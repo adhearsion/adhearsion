@@ -1,0 +1,49 @@
+Support ITAD routing using ENUM lookups.
+
+Support a way of playing digits through SayDigits() instead of SayNumber()
+
+Allow a Rails app to ./script/plugin install an entire application.
+
+Implement the notifications DSL using OpenWFEru as a base.
+
+Add the ability to auto-require gems when Adhearsion boots by specifying them in adhearsion.yml.
+
+Implement PBX[] access to the Asterisk database. In an AGI session this should use DATABASE PUT/GET while elsewhere it should use AMI if a connection exists. Here are some examples:
+ - PBX['SIP']['Registry'].each { |user| p user }
+ - PBX['foo'] = Time.now # => Should use Marshal.dump
+ - PBX['foo'].delete!
+ 
+Implement an AMI client in Erlang that Ruby can talk to and dispatch/queue events.
+
+Allow setting autohangups after a certain duration (SET AUTOHANGUP seconds)
+
+Create more framework hooks! Need some especially for after_helpers_load()
+
+Support logging to the Asterisk console with the use of the VERBOSE AGI command.
+
+Support calling normal Asterisk AGI scripts from Adhearsion.
+
+Create a CommandFactory module which takes the same arguments as all dialplan methods, but returns the String that should be sent to Asterisk. This would be really helpful for compiling commands for use elsewhere. This would greatly clean up the Asterisk module.
+
+Develop Rails app integration that hooks into the framework itself.
+
+Port the Perl Least Cost Routing Engine (Asterisk::LCR) to Adhearsion. http://search.cpan.org/~jhiver/Asterisk-LCR-0.08/lib/Asterisk/LCR.pm
+
+Improved migration support. Should inherit migrations from a Rails app. Should support sexy migrations. Should have a migrations generator and maybe a schema file that keeps track of the current version?
+
+Support storing call caches with memcached if available.
+
+Have Adhearsion's migrations use a version system. Instead of having just one migration.rb file, migrations should be kept with different versions and a schema which specifies the version.
+
+Adhearsion CLI. Should use the 'breakpoint' library's DRb extension to run an irb session in an external Ruby interpreter (Adhearsion's)
+
+Allow config files to use ERb
+
+Let record() take a block of functionality to record.
+
+Build in hunt-group support into dial(). Basically, traverse a list of people to dial and checking for timeouts. When a timeout occurs, try the next person. Can optionally loop.
+
+Allow the multi_messenger.rb helper's event handlers to be declared somewhere other than the file itself (e.g. config/helpers/ directory)
+
+
+Maybe allow nested commands with response blocks in the future...

@@ -1,0 +1,36 @@
+load 'deploy' if respond_to?(:namespace) # cap2 differentiator
+
+# Hey! Why don't you set these? :)
+role:pbx,   "asterisk.localdomain"
+role:ahn,   "adhearsion.localdomain"
+role:rails, "rails.localdomain"
+
+# deploy_to is for Adhearsion deployments. Also used by the agi:// URI
+set:deploy_to, "localhost"
+
+set:pbx_context, "adhearsion"
+set:asterisk_path, "/etc/asterisk"
+
+desc "Backup all of your applications to a remote server."
+task:backup, :roles => [:pbx, :ahn, :rails] do
+  # TODO: Tar directories. SCP over. S3 upload.
+end 
+
+namespace:asterisk do
+  task:version do
+    run "asterisk -V"
+  end
+  
+  # A lot of stuff here can use the ORM
+  namespace:configure do
+    task:for_adhearsion, :roles => :ahn do
+      "\n\n[#{pbx_context}]\nexten => _.,1,AGI(agi://#{})\n"
+    end
+  end
+end
+
+namespace:deploy do
+  task:check do
+    # TODO: Check if Ruby and Rubygems are installed.
+  end
+end
