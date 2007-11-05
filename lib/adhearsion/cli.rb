@@ -42,19 +42,11 @@ USAGE
       module CommandHandler
         class << self
           def create(path, project=:default)
-            origin = AHN_INSTALL_DIR + "/applications/#{project}"
-            raise UnknownProject, origin unless File.directory? origin
-          
-            FileUtils.makedirs path
-            FileUtils.copy_entry origin, path
-          
-            # Seems so often Subversion files get thrown around.
-            Dir.glob File.join(path, "**", '.svn') do |svndir|
-              FileUtils.rm_rf svndir
-            end
-          
-            # readme = File.read path + "/README.txt" rescue ""
-            # puts "Adhearsion project generated!", "\n", readme
+            require 'rubygems'
+            require 'rubigen'
+            require 'rubigen/scripts/generate'
+            RubiGen::Base.use_application_sources! :ahn
+            RubiGen::Scripts::Generate.new.run([path], :generator => 'ahn')
           end
         
           def start(path, daemon=false)
