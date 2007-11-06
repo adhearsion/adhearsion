@@ -231,25 +231,26 @@ end
 context "Dial command" do
   include DialplanCommandTestHelpers
   
-  test "Dialing an American number with only one possible ProviderDefinition should " do
-    mock_route_calculation_with empty_provider_definition
-    pbx_should_respond_with_success
-    pbx_should_respond_with_value "ANSWER"
-    assert_answered mock_call.dial(1_444_555_6666)
+  test "should set the caller id if the callerid option is specified" do
+    mock_call.should_receive(:set_caller_id).once
+    mock_call.dial 123, :caller_id => "1234678901"
   end
   
-  disabled_test "If "
-  
-  private
-    def empty_provider_definition(name = :provider_definition_name_does_not_matter)
-      Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new(name) do
-        # do nothing in this case
-      end
-    end
-    
-    def assert_answered(call_response)
-      call_response.should.equal :answered
-    end
+  test "should raise an exception when a non-numerical callerid is specified" do
+    the_following_code {
+      mock_call.dial 911, :caller_id => "zomgz"
+    }.should.raise ArgumentError
+  end
+end
+
+context "set_caller_id command" do
+  include DialplanCommandTestHelpers
+
+  test "should encapsulate the number with quotes" do
+    caller_id = "14445556666"
+    mock_call.should_receive(:raw_response).once.with(%(SET CALLERID "#{caller_id}")).and_return true
+    mock_call.send(:set_caller_id, caller_id)
+  end
 end
 
 context "record command" do

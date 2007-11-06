@@ -131,21 +131,26 @@ module Adhearsion
     	  end
     	  
         def dial(number, options={})
-          rules = callable_routes_for number
-          return :no_route if rules.empty?
-          call_attempt_status = nil
-          rules.each do |provider|
-            
-            response = execute "Dial",
-              provider.format_number_for_platform(number),
-              timeout_from_dial_options(options),
-              asterisk_options_from_dial_options(options)
-              
-            call_attempt_status = last_dial_status
-            break if call_attempt_status == :answered
-          end
-          call_attempt_status
+          set_caller_id options.delete(:caller_id)
+          execute "Dial", number, options[:for], options[:options]
         end
+        
+        # def dial(number, options={})
+        #   rules = callable_routes_for number
+        #   return :no_route if rules.empty?
+        #   call_attempt_status = nil
+        #   rules.each do |provider|
+        #     
+        #     response = execute "Dial",
+        #       provider.format_number_for_platform(number),
+        #       timeout_from_dial_options(options),
+        #       asterisk_options_from_dial_options(options)
+        #       
+        #     call_attempt_status = last_dial_status
+        #     break if call_attempt_status == :answered
+        #   end
+        #   call_attempt_status
+        # end
       	
       	def say_digits(digits)
       	  validate_digits(digits)
@@ -164,7 +169,12 @@ module Adhearsion
         end
 
         private
-        
+          def set_caller_id(caller_id)
+            return unless caller_id
+            raise ArgumentError, "Caller ID must be numerical" if caller_id !~ /^\d+$/
+            raw_response %(SET CALLERID %p) % caller_id
+          end
+          
           def timeout_from_dial_options(options)
             options[:for] || options[:timeout]
           end
@@ -224,7 +234,7 @@ module Adhearsion
           end
           
           def error?(result)
-            result[/^#{response_prefix}(?:-\d+|0)/]
+            result.to_s[/^#{response_prefix}(?:-\d+|0)/]
           end
           
           # timeout with pressed digits:    200 result=<digits> (timeout)
