@@ -45,5 +45,4 @@ Build in hunt-group support into dial(). Basically, traverse a list of people to
 
 Allow the multi_messenger.rb helper's event handlers to be declared somewhere other than the file itself (e.g. config/helpers/ directory)
 
-
-Maybe allow nested commands with response blocks in the future...
+Maybe allow nested commands with response blocks in the future....
