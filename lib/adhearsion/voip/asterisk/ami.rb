@@ -55,7 +55,7 @@ module Adhearsion
             error message
             raise AuthenticationFailedException, message
           else
-            puts "Manager connection established to #{@host}:#{@port} with user '#{@user}'"
+            # puts "Manager connection established to #{@host}:#{@port} with user '#{@user}'"
           end
         end
   
