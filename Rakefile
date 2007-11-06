@@ -14,6 +14,7 @@ Hoe.new('adhearsion', Adhearsion::VERSION::STRING) do |p|
   p.url = p.paragraphs_of('README.txt', 0).first.split(/\n/)[1..-1]
   p.changes = p.paragraphs_of('History.txt', 0..1).join("\n\n")
   p.test_globs = ['spec/**/test_*.rb']
+  p.extra_deps = [['rubigen', '>=1.0.6']]
 end
 
 task :ragel do
