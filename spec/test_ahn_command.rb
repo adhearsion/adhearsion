@@ -64,7 +64,7 @@ context "The ahn command" do
   end
   
   test "if not path is provided, running Ahn command blows up" do
-    lambda {
+    the_following_code {
       simulate_args "start"
       Adhearsion::CLI::AhnCommand.execute!
     }.should.raise(NoMethodError)
@@ -85,7 +85,7 @@ context "The ahn command" do
   end
   
   test "reacting to unrecognized commands" do
-    lambda {
+    the_following_code {
       simulate_args "alpha", "beta"
       Adhearsion::CLI::AhnCommand::CommandHandler
       Adhearsion::CLI::AhnCommand.execute!
@@ -93,14 +93,14 @@ context "The ahn command" do
   end
   
   test "giving a path that doesn't contain a project raises an exception" do
-    lambda {
+    the_following_code {
       simulate_args "start", "/asjdfas/sndjfabsdfbqwb/qnjwejqbwh"
       Adhearsion::CLI::AhnCommand.execute!
     }.should.raise(Adhearsion::CLI::AhnCommand::CommandHandler::PathInvalid)
   end
   
   test "giving an unrecognized project name raises an exception" do
-    lambda {
+    the_following_code {
       simulate_args "create:a2n8y3gny2", "/tmp/qjweqbwas"
       Adhearsion::CLI::AhnCommand.execute!
     }.should.raise(Adhearsion::CLI::AhnCommand::CommandHandler::UnknownProject)
