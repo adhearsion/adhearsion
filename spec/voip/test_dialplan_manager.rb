@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + "/../test_helper"
 require 'adhearsion/voip/dsl/dialplan/parser'
 
-context "DialplanManager" do
+context "Dialplan::Manager handling" do
   attr_accessor :manager, :call, :context_name, :mock_context
   
   before do
@@ -122,12 +122,6 @@ context "ExecutionEnvironemnt" do
     execution_environent.metaclass.included_modules.should.include(Adhearsion::VoIP::Asterisk::Commands)
   end
   
-  test "should raise a NoContextError exception if the entry point given is nil" do
-    the_following_code {
-      Adhearsion::DialPlan::ExecutionEnvironment.new(@call, nil)
-    }.should.raise(Adhearsion::DialPlan::ExecutionEnvironment::NoContextError)
-  end
-  
   test "should define variables accessors within itself" do
     environment = Adhearsion::DialPlan::ExecutionEnvironment.new(@call, entry_point)
     call.variables.should.not.be.empty
@@ -157,7 +151,7 @@ context "ExecutionEnvironemnt" do
   
 end
 
-context "Platform operations" do
+context "VoIP platform operations" do
   test "can map a platform name to a module which holds its platform-specific operations" do
     Adhearsion::VoIP::Commands.for(:asterisk).should == Adhearsion::VoIP::Asterisk::Commands
   end
