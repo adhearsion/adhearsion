@@ -20,7 +20,7 @@ module Adhearsion
           	    #TODO: This is temporary
           	    logger = Logger.new(STDOUT)
           	    logger.error e.inspect
-          	    logger.error e.backtrace.join("\n")
+          	    logger.error e.backtrace.map { |s| " " * 5 + s }.join("\n")
         	    end
           	  # TBD: (may have more hooks than what Jay has defined in hooks.rb) Adhearsion::Hooks::BeforeHelpersLoad.trigger_hooks!
           	  #     Rich says how about regisering hooks into  Call's lifecycle?  Excellent idea.  We could manage state transitions as a first-class
