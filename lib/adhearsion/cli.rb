@@ -45,7 +45,10 @@ USAGE
             require 'rubygems'
             require 'rubigen'
             require 'rubigen/scripts/generate'
-            RubiGen::Base.use_application_sources! :ahn
+            source = RubiGen::PathSource.new(:application, 
+              File.join(File.dirname(__FILE__), "../../app_generators"))
+            RubiGen::Base.reset_sources
+            RubiGen::Base.append_sources source
             RubiGen::Scripts::Generate.new.run([path], :generator => 'ahn')
           end
         
