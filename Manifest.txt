@@ -36,7 +36,6 @@ applications/default/config/startup.rb
 applications/default/dialplan.rb
 applications/default/helpers/simon.rb
 bin/ahn
-bin/ahn_orig
 lib/adhearsion.rb
 lib/adhearsion/blank_slate.rb
 lib/adhearsion/cli.rb
