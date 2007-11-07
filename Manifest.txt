@@ -16,7 +16,6 @@ app_generators/ahn/USAGE
 app_generators/ahn/ahn_generator.rb
 app_generators/ahn/templates/README
 app_generators/ahn/templates/Rakefile
-app_generators/ahn/templates/components/.DS_Store
 app_generators/ahn/templates/components/simon_game/configuration.rb
 app_generators/ahn/templates/components/simon_game/lib/simon_game.rb
 app_generators/ahn/templates/components/simon_game/test/test_helper.rb
