@@ -4,16 +4,23 @@ require 'adhearsion/cli'
 module AhnCommandSpecHelper
   def simulate_args(*args)
     ARGV.clear
-    args.each {|a| ARGV << a }
+    ARGV.concat args
   end
   
   def capture_stdout(&block)
     old = $stdout
     $stdout = io = StringIO.new
     yield
+  ensure
     $stdout = old
-    io.string
+    return io.string
   end
+  
+  def new_tmp_dir(filename=String.random)
+    File.join Dir.tmpdir, filename
+  end
+  
+  
 end
 
 context 'The Ahn Command helper' do
@@ -34,7 +41,7 @@ context 'The Ahn Command helper' do
   
 end
 
-context "The ahn command" do
+context "A simulated use of the 'ahn' command" do
   
   include AhnCommandSpecHelper
   
@@ -45,21 +52,21 @@ context "The ahn command" do
   test "arguments to 'create' are executed properly properly" do
     some_path = "/path/somewhere"
     simulate_args "create", some_path
-    flexmock(Adhearsion::CLI::AhnCommand::CommandHandler).should_receive(:create).with(some_path, :default)
-    Adhearsion::CLI::AhnCommand.execute!
+    flexmock(Adhearsion::CLI::AhnCommand::CommandHandler).should_receive(:create).once.with(some_path, :default)
+    capture_stdout { Adhearsion::CLI::AhnCommand.execute! }
   end
   
   test "arguments to 'start' are executed properly properly" do
     some_path = "/tmp/blargh"
     simulate_args "start", some_path
-    flexmock(Adhearsion::CLI::AhnCommand::CommandHandler).should_receive(:start).with(some_path, nil)
+    flexmock(Adhearsion::CLI::AhnCommand::CommandHandler).should_receive(:start).once.with(some_path, nil)
     Adhearsion::CLI::AhnCommand.execute!
   end
   
   test "should execute arguments to 'start' for daemonizing properly" do
     somewhere = "/tmp/blarghh"
     simulate_args "start", somewhere, true
-    flexmock(Adhearsion::CLI::AhnCommand::CommandHandler).should_receive(:start).with(somewhere, true)
+    flexmock(Adhearsion::CLI::AhnCommand::CommandHandler).should_receive(:start).once.with(somewhere, true)
     Adhearsion::CLI::AhnCommand.execute!
   end
   
@@ -87,7 +94,6 @@ context "The ahn command" do
   test "reacting to unrecognized commands" do
     the_following_code {
       simulate_args "alpha", "beta"
-      Adhearsion::CLI::AhnCommand::CommandHandler
       Adhearsion::CLI::AhnCommand.execute!
     }.should.raise(Adhearsion::CLI::AhnCommand::CommandHandler::UnknownCommand)
   end
@@ -101,12 +107,24 @@ context "The ahn command" do
   
   test "giving an unrecognized project name raises an exception" do
     the_following_code {
-      simulate_args "create:a2n8y3gny2", "/tmp/qjweqbwas"
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise(Adhearsion::CLI::AhnCommand::CommandHandler::UnknownProject)
+      nonexistent_app_name, nonexistent_path = "a2n8y3gny2", "/tmp/qjweqbwas"
+      simulate_args "create:#{nonexistent_app_name}", nonexistent_path
+      capture_stdout { Adhearsion::CLI::AhnCommand.execute! }
+    }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::UnknownProject
   end
 end
 
-context 'The "ahn create" command' do
-  disabled_test ".svn folders should not be copied"
+context 'A real use of the "ahn" command' do
+  
+  include AhnCommandSpecHelper
+  
+  test "the 'create' command" do
+    the_following_code {
+      tmp_path = new_tmp_dir
+      simulate_args "create", tmp_path
+      capture_stdout { Adhearsion::CLI::AhnCommand.execute! }
+      Dir[tmp_path + "/*"].should.not.be.empty
+    }.should.not.raise
+  end
+  
 end

@@ -24,7 +24,7 @@ USAGE
       def self.parse_arguments(args=ARGV.clone)
         action = args.shift
         case action
-          when /^-?-?h(elp)?$/        then [:help]
+          when /^-?-?h(elp)?$/, nil   then [:help]
           when /^-?-?v(ersion)?$/     then [:version]
           when /^create(:([\w_.]+))?$/
             [:create, args.shift, $LAST_PAREN_MATCH || :default]
@@ -42,7 +42,7 @@ USAGE
       module CommandHandler
         class << self
           def create(path, project=:default)
-            require 'rubygems'
+            raise UnknownProject.new(project) if project != :default # TODO: Support other projects
             require 'rubigen'
             require 'rubigen/scripts/generate'
             source = RubiGen::PathSource.new(:application, 
