@@ -19,11 +19,8 @@ module Adhearsion
     # Executable environment for a dial plan in the scope of a call
     class ExecutionEnvironment
       
-      class NoContextError < Exception; end
-      
       attr_reader :call
       def initialize(call, entry_point)
-        raise NoContextError, "No dialplan entry point for call context '#{call.context}'! Ignoring call." unless entry_point
         @call, @entry_point = call, entry_point
         extend_with_voip_commands!
         extend_with_call_variables!
@@ -57,6 +54,9 @@ module Adhearsion
     end
     
     class Manager
+      
+      class NoContextError < Exception; end
+      
       class << self
         def handle(call)
           new.handle(call)
@@ -69,7 +69,9 @@ module Adhearsion
       end
       
       def handle(call)
-        @context = ExecutionEnvironment.new(call, entry_point_for(call))
+        starting_entry_point = entry_point_for call
+        raise NoContextError, "No dialplan entry point for call context '#{call.context}' -- Ignoring call!" unless starting_entry_point
+        @context = ExecutionEnvironment.new(call, starting_entry_point)
         inject_context_names_into_environment(@context)
         @context.run
       end

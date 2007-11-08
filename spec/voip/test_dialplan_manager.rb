@@ -27,6 +27,14 @@ context "Dialplan::Manager handling" do
     manager.handle(call)
   end
   
+  test "should raise a NoContextError exception if the targeted context is not found" do
+    the_following_code {
+      # manager = flexmock Adhearsion::DialPlan::Manager.new
+      flexmock(manager).should_receive(:entry_point_for).and_return nil
+      manager.handle call
+    }.should.raise(Adhearsion::DialPlan::Manager::NoContextError)
+  end
+  
   private
     def hack_to_work_around_parser_coupling
       flexmock(Adhearsion::Paths).should_receive(:manager_for?).and_return(true)
@@ -34,8 +42,11 @@ context "Dialplan::Manager handling" do
     end
     
     def mock_dial_plan_lookup_for_context_name
-      flexmock(Adhearsion::DialPlan).new_instances.should_receive(:lookup).with(context_name).once.and_return(mock_context)
+      flexmock(Adhearsion::DialPlan).new_instances.should_receive(:lookup).with(context_name).and_return(mock_context)
     end
+end
+
+context "Dialplan::Manager context lookup" do
 end
 
 context "DialPlan" do
