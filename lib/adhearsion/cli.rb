@@ -11,10 +11,7 @@ Usage:
    ahn help|-h|--h|--help|-help
 
 Under development:
-   ahn install helpername
    ahn create:projectname /path/to/directory
-   ahn search keyword
-   ahn uninstall/remove helpername"
 USAGE
     
       def self.execute!
