@@ -123,7 +123,7 @@ context 'A real use of the "ahn" command' do
       tmp_path = new_tmp_dir
       simulate_args "create", tmp_path
       capture_stdout { Adhearsion::CLI::AhnCommand.execute! }
-      Dir[tmp_path + "/*"].should.not.be.empty
+      File.exists?(File.join(tmp_path, ".ahnrc")).should.be true
     }.should.not.raise
   end
   

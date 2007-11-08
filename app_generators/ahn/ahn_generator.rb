@@ -22,6 +22,8 @@ class AhnGenerator < RubiGen::Base
       m.directory ''
       BASEDIRS.each { |path| m.directory path }
 
+      m.file  *[".ahnrc"]*2
+      
       m.file  *["components/simon_game/configuration.rb"]*2
       m.file  *["components/simon_game/lib/simon_game.rb"]*2
       m.file  *["components/simon_game/test/test_helper.rb"]*2

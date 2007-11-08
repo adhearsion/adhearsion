@@ -1,0 +1,26 @@
+# Adhearsion Runtime Configuration.
+#     (YAML+ERb configuration)
+# The search paths for certain files.
+
+
+# See the documentation on Adhearsion::Paths for path formats.
+paths:
+  # Specify these paths relative to the Adhearsion app's root
+  init: config/startup.rb
+  helpers:
+    directory: helpers
+    pattern: *.rb
+  config:
+    directory: config
+  dialplan: dialplan.rb
+  logs:
+    directory: logs
+    pattern: *.log
+
+  # Models
+  models:
+    directory: models
+    pattern: *.rb
+  migrations:
+    directory: db/migrations
+    pattern: *.rb
