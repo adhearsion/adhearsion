@@ -86,7 +86,6 @@ module Adhearsion
       init_modules
       daemonize! if running_in_daemon_mode?
       create_pid_file if pid_file
-      load_helpers
       load_components
       trigger_after_initialized_hooks
     end
@@ -148,10 +147,6 @@ module Adhearsion
     def daemonize!
       puts "Daemonizing now! Creating #{pid_file}."
       fork
-    end
-    
-    def load_helpers
-      HelperSupport::HelperLoader.load!
     end
     
     def load_components

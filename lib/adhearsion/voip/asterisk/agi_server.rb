@@ -25,11 +25,7 @@ module Adhearsion
                 logger.error e.inspect
                 logger.error e.backtrace.map { |s| " " * 5 + s }.join("\n")
               end
-          	  # TBD: (may have more hooks than what Jay has defined in hooks.rb) Adhearsion::Hooks::BeforeHelpersLoad.trigger_hooks!
-          	  #     Rich says how about regisering hooks into  Call's lifecycle?  Excellent idea.  We could manage state transitions as a first-class
-          	  #     thing for calls.
-          	  # SKIP: (This feature will come later) SOME PBX.call thing which I don't think actually works in adhearsion 0.7.x
-          	  # execute_after_hooks              
+          	  # TBD: (may have more hooks than what Jay has defined in hooks.rb)
             end
           end
          

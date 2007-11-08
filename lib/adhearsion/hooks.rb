@@ -20,8 +20,6 @@ module Adhearsion
 
   module Hooks
     
-    BeforeHelpersLoad = GenericHook.new
-    AfterHelpersLoad  = GenericHook.new
     AfterInitialized  = GenericHook.new
     
     TearDown = GenericHook.new
