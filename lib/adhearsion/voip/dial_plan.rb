@@ -138,6 +138,9 @@ module Adhearsion
             builder.instance_eval(dial_plan_as_string)
             builder.contexts
           end
+          def const_missing(name)
+            raise NameError, %(undefined constant "#{name}")
+          end
         end
         
         attr_reader :contexts

@@ -2,6 +2,9 @@ require File.dirname(__FILE__) + "/../test_helper"
 require 'adhearsion/voip/dsl/dialplan/parser'
 
 context "Dialplan::Manager handling" do
+  
+  include DialplanTestingHelper
+  
   attr_accessor :manager, :call, :context_name, :mock_context
   
   before do
@@ -12,7 +15,7 @@ context "Dialplan::Manager handling" do
     mock_dial_plan_lookup_for_context_name
     flexmock(Adhearsion::DialPlan::Loader).should_receive(:load_dial_plan).and_return{flexmock("loaded contexts", :contexts => nil)}
     @manager = Adhearsion::DialPlan::Manager.new
-    @call    = Adhearsion::Call.new(flexmock("io does not matter in this case"), :context => context_name)
+    @call    = new_call_for_context context_name
     
     # Sanity check context name being set
     call.context.should.equal context_name
@@ -133,6 +136,16 @@ context "ExecutionEnvironemnt" do
     execution_environent.metaclass.included_modules.should.include(Adhearsion::VoIP::Asterisk::Commands)
   end
   
+  test "An executed context should raise a NameError error when a missing constant is referenced" do
+    the_following_code do
+      call = new_call_for_context :context_with_missing_constant
+      mock_dialplan_with "context_with_missing_constant { ThisConstantDoesntExist }"
+      manager = new_manager_with_entry_points_loaded_from_dialplan_contexts
+      manager.handle call
+    end.should.raise NameError
+    
+  end
+  
   test "should define variables accessors within itself" do
     environment = Adhearsion::DialPlan::ExecutionEnvironment.new(@call, entry_point)
     call.variables.should.not.be.empty
@@ -142,13 +155,14 @@ context "ExecutionEnvironemnt" do
   end
   
   test "should define accessors for other contexts in the dialplan" do
-    call = Adhearsion::Call.new(StringIO.new, :context => :am_not_for_kokoa!)
+    call = new_call_for_context :am_not_for_kokoa!
     bogus_dialplan = <<-DIALPLAN
       am_not_for_kokoa! {}
       icanhascheezburger? {}
       these_context_names_do_not_really_matter {}
     DIALPLAN
-    flexmock(Adhearsion::DialPlan::Loader).should_receive(:read_dialplan_file).at_least.once.and_return(bogus_dialplan)
+    
+    mock_dialplan_with bogus_dialplan
     manager = Adhearsion::DialPlan::Manager.new
     manager.dial_plan.entry_points = manager.dial_plan.loader.load_dial_plan.contexts
     manager.dial_plan.entry_points.should.not.be.empty
@@ -172,6 +186,21 @@ BEGIN {
 module DialplanTestingHelper
   def load(dial_plan_as_string)
     Adhearsion::DialPlan::Loader.load(dial_plan_as_string)
+  end
+  
+  def mock_dialplan_with(string)
+    flexmock(Adhearsion::DialPlan::Loader).should_receive(:read_dialplan_file).
+        at_least.once.and_return(string)
+  end
+  
+  def new_manager_with_entry_points_loaded_from_dialplan_contexts
+    returning Adhearsion::DialPlan::Manager.new do |manager|
+      manager.dial_plan.entry_points = manager.dial_plan.loader.load_dial_plan.contexts
+    end
+  end
+  
+  def new_call_for_context(context)
+    Adhearsion::Call.new(StringIO.new, :context => context)
   end
 end
 }
