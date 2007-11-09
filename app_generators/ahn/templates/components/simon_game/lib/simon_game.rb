@@ -38,8 +38,7 @@ class SimonGame
       call_context.play 'good'
     else
       call_context.play %W(#{number.size - 1} times wrong-try-again-smarty)
-      initialize_attempt
-      initialize_number
+      reset
     end
   end
 
@@ -54,4 +53,9 @@ class SimonGame
   def initialize_number
     @number ||= ''
   end
+  
+  def reset
+    @attempt, @number = '', ''
+  end
+  
 end
