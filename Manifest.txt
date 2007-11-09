@@ -14,6 +14,7 @@ ahn_generators/component/templates/test/test.rb.erb
 ahn_generators/component/templates/test/test_helper.rb
 app_generators/ahn/USAGE
 app_generators/ahn/ahn_generator.rb
+app_generators/ahn/templates/.ahnrc
 app_generators/ahn/templates/README
 app_generators/ahn/templates/Rakefile
 app_generators/ahn/templates/components/simon_game/configuration.rb
@@ -22,18 +23,6 @@ app_generators/ahn/templates/components/simon_game/test/test_helper.rb
 app_generators/ahn/templates/components/simon_game/test/test_simon_game.rb
 app_generators/ahn/templates/config/startup.rb
 app_generators/ahn/templates/dialplan.rb
-applications/default/.ahnrc
-applications/default/Capfile
-applications/default/README.txt
-applications/default/Rakefile
-applications/default/components/simon_game/configuration.rb
-applications/default/components/simon_game/lib/simon_game.rb
-applications/default/components/simon_game/test/test_helper.rb
-applications/default/components/simon_game/test/test_simon_game.rb
-applications/default/config/dialing.rb
-applications/default/config/startup.rb
-applications/default/dialplan.rb
-applications/default/helpers/simon.rb
 bin/ahn
 lib/adhearsion.rb
 lib/adhearsion/blank_slate.rb
@@ -58,8 +47,6 @@ lib/adhearsion/distributed/gateways/soap_gateway.rb
 lib/adhearsion/distributed/gateways/xmlrpc_gateway.rb
 lib/adhearsion/distributed/peer_finder.rb
 lib/adhearsion/distributed/remote_cli.rb
-lib/adhearsion/helper_support/helper_installer.rb
-lib/adhearsion/helper_support/helper_loader.rb
 lib/adhearsion/hooks.rb
 lib/adhearsion/initializer.rb
 lib/adhearsion/initializer/asterisk.rb
@@ -107,7 +94,6 @@ script/destroy
 script/generate
 spec/distributed/test_meta.rb
 spec/fixtures/dialplan.rb
-spec/helper_support/test_helper_loader.rb
 spec/initializer/test_configuration.rb
 spec/initializer/test_loading.rb
 spec/initializer/test_paths.rb
