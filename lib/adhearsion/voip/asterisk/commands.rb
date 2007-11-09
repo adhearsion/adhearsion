@@ -188,10 +188,6 @@ module Adhearsion
             get_variable('DIALSTATUS').downcase.to_sym
           end
         
-          def callable_routes_for(number)
-            Adhearsion::VoIP::DSL::DialingDSL.calculate_routes_for(number)
-          end
-          
           def extract_input_from(result)
             return false if error?(result)
             return false if input_timed_out?(result)
