@@ -72,6 +72,5 @@ EOS
       components/simon_game/lib
       components/simon_game/test
       config
-      helpers
     )
 end
