@@ -1,3 +1,5 @@
+# THIS FREESWITCH LIBRARY HASN'T BEEN INTEGRATED INTO THE REFACTORED 0.8.0 YET.
+# WHAT EXISTS HERE IS OLD, MUST BE CHANGED, AND DOES NOT EVEN GET LOADED AT THE MOMENT.
 require "adhearsion/voip/freeswitch/oes_server"
 require "adhearsion/voip/freeswitch/event_handler"
 require "adhearsion/voip/freeswitch/inbound_connection_manager"
