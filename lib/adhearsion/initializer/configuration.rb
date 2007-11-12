@@ -93,15 +93,21 @@ module Adhearsion
         attr_accessor :port
         attr_accessor :username
         attr_accessor :password
+        attr_accessor :events
         
         class << self
           def default_port
             5038
           end
+
+          def default_events
+            false
+          end
         end
         
         def initialize(overrides = {})
           self.port = self.class.default_port
+          self.events = self.class.default_events
           super
         end
       end
@@ -129,6 +135,35 @@ module Adhearsion
     
     class DrbConfiguration < AbstractConfiguration
       attr_accessor :port
+      attr_accessor :host
+      attr_accessor :acl
+
+      class << self
+        def default_port
+          9050
+        end
+        
+        def default_host
+          'localhost'
+        end
+      end
+      
+      def initialize(overrides = {})
+        self.port = overrides.delete(:port) || self.class.default_port
+        self.host = overrides.delete(:host) || self.class.default_host
+        self.acl  = overrides.delete(:raw_acl)
+        if not self.acl
+          self.acl = []
+          denies = overrides.delete(:deny)
+          denies.each do |ip|
+            self.acl << "deny" << ip
+          end if denies
+          allows = overrides.delete(:allow)
+          allows.each do |ip|
+            self.acl << "allow" << ip
+          end if allows
+        end
+      end
     end
     add_configuration_for :Drb
   end

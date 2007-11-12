@@ -105,13 +105,12 @@ module Adhearsion
     def init_modules
       require 'adhearsion/initializer/database.rb'
       require 'adhearsion/initializer/asterisk.rb'
-      # require 'adhearsion/initializer/drb.rb'
+      require 'adhearsion/initializer/drb.rb'
       # require 'adhearsion/initializer/freeswitch.rb'
       
       DatabaseInitializer.start if AHN_CONFIG.database_enabled?
       AsteriskInitializer.start if AHN_CONFIG.asterisk_enabled?
-
-      # DRbInitializer.start        if AHN_CONFIG.drb_enabled?
+      DrbInitializer.start      if AHN_CONFIG.drb_enabled?
       # FreeswitchInitializer.start if AHN_CONFIG.freeswitch_enabled?
     end
     
