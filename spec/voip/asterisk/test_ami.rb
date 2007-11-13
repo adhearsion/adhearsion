@@ -64,7 +64,7 @@ context "The AMI command interface" do
   test "should respond to a DBGet for a non-existent key with an exception" do
     the_following_code do
       resp = @ami.dbget :Family => "none", :Key => "somekey"
-    end.should.raise Adhearsion::VoIP::Asterisk::AMI::CommandError
+    end.should.raise Adhearsion::VoIP::Asterisk::AMI::ActionError
   end
   
   test "should respond to a DBGet for a key with an event" do

@@ -2,8 +2,8 @@ module Adhearsion
   module VoIP
     module Asterisk
       class AMI
-        module Commands
-          class Command
+        module Actions
+          class Action
             @@subclasses = []
             
             attr_accessor :action
@@ -15,13 +15,13 @@ module Adhearsion
               def build(name, hash)
                 name = name.to_s
                 entry = @@subclasses.find { |klass| klass.downcase == name.downcase }
-                klass = entry ? Commands.const_get("#{entry}Command") : self
+                klass = entry ? Actions.const_get("#{entry}Action") : self
                 klass.new(name, hash)
               end
 
               # Keep a list of the subclasses.
               def inherited(klass)
-                @@subclasses << klass.to_s.split("::").last.match(/(.*?)Command/)[1]
+                @@subclasses << klass.to_s.split("::").last.match(/(.*?)Action/)[1]
               end
             end
 
@@ -45,7 +45,7 @@ module Adhearsion
               follows? or %w(dbget originate).include? @action
             end
 
-            # Commands of the form "Response: <Command> results will follow"
+            # Actions of the form "Response: <Action> results will follow"
             def follows?
               %w(parkedcalls queuestatus agents status sippeers zapshowchannels).include? @action
             end
@@ -103,7 +103,7 @@ module Adhearsion
             end
           end
 
-          class OriginateCommand < Command
+          class OriginateAction < Action
             # Return true if this action will return events, i.e. it is asynchronous.
             # This is controlled by the 'Async' argument to the command.
             def async?
@@ -119,7 +119,7 @@ module Adhearsion
             end
           end
           
-          class DBGetCommand < Command
+          class DBGetAction < Action
             # Needed only because this asynchronous response (when the
             # command succeeds) does not return a response with the
             # name "DBGetComplete".
@@ -130,7 +130,7 @@ module Adhearsion
             end
           end
 
-          class SIPpeersCommand < Command
+          class SIPpeersAction < Action
             # Sigh. The only reason for this is that the naming
             # convention differs.
             def completed_by?(packet)
@@ -140,7 +140,7 @@ module Adhearsion
             end
           end
           
-          class EventsCommand < Command
+          class EventsAction < Action
             # Again, this is a command that is subclassed due to interface
             # inconsistency. If the command turns on events with the mask
             # of "On", there is no response. If it is "Off" or set on for

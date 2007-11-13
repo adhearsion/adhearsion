@@ -12,7 +12,7 @@ module Adhearsion
   module VoIP
     module Asterisk
       class AMI
-        include Commands
+        include Actions
   
         attr_accessor :version
 
@@ -50,7 +50,7 @@ module Adhearsion
           @version = @scanner.run(@action_sock)
           begin
             __cmd 'login', @action_sock, :username => user, :secret => pass, :events => (events ? "On" : "Off")
-          rescue CommandError
+          rescue ActionError
             message = "Invalid AMI username/password! Check manager.conf."
             error message
             raise AuthenticationFailedException, message
@@ -60,7 +60,7 @@ module Adhearsion
         end
   
         def __cmd(name, sock, hash={})
-          cmd = Command.build(name, hash)
+          cmd = Action.build(name, hash)
           sock.synchronize do
             connect! if !sock || sock.closed?
             sock.write cmd.to_s
@@ -108,7 +108,7 @@ module Adhearsion
         end
   
         class AuthenticationFailedException < Exception; end
-        class CommandError < RuntimeError; end
+        class ActionError < RuntimeError; end
       end
     end
   end

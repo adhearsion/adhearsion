@@ -170,7 +170,7 @@ module Adhearsion
 								if not @packets[action_id].blank?
 									@packets[action_id].each do |pkt|
 									  if pkt.error?
-                      raise CommandError, pkt.message
+                      raise ActionError, pkt.message
 								    end
                     packets << pkt.body if cmd.keep?(pkt)
                     if cmd.completed_by?(pkt)
