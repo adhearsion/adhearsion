@@ -6,7 +6,7 @@ require 'thread'
 require 'monitor'
 require 'active_support'
 require 'adhearsion/voip/asterisk/ami/parser'
-require 'adhearsion/voip/asterisk/ami/commands'
+require 'adhearsion/voip/asterisk/ami/actions'
 
 module Adhearsion
   module VoIP
