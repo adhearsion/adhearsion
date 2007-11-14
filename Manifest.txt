@@ -67,7 +67,7 @@ lib/adhearsion/version.rb
 lib/adhearsion/voip/asterisk.rb
 lib/adhearsion/voip/asterisk/agi_server.rb
 lib/adhearsion/voip/asterisk/ami.rb
-lib/adhearsion/voip/asterisk/ami/commands.rb
+lib/adhearsion/voip/asterisk/ami/actions.rb
 lib/adhearsion/voip/asterisk/ami/machine.rb
 lib/adhearsion/voip/asterisk/ami/machine.rl
 lib/adhearsion/voip/asterisk/ami/parser.rb
