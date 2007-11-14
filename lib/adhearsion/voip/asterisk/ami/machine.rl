@@ -12,7 +12,7 @@ module Adhearsion
 						action key 		{ set("key");		}
 						action _value { mark("value") }
 						action value 	{ set("value"); }
-						Attr = alpha+ >_key %key ': ' (any* -- crlf) >_value %value crlf;
+						Attr = [a-zA-Z\-]+ >_key %key ': ' (any* -- crlf) >_value %value crlf;
 
 						action _event { mark("event") }
 						action event 	{ set("event"); @current_packet = EventPacket.new(@__ragel_event) }
