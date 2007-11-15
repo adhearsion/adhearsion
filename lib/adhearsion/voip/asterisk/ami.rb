@@ -13,7 +13,7 @@ module Adhearsion
     module Asterisk
       class AMI
         include Actions
-  
+
         attr_accessor :version
 
         def initialize(user, pass, host='127.0.0.1', hash={})
@@ -21,6 +21,17 @@ module Adhearsion
           @events = hash[:events]
         end
   
+        include Publishable
+        publish :through => :proxy do
+          def originate(options={}, &block)
+            __cmd :originate, @action_sock, options, &block
+          end
+
+          def ping
+            __cmd :ping, @action_sock
+          end
+        end
+
         def connect!
           disconnect!
           __start_event_thread if @events

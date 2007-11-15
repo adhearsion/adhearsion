@@ -49,6 +49,10 @@ class AmiServer
       def events_off_response
         { "Response" => "Events Off" }
       end
+      
+      def ping_response
+        { "Response" => "Pong" }
+      end
     end
   end
 
@@ -127,6 +131,8 @@ class AmiServer
             fill(response(actionid, AMIResponseHelper.events_on_response))
           end
         end
+      when "ping"
+        fill(response(actionid, AMIResponseHelper.ping_response))
       else
         raise ArgumentError, "Unknown action #{args['action']}"
       end

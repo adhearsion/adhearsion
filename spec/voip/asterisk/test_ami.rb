@@ -92,6 +92,33 @@ context "The AMI command interface" do
   end
 end
 
+context "The manager proxy" do
+  before do
+    host, port = "localhost", 5038
+    @ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "password", "localhost", :port => port, :events => false
+    flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return(AmiServer.new)
+    @ami.connect!
+    @door = DRb.start_service "druby://127.0.0.1:9050", DrbDoor.instance
+  end
+  
+  test "should accept a command" do
+    client = DRbObject.new nil, DRb.uri
+    client.proxy.ping
+  end
+
+  test "should raise an exception for a non-existent command" do
+    the_following_code do
+      client = DRbObject.new nil, DRb.uri
+      client.proxy.does_not_exist
+    end.should.raise NoMethodError
+  end
+  
+  after do
+    DRb.stop_service
+    @ami.disconnect!
+  end
+end
+
 context "The command-sending interface" do
   test "should raise an exception if permission was denied"
   test "should allow variables to be specified as a Hash"

@@ -52,19 +52,6 @@ context "Publishing an interface" do
     # end
     # DrbDoor.instance.interface.baz.should.equal [4, 5, 6]
   end
-  
-  test "should not be allowed for an instance method" do
-    the_following_code do
-      Class.new.class_eval do
-        include Publishable
-        publish :through => :interface do
-          def baz
-            [4, 5, 6]
-          end
-        end
-      end
-    end.should.raise Publishable::UnpublishableMethod
-  end
 end
 
 context "Invoking an interface" do

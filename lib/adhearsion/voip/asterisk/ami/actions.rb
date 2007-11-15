@@ -145,7 +145,7 @@ module Adhearsion
             end
 
             def complete_async!
-              @async_completion_callback.call(self.packets) if @async_completion_callback
+              @async_completion_callback.call(self.packets!) if @async_completion_callback
               complete!
             end
 

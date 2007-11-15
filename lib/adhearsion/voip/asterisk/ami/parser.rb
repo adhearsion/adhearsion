@@ -6,8 +6,6 @@ module Adhearsion
 		module Asterisk
 			class AMI
 				class Packet < Hash
-				  include DRbUndumped
-				  
 					def initialize(error = false)
             @error = error
 					end

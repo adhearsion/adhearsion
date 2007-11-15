@@ -12,11 +12,15 @@ class DrbDoor
     obj.__methods[name] = meth
     obj.instance_eval <<-STR
       def #{name}(*args, &block)
-        __methods["#{name}"].call(*args, &block)
+        begin
+          __methods["#{name}"].call(*args, &block)
+        rescue => exception
+          raise RuntimeError, exception.message
+        end
       end
     STR
   end
-  
+
   def method_missing(name, *args, &block)
     return Module.const_get(name) if (?A..?Z).include? name.to_s[0]
     return super unless @interfaces and @interfaces.keys.include? name.to_s
@@ -25,16 +29,22 @@ class DrbDoor
 end
 
 module Publishable
-  class UnpublishableMethod < RuntimeError; end
-    
   def self.included(base)
+    base.send(:alias_method_chain, :initialize, :publishable)
     base.extend(ClassMethods)
-    base.metaclass.send(:alias_method_chain, :singleton_method_added, :publishable)
-    base.metaclass.send(:alias_method_chain, :method_added, :publishable)
+  end
+
+  def initialize_with_publishable(*args, &block)
+    initialize_without_publishable(*args, &block)
+    self.class.published_instance_methods.each do |(sym, interface)|
+      DrbDoor.instance.add(interface, sym.to_s, self.method(sym))
+    end
   end
 
   module ClassMethods
     attr_reader :interface
+    attr_reader :published_instance_methods
+    
     def publish(options={}, &block)
       @interface = options.delete(:through).to_s || self.to_s
       begin
@@ -44,14 +54,17 @@ module Publishable
         @capture = false
       end
     end
-    def method_added_with_publishable(sym)
-      method_added_without_publishable(sym)
-      return if @capture == false
-      raise UnpublishableMethod, "Cannot publish instance method " + sym.to_s
+
+    def method_added(sym)
+      return if not @capture
+      if sym.to_s !~ /method_added/
+        @published_instance_methods ||= []
+        @published_instance_methods << [sym, @interface]
+      end
     end
-    def singleton_method_added_with_publishable(sym)
-      singleton_method_added_without_publishable(sym)
-      return if @capture == false
+
+    def singleton_method_added(sym)
+      return if not @capture
       if sym.to_s !~ /method_added/
         DrbDoor.instance.add(@interface, sym.to_s, method(sym.to_s))
       end
