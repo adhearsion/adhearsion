@@ -24,7 +24,7 @@ module Adhearsion
         def connect!
           disconnect!
           __start_event_thread if @events
-          __login @host, @user, @pass, @port, false
+          __login @host, @user, @pass, @port, true
         end
         
         def disconnect!
@@ -37,8 +37,8 @@ module Adhearsion
           __cmd "command", @action_sock, :command => cmd
         end 
 
-        def method_missing(name, hash={})
-          __cmd name, @action_sock, hash
+        def method_missing(name, hash={}, &block)
+          __cmd name, @action_sock, hash, &block
         end
   
         private
@@ -59,15 +59,15 @@ module Adhearsion
           end
         end
   
-        def __cmd(name, sock, hash={})
-          cmd = Action.build(name, hash)
+        def __cmd(name, sock, hash={}, &block)
+          action = Action.build(name, hash, &block)
           sock.synchronize do
             connect! if !sock || sock.closed?
-            sock.write cmd.to_s
+            sock.write action.to_s
           end
           
-          return nil if not cmd.has_response?
-          @scanner.wait(cmd)
+          return nil if not action.has_response?
+          @scanner.wait(action)
         end
         
         def __start_event_thread

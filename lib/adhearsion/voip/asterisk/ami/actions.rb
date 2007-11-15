@@ -5,32 +5,86 @@ module Adhearsion
         module Actions
           class Action
             @@subclasses = []
+            @@actions = {}
             
             attr_accessor :action
             attr_accessor :action_id
             
-            class << self
+            class << self              
               # Return a new instance of the command. Make sure to return an instance
               # of the command-specific subclass if it exists.
-              def build(name, hash)
+              def build(name, hash, &block)
                 name = name.to_s
                 entry = @@subclasses.find { |klass| klass.downcase == name.downcase }
                 klass = entry ? Actions.const_get("#{entry}Action") : self
-                klass.new(name, hash)
+                obj = klass.new(name, hash, &block)
+                self[obj.action_id] = obj
               end
 
               # Keep a list of the subclasses.
               def inherited(klass)
                 @@subclasses << klass.to_s.split("::").last.match(/(.*?)Action/)[1]
               end
+              
+              def [](key)
+                @@actions[key]
+              end
+
+              def []=(key, action)
+                @@actions[key] = action
+              end
             end
 
-            def initialize(name, hash)
+            def initialize(name, hash, &block)
               @action = name.downcase
               @action_id = __action_id
               @arguments = {}
+              @packets = []
+              @sync_complete = false
+              @error = nil
+
               # Normalize the keys
               hash.each_pair { |k,v| @arguments[k.to_s.downcase] = v }
+
+              if block and not async?
+                raise RuntimeError, "Cannot specify completion callback for synchronous command"
+              end
+              @async_completion_callback = block
+            end
+            
+            def <<(packet)
+              if packet.error?
+                @error = packet.message
+                complete_sync!
+              end
+              
+              # We don't keep every packet, just the important ones.
+              @packets << packet if keep?(packet)
+
+              # Check if the synchronous portion of the action is done.
+              if completed_by?(packet)
+                # The synchronous portion is done.
+                complete_sync!
+                
+                # We're totally done if it is not asynchronous.
+                complete! if not async?
+              end
+
+              # Check if this is an asynchronous action, and we have received the last event
+              complete_async! if completed_by_async?(packet)
+            end
+            
+            def done?
+              @sync_complete
+            end
+            
+            def packets!
+              packets, @packets = @packets, []
+              packets
+            end
+            
+            def check_error!
+              raise ActionError, @error if @error
             end
             
             # Return true if this is an 'immediate' command, i.e., it returns raw
@@ -40,9 +94,15 @@ module Adhearsion
               %w(iaxpeers queues).include? @action
             end
             
-            # Return true if this action will return events that we will wait on.
+            # Return true if this action will return matching events that we will wait on.
+            def waits_for_events?
+              follows? or %w(dbget).include? @action
+            end
+
+            # Return true if this action returns matching events that we will not wait on,
+            # but can access at a later time.
             def async?
-              follows? or %w(dbget originate).include? @action
+              false
             end
 
             # Actions of the form "Response: <Action> results will follow"
@@ -57,17 +117,41 @@ module Adhearsion
             end
 
             # Return true if this packet completes the command, i.e., there is
-            # no more response data to receive for this command.
+            # no more synchronous response data to receive for this command.
             def completed_by?(packet)
-              return true if not async?
+              return true if not waits_for_events?
               return false if not packet.is_event?
               packet.event.downcase == "#{@action}complete"
+            end
+
+            # Return true if this packet completes the matching asynchronous
+            # events for this command.
+            def completed_by_async?(packet)
+              return false if not async?
+              return false if not packet.is_event?
+              statuses = %w(success failure).collect { |status| "#{@action}#{status}" }
+              statuses.include?(packet.event.downcase)
+            end
+            
+            def complete_sync!
+              @packets.collect! { |p| p.body }
+              @sync_complete = true
+            end
+
+            def complete_async!
+              @packets.collect! { |p| p.body }
+              @async_completion_callback.call(@packets) if @async_completion_callback
+              complete!
+            end
+
+            def complete!
+							Action[@action_id] = nil
             end
 
             # Return true if the packet should be included in the response. Raw and
             # synchronous responses are kept. Some event responses are rejected.
             def keep?(packet)
-              return true if not async?
+              return true if not waits_for_events?
               return false if not packet.is_event?
               return keep_event?(packet)
             end
@@ -78,7 +162,8 @@ module Adhearsion
             # TODO: They do contain a count of the events generated, which perhaps
             # we want to verify matches the number we think we have received?
             def keep_event?(packet)
-              !(completed_by?(packet) and follows?)
+              return false if (follows? and completed_by?(packet))
+              true
             end
 
             def to_s
@@ -109,14 +194,6 @@ module Adhearsion
             def async?
               @arguments['async'] == true
             end
-
-            # Returns true when the terminating marker packets are seen when the
-            # command is invoked asyncrhonously.
-            def completed_by?(packet)
-              return true if not async?
-              return false if not packet.is_event?
-              %w(Hangup OriginateFailed).include?(packet.message)
-            end
           end
           
           class DBGetAction < Action
@@ -124,7 +201,7 @@ module Adhearsion
             # command succeeds) does not return a response with the
             # name "DBGetComplete".
             def completed_by?(packet)
-              return true if not async?
+              return true if not waits_for_events?
               return false if not packet.is_event?
               packet.event == "DBGetResponse"
             end
@@ -134,7 +211,7 @@ module Adhearsion
             # Sigh. The only reason for this is that the naming
             # convention differs.
             def completed_by?(packet)
-              return true if not async?
+              return true if not waits_for_events?
               return false if not packet.is_event?
               packet.event == "PeerlistComplete"
             end

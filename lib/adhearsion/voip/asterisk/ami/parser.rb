@@ -7,6 +7,8 @@ module Adhearsion
 		module Asterisk
 			class AMI
 				class Packet < Hash
+				  include DRbUndumped
+				  
 					def initialize(error = false)
             @error = error
 					end
@@ -89,11 +91,10 @@ module Adhearsion
   					end
 						@signal = ConditionVariable.new
 						@mutex = Mutex.new
-						@packets = {}
 						@events = Queue.new
 						@current_packet = nil
-            # @logger = Logger.new STDOUT
-            @logger = Logger.new("/dev/null")
+            @logger = Logger.new STDOUT
+            #@logger = Logger.new("/dev/null")
 					end
 
 					private
@@ -145,15 +146,15 @@ module Adhearsion
 						logger.debug "Packet end: #{@__ragel_p}, #{@current_packet.class}, #{action_id.inspect}"
 						logger.debug "=====>#{@current_packet[:raw]}<=====" if @current_packet.raw?
             if action_id
-              # Packets with IDs go into the packet hash, hashed by action ID
-  						@packets[action_id] ||= []
-  						@packets[action_id] << @current_packet
+              # Packets with IDs are associated with the action of the same ID
+              action = Actions::Action[action_id]
+  						action << @current_packet
             else
               # Asynchronous events without IDs go into the event queue
               @events.push(@current_packet)
             end
-						@signal.signal
-						@current_packet = nil;
+						@signal.broadcast
+						@current_packet = nil
 						@__ragel_raw = []
 					end
 					
@@ -161,24 +162,12 @@ module Adhearsion
 					# Wait for any packets (including events) that have the specified Action ID.
 					# Do not stop waiting until all of the packets for the specified Action ID
 					# have been seen.
-					def wait(cmd)
-					  action_id = cmd.action_id
-					  packets = []
-						logger.debug "Waiting for #{action_id.inspect}"
+					def wait(action)
+						logger.debug "Waiting for #{action.action_id.inspect}"
 						@mutex.synchronize do
 							loop do
-								if not @packets[action_id].blank?
-									@packets[action_id].each do |pkt|
-									  if pkt.error?
-                      raise ActionError, pkt.message
-								    end
-                    packets << pkt.body if cmd.keep?(pkt)
-                    if cmd.completed_by?(pkt)
-    									@packets[action_id] = []
-                      return packets
-                    end
-									end
-								end
+                action.check_error!
+                return action.packets! if action.done?
 								@signal.wait(@mutex)
 							end
 						end
