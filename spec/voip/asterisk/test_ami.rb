@@ -88,7 +88,7 @@ context "The AMI command interface" do
 
   test "should respond to an 'events off' command" do
     resp = @ami.events :EventMask => "Off"
-    resp[0].should.be.a.kind_of Hash
+    resp[0].should.be.a.kind_of NilClass
   end
 end
 
