@@ -1,5 +1,4 @@
-require 'rubygems'
-require 'active_support'
+require 'drb'
 require 'adhearsion/voip/asterisk/ami/machine'
 
 module Adhearsion
@@ -27,9 +26,9 @@ module Adhearsion
 			    
 			    # Return the hash, without the internal Action ID
 					def body
-						hsh = self.dup
-						hsh.delete('ActionID')
-						hsh
+						returning clone do |packet|
+						  packet.delete 'ActionID'
+  					end
 					end
 					
 					def message

@@ -90,10 +90,7 @@ module Adhearsion
       
       
       class AMIConfiguration < AbstractConfiguration
-        attr_accessor :port
-        attr_accessor :username
-        attr_accessor :password
-        attr_accessor :events
+        attr_accessor :port, :username, :password, :events, :host
         
         class << self
           def default_port
@@ -103,10 +100,15 @@ module Adhearsion
           def default_events
             false
           end
+          
+          def default_host
+            'localhost'
+          end
         end
         
         def initialize(overrides = {})
-          self.port = self.class.default_port
+          self.host   = self.class.default_host
+          self.port   = self.class.default_port
           self.events = self.class.default_events
           super
         end

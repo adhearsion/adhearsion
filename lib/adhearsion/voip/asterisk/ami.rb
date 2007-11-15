@@ -44,7 +44,12 @@ module Adhearsion
         private
   
         def __login(host, user, pass, port, events)
-          @action_sock = TCPSocket.new host, port
+          begin
+            @action_sock = TCPSocket.new host, port
+          rescue Errno::ECONNREFUSED => refusal_error
+            raise Errno::ECONNREFUSED, "Could not connect with AMI to Asterisk server at #{host}:#{port}. " +
+                                       "Is enabled set to 'yes' in manager.conf?"
+          end
           @action_sock.extend(MonitorMixin)
           @scanner = Parser.new
           @version = @scanner.run(@action_sock)
