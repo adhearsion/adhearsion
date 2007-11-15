@@ -3,14 +3,18 @@ class DrbDoor
   def add(interface, name, meth)
     @interfaces ||= {}
     @interfaces[interface] ||= returning(Object.new) do |obj|
-      obj.class.instance_eval do
+      obj.metaclass.instance_eval do
         attr_accessor :__methods
       end
     end
     obj = @interfaces[interface]
-    obj.class.instance_eval { define_method(name) { __methods[name].call } }
     obj.__methods ||= {}
     obj.__methods[name] = meth
+    obj.instance_eval <<-STR
+      def #{name}(*args, &block)
+        __methods["#{name}"].call(*args, &block)
+      end
+    STR
   end
   
   def method_missing(name, *args, &block)
