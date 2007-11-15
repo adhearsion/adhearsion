@@ -93,8 +93,8 @@ module Adhearsion
 						@mutex = Mutex.new
 						@events = Queue.new
 						@current_packet = nil
-            @logger = Logger.new STDOUT
-            #@logger = Logger.new("/dev/null")
+            #@logger = Logger.new STDOUT
+            @logger = Logger.new("/dev/null")
 					end
 
 					private
