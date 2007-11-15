@@ -80,7 +80,14 @@ module Adhearsion
             
             def packets!
               packets, @packets = @packets, []
-              packets
+              packets.inject([]) do |arr, pkt|
+                pkt = pkt.body.inject({}) do |hash, (k, v)|
+                  hash[k] = v
+                  hash
+                end
+                arr << pkt if not pkt.blank?
+                arr
+              end
             end
             
             def check_error!
@@ -134,13 +141,11 @@ module Adhearsion
             end
             
             def complete_sync!
-              @packets.collect! { |p| p.body }
               @sync_complete = true
             end
 
             def complete_async!
-              @packets.collect! { |p| p.body }
-              @async_completion_callback.call(@packets) if @async_completion_callback
+              @async_completion_callback.call(self.packets) if @async_completion_callback
               complete!
             end
 
