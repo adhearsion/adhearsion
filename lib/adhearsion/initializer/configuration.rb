@@ -162,6 +162,7 @@ module Adhearsion
           allows.each do |ip|
             self.acl << "allow" << ip
           end if allows
+          self.acl << "allow" << "all" if self.acl.blank?
         end
       end
     end
