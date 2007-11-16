@@ -99,10 +99,10 @@ class AmiServer
         case args['command']
         when "show channels"
           fill(response(actionid, AMIResponseHelper.follows_response), 1)
-          fill("Channel (Context Extension Pri ) State Appl. Data\n0 active channel(s)\r\n--END COMMAND--")
+          fill("Channel (Context Extension Pri ) State Appl. Data\n0 active channel(s)\n--END COMMAND--")
         else
           fill(response(actionid, AMIResponseHelper.follows_response), 1)
-          fill("No such command '#{args['command']}' (type 'help' for help)\r\n--END COMMAND--")
+          fill("No such command '#{args['command']}' (type 'help' for help)\n--END COMMAND--")
         end
       when "dbget"
         if not @db.has_key?(args['family']) or not @db[args['family']].has_key?(args['key'])
@@ -143,6 +143,7 @@ class AmiServer
   def response(action_id, args = {})
     resp = []
     resp << "Response: #{args.delete('Response')}" if args['Response']
+    resp << "Privilege: #{args.delete('Privilege')}" if args['Privilege']
     resp << "Event: #{args.delete('Event')}" if args['Event']
     resp << "ActionID: #{action_id}"
     resp << "Message: #{args.delete('Message')}" if args['Message']

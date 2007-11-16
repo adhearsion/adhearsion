@@ -6,7 +6,9 @@ module Adhearsion
 				%%{
 				    machine ami;
 
-						crlf = "\r\n";
+						cr = "\r";
+						lf = "\n";
+						crlf = cr lf;
 
 						action _key 	{ mark("key") 	}
 						action key 		{ set("key");		}
@@ -44,12 +46,16 @@ module Adhearsion
 							*|;
 				
 						# For immediate or raw commands
-						Raw = (any+ >{ mark_array("raw") } -- crlf) crlf %{ insert("raw") };
+						Raw = (any+ >{ mark_array("raw"); } -- lf) lf;
+
+						# For immediate or raw commands
+						Imm = (any+ >{ mark_array("raw") } -- crlf) crlf %{ insert("raw") };
 
 						# For raw commands
 						response_follows := |*
-							Attr								=> { pair; };
-							Raw EndFollows crlf => { packet; fgoto main; };
+							Attr 	=> { pair; };
+							Raw 	=> { insert("raw") };
+							EndFollows crlf => { packet; fgoto main; };
 							*|;
 			
 						main := |*
@@ -62,7 +68,7 @@ module Adhearsion
 							Follows @{ fgoto response_follows; 	};
 
 							# Must also handle immediate responses with raw data
-							Raw crlf crlf => { @current_packet = ImmediatePacket.new; packet; };
+							Imm crlf crlf => { @current_packet = ImmediatePacket.new; packet; };
 						*|;
 				}%%
 	
