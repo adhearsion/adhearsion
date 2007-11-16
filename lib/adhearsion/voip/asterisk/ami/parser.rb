@@ -104,7 +104,6 @@ module Adhearsion
           # Set the starting marker position for capturing raw data in an array
 					def mark_array(name)
 						send("__ragel_mark_#{name}=", @__ragel_p)
-						send("__ragel_#{name}=", [])
 					end
 
           # Capture the marked data from the marker to the current position
@@ -192,6 +191,7 @@ module Adhearsion
 					def run(socket)
 						@__ragel_eof = nil
 						@__ragel_data = " " * BUFSIZE
+            @__ragel_raw = []
 
 						ragel_init
 
