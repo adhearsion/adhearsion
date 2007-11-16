@@ -4,6 +4,7 @@ ENV['RUBY_FLAGS'] = "-I#{%w(lib ext bin test).join(File::PATH_SEPARATOR)}"
 require 'rubygems'
 require 'hoe'
 require 'lib/adhearsion/version'
+require 'rcov/rcovtask'
   
 Hoe.new('adhearsion', Adhearsion::VERSION::STRING) do |p|
   p.rubyforge_name = 'adhearsion'
@@ -15,6 +16,12 @@ Hoe.new('adhearsion', Adhearsion::VERSION::STRING) do |p|
   p.changes = p.paragraphs_of('History.txt', 0..1).join("\n\n")
   p.test_globs = ['spec/**/test_*.rb']
   p.extra_deps = [['rubigen', '>=1.0.6']]
+end
+
+Rcov::RcovTask.new do |t|
+  t.test_files = FileList.new 'spec/**/test_*.rb', 'spec/**/*_test.rb', 'test/**/test_*.rb', 'test/**/*_test.rb'
+  t.output_dir = 'coverage'
+  t.rcov_opts = []
 end
 
 task :ragel do
