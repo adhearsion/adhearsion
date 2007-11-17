@@ -19,9 +19,10 @@ Hoe.new('adhearsion', Adhearsion::VERSION::STRING) do |p|
 end
 
 Rcov::RcovTask.new do |t|
-  t.test_files = FileList.new 'spec/**/test_*.rb', 'spec/**/*_test.rb', 'test/**/test_*.rb', 'test/**/*_test.rb'
+  t.test_files = Dir['spec/**/test_*.rb']
   t.output_dir = 'coverage'
-  t.rcov_opts = []
+  t.verbose = true
+  t.rcov_opts.concat %w[--sort coverage --sort-reverse -x gems -x /var]
 end
 
 task :ragel do
