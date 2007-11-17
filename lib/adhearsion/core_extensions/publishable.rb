@@ -2,11 +2,7 @@ class DrbDoor
   include Singleton
   def add(interface, name, meth)
     @interfaces ||= {}
-    @interfaces[interface] ||= returning(Object.new) do |obj|
-      obj.metaclass.instance_eval do
-        attr_accessor :__methods
-      end
-    end
+    @interfaces[interface] ||= returning(Object.new) { |obj| obj.metaclass.send(:attr_accessor, :__methods) }
     obj = @interfaces[interface]
     obj.__methods ||= {}
     obj.__methods[name] = meth

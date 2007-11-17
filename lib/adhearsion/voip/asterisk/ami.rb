@@ -12,18 +12,20 @@ module Adhearsion
   module VoIP
     module Asterisk
       class AMI
+        
         include Actions
+        
+        attr_reader :action_sock, :host, :user, :password, :port, :event_thread, :scanner, :version
 
-        attr_accessor :version
-        attr_reader :action_sock, :host, :user, :password, :port, :events, :event_thread, :scanner
-
-        def initialize(user, pass, host='127.0.0.1', hash={})
-          @host, @user, @password, @port = host, user, pass, hash[:port] || 5038
-          @events = hash[:events]
+        def initialize(user, pass, host='127.0.0.1', options={})
+          @host, @user, @password, @port = host, user, pass, options[:port] || 5038
+          @events_enabled = options[:events]
         end
-  
+        
         include Publishable
+        
         publish :through => :proxy do
+          
           def originate(options={}, &block)
             execute_ami_command! :originate, action_sock, options, &block
           end
@@ -31,12 +33,13 @@ module Adhearsion
           def ping
             execute_ami_command! :ping, action_sock
           end
+          
         end
 
         def connect!
           disconnect!
-          start_event_thread! if events
-          login! host, user, password, port, events
+          start_event_thread! if events_enabled?
+          login! host, user, password, port, events_enabled?
         end
         
         def disconnect!
@@ -45,6 +48,10 @@ module Adhearsion
           scanner.stop if scanner
         end
 
+        def events_enabled?
+          @events_enabled
+        end
+        
         def method_missing(name, hash={}, &block)
           execute_ami_command! name, action_sock, hash, &block
         end
@@ -62,11 +69,9 @@ module Adhearsion
           @scanner = Parser.new
           @version = scanner.run(action_sock)
           begin
-            execute_ami_command! 'login', action_sock, :username => user, :secret => pass, :events => (events ? "On" : "Off")
+            execute_ami_command! :login, action_sock, :username => user, :secret => password, :events => (events_enabled? ? "On" : "Off")
           rescue ActionError
-            message = "Invalid AMI username/password! Check manager.conf."
-            error message
-            raise AuthenticationFailedException, message
+            raise AuthenticationFailedException, "Invalid AMI username/password! Check manager.conf."
           else
             # puts "Manager connection established to #{host}:#{port} with user '#{user}'"
           end
@@ -79,7 +84,7 @@ module Adhearsion
             sock.write action.to_s
           end
           
-          return nil if not action.has_response?
+          return unless action.has_response?
           scanner.wait(action)
         end
         
@@ -92,6 +97,9 @@ module Adhearsion
           end
           event_thread.abort_on_exception = true
         end
+  
+        # Method simply defined as private to prevent method_missing from catching it.
+        def events() end
   
         class EventHandler
           # TODO: Refactor me!

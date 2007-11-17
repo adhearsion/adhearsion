@@ -42,7 +42,7 @@ end
 context "The AMI command interface" do
   before do
     host, port = "localhost", 5038
-    @ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "password", "localhost", :port => port, :events => false
+    @ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "password", host, :port => port, :events => false
     flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return(AmiServer.new)
     @ami.connect!
   end
@@ -81,8 +81,8 @@ context "The AMI command interface" do
   test "should respond to a synchronous originate"
   test "should responde to an asynchronous originate"
 
-  test "should override the events() method to prevent turning events on or off" do
-    @ami.method(:events).arity.should.equal 0
+  test "should define events() as a private method to prevent turning events on or off" do
+    @ami.private_methods.include?("events").should.equal true
   end
 end
 
