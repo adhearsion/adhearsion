@@ -81,14 +81,8 @@ context "The AMI command interface" do
   test "should respond to a synchronous originate"
   test "should responde to an asynchronous originate"
 
-  test "should not respond to an 'events on' command" do
-    resp = @ami.events :EventMask => "On"
-    resp.should == nil
-  end
-
-  test "should respond to an 'events off' command" do
-    resp = @ami.events :EventMask => "Off"
-    resp[0].should.be.a.kind_of NilClass
+  test "should override the events() method to prevent turning events on or off" do
+    @ami.method(:events).arity.should.equal 0
   end
 end
 
