@@ -94,34 +94,7 @@ module Adhearsion
         end
   
         class EventHandler
-          @@subclasses = []
-
-          def self.inherited(klass)
-            @@subclasses << klass.new
-
-            # Have to set this because singleton classes can't easily access
-            # their owner's Class instance.
-            klass.instance_variable_set :@me, klass
-      
-            def klass.method_added(name)
-              if name == :initialize
-                @@subclasses.each_with_index do |obj,i|
-                  if obj.is_a? @me
-                    @@subclasses[i] = @me.new
-                    break
-                  end
-                end
-              end
-            end
-          end
-
-          def self.handle!(event)
-            name = event.delete('Event').underscore
-            @@subclasses.each do |klass|
-              klass.send name, event if klass.respond_to? name
-            end
-          end
-    
+          # TODO: Refactor me!
         end
   
         class AuthenticationFailedException < Exception; end
