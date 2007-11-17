@@ -24,18 +24,18 @@ module Adhearsion
         include Publishable
         publish :through => :proxy do
           def originate(options={}, &block)
-            __cmd :originate, @action_sock, options, &block
+            execute_ami_command! :originate, @action_sock, options, &block
           end
 
           def ping
-            __cmd :ping, @action_sock
+            execute_ami_command! :ping, @action_sock
           end
         end
 
         def connect!
           disconnect!
-          __start_event_thread if @events
-          __login @host, @user, @pass, @port, true
+          start_event_thread! if @events
+          login! @host, @user, @pass, @port, true
         end
         
         def disconnect!
@@ -44,17 +44,13 @@ module Adhearsion
           @scanner.stop if @scanner
         end
 
-        def [] cmd
-          __cmd "command", @action_sock, :command => cmd
-        end 
-
         def method_missing(name, hash={}, &block)
-          __cmd name, @action_sock, hash, &block
+          execute_ami_command! name, @action_sock, hash, &block
         end
   
         private
   
-        def __login(host, user, pass, port, events)
+        def login!(host, user, pass, port, events)
           begin
             @action_sock = TCPSocket.new host, port
           rescue Errno::ECONNREFUSED => refusal_error
@@ -65,7 +61,7 @@ module Adhearsion
           @scanner = Parser.new
           @version = @scanner.run(@action_sock)
           begin
-            __cmd 'login', @action_sock, :username => user, :secret => pass, :events => (events ? "On" : "Off")
+            execute_ami_command! 'login', @action_sock, :username => user, :secret => pass, :events => (events ? "On" : "Off")
           rescue ActionError
             message = "Invalid AMI username/password! Check manager.conf."
             error message
@@ -75,7 +71,7 @@ module Adhearsion
           end
         end
   
-        def __cmd(name, sock, hash={}, &block)
+        def execute_ami_command!(name, sock, hash={}, &block)
           action = Action.build(name, hash, &block)
           sock.synchronize do
             connect! if !sock || sock.closed?
@@ -86,10 +82,14 @@ module Adhearsion
           @scanner.wait(action)
         end
         
-        def __start_event_thread
+        def start_event_thread!
           @event_thread = Thread.new(@scanner) do |scanner|
-            loop { AMI::EventHandler.handle! __read_event(scanner.events.pop) rescue nil }
+            loop do
+              # TODO: This is totally screwed up. __read_event doesn't exist.
+              AMI::EventHandler.handle! __read_event(scanner.events.pop)
+            end
           end
+          @event_thread.abort_on_exception = true
         end
   
         class EventHandler

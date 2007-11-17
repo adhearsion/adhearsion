@@ -22,7 +22,7 @@ Rcov::RcovTask.new do |t|
   t.test_files = Dir['spec/**/test_*.rb']
   t.output_dir = 'coverage'
   t.verbose = true
-  t.rcov_opts.concat %w[--sort coverage --sort-reverse -x gems -x /var]
+  t.rcov_opts.concat %w[--sort coverage --sort-reverse -x gems -x /var --no-validator-links]
 end
 
 task :ragel do
