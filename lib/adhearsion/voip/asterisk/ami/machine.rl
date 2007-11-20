@@ -15,6 +15,8 @@ module Adhearsion
 						action _value { mark("value") }
 						action value 	{ set("value"); }
 						Attr = [a-zA-Z\-]+ >_key %key ': ' (any* -- crlf) >_value %value crlf;
+						Privilege = "Privilege" >_key %key ': ' (any* -- crlf) >_value %value crlf;
+						ActionID = "ActionID" >_key %key ': ' (any* -- crlf) >_value %value crlf;
 
 						action _event { mark("event") }
 						action event 	{ set("event"); @current_packet = EventPacket.new(@__ragel_event) }
@@ -53,8 +55,9 @@ module Adhearsion
 
 						# For raw commands
 						response_follows := |*
-							Attr 	=> { pair; };
-							Raw 	=> { insert("raw") };
+							Privilege 			=> { pair; };
+							ActionID 				=> { pair; };
+							Raw 						=> { insert("raw") };
 							EndFollows crlf => { packet; fgoto main; };
 							*|;
 			

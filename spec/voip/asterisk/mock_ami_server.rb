@@ -100,6 +100,13 @@ class AmiServer
         when "show channels"
           fill(response(actionid, AMIResponseHelper.follows_response), 1)
           fill("Channel (Context Extension Pri ) State Appl. Data\n0 active channel(s)\n--END COMMAND--")
+        when "meetme list"
+          fill(response(actionid, AMIResponseHelper.follows_response), 1)
+          str = []
+          str << "Usage: meetme (un)lock|(un)mute|kick|list [concise] "
+          str << " Executes a command for the conference or on a conferee"
+          str << "--END COMMAND--"
+          fill(str.join("\n"))
         else
           fill(response(actionid, AMIResponseHelper.follows_response), 1)
           fill("No such command '#{args['command']}' (type 'help' for help)\n--END COMMAND--")

@@ -4,7 +4,7 @@ module Adhearsion
 		module Asterisk
 			class AMI
 				module Machine
-				# line 73 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+				# line 77 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 
 	
 					class << self
@@ -25,14 +25,14 @@ self._ami_actions = [
 	11, 1, 12, 1, 13, 1, 21, 1, 
 	23, 1, 24, 1, 25, 1, 26, 1, 
 	27, 1, 28, 1, 29, 1, 30, 1, 
-	31, 1, 32, 1, 33, 1, 41, 1, 
+	31, 1, 32, 1, 33, 1, 34, 1, 
 	42, 1, 43, 1, 44, 1, 45, 1, 
-	46, 1, 47, 1, 48, 2, 0, 11, 
-	2, 2, 3, 2, 21, 22, 2, 24, 
-	2, 3, 24, 14, 34, 3, 24, 15, 
-	35, 3, 24, 16, 36, 3, 24, 17, 
-	37, 3, 24, 18, 38, 3, 24, 19, 
-	39, 3, 24, 20, 40
+	46, 1, 47, 1, 48, 1, 49, 2, 
+	0, 11, 2, 2, 3, 2, 21, 22, 
+	2, 24, 2, 3, 24, 14, 35, 3, 
+	24, 15, 36, 3, 24, 16, 37, 3, 
+	24, 17, 38, 3, 24, 18, 39, 3, 
+	24, 19, 40, 3, 24, 20, 41
 ]
 
 class << self
@@ -52,12 +52,14 @@ self._ami_key_offsets = [
 	147, 149, 150, 152, 154, 156, 158, 159, 
 	161, 163, 165, 167, 169, 171, 173, 174, 
 	176, 177, 178, 184, 190, 191, 192, 193, 
-	195, 196, 197, 204, 212, 219, 221, 223, 
-	225, 226, 228, 230, 238, 246, 254, 256, 
-	258, 260, 262, 264, 266, 268, 270, 272, 
-	274, 275, 276, 283, 287, 288, 289, 290, 
-	291, 292, 293, 294, 297, 299, 301, 307, 
-	313, 314
+	195, 196, 197, 199, 201, 203, 205, 207, 
+	209, 211, 213, 215, 217, 219, 221, 223, 
+	225, 227, 228, 229, 231, 233, 235, 237, 
+	239, 241, 243, 245, 247, 249, 251, 252, 
+	254, 256, 258, 260, 262, 264, 266, 268, 
+	270, 272, 274, 276, 278, 280, 281, 283, 
+	285, 289, 290, 291, 292, 293, 294, 295, 
+	296, 299, 301, 303, 309, 313, 314, 315
 ]
 
 class << self
@@ -89,22 +91,22 @@ self._ami_trans_keys = [
 	101, 13, 115, 13, 115, 13, 10, 13, 
 	10, 10, 45, 58, 65, 90, 97, 122, 
 	45, 58, 65, 90, 97, 122, 32, 13, 
-	13, 10, 13, 10, 10, 10, 45, 58, 
-	65, 90, 97, 122, 10, 45, 58, 69, 
-	65, 90, 97, 122, 10, 45, 58, 65, 
-	90, 97, 122, 10, 32, 10, 13, 10, 
-	13, 13, 10, 13, 10, 13, 10, 45, 
-	58, 78, 65, 90, 97, 122, 10, 45, 
-	58, 68, 65, 90, 97, 122, 10, 32, 
-	45, 58, 65, 90, 97, 122, 10, 67, 
-	10, 79, 10, 77, 10, 77, 10, 65, 
-	10, 78, 10, 68, 10, 45, 10, 45, 
-	10, 13, 10, 10, 10, 45, 58, 65, 
-	90, 97, 122, 13, 65, 69, 82, 13, 
-	13, 13, 13, 13, 13, 13, 13, 33, 
-	126, 33, 126, 33, 126, 13, 45, 65, 
-	90, 97, 122, 10, 45, 65, 90, 97, 
-	122, 13, 13, 0
+	13, 10, 13, 10, 10, 10, 45, 10, 
+	69, 10, 78, 10, 68, 10, 32, 10, 
+	67, 10, 79, 10, 77, 10, 77, 10, 
+	65, 10, 78, 10, 68, 10, 45, 10, 
+	45, 10, 13, 10, 10, 10, 99, 10, 
+	116, 10, 105, 10, 111, 10, 110, 10, 
+	73, 10, 68, 10, 58, 10, 32, 10, 
+	13, 10, 13, 13, 10, 13, 10, 13, 
+	10, 114, 10, 105, 10, 118, 10, 105, 
+	10, 108, 10, 101, 10, 103, 10, 101, 
+	10, 58, 10, 32, 10, 13, 10, 13, 
+	13, 10, 13, 10, 13, 13, 65, 69, 
+	82, 13, 13, 13, 13, 13, 13, 13, 
+	13, 33, 126, 33, 126, 33, 126, 13, 
+	45, 65, 90, 97, 122, 10, 45, 65, 
+	80, 13, 13, 13, 0
 ]
 
 class << self
@@ -124,12 +126,14 @@ self._ami_single_lengths = [
 	2, 1, 2, 2, 2, 2, 1, 2, 
 	2, 2, 2, 2, 2, 2, 1, 2, 
 	1, 1, 2, 2, 1, 1, 1, 2, 
-	1, 1, 3, 4, 3, 2, 2, 2, 
-	1, 2, 2, 4, 4, 4, 2, 2, 
+	1, 1, 2, 2, 2, 2, 2, 2, 
 	2, 2, 2, 2, 2, 2, 2, 2, 
-	1, 1, 3, 4, 1, 1, 1, 1, 
-	1, 1, 1, 1, 0, 0, 2, 2, 
-	1, 1
+	2, 1, 1, 2, 2, 2, 2, 2, 
+	2, 2, 2, 2, 2, 2, 1, 2, 
+	2, 2, 2, 2, 2, 2, 2, 2, 
+	2, 2, 2, 2, 2, 1, 2, 2, 
+	4, 1, 1, 1, 1, 1, 1, 1, 
+	1, 0, 0, 2, 4, 1, 1, 1
 ]
 
 class << self
@@ -149,12 +153,14 @@ self._ami_range_lengths = [
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 2, 2, 0, 0, 0, 0, 
-	0, 0, 2, 2, 2, 0, 0, 0, 
-	0, 0, 0, 2, 2, 2, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 2, 0, 0, 0, 0, 0, 
-	0, 0, 0, 1, 1, 1, 2, 2, 
-	0, 0
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	1, 1, 1, 2, 0, 0, 0, 0
 ]
 
 class << self
@@ -174,12 +180,14 @@ self._ami_index_offsets = [
 	212, 215, 217, 220, 223, 226, 229, 231, 
 	234, 237, 240, 243, 246, 249, 252, 254, 
 	257, 259, 261, 266, 271, 273, 275, 277, 
-	280, 282, 284, 290, 297, 303, 306, 309, 
-	312, 314, 317, 320, 327, 334, 341, 344, 
-	347, 350, 353, 356, 359, 362, 365, 368, 
-	371, 373, 375, 381, 386, 388, 390, 392, 
-	394, 396, 398, 400, 403, 405, 407, 412, 
-	417, 419
+	280, 282, 284, 287, 290, 293, 296, 299, 
+	302, 305, 308, 311, 314, 317, 320, 323, 
+	326, 329, 331, 333, 336, 339, 342, 345, 
+	348, 351, 354, 357, 360, 363, 366, 368, 
+	371, 374, 377, 380, 383, 386, 389, 392, 
+	395, 398, 401, 404, 407, 410, 412, 415, 
+	418, 423, 425, 427, 429, 431, 433, 435, 
+	437, 440, 442, 444, 449, 454, 456, 458
 ]
 
 class << self
@@ -188,7 +196,7 @@ class << self
 end
 self._ami_trans_targs_wi = [
 	3, 2, 3, 2, 4, 3, 2, 5, 
-	123, 6, 123, 7, 123, 123, 123, 0, 
+	144, 6, 144, 7, 144, 144, 144, 0, 
 	3, 2, 3, 10, 2, 3, 11, 2, 
 	3, 12, 2, 3, 13, 2, 3, 14, 
 	2, 3, 15, 2, 3, 16, 2, 3, 
@@ -196,50 +204,55 @@ self._ami_trans_targs_wi = [
 	3, 20, 2, 3, 21, 2, 3, 22, 
 	2, 3, 23, 2, 3, 24, 2, 3, 
 	25, 2, 3, 26, 2, 3, 27, 2, 
-	3, 28, 2, 3, 29, 2, 3, 124, 
+	3, 28, 2, 3, 29, 2, 3, 145, 
 	2, 3, 31, 2, 3, 32, 2, 3, 
 	33, 2, 3, 34, 2, 3, 35, 2, 
 	3, 36, 2, 3, 37, 37, 2, 38, 
-	39, 39, 2, 125, 3, 2, 38, 39, 
+	39, 39, 2, 146, 3, 2, 38, 39, 
 	39, 2, 3, 41, 2, 3, 42, 2, 
 	3, 43, 2, 3, 44, 2, 3, 45, 
 	2, 3, 46, 2, 3, 47, 2, 3, 
 	48, 2, 3, 49, 2, 3, 50, 67, 
 	75, 80, 2, 3, 51, 56, 2, 3, 
 	52, 2, 3, 53, 2, 3, 54, 2, 
-	55, 2, 126, 3, 2, 3, 57, 2, 
+	55, 2, 147, 3, 2, 3, 57, 2, 
 	3, 58, 2, 3, 59, 2, 3, 60, 
 	2, 3, 61, 2, 3, 62, 2, 3, 
 	63, 66, 2, 3, 64, 2, 65, 2, 
-	127, 3, 2, 65, 2, 3, 68, 2, 
+	148, 3, 2, 65, 2, 3, 68, 2, 
 	3, 69, 2, 3, 70, 2, 3, 71, 
 	2, 3, 72, 2, 3, 73, 2, 74, 
-	2, 128, 3, 2, 3, 76, 2, 3, 
-	77, 2, 3, 78, 2, 79, 2, 129, 
+	2, 149, 3, 2, 3, 76, 2, 3, 
+	77, 2, 3, 78, 2, 79, 2, 150, 
 	3, 2, 3, 81, 2, 3, 82, 2, 
 	3, 83, 2, 3, 84, 2, 3, 85, 
-	2, 3, 86, 2, 87, 2, 130, 3, 
-	2, 131, 0, 134, 0, 91, 92, 91, 
+	2, 3, 86, 2, 87, 2, 151, 3, 
+	2, 152, 0, 155, 0, 91, 92, 91, 
 	91, 0, 91, 92, 91, 91, 0, 93, 
-	0, 95, 94, 95, 94, 134, 95, 94, 
-	135, 97, 135, 97, 135, 99, 101, 100, 
-	100, 97, 135, 100, 101, 107, 100, 100, 
-	97, 135, 100, 101, 100, 100, 97, 135, 
-	102, 97, 136, 106, 103, 136, 106, 103, 
-	105, 104, 135, 105, 104, 135, 106, 103, 
-	135, 100, 101, 108, 100, 100, 97, 135, 
-	100, 101, 109, 100, 100, 97, 135, 110, 
-	100, 101, 100, 100, 97, 135, 111, 97, 
-	135, 112, 97, 135, 113, 97, 135, 114, 
-	97, 135, 115, 97, 135, 116, 97, 135, 
-	117, 97, 135, 118, 97, 135, 119, 97, 
-	135, 120, 97, 137, 97, 135, 135, 135, 
-	100, 101, 100, 100, 97, 8, 9, 30, 
-	40, 1, 3, 2, 5, 123, 5, 123, 
-	5, 123, 5, 123, 5, 123, 5, 123, 
-	88, 132, 0, 133, 131, 133, 131, 89, 
-	90, 90, 90, 0, 0, 98, 122, 122, 
-	96, 105, 104, 121, 135, 0
+	0, 95, 94, 95, 94, 155, 95, 94, 
+	156, 97, 156, 97, 156, 99, 97, 156, 
+	100, 97, 156, 101, 97, 156, 102, 97, 
+	156, 103, 97, 156, 104, 97, 156, 105, 
+	97, 156, 106, 97, 156, 107, 97, 156, 
+	108, 97, 156, 109, 97, 156, 110, 97, 
+	156, 111, 97, 156, 112, 97, 156, 113, 
+	97, 157, 97, 156, 156, 156, 116, 97, 
+	156, 117, 97, 156, 118, 97, 156, 119, 
+	97, 156, 120, 97, 156, 121, 97, 156, 
+	122, 97, 156, 123, 97, 156, 124, 97, 
+	158, 128, 125, 158, 128, 125, 127, 126, 
+	156, 127, 126, 156, 128, 125, 156, 130, 
+	97, 156, 131, 97, 156, 132, 97, 156, 
+	133, 97, 156, 134, 97, 156, 135, 97, 
+	156, 136, 97, 156, 137, 97, 156, 138, 
+	97, 156, 139, 97, 159, 143, 140, 159, 
+	143, 140, 142, 141, 156, 142, 141, 156, 
+	143, 140, 8, 9, 30, 40, 1, 3, 
+	2, 5, 144, 5, 144, 5, 144, 5, 
+	144, 5, 144, 5, 144, 88, 153, 0, 
+	154, 152, 154, 152, 89, 90, 90, 90, 
+	0, 0, 98, 115, 129, 96, 114, 156, 
+	127, 126, 142, 141, 0
 ]
 
 class << self
@@ -248,7 +261,7 @@ class << self
 end
 self._ami_trans_actions_wi = [
 	0, 0, 0, 0, 0, 0, 0, 27, 
-	67, 0, 67, 0, 67, 53, 67, 0, 
+	69, 0, 69, 0, 69, 55, 69, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
@@ -256,50 +269,55 @@ self._ami_trans_actions_wi = [
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 81, 
+	0, 0, 0, 0, 0, 0, 0, 83, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 9, 9, 0, 11, 
-	0, 0, 0, 97, 0, 0, 11, 0, 
+	0, 0, 0, 99, 0, 0, 11, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 15, 17, 
 	13, 13, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 93, 0, 0, 0, 0, 0, 
+	0, 0, 95, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 13, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	101, 0, 0, 0, 0, 0, 0, 0, 
+	103, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 105, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 89, 
+	0, 107, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 91, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 85, 0, 
+	0, 0, 0, 0, 0, 0, 87, 0, 
 	0, 35, 0, 41, 0, 0, 3, 0, 
 	0, 0, 0, 3, 0, 0, 0, 0, 
-	0, 72, 5, 7, 0, 39, 7, 0, 
-	45, 0, 45, 0, 45, 0, 3, 0, 
-	0, 0, 45, 0, 3, 0, 0, 0, 
-	0, 45, 0, 3, 0, 0, 0, 45, 
-	0, 0, 78, 72, 5, 33, 7, 0, 
-	7, 0, 43, 7, 0, 43, 7, 0, 
-	45, 0, 3, 0, 0, 0, 0, 45, 
-	0, 3, 0, 0, 0, 0, 45, 0, 
-	0, 3, 0, 0, 0, 45, 0, 0, 
-	45, 0, 0, 45, 0, 0, 45, 0, 
-	0, 45, 0, 0, 45, 0, 0, 45, 
-	0, 0, 45, 0, 0, 45, 0, 0, 
-	45, 0, 0, 33, 0, 47, 51, 45, 
-	0, 3, 0, 0, 0, 25, 25, 25, 
-	25, 25, 0, 0, 27, 61, 27, 59, 
-	27, 63, 27, 65, 27, 57, 27, 55, 
-	21, 19, 0, 0, 37, 0, 37, 0, 
-	1, 1, 1, 0, 0, 69, 69, 69, 
-	23, 7, 0, 0, 49, 0
+	0, 74, 5, 7, 0, 39, 7, 0, 
+	47, 0, 47, 0, 47, 0, 0, 47, 
+	0, 0, 47, 0, 0, 47, 0, 0, 
+	47, 0, 0, 47, 0, 0, 47, 0, 
+	0, 47, 0, 0, 47, 0, 0, 47, 
+	0, 0, 47, 0, 0, 47, 0, 0, 
+	47, 0, 0, 47, 0, 0, 47, 0, 
+	0, 33, 0, 49, 53, 47, 0, 0, 
+	47, 0, 0, 47, 0, 0, 47, 0, 
+	0, 47, 0, 0, 47, 0, 0, 47, 
+	0, 0, 47, 3, 0, 47, 0, 0, 
+	80, 74, 5, 33, 7, 0, 7, 0, 
+	45, 7, 0, 45, 7, 0, 47, 0, 
+	0, 47, 0, 0, 47, 0, 0, 47, 
+	0, 0, 47, 0, 0, 47, 0, 0, 
+	47, 0, 0, 47, 0, 0, 47, 3, 
+	0, 47, 0, 0, 80, 74, 5, 33, 
+	7, 0, 7, 0, 43, 7, 0, 43, 
+	7, 0, 25, 25, 25, 25, 25, 0, 
+	0, 27, 63, 27, 61, 27, 65, 27, 
+	67, 27, 59, 27, 57, 21, 19, 0, 
+	0, 37, 0, 37, 0, 1, 1, 1, 
+	0, 0, 23, 71, 71, 23, 0, 51, 
+	7, 0, 7, 0, 0
 ]
 
 class << self
@@ -322,9 +340,11 @@ self._ami_to_state_actions = [
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 75, 0, 0, 0, 0, 
-	0, 0, 0, 29, 0, 0, 29, 29, 
-	0, 0
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	77, 0, 0, 0, 0, 0, 0, 0, 
+	29, 0, 0, 29, 29, 0, 0, 0
 ]
 
 class << self
@@ -347,15 +367,17 @@ self._ami_from_state_actions = [
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 31, 0, 0, 0, 0, 
-	0, 0, 0, 31, 0, 0, 31, 31, 
-	0, 0
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	31, 0, 0, 0, 0, 0, 0, 0, 
+	31, 0, 0, 31, 31, 0, 0, 0
 ]
 
 class << self
 	attr_accessor :ami_start
 end
-self.ami_start = 123;
+self.ami_start = 144;
 class << self
 	attr_accessor :ami_error
 end
@@ -364,21 +386,21 @@ self.ami_error = 0;
 class << self
 	attr_accessor :ami_en_prompt
 end
-self.ami_en_prompt = 131;
+self.ami_en_prompt = 152;
 class << self
 	attr_accessor :ami_en_response_normal
 end
-self.ami_en_response_normal = 134;
+self.ami_en_response_normal = 155;
 class << self
 	attr_accessor :ami_en_response_follows
 end
-self.ami_en_response_follows = 135;
+self.ami_en_response_follows = 156;
 class << self
 	attr_accessor :ami_en_main
 end
-self.ami_en_main = 123;
+self.ami_en_main = 144;
 
-# line 89 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 93 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 
 							end			
 						end
@@ -387,7 +409,7 @@ self.ami_en_main = 123;
 					private					
 					def ragel_init
 						
-# line 391 "lib/adhearsion/voip/asterisk/ami/machine.rb"
+# line 413 "lib/adhearsion/voip/asterisk/ami/machine.rb"
 begin
 	 @__ragel_p ||= 0
 	 @__ragel_pe ||=  @__ragel_data.length
@@ -396,12 +418,12 @@ begin
 	 @__ragel_tokend = nil
 	 @__ragel_act = 0
 end
-# line 97 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 101 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 					end
 					
 					def ragel_exec
 						
-# line 405 "lib/adhearsion/voip/asterisk/ami/machine.rb"
+# line 427 "lib/adhearsion/voip/asterisk/ami/machine.rb"
 begin
 	_klen, _trans, _keys, _acts, _nacts = nil
 	if  @__ragel_p !=  @__ragel_pe
@@ -423,7 +445,7 @@ begin
  @__ragel_tokstart =  @__ragel_p
 		end
 # line 1 "lib/adhearsion/voip/asterisk/ami/machine.rl"
-# line 427 "lib/adhearsion/voip/asterisk/ami/machine.rb"
+# line 449 "lib/adhearsion/voip/asterisk/ami/machine.rb"
 		end # from state action switch
 	end
 	break if _break_again
@@ -506,125 +528,125 @@ when 3:
  set("value"); 		end
 # line 16 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 4:
-# line 19 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 21 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  mark("event") 		end
-# line 19 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 21 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 5:
-# line 20 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 22 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  set("event"); @current_packet = EventPacket.new(@__ragel_event) 		end
-# line 20 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 22 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 6:
-# line 23 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 25 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @current_packet = Packet.new; 		end
-# line 23 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 25 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 7:
-# line 24 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 26 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @current_packet = Packet.new(true); 		end
-# line 24 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 26 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 8:
-# line 31 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 33 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @current_packet = FollowsPacket.new; 		end
-# line 31 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 33 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 9:
-# line 38 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 40 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  mark("version"); 		end
-# line 38 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 40 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 10:
-# line 39 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 41 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  set("version"); @signal.signal			end
-# line 39 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 41 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 11:
-# line 49 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 51 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  mark_array("raw"); 		end
-# line 49 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 51 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 12:
-# line 52 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 54 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  mark_array("raw") 		end
-# line 52 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 54 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 13:
-# line 52 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 54 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  insert("raw") 		end
-# line 52 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 54 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 14:
-# line 62 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  	begin
-		 @__ragel_cs = 131
+		 @__ragel_cs = 152
 		_break_again = true
 		break
 	end
  								end
-# line 62 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 15:
-# line 63 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  	begin
-		 @__ragel_cs = 134
+		 @__ragel_cs = 155
 		_break_again = true
 		break
 	end
  			end
-# line 63 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 16:
-# line 64 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  	begin
-		 @__ragel_cs = 134
+		 @__ragel_cs = 155
 		_break_again = true
 		break
 	end
  			end
-# line 64 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 17:
-# line 65 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  	begin
-		 @__ragel_cs = 134
+		 @__ragel_cs = 155
 		_break_again = true
 		break
 	end
  			end
-# line 65 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 18:
-# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  	begin
-		 @__ragel_cs = 134
+		 @__ragel_cs = 155
 		_break_again = true
 		break
 	end
  			end
-# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 19:
-# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  	begin
-		 @__ragel_cs = 134
+		 @__ragel_cs = 155
 		_break_again = true
 		break
 	end
  			end
-# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 20:
-# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 72 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  	begin
-		 @__ragel_cs = 135
+		 @__ragel_cs = 156
 		_break_again = true
 		break
 	end
  			end
-# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 72 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 24:
 # line 1 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
@@ -632,161 +654,168 @@ when 24:
 		end
 # line 1 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 25:
-# line 39 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 41 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p+1
  begin  	begin
-		 @__ragel_cs = 123
+		 @__ragel_cs = 144
 		_break_again = true
 		break
 	end
   end
 		end
-# line 39 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 41 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 26:
-# line 38 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 40 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p
  @__ragel_p =  @__ragel_p - 1;		end
-# line 38 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 40 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 27:
-# line 44 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 46 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p+1
  begin  pair;  end
 		end
-# line 44 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 46 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 28:
-# line 45 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 47 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p+1
  begin  packet; 	begin
-		 @__ragel_cs = 123
+		 @__ragel_cs = 144
 		_break_again = true
 		break
 	end
   end
 		end
-# line 45 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 47 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 29:
-# line 56 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 59 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p+1
  begin  pair;  end
 		end
-# line 56 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 59 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 30:
-# line 57 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 60 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+		begin
+ @__ragel_tokend =  @__ragel_p+1
+ begin  pair;  end
+		end
+# line 60 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+when 31:
+# line 61 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p+1
  begin  insert("raw")  end
 		end
-# line 57 "lib/adhearsion/voip/asterisk/ami/machine.rl"
-when 31:
-# line 58 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 61 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+when 32:
+# line 62 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p+1
  begin  packet; 	begin
-		 @__ragel_cs = 123
+		 @__ragel_cs = 144
 		_break_again = true
 		break
 	end
   end
 		end
-# line 58 "lib/adhearsion/voip/asterisk/ami/machine.rl"
-when 32:
-# line 57 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 62 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+when 33:
+# line 61 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p
  @__ragel_p =  @__ragel_p - 1; begin  insert("raw")  end
 		end
-# line 57 "lib/adhearsion/voip/asterisk/ami/machine.rl"
-when 33:
-# line 57 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 61 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+when 34:
+# line 61 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  begin  @__ragel_p = (( @__ragel_tokend))-1; end
  begin  insert("raw")  end
 		end
-# line 57 "lib/adhearsion/voip/asterisk/ami/machine.rl"
-when 34:
-# line 62 "lib/adhearsion/voip/asterisk/ami/machine.rl"
-		begin
- @__ragel_act = 8;		end
-# line 62 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 61 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 35:
-# line 63 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_act = 9;		end
-# line 63 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 36:
-# line 64 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_act = 10;		end
-# line 64 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 37:
-# line 65 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_act = 11;		end
-# line 65 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 38:
-# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_act = 12;		end
-# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 39:
-# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_act = 13;		end
-# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 40:
-# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_act = 14;		end
-# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
-when 41:
 # line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+when 41:
+# line 72 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+		begin
+ @__ragel_act = 15;		end
+# line 72 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+when 42:
+# line 75 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p+1
  begin  @current_packet = ImmediatePacket.new; packet;  end
 		end
-# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
-when 42:
-# line 63 "lib/adhearsion/voip/asterisk/ami/machine.rl"
-		begin
- @__ragel_tokend =  @__ragel_p
- @__ragel_p =  @__ragel_p - 1;		end
-# line 63 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 75 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 43:
-# line 64 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p
  @__ragel_p =  @__ragel_p - 1;		end
-# line 64 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 44:
-# line 65 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p
  @__ragel_p =  @__ragel_p - 1;		end
-# line 65 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 45:
-# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p
  @__ragel_p =  @__ragel_p - 1;		end
-# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 46:
-# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p
  @__ragel_p =  @__ragel_p - 1;		end
-# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 47:
-# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p
  @__ragel_p =  @__ragel_p - 1;		end
-# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 48:
+# line 72 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+		begin
+ @__ragel_tokend =  @__ragel_p
+ @__ragel_p =  @__ragel_p - 1;		end
+# line 72 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+when 49:
 # line 1 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
 	case  @__ragel_act
@@ -800,7 +829,7 @@ end
 end 
 			end
 # line 1 "lib/adhearsion/voip/asterisk/ami/machine.rl"
-# line 804 "lib/adhearsion/voip/asterisk/ami/machine.rb"
+# line 833 "lib/adhearsion/voip/asterisk/ami/machine.rb"
 		end # action switch
 	end
 	end while false
@@ -823,7 +852,7 @@ when 22
  @__ragel_act = 0
 		end
 # line 1 "lib/adhearsion/voip/asterisk/ami/machine.rl"
-# line 827 "lib/adhearsion/voip/asterisk/ami/machine.rb"
+# line 856 "lib/adhearsion/voip/asterisk/ami/machine.rb"
 		end # to state action switch
 	end
 	break if  @__ragel_cs == 0
@@ -833,7 +862,7 @@ when 22
 	end
 	end
 	end
-# line 101 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 105 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 					end
 				end
 			end

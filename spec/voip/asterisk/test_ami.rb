@@ -78,6 +78,11 @@ context "The AMI command interface" do
     resp[0]['Queue'].should == "default"
   end
   
+  test "should show usage for an improper follows command" do
+    resp = @ami.command :Command => "meetme list"
+    resp[0][:raw].should.be.a.kind_of String
+  end
+  
   test "should respond to a synchronous originate"
   test "should responde to an asynchronous originate"
 
