@@ -134,7 +134,7 @@ module Adhearsion
 		      # event, so add it to the event queue.
 					def packet
 						return if not @current_packet
- 						@current_packet[:raw] = @__ragel_raw.join if @current_packet.raw?
+ 						@current_packet[:raw] = @__ragel_raw.join("\n") if @current_packet.raw?
             action_id = nil
             if not @current_packet.is_event? or @current_packet['ActionID']
 						  action_id = @current_packet['ActionID'] || 0
