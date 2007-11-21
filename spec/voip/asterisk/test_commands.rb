@@ -209,9 +209,9 @@ context "duration_of command" do
   test "Passed block to duration of is actually executed" do
     the_following_code {
       mock_call.duration_of {
-        raise
+        throw :inside_duration_of
       }
-    }.should.raise(RuntimeError)
+    }.should.throw :inside_duration_of
   end
   
   test "Duration of block is returned" do
@@ -331,7 +331,7 @@ BEGIN {
       test_case.before do
         @input      = MockSocket.new
         @output     = MockSocket.new
-        @mock_call  = flexmock("mock call")
+        @mock_call  = Object.new
         mock_call.extend(Adhearsion::VoIP::Asterisk::Commands)
         flexmock(mock_call) do |call|
           call.should_receive(:from_pbx).and_return(input)
