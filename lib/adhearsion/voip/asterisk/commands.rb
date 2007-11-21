@@ -168,13 +168,13 @@ module Adhearsion
           Time.now - start_time
         end
 
-        private
-          def set_caller_id(caller_id)
-            return unless caller_id
-            raise ArgumentError, "Caller ID must be numerical" if caller_id !~ /^\d+$/
-            raw_response %(SET CALLERID %p) % caller_id
-          end
+        def set_caller_id(caller_id)
+          return unless caller_id
+          raise ArgumentError, "Caller ID must be numerical" if caller_id !~ /^\d+$/
+          raw_response %(SET CALLERID %p) % caller_id
+        end
           
+        private
           def timeout_from_dial_options(options)
             options[:for] || options[:timeout]
           end

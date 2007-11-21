@@ -109,7 +109,7 @@ context "A simulated use of the 'ahn' command" do
     the_following_code {
       nonexistent_app_name, nonexistent_path = "a2n8y3gny2", "/tmp/qjweqbwas"
       simulate_args "create:#{nonexistent_app_name}", nonexistent_path
-      capture_stdout { Adhearsion::CLI::AhnCommand.execute! }
+      Adhearsion::CLI::AhnCommand.execute!
     }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::UnknownProject
   end
 end
