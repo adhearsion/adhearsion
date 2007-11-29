@@ -140,6 +140,8 @@ module Adhearsion
       attr_accessor :host
       attr_accessor :acl
 
+      # ACL = Access Control List
+
       class << self
         def default_port
           9050
@@ -151,20 +153,15 @@ module Adhearsion
       end
       
       def initialize(overrides = {})
-        self.port = overrides.delete(:port) || self.class.default_port
-        self.host = overrides.delete(:host) || self.class.default_host
-        self.acl  = overrides.delete(:raw_acl)
-        if not self.acl
+        self.port = overrides[:port] || self.class.default_port
+        self.host = overrides[:host] || self.class.default_host
+        self.acl  = overrides[:raw_acl]
+        
+        unless acl
           self.acl = []
-          denies = overrides.delete(:deny)
-          denies.each do |ip|
-            self.acl << "deny" << ip
-          end if denies
-          allows = overrides.delete(:allow)
-          allows.each do |ip|
-            self.acl << "allow" << ip
-          end if allows
-          self.acl << "allow" << "all" if self.acl.blank?
+          overrides[ :deny].to_a.each { |ip| acl << 'deny' << ip }
+          overrides[:allow].to_a.each { |ip| acl << 'allow' << ip }
+          acl.concat %w[allow 127.0.0.1] if acl.empty?
         end
       end
     end
