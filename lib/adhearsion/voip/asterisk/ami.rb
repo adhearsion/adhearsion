@@ -22,7 +22,7 @@ module Adhearsion
           @events_enabled = options[:events]
         end
         
-        include Publishable
+        include Adhearsion::Publishable
         
         publish :through => :proxy do
           

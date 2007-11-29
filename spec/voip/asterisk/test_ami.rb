@@ -97,7 +97,7 @@ context "The manager proxy" do
     @ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "password", "localhost", :port => port, :events => false
     flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return(AmiServer.new)
     @ami.connect!
-    @door = DRb.start_service "druby://127.0.0.1:9050", DrbDoor.instance
+    @door = DRb.start_service "druby://127.0.0.1:9050", Adhearsion::DrbDoor.instance
   end
   
   test "should accept a command" do

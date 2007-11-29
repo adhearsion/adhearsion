@@ -12,7 +12,7 @@ module Adhearsion
         def start
           config = Adhearsion::AHN_CONFIG.drb
           DRb.install_acl ACL.new(config.acl) if config.acl
-          DRb.start_service "druby://#{config.host}:#{config.port}", DrbDoor.instance
+          DRb.start_service "druby://#{config.host}:#{config.port}", Adhearsion::DrbDoor.instance
           log "Starting DRb on #{config.host}:#{config.port}"
         end
   
