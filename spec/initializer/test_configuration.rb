@@ -146,7 +146,7 @@ context "Configuration scenarios" do
   private
     def enable_ami(*overrides)
       default_config do |config|
-        config.asterisk.enable_ami *overrides
+        config.asterisk.enable_ami(*overrides)
       end
     end
     
@@ -171,6 +171,36 @@ context "AHN_CONFIG" do
     assert Adhearsion.const_defined?(:AHN_CONFIG)
     Adhearsion::AHN_CONFIG.should.be.kind_of(Adhearsion::Configuration)
   end
+end
+
+context "DRb configuration" do
+  test "should not add any ACL rules when :raw_acl is passed in" do
+    config = Adhearsion::Configuration::DrbConfiguration.new :raw_acl => :this_is_an_acl
+    config.acl.should.equal :this_is_an_acl
+  end
+  
+  test "should, by default, allow only localhost connections" do
+    config = Adhearsion::Configuration::DrbConfiguration.new
+    config.acl.should == %w[allow 127.0.0.1]
+  end
+  
+  test "should add ACL 'deny' rules before 'allow' rules" do
+    config = Adhearsion::Configuration::DrbConfiguration.new :allow => %w[1.1.1.1  2.2.2.2],
+                                                             :deny  => %w[9.9.9.9]
+    config.acl.should == %w[deny 9.9.9.9 allow 1.1.1.1 allow 2.2.2.2]
+  end
+  
+  test "should allow both an Array and a String to be passed as an allow/deny ACL rule" do
+    config = Adhearsion::Configuration::DrbConfiguration.new :allow => "1.1.1.1", :deny => "9.9.9.9"
+    config.acl.should == %w[deny 9.9.9.9 allow 1.1.1.1]
+  end
+  
+  test "should have a default host and port" do
+    config = Adhearsion::Configuration::DrbConfiguration.new
+    config.host.should.not.equal nil
+    config.port.should.not.equal nil
+  end
+  
 end
 
 BEGIN {
