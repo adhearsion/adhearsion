@@ -22,7 +22,7 @@ module Adhearsion
 
     def method_missing(name, *args, &block)
       return Module.const_get(name) if (?A..?Z).include? name.to_s[0]
-      return super unless @interfaces and @interfaces.keys.include? name.to_s
+      super unless @interfaces && @interfaces.keys.include?(name.to_s)
       @interfaces[name.to_s]
     end
   end

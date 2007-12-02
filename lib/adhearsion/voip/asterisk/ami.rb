@@ -26,14 +26,42 @@ module Adhearsion
         
         publish :through => :proxy do
           
-          def originate(options={}, &block)
-            execute_ami_command! :originate, action_sock, options, &block
+          def originate(options={})
+            execute_ami_command! :originate, options
           end
 
           def ping
-            execute_ami_command! :ping, action_sock
+            execute_ami_command! :ping
           end
           
+          # An introduction connects two endpoints together. The first argument is
+          # the first person the PBX will call. When she's picked up, Asterisk will
+          # play ringing while the second person is being dialed.
+          #
+          # The first argument is the person called first. Pass this as a canonical
+          # IAX2/server/user type argument. Destination takes the same format, but
+          # comma-separated Dial() arguments can be optionally passed after the
+          # technology.
+          #
+          # TODO: Provide an example when this works.
+          def introduce(caller, callee, opts={})
+            dial_args  = callee
+            dial_args += "|#{opts[:options]}" if opts[:options]
+            call_and_exec caller, "Dial", dial_args, opts[:caller_id]
+          end
+
+          def call_and_exec(channel, app, app_args=nil, callerid=nil)
+            args = { :channel => channel, :application => app }
+            args[:data]     = app_args if app_args
+            args[:callerid] = callerid if callerid
+            originate args
+          end
+
+
+          def call_into_context(callee, context, dial_args=nil, callerid=nil)
+            call_and_exec callee, "Dial", "1@#{context}", dial_args, callerid
+          end
+
         end
 
         def connect!
@@ -53,7 +81,7 @@ module Adhearsion
         end
         
         def method_missing(name, hash={}, &block)
-          execute_ami_command! name, action_sock, hash, &block
+          execute_ami_command! name, hash, &block
         end
   
         private
@@ -69,7 +97,7 @@ module Adhearsion
           @scanner = Parser.new
           @version = scanner.run(action_sock)
           begin
-            execute_ami_command! :login, action_sock, :username => user, :secret => password, :events => (events_enabled? ? "On" : "Off")
+            execute_ami_command! :login, :username => user, :secret => password, :events => (events_enabled? ? "On" : "Off")
           rescue ActionError
             raise AuthenticationFailedException, "Invalid AMI username/password! Check manager.conf."
           else
@@ -77,11 +105,11 @@ module Adhearsion
           end
         end
   
-        def execute_ami_command!(name, sock, hash={}, &block)
-          action = Action.build(name, hash, &block)
-          sock.synchronize do
-            connect! if !sock || sock.closed?
-            sock.write action.to_s
+        def execute_ami_command!(name, options={}, &block)
+          action = Action.build(name, options, &block)
+          action_sock.synchronize do
+            connect! if !action_sock || action_sock.closed?
+            action_sock.write action.to_s
           end
           
           return unless action.has_response?

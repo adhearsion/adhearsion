@@ -17,6 +17,8 @@ context "Connecting via AMI" do
   end
   
   test "should discover its own permissions and make them available as connection attributes"
+  
+  # TODO: DRY up the following two specs
   test "should start a new thread if events are enabled" do
     host, port = "localhost", 5038
     ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "password", "localhost", :port => port, :events => true
@@ -91,6 +93,48 @@ context "The AMI command interface" do
   end
 end
 
+context 'AMI#originate' do
+  include AmiCommandTestHelper
+  test "should pass the arguments to execute_ami_command! with the options given" do
+    ami     = new_ami_instance
+    options = { :channel => "ohai_lolz", :application => "Echo" }
+    flexmock(ami).should_receive(:execute_ami_command!).with(:originate, options).once
+    ami.originate options
+  end
+end
+
+context 'AMI#call_and_exec' do
+  
+end
+
+context 'AMI#introduce' do
+  
+  include AmiCommandTestHelper
+  
+  test "should execute origiante properly (when :caller_id and :options aren't specified)" do
+    caller, callee, caller_id = "SIP/12224446666@trunk", "SIP/12224447777@trunk", "Jay Phillips"
+    
+    correct_args = {:application => "Dial", :channel => caller, :data => callee}
+    ami = flexmock new_ami_instance
+    ami.should_receive(:originate).once.with(correct_args).and_return(true)
+    ami.introduce caller, callee
+  end
+  
+  test "should remove the :caller_id symbol key from the Hash argument without modifying the reference and pass it to originate as :callerid" do
+    caller, callee, caller_id = "1337", "2600", "Jay Phillips"
+    introduce_options = {:caller_id => caller_id}
+    
+    correct_args = {:application => "Dial", :channel => caller, :data => callee, :callerid => caller_id}
+    ami = flexmock new_ami_instance
+    ami.should_receive(:originate).once.with(correct_args).and_return(true)
+    ami.introduce caller, callee, introduce_options
+    
+    introduce_options.size.should == 1
+  end
+  
+  test "should remove the :options symbol key from the Hash argument"
+end
+
 context "The manager proxy" do
   before do
     host, port = "localhost", 5038
@@ -140,3 +184,15 @@ context "The event parser" do
   test "should allow a Hash to specify multiple matches"
   
 end
+
+BEGIN {
+module AmiCommandTestHelper
+  def new_ami_instance
+    # TODO. mock everything out here
+    returning Adhearsion::VoIP::Asterisk::AMI.new("user","pass") do |ami|
+      flexmock(ami).should_receive(:connect!).and_return(true)
+    end
+  end
+  
+end
+}

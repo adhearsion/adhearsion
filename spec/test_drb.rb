@@ -1,5 +1,10 @@
 require File.dirname(__FILE__) + "/test_helper"
 
+# The way I envisoned publishing this DRb:
+#
+# publish :globally do/end
+# publish :with => :drb do/end
+
 context "Publishing an interface" do  
   test "should be allowed with a class method" do
     Class.new.class_eval do
