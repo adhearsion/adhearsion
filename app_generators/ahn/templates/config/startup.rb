@@ -10,8 +10,10 @@ Adhearsion::Configuration.configure do |config|
   
   # By default Asterisk is enabled with the default settings
   config.enable_asterisk
+  # config.asterisk.enable_ami :host => "127.0.0.1", :username => "admin", :password => "password"
   
-  # 
+  # config.enable_drb 
+  
   # config.asterisk.speech_engine = :cepstral
   
   # Configure FreeSwitch
