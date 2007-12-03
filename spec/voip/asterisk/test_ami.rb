@@ -101,9 +101,25 @@ context 'AMI#originate' do
     flexmock(ami).should_receive(:execute_ami_command!).with(:originate, options).once
     ami.originate options
   end
+  
+  test "should rename the :caller_id Hash key to :callerid" do
+    ami, caller_id = new_ami_instance, "Jay"
+    options = { :channel => "ohai_lolz", :application => "Echo"}
+    flexmock(ami).should_receive(:execute_ami_command!).with(:originate, options.merge(:callerid => caller_id)).once
+    ami.originate options.merge(:caller_id => caller_id)
+  end
+  
 end
 
 context 'AMI#call_and_exec' do
+  include AmiCommandTestHelper
+  test "should execute originate properly with the minimum arguments" do
+    number, app = "12224446666", "Echo"
+    
+    ami = flexmock new_ami_instance
+    ami.should_receive(:originate).once.with(:channel => number, :application => app).and_return true
+    ami.call_and_exec number, app
+  end
   
 end
 
@@ -114,25 +130,12 @@ context 'AMI#introduce' do
   test "should execute origiante properly (when :caller_id and :options aren't specified)" do
     caller, callee, caller_id = "SIP/12224446666@trunk", "SIP/12224447777@trunk", "Jay Phillips"
     
-    correct_args = {:application => "Dial", :channel => caller, :data => callee}
+    correct_args = {:application => "Dial", :channel => caller, :data => callee, :caller_id => "Jay"}
     ami = flexmock new_ami_instance
     ami.should_receive(:originate).once.with(correct_args).and_return(true)
-    ami.introduce caller, callee
+    ami.introduce caller, callee, :caller_id => "Jay"
   end
   
-  test "should remove the :caller_id symbol key from the Hash argument without modifying the reference and pass it to originate as :callerid" do
-    caller, callee, caller_id = "1337", "2600", "Jay Phillips"
-    introduce_options = {:caller_id => caller_id}
-    
-    correct_args = {:application => "Dial", :channel => caller, :data => callee, :callerid => caller_id}
-    ami = flexmock new_ami_instance
-    ami.should_receive(:originate).once.with(correct_args).and_return(true)
-    ami.introduce caller, callee, introduce_options
-    
-    introduce_options.size.should == 1
-  end
-  
-  test "should remove the :options symbol key from the Hash argument"
 end
 
 context "The manager proxy" do

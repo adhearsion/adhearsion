@@ -27,6 +27,7 @@ module Adhearsion
         publish :through => :proxy do
           
           def originate(options={})
+            options[:callerid] = options.delete :caller_id if options[:caller_id]
             execute_ami_command! :originate, options
           end
 
@@ -47,19 +48,14 @@ module Adhearsion
           def introduce(caller, callee, opts={})
             dial_args  = callee
             dial_args += "|#{opts[:options]}" if opts[:options]
-            call_and_exec caller, "Dial", dial_args, opts[:caller_id]
+            call_and_exec caller, "Dial", :args => dial_args, :caller_id => opts[:caller_id]
           end
 
-          def call_and_exec(channel, app, app_args=nil, callerid=nil)
+          def call_and_exec(channel, app, opts={})
             args = { :channel => channel, :application => app }
-            args[:data]     = app_args if app_args
-            args[:callerid] = callerid if callerid
+            args[:caller_id] = opts[:caller_id] if opts[:caller_id]
+            args[:data] = opts[:args] if opts[:args]
             originate args
-          end
-
-
-          def call_into_context(callee, context, dial_args=nil, callerid=nil)
-            call_and_exec callee, "Dial", "1@#{context}", dial_args, callerid
           end
 
         end
