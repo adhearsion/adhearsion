@@ -49,9 +49,6 @@ context "Dialplan::Manager handling" do
     end
 end
 
-context "Dialplan::Manager context lookup" do
-end
-
 context "DialPlan" do
   
   attr_accessor :loader, :loader_instance, :dial_plan
@@ -176,6 +173,51 @@ context "ExecutionEnvironemnt" do
   
 end
 
+context "Dialplan control statements" do
+  
+  include DialplanTestingHelper
+  
+  test "Manager should catch ControlPassingExceptions" do
+    dialplan = %{
+      foo { raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(bar) }
+      bar {}
+    }
+    executing_dialplan(:foo => dialplan).should.not.raise
+  end
+  
+  test "Proc#+@ should not return to its originating context" do
+    dialplan = %{
+      andere {}
+      zuerst {
+        +andere
+        throw :after_control_statement
+      }
+    }
+    executing_dialplan(:zuerst => dialplan).should.not.throw
+  end
+  test "All dialplan contexts should be available at context execution time" do
+    dialplan = %{
+      context_defined_first {
+        throw :i_see_it if context_defined_second
+      }
+      context_defined_second {}
+    }
+    executing_dialplan(:context_defined_first => dialplan).should.throw :i_see_it
+  end
+  test "Proc#+@ should execute the other context" do
+    dialplan = %{
+      eins {
+        +zwei
+        throw :eins
+      }
+      zwei {
+        throw :zwei
+      }
+    }
+    executing_dialplan(:eins => dialplan).should.throw :zwei
+  end
+end
+
 context "VoIP platform operations" do
   test "can map a platform name to a module which holds its platform-specific operations" do
     Adhearsion::VoIP::Commands.for(:asterisk).should == Adhearsion::VoIP::Asterisk::Commands
@@ -196,6 +238,16 @@ module DialplanTestingHelper
   def new_manager_with_entry_points_loaded_from_dialplan_contexts
     returning Adhearsion::DialPlan::Manager.new do |manager|
       manager.dial_plan.entry_points = manager.dial_plan.loader.load_dial_plan.contexts
+    end
+  end
+  
+  def executing_dialplan(options)
+    context_name = options.keys.first
+    dialplan     = options[context_name]
+    
+    mock_dialplan_with dialplan
+    lambda do
+      Adhearsion::DialPlan::Manager.new.handle new_call_for_context(context_name)
     end
   end
   

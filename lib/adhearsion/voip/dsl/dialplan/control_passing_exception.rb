@@ -14,18 +14,12 @@ module Adhearsion
           attr_reader :target
           
           def initialize(target)
-            super
+            super()
             @target = target
           end
           
         end
       end
     end
-  end
-end
-
-class Proc
-  def ~@
-    raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(self)
   end
 end

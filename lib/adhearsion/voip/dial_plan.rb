@@ -1,6 +1,8 @@
 # Hardcoding require for now since for some reason it's not being loaded
 require 'adhearsion/blank_slate'
 require 'adhearsion/component_manager'
+require 'adhearsion/voip/dsl/dialplan/control_passing_exception'
+
 module Adhearsion
   class DialPlan
     attr_accessor :loader, :entry_points
@@ -28,7 +30,13 @@ module Adhearsion
       end
       
       def run
-        instance_eval(&entry_point)
+        current_context = entry_point
+        begin
+          instance_eval(&current_context)
+        rescue Adhearsion::VoIP::DSL::Dialplan::ControlPassingException => exception
+          current_context = exception.target
+          retry
+        end
       end
       
       private
@@ -150,9 +158,23 @@ module Adhearsion
         
         def method_missing(name, *args, &block)
           super unless block_given?
-          contexts[name] = block
+          contexts[name] = DialplanContextProc.new name, &block
         end
       end
+    end
+    class DialplanContextProc < Proc
+      
+      attr_reader :name
+      
+      def initialize(name, &block)
+        super(&block)
+        @name = name
+      end
+      
+      def +@
+        raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(self)
+      end
+      
     end
   end
 end
