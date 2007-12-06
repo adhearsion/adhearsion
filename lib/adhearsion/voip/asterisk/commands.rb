@@ -75,7 +75,7 @@ module Adhearsion
       	# Note: input() does NOT catch "#" character! Use wait_for_digit instead.
         def input(digits = nil, options = {})
           timeout = options[:timeout]
-          timeout = timeout ? (timeout * 1000).to_i : -1
+          timeout = (timeout && timeout != -1) ? (timeout * 1000).to_i : -1
           play    = options[:play] || 'beep'
       	  result  = raw_response("GET DATA #{play} #{timeout} #{digits}") 
       	  extract_input_from result

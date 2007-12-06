@@ -95,11 +95,12 @@ context 'input command' do
     pbx_was_asked_for_input(4)
   end
   
-  test 'Can ask for input with a timeout option' do
+  test 'Does properly convert timeouts from seconds to milliseconds when applicable' do
     timeout = 1.minute
     pbx_should_respond_with_digits('4321')
     mock_call.input(4, :timeout => timeout)
-    pbx_was_asked_for_input(4, :timeout => timeout)
+    pbx_was_asked_for_input(4, :timeout => 1.minute)
+    
     default_timeout_which_asterisk_interprets_as_infinity = -1
     pbx_should_respond_with_digits('4321')
     mock_call.input(4)
@@ -422,7 +423,8 @@ BEGIN {
         end
 
         def pbx_was_asked_for_input(number_of_digits, options={})
-          timeout = options[:timeout] || -1
+          timeout = options[:timeout]
+          timeout = (timeout && timeout != -1) ? (timeout * 1000).to_i : -1
           play    = options[:play] || 'beep'
           output_stream_matches(/GET DATA #{play} #{timeout} #{number_of_digits}/)
         end
