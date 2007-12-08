@@ -53,6 +53,10 @@ class AmiServer
       def ping_response
         { "Response" => "Pong" }
       end
+      
+      def unrecognized_action
+        { "Response" => "Error", "Message" => "Invalid/unknown command" }
+      end
     end
   end
 
@@ -141,7 +145,8 @@ class AmiServer
       when "ping"
         fill(response(actionid, AMIResponseHelper.ping_response))
       else
-        raise ArgumentError, "Unknown action #{args['action']}"
+        # raise ArgumentError, "Unknown action #{args['action']}"
+        fill(response(actionid, AMIResponseHelper.unrecognized_action))
       end
   end
 

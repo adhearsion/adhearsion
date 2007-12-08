@@ -86,11 +86,19 @@ context "The AMI command interface" do
   end
   
   test "should respond to a synchronous originate"
-  test "should responde to an asynchronous originate"
+  test "should respond to an asynchronous originate"
 
   test "should define events() as a private method to prevent turning events on or off" do
     @ami.private_methods.include?("events").should.equal true
   end
+  
+  test "should raise an exception when Asterisk doesn't recognize a command" do
+    the_following_code {
+      @ami.this_command_does_not_exist_kthx
+    }.should.raise Adhearsion::VoIP::Asterisk::AMI::ActionError
+    
+  end
+  
 end
 
 context 'AMI#originate' do
