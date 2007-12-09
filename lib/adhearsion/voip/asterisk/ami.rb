@@ -58,6 +58,10 @@ module Adhearsion
             originate args
           end
 
+          def method_missing(name, hash={}, &block)
+            execute_ami_command! name, hash, &block
+          end
+
         end
 
         def connect!
@@ -76,10 +80,6 @@ module Adhearsion
           @events_enabled
         end
         
-        def method_missing(name, hash={}, &block)
-          execute_ami_command! name, hash, &block
-        end
-  
         private
   
         def login!(host, user, pass, port, events)

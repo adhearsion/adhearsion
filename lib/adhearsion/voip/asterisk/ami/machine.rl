@@ -23,7 +23,7 @@ module Adhearsion
 						Event = "Event: " alpha+ >_event %event crlf;
 
 						action _success { @current_packet = Packet.new; }
-						action _error 	{ @current_packet = Packet.new(true); }
+						action _error 	{ @current_packet = ErrorPacket.new; }
 						Response 	= "Response: ";
 						Success		= Response "Success" >_success crlf;
 						Pong 			= Response "Pong" >_success crlf;

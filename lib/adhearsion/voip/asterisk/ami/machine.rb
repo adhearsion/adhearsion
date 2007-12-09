@@ -4,7 +4,7 @@ module Adhearsion
 		module Asterisk
 			class AMI
 				module Machine
-				# line 77 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+				# line 76 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 
 	
 					class << self
@@ -400,7 +400,7 @@ class << self
 end
 self.ami_en_main = 144;
 
-# line 93 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 92 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 
 							end			
 						end
@@ -418,7 +418,7 @@ begin
 	 @__ragel_tokend = nil
 	 @__ragel_act = 0
 end
-# line 101 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 100 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 					end
 					
 					def ragel_exec
@@ -545,7 +545,7 @@ when 6:
 when 7:
 # line 26 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
- @current_packet = Packet.new(true); 		end
+ @current_packet = ErrorPacket.new; 		end
 # line 26 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 8:
 # line 33 "lib/adhearsion/voip/asterisk/ami/machine.rl"
@@ -578,7 +578,7 @@ when 13:
  insert("raw") 		end
 # line 54 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 14:
-# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 65 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  	begin
 		 @__ragel_cs = 152
@@ -586,9 +586,9 @@ when 14:
 		break
 	end
  								end
-# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 65 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 15:
-# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  	begin
 		 @__ragel_cs = 155
@@ -596,9 +596,9 @@ when 15:
 		break
 	end
  			end
-# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 16:
-# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  	begin
 		 @__ragel_cs = 155
@@ -606,9 +606,9 @@ when 16:
 		break
 	end
  			end
-# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 17:
-# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  	begin
 		 @__ragel_cs = 155
@@ -616,9 +616,9 @@ when 17:
 		break
 	end
  			end
-# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 18:
-# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  	begin
 		 @__ragel_cs = 155
@@ -626,9 +626,9 @@ when 18:
 		break
 	end
  			end
-# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 19:
-# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  	begin
 		 @__ragel_cs = 155
@@ -636,9 +636,9 @@ when 19:
 		break
 	end
  			end
-# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 20:
-# line 72 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  	begin
 		 @__ragel_cs = 156
@@ -646,7 +646,7 @@ when 20:
 		break
 	end
  			end
-# line 72 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 24:
 # line 1 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
@@ -691,28 +691,28 @@ when 28:
 		end
 # line 47 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 29:
-# line 59 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 58 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p+1
  begin  pair;  end
 		end
-# line 59 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 58 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 30:
-# line 60 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 59 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p+1
  begin  pair;  end
 		end
-# line 60 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 59 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 31:
-# line 61 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 60 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p+1
  begin  insert("raw")  end
 		end
-# line 61 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 60 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 32:
-# line 62 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 61 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p+1
  begin  packet; 	begin
@@ -722,99 +722,99 @@ when 32:
 	end
   end
 		end
-# line 62 "lib/adhearsion/voip/asterisk/ami/machine.rl"
-when 33:
 # line 61 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+when 33:
+# line 60 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p
  @__ragel_p =  @__ragel_p - 1; begin  insert("raw")  end
 		end
-# line 61 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 60 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 34:
-# line 61 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 60 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  begin  @__ragel_p = (( @__ragel_tokend))-1; end
  begin  insert("raw")  end
 		end
-# line 61 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 60 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 35:
-# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 65 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_act = 9;		end
-# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 65 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 36:
-# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_act = 10;		end
-# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 37:
-# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_act = 11;		end
-# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 38:
-# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_act = 12;		end
-# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 39:
-# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_act = 13;		end
-# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 40:
-# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_act = 14;		end
-# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 41:
-# line 72 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_act = 15;		end
-# line 72 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 42:
-# line 75 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 74 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p+1
  begin  @current_packet = ImmediatePacket.new; packet;  end
 		end
-# line 75 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 74 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 43:
-# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p
  @__ragel_p =  @__ragel_p - 1;		end
-# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 66 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 44:
-# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p
  @__ragel_p =  @__ragel_p - 1;		end
-# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 67 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 45:
-# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p
  @__ragel_p =  @__ragel_p - 1;		end
-# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 68 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 46:
-# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p
  @__ragel_p =  @__ragel_p - 1;		end
-# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 69 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 47:
-# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p
  @__ragel_p =  @__ragel_p - 1;		end
-# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 70 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 48:
-# line 72 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
  @__ragel_tokend =  @__ragel_p
  @__ragel_p =  @__ragel_p - 1;		end
-# line 72 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 71 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 when 49:
 # line 1 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 		begin
@@ -862,7 +862,7 @@ when 22
 	end
 	end
 	end
-# line 105 "lib/adhearsion/voip/asterisk/ami/machine.rl"
+# line 104 "lib/adhearsion/voip/asterisk/ami/machine.rl"
 					end
 				end
 			end

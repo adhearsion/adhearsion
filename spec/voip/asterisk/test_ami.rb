@@ -160,13 +160,6 @@ context "The manager proxy" do
     client.proxy.ping
   end
 
-  test "should raise an exception for a non-existent command" do
-    the_following_code do
-      client = DRbObject.new nil, DRb.uri
-      client.proxy.does_not_exist
-    end.should.raise NoMethodError
-  end
-  
   after do
     DRb.stop_service
     @ami.disconnect!
@@ -190,10 +183,18 @@ context "Sent arbitrary AMI commands" do
   test "should raise an exception if permission was denied"
 end
 
+context "AMI Packets" do
+  test "A Packet should not be an error" do
+    Adhearsion::VoIP::Asterisk::AMI::Packet.new.error?.should.be false
+  end
+  test "An ErrorPacket should be an error" do
+    Adhearsion::VoIP::Asterisk::AMI::ErrorPacket.new.error?.should.be true
+  end
+end
+
 context "The event parser" do
   test "should parse the the YAML-like format "
   test "should allow a Hash to specify multiple matches"
-  
 end
 
 BEGIN {

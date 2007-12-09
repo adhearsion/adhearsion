@@ -6,12 +6,8 @@ module Adhearsion
 		module Asterisk
 			class AMI
 				class Packet < Hash
-					def initialize(error = false)
-            @error = error
-					end
-
 					def error?
-            @error
+            false
 					end
 					
 					def raw?
@@ -46,12 +42,22 @@ module Adhearsion
 				  end
 				end
 				
+				class ErrorPacket < Packet
+				  def error?
+				    true
+			    end
+			  end
+				
 				class FollowsPacket < Packet
-				  def raw?; true end
+				  def raw?
+				    true
+				  end
 			  end
 			  
 			  class ImmediatePacket < Packet
-				  def raw?; true end
+				  def raw?
+				    true
+				  end
 		    end
 		    
 				class Parser
@@ -86,12 +92,11 @@ module Adhearsion
   							send("__ragel_#{name}=", [])
   						STR
   					end
-						@signal = ConditionVariable.new
-						@mutex = Mutex.new
-						@events = Queue.new
+						@signal         = ConditionVariable.new
+						@mutex          = Mutex.new
+						@events         = Queue.new
 						@current_packet = nil
-            #@logger = Logger.new STDOUT
-            @logger = Logger.new("/dev/null")
+            @logger         = Logger.new "/dev/null"
 					end
 
 					private
