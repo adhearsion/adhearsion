@@ -2,7 +2,7 @@ Create an RSpec helper that can detect when a method is synchronized.
 
 Add assertions that ensure certain things are synchronized.
 
-###########################################################################
+##########################################################################
 
 Create an engine for generating PBX-independent configurations
 
