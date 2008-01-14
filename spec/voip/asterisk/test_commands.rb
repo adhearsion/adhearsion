@@ -124,6 +124,12 @@ context 'input command' do
     assert !mock_call.input(2, :timeout => timeout), "the pbx did not respond with failure"
   end
   
+  test "Input timing out when digits are pressed returns those digits" do
+    timeout = 1.minute
+    pbx_should_respond_with_digits_and_timeout 1
+    mock_call.input(9, :timeout => timeout).should == '1'
+  end
+  
   test 'Both possible input timeout responses are recognized' do
     timeout_results = ['200 result=123 (timeout)', '200 result= (timeout)']
     timeout_results.each do |timeout_result|
@@ -377,6 +383,10 @@ BEGIN {
 
       def pbx_should_respond_with_digits(string_of_digits)
         pbx_should_respond_with "200 result=#{string_of_digits}"
+      end
+
+      def pbx_should_respond_with_digits_and_timeout(string_of_digits)
+        pbx_should_respond_with "200 result=#{string_of_digits} (timeout)"
       end
 
       def pbx_should_respond_to_timeout(timeout)

@@ -192,7 +192,7 @@ module Adhearsion
         
           def extract_input_from(result)
             return false if error?(result)
-            return false if input_timed_out?(result)
+            # return false if input_timed_out?(result)
             result[/^#{response_prefix}([\d*]+)/, 1]
           end
           
