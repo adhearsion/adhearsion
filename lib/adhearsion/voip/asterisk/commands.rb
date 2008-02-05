@@ -175,6 +175,10 @@ module Adhearsion
 
         private
         
+          def background(file)
+            result_digit_from raw_response("EXEC BACKGROUND #{file}")
+          end
+        
           def set_caller_id(caller_id)
             return unless caller_id
             raise ArgumentError, "Caller ID must be numerical" if caller_id !~ /^\d+$/
@@ -188,6 +192,11 @@ module Adhearsion
           def asterisk_options_from_dial_options(options)
             # TODO: Will become much more sophisticated soon to handle callerid, etc
             options[:options]
+          end
+          
+          def result_digit_from(response_string)
+            digit = response_string[/^#{response_prefix}(-?\d+(\.\d+)?)/,1]
+            digit.to_i.chr if digit
           end
           
           def get_dial_status

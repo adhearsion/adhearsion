@@ -194,6 +194,20 @@ context 'menu command' do
   test "on:invalid must be executed when the user enters a series of digits that don't match anything"
   test "on:failure must be executed when all tries have elapsed"
   test "on:invalid should be executed before on:failure"
+  test "the 'extension' dialplan variable should be redefined when menu() jumps to a new context"
+end
+
+context 'background command' do
+  
+  include DialplanCommandTestHelpers
+  
+  test 'should return a string for the digit that was pressed' do
+    digits = [?0, ?1, ?#, ?*, ?9]
+    file = "file_doesnt_matter"
+    digits.each { |digit| pbx_should_respond_with_success digit }
+    digits.map  { |digit| mock_call.send(:background, file) }.should == digits.map(&:chr)
+  end
+  
 end
 
 context 'say_digits command' do
