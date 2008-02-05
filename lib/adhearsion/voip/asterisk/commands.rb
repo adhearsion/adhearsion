@@ -156,12 +156,10 @@ module Adhearsion
       	
       	# See the Menu class.
       	def menu(*args, &block)
-      	  
-      	  menu = Menu.new(*args, &block)
-      	  
-      	  result = menu.sound_files.any? ? interruptable_play(menu.sound_files) : wait_for_digit(menu.timeout)
-      	  
-          menu.execute_with_result result
+      	  destination_context_name = Menu.new(self, *args, &block).enter
+      	  if destination_context_name
+      	    # JUMP TO THAT CONTEXT HERE
+    	    end
     	  end
       	
       	def say_digits(digits)
