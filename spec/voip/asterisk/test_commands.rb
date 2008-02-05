@@ -1,4 +1,6 @@
 require File.dirname(__FILE__) + "/../../test_helper"
+require 'adhearsion/voip/asterisk/menu_command/menu_class'
+require 'adhearsion/voip/asterisk/menu_command/menu_builder'
 
 context 'Asterisk VoIP Commands' do
   include DialplanCommandTestHelpers
@@ -18,6 +20,51 @@ context 'hangup command' do
     response = mock_call.hangup
     pbx_should_have_been_sent 'HANGUP'
     response.should.equal pbx_success_response
+  end
+end
+
+context 'interruptable_play command' do
+  
+  include DialplanCommandTestHelpers
+  
+  test 'should return a string for the digit that was pressed' do
+    digits = [?0, ?1, ?#, ?*, ?9]
+    file = "file_doesnt_matter"
+    digits.each { |digit| pbx_should_respond_with_success digit }
+    digits.map  { |digit| mock_call.send(:interruptable_play, file) }.should == digits.map(&:chr)
+  end
+  
+  test "should return nil if no digit was pressed" do
+    pbx_should_respond_with_success 0
+    mock_call.send(:interruptable_play, 'foobar').should.equal nil
+  end
+  
+  test "should play a series of files, stopping the series when a digit is played" do
+    stubbed_keypad_input = [0, 0, ?3]
+    stubbed_keypad_input.each do |digit|
+      pbx_should_respond_with_success digit
+    end
+    
+    files = (100..105).map(&:to_s)
+    mock_call.send(:interruptable_play, *files).should == '3'
+  end
+  
+end
+
+context 'wait_for_digit command' do
+  
+  include DialplanCommandTestHelpers
+  
+  test 'should return a string for the digit that was pressed' do
+    digits = [?0, ?1, ?#, ?*, ?9]
+    digits.each { |digit| pbx_should_respond_with_success digit }
+    digits.map  { |digit| mock_call.send(:wait_for_digit) }.should == digits.map(&:chr)
+  end
+  
+  test "the timeout given must be converted to milliseconds" do
+    pbx_should_respond_with_success 0
+    mock_call.send(:wait_for_digit, 1)
+    output.messages.first.ends_with?('1000').should.equal true
   end
 end
 
@@ -138,49 +185,321 @@ context 'input command' do
   end
 end
 
-context 'interruptable_play command' do
-  
+context 'the menu() method' do
+
   include DialplanCommandTestHelpers
   
-  test 'should return a string for the digit that was pressed' do
-    digits = [?0, ?1, ?#, ?*, ?9]
-    file = "file_doesnt_matter"
-    digits.each { |digit| pbx_should_respond_with_success digit }
-    digits.map  { |digit| mock_call.send(:interruptable_play, file) }.should == digits.map(&:chr)
-  end
-  
-  test "should return nil if no digit was pressed" do
-    pbx_should_respond_with_success 0
-    mock_call.send(:interruptable_play, 'foobar').should.equal nil
-  end
-  
-  test "should play a series of files, stopping the series when a digit is played" do
-    stubbed_keypad_input = [0, 0, ?3]
-    stubbed_keypad_input.each do |digit|
-      pbx_should_respond_with_success digit
-    end
+  test "should instantiate a new Menu object, passing in its own arguments" do
+    *args = 1,2,3,4,5
     
-    files = (100..105).map(&:to_s)
-    mock_call.send(:interruptable_play, *files).should == '3'
+    flexmock(Adhearsion::VoIP::Asterisk::Commands::Menu).should_receive(:new).once.with(*args).and_throw(:instantiating_menu!)
+    
+    should_throw(:instantiating_menu!) { mock_call.menu(*args) }
+  end
+  
+  test "should jump to a context when a timeout is encountered and there is at least one exact match" do
+    pbx_should_respond_with_successful_background_response ?5
+    pbx_should_respond_with_successful_background_response ?4
+    pbx_should_respond_with_a_wait_for_digit_timeout
+    
+    context_named_main  = lambda { throw :inside_main!  }
+    context_named_other = lambda { throw :inside_other! }
+    flexmock(mock_call).should_receive(:main).once.and_return(context_named_main)
+    flexmock(mock_call).should_receive(:other).never
+    
+    should_pass_control_to_a_context_that_throws :inside_main! do
+      mock_call.menu do |link|
+        link.main  54
+        link.other 543
+      end
+    end
+  end
+  
+  test "when the 'extension' variable is changed, it should be an instance of PhoneNumber" do
+    pbx_should_respond_with_successful_background_response ?5
+    mock_call.should_receive(:foobar).once.and_return lambda { throw :foobar! }
+    should_pass_control_to_a_context_that_throws :foobar! do
+      mock_call.menu do |link|
+        link.foobar 5
+      end
+    end
+    5.should === mock_call.extension
+    mock_call.extension.__real_string.should == "5"
   end
   
 end
 
-context 'wait_for_digit command' do
+context 'the Menu class' do
   
   include DialplanCommandTestHelpers
   
-  test 'should return a string for the digit that was pressed' do
-    digits = [?0, ?1, ?#, ?*, ?9]
-    digits.each { |digit| pbx_should_respond_with_success digit }
-    digits.map  { |digit| mock_call.send(:wait_for_digit) }.should == digits.map(&:chr)
+  test "should yield a MenuBuilder when instantiated" do
+    lambda {
+      Adhearsion::VoIP::Asterisk::Commands::Menu.new do |block_argument|
+        block_argument.should.be.kind_of Adhearsion::VoIP::Asterisk::Commands::MenuBuilder
+        throw :inside_block
+      end
+    }.should.throw :inside_block
   end
   
-  test "the timeout given must be converted to milliseconds" do
-    pbx_should_respond_with_success 0
-    mock_call.send(:wait_for_digit, 1)
-    output.messages.first.ends_with?('1000').should.equal true
+  test "should invoke wait_for_digit instead of interruptable_play when no sound files are given" do
+    mock_call.should_receive(:wait_for_digit).once.with(5).and_return '#'
+    mock_call.menu { |link| link.does_not_match 3 }
   end
+  
+  test 'should invoke interruptable_play when sound files are given only for the first digit' do
+    sound_files = %w[i like big butts and i cannot lie]
+    timeout = 1337
+    
+    mock_call.should_receive(:interruptable_play).once.with(*sound_files).and_return nil
+    mock_call.should_receive(:wait_for_digit).once.with(timeout).and_return nil
+    
+    mock_call.menu(sound_files, :timeout => timeout) { |link| link.qwerty 12345 }
+  end
+   
+  test 'if the call to interruptable_play receives a timeout, it should execute wait_for_digit with the timeout given' do
+      sound_files = %w[i like big butts and i cannot lie]
+      timeout = 987
+      
+      mock_call.should_receive(:interruptable_play).once.with(*sound_files).and_return nil
+      mock_call.should_receive(:wait_for_digit).with(timeout).and_return
+      
+      mock_call.menu(sound_files, :timeout => timeout) { |link| link.foobar 911 }
+  end
+   
+  test "should work when no files are given to be played and a timeout is reached on the first digit" do
+    timeout = 12
+    [:on_premature_timeout, :on_failure].each do |usage_case|
+      should_throw :got_here! do
+        mock_call.should_receive(:wait_for_digit).once.with(timeout).and_return nil # Simulates timeout
+        mock_call.menu :timeout => timeout do |link|
+          link.foobar 0
+          link.__send__(usage_case) { throw :got_here! }
+        end
+      end
+    end
+  end
+  
+  test "should default the timeout to five seconds" do
+    pbx_should_respond_with_successful_background_response ?2
+    pbx_should_respond_with_a_wait_for_digit_timeout
+    
+    mock_call.should_receive(:wait_for_digit).once.with(5).and_return nil
+    mock_call.menu { |link| link.foobar 22 }
+  end
+  
+  test "when matches fail due to timeouts, the menu should repeat :tries times" do
+    tries, times_timed_out = 10, 0
+
+    tries.times do
+      pbx_should_respond_with_successful_background_response ?4
+      pbx_should_respond_with_successful_background_response ?0
+      pbx_should_respond_with_a_wait_for_digit_timeout
+    end
+    
+    should_throw :inside_failure_callback do
+      mock_call.menu :tries => tries do |link|
+        link.pattern_longer_than_our_test_input 400
+        link.on_premature_timeout { times_timed_out += 1 }
+        link.on_invalid { raise "should never get here!" }
+        link.on_failure { throw :inside_failure_callback }
+      end
+    end
+    times_timed_out.should.equal tries
+  end
+  
+  test "when matches fail due to invalid input, the menu should repeat :tries times" do
+    tries = 10
+    times_invalid = 0
+    
+    tries.times do
+      pbx_should_respond_with_successful_background_response ?0
+    end
+    
+    should_throw :inside_failure_callback do
+      mock_call.menu :tries => tries do |link|
+        link.be_leet 1337
+        link.on_premature_timeout { raise "should never get here!" }
+        link.on_invalid { times_invalid += 1 }
+        link.on_failure { throw :inside_failure_callback }
+      end
+    end
+    times_invalid.should.equal tries
+  end
+  
+  test "invoke on_invalid callback when an invalid extension was entered" do
+    pbx_should_respond_with_successful_background_response ?5
+    pbx_should_respond_with_successful_background_response ?5
+    pbx_should_respond_with_successful_background_response ?5
+    should_throw :inside_invalid_callback do
+      mock_call.menu do |link|
+        link.onetwothree 123
+        link.on_invalid { throw :inside_invalid_callback }
+      end
+    end
+  end
+  
+  test "invoke on_premature_timeout when a timeout is encountered" do
+    pbx_should_respond_with_successful_background_response ?9
+    pbx_should_respond_with_a_wait_for_digit_timeout
+    
+    should_throw :inside_timeout do
+      mock_call.menu :timeout => 1 do |link|
+        link.something 999
+        link.on_premature_timeout { throw :inside_timeout }
+      end
+    end
+  end
+  
+end
+
+context "the Menu class's high-level judgment" do
+  
+  include DialplanCommandTestHelpers
+  
+  test "should match things in ambiguous ranges properly" do
+    pbx_should_respond_with_successful_background_response ?1
+    pbx_should_respond_with_successful_background_response ?1
+    pbx_should_respond_with_successful_background_response ?1
+    pbx_should_respond_with_a_wait_for_digit_timeout
+
+    mock_call.should_receive(:main).and_return(lambda { throw :got_here! })
+    
+    should_pass_control_to_a_context_that_throws :got_here! do
+      mock_call.menu do |link|
+        link.main 11..11111
+      end
+    end
+    111.should === mock_call.extension
+  end
+  
+end
+
+
+context 'the MenuBuilder' do
+  
+  include MenuBuilderTestHelper
+  
+  attr_reader :builder
+  before:each do
+    @builder = Adhearsion::VoIP::Asterisk::Commands::MenuBuilder.new
+  end
+  
+  test "should convert each pattern given to it into a MatchCalculator instance" do
+    returning builder do |link|
+      link.foo 1,2,3
+      link.bar "4", "5", 6
+      link.qaz? {}
+    end
+    
+    builder.weighted_match_calculators.size.should.equal 7
+    builder.weighted_match_calculators.each do |match_calculator|
+      match_calculator.should.be.kind_of Adhearsion::VoIP::Asterisk::Commands::MatchCalculator
+    end
+  end
+  
+  test "conflicting ranges" do
+    returning builder do |link|
+      link.hundreds     100...200
+      link.thousands    1_000...2_000
+      link.tenthousands 10_000...20_000
+    end
+    
+    builder_should_match_with_these_quantities_of_calculated_matches \
+      1       => {  :exact_match_count => 0, :potential_match_count => 11100 },
+      10      => {  :exact_match_count => 0, :potential_match_count => 1110  },
+      100     => {  :exact_match_count => 1, :potential_match_count => 110   },
+      1_000   => {  :exact_match_count => 1, :potential_match_count => 10    },
+      10_000  => {  :exact_match_count => 1, :potential_match_count => 0     },
+      100_000 => {  :exact_match_count => 0, :potential_match_count => 0     }
+    
+  end
+  
+  test "multiple patterns given at once" do
+    returning builder do |link|
+      link.multiple_patterns 1,2,3,4,5,6,7,8,9
+      link.multiple_patterns 100..199, 200..299, 300..399, 400..499, 500..599,
+                             600..699, 700..799, 800..899, 900..999
+    end
+    1.upto 9 do |num|
+      returning builder.calculate_matches_for(num) do |matches_of_num|
+        matches_of_num.potential_match_count.should.equal 100
+        matches_of_num.exact_match_count.should.equal 1
+      end
+      returning builder.calculate_matches_for((num * 100) + 5) do |matches_of_num|
+        matches_of_num.potential_match_count.should.equal 0
+        matches_of_num.exact_match_count.should.equal 1
+      end
+    end
+  end
+  
+  test "numeric literals that don't match but ultimately would" do
+    returning builder do |link|
+      link.nineninenine 999
+      link.shouldnt_match 4444
+    end
+    builder.calculate_matches_for(9).potential_match_count.should.equal 1
+  end
+
+  test "three fixnums that obviously don't conflict" do
+    returning builder do |link|
+      link.one   1
+      link.two   2
+      link.three 3
+    end
+    [[1,2,3,4,'#'], [1,1,1,0,0]].transpose.each do |(input,expected_matches)|
+      matches = builder.calculate_matches_for input
+      matches.exact_match_count.should.equal expected_matches
+    end
+  end
+  
+  test "numerical digits mixed with special digits" do
+    returning builder do |link|
+      link.one   '5*11#3'
+      link.two   '5***'
+      link.three '###'
+    end
+    
+    builder_should_match_with_these_quantities_of_calculated_matches \
+      '5'      => { :potential_match_count => 2, :exact_match_count => 0 },
+      '*'      => { :potential_match_count => 0, :exact_match_count => 0 },
+      '5**'    => { :potential_match_count => 1, :exact_match_count => 0 },
+      '5*1'    => { :potential_match_count => 1, :exact_match_count => 0 },
+      '5*11#3' => { :potential_match_count => 0, :exact_match_count => 1 },
+      '5*11#4' => { :potential_match_count => 0, :exact_match_count => 0 },
+      '5***'   => { :potential_match_count => 0, :exact_match_count => 1 },
+      '###'    => { :potential_match_count => 0, :exact_match_count => 1 },
+      '##*'    => { :potential_match_count => 0, :exact_match_count => 0 }
+    
+  end
+  
+  test 'a Fixnum exact match conflicting with a Range that would ultimately match' do
+    returning builder do |link|
+      link.single_digit 1
+      link.range 100..200
+    end
+    matches = builder.calculate_matches_for 1
+    matches.potential_match_count.should.equal 100
+  end
+  
+  test "custom blocks" do
+    strange_use_case = %w[321 4321 54321]
+    returning builder do |link|
+      link.arbitrary? do |str|
+        strange_use_case.select { |num| num.reverse.starts_with?(str) }
+      end
+    end
+    
+    builder_should_match_with_these_quantities_of_calculated_matches \
+      1      => { :exact_match_count => 3 },
+      12     => { :exact_match_count => 3 },
+      123    => { :exact_match_count => 3 },
+      1234   => { :exact_match_count => 2 },
+      12345  => { :exact_match_count => 1 },
+      123456 => { :exact_match_count => 0 }
+
+  end
+  
 end
 
 context 'say_digits command' do
@@ -414,6 +733,21 @@ BEGIN {
     
     private
 
+      def should_pass_control_to_a_context_that_throws(symbol, &block)
+        did_the_rescue_block_get_executed = false
+        begin
+          block.call
+        rescue Adhearsion::VoIP::DSL::Dialplan::ControlPassingException => cpe
+          did_the_rescue_block_get_executed = true
+          cpe.target.should.throw symbol
+        rescue => e
+          did_the_rescue_block_get_executed = true
+          raise e
+        ensure
+          did_the_rescue_block_get_executed.should.be true
+        end
+      end
+
       def should_throw(sym=nil,&block)
         block.should.throw(*[sym].compact)
       end
@@ -522,4 +856,28 @@ BEGIN {
         Adhearsion::VoIP::Asterisk::Commands::TONES
       end
   end
+  
+  
+module MenuBuilderTestHelper
+  def builder_should_match_with_these_quantities_of_calculated_matches(checks)
+    checks.each do |check,hash|
+      hash.each_pair do |method_name,intended_quantity|
+        message = "There were supposed to be #{intended_quantity} #{method_name.to_s.humanize} calculated."
+        builder.calculate_matches_for(check).send(method_name).
+          should.messaging(message).equal(intended_quantity)
+      end
+    end
+  end
+end
+  
+module MenuTestHelper
+  
+  def pbx_should_send_digits(*digits)
+    digits.each do |digit|
+      digit = nil if digit == :timeout
+      mock_call.should_receive(:interruptable_play).once.and_return(digit)
+    end
+  end
+end
+  
 }

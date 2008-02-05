@@ -59,7 +59,62 @@ module Adhearsion
           tone_code = TONES[type_name_or_raw_tone] || type_name_or_raw_tone
           execute 'PlayTones', tone_code
         end
-          
+        
+        def menu(*args, &block)
+          menu_instance = Menu.new(*args, &block)
+
+          initial_digit_prompt = menu_instance.sound_files.any?
+
+          # This method is basically one big begin/rescue block. When we
+          # start the Menu object by continue()ing into it, it will pass
+          # messages back to this method in the form of exceptions.
+          begin
+            # When enter!() is sent, this menu() implementation should handle
+            # the is sent via an Exception subclass.
+            unless menu_instance.should_continue?
+              menu_instance.execute_failure_hook
+              return :failed 
+            else
+              menu_instance.continue
+            end
+          rescue Menu::MenuResult => result_of_menu
+            case result_of_menu
+              when Menu::MenuResultInvalid
+                menu_instance.execute_invalid_hook
+                menu_instance.restart!
+              when Menu::MenuGetAnotherDigit
+                next_digit = play_files_in_menu menu_instance
+                if next_digit
+                  menu_instance << next_digit
+                else
+                  # The user timed out entering another digit!
+                  case result_of_menu
+                    when Menu::MenuGetAnotherDigitOrFinish
+                      # This raises a ControlPassingException
+                      redefine_extension_to_be result_of_menu.new_extension
+                      jump_to_context_with_name result_of_menu.context_name
+                    when Menu::MenuGetAnotherDigitOrTimeout
+                      # This should execute premature_timeout AND reset if the number of retries
+                      # has not been exhausted.
+                      menu_instance.execute_timeout_hook
+                      menu_instance.restart!
+                  end
+                end
+              when Menu::MenuResultFound
+                redefine_extension_to_be result_of_menu.new_extension
+                jump_to_context_with_name result_of_menu.context_name
+              else
+                raise "Unrecognized MenuResult! This may be a bug!"
+            end
+
+            # Retry will re-execute the begin block, preserving our changes to the
+            # menu_instance object.
+            retry
+
+          end
+        end
+        
+        
         # Input is used to receive keypad input from the user, pausing until they
       	# have entered the desired number of digits (specified with the first
       	# parameter) or the timeout has been reached (specified as a hash argument
@@ -241,6 +296,28 @@ module Adhearsion
             execute(:playback, argument)
           end
 
+          def play_files_in_menu(menu_instance)
+            digit = nil
+            if menu_instance.sound_files.any? && menu_instance.string_of_digits.empty?
+              digit = interruptable_play *menu_instance.sound_files
+            end
+            digit || wait_for_digit(menu_instance.timeout)
+          end
+
+          def jump_to_context_with_name(context_name)
+            context_lambda = begin
+              send context_name
+            rescue NameError
+              raise ContextNotFoundException
+            end
+            raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(context_lambda)
+          end
+
+          def redefine_extension_to_be(new_extension)
+            new_extension = Adhearsion::VoIP::DSL::PhoneNumber.new new_extension
+            meta_def(:extension) { new_extension }
+          end
+
           def to_pbx
             io
           end
@@ -274,6 +351,12 @@ module Adhearsion
             RESPONSE_PREFIX
           end
           
+          module MenuDigitResponse
+            def timed_out?
+              eql? 0.chr
+            end
+          end
+
           module SpeechEngines
             
             class InvalidSpeechEngine < Exception; end

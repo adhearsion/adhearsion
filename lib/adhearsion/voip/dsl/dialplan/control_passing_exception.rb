@@ -19,6 +19,8 @@ module Adhearsion
           end
           
         end
+      
+        class ContextNotFoundException < Exception; end
       end
     end
   end
