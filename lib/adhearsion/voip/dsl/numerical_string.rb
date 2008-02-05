@@ -1,5 +1,3 @@
-require 'adhearsion/voip/conveniences'
-
 module Adhearsion
   module VoIP
     module DSL
@@ -25,12 +23,12 @@ module Adhearsion
           undef_method m
         end
 
+        attr_reader :__real_num, :__real_string
+
         def initialize(str)
           @__real_string = str.to_s
           @__real_num = str.to_i if @__real_string =~ /^\d+$/
         end
-
-        attr_reader :__real_num, :__real_string
 
         def method_missing(name, *args, &block)
           @__real_string.__send__ name, *args, &block

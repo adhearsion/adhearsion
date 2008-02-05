@@ -1,4 +1,3 @@
-require 'adhearsion/voip/asterisk/menu_command'
 module Adhearsion
   module VoIP
     module Asterisk
@@ -153,14 +152,6 @@ module Adhearsion
         #   end
         #   call_attempt_status
         # end
-      	
-      	# See the Menu class.
-      	def menu(*args, &block)
-      	  destination_context_name = Menu.new(self, *args, &block).enter
-      	  if destination_context_name
-      	    # JUMP TO THAT CONTEXT HERE
-    	    end
-    	  end
       	
       	def say_digits(digits)
       	  validate_digits(digits)
