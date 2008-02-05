@@ -185,28 +185,21 @@ context "The menu() command's handling of context jumping" do
     @entry_point = lambda {}
   end
 
-  test "a simple, absolute match should jump the context properly" do
+  test "a simple, absolute match should jump to the context properly" do
     the_following_code do
       call = new_call_for_context :main
-      mock_dialplan_with <<-DIALPLAN
-        main {
-          menu 'hello-world' do |link|
-            link.sales   1
-            link.support 2
-          end
-        }
-        sales {
-          throw :inside_sales!
-        }
-        support {
-          throw :inside_support!
-        }
-      DIALPLAN
-      manager = new_manager_with_entry_points_loaded_from_dialplan_contexts
-      flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances do |instance|
-        instance.should_receive(:interruptable_playback).once.with('hello-world').and_return("1")
+      main_context = lambda do
+        menu 'hello-world' do |link|
+          link.sales   1
+          link.support 2
+        end
       end
-      manager.handle call
+      env = flexmock Adhearsion::DialPlan::ExecutionEnvironment.new(call, main_context)
+      
+      env.should_receive(:interruptable_play).once.with(['hello-world']).and_return("1")
+      env.should_receive(:sales).once.and_return(lambda { throw :inside_sales! })
+      env.should_receive(:support).never
+      env.run
     end.should.throw :inside_sales!
   end
   

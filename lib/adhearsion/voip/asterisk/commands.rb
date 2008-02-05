@@ -179,7 +179,9 @@ module Adhearsion
     	        # Need to check if the potential match is an exact match.
     	        pattern, context_name = potential_matches.first
     	        if pattern === result || (result =~ /^\d+$/ && pattern === result.to_i)
-    	          # It's an exact match!
+    	          new_context = send context_name rescue nil
+    	          raise LocalJumpError, "Could not find context with name '#{context_name}'!" unless new_context
+    	          raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(new_context)
   	          else
   	            # It's not an exact match! premature_timeout!
   	            menu_definitions.execute_hook_for :premature_timeout, result
