@@ -31,7 +31,9 @@ module Adhearsion
                 # No more potential matches, but there's guaranteed to be at least one exact match! If there
                 # were more than one exact matches found, we should go with the first one found.
                 return calculated_matches.first.context_name
-              elsif
+              elsif calculated_matches.exact_matches.any? && calculated_matches.potential_matches.any?
+                # There're both exact matches and potential matches. It's ambigous, so let's see if the user
+                # times out.
                 new_digit = silently_get_digit
                 if new_digit
                   # 
@@ -84,6 +86,22 @@ module Adhearsion
                 menu_definitions.execute_hook_for :premature_timeout, result
               end
               redo
+            end
+          end
+          
+          def try_matching(result)
+            calculated_matches = menu_definitions.calculate_matches result
+            if calculated_matches.exact_matches.any? && calculated_matches.potential_matches.size.zero?
+              # No more potential matches, but there's guaranteed to be at least one exact match! If there
+              # were more than one exact matches found, we should go with the first one found.
+              return calculated_matches.first.context_name
+            elsif calculated_matches.exact_matches.any? && calculated_matches.potential_matches.any?
+              # There're both exact matches and potential matches. It's ambigous, so let's see if the user
+              # times out.
+              new_digit = silently_get_digit
+              if new_digit then return try_matching(result + new_digit)
+              else # FOUND OUR MATCH!
+              end
             end
           end
           
