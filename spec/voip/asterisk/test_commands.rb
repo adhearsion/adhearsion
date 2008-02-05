@@ -181,6 +181,7 @@ context 'menu command' do
     should_throw :inside_failure_callback do
       mock_call.menu :tries => tries do |link|
         link.be_leet 1337
+        link.on(:premature_timeout) { raise "should never get here!" }
         link.on(:invalid) { times_invalid += 1 }
         link.on(:failure) { throw :inside_failure_callback }
       end
@@ -189,7 +190,24 @@ context 'menu command' do
   end
   
   test "when matches fail due to timeouts, the menu should repeat :tries times" do
-  
+    tries = 10
+    times_timed_out = 0
+    
+    tries.times do
+      pbx_should_respond_with_successful_background_response ?4
+      pbx_should_respond_with_successful_background_response ?0
+      pbx_should_respond_with_a_wait_for_digit_timeout
+    end
+    
+    should_throw :inside_failure_callback do
+      mock_call.menu :tries => tries do |link|
+        link.pattern_longer_than_our_test_input 400
+        link.on(:premature_timeout) { times_timed_out += 1 }
+        link.on(:invalid) { raise "should never get here!" }
+        link.on(:failure) { throw :inside_failure_callback }
+      end
+    end
+    times_timed_out.should.equal tries
   end
   
   test "a menu with ranges which are initially ambigous (multiple matches after the first digit)" do
@@ -342,6 +360,10 @@ context 'the MenuBuilder helper class for menu()' do
     builder.potential_matches_for(1234).size.should.equal 2
     builder.potential_matches_for(12345).size.should.equal 1
     builder.potential_matches_for(123456).size.should.equal 0
+  end
+  
+  test "multiple patterns given at once" do
+    raise NotImplementedError
   end
   
 end

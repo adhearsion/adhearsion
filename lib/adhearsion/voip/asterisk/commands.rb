@@ -184,7 +184,6 @@ module Adhearsion
   	            # It's not an exact match! premature_timeout!
   	            menu_definitions.execute_hook_for :premature_timeout, result
   	            tries_count += 1
-                puts "tries: #{tries_count}/#{max_tries}"
                 if tries_count == max_tries
                   menu_definitions.execute_hook_for :failure, result
                 else
