@@ -167,7 +167,10 @@ module Adhearsion
       	  # Using a lambda immediately call()ed so the 'redo' keyword works. It's useful!
       	  lambda do
         	  potential_matches = menu_definitions.potential_matches_for result
-        	  if potential_matches.size.zero?
+        	  multiple_matches = potential_matches.select { |(first,*rest)| first == :multiple_matches }
+        	  number_of_matches = ( potential_matches.size - multiple_matches.size +
+        	                        multiple_matches.map { |first,num,*rest| num }.sum)
+        	  if number_of_matches.zero?
         	    menu_definitions.execute_hook_for :invalid, result
         	    tries_count += 1
         	    if tries_count == max_tries
@@ -175,10 +178,10 @@ module Adhearsion
       	      else
       	        redo
     	        end
-      	    elsif potential_matches.size.equal? 1
+      	    elsif number_of_matches.equal? 1
     	        # Need to check if the potential match is an exact match.
     	        pattern, context_name = potential_matches.first
-    	        if pattern === result || (result =~ /^\d+$/ && pattern === result.to_i)
+    	        if pattern != :multiple_matches && (pattern === result || (result =~ /^\d+$/ && pattern === result.to_i))
     	          new_context = send context_name rescue nil
     	          raise LocalJumpError, "Could not find context with name '#{context_name}'!" unless new_context
     	          raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(new_context)
@@ -409,16 +412,8 @@ module Adhearsion
                     raise "block for context #{context_name}? didn't return an Array or nil!" unless matches_from_block.kind_of?(Array)
                     all_matches.concat matches_from_block.map { |match| [match, context_name] }
                   when Range
-                    matches_range = pattern.include?(result) || pattern.include?(result_string) || pattern.include?(result_numeric)
-                    matches_range ||= begin
-                      potential_match = pattern.first.to_s
-                      if result_string.length < potential_match.length
-                        potential_match.starts_with?(result_string)
-                      else
-                        potential_match == result_string
-                      end
-                    end
-                    all_matches << pattern_with_metadata if matches_range
+                    matches_in_range = pattern.to_a.select { |num| num.to_s.starts_with?(result_string) }
+                    all_matches << [:multiple_matches, [matches_in_range.size, *pattern_with_metadata]] if matches_in_range.any?
                   when Fixnum
                     all_matches << pattern_with_metadata if pattern.to_s.starts_with?(result_string)
                   when String

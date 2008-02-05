@@ -390,10 +390,14 @@ context 'the MenuBuilder helper class for menu()' do
   end
   
   test "matching with a Range should handle the case of two potential matches in the range" do
+    digits_that_begin_with_eleven = [11, 110..119, 1100..1111].map { |x| Array(x) }.flatten.size
     returning builder do |link|
-      link.big_range 11..1111 # Could be 11, 111 or 1111
+      link.big_range 11..1111
     end
-    builder.potential_matches_for(11).size.should.be >= 3
+    result = builder.potential_matches_for 11
+    
+    result.size.should.equal 1
+    result.first.last.first.should == digits_that_begin_with_eleven
   end
   
 end
