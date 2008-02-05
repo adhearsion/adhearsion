@@ -434,6 +434,23 @@ context 'the MenuBuilder helper class for menu()' do
   
 end
 
+context "A custom MatchPattern" do
+  
+  include DialplanCommandTestHelpers
+  
+  attr_reader :match_pattern_class
+  before:each do
+    @match_pattern_class = Adhearsion::VoIP::Asterisk::Commands::Menu::MatchPattern
+  end
+  
+  test "The block given to the constructor should become the matches?() method" do
+    pattern = match_pattern_class.new do |pattern|
+      throw :inside_constructor_block!
+    end
+    should_throw(:inside_constructor_block!) { pattern.matches? nil }
+  end
+end
+
 context 'say_digits command' do
   include DialplanCommandTestHelpers
   test 'Can execute the saydigits application using say_digits' do
