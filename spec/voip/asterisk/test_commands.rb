@@ -372,6 +372,23 @@ context 'the MenuBuilder helper class for menu()' do
     end
   end
   
+  test "numerical digits mixed with special digits" do
+    returning builder do |link|
+      link.one   '5*11#3'
+      link.two   '5***'
+      link.three '###'
+    end
+    builder.potential_matches_for('5').size.should.equal 2
+    builder.potential_matches_for('*').size.should.equal 2
+    builder.potential_matches_for('5**').size.should.equal 1
+    builder.potential_matches_for('5*1').size.should.equal 1
+    builder.potential_matches_for('5*11#3').size.should.equal 1
+    builder.potential_matches_for('5*11#4').size.should.equal 0
+    builder.potential_matches_for('5***').size.should.equal 1
+    builder.potential_matches_for('###').size.should.equal 1
+    builder.potential_matches_for('##*').size.should.equal 1
+  end
+  
   test "matching with a Range should handle the case of two potential matches in the range" do
     returning builder do |link|
       link.big_range 11..1111 # Could be 11, 111 or 1111
