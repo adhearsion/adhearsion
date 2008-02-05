@@ -172,7 +172,7 @@ module Adhearsion
     	        # This is our match!
     	      else
     	        # Too many matches still. We need to get another digit
-    	        result << wait_for_digit
+    	        result = "#{result}#{wait_for_digit}"
     	        redo
   	        end
 	        end.call
@@ -362,32 +362,35 @@ module Adhearsion
           	  result_string  = result.to_s
           	  result_numeric = result.to_i if result_string =~ /^\d+$/
 
-              @patterns.select do |(pattern,action_info)|
+              all_matches = []
+              @patterns.each do |pattern_with_metadata|
+                pattern, action_info = pattern_with_metadata
                 case pattern
                   when :custom
                     context_name, block = action_info
-                    returning block.call(result_string).to_a do |response|
-                      raise "block for context #{context_name}? didn't return an Array or nil!" unless response.kind_of?(Array)
-                    end
+                    matches_from_block = block.call(result_string).to_a
+                    raise "block for context #{context_name}? didn't return an Array or nil!" unless matches_from_block.kind_of?(Array)
+                    all_matches.concat matches_from_block.map { |match| [match, context_name] }
                   when Range
                     matches_range = pattern.include?(result) || pattern.include?(result_string) || pattern.include?(result_numeric)
-                    unless matches_range
+                    matches_range ||= begin
                       potential_match = pattern.first.to_s
-                      p [potential_match, result_string]
                       if result_string.length < potential_match.length
                         potential_match.starts_with?(result_string)
                       else
                         potential_match == result_string
                       end
-                    else true
                     end
+                    all_matches << pattern_with_metadata if matches_range
                   when Fixnum
-                    pattern == result_numeric
+                    all_matches << pattern_with_metadata if pattern == result_numeric
                   else
-                    pattern === result || pattern === result_string || pattern === result_numeric
+                    if pattern === result || pattern === result_string || pattern === result_numeric
+                      all_matches << pattern_with_metadata 
+                    end
                 end
               end
-        	    
+        	    all_matches
             end
             
           end

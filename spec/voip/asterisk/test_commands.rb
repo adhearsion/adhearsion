@@ -269,6 +269,19 @@ context 'the MenuBuilder helper class for menu()' do
     @builder = Adhearsion::VoIP::Asterisk::Commands::MenuBuilder.new
   end
   
+  test "three fixnums that obviously don't conflict" do
+    returning builder do |link|
+      link.one   1
+      link.two   2
+      link.three 3
+    end
+    [[1,2,3,4,'#'], [1,1,1,0,0]].transpose.each do |(input,expected_matches)|
+      potential_matches = builder.potential_matches_for input
+      # p "Input #{input.inspect} should match #{expected_matches} times. This was returned: #{potential_matches.inspect}"
+      potential_matches.size.should.equal expected_matches
+    end
+  end
+  
   # FUCK. DIFFERENT TYPES OF MATCHES:
   # fixnum, range, regexp, custom
   test 'a Fixnum exact match conflicting with a Range that would ultimately match' do
@@ -278,19 +291,6 @@ context 'the MenuBuilder helper class for menu()' do
     end
     matches = builder.potential_matches_for 1
     matches.size.should.equal 2
-  end
-  
-  test "three fixnums that obviously don't match" do
-    returning builder do |link|
-      link.one   1
-      link.two   2
-      link.three 3
-    end
-    builder.potential_matches_for(1).size.should.equal 1
-    builder.potential_matches_for(2).size.should.equal 1
-    builder.potential_matches_for(3).size.should.equal 1
-    builder.potential_matches_for(4).size.should.equal 0
-    builder.potential_matches_for('#').size.should.equal 0
   end
   
   test "matching the special DTMF characters such as * and #" do
@@ -320,10 +320,9 @@ context 'the MenuBuilder helper class for menu()' do
   test "custom blocks" do
     strange_use_case = %w[321 4321 54321]
     returning builder do |link|
-      link.arbitrary? { |str| strange_use_case.select { |num| num.reverse == str } }
+      link.arbitrary? { |str| strange_use_case.select { |num| num.reverse.starts_with?(str) } }
     end
-    match = builder.potential_matches_for(1)
-    p match
+    match = builder.potential_matches_for 1
     match.size.should.equal 3
     builder.potential_matches_for(12).size.should.equal 3
     builder.potential_matches_for(123).size.should.equal 3
