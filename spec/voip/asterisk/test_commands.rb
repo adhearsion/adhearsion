@@ -167,7 +167,7 @@ context 'menu command' do
     pbx_should_respond_with_a_wait_for_digit_timeout
     should_throw :inside_timeout do
       mock_call.menu :timeout => 1 do |link|
-        link.foobar? { [1,2,3] }
+        link.something 12345
         link.on(:premature_timeout) { throw :inside_timeout }
       end
     end
@@ -180,15 +180,6 @@ context 'menu command' do
     mock_call.menu do |link|
       link.ambiguous_first  100..10000000
       link.ambiguous_second 1..20
-    end
-  end
-  
-  test "should play the sound files in sequence" do
-    3.times { pbx_should_respond_with_successful_background_response }
-    pbx_should_respond_with_a_wait_for_digit_timeout
-    mock_call.menu 'one', 'two', 'three' do |link|
-      link.foobar? { [1,2,3] }
-      
     end
   end
   
@@ -322,8 +313,7 @@ context 'the MenuBuilder helper class for menu()' do
     returning builder do |link|
       link.arbitrary? { |str| strange_use_case.select { |num| num.reverse.starts_with?(str) } }
     end
-    match = builder.potential_matches_for 1
-    match.size.should.equal 3
+    builder.potential_matches_for(1).size.should.equal 3
     builder.potential_matches_for(12).size.should.equal 3
     builder.potential_matches_for(123).size.should.equal 3
     builder.potential_matches_for(1234).size.should.equal 2
