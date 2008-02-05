@@ -154,7 +154,43 @@ context 'menu command' do
     end
   end
   
-  test ""
+  test "invoke :invalid callback when an invalid extension was entered" do
+    pbx_should_respond_with_successful_background_response ?5
+    pbx_should_respond_with_successful_background_response ?5
+    pbx_should_respond_with_successful_background_response ?5
+    should_throw :inside_invalid_callback do
+      mock_call.menu do |link|
+        link.onetwothree 123
+        link.on(:invalid) { throw :inside_invalid_callback }
+      end
+    end
+  end
+  
+  test "invoke :failure callback when all tries elapse" do
+    
+  end
+  
+  test "when matches fail due to invalid input, the menu should repeat :tries times" do
+    tries = 10
+    times_invalid = 0
+    
+    tries.times do
+      pbx_should_respond_with_successful_background_response ?0
+    end
+    
+    should_throw :inside_failure_callback do
+      mock_call.menu :tries => tries do |link|
+        link.be_leet 1337
+        link.on(:invalid) { times_invalid += 1 }
+        link.on(:failure) { throw :inside_failure_callback }
+      end
+    end
+    times_invalid.should.equal tries
+  end
+  
+  test "when matches fail due to timeouts, the menu should repeat :tries times" do
+  
+  end
   
   test "a menu with ranges which are initially ambigous (multiple matches after the first digit)" do
     pbx_should_respond_with_successful_background_response ?1
@@ -170,18 +206,11 @@ context 'menu command' do
     raise NotImplementedError
   end
   
-  test "should work with no arguments at all"
-  test "should not play subsequent sound files after a digit is pressed"
   test "should default the timeout to five seconds"
-  test "record arbitrary names given to the yielded object"
-  test "invoke blocks given to methods with a question mark on the end of them"
   test "invoke the dialplan context when no other extensions could possibly match the string"
   test "not invoke a dialplan context when multiple potential matches exist"
   test "invoke a dialplan context that matches exactly, despite other potential matches, when a timeout is encountered"
   test "invoke the dialplan context given before a question mark if the block evaluates to true"
-  test "should perform the IVR logic n times, where n is the value of the :tries Hash-key argument"
-  test "on:invalid must be executed when the user enters a series of digits that don't match anything"
-  test "on:failure must be executed when all tries have elapsed"
   test "on:invalid should be executed before on:failure"
   test "the 'extension' dialplan variable should be redefined when menu() jumps to a new context"
   test "should redefine the extension variable in the dialplan's scope"

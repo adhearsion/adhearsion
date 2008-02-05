@@ -157,7 +157,7 @@ module Adhearsion
       	  options = sound_files.last.kind_of?(Hash) ? sound_files.pop : {}
       	  timeout = options[:timeout] || 5.seconds
       	  max_tries   = options[:tries] || 1
-      	  tries_count = 1
+      	  tries_count = 0
       	  menu_definitions = MenuBuilder.new
       	  
       	  yield menu_definitions
@@ -169,6 +169,12 @@ module Adhearsion
         	  potential_matches = menu_definitions.potential_matches_for result
         	  if potential_matches.size.zero?
         	    menu_definitions.execute_hook_for :invalid, result
+        	    tries_count += 1
+        	    if tries_count == max_tries
+                menu_definitions.execute_hook_for :failure, result
+      	      else
+      	        redo
+    	        end
       	    elsif potential_matches.size.equal? 1
     	        # Need to check if the potential match is an exact match.
     	        pattern, context_name = potential_matches.first
@@ -177,6 +183,13 @@ module Adhearsion
   	          else
   	            # It's not an exact match! premature_timeout!
   	            menu_definitions.execute_hook_for :premature_timeout, result
+  	            tries_count += 1
+                puts "tries: #{tries_count}/#{max_tries}"
+                if tries_count == max_tries
+                  menu_definitions.execute_hook_for :failure, result
+                else
+                  redo
+                end
 	            end
     	      else
     	        # Too many potential_matches still. We need to get another digit
