@@ -142,31 +142,31 @@ context 'menu command' do
   
   include DialplanCommandTestHelpers
   
-  test "invoke :premature_timeout when a timeout is encountered" do
+  test "invoke on_premature_timeout when a timeout is encountered" do
     pbx_should_respond_with_successful_background_response ?9
     pbx_should_respond_with_a_wait_for_digit_timeout
     
     should_throw :inside_timeout do
       mock_call.menu :timeout => 1 do |link|
         link.something 999
-        link.on(:premature_timeout) { throw :inside_timeout }
+        link.on_premature_timeout { throw :inside_timeout }
       end
     end
   end
   
-  test "invoke :invalid callback when an invalid extension was entered" do
+  test "invoke on_invalid callback when an invalid extension was entered" do
     pbx_should_respond_with_successful_background_response ?5
     pbx_should_respond_with_successful_background_response ?5
     pbx_should_respond_with_successful_background_response ?5
     should_throw :inside_invalid_callback do
       mock_call.menu do |link|
         link.onetwothree 123
-        link.on(:invalid) { throw :inside_invalid_callback }
+        link.on_invalid { throw :inside_invalid_callback }
       end
     end
   end
   
-  test "invoke :failure callback when all tries elapse" do
+  test "invoke on_failure callback when all tries elapse" do
     
   end
   
@@ -181,9 +181,9 @@ context 'menu command' do
     should_throw :inside_failure_callback do
       mock_call.menu :tries => tries do |link|
         link.be_leet 1337
-        link.on(:premature_timeout) { raise "should never get here!" }
-        link.on(:invalid) { times_invalid += 1 }
-        link.on(:failure) { throw :inside_failure_callback }
+        link.on_premature_timeout { raise "should never get here!" }
+        link.on_invalid { times_invalid += 1 }
+        link.on_failure { throw :inside_failure_callback }
       end
     end
     times_invalid.should.equal tries
@@ -202,9 +202,9 @@ context 'menu command' do
     should_throw :inside_failure_callback do
       mock_call.menu :tries => tries do |link|
         link.pattern_longer_than_our_test_input 400
-        link.on(:premature_timeout) { times_timed_out += 1 }
-        link.on(:invalid) { raise "should never get here!" }
-        link.on(:failure) { throw :inside_failure_callback }
+        link.on_premature_timeout { times_timed_out += 1 }
+        link.on_invalid { raise "should never get here!" }
+        link.on_failure { throw :inside_failure_callback }
       end
     end
     times_timed_out.should.equal tries
@@ -217,12 +217,12 @@ context 'menu command' do
   
   test "should work when no files are given to be played and a timeout is reached on the first digit" do
     timeout = 12
-    [:premature_timeout, :failure].each do |usage_case|
+    [:on_premature_timeout, :on_failure].each do |usage_case|
       should_throw :got_here! do
         mock_call.should_receive(:wait_for_digit).once.with(timeout).and_return nil # Simulates timeout
         mock_call.menu :timeout => timeout do |link|
           link.foobar 0
-          link.on(usage_case) { throw :got_here! }
+          link.__send__(usage_case) { throw :got_here! }
         end
       end
     end

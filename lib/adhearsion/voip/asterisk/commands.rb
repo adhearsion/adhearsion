@@ -380,13 +380,19 @@ module Adhearsion
               callback.call input if callback
             end
             
-            def on(symbol, &block)
+            def on_invalid(&block)
               raise LocalJumpError, "Must supply a block!" unless block_given?
-              if supported_hooks.include? symbol
-                @menu_callbacks[symbol] = block
-              else
-                raise "Unsupported event hook #{symbol.inspect}"
-              end
+              @menu_callbacks[:invalid] = block
+            end
+            
+            def on_premature_timeout(&block)
+              raise LocalJumpError, "Must supply a block!" unless block_given?
+              @menu_callbacks[:premature_timeout] = block
+            end
+            
+            def on_failure(&block)
+              raise LocalJumpError, "Must supply a block!" unless block_given?
+              @menu_callbacks[:failure] = block
             end
             
             def potential_matches_for(result)
@@ -424,11 +430,6 @@ module Adhearsion
                 end
               end
         	    all_matches
-            end
-            
-            private
-            def supported_hooks
-              [:premature_timeout, :invalid, :failure]
             end
             
           end
