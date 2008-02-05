@@ -210,18 +210,22 @@ context 'menu command' do
     times_timed_out.should.equal tries
   end
   
-  test "a menu with ranges which are initially ambigous (multiple matches after the first digit)" do
-    pbx_should_respond_with_successful_background_response ?1
-    pbx_should_respond_with_successful_background_response ?0
-    pbx_should_respond_with_successful_background_response ?5
-    
-    # MOCK OUT THE CONTEXTS HERE
-    
-    mock_call.menu do |link|
-      link.ambiguous_first  100..10000000
-      link.ambiguous_second 1..20
+  test "should invoke wait_for_digit instead of interruptable_play when no sound files are given" do
+    mock_call.should_receive(:wait_for_digit).once.with(5.seconds).and_return '#'
+    mock_call.menu { |link| link.does_not_match 3 }
+  end
+  
+  test "should work when no files are given to be played and a timeout is reached on the first digit" do
+    timeout = 12
+    [:premature_timeout, :failure].each do |usage_case|
+      should_throw :got_here! do
+        mock_call.should_receive(:wait_for_digit).once.with(timeout).and_return nil # Simulates timeout
+        mock_call.menu :timeout => timeout do |link|
+          link.foobar 0
+          link.on(usage_case) { throw :got_here! }
+        end
+      end
     end
-    raise NotImplementedError
   end
   
   test "should default the timeout to five seconds"
@@ -363,7 +367,15 @@ context 'the MenuBuilder helper class for menu()' do
   end
   
   test "multiple patterns given at once" do
-    raise NotImplementedError
+    returning builder do |link|
+      link.multiple_patterns 1,2,3,4,5,6,7,8,9
+      link.multiple_patterns 100..199, 200..299, 300..399, 400..499, 500..599,
+                             600..699, 700..799, 800..899, 900..999
+    end
+    1.upto 9 do |num|
+      builder.potential_matches_for(num).size.should.equal 2
+      builder.potential_matches_for((num * 100) + 5).size.should.equal 1
+    end
   end
   
 end

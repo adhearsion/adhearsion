@@ -122,7 +122,7 @@ context "ExecutionEnvironemnt" do
   include DialplanTestingHelper
 
   before do
-    variables = { :context => "zomgzlols", :callerid => "Ponce de Leon" }
+    variables = { :context => "zomgzlols", :caller_id => "Ponce de Leon" }
     @call = Adhearsion::Call.new(nil, variables)
     @entry_point = lambda {}
   end
@@ -171,6 +171,46 @@ context "ExecutionEnvironemnt" do
     end
   end
   
+end
+
+context "The menu() command's handling of context jumping" do
+  
+  attr_accessor :call, :entry_point
+  
+  include DialplanTestingHelper
+
+  before do
+    variables = { :context => "zomgzlols", :caller_id => "Ponce de Leon" }
+    @call = Adhearsion::Call.new(nil, variables)
+    @entry_point = lambda {}
+  end
+
+  test "a simple, absolute match should jump the context properly" do
+    the_following_code do
+      call = new_call_for_context :main
+      mock_dialplan_with <<-DIALPLAN
+        main {
+          menu 'hello-world' do |link|
+            link.sales   1
+            link.support 2
+          end
+        }
+        sales {
+          throw :inside_sales!
+        }
+        support {
+          throw :inside_support!
+        }
+      DIALPLAN
+      manager = new_manager_with_entry_points_loaded_from_dialplan_contexts
+      flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances do |instance|
+        instance.should_receive(:interruptable_playback).once.with('hello-world').and_return("1")
+      end
+      manager.handle call
+    end.should.throw :inside_sales!
+  end
+  
+
 end
 
 context "Dialplan control statements" do

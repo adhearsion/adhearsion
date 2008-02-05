@@ -162,7 +162,7 @@ module Adhearsion
       	  
       	  yield menu_definitions
       	  
-      	  result = interruptable_play sound_files
+      	  result = sound_files.any? ? interruptable_play(sound_files) : wait_for_digit(timeout)
       	  
       	  # Using a lambda immediately call()ed so the 'redo' keyword works. It's useful!
       	  lambda do
