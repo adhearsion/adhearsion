@@ -142,28 +142,7 @@ context 'menu command' do
   
   include DialplanCommandTestHelpers
   
-  # Just here for reference
-  lambda do
-    menu sound_files, :tries => 3, :timeout => 10  do |link|
-      link.sales 1
-      link.tech_support 2
-      link.finance 3
-      link.employee? { |str| @search = Employee.with_extension_like str }
-      link.conferences 1_000...10_000
-      link.on :premature_timeout do |str|
-        # Say: Are you still there? Please enter a digit.
-      end
-      link.on :invalid do |str|
-      
-      end
-      link.on :failure do |str|
-      
-      end
-    end
-  end
-  
-  test "invoke on_timeout() when a timeout is encountered" do
-    puts "this one's a bitch"
+  test "invoke :premature_timeout when a timeout is encountered" do
     pbx_should_respond_with_successful_background_response ?9
     pbx_should_respond_with_a_wait_for_digit_timeout
     
@@ -175,14 +154,20 @@ context 'menu command' do
     end
   end
   
-  test "that this doesn't break !!!!!!!!" do
+  test ""
+  
+  test "a menu with ranges which are initially ambigous (multiple matches after the first digit)" do
     pbx_should_respond_with_successful_background_response ?1
     pbx_should_respond_with_successful_background_response ?0
     pbx_should_respond_with_successful_background_response ?5
+    
+    # MOCK OUT THE CONTEXTS HERE
+    
     mock_call.menu do |link|
       link.ambiguous_first  100..10000000
       link.ambiguous_second 1..20
     end
+    raise NotImplementedError
   end
   
   test "should work with no arguments at all"
@@ -233,7 +218,7 @@ context 'interruptable_play command' do
       pbx_should_respond_with_success digit
     end
     
-    files = (100..105).map &:to_s
+    files = (100..105).map(&:to_s)
     mock_call.send(:interruptable_play, *files).should == '3'
   end
   
@@ -276,8 +261,6 @@ context 'the MenuBuilder helper class for menu()' do
     end
   end
   
-  # FUCK. DIFFERENT TYPES OF MATCHES:
-  # fixnum, range, regexp, custom
   test 'a Fixnum exact match conflicting with a Range that would ultimately match' do
     returning builder do |link|
       link.single_digit 1
@@ -566,7 +549,7 @@ BEGIN {
     private
 
       def should_throw(sym=nil,&block)
-        block.should.throw *[sym].compact
+        block.should.throw(*[sym].compact)
       end
 
       def mock_route_calculation_with(*definitions)

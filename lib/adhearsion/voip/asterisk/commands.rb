@@ -174,16 +174,13 @@ module Adhearsion
     	        pattern, context_name = potential_matches.first
     	        if pattern === result || (result =~ /^\d+$/ && pattern === result.to_i)
     	          # It's an exact match!
-    	          
   	          else
   	            # It's not an exact match! premature_timeout!
   	            menu_definitions.execute_hook_for :premature_timeout, result
 	            end
-    	        puts "ONE MATCH OF #{result.inspect} == #{potential_matches.first.inspect}"
     	      else
     	        # Too many potential_matches still. We need to get another digit
     	        new_input = wait_for_digit timeout
-    	        puts "new input: #{new_input.inspect}"
     	        if new_input
       	        result = "#{result}#{new_input}"
   	          else
@@ -371,7 +368,7 @@ module Adhearsion
             
             def on(symbol, &block)
               raise LocalJumpError, "Must supply a block!" unless block_given?
-              if [:premature_timeout, :invalid, :failure].include? symbol
+              if supported_hooks.include? symbol
                 @menu_callbacks[symbol] = block
               else
                 raise "Unsupported event hook #{symbol.inspect}"
@@ -411,6 +408,11 @@ module Adhearsion
                 end
               end
         	    all_matches
+            end
+            
+            private
+            def supported_hooks
+              [:premature_timeout, :invalid, :failure]
             end
             
           end
