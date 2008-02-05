@@ -2,6 +2,9 @@ module Adhearsion
   module VoIP
     module Asterisk
       module Commands
+        
+        require 'adhearsion/voip/asterisk/menu_command/menu_class'
+        
         TONES = {
           :busy   => "480+620/500,0/500",
           :dial   => "440+480/2000,0/4000",
@@ -308,7 +311,7 @@ module Adhearsion
             context_lambda = begin
               send context_name
             rescue NameError
-              raise ContextNotFoundException
+              raise Adhearsion::VoIP::DSL::Dialplan::ContextNotFoundException
             end
             raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(context_lambda)
           end

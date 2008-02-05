@@ -373,8 +373,24 @@ context "the Menu class's high-level judgment" do
     111.should === mock_call.extension
   end
   
-end
+  test 'should match things in a range when there are many other non-matching patterns' do
+    pbx_should_respond_with_successful_background_response ?9
+    pbx_should_respond_with_successful_background_response ?9
+    pbx_should_respond_with_successful_background_response ?5
+    
+    mock_call.should_receive(:conferences).and_return(lambda { throw :got_here! })
 
+    should_pass_control_to_a_context_that_throws :got_here! do
+      mock_call.menu do |link|
+        link.sales        1
+        link.tech_support 2
+        link.finance      3
+        link.conferences  900..999
+      end
+    end
+  end
+  
+end
 
 context 'the MenuBuilder' do
   
