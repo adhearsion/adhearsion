@@ -208,6 +208,11 @@ context 'background command' do
     digits.map  { |digit| mock_call.send(:background, file) }.should == digits.map(&:chr)
   end
   
+  test "should return nil if no digit was pressed" do
+    pbx_should_respond_with_success 0
+    mock_call.send(:background, 'foobar').should.equal nil
+  end
+  
 end
 
 context 'say_digits command' do
