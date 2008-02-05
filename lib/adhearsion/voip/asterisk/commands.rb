@@ -175,6 +175,12 @@ module Adhearsion
 
         private
         
+          def wait_for_digit(timeout=-1)
+            timeout *= 1_000 if timeout != -1
+            result = result_digit_from raw_response("WAIT FOR DIGIT #{timeout.to_i}")
+            (result == 0.chr) ? nil : result
+          end
+        
           def interruptable_play(*files)
             files.each do |file|
               result = result_digit_from raw_response("EXEC BACKGROUND #{file}")

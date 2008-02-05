@@ -225,6 +225,17 @@ context 'interruptable_play command' do
   
 end
 
+context 'wait_for_digit command' do
+  
+  include DialplanCommandTestHelpers
+  
+  test "the timeout given must be converted to milliseconds" do
+    pbx_should_respond_with_success 0
+    mock_call.send(:wait_for_digit, 1)
+    output.messages.first.ends_with?('1000').should.equal true
+  end
+end
+
 context 'say_digits command' do
   include DialplanCommandTestHelpers
   test 'Can execute the saydigits application using say_digits' do
@@ -435,6 +446,7 @@ BEGIN {
     end
     
     class MockSocket
+
       def print(message)
         messages << message
       end
@@ -447,10 +459,9 @@ BEGIN {
         read
       end
 
-      private    
-        def messages
-          @messages ||= []
-        end
+      def messages
+        @messages ||= []
+      end
     end
     
     
