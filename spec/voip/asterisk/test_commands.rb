@@ -166,10 +166,6 @@ context 'menu command' do
     end
   end
   
-  test "invoke on_failure callback when all tries elapse" do
-    
-  end
-  
   test "when matches fail due to invalid input, the menu should repeat :tries times" do
     tries = 10
     times_invalid = 0
@@ -236,8 +232,44 @@ context 'menu command' do
     mock_call.menu { |link| link.foobar 22 }
   end
   
+  test "should jump to a context when a timeout is encountered and there is at least one exact match" do
+    pbx_should_respond_with_successful_background_response ?5
+    pbx_should_respond_with_successful_background_response ?4
+    pbx_should_respond_with_a_wait_for_digit_timeout
+    
+    main = lambda { throw :inside_main! }
+    mock_call.should_receive(:main).once.and_return(main)
+    should_throw :inside_main! do
+      mock_call.menu do |link|
+        link.main  54
+        link.other 543
+      end
+    end
+  end
+  
+  test "should match things in ambiguous ranges properly" do
+    pbx_should_respond_with_successful_background_response ?1
+    pbx_should_respond_with_successful_background_response ?1
+    pbx_should_respond_with_successful_background_response ?1
+    pbx_should_respond_with_a_wait_for_digit_timeout
+
+    main = lambda {
+      extension.should === 111
+      throw :got_here!
+    }
+    mock_call.should_receive(:main).and_return main
+    
+    should_throw :got_here! do
+      mock_call.menu do |link|
+        link.main 11..11111
+      end
+    end
+    
+  end
+  
   test "invoke a dialplan context that matches exactly, despite other potential matches, when a timeout is encountered"
   test "the 'extension' dialplan variable should be redefined when menu() jumps to a new context"
+  test "when the 'extension' variable is changed, it should be an instance of PhoneNumber"
 
 end
 

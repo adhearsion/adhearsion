@@ -167,9 +167,10 @@ module Adhearsion
       	  # Using a lambda immediately call()ed so the 'redo' keyword works. It's useful!
       	  lambda do
         	  potential_matches = menu_definitions.potential_matches_for result
-        	  multiple_matches = potential_matches.select { |(first,*rest)| first == :multiple_matches }
+        	  multiple_matches  = potential_matches.select { |(first,*rest)| first == :multiple_matches }
         	  number_of_matches = ( potential_matches.size - multiple_matches.size +
-        	                        multiple_matches.map { |first,num,*rest| num }.sum)
+        	                        multiple_matches.map { |first,(num,*rest)| num }.sum)
+            puts "result: #{number_of_matches} matches in the range."
         	  if number_of_matches.zero?
         	    menu_definitions.execute_hook_for :invalid, result
         	    tries_count += 1
@@ -199,7 +200,7 @@ module Adhearsion
     	        # Too many potential_matches still. We need to get another digit
     	        new_input = wait_for_digit timeout
     	        if new_input
-      	        result = "#{result}#{new_input}"
+      	        result = result.to_s + new_input.to_s
   	          else
   	            menu_definitions.execute_hook_for :premature_timeout, result
   	          end
@@ -256,6 +257,7 @@ module Adhearsion
           end
           
           def result_digit_from(response_string)
+            raise ArgumentError, "Can't coerce nil into AGI response! This could be a bug!" unless response_string
             digit = response_string[/^#{response_prefix}(-?\d+(\.\d+)?)/,1]
             digit.to_i.chr if digit
           end
