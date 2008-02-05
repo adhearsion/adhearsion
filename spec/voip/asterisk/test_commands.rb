@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + "/../../test_helper"  
+require File.dirname(__FILE__) + "/../../test_helper"
 
 context 'Asterisk VoIP Commands' do
   include DialplanCommandTestHelpers
@@ -167,7 +167,7 @@ context 'menu command' do
     pbx_should_respond_with_a_wait_for_digit_timeout
     should_throw :inside_timeout do
       mock_call.menu :timeout => 1 do |link|
-        link.foobar?    { [1,2,3] }
+        link.foobar? { [1,2,3] }
         link.on(:premature_timeout) { throw :inside_timeout }
       end
     end
@@ -260,6 +260,78 @@ context 'wait_for_digit command' do
     mock_call.send(:wait_for_digit, 1)
     output.messages.first.ends_with?('1000').should.equal true
   end
+end
+
+context 'the MenuBuilder helper class for menu()' do
+  
+  attr_reader :builder
+  before:each do
+    @builder = Adhearsion::VoIP::Asterisk::Commands::MenuBuilder.new
+  end
+  
+  # FUCK. DIFFERENT TYPES OF MATCHES:
+  # fixnum, range, regexp, custom
+  test 'a Fixnum exact match conflicting with a Range that would ultimately match' do
+    returning builder do |link|
+      link.single_digit 1
+      link.range 100..200
+    end
+    matches = builder.potential_matches_for 1
+    matches.size.should.equal 2
+  end
+  
+  test "three fixnums that obviously don't match" do
+    returning builder do |link|
+      link.one   1
+      link.two   2
+      link.three 3
+    end
+    builder.potential_matches_for(1).size.should.equal 1
+    builder.potential_matches_for(2).size.should.equal 1
+    builder.potential_matches_for(3).size.should.equal 1
+    builder.potential_matches_for(4).size.should.equal 0
+    builder.potential_matches_for('#').size.should.equal 0
+  end
+  
+  test "matching the special DTMF characters such as * and #" do
+    returning builder do |link|
+      link.asterisk '*'
+      link.pound    '#'
+    end
+    builder.potential_matches_for('*').size.should.equal 1
+    builder.potential_matches_for('#').size.should.equal 1
+    builder.potential_matches_for(1).size.should.equal 0
+  end
+  
+  test "conflicting ranges" do
+    returning builder do |link|
+      link.hundreds     100...200
+      link.thousands    1_000...2_000
+      link.tenthousands 10_000...20_000
+    end
+    builder.potential_matches_for(1).size.should.equal 3
+    builder.potential_matches_for(10).size.should.equal 3
+    builder.potential_matches_for(100).size.should.equal 3
+    builder.potential_matches_for(1_000).size.should.equal 2
+    builder.potential_matches_for(10_000).size.should.equal 1
+    builder.potential_matches_for(100_000).size.should.equal 0
+  end
+  
+  test "custom blocks" do
+    strange_use_case = %w[321 4321 54321]
+    returning builder do |link|
+      link.arbitrary? { |str| strange_use_case.select { |num| num.reverse == str } }
+    end
+    match = builder.potential_matches_for(1)
+    p match
+    match.size.should.equal 3
+    builder.potential_matches_for(12).size.should.equal 3
+    builder.potential_matches_for(123).size.should.equal 3
+    builder.potential_matches_for(1234).size.should.equal 2
+    builder.potential_matches_for(12345).size.should.equal 1
+    builder.potential_matches_for(123456).size.should.equal 0
+  end
+  
 end
 
 context 'say_digits command' do

@@ -18,7 +18,7 @@ end
 require_or_report_dependency('test/spec', 'test-spec')
 require_or_report_dependency('flexmock/test_unit', 'flexmock')
 require_or_report_dependency('active_support', 'activesupport')
-require_or_report_dependency('ruby-debug', 'ruby-debug')
+# require_or_report_dependency('ruby-debug', 'ruby-debug')
 require_or_report_dependency('rubigen', 'rubigen')
 
 require 'pp'

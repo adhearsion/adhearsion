@@ -163,16 +163,19 @@ module Adhearsion
       	  
       	  result = interruptable_play sound_files
       	  
-      	  begin
-        	  match = menu_definitions.matches_for result
-        	  if match.kind_of? Symbol
-        	    puts "EXECUTING CONTEXT NAMED #{match.inspect}"
-      	    elsif match == 0
-      	      # NO MATCH. DO INVALID
+      	  # Using a lambda immediately call()ed so the 'redo' keyword works. It's useful!
+      	  lambda do
+        	  matches = menu_definitions.potential_matches_for result
+        	  if matches.size.zero?
+        	    # Invalid!
+      	    elsif matches.size.equal? 1
+    	        # This is our match!
     	      else
-    	        # NEED ANOTHER DIGIT. GO TO WAIT FOR DIGIT
+    	        # Too many matches still. We need to get another digit
+    	        result << wait_for_digit
+    	        redo
   	        end
-	        end
+	        end.call
     	  end
       	
       	def say_digits(digits)
@@ -331,13 +334,18 @@ module Adhearsion
             attr_reader :hook_premature_timeout, :hook_invalid, :hook_failure
             
             def initialize
-              @patterns = {}
+              @patterns = []
             end
             
-            def method_missing(name, *patterns)
-              patterns.each do |pattern|
-                @patterns[pattern] = name
+            def method_missing(name, *patterns, &block)
+              name_string = name.to_s
+              if patterns.empty? && name_string.ends_with?('?')
+                @patterns << [:custom, [name_string.chop.to_sym, block]]
+              elsif !patterns.empty? && !block_given?
+                @patterns.concat patterns.map { |pattern| [pattern, name] }
+              else raise ArgumentError
               end
+              
               nil
             end
             
@@ -350,23 +358,35 @@ module Adhearsion
               end
             end
             
-            def matches_for(result)
+            def potential_matches_for(result)
           	  result_string  = result.to_s
           	  result_numeric = result.to_i if result_string =~ /^\d+$/
 
-          	  @patterns.inject(0) do |match_or_count,(pattern,context_name)|
-          	    # Break when the second match is found. If there exists more than exactly one
-          	    # match, then it's abiguous and more digits are needed. If there're two matches,
-          	    # it's unnecessary to continue trying other matches.
-          	    if pattern === result || pattern === result_string || pattern === result_numeric
-          	      if match_or_count.kind_of? Symbol
-          	        break 2
-        	        elsif match_or_count == 0
-        	          context_name
-      	          end
-        	      else match_or_count
-      	        end
-        	    end
+              @patterns.select do |(pattern,action_info)|
+                case pattern
+                  when :custom
+                    context_name, block = action_info
+                    returning block.call(result_string).to_a do |response|
+                      raise "block for context #{context_name}? didn't return an Array or nil!" unless response.kind_of?(Array)
+                    end
+                  when Range
+                    matches_range = pattern.include?(result) || pattern.include?(result_string) || pattern.include?(result_numeric)
+                    unless matches_range
+                      potential_match = pattern.first.to_s
+                      p [potential_match, result_string]
+                      if result_string.length < potential_match.length
+                        potential_match.starts_with?(result_string)
+                      else
+                        potential_match == result_string
+                      end
+                    else true
+                    end
+                  when Fixnum
+                    pattern == result_numeric
+                  else
+                    pattern === result || pattern === result_string || pattern === result_numeric
+                end
+              end
         	    
             end
             
