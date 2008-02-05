@@ -138,6 +138,64 @@ context 'input command' do
   end
 end
 
+context 'menu command' do
+  
+  include DialplanCommandTestHelpers
+  
+  # Just here for reference
+  lambda do
+    menu sound_files, :tries => 3, :timeout => 10  do |link|
+      link.sales 1
+      link.tech_support 2
+      link.finance 3
+      link.employee? { |str| @search = Employee.with_extension_like str }
+      link.conferences 1_000...10_000
+      link.on :premature_timeout do |str|
+        # Say: Are you still there? Please enter a digit.
+      end
+      link.on :invalid do |str|
+      
+      end
+      link.on :failure do |str|
+      
+      end
+    end
+  end
+  
+  test "invoke on_timeout() when a timeout is encountered" do
+    pbx_should_respond_with_successful_background_response
+    pbx_should_respond_with_a_wait_for_digit_timeout
+    should_throw :inside_timeout do
+      mock_call.menu :timeout => 1 do |link|
+        link.foobar?    { [1,2,3] }
+        link.on(:timeout) { throw :inside_timeout }
+      end
+    end
+  end
+  
+  test "should play the sound files in sequence" do
+    3.times { pbx_should_respond_with_successful_background_response }
+    pbx_should_respond_with_a_wait_for_digit_timeout
+    mock_call.menu 'one', 'two', 'three' do |link|
+      link.foobar? { [1,2,3] }
+      
+    end
+  end
+  test "should work with no arguments at all"
+  test "should not play subsequent sound files after a digit is pressed"
+  test "should default the timeout to five seconds"
+  test "record arbitrary names given to the yielded object"
+  test "invoke blocks given to methods with a question mark on the end of them"
+  test "invoke the dialplan context when no other extensions could possibly match the string"
+  test "not invoke a dialplan context when multiple potential matches exist"
+  test "invoke a dialplan context that matches exactly, despite other potential matches, when a timeout is encountered"
+  test "invoke the dialplan context given before a question mark if the block evaluates to true"
+  test "should perform the IVR logic n times, where n is the value of the :tries Hash-key argument"
+  test "on:invalid must be executed when the user enters a series of digits that don't match anything"
+  test "on:failure must be executed when all tries have elapsed"
+  test "on:invalid should be executed before on:failure"
+end
+
 context 'say_digits command' do
   include DialplanCommandTestHelpers
   test 'Can execute the saydigits application using say_digits' do
@@ -369,6 +427,10 @@ BEGIN {
     
     private
 
+      def should_throw(sym=nil,&block)
+        block.should.throw *[sym].compact
+      end
+
       def mock_route_calculation_with(*definitions)
         flexmock(Adhearsion::VoIP::DSL::DialingDSL).should_receive(:calculate_routes_for).and_return(definitions)
       end
@@ -405,6 +467,11 @@ BEGIN {
         pbx_should_respond_with(pbx_failure_response(failure_code))
       end
 
+      def pbx_should_respond_with_successful_background_response(digit=0)
+        pbx_should_respond_with_success digit.kind_of?(String) ? digit[0] : digit
+      end
+      alias pbx_should_respond_with_a_wait_for_digit_timeout pbx_should_respond_with_successful_background_response
+      
       def pbx_success_response(success_code = nil)
         "200 result=#{success_code || default_success_code}"
       end

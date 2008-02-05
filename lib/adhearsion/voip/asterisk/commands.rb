@@ -153,6 +153,10 @@ module Adhearsion
         #   call_attempt_status
         # end
       	
+      	def menu(*args, &block)
+      	  
+    	  end
+      	
       	def say_digits(digits)
       	  validate_digits(digits)
       	  execute("saydigits #{digits}")
@@ -193,7 +197,11 @@ module Adhearsion
           def extract_input_from(result)
             return false if error?(result)
             # return false if input_timed_out?(result)
-            result[/^#{response_prefix}([\d*]+)/, 1]
+            
+            # This regexp doesn't match if there was a timeout with no
+            # inputted digits, therefore returning nil.
+            
+            result[/^#{response_prefix}([\d*]+)/, 1] 
           end
           
           def extract_variable_from(result)
@@ -239,7 +247,7 @@ module Adhearsion
           # timeout without pressed digits: 200 result= (timeout)
           # (http://www.voip-info.org/wiki/view/get+data)
           def input_timed_out?(result)
-            result[/^#{response_prefix}\d*\s\(timeout\)/]
+            result.starts_with?(response_prefix) && result.ends_with?('(timeout)')
           end
           
           def io
