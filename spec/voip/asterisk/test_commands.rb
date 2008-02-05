@@ -322,7 +322,7 @@ context 'the MenuBuilder helper class for menu()' do
   
   attr_reader :builder
   before:each do
-    @builder = Adhearsion::VoIP::Asterisk::Commands::MenuBuilder.new
+    @builder = Adhearsion::VoIP::Asterisk::Commands::Menu::MenuBuilder.new
   end
   
   test "three fixnums that obviously don't conflict" do
