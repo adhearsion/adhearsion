@@ -86,6 +86,7 @@ module Adhearsion
                 menu_instance.execute_invalid_hook
                 menu_instance.restart!
               when Menu::MenuGetAnotherDigit
+                
                 next_digit = play_files_in_menu menu_instance
                 if next_digit
                   menu_instance << next_digit

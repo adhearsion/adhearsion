@@ -367,6 +367,7 @@ context "the Menu class's high-level judgment" do
     
     should_pass_control_to_a_context_that_throws :got_here! do
       mock_call.menu do |link|
+        link.blah 1
         link.main 11..11111
       end
     end
@@ -429,6 +430,21 @@ context 'the MenuBuilder' do
       10_000  => {  :exact_match_count => 1, :potential_match_count => 0     },
       100_000 => {  :exact_match_count => 0, :potential_match_count => 0     }
     
+  end
+  
+  test 'a String query ran against multiple Numeric patterns and a range' do
+    returning builder do |link|
+      link.sales        1
+      link.tech_support 2
+      link.finance      3
+      link.conferences  900..999
+    end
+    match = builder.calculate_matches_for "995"
+    require 'pp'
+    # pp match
+    match.should.not.be.potential_match
+    match.should.be.exact_match
+    match.actual_exact_matches.should == ["995"]
   end
   
   test "multiple patterns given at once" do
