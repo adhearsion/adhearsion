@@ -197,7 +197,7 @@ context 'menu command' do
   test "the 'extension' dialplan variable should be redefined when menu() jumps to a new context"
 end
 
-context 'background command' do
+context 'interruptable_play command' do
   
   include DialplanCommandTestHelpers
   
@@ -205,12 +205,22 @@ context 'background command' do
     digits = [?0, ?1, ?#, ?*, ?9]
     file = "file_doesnt_matter"
     digits.each { |digit| pbx_should_respond_with_success digit }
-    digits.map  { |digit| mock_call.send(:background, file) }.should == digits.map(&:chr)
+    digits.map  { |digit| mock_call.send(:interruptable_play, file) }.should == digits.map(&:chr)
   end
   
   test "should return nil if no digit was pressed" do
     pbx_should_respond_with_success 0
-    mock_call.send(:background, 'foobar').should.equal nil
+    mock_call.send(:interruptable_play, 'foobar').should.equal nil
+  end
+  
+  test "should play a series of files, stopping the series when a digit is played" do
+    stubbed_keypad_input = [0, 0, ?3]
+    stubbed_keypad_input.each do |digit|
+      pbx_should_respond_with_success digit
+    end
+    
+    files = (100..105).map &:to_s
+    mock_call.send(:interruptable_play, *files).should == '3'
   end
   
 end

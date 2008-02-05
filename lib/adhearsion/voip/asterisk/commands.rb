@@ -154,10 +154,7 @@ module Adhearsion
         # end
       	
       	def menu(*sound_files, &block)
-      	  sound_files.each do |sound_file|
-      	    digit_pressed = background sound_file
-      	    break unless digit_pressed == ?0
-    	    end
+          result = interruptable_play sound_files
     	  end
       	
       	def say_digits(digits)
@@ -178,9 +175,12 @@ module Adhearsion
 
         private
         
-          def background(file)
-            result = result_digit_from raw_response("EXEC BACKGROUND #{file}")
-            result == 0.chr ? nil : result
+          def interruptable_play(*files)
+            files.each do |file|
+              result = result_digit_from raw_response("EXEC BACKGROUND #{file}")
+              return result if result != 0.chr
+            end
+            nil
           end
         
           def set_caller_id(caller_id)
