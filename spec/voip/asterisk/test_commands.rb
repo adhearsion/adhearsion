@@ -228,23 +228,17 @@ context 'menu command' do
     end
   end
   
-  test "should default the timeout to five seconds"
-  test "invoke the dialplan context when no other extensions could possibly match the string"
-  test "not invoke a dialplan context when multiple potential matches exist"
-  test "invoke a dialplan context that matches exactly, despite other potential matches, when a timeout is encountered"
-  test "invoke the dialplan context given before a question mark if the block evaluates to true"
-  test "on:invalid should be executed before on:failure"
-  test "the 'extension' dialplan variable should be redefined when menu() jumps to a new context"
-  test "should redefine the extension variable in the dialplan's scope"
-  test "matching with a Range should handle the case of two potential matches in the range" do
-=begin
-    pbx_should_respond_with_successful_background_response ?1
-    menu do |link|
-      link.foobar 1..11
-    end
-    # !!! MATCHES SHOULD BE 2!!!!!!!
-=end
+  test "should default the timeout to five seconds" do
+    pbx_should_respond_with_successful_background_response ?2
+    pbx_should_respond_with_a_wait_for_digit_timeout
+    
+    mock_call.should_receive(:wait_for_digit).once.with(5).and_return nil
+    mock_call.menu { |link| link.foobar 22 }
   end
+  
+  test "invoke a dialplan context that matches exactly, despite other potential matches, when a timeout is encountered"
+  test "the 'extension' dialplan variable should be redefined when menu() jumps to a new context"
+
 end
 
 context 'interruptable_play command' do
@@ -376,6 +370,13 @@ context 'the MenuBuilder helper class for menu()' do
       builder.potential_matches_for(num).size.should.equal 2
       builder.potential_matches_for((num * 100) + 5).size.should.equal 1
     end
+  end
+  
+  test "matching with a Range should handle the case of two potential matches in the range" do
+    returning builder do |link|
+      link.big_range 11..1111 # Could be 11, 111 or 1111
+    end
+    builder.potential_matches_for(11).size.should.be >= 3
   end
   
 end
