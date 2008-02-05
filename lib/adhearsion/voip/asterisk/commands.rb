@@ -155,8 +155,9 @@ module Adhearsion
       	
       	def menu(*sound_files, &block)
       	  options = sound_files.last.kind_of?(Hash) ? sound_files.pop : {}
-      	  timeout = options[:timeout]
-      	  tries   = options[:tries]
+      	  timeout = options[:timeout] || 5.seconds
+      	  max_tries   = options[:tries] || 1
+      	  tries_count = 1
       	  menu_definitions = MenuBuilder.new
       	  
       	  yield menu_definitions
@@ -165,14 +166,29 @@ module Adhearsion
       	  
       	  # Using a lambda immediately call()ed so the 'redo' keyword works. It's useful!
       	  lambda do
-        	  matches = menu_definitions.potential_matches_for result
-        	  if matches.size.zero?
-        	    # Invalid!
-      	    elsif matches.size.equal? 1
-    	        # This is our match!
+        	  potential_matches = menu_definitions.potential_matches_for result
+        	  if potential_matches.size.zero?
+        	    menu_definitions.execute_hook_for :invalid, result
+      	    elsif potential_matches.size.equal? 1
+    	        # Need to check if the potential match is an exact match.
+    	        pattern, context_name = potential_matches.first
+    	        if pattern === result || (result =~ /^\d+$/ && pattern === result.to_i)
+    	          # It's an exact match!
+    	          
+  	          else
+  	            # It's not an exact match! premature_timeout!
+  	            menu_definitions.execute_hook_for :premature_timeout, result
+	            end
+    	        puts "ONE MATCH OF #{result.inspect} == #{potential_matches.first.inspect}"
     	      else
-    	        # Too many matches still. We need to get another digit
-    	        result = "#{result}#{wait_for_digit}"
+    	        # Too many potential_matches still. We need to get another digit
+    	        new_input = wait_for_digit timeout
+    	        puts "new input: #{new_input.inspect}"
+    	        if new_input
+      	        result = "#{result}#{new_input}"
+  	          else
+  	            menu_definitions.execute_hook_for :premature_timeout, result
+  	          end
     	        redo
   	        end
 	        end.call
@@ -331,10 +347,9 @@ module Adhearsion
 
           class MenuBuilder
             
-            attr_reader :hook_premature_timeout, :hook_invalid, :hook_failure
-            
             def initialize
               @patterns = []
+              @menu_callbacks = {}
             end
             
             def method_missing(name, *patterns, &block)
@@ -349,10 +364,15 @@ module Adhearsion
               nil
             end
             
+            def execute_hook_for(symbol, input)
+              callback = @menu_callbacks[symbol]
+              callback.call input if callback
+            end
+            
             def on(symbol, &block)
               raise LocalJumpError, "Must supply a block!" unless block_given?
               if [:premature_timeout, :invalid, :failure].include? symbol
-                instance_variable_set("@hook_#{symbol}", block)
+                @menu_callbacks[symbol] = block
               else
                 raise "Unsupported event hook #{symbol.inspect}"
               end
@@ -383,7 +403,7 @@ module Adhearsion
                     end
                     all_matches << pattern_with_metadata if matches_range
                   when Fixnum
-                    all_matches << pattern_with_metadata if pattern == result_numeric
+                    all_matches << pattern_with_metadata if pattern.to_s.starts_with?(result_string)
                   else
                     if pattern === result || pattern === result_string || pattern === result_numeric
                       all_matches << pattern_with_metadata 

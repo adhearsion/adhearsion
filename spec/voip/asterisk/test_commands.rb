@@ -163,17 +163,19 @@ context 'menu command' do
   end
   
   test "invoke on_timeout() when a timeout is encountered" do
-    pbx_should_respond_with_successful_background_response
+    puts "this one's a bitch"
+    pbx_should_respond_with_successful_background_response ?9
     pbx_should_respond_with_a_wait_for_digit_timeout
+    
     should_throw :inside_timeout do
       mock_call.menu :timeout => 1 do |link|
-        link.something 12345
+        link.something 999
         link.on(:premature_timeout) { throw :inside_timeout }
       end
     end
   end
   
-  test "that this doesn't break" do
+  test "that this doesn't break !!!!!!!!" do
     pbx_should_respond_with_successful_background_response ?1
     pbx_should_respond_with_successful_background_response ?0
     pbx_should_respond_with_successful_background_response ?5
@@ -197,6 +199,7 @@ context 'menu command' do
   test "on:failure must be executed when all tries have elapsed"
   test "on:invalid should be executed before on:failure"
   test "the 'extension' dialplan variable should be redefined when menu() jumps to a new context"
+  test "should redefine the extension variable in the dialplan's scope"
   test "matching with a Range should handle the case of two potential matches in the range" do
 =begin
     pbx_should_respond_with_successful_background_response ?1
@@ -306,6 +309,14 @@ context 'the MenuBuilder helper class for menu()' do
     builder.potential_matches_for(1_000).size.should.equal 2
     builder.potential_matches_for(10_000).size.should.equal 1
     builder.potential_matches_for(100_000).size.should.equal 0
+  end
+  
+  test "numeric literals that don't match but ultimately would" do    
+    returning builder do |link|
+      link.nineninenine 999
+      link.shouldnt_match 4444
+    end
+    builder.potential_matches_for(9).size.should.equal 1
   end
   
   test "custom blocks" do
@@ -597,7 +608,10 @@ BEGIN {
       def pbx_should_respond_with_successful_background_response(digit=0)
         pbx_should_respond_with_success digit.kind_of?(String) ? digit[0] : digit
       end
-      alias pbx_should_respond_with_a_wait_for_digit_timeout pbx_should_respond_with_successful_background_response
+      
+      def pbx_should_respond_with_a_wait_for_digit_timeout
+        pbx_should_respond_with_successful_background_response 0
+      end
       
       def pbx_success_response(success_code = nil)
         "200 result=#{success_code || default_success_code}"
