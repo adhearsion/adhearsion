@@ -229,6 +229,12 @@ context 'wait_for_digit command' do
   
   include DialplanCommandTestHelpers
   
+  test 'should return a string for the digit that was pressed' do
+    digits = [?0, ?1, ?#, ?*, ?9]
+    digits.each { |digit| pbx_should_respond_with_success digit }
+    digits.map  { |digit| mock_call.send(:wait_for_digit) }.should == digits.map(&:chr)
+  end
+  
   test "the timeout given must be converted to milliseconds" do
     pbx_should_respond_with_success 0
     mock_call.send(:wait_for_digit, 1)
