@@ -168,8 +168,18 @@ context 'menu command' do
     should_throw :inside_timeout do
       mock_call.menu :timeout => 1 do |link|
         link.foobar?    { [1,2,3] }
-        link.on(:timeout) { throw :inside_timeout }
+        link.on(:premature_timeout) { throw :inside_timeout }
       end
+    end
+  end
+  
+  test "that this doesn't break" do
+    pbx_should_respond_with_successful_background_response ?1
+    pbx_should_respond_with_successful_background_response ?0
+    pbx_should_respond_with_successful_background_response ?5
+    mock_call.menu do |link|
+      link.ambiguous_first  100..10000000
+      link.ambiguous_second 1..20
     end
   end
   
@@ -181,6 +191,7 @@ context 'menu command' do
       
     end
   end
+  
   test "should work with no arguments at all"
   test "should not play subsequent sound files after a digit is pressed"
   test "should default the timeout to five seconds"
@@ -195,6 +206,15 @@ context 'menu command' do
   test "on:failure must be executed when all tries have elapsed"
   test "on:invalid should be executed before on:failure"
   test "the 'extension' dialplan variable should be redefined when menu() jumps to a new context"
+  test "matching with a Range should handle the case of two potential matches in the range" do
+=begin
+    pbx_should_respond_with_successful_background_response ?1
+    menu do |link|
+      link.foobar 1..11
+    end
+    # !!! MATCHES SHOULD BE 2!!!!!!!
+=end
+  end
 end
 
 context 'interruptable_play command' do

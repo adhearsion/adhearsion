@@ -154,7 +154,25 @@ module Adhearsion
         # end
       	
       	def menu(*sound_files, &block)
-          result = interruptable_play sound_files
+      	  options = sound_files.last.kind_of?(Hash) ? sound_files.pop : {}
+      	  timeout = options[:timeout]
+      	  tries   = options[:tries]
+      	  menu_definitions = MenuBuilder.new
+      	  
+      	  yield menu_definitions
+      	  
+      	  result = interruptable_play sound_files
+      	  
+      	  begin
+        	  match = menu_definitions.matches_for result
+        	  if match.kind_of? Symbol
+        	    puts "EXECUTING CONTEXT NAMED #{match.inspect}"
+      	    elsif match == 0
+      	      # NO MATCH. DO INVALID
+    	      else
+    	        # NEED ANOTHER DIGIT. GO TO WAIT FOR DIGIT
+  	        end
+	        end
     	  end
       	
       	def say_digits(digits)
@@ -307,6 +325,53 @@ module Adhearsion
               
             end
           end
+
+          class MenuBuilder
+            
+            attr_reader :hook_premature_timeout, :hook_invalid, :hook_failure
+            
+            def initialize
+              @patterns = {}
+            end
+            
+            def method_missing(name, *patterns)
+              patterns.each do |pattern|
+                @patterns[pattern] = name
+              end
+              nil
+            end
+            
+            def on(symbol, &block)
+              raise LocalJumpError, "Must supply a block!" unless block_given?
+              if [:premature_timeout, :invalid, :failure].include? symbol
+                instance_variable_set("@hook_#{symbol}", block)
+              else
+                raise "Unsupported event hook #{symbol.inspect}"
+              end
+            end
+            
+            def matches_for(result)
+          	  result_string  = result.to_s
+          	  result_numeric = result.to_i if result_string =~ /^\d+$/
+
+          	  @patterns.inject(0) do |match_or_count,(pattern,context_name)|
+          	    # Break when the second match is found. If there exists more than exactly one
+          	    # match, then it's abiguous and more digits are needed. If there're two matches,
+          	    # it's unnecessary to continue trying other matches.
+          	    if pattern === result || pattern === result_string || pattern === result_numeric
+          	      if match_or_count.kind_of? Symbol
+          	        break 2
+        	        elsif match_or_count == 0
+        	          context_name
+      	          end
+        	      else match_or_count
+      	        end
+        	    end
+        	    
+            end
+            
+          end
+
       end
     end
   end
