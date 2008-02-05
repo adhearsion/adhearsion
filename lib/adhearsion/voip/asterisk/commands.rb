@@ -415,6 +415,8 @@ module Adhearsion
                     all_matches << pattern_with_metadata if matches_range
                   when Fixnum
                     all_matches << pattern_with_metadata if pattern.to_s.starts_with?(result_string)
+                  when String
+                    all_matches << pattern_with_metadata if pattern.starts_with? result_string
                   else
                     if pattern === result || pattern === result_string || pattern === result_numeric
                       all_matches << pattern_with_metadata 

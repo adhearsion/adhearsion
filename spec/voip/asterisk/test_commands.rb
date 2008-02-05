@@ -379,14 +379,14 @@ context 'the MenuBuilder helper class for menu()' do
       link.three '###'
     end
     builder.potential_matches_for('5').size.should.equal 2
-    builder.potential_matches_for('*').size.should.equal 2
+    builder.potential_matches_for('*').size.should.equal 0
     builder.potential_matches_for('5**').size.should.equal 1
     builder.potential_matches_for('5*1').size.should.equal 1
     builder.potential_matches_for('5*11#3').size.should.equal 1
     builder.potential_matches_for('5*11#4').size.should.equal 0
     builder.potential_matches_for('5***').size.should.equal 1
     builder.potential_matches_for('###').size.should.equal 1
-    builder.potential_matches_for('##*').size.should.equal 1
+    builder.potential_matches_for('##*').size.should.equal 0
   end
   
   test "matching with a Range should handle the case of two potential matches in the range" do
