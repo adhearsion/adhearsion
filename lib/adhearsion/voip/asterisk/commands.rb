@@ -246,7 +246,7 @@ module Adhearsion
         
           def set_caller_id(caller_id)
             return unless caller_id
-            raise ArgumentError, "Caller ID must be numerical" if caller_id !~ /^\d+$/
+            raise ArgumentError, "Caller ID must be numerical" if caller_id.to_s !~ /^\d+$/
             raw_response %(SET CALLERID %p) % caller_id
           end
           
