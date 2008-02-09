@@ -1,6 +1,7 @@
 require File.dirname(__FILE__) + "/../test_helper"
 require 'adhearsion/initializer/database'
 require 'adhearsion/initializer/asterisk'
+require 'adhearsion/initializer/rails'
 require 'active_record'
 
 context "The database initializer" do
@@ -43,6 +44,37 @@ context "The Asterisk initializer" do
   
 end
 
+context "The Rails initializer" do
+  
+  include RailsInitializerTestHelper
+  
+  test "should load the config/environment.rb file within the rails_root path" do
+    rails_root     = "/path/to/rails/app"
+    environment_rb = rails_root + '/config/environment.rb'
+    flexmock(Adhearsion::Initializer::RailsInitializer).should_receive(:require).once.with environment_rb
+    stub_file_checking_methods!
+    initialize_rails_with_options :rails_root => rails_root, :environment => :development
+  end
+  
+  test "should raise an exception if the database is initialized at the same time" do
+    flexmock(Adhearsion::AHN_CONFIG).should_receive(:database_enabled?).and_return true
+    flexmock(Adhearsion::Initializer::RailsInitializer).should_receive(:require).and_return
+    stub_file_checking_methods!
+    
+    the_following_code {
+      initialize_rails_with_options :rails_root => '/tmp', :environment => :development  
+    }.should.raise
+  end
+  
+  test "should set the RAILS_ENV to be the argument passed in" do
+    flexmock(ENV).should_receive(:[]=).once.with("RAILS_ENV", "development")
+    flexmock(Adhearsion::Initializer::RailsInitializer).should_receive(:require).once.and_return
+    stub_file_checking_methods!
+    initialize_rails_with_options :rails_root => '/tmp', :environment => :development
+  end
+  
+end
+
 BEGIN {
 module DatabaseInitializationTestHelper
   
@@ -81,4 +113,21 @@ module AsteriskInitializerTestHelper
     Adhearsion::Initializer::AsteriskInitializer.start
   end
 end
+
+module RailsInitializerTestHelper
+  
+  
+  def initialize_rails_with_options(options)
+    rails_options = flexmock "Rails options mock", options
+    flexmock(Adhearsion::AHN_CONFIG).should_receive(:rails).once.and_return(rails_options)
+    Adhearsion::Initializer::RailsInitializer.start
+  end
+  
+  def stub_file_checking_methods!
+    flexmock(File).should_receive(:directory?).and_return true
+    flexmock(File).should_receive(:exists?).and_return true
+  end
+  
+end
+
 }

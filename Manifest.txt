@@ -54,8 +54,9 @@ lib/adhearsion/initializer/asterisk.rb
 lib/adhearsion/initializer/configuration.rb
 lib/adhearsion/initializer/database.rb
 lib/adhearsion/initializer/drb.rb
-lib/adhearsion/initializer/modules/freeswitch.rb
+lib/adhearsion/initializer/freeswitch.rb
 lib/adhearsion/initializer/paths.rb
+lib/adhearsion/initializer/rails.rb
 lib/adhearsion/logging.rb
 lib/adhearsion/services/scheduler.rb
 lib/adhearsion/tasks.rb
@@ -73,6 +74,10 @@ lib/adhearsion/voip/asterisk/ami/machine.rl
 lib/adhearsion/voip/asterisk/ami/parser.rb
 lib/adhearsion/voip/asterisk/commands.rb
 lib/adhearsion/voip/asterisk/config_manager.rb
+lib/adhearsion/voip/asterisk/menu_command/calculated_match.rb
+lib/adhearsion/voip/asterisk/menu_command/matchers.rb
+lib/adhearsion/voip/asterisk/menu_command/menu_builder.rb
+lib/adhearsion/voip/asterisk/menu_command/menu_class.rb
 lib/adhearsion/voip/asterisk/meta_module.rb
 lib/adhearsion/voip/call.rb
 lib/adhearsion/voip/call_routing.rb
@@ -118,6 +123,8 @@ spec/voip/abstractions/test_pbx.rb
 spec/voip/abstractions/test_queue.rb
 spec/voip/abstractions/test_voicemail.rb
 spec/voip/asterisk/ami_response_definitions.rb
+spec/voip/asterisk/menu_command/test_calculated_match.rb
+spec/voip/asterisk/menu_command/test_matchers.rb
 spec/voip/asterisk/mock_ami_server.rb
 spec/voip/asterisk/test_agi_server.rb
 spec/voip/asterisk/test_ami.rb
@@ -138,4 +145,3 @@ spec/voip/test_numerical_string.rb
 spec/voip/test_phone_number.rb
 test/test_ahn_generator.rb
 test/test_component_generator.rb
-test/test_generator_helper.rb

@@ -106,11 +106,13 @@ module Adhearsion
       require 'adhearsion/initializer/database.rb'
       require 'adhearsion/initializer/asterisk.rb'
       require 'adhearsion/initializer/drb.rb'
+      require 'adhearsion/initializer/rails.rb'
       # require 'adhearsion/initializer/freeswitch.rb'
       
       DatabaseInitializer.start if AHN_CONFIG.database_enabled?
       AsteriskInitializer.start if AHN_CONFIG.asterisk_enabled?
       DrbInitializer.start      if AHN_CONFIG.drb_enabled?
+      RailsInitializer.start    if AHN_CONFIG.rails_enabled?
       # FreeswitchInitializer.start if AHN_CONFIG.freeswitch_enabled?
     end
     
@@ -155,10 +157,6 @@ module Adhearsion
     
     def trigger_after_initialized_hooks
       Hooks::AfterInitialized.trigger_hooks
-    end
-    
-    def init_module(name)
-      require "adhearsion/initializer/modules/#{name}"
     end
     
     def bootstrap_rc

@@ -14,6 +14,15 @@ Adhearsion::Configuration.configure do |config|
   
   # config.enable_drb 
   
+  # Streamlined Rails integration! The first argument should be a relative or absolute path to 
+  # the Rails app folder with which you're integrating. The second argument must be one of the 
+  # the following: :development, :production, or :test.
+  
+  # config.enable_rails 'gui', :development
+  
+  # Note: You CANNOT do enable_rails and enable_database at the same time. When you enable Rails,
+  # it will automatically connect to same database Rails does and load the Rails app's models.
+  
   # config.asterisk.speech_engine = :cepstral
   
   # Configure FreeSwitch

@@ -2,8 +2,8 @@ module Adhearsion
   class Configuration
     module ConfigurationEntryPoint
       def add_configuration_for(name)
-        lowercased_name          = name.to_s.underscore
         configuration_class_name = "#{name}Configuration"
+        lowercased_name          = name.to_s.underscore
 
         class_eval(<<-EVAL, __FILE__, __LINE__)
           def enable_#{lowercased_name}(configuration_options = {})
@@ -166,5 +166,34 @@ module Adhearsion
       end
     end
     add_configuration_for :Drb
+    
+    class RailsConfiguration < AbstractConfiguration
+      
+      SUPPORTED_RAILS_ENVIRONMENTS = [:development, :test, :production]
+      
+      attr_accessor :rails_root, :environment
+      def initialize(options)
+        path_to_rails, environment = check_options options
+        @rails_root = File.expand_path(path_to_rails)
+        @environment = environment.to_sym
+        raise ArgumentError, "Unrecognized environment type #@environment. Supported: " +
+          SUPPORTED_RAILS_ENVIRONMENTS.to_sentence unless SUPPORTED_RAILS_ENVIRONMENTS.include?(@environment)
+      end
+    
+      private
+      
+      def check_options(options)
+        options = options.clone
+        path    = options.delete :path
+        env     = options.delete :env
+        raise ArgumentError, "Unrecognied argument(s) #{options.keys.to_sentence} in Rails initializer!" unless options.size.zero?
+        raise ArgumentError, "Must supply an :env argument to the Rails initializer!" unless env
+        raise ArgumentError, "Must supply an :path argument to the Rails initializer!" unless path
+        [path, env]
+      end
+    
+    end
+    add_configuration_for :Rails
+    
   end
 end

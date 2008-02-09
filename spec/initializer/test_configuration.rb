@@ -78,6 +78,39 @@ context "AMI configuration defaults" do
   end
 end
 
+context "Rails configuration defaults" do
+  test "should require the path to the Rails app in the constructor" do
+    config = Adhearsion::Configuration::RailsConfiguration.new "path here doesn't matter right now", :development
+    config.rails_root.should.not.be.nil
+  end
+  
+  test "should expand_path() the first constructor parameter" do
+    rails_root = "gui"
+    flexmock(File).should_receive(:expand_path).once.with(rails_root)
+    config = Adhearsion::Configuration::RailsConfiguration.new rails_root, :development
+  end
+  
+  test "should ensure that the environment provided is one supported by Rails" do
+    the_following_code {
+      Adhearsion::Configuration::RailsConfiguration.new "doesnt matter", :this_is_not_a_rails_env
+    }.should.raise ArgumentError
+    
+    the_following_code {
+      Adhearsion::Configuration::RailsConfiguration.new "doesnt matter", :development
+      Adhearsion::Configuration::RailsConfiguration.new "doesnt matter", :production
+      Adhearsion::Configuration::RailsConfiguration.new "doesnt matter", :test
+    }.should.not.raise ArgumentError
+  end
+  
+  test "should convert the environment into a Symbol" do
+    Adhearsion::Configuration::RailsConfiguration::SUPPORTED_RAILS_ENVIRONMENTS.should.not.be.empty
+    Adhearsion::Configuration::RailsConfiguration::SUPPORTED_RAILS_ENVIRONMENTS.each do |env|
+      config = Adhearsion::Configuration::RailsConfiguration.new "doesnt matter", env.to_s
+      config.environment.should.equal env
+    end
+  end
+end
+
 context "Database configuration defaults" do
   
   setup do
