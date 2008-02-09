@@ -147,6 +147,8 @@ module Adhearsion
             builder.contexts
           end
           def const_missing(name)
+            super
+          rescue ArgumentError
             raise NameError, %(undefined constant "#{name}")
           end
         end

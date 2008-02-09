@@ -216,6 +216,16 @@ context "Dialplan control statements" do
     }
     executing_dialplan(:eins => dialplan).should.throw :zwei
   end
+  
+  test "new constants should still be accessible within the dialplan" do
+    ::Jicksta = :Jicksta
+    dialplan = %{
+      constant_test {
+        Jicksta.should.equal:Jicksta
+      }
+    }
+    executing_dialplan(:constant_test => dialplan).should.not.raise
+  end
 end
 
 context "VoIP platform operations" do
