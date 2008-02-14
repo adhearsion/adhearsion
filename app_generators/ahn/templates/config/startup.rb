@@ -18,7 +18,7 @@ Adhearsion::Configuration.configure do |config|
   # the Rails app folder with which you're integrating. The second argument must be one of the 
   # the following: :development, :production, or :test.
   
-  # config.enable_rails 'gui', :development
+  # config.enable_rails :path => 'gui', :env => :development
   
   # Note: You CANNOT do enable_rails and enable_database at the same time. When you enable Rails,
   # it will automatically connect to same database Rails does and load the Rails app's models.
