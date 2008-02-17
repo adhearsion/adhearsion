@@ -140,6 +140,22 @@ module Adhearsion
       	  extract_input_from result
       	end
       	
+      	# TODO: THESE QUEUE FEATURES ARE EXPERIMENTAL!
+      	
+      	def queue(queue_name)
+      	  execute("queue", queue_name, 't') # 't' allows the called user to transfer the call
+      	  get_variable("QUEUESTATUS")
+    	  end
+      	
+      	def add_queue_member(queue, interface)
+      	  execute("AddQueueMember", queue, interface)
+      	end
+      	
+      	def agent_login(id, silent=true)
+      	  last_arg = silent ? 's' : ''
+      	  execute "AgentLogin", id, last_arg
+    	  end
+      	
       	# Returns the status of the last dial(). Possible dial
         # statuses include :answer, :busy, :no_answer, :cancelled,
         # :congested, and :channel_unavailable. If :cancel is
@@ -262,7 +278,7 @@ module Adhearsion
           def result_digit_from(response_string)
             raise ArgumentError, "Can't coerce nil into AGI response! This could be a bug!" unless response_string
             digit = response_string[/^#{response_prefix}(-?\d+(\.\d+)?)/,1]
-            digit.to_i.chr if digit
+            digit.to_i.chr if digit && digit.to_s != "-1"
           end
           
           def get_dial_status

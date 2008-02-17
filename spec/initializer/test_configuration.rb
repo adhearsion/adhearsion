@@ -45,7 +45,7 @@ context "Configuration defaults" do
   end
 end
 
-context "Asterisk configuration defaults" do
+context "Asterisk AGI configuration defaults" do
   attr_reader :config
   
   setup do

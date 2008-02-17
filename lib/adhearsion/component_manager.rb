@@ -30,7 +30,7 @@ module Adhearsion
         return unless File.exist?(AHN_ROOT.component_path)
         component_directories = Dir.glob(File.join(AHN_ROOT.component_path, "*"))
         component_directories.each do |component_directory|
-          component_name = File.basename(component_directory).intern
+          component_name = File.basename(component_directory).to_sym
           @active_components[component_name] = Component.new(self, component_name, component_directory)
         end
       end
@@ -65,7 +65,7 @@ module Adhearsion
     class ClassToGetCallContext
       def instantiate_with_call_context(call_context, *args, &block)
         component = component_class.allocate
-        component.instance_variable_set(("@"+instance_variable.to_s).intern, call_context)
+        component.instance_variable_set(("@"+instance_variable.to_s).to_sym, call_context)
         component.send(:initialize, *args, &block)
         component
       end
@@ -112,8 +112,8 @@ module Adhearsion
       attr_reader :manager, :name, :path, :component_module, :component_class
       def initialize(manager, name, path)
         @manager = manager
-        @name = name
-        @path = path
+        @name    = name
+        @path    = path
         unless File.exist?(main_file_name)
           gem_path = @manager.component_gems[@name.to_s]
           raise "The component '#{@name}' does not have the main file: #{main_file_name}" unless gem_path

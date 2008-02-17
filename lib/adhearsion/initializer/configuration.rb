@@ -75,7 +75,6 @@ module Adhearsion
       def initialize(overrides = {})
         @listening_port = self.class.default_listening_port
         @listening_host = self.class.default_listening_host
-      
         super
       end
     end
@@ -83,11 +82,11 @@ module Adhearsion
     class AsteriskConfiguration < TelephonyPlatformConfiguration
       class << self
         attr_accessor :speech_engine
+        
         def default_listening_port
           4573
         end
       end
-      
       
       class AMIConfiguration < AbstractConfiguration
         attr_accessor :port, :username, :password, :events, :host

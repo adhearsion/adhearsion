@@ -6,6 +6,22 @@ module Adhearsion
       module ConfigFileGenerators
         class Agents < AsteriskConfigGenerator
 
+          # If you want to store these properties in a database, your schema
+          # could look like this:
+          #
+          # create_table :agents do |table|
+          #
+          #
+          #
+          #
+          #
+          #
+          #
+          #
+          #
+          #
+          #
+
           attr_accessor :general_section, :agent_section, :agent_definitions, :agent_section_special
           def initialize
             @general_section       = {}

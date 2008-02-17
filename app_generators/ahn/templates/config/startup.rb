@@ -12,6 +12,9 @@ Adhearsion::Configuration.configure do |config|
   config.enable_asterisk
   # config.asterisk.enable_ami :host => "127.0.0.1", :username => "admin", :password => "password"
   
+  # To change the host IP or port on which the AGI server listens, use this:
+  # config.enable_asterisk :listening_port => 4574, :listening_host => "127.0.0.1"
+  
   # config.enable_drb 
   
   # Streamlined Rails integration! The first argument should be a relative or absolute path to 
