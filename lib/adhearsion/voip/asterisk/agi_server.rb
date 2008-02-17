@@ -7,7 +7,11 @@ module Adhearsion
           Thread.current.abort_on_exception=true
           
           class RubyServer < GServer
-        
+            
+            def initialize(port, host)
+              super(port, host, (1.0/0.0)) # (1.0/0.0) == Infinity
+            end
+            
             def serve(io)
               begin
             	  call = Adhearsion.receive_call_from io
