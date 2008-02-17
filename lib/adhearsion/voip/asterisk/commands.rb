@@ -1,9 +1,9 @@
+require 'adhearsion/voip/asterisk/menu_command/menu_class'
+
 module Adhearsion
   module VoIP
     module Asterisk
       module Commands
-        
-        require 'adhearsion/voip/asterisk/menu_command/menu_class'
         
         TONES = {
           :busy   => "480+620/500,0/500",
@@ -203,7 +203,7 @@ module Adhearsion
         
       	def get_variable(variable_name)
       	  result = raw_response("GET VARIABLE #{variable_name}")
-      	  extract_variable_from(result)
+      	  extract_variable_from(result) if result
     	  end
     	  
         def dial(number, options={})
