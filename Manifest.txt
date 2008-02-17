@@ -78,7 +78,6 @@ lib/adhearsion/voip/asterisk/menu_command/calculated_match.rb
 lib/adhearsion/voip/asterisk/menu_command/matchers.rb
 lib/adhearsion/voip/asterisk/menu_command/menu_builder.rb
 lib/adhearsion/voip/asterisk/menu_command/menu_class.rb
-lib/adhearsion/voip/asterisk/meta_module.rb
 lib/adhearsion/voip/call.rb
 lib/adhearsion/voip/call_routing.rb
 lib/adhearsion/voip/commands.rb
