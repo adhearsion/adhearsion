@@ -103,7 +103,6 @@ context "DialPlan loader" do
   
   test "loading a dial plan from a file" do
     loader = nil
-    # The assumption is that only the "dial_plan.rb" file will be loaded from fixtures/dial_plans
     the_following_code {
       AHN_ROOT.using_base_path(File.expand_path(File.dirname(__FILE__) + '/../fixtures')) do
         loader = Adhearsion::DialPlan::Loader.load_dial_plan
