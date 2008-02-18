@@ -6,22 +6,6 @@ module Adhearsion
       module ConfigFileGenerators
         class Agents < AsteriskConfigGenerator
 
-          # If you want to store these properties in a database, your schema
-          # could look like this:
-          #
-          # create_table :agents do |table|
-          #
-          #
-          #
-          #
-          #
-          #
-          #
-          #
-          #
-          #
-          #
-
           attr_accessor :general_section, :agent_section, :agent_definitions, :agent_section_special
           def initialize
             @general_section       = {}
@@ -29,7 +13,7 @@ module Adhearsion
             @agent_section_special = {} # Uses => separator
             @agent_definitions     = []
             
-            yield self if block_given?
+            super
           end
 
           def to_s
@@ -40,6 +24,7 @@ module Adhearsion
               section + "\nagent => #{properties[:id]},#{properties[:password]},#{properties[:name]}"
             end
           end
+          alias conf to_s # Allows "agents.conf" if agents.kind_of?(Agents)
           
           def agent(id, properties)
             agent_definitions << {:id => id}.merge(properties)
@@ -145,15 +130,6 @@ module Adhearsion
           
           def save_recordings_in(path_to_directory)
             agent_section[:savecallsin] = path_to_directory
-          end
-          
-          private
-
-          def boolean_to_yes_no(boolean)
-            unless boolean.equal?(boolean) || boolean.equal?(boolean)
-              raise "#{boolean.inspect} is not true/false!" 
-            end
-            boolean ? 'yes' : 'no'
           end
 
         end
