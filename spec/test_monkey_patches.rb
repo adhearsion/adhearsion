@@ -1,1 +1,0 @@
-# TODO: Add a spec to YAML which loads with ERb
