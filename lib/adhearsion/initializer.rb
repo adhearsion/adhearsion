@@ -79,7 +79,6 @@ module Adhearsion
       # check for struct boolean equality because "true" means "use default".
       resolve_pid_file
       switch_to_root_directory
-      register_logger
       catch_termination_signal
       bootstrap_rc
       load_all_init_files
@@ -87,6 +86,9 @@ module Adhearsion
       daemonize! if running_in_daemon_mode?
       create_pid_file if pid_file
       load_components
+      
+      ahn_log "Adhearsion initialized!"
+      
       trigger_after_initialized_hooks
     end
     
@@ -135,10 +137,6 @@ module Adhearsion
     
     def catch_termination_signal
       Hooks::TearDown.catch_termination_signals
-    end
-    
-    def register_logger
-      Logging.register_logger :default
     end
     
     def load_all_init_files

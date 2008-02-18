@@ -73,7 +73,7 @@ describe "The DialingDSL class internals" do
   test "should allow Asterisk-like patterns" do
     Adhearsion::VoIP::DSL::DialingDSL.class_eval do
       _('23XX')
-    end.should.be_an_instance_of(Regexp)
+    end.should.be.instance_of Regexp
   end
   
   test "should define all of the VoIP constants" do

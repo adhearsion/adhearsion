@@ -6,3 +6,5 @@ class Test::Unit::TestResult
     #nothing!
   end
 end
+
+Adhearsion::Logging.silence!

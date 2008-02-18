@@ -31,7 +31,7 @@ module Adhearsion
       def catch_termination_signals
         %w'INT TERM'.each do |sig|
           trap sig do
-            log "Shutting down gracefully at #{Time.now}."
+            ahn_log "Shutting down gracefully at #{Time.now}."
             Adhearsion::Hooks::TearDown.trigger_hooks
             exit
           end
