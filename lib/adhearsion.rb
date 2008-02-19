@@ -10,6 +10,8 @@ module Adhearsion
   
 end
 
+$: << File.dirname(__FILE__)
+
 require 'rubygems'
 require 'adhearsion/version'
 require 'adhearsion/voip/call'

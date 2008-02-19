@@ -131,7 +131,10 @@ context "The private, helper methods in QueueDefinition" do
   end
   
   test '#string should add the argument directly to the properties' do
-    
+    mock_of_properties = flexmock "mock of the properties instance variable of a QueueDefinition"
+    mock_of_properties.should_receive(:[]=).once.with("eins", "zwei")
+    flexmock(queue).should_receive(:properties).and_return mock_of_properties
+    queue.send(:string, "eins" => "zwei")
   end
   
   test '#one_of() should add its successful match to the properties attribute' do
@@ -140,6 +143,23 @@ context "The private, helper methods in QueueDefinition" do
     flexmock(queue).should_receive(:properties).once.and_return mock_properties
     
     queue.send(:one_of, 1..100, :doesnt_matter => 5)
+  end
+  
+  test "one_of() should convert booleans to yes/no" do
+    mock_properties = flexmock "mock of the properties instance variable of a QueueDefinition"
+    mock_properties.should_receive(:[]=).once.with(:doesnt_matter, 'yes')
+    flexmock(queue).should_receive(:properties).once.and_return mock_properties
+    queue.send(:one_of, [true, false, :strict], :doesnt_matter => true)
+    
+    mock_properties = flexmock "mock of the properties instance variable of a QueueDefinition"
+    mock_properties.should_receive(:[]=).once.with(:doesnt_matter, :strict)
+    flexmock(queue).should_receive(:properties).once.and_return mock_properties
+    queue.send(:one_of, [true, false, :strict], :doesnt_matter => :strict)
+    
+    mock_properties = flexmock "mock of the properties instance variable of a QueueDefinition"
+    mock_properties.should_receive(:[]=).once.with(:doesnt_matter, 'no')
+    flexmock(queue).should_receive(:properties).once.and_return mock_properties
+    queue.send(:one_of, [true, false, :strict], :doesnt_matter => false)
   end
   
   test '#one_of() should raise an ArgumentError if a value is not in the criteria' do
@@ -175,7 +195,7 @@ wrapuptime=15
 autofill=yes
 autopause=yes
 maxlen=0
-setinterfacevar=no
+setinterfacevar=yes
 announce-frequency=90
 periodic-announce-frequency=60
 announce-holdtime=once
@@ -217,16 +237,14 @@ CONFIG
         markq.play_on_connect 'queue-markq'
         markq.strategy :ringall
         markq.service_level 60
-        markq.context 'qoutcon'
-        markq.timeout 15
-        markq.retry 5
+        markq.exit_to_context_on_digit_press 'qoutcon'
+        markq.ring_timeout 15
+        markq.retry_after_waiting 5
         markq.weight 0
         markq.wrapup_time 15
         markq.autopause true
         markq.maximum_length 0
-        markq.setinterfacevar false
-        markq.announce_frequency 90
-        markq.periodic_announce_frequency 60
+        markq.queue_status_announce_frequency 90
         markq.announce_hold_time :once
         markq.announce_round_seconds 10
         markq.sound_files \
@@ -246,7 +264,7 @@ CONFIG
         markq.leave_when_empty true
         markq.report_hold_time false
         markq.ring_in_use false
-        markq.member_delay 0
+        markq.delay_connection_by 0
         markq.timeout_restart false
         
         markq.member 'Zap/1'

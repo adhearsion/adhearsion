@@ -4,6 +4,11 @@ module Adhearsion
   module VoIP
     module Asterisk
       module ConfigFileGenerators
+        
+        # This will generate a queues.conf file. If there is no documentation on what a method
+        # actually does, take a look at the documentation for its original key/value pair in
+        # an unedited queues.conf file. WARNING! Don't get too embedded with these method names.
+        # I'm still not satisfied. These settings will be greatly abstracted eventually.
         class Queues < AsteriskConfigGenerator
 
           DEFAULT_GENERAL_SECTION = {
@@ -44,9 +49,10 @@ module Adhearsion
           class QueueDefinition < AsteriskConfigGenerator
 
             DEFAULT_QUEUE_PROPERTIES = {
-              :autofill              => 'yes',
-              :eventwhencalled       => 'vars',
-              :eventmemberstatus     => 'yes'
+              :autofill          => 'yes',
+              :eventwhencalled   => 'vars',
+              :eventmemberstatus => 'yes',
+              :setinterfacevar   => 'yes'
             }
 
             SUPPORTED_RING_STRATEGIES = [:ringall, :roundrobin, :leastrecent, :fewestcalls, :random, :rrmemory]
@@ -87,7 +93,7 @@ module Adhearsion
             
             def to_s
               "[#{name}]\n" +
-              properties.merge(@sound_files).map { |key, value| "#{key}=#{value}" }.join("\n") + "\n\n" +
+              properties.merge(@sound_files).map { |key, value| "#{key}=#{value}" }.sort.join("\n") + "\n\n" +
               members.map { |member| "member => #{member}" }.join("\n")
             end
 
@@ -107,26 +113,37 @@ module Adhearsion
               int :servicelevel => seconds
             end
 
-            def context(context_name)
+            # A context may be specified, in which if the user types a SINGLE
+            # digit extension while they are in the queue, they will be taken out
+            # of the queue and sent to that extension in this context. This context
+            # should obviously be a different context other than the one that
+            # normally forwards to Adhearsion (though the context that handles
+            # these digits should probably go out to Adhearsion too).
+            def exit_to_context_on_digit_press(context_name)
               string :context => context_name
             end
 
-            def timeout(seconds)
+            # Ex: ring_timeout 15.seconds
+            def ring_timeout(seconds)
               int :timeout => seconds
             end
 
-            def retry(seconds)
+            # Ex: retry_after_waiting 5.seconds
+            def retry_after_waiting(seconds)
               int :retry => seconds
             end
 
+            # THIS IS UNSUPPORTED
             def weight(number)
               int :weight => number
             end
 
+            # Ex: wrapup_time 1.minute
             def wrapup_time(seconds)
               int :wrapuptime => seconds
             end
 
+            
             def autopause(yes_no)
               boolean :autopause => yes_no
             end
@@ -135,20 +152,15 @@ module Adhearsion
               int :maxlen => number
             end
 
-            def setinterfacevar(yes_no)
-              boolean :setinterfacevar => yes_no
-            end
-
-            def announce_frequency(seconds)
+            def queue_status_announce_frequency(seconds)
               int "announce-frequency" => seconds
             end
 
-            def periodically_announce(sound_file)
+            def periodically_announce(sound_file, options={})
+              frequency = options.delete(:every) || 1.minute
+              
               string 'periodic-announce' => sound_file
-            end
-
-            def periodic_announce_frequency(seconds)
-              int "periodic-announce-frequency" => seconds
+              int 'periodic-announce-frequency' => frequency
             end
 
             def announce_hold_time(seconds)
@@ -168,8 +180,10 @@ module Adhearsion
               one_of_and_translate criteria, 'monitor-type' => symbol
             end
 
-            def join_empty(yes_no)
-              boolean :joinempty => yes_no
+            # Ex: join_empty true
+            # Ex: join_empty :strict
+            def join_empty(yes_no_or_strict)
+              one_of [true, false, :strict], :joinempty => yes_no_or_strict
             end
             
             def leave_when_empty(yes_no)
@@ -184,7 +198,9 @@ module Adhearsion
               boolean :ringinuse => yes_no
             end
 
-            def member_delay(seconds)
+            # Number of seconds to wait when an agent is to be bridged with
+            # a caller. Normally you'd want this to be zero.
+            def delay_connection_by(seconds)
               int :memberdelay => seconds
             end
             

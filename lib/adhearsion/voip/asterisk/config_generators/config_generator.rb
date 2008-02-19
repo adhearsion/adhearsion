@@ -47,21 +47,21 @@ module Adhearsion
           def int(options)
             cache = options.delete(:with) || properties
             options.each_pair do |property,number|
-              number = number.to_i if number.kind_of?(String) && number =~ /^\d+$/
+              number = number.to_i if (number.kind_of?(String) && number =~ /^\d+$/) || number.kind_of?(Numeric)
               raise ArgumentError, "#{number.inspect} must be an integer" unless number.kind_of?(Fixnum)
-              cache[property] = number
+              cache[property] = number.to_i
             end
           end
 
           def one_of(criteria, options)
             cache = options.delete(:with) || properties
             options.each_pair do |key, value|
-              search = criteria.find { |criterion| criterion === value }
+              search = !criteria.find { |criterion| criterion === value }.nil?
               unless search
                 msg = "Didn't recognize #{value.inspect}! Must be one of " + criteria.map(&:inspect).to_sentence
                 raise ArgumentError, msg
               end
-              cache[key] = value
+              cache[key] = [true, false].include?(value) ? boolean_to_yes_no(value) : value
             end
           end
           
