@@ -25,7 +25,7 @@ context "The queues.conf config file generator" do
   end
   
   test 'should add the warning message to the to_s output' do
-    queues.conf.should.include Adhearsion::VoIP::Asterisk::ConfigFileGenerators::AsteriskConfigGenerator.warning_message
+    queues.conf.should =~ /^\s*;.{10}/
   end
   
 end

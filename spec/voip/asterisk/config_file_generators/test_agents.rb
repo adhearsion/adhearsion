@@ -16,7 +16,7 @@ context "The agents.conf config file agents" do
   end
   
   test 'should add the warning message to the to_s output' do
-    agents.conf.should.include Adhearsion::VoIP::Asterisk::ConfigFileGenerators::AsteriskConfigGenerator.warning_message
+    agents.conf.should =~ /^\s*;.{10}/
   end
   
   test "The conf() method should always create a general section" do
