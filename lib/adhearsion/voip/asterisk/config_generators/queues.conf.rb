@@ -31,6 +31,7 @@ module Adhearsion
           end
 
           def to_s
+            AsteriskConfigGenerator.warning_message +
             general_section.inject("[general]") { |section,(key,value)| section + "\n#{key}=#{value}" } + "\n\n" +
             queue_definitions.map(&:to_s).join("\n\n")
           end

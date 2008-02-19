@@ -17,6 +17,7 @@ module Adhearsion
           end
 
           def to_s
+            AsteriskConfigGenerator.warning_message +
             general_section.inject("[general]") { |section,(key,value)| section + "\n#{key}=#{value}" } +
             agent_section.inject("\n[agents]")  { |section,(key,value)| section + "\n#{key}=#{value}" } +
             agent_section_special.inject("")    { |section,(key,value)| section + "\n#{key} => #{value}" } +

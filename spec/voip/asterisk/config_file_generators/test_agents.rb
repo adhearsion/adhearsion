@@ -15,6 +15,10 @@ context "The agents.conf config file agents" do
     agents.agent_definitions.first.should == {:id => 1337, :password => 9876, :name => "Jay Phillips"}
   end
   
+  test 'should add the warning message to the to_s output' do
+    agents.conf.should.include Adhearsion::VoIP::Asterisk::ConfigFileGenerators::AsteriskConfigGenerator.warning_message
+  end
+  
   test "The conf() method should always create a general section" do
     agents.conf.should =~ /^\[general\]/
   end
