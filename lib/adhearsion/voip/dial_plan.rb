@@ -79,8 +79,10 @@ module Adhearsion
       def handle(call)
         starting_entry_point = entry_point_for call
         raise NoContextError, "No dialplan entry point for call context '#{call.context}' -- Ignoring call!" unless starting_entry_point
+        
         @context = ExecutionEnvironment.new(call, starting_entry_point)
         inject_context_names_into_environment(@context)
+        ahn_log "Entering context #{starting_entry_point}"
         @context.run
       end
       
@@ -122,7 +124,7 @@ module Adhearsion
           end
           
           def read_dialplan_file(filename)
-            IO.read(filename)
+            File.read filename
           end
           
       end

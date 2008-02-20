@@ -15,7 +15,8 @@ module Adhearsion
             def serve(io)
               begin
             	  call = Adhearsion.receive_call_from io
-            	  ahn_log.agi "Handling call with variables #{call.variables.inspect}" # Should be sent to a logger
+            	  ahn_log.agi "Handling call with variables #{call.variables.inspect}"
+            	  puts "Got here i think"
             	  Adhearsion::DialPlan::Manager.new.handle call
               rescue Adhearsion::DialPlan::Manager::NoContextError => e
                 ahn_log.agi e.message

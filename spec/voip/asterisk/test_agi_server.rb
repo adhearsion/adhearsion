@@ -1,6 +1,8 @@
 require File.dirname(__FILE__) + "/../../test_helper"
 require 'adhearsion/voip/asterisk'
 
+
+
 context 'Active Calls' do
   include CallVariableTestHelper
   attr_accessor :typical_call
