@@ -203,7 +203,12 @@ module Adhearsion
         
       	def get_variable(variable_name)
       	  result = raw_response("GET VARIABLE #{variable_name}")
-      	  extract_variable_from(result) if result
+      	  case result
+      	    when "200 result=0"
+      	      return nil
+    	      when /^200 result=1 \((.+)\)$/
+    	        return $LAST_PAREN_MATCH
+    	    end
     	  end
     	  
         def dial(number, options={})
@@ -353,10 +358,7 @@ module Adhearsion
           end
           
           def error?(result)
-            success_criterion = result.to_s[/^#{response_prefix}(?:-\d+|0)/]
-            return false if success_criterion
-            ahn_log.agi.error "Received AGI error: '#{result}'"
-            true
+            result.to_s[/^#{response_prefix}(?:-\d+|0)/]
           end
           
           # timeout with pressed digits:    200 result=<digits> (timeout)
