@@ -353,7 +353,10 @@ module Adhearsion
           end
           
           def error?(result)
-            result.to_s[/^#{response_prefix}(?:-\d+|0)/]
+            success_criterion = result.to_s[/^#{response_prefix}(?:-\d+|0)/]
+            return false if success_criterion
+            ahn_log.agi.error "Received AGI error: '#{result}'"
+            true
           end
           
           # timeout with pressed digits:    200 result=<digits> (timeout)
