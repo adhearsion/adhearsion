@@ -209,6 +209,11 @@ context "The variable() command" do
     mock_call.variable(*variables)
   end
   
+  test "should NOT return an Array when just one arg is given" do
+    mock_call.should_receive(:get_variable).once.and_return "lol"
+    mock_call.variable(:foo).should.not.be.kind_of Array
+  end
+  
   test "should raise an ArgumentError when a Hash and normal args are given" do
     the_following_code {
       mock_call.variable 5,4,3,2,1, :foo => :bar

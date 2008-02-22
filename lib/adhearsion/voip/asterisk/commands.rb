@@ -223,9 +223,12 @@ module Adhearsion
       	      set_variable(key, value)
     	      end
     	    else
-    	      args.map { |var| get_variable(var) }
+    	      if args.size == 1
+    	        get_variable args.first
+  	        else
+      	      args.map { |var| get_variable(var) }
+    	      end
     	    end
-    	    
   	    end
     	  
         def dial(number, options={})
