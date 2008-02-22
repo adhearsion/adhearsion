@@ -211,6 +211,23 @@ module Adhearsion
     	    end
     	  end
     	  
+    	  def set_variable(variable_name, value)
+    	    raw_response("SET VARIABLE %s %p" % [variable_name.to_s, value.to_s]) == "200 result=1"
+  	    end
+    	  
+    	  def variable(*args)
+    	    if args.last.kind_of? Hash
+      	    assignments = args.pop
+      	    raise ArgumentError, "Can't mix variable setting and fetching!" if args.any?
+      	    assignments.each_pair do |key, value|
+      	      set_variable(key, value)
+    	      end
+    	    else
+    	      args.map { |var| get_variable(var) }
+    	    end
+    	    
+  	    end
+    	  
         def dial(number, options={})
           set_caller_id options.delete(:caller_id)
           execute "Dial", number, options[:for], options[:options]

@@ -185,6 +185,54 @@ context 'input command' do
   end
 end
 
+context "The variable() command" do
+  
+  include DialplanCommandTestHelpers
+
+  test "should call set_variable for every Hash-key argument given" do
+    args = [:ohai, "ur_home_erly"]
+    mock_call.should_receive(:set_variable).once.with(*args)
+    mock_call.variable Hash[*args]
+  end
+  
+  test "should call set_variable for every Hash-key argument given" do
+    many_args = { :a => :b, :c => :d, :e => :f, :g => :h}
+    mock_call.should_receive(:set_variable).times(many_args.size)
+    mock_call.variable many_args
+  end
+  
+  test "should call get_variable for every String given" do
+    variables = ["foo", "bar", :qaz, :qwerty, :baz]
+    variables.each do |var|
+      mock_call.should_receive(:get_variable).once.with(var).and_return("X")
+    end
+    mock_call.variable(*variables)
+  end
+  
+  test "should raise an ArgumentError when a Hash and normal args are given" do
+    the_following_code {
+      mock_call.variable 5,4,3,2,1, :foo => :bar
+    }.should.raise ArgumentError
+  end
+
+end
+
+context "the set_variable method" do
+  
+  include DialplanCommandTestHelpers
+  
+  test "variables and values are properly quoted" do
+    mock_call.should_receive(:raw_response).once.with 'SET VARIABLE foo "i can \\" has ruby?"'
+    mock_call.set_variable 'foo', 'i can " has ruby?'
+  end
+  
+  test "to_s() is effectively called on both the key and the value" do
+    mock_call.should_receive(:raw_response).once.with 'SET VARIABLE QAZ "QWERTY"'
+    mock_call.set_variable :QAZ, :QWERTY
+  end
+  
+end
+
 context 'the menu() method' do
 
   include DialplanCommandTestHelpers
