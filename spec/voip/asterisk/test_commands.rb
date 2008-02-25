@@ -238,6 +238,215 @@ context "the set_variable method" do
   
 end
 
+context "The queue management abstractions" do
+  
+  include DialplanCommandTestHelpers
+  
+  test 'should not create separate objects for queues with basically the same name' do
+    mock_call.queue('foo').should.equal mock_call.queue('foo')
+    mock_call.queue('bar').should.equal mock_call.queue(:bar)
+  end
+  
+  test "queue() should return an instance of QueueProxy" do
+    mock_call.queue("foobar").should.be.kind_of Adhearsion::VoIP::Asterisk::Commands::QueueProxy
+  end
+  
+  test "a QueueProxy should respond to join!(), members()" do
+    %w[join! agents].each do |method|
+      mock_call.queue('foobar').should.respond_to(method)
+    end
+  end
+  
+  test 'a QueueProxy should return a QueueAgentsListProxy when members() is called' do
+    mock_call.queue('foobar').agents.should.be.kind_of(Adhearsion::VoIP::Asterisk::Commands::QueueProxy::QueueAgentsListProxy)
+  end
+  
+  test 'join! should properly join a queue' do
+    mock_call.should_receive(:execute).once.with("queue", "foobaz", "t")
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "FULL"
+    mock_call.queue("foobaz").join!
+  end
+  
+  test 'should return a symbol representing the result of joining the queue' do
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "TIMEOUT"
+    mock_call.queue('monkey').join!.should.equal :timeout
+  end
+  
+  test 'should fetch the members with the name given to queue()' do
+    mock_call.should_receive(:variable).once.with("QUEUE_MEMBER_COUNT(jay)").and_return 5
+    mock_call.queue('jay').agents.size.should.equal 5
+  end
+  
+  test 'should not fetch a QUEUE_MEMBER_COUNT each time count() is called when caching is enabled' do
+    mock_call.should_receive(:variable).once.with("QUEUE_MEMBER_COUNT(sales)").and_return 0
+    10.times do
+      mock_call.queue('sales').agents(:cache => true).size
+    end
+  end
+  
+  test 'should raise an argument error if the members() method receives an unrecognized symbol' do
+    the_following_code {
+      mock_call.queue('foobarz').agents(:cached => true) # common typo
+    }.should.raise ArgumentError
+  end
+  
+  test 'when fetching agents, it should properly split by the supported delimiters' do
+    queue_name = "doesnt_matter"
+    mock_call.should_receive(:get_variable).with("QUEUE_MEMBER_LIST(#{queue_name})").and_return('Agent/007,Agent/003,Zap/2')
+    mock_call.queue(queue_name).agents(:cache => true).to_a.size.should.equal 3
+  end
+  
+  test 'when fetching agents, each array index should be an instance of AgentProxy' do
+    queue_name = 'doesnt_matter'
+    mock_call.should_receive(:get_variable).with("QUEUE_MEMBER_LIST(#{queue_name})").and_return('Agent/007,Agent/003,Zap/2')
+    agents = mock_call.queue(queue_name).agents(:cache => true).to_a
+    agents.size.should.be > 0
+    agents.each do |agent|
+      agent.should.be.kind_of Adhearsion::VoIP::Asterisk::Commands::QueueProxy::AgentProxy
+    end
+  end
+  
+  test 'QueueAgentsListProxy#<<() should new the channel driver given as the argument to the system' do
+    queue_name, agent_channel = "metasyntacticvariablesftw", "Agent/123"
+    pbx_should_respond_with_value "ADDED"
+    mock_call.should_receive('execute').once.with("AddQueueMember", queue_name, agent_channel, "", "", "")
+    mock_call.queue(queue_name).agents.new agent_channel
+  end
+  
+  test 'when a queue agent is dynamically added and the queue does not exist, a QueueDoesNotExistError should be raised' do
+    mock_call.should_receive(:get_variable).once.with('AQMSTATUS').and_return('NOSUCHQUEUE')
+    the_following_code {
+      mock_call.queue('this_should_not_exist').agents.new 'Agent/911'
+    }.should.raise Adhearsion::VoIP::Asterisk::Commands::QueueProxy::QueueDoesNotExistError
+  end
+  
+  test 'when a queue agent is dynamiaclly added and the adding was successful, true should be returned' do
+    mock_call.should_receive(:get_variable).once.with("AQMSTATUS").and_return("ADDED")
+    mock_call.should_receive(:execute).once.with("AddQueueMember", "lalala", "Agent/007", "", "", "")
+    return_value = mock_call.queue('lalala').agents.new "Agent/007"
+    return_value.should.equal true
+  end
+  
+  test 'should raise an argument when an unrecognized key is given to add()' do
+    the_following_code {
+      mock_call.queue('q').agents.new :foo => "bar"
+    }.should.raise ArgumentError
+  end
+  
+  test 'should execute AddQueueMember with the penalty properly' do
+    queue_name = 'name_does_not_matter'
+    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, '', 10, '', '')
+    mock_call.should_receive(:get_variable).once.with('AQMSTATUS').and_return('ADDED')
+    mock_call.queue(queue_name).agents.new :penalty => 10
+  end
+  
+  test 'should execute AddQueueMember properly when the name is given' do
+    queue_name, agent_name = 'name_does_not_matter', 'Jay Phillips'
+    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, '', '', '', agent_name)
+    mock_call.should_receive(:get_variable).once.with('AQMSTATUS').and_return('ADDED')
+    mock_call.queue(queue_name).agents.new :name => agent_name
+  end
+  
+  test 'should execute AddQueueMember properly when the name, penalty, and interface is given' do
+    queue_name, agent_name, interface, penalty = 'name_does_not_matter', 'Jay Phillips', 'Agent/007', 4
+    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, interface, penalty, '', agent_name)
+    mock_call.should_receive(:get_variable).once.with('AQMSTATUS').and_return('ADDED')
+    mock_call.queue(queue_name).agents.new interface, :name => agent_name, :penalty => penalty
+  end
+  
+  test 'should return a correct boolean for exists?()' do
+    mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(kablamm)").and_return "Agent/444,Agent/555"
+    mock_call.queue("kablamm").exists?.should.equal true
+    
+    mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(monkey)").and_return ""
+    mock_call.queue("monkey").exists?.should.equal false
+  end
+  
+  test 'should pause an agent properly from a certain queue' do
+    mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(lolcats)").and_return "Agent/007,Agent/008"
+    mock_call.should_receive(:get_variable).once.with("PQMSTATUS").and_return "PAUSED"
+    
+    agents = mock_call.queue('lolcats').agents :cache => true
+    agents.last.pause!.should.equal true
+  end
+  
+  test 'should pause an agent properly from a certain queue and return false when the agent did not exist' do
+    mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(lolcats)").and_return "Agent/007,Agent/008"
+    mock_call.should_receive(:get_variable).once.with("PQMSTATUS").and_return "NOTFOUND"
+    mock_call.should_receive(:execute).once.with("PauseQueueMember", 'lolcats', "Agent/008")
+    
+    agents = mock_call.queue('lolcats').agents :cache => true
+    agents.last.pause!.should.equal false
+  end
+  
+  test 'should pause an agent globally properly' do
+    mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(family)").and_return "Agent/Jay"
+    mock_call.should_receive(:get_variable).once.with("PQMSTATUS").and_return "PAUSED"
+    mock_call.should_receive(:execute).once.with("PauseQueueMember", nil, "Agent/Jay")
+    
+    mock_call.queue('family').agents.first.pause! :everywhere => true
+  end
+  
+  test 'should unpause an agent properly' do
+    queue_name = "name with spaces"
+    mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(#{queue_name})").and_return "Agent/Jay"
+    mock_call.should_receive(:get_variable).once.with("UPQMSTATUS").and_return "UNPAUSED"
+    mock_call.should_receive(:execute).once.with("UnpauseQueueMember", queue_name, "Agent/Jay")
+
+    mock_call.queue(queue_name).agents.first.unpause!.should.equal true
+  end
+  
+  test 'should unpause an agent globally properly' do
+    mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(FOO)").and_return "Agent/Tom"
+    mock_call.should_receive(:get_variable).once.with("UPQMSTATUS").and_return "UNPAUSED"
+    mock_call.should_receive(:execute).once.with("UnpauseQueueMember", nil, "Agent/Tom")
+
+    mock_call.queue('FOO').agents.first.unpause!(:everywhere => true).should.equal true
+  end
+  
+  test 'should remove an agent properly' do
+    mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(FOO)").and_return "Agent/Tom"
+    mock_call.should_receive(:execute).once.with('RemoveQueueMember', 'FOO', 'Agent/Tom')
+    mock_call.queue('FOO').agents.first.remove!
+  end
+  
+  test 'should log an agent in properly with no agent id given' do
+    mock_call.should_receive(:execute).once.with('AgentLogin', nil, 's')
+    mock_call.queue('barrel_o_agents').agents.login!
+  end
+  
+  test 'should add "Agent/" before the agent ID given if necessary when logging an agent in' do
+    mock_call.should_receive(:execute).once.with('AgentLogin', 'Agent/007', 's')
+    mock_call.queue('barrel_o_agents').agents.login! '007'
+    
+    mock_call.should_receive(:execute).once.with('AgentLogin', 'Agent/007', 's')
+    mock_call.queue('barrel_o_agents').agents.login! 'Agent/007'
+  end
+
+  test 'should add an agent silently properly' do
+    mock_call.should_receive(:execute).once.with('AgentLogin', 'Agent/007', '')
+    mock_call.queue('barrel_o_agents').agents.login! '007', :silent => false    
+  
+    mock_call.should_receive(:execute).once.with('AgentLogin', 'Agent/008', 's')
+    mock_call.queue('barrel_o_agents').agents.login! '008', :silent => true
+  end
+  
+  test 'logging an agent in should raise an ArgumentError is unrecognized arguments are given' do
+    the_following_code {
+      mock_call.queue('ohai').agents.login! 1,2,3,4,5
+    }.should.raise ArgumentError
+    
+    the_following_code {
+      mock_call.queue('lols').agents.login! 1337, :sssssilent => false
+    }.should.raise ArgumentError
+    
+    the_following_code {
+      mock_call.queue('qwerty').agents.login! 777, 6,5,4,3,2,1, :wee => :wee
+    }.should.raise ArgumentError
+  end
+  
+end
+
 context 'the menu() method' do
 
   include DialplanCommandTestHelpers
@@ -643,6 +852,11 @@ context 'get variable command' do
   test "Getting a variable that isn't set returns nothing" do
     pbx_should_respond_with "200 result=0"
     assert !mock_call.get_variable('OMGURFACE')
+  end
+  
+  test 'An empty variable should return an empty String' do
+    pbx_should_respond_with_value ""
+    mock_call.get_variable('kablamm').should == ""
   end
   
   test "Getting a variable that is set returns its value" do

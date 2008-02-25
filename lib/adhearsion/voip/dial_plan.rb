@@ -82,7 +82,6 @@ module Adhearsion
         
         @context = ExecutionEnvironment.new(call, starting_entry_point)
         inject_context_names_into_environment(@context)
-        ahn_log "Entering context #{starting_entry_point}"
         @context.run
       end
       

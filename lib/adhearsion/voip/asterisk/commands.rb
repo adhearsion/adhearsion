@@ -1,3 +1,4 @@
+
 require 'adhearsion/voip/asterisk/menu_command/menu_class'
 
 module Adhearsion
@@ -19,6 +20,7 @@ module Adhearsion
                                                    :cancel      => :cancelled,
                                                    :noanswer    => :unanswered,
                                                    :chanunavail => :channel_unavailable) unless defined? DIAL_STATUSES
+        
         def write(message)
           to_pbx.print(message)
         end
@@ -140,20 +142,19 @@ module Adhearsion
       	  extract_input_from result
       	end
       	
-      	# TODO: THESE QUEUE FEATURES ARE EXPERIMENTAL!
-      	
       	def queue(queue_name)
-      	  execute("queue", queue_name, 't') # 't' allows the called user to transfer the call
-      	  get_variable("QUEUESTATUS")
-    	  end
-      	
-      	def add_queue_member(queue, interface)
-      	  execute("AddQueueMember", queue, interface)
-      	end
-      	
-      	def agent_login(id, silent=true)
-      	  last_arg = silent ? 's' : ''
-      	  execute "AgentLogin", id, last_arg
+      	  queue_name = queue_name.to_s
+      	  
+      	  @queue_proxy_hash_lock = Mutex.new unless defined? @queue_proxy_hash_lock
+      	  @queue_proxy_hash_lock.synchronize do
+      	    @queue_proxy_hash ||= {}
+      	    if @queue_proxy_hash.has_key? queue_name
+        	    return @queue_proxy_hash[queue_name]
+      	    else
+      	      proxy = @queue_proxy_hash[queue_name] = QueueProxy.new(queue_name, self)
+      	      return proxy
+    	      end
+      	  end
     	  end
       	
       	# Returns the status of the last dial(). Possible dial
@@ -206,7 +207,7 @@ module Adhearsion
       	  case result
       	    when "200 result=0"
       	      return nil
-    	      when /^200 result=1 \((.+)\)$/
+    	      when /^200 result=1 \((.*)\)$/
     	        return $LAST_PAREN_MATCH
     	    end
     	  end
@@ -344,7 +345,7 @@ module Adhearsion
           def play_files_in_menu(menu_instance)
             digit = nil
             if menu_instance.sound_files.any? && menu_instance.string_of_digits.empty?
-              digit = interruptable_play *menu_instance.sound_files
+              digit = interruptable_play(*menu_instance.sound_files)
             end
             digit || wait_for_digit(menu_instance.timeout)
           end
@@ -394,6 +395,203 @@ module Adhearsion
           
           def response_prefix
             RESPONSE_PREFIX
+          end
+          
+          class QueueProxy
+            
+            attr_reader :name, :environment
+            def initialize(name, environment)
+              @name, @environment = name, environment
+            end
+            
+            def join!(options={})
+              environment.execute("queue", name, 't') # 't' allows the called user to transfer the call
+          	  normalize_queue_status_variable(environment.variable("QUEUESTATUS"))
+            end
+            
+            def agents(options={})
+              cached = options.has_key?(:cache) ? options.delete(:cache) : true
+              raise ArgumentError, "Unrecognized arguments to agents(): #{options.inspect}" if options.keys.any?
+              if cached
+                @cached_proxy ||= QueueAgentsListProxy.new(self, true)
+              else
+                @uncached_proxy ||=  QueueAgentsListProxy.new(self, false)
+              end
+            end
+            
+            def waiting_count
+              environment.variable "QUEUE_WAITING_COUNT(#{name})".to_i
+            end
+            
+            def exists?
+              environment.variable("QUEUE_MEMBER_LIST(#{name})") != ''
+            end
+            
+            private
+            
+            def normalize_queue_status_variable(variable)
+              returning variable.downcase.to_sym do |queue_status|
+                raise QueueDoesNotExistError.new(name) if queue_status == :unknown
+              end
+            end
+            
+            class QueueAgentsListProxy
+              
+              include Enumerable
+              
+              attr_reader :proxy, :agents
+              def initialize(proxy, cached=false)
+                @proxy  = proxy
+                @cached = cached
+              end
+              
+              def count
+                if cached? && @cached_count
+                  @cached_count
+                else
+                  @cached_count = proxy.environment.variable("QUEUE_MEMBER_COUNT(#{proxy.name})").to_i
+                end
+              end
+              alias size count
+              alias length count
+              
+              # Supported Hash-key arguments are :penalty and :name. The :name value will be viewable in
+              # the queue_log. The :penalty is the penalty assigned to this agent for answering calls on
+              # this queue
+              def new(*args)
+                
+                options   = args.last.kind_of?(Hash) ? args.pop : {}
+                interface = args.shift || ''
+                
+                raise ArgumentError, "You may only supply an interface and a Hash argument!" if args.any?
+                
+                penalty = options.delete(:penalty) || ''
+                name    = options.delete(:name)    || ''
+                
+                raise ArgumentError, "Unrecognized argument(s): #{options.inspect}" if options.any?
+                
+                proxy.environment.execute("AddQueueMember", proxy.name, interface, penalty, '', name)
+                
+                case proxy.environment.variable("AQMSTATUS")
+                  when "ADDED"         : true
+                  when "MEMBERALREADY" : false
+                  when "NOSUCHQUEUE"   : raise QueueDoesNotExistError.new(proxy.name)
+                  else
+                    raise "UNRECOGNIZED AQMSTATUS VALUE!"
+                end
+                
+                # TODO: THIS SHOULD RETURN AN AGENT INSTANCE
+              end
+              
+              # Logs a pre-defined agent into this queue and waits for calls. Pass in :silent => true to stop
+              # the message which says "Agent logged in".
+              def login!(*args)
+                options = args.last.kind_of?(Hash) ? args.pop : {}
+                
+                silent = options.delete(:silent).equal?(false) ? '' : 's'
+                id     = args.shift
+                id   &&= id.to_s.starts_with?('Agent/') ? id : "Agent/#{id}"
+                raise ArgumentError, "Unrecognized Hash options to login(): #{options.inspect}" if options.any?
+                raise ArgumentError, "Unrecognized argument to login(): #{args.inspect}" if args.any?
+                
+                proxy.environment.execute('AgentLogin', id, silent)
+              end
+              
+              def each(&block)
+                check_agent_cache!
+                agents.each(&block)
+              end
+              
+              def first
+                check_agent_cache!
+                agents.first
+              end
+              
+              def last
+                check_agent_cache!
+                agents.last
+              end
+              
+              def cached?
+                @cached
+              end
+              
+              def to_a
+                check_agent_cache!
+                @agents
+              end
+              
+              private
+              
+              def check_agent_cache!
+                if cached?
+                  load_agents! unless agents
+                else
+                  load_agents!
+                end
+              end
+              
+              def load_agents!
+                raw_data = proxy.environment.variable "QUEUE_MEMBER_LIST(#{proxy.name})"
+                @agents = raw_data.split(',').map(&:strip).reject(&:empty?).map do |agent|
+                  AgentProxy.new(agent, proxy)
+                end
+                @cached_count = @agents.size
+              end
+              
+            end
+            
+            class AgentProxy
+              
+              attr_reader :interface, :proxy, :queue_name
+              def initialize(interface, proxy)
+                @interface  = interface
+                @proxy      = proxy
+                @queue_name = proxy.name
+              end
+              
+              def remove!
+                proxy.environment.execute 'RemoveQueueMember', queue_name, interface
+              end
+              
+              # Pauses the given agent for this queue only. If you wish to pause this agent
+              # for all queues, pass in :everywhere => true. Returns true if the agent was
+              # successfully paused and false if the agent was not found.
+              def pause!(options={})
+                everywhere = options.delete(:everywhere)
+                args = [(everywhere ? nil : queue_name), interface]
+                proxy.environment.execute('PauseQueueMember', *args)
+                case proxy.environment.variable("PQMSTATUS")
+                  when "PAUSED"   : true
+                  when "NOTFOUND" : false
+                  else
+                    raise "Unrecognized PQMSTATUS value!"
+                end
+              end
+              
+              # Pauses the given agent for this queue only. If you wish to pause this agent
+              # for all queues, pass in :everywhere => true. Returns true if the agent was
+              # successfully paused and false if the agent was not found.
+              def unpause!(options={})
+                everywhere = options.delete(:everywhere)
+                args = [(everywhere ? nil : queue_name), interface]
+                proxy.environment.execute('UnpauseQueueMember', *args)
+                case proxy.environment.variable("UPQMSTATUS")
+                  when "UNPAUSED" : true
+                  when "NOTFOUND" : false
+                  else
+                    raise "Unrecognized UPQMSTATUS value!"
+                end
+              end
+              
+            end
+            
+            class QueueDoesNotExistError < Exception
+              def initialize(queue_name)
+                super "Queue #{queue_name} does not exist!"
+              end
+            end
+            
           end
           
           module MenuDigitResponse
