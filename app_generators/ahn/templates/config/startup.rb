@@ -1,4 +1,8 @@
 Adhearsion::Configuration.configure do |config|
+  
+  # Supported levels (in increasing severity) -- :debug < :info < :warn < :error < :fatal
+  config.logging :level => :info
+  
   # Whether incoming calls be automatically answered. Defaults to true.
   # config.automatically_answer_incoming_calls = false
   

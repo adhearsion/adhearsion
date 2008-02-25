@@ -61,6 +61,25 @@ context "Asterisk AGI configuration defaults" do
   end
 end
 
+context 'Logging configuration' do
+  
+  attr_reader :config
+  before :each do
+    @config = Adhearsion::Configuration.new
+  end
+  
+  after :each do
+    Adhearsion::Logging.logging_level = :fatal
+  end
+  
+  test 'the logging level should translate from symbols into Log4r constants' do
+    Adhearsion::Logging.logging_level.should.not.equal Log4r::WARN
+    config.logging :level => :warn
+    Adhearsion::Logging.logging_level.should.equal Log4r::WARN
+  end
+  
+end
+
 context "AMI configuration defaults" do
   attr_reader :config
   

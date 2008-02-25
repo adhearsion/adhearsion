@@ -33,6 +33,10 @@ module Adhearsion
     attr_accessor :end_call_on_hangup
     attr_accessor :end_call_on_error
     
+    def logging(options)
+      Adhearsion::Logging.logging_level = options[:level]
+    end
+    
     def initialize
       @automatically_answer_incoming_calls = true
       @end_call_on_hangup                  = true
