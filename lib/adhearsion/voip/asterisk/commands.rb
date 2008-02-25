@@ -498,6 +498,14 @@ module Adhearsion
               environment.variable("QUEUE_WAITING_COUNT(#{name})").to_i
             end
             
+            def empty?
+              waiting_count == 0
+            end
+            
+            def any?
+              waiting_count > 0
+            end
+            
             def exists?
               environment.execute('RemoveQueueMember', name, 'SIP/AdhearsionQueueExistenceCheck')
               environment.variable("RQMSTATUS") != 'NOSUCHQUEUE'

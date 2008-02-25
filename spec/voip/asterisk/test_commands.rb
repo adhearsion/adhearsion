@@ -482,6 +482,26 @@ context "The queue management abstractions" do
     }.should.raise Adhearsion::VoIP::Asterisk::Commands::QueueProxy::QueueDoesNotExistError
   end
   
+  test 'empty? should call waiting_count' do
+    queue = mock_call.queue 'testing_empty'
+    flexmock(queue).should_receive(:waiting_count).once.and_return 0
+    queue.should.be.empty
+    
+    queue = mock_call.queue 'testing_empty'
+    flexmock(queue).should_receive(:waiting_count).once.and_return 99
+    queue.should.not.be.empty
+  end
+  
+  test 'any? should call waiting_count' do
+    queue = mock_call.queue 'testing_empty'
+    flexmock(queue).should_receive(:waiting_count).once.and_return 0
+    queue.any?.should.equal false
+    
+    queue = mock_call.queue 'testing_empty'
+    flexmock(queue).should_receive(:waiting_count).once.and_return 99
+    queue.any?.should.equal true
+  end
+  
   test 'should remove an agent properly' do
     mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(FOO)").and_return "Agent/Tom"
     mock_call.should_receive(:execute).once.with('RemoveQueueMember', 'FOO', 'Agent/Tom')
