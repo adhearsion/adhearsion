@@ -26,10 +26,13 @@ module Adhearsion
         end
         
         def read
-          from_pbx.gets
+          returning from_pbx.gets do |message|
+            ahn_log.agi.debug "<<< #{message}"
+          end
         end
         
         def raw_response(message = nil)
+          ahn_log.agi.debug ">>> #{message}"
           write message if message
           read
         end
