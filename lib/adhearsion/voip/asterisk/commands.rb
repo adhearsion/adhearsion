@@ -402,14 +402,85 @@ module Adhearsion
           
           class QueueProxy
             
+            class << self
+              
+              def format_join_hash_key_arguments(options)
+                
+                bad_argument = lambda do |(key, value)|
+                  raise ArgumentError, "Unrecognize value for #{key.inspect} -- #{value.inspect}"
+                end
+                
+                # Direct Queue() arguments:
+                timeout        = options.delete :timeout
+                announcement   = options.delete :announce
+
+                # Terse single-character options
+                ring_style     = options.delete :play
+                allow_hangup   = options.delete :allow_hangup
+                allow_transfer = options.delete :allow_transfer
+
+                raise ArgumentError, "Unrecognized args to join!: #{options.inspect}" if options.any?
+
+                ring_style = case ring_style
+                  when :ringing: 'r'
+                  when :music:   ''
+                  when nil
+                  else bad_argument[:play => ring_style]
+                end.to_s
+                
+                allow_hangup = case allow_hangup
+                  when :caller:   'H'
+                  when :agent:    'h'
+                  when :everyone: 'Hh'
+                  when nil
+                  else bad_argument[:allow_hangup => allow_hangup]
+                end.to_s
+                
+                allow_transfer = case allow_transfer
+                  when :caller:   'T'
+                  when :agent:    't'
+                  when :everyone: 'Tt'
+                  when nil
+                  else bad_argument[:allow_transfer => allow_transfer]
+                end.to_s
+                
+                terse_character_options = 'n' + ring_style + allow_transfer + allow_hangup
+                
+                [terse_character_options, '', announcement, timeout].map(&:to_s)
+              end
+
+            end
+            
             attr_reader :name, :environment
             def initialize(name, environment)
               @name, @environment = name, environment
             end
             
+            # Makes the current channel join the queue. Below are explanations of the recognized Hash-key
+            # arguments supported by this method.
+            #
+            #   :timeout        - The number of seconds to wait for an agent to answer
+            #   :play           - Can be :ringing or :music.
+            #   :announce       - A sound file to play instead of the normal queue announcement.
+            #   :allow_transfer - Can be :caller, :agent, or :everyone. Allow someone to transfer the call.
+            #   :allow_hangup   - Can be :caller, :agent, or :everyone. Allow someone to hangup with the * key.
+            # 
+            # Usage examples:
+            # 
+            #  - queue('sales').join!
+            #  - queue('sales').join! :timeout => 1.minute
+            #  - queue('sales').join! :play => :music
+            #  - queue('sales').join! :play => :ringing
+            #  - queue('sales').join! :announce => "custom/special-queue-announcement"
+            #  - queue('sales').join! :allow_transfer => :caller
+            #  - queue('sales').join! :allow_transfer => :agent
+            #  - queue('sales').join! :allow_hangup   => :caller
+            #  - queue('sales').join! :allow_hangup   => :agent
+            #  - queue('sales').join! :allow_hangup   => :everyone
+            #  - queue('sales').join! :allow_transfer => :agent, :timeout => 30.seconds, 
             def join!(options={})
-              environment.execute("queue", name, 't') # 't' allows the called user to transfer the call
-          	  normalize_queue_status_variable(environment.variable("QUEUESTATUS"))
+              environment.execute("queue", name, *self.class.format_join_hash_key_arguments(options))
+          	  normalize_queue_status_variable environment.variable("QUEUESTATUS")
             end
             
             def agents(options={})

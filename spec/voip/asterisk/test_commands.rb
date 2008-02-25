@@ -262,7 +262,7 @@ context "The queue management abstractions" do
   end
   
   test 'join! should properly join a queue' do
-    mock_call.should_receive(:execute).once.with("queue", "foobaz", "t")
+    mock_call.should_receive(:execute).once.with("queue", "foobaz", "n", '', '', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "FULL"
     mock_call.queue("foobaz").join!
   end
@@ -270,6 +270,69 @@ context "The queue management abstractions" do
   test 'should return a symbol representing the result of joining the queue' do
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "TIMEOUT"
     mock_call.queue('monkey').join!.should.equal :timeout
+  end
+  
+  test 'should join a queue with a timeout properly' do
+    mock_call.should_receive(:execute).once.with("queue", "foobaz", "n", '', '', '60')
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
+    mock_call.queue("foobaz").join! :timeout => 1.minute
+  end
+  
+  test 'should join a queue with an announcement file properly' do
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "n", '', '', '5')
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
+    mock_call.queue("roflcopter").join! :timeout => 5
+  end
+  
+  test 'should join a queue with allow_transfer properly' do
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "nTt", '', '', '')
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
+    mock_call.queue("roflcopter").join! :allow_transfer => :everyone
+  
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "nT", '', '', '')
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
+    mock_call.queue("roflcopter").join! :allow_transfer => :caller
+
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "nt", '', '', '')
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
+    mock_call.queue("roflcopter").join! :allow_transfer => :agent
+  end
+  
+  test 'should join a queue with allow_hangup properly' do
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "nHh", '', '', '')
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
+    mock_call.queue("roflcopter").join! :allow_hangup => :everyone
+  
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "nH", '', '', '')
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
+    mock_call.queue("roflcopter").join! :allow_hangup => :caller
+
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "nh", '', '', '')
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
+    mock_call.queue("roflcopter").join! :allow_hangup => :agent
+  end
+  
+  test 'should join a queue properly with the :play argument' do
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "nr", '', '', '')
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
+    mock_call.queue("roflcopter").join! :play => :ringing
+    
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "n", '', '', '')
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
+    mock_call.queue("roflcopter").join! :play => :music
+  end
+  
+  test 'joining a queue with many options specified' do
+    mock_call.should_receive(:execute).once.with("queue", "q", "nrtHh", '', '', '120')
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
+    mock_call.queue('q').join! :allow_transfer => :agent, :timeout => 2.minutes,
+                               :play => :ringing, :allow_hangup => :everyone
+  end
+  
+  test 'join!() should raise an ArgumentError when unrecognized Hash key arguments are given' do
+    the_following_code {
+      mock_call.queue('iwearmysunglassesatnight').join! :misspelled => true
+    }.should.raise ArgumentError
   end
   
   test 'should fetch the members with the name given to queue()' do
