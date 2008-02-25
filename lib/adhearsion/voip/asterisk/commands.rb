@@ -423,11 +423,13 @@ module Adhearsion
             end
             
             def waiting_count
-              environment.variable "QUEUE_WAITING_COUNT(#{name})".to_i
+              raise QueueDoesNotExistError.new(name) unless exists?
+              environment.variable("QUEUE_WAITING_COUNT(#{name})").to_i
             end
             
             def exists?
-              environment.variable("QUEUE_MEMBER_LIST(#{name})") != ''
+              environment.execute('RemoveQueueMember', name, 'SIP/AdhearsionQueueExistenceCheck')
+              environment.variable("RQMSTATUS") != 'NOSUCHQUEUE'
             end
             
             private
@@ -555,6 +557,14 @@ module Adhearsion
               
               def remove!
                 proxy.environment.execute 'RemoveQueueMember', queue_name, interface
+                case proxy.environment.variable("RQMSTATUS")
+                  when "REMOVED"     : true
+                  when "NOTINQUEUE"  : false
+                  when "NOSUCHQUEUE"
+                    raise QueueDoesNotExistError.new(queue_name)
+                  else
+                    raise "Unrecognized RQMSTATUS variable!"
+                end
               end
               
               # Pauses the given agent for this queue only. If you wish to pause this agent

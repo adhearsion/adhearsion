@@ -355,10 +355,12 @@ context "The queue management abstractions" do
   end
   
   test 'should return a correct boolean for exists?()' do
-    mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(kablamm)").and_return "Agent/444,Agent/555"
+    mock_call.should_receive(:execute).once.with("RemoveQueueMember", "kablamm", "SIP/AdhearsionQueueExistenceCheck")
+    mock_call.should_receive(:get_variable).once.with("RQMSTATUS").and_return "NOTINQUEUE"
     mock_call.queue("kablamm").exists?.should.equal true
     
-    mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(monkey)").and_return ""
+    mock_call.should_receive(:execute).once.with("RemoveQueueMember", "monkey", "SIP/AdhearsionQueueExistenceCheck")
+    mock_call.should_receive(:get_variable).once.with("RQMSTATUS").and_return "NOSUCHQUEUE"
     mock_call.queue("monkey").exists?.should.equal false
   end
   
@@ -404,13 +406,43 @@ context "The queue management abstractions" do
     mock_call.queue('FOO').agents.first.unpause!(:everywhere => true).should.equal true
   end
   
+  test 'waiting_count for a queue that does exist' do
+    mock_call.should_receive(:get_variable).once.with("QUEUE_WAITING_COUNT(q)").and_return "50"
+    flexmock(mock_call.queue('q')).should_receive(:exists?).once.and_return true
+    mock_call.queue('q').waiting_count.should.equal 50
+  end
+  
+  test 'waiting_count for a queue that does not exist' do
+    the_following_code {  
+      flexmock(mock_call.queue('q')).should_receive(:exists?).once.and_return false
+      mock_call.queue('q').waiting_count
+    }.should.raise Adhearsion::VoIP::Asterisk::Commands::QueueProxy::QueueDoesNotExistError
+  end
+  
   test 'should remove an agent properly' do
     mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(FOO)").and_return "Agent/Tom"
     mock_call.should_receive(:execute).once.with('RemoveQueueMember', 'FOO', 'Agent/Tom')
-    mock_call.queue('FOO').agents.first.remove!
+    mock_call.should_receive(:get_variable).once.with("RQMSTATUS").and_return "REMOVED"
+    mock_call.queue('FOO').agents.first.remove!.should.equal true
   end
   
-  test 'should log an agent in properly with no agent id given' do
+  test 'should remove an agent properly' do
+    mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(FOO)").and_return "Agent/Tom"
+    mock_call.should_receive(:execute).once.with('RemoveQueueMember', 'FOO', 'Agent/Tom')
+    mock_call.should_receive(:get_variable).once.with("RQMSTATUS").and_return "NOTINQUEUE"
+    mock_call.queue('FOO').agents.first.remove!.should.equal false
+  end
+  
+  test "should raise a QueueDoesNotExistError when removing an agent from a queue that doesn't exist" do
+    mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(cool_people)").and_return "Agent/ZeroCool"
+    mock_call.should_receive(:execute).once.with("RemoveQueueMember", "cool_people", "Agent/ZeroCool")
+    mock_call.should_receive(:get_variable).once.with("RQMSTATUS").and_return "NOSUCHQUEUE"
+    the_following_code {
+      mock_call.queue("cool_people").agents.first.remove!
+    }.should.raise Adhearsion::VoIP::Asterisk::Commands::QueueProxy::QueueDoesNotExistError
+  end
+  
+  test "should log an agent in properly with no agent id given" do
     mock_call.should_receive(:execute).once.with('AgentLogin', nil, 's')
     mock_call.queue('barrel_o_agents').agents.login!
   end
