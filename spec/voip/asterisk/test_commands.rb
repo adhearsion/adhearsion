@@ -447,20 +447,20 @@ context "The queue management abstractions" do
     mock_call.queue('barrel_o_agents').agents.login!
   end
   
-  test 'should add "Agent/" before the agent ID given if necessary when logging an agent in' do
-    mock_call.should_receive(:execute).once.with('AgentLogin', 'Agent/007', 's')
-    mock_call.queue('barrel_o_agents').agents.login! '007'
-    
-    mock_call.should_receive(:execute).once.with('AgentLogin', 'Agent/007', 's')
+  test 'should remove "Agent/" before the agent ID given if necessary when logging an agent in' do
+    mock_call.should_receive(:execute).once.with('AgentLogin', '007', 's')
     mock_call.queue('barrel_o_agents').agents.login! 'Agent/007'
+    
+    mock_call.should_receive(:execute).once.with('AgentLogin', '007', 's')
+    mock_call.queue('barrel_o_agents').agents.login! '007'
   end
 
   test 'should add an agent silently properly' do
-    mock_call.should_receive(:execute).once.with('AgentLogin', 'Agent/007', '')
-    mock_call.queue('barrel_o_agents').agents.login! '007', :silent => false    
+    mock_call.should_receive(:execute).once.with('AgentLogin', '007', '')
+    mock_call.queue('barrel_o_agents').agents.login! 'Agent/007', :silent => false    
   
-    mock_call.should_receive(:execute).once.with('AgentLogin', 'Agent/008', 's')
-    mock_call.queue('barrel_o_agents').agents.login! '008', :silent => true
+    mock_call.should_receive(:execute).once.with('AgentLogin', '008', 's')
+    mock_call.queue('barrel_o_agents').agents.login! 'Agent/008', :silent => true
   end
   
   test 'logging an agent in should raise an ArgumentError is unrecognized arguments are given' do

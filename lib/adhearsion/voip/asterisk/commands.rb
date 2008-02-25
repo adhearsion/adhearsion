@@ -495,7 +495,7 @@ module Adhearsion
                 
                 silent = options.delete(:silent).equal?(false) ? '' : 's'
                 id     = args.shift
-                id   &&= id.to_s.starts_with?('Agent/') ? id : "Agent/#{id}"
+                id   &&= id.to_s.starts_with?('Agent/') ? id[%r[^Agent/(.+)$],1] : id
                 raise ArgumentError, "Unrecognized Hash options to login(): #{options.inspect}" if options.any?
                 raise ArgumentError, "Unrecognized argument to login(): #{args.inspect}" if args.any?
                 
