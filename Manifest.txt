@@ -73,6 +73,9 @@ lib/adhearsion/voip/asterisk/ami/machine.rb
 lib/adhearsion/voip/asterisk/ami/machine.rl
 lib/adhearsion/voip/asterisk/ami/parser.rb
 lib/adhearsion/voip/asterisk/commands.rb
+lib/adhearsion/voip/asterisk/config_generators/agents.conf.rb
+lib/adhearsion/voip/asterisk/config_generators/config_generator.rb
+lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb
 lib/adhearsion/voip/asterisk/config_manager.rb
 lib/adhearsion/voip/asterisk/menu_command/calculated_match.rb
 lib/adhearsion/voip/asterisk/menu_command/matchers.rb
@@ -98,7 +101,6 @@ lib/adhearsion/voip/freeswitch/inbound_connection_manager.rb
 lib/adhearsion/voip/freeswitch/oes_server.rb
 script/destroy
 script/generate
-spec/distributed/test_meta.rb
 spec/fixtures/dialplan.rb
 spec/initializer/test_configuration.rb
 spec/initializer/test_loading.rb
@@ -113,15 +115,10 @@ spec/test_helper.rb
 spec/test_hooks.rb
 spec/test_initialization.rb
 spec/test_logging.rb
-spec/test_monkey_patches.rb
 spec/test_plugin.rb
-spec/voip/abstractions/test_agent.rb
-spec/voip/abstractions/test_channel.rb
-spec/voip/abstractions/test_conference.rb
-spec/voip/abstractions/test_pbx.rb
-spec/voip/abstractions/test_queue.rb
-spec/voip/abstractions/test_voicemail.rb
 spec/voip/asterisk/ami_response_definitions.rb
+spec/voip/asterisk/config_file_generators/test_agents.rb
+spec/voip/asterisk/config_file_generators/test_queues.rb
 spec/voip/asterisk/menu_command/test_calculated_match.rb
 spec/voip/asterisk/menu_command/test_matchers.rb
 spec/voip/asterisk/mock_ami_server.rb
@@ -129,11 +126,9 @@ spec/voip/asterisk/test_agi_server.rb
 spec/voip/asterisk/test_ami.rb
 spec/voip/asterisk/test_commands.rb
 spec/voip/asterisk/test_config_manager.rb
-spec/voip/asterisk/test_dialplan_caching.rb
 spec/voip/dsl/dispatcher_spec_helper.rb
 spec/voip/dsl/test_dialing_dsl.rb
 spec/voip/dsl/test_dispatcher.rb
-spec/voip/dsl/test_official_adhearsion_dialplan.rb
 spec/voip/dsl/test_parser.rb
 spec/voip/freeswitch/test_basic_connection_manager.rb
 spec/voip/freeswitch/test_inbound_connection_manager.rb
@@ -144,3 +139,4 @@ spec/voip/test_numerical_string.rb
 spec/voip/test_phone_number.rb
 test/test_ahn_generator.rb
 test/test_component_generator.rb
+test/test_generator_helper.rb
