@@ -444,7 +444,7 @@ module Adhearsion
                   else bad_argument[:allow_transfer => allow_transfer]
                 end.to_s
                 
-                terse_character_options = 'n' + ring_style + allow_transfer + allow_hangup
+                terse_character_options = ring_style + allow_transfer + allow_hangup
                 
                 [terse_character_options, '', announcement, timeout].map(&:to_s)
               end
