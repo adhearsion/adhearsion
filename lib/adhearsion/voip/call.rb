@@ -65,6 +65,14 @@ module Adhearsion
   
   class UselessCallException < Exception; end
   
+  class FailedExtensionCallException < Exception
+    attr_reader :call_variables
+    def initialize(call_variables)
+      super()
+      @call_variables = call_variables
+    end
+  end
+  
   ##
   # Encapsulates call-related data and behavior.
   # For example, variables passed in on call initiation are
@@ -104,6 +112,13 @@ module Adhearsion
       io.closed?
     end
     
+    # Asterisk sometimes uses the "failed" extension to indicate a failed dial attempt.
+    # Since it may be important to handle these, this flag helps the dialplan Manager
+    # figure that out.
+    def failed_call?
+      @failed_call
+    end
+    
     def define_variable_accessors(recipient=self)
       variables.each do |key, value| 
         recipient.class.send :attr_accessor, key unless recipient.class.respond_to?("#{key}=")
@@ -115,7 +130,8 @@ module Adhearsion
     
       def check_if_valid_call
         extension = variables['extension'] || variables[:extension]
-        raise UselessCallException if extension == 't' || extension == 'failed' || extension == 'h'
+        @failed_call = true if extension == 'failed'
+        raise UselessCallException if extension == 't' || extension == 'h'
       end
     
       def set_originating_voip_platform!

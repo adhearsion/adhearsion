@@ -101,6 +101,12 @@ context "DialPlan loader" do
     loader.contexts.keys.map(&:to_s).sort.should.equal %w(one two)
   end
   
+  test 'loading a dialplan with a syntax error' do
+    the_following_code {
+      load "foo { &@(*!&(*@*!@^!^%@%^! }"
+    }.should.raise SyntaxError
+  end
+  
   test "loading a dial plan from a file" do
     loader = nil
     the_following_code {
@@ -225,11 +231,20 @@ context "Dialplan control statements" do
     }
     executing_dialplan(:constant_test => dialplan).should.not.raise
   end
+  
 end
 
 context "VoIP platform operations" do
   test "can map a platform name to a module which holds its platform-specific operations" do
     Adhearsion::VoIP::Commands.for(:asterisk).should == Adhearsion::VoIP::Asterisk::Commands
+  end
+end
+
+context 'ContextNameCollector' do
+  test '::build should raise a SyntaxError when the dialplan String contains one' do
+    the_following_code {
+      Adhearsion::DialPlan::Loader::ContextNameCollector.build "foo { ((((( *@!^*@&*^!^@ }"
+    }.should.raise SyntaxError
   end
 end
 

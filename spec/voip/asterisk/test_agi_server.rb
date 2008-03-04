@@ -64,12 +64,6 @@ context 'Active Calls' do
     }.should.raise(Adhearsion::UselessCallException)
   end
   
-  test 'A call with an extension of "failed" raises a UselessCallException' do
-    the_following_code {
-      Adhearsion::Call.new(@mock_io, typical_call_variables_hash.merge(:extension => 'failed'))
-    }.should.raise(Adhearsion::UselessCallException)
-  end
-  
   test 'Can create a call and add it via a top-level method on the Adhearsion module' do
     assert !Adhearsion::active_calls.any?
     call = Adhearsion::receive_call_from(typical_call_variable_io)

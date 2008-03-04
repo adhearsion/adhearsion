@@ -22,7 +22,7 @@ module Adhearsion
     class ExecutionEnvironment
       
       attr_reader :call
-      def initialize(call, entry_point)
+      def initialize(call, entry_point=nil)
         @call, @entry_point = call, entry_point
         extend_with_voip_commands!
         extend_with_call_variables!
@@ -30,6 +30,7 @@ module Adhearsion
       end
       
       def run
+        raise "Cannot run ExecutionEnvironment without an entry point!" unless @entry_point
         current_context = entry_point
         begin
           instance_eval(&current_context)
@@ -77,9 +78,11 @@ module Adhearsion
       end
       
       def handle(call)
+        raise FailedExtensionCallException.new(ExecutionEnvironment.new(call)) if call.failed_call?
+        
         starting_entry_point = entry_point_for call
         raise NoContextError, "No dialplan entry point for call context '#{call.context}' -- Ignoring call!" unless starting_entry_point
-        
+      
         @context = ExecutionEnvironment.new(call, starting_entry_point)
         inject_context_names_into_environment(@context)
         @context.run
@@ -136,22 +139,25 @@ module Adhearsion
       end
       
       def load(dial_plan_as_string)
-        contexts.update(Builder.build(dial_plan_as_string))
+        contexts.update(ContextNameCollector.build(dial_plan_as_string))
       end
       
-      class Builder < ::BlankSlate
+      class ContextNameCollector# < ::BlankSlate
         
         class << self
+          
           def build(dial_plan_as_string)
             builder = new
             builder.instance_eval(dial_plan_as_string)
             builder.contexts
           end
+          
           def const_missing(name)
             super
           rescue ArgumentError
             raise NameError, %(undefined constant "#{name}")
           end
+          
         end
         
         attr_reader :contexts
@@ -160,8 +166,8 @@ module Adhearsion
         end
         
         def method_missing(name, *args, &block)
-          super unless block_given?
-          contexts[name] = DialplanContextProc.new name, &block
+          super if !block_given? || args.any?
+          contexts[name] = DialplanContextProc.new(name, &block)
         end
       end
     end

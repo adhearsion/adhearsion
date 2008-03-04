@@ -16,9 +16,14 @@ module Adhearsion
               begin
             	  call = Adhearsion.receive_call_from io
             	  ahn_log.agi "Handling call with variables #{call.variables.inspect}"
-            	  Adhearsion::DialPlan::Manager.new.handle call
+            	  dialplan_manager = Adhearsion::DialPlan::Manager.new
+                dialplan_manager.handle call
               rescue Adhearsion::DialPlan::Manager::NoContextError => e
                 ahn_log.agi e.message
+                call.hangup!
+              rescue Adhearsion::FailedExtensionCallException => failed_call
+                ahn_log.agi 'Received "failed" extension for call. Executing any hooks.'
+                Adhearsion::Hooks::OnFailedCall.trigger_hooks(failed_call.call_variables)
                 call.hangup!
               rescue Adhearsion::UselessCallException
                 ahn_log.agi "Ignoring meta-AGI request"

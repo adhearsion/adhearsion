@@ -1,26 +1,35 @@
 module Adhearsion
 
-  class GenericHook
-    
-    def initialize
-      @hooks = []
-    end
-    
-    def create_hook(&block)
-      @hooks.synchronize do
-        @hooks << block
-      end
-    end
-
-    def trigger_hooks
-      @hooks.each &:call
-    end
-    
-  end
 
   module Hooks
     
-    AfterInitialized  = GenericHook.new
+    class GenericHook
+
+      def initialize
+        @hooks = []
+      end
+
+      def create_hook(&block)
+        @hooks.synchronize do
+          @hooks << block
+        end
+      end
+
+      # TODO: This is hardly thread safe!
+      def trigger_hooks
+        @hooks.each &:call
+      end
+      
+    end
+
+    class HookWithArguments < GenericHook
+      def trigger_hooks(*args)
+        @hooks.each { |hook| hook.call(*args) }
+      end
+    end
+    
+    AfterInitialized = GenericHook.new
+    OnFailedCall     = HookWithArguments.new
     
     TearDown = GenericHook.new
     class << TearDown

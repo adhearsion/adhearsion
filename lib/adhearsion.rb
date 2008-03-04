@@ -29,4 +29,3 @@ require 'adhearsion/voip/commands'
 require 'adhearsion/voip/asterisk/commands'
 require 'adhearsion/voip/dsl/dialing_dsl'
 require 'adhearsion/voip/call_routing'
-
