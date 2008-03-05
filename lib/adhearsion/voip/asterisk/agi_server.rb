@@ -22,14 +22,17 @@ module Adhearsion
                 ahn_log.agi e.message
                 call.hangup!
               rescue Adhearsion::FailedExtensionCallException => failed_call
-                ahn_log.agi 'Received "failed" extension for call. Executing any hooks.'
-                Adhearsion::Hooks::OnFailedCall.trigger_hooks(failed_call.call_variables)
-                call.hangup!
+                begin
+                  ahn_log.agi "Received \"failed\" meta-call with :failed_reason => #{failed_call.call.failed_reason.inspect}. Executing OnFailedCall hooks."
+                  Adhearsion::Hooks::OnFailedCall.trigger_hooks(failed_call.call)
+                  call.hangup!
+                rescue => e
+                  p e
+                end
               rescue Adhearsion::UselessCallException
                 ahn_log.agi "Ignoring meta-AGI request"
                 call.hangup!
               rescue => e
-                # TODO: Wouldn't it be nice to have a logging system?!?!  :(
                 ahn_log.agi.error e.inspect
                 ahn_log.agi.error e.backtrace.map { |s| " " * 5 + s }.join("\n")
               end

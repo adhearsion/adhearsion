@@ -49,6 +49,21 @@ context "Dialplan::Manager handling" do
     end
 end
 
+context "DialPlan::Manager's handling a failed call" do
+  include DialplanTestingHelper
+  test 'should check if the call has failed and then instruct it to extract the reason from the environment' do
+    flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:variable).with("REASON").once.and_return '3'
+    call = Adhearsion::Call.new(nil, {'extension' => "failed"})
+    call.should.be.failed_call
+    
+    begin
+      Adhearsion::DialPlan::Manager.handle(call)
+    rescue Adhearsion::FailedExtensionCallException => error
+      error.call.failed_reason.should == Adhearsion::Call::ASTERISK_FRAME_STATES[3]
+    end
+  end
+end
+
 context "DialPlan" do
   
   attr_accessor :loader, :loader_instance, :dial_plan

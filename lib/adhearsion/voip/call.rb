@@ -66,10 +66,10 @@ module Adhearsion
   class UselessCallException < Exception; end
   
   class FailedExtensionCallException < Exception
-    attr_reader :call_variables
-    def initialize(call_variables)
+    attr_reader :call
+    def initialize(call)
       super()
-      @call_variables = call_variables
+      @call = call
     end
   end
   
@@ -78,6 +78,33 @@ module Adhearsion
   # For example, variables passed in on call initiation are
   # accessible here as attributes    
   class Call
+    
+    # This is basically a translation of ast_channel_reason2str() from main/channel.c and
+    # ast_control_frame_type in include/asterisk/frame.h in the Asterisk source code. When
+    # Asterisk jumps to the 'failed' extension, it sets a REASON channel variable to a number.
+    # The indexes of these symbols represent the possible numbers REASON could be.
+    ASTERISK_FRAME_STATES = [
+      :failure,     # "Call Failure (not BUSY, and not NO_ANSWER, maybe Circuit busy or down?)"
+      :hangup,      # Other end has hungup
+      :ring,        # Local ring
+      :ringing,     # Remote end is ringing
+      :answer,      # Remote end has answered
+      :busy,        # Remote end is busy
+      :takeoffhook, # Make it go off hook
+      :offhook,     # Line is off hook
+      :congestion,  # Congestion (circuits busy)
+      :flash,       # Flash hook
+      :wink,        # Wink
+      :option,      # Set a low-level option
+      :radio_key,   # Key Radio
+      :radio_unkey, # Un-Key Radio
+      :progress,    # Indicate PROGRESS
+      :proceeding,  # Indicate CALL PROCEEDING
+      :hold,        # Indicate call is placed on hold
+      :unhold,      # Indicate call is left from hold
+      :vidupdate    # Indicate video frame update
+    ]
+    
     class << self
       ##
       # The primary public interface for creating a Call instance.
@@ -121,13 +148,25 @@ module Adhearsion
     
     def define_variable_accessors(recipient=self)
       variables.each do |key, value| 
-        recipient.class.send :attr_accessor, key unless recipient.class.respond_to?("#{key}=")
-        recipient.send "#{key}=", value
+        define_singleton_accessor_with_pair(key, value, recipient)
+      end
+    end
+    
+    def extract_failed_reason_from(environment)
+      if originating_voip_platform == :asterisk
+        failed_reason = environment.variable 'REASON'
+        failed_reason &&= ASTERISK_FRAME_STATES[failed_reason.to_i]
+        define_singleton_accessor_with_pair(:failed_reason, failed_reason, environment)
       end
     end
     
     private
-    
+      
+      def define_singleton_accessor_with_pair(key, value, recipient=self)
+        recipient.class.send :attr_accessor, key unless recipient.class.respond_to?("#{key}=")
+        recipient.send "#{key}=", value
+      end
+      
       def check_if_valid_call
         extension = variables['extension'] || variables[:extension]
         @failed_call = true if extension == 'failed'
