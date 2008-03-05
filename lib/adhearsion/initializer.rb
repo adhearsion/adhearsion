@@ -77,6 +77,7 @@ module Adhearsion
       self.class.ahn_root = path
       # See documentation for explanation of how :pid_file works. Have to
       # check for struct boolean equality because "true" means "use default".
+      initialize_log_file
       resolve_pid_file
       switch_to_root_directory
       catch_termination_signal
@@ -90,6 +91,15 @@ module Adhearsion
       ahn_log "Adhearsion initialized!"
       
       trigger_after_initialized_hooks
+    end
+    
+    def initialize_log_file
+      ahn_app_log_directory = AHN_ROOT + '/log'
+      Dir.mkdir(ahn_app_log_directory) unless File.directory? ahn_app_log_directory
+      Adhearsion::Logging::DefaultAdhearsionLogger.outputters = [
+        Adhearsion::Logging::DefaultAdhearsionOutputter,
+        Log4r::FileOutputter.new("Main Adhearsion log file", :filename => ahn_app_log_directory + "/adhearsion.log", :trunc => false)
+      ]
     end
     
     def create_pid_file(file = pid_file)

@@ -64,7 +64,7 @@ end
 module InitializerStubs
   
   UNWANTED_BEHAVIOR = {
-    Adhearsion::Initializer                       => [:switch_to_root_directory],
+    Adhearsion::Initializer                       => [:initialize_log_file, :switch_to_root_directory],
     Adhearsion::Hooks::AfterInitialized.metaclass => [:create_hook, :trigger_hooks]
   } unless defined? UNWANTED_BEHAVIOR
   

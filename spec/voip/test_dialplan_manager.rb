@@ -55,7 +55,7 @@ context "DialPlan::Manager's handling a failed call" do
     flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:variable).with("REASON").once.and_return '3'
     call = Adhearsion::Call.new(nil, {'extension' => "failed"})
     call.should.be.failed_call
-    
+    flexmock(Adhearsion::DialPlan).should_receive(:new).once.and_return flexmock("bogus DialPlan which should never be used")
     begin
       Adhearsion::DialPlan::Manager.handle(call)
     rescue Adhearsion::FailedExtensionCallException => error
