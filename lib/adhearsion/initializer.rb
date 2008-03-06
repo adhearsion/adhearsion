@@ -53,6 +53,11 @@ module Adhearsion
           Object.const_set(:AHN_ROOT, PathString.new(File.expand_path(path)))
         end
       end
+      
+      def start_from_init_file(file, ahn_app_path)
+        new(ahn_app_path, :loaded_init_files => file)
+      end
+      
     end
   
     attr_reader :path, :daemon, :pid_file
@@ -64,19 +69,20 @@ module Adhearsion
     #
     #  - You may want to have Adhearsion create a process identification
     #    file when it boots so that a crash monitoring program such as
-    #    Monit can reboot if necessary of so the init script can kill it
+    #    Monit can reboot if necessary or so the init script can kill it
     #    for system shutdowns.
     #  - To have Adhearsion create a pid file in the default location (i.e.
     #    AHN_INSTALL_DIR/adhearsion.pid), supply :pid_file with 'true'. Otherwise
     #    one is not created UNLESS it is running in daemon mode, in which
     #    case one is created. You can force Adhearsion to not create one
     #    even in daemon mode by supplying "false".
-    def initialize(path = nil, options = {})
-      @path, @daemon, @pid_file = path, options[:daemon], options[:pid_file]
+    def initialize(path=nil, options={})
+      @path              = path
+      @daemon            = options[:daemon]
+      @pid_file          = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
+      @loaded_init_files = options[:loaded_init_files]
       
       self.class.ahn_root = path
-      # See documentation for explanation of how :pid_file works. Have to
-      # check for struct boolean equality because "true" means "use default".
       initialize_log_file
       resolve_pid_file
       switch_to_root_directory
@@ -150,7 +156,11 @@ module Adhearsion
     end
     
     def load_all_init_files
-      all_inits.each { |init| load init } if Paths.manager_for? "init"
+      if Paths.manager_for? "init"
+        init_files_from_rc = all_inits.map { |file| File.expand_path(file) }
+        already_loaded_init_files = Array(@loaded_init_files).map { |file| File.expand_path(file) }
+        (init_files_from_rc - already_loaded_init_files).each { |init| load init }
+      end
     end
     
     def daemonize!

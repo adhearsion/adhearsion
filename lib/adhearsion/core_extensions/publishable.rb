@@ -21,7 +21,7 @@ module Adhearsion
     end
 
     def method_missing(name, *args, &block)
-      return Module.const_get(name) if (?A..?Z).include? name.to_s[0]
+      return Module.const_get(name) if name.to_s =~ /^[A-Z]/
       super unless @interfaces && @interfaces.has_key?(name.to_s)
       @interfaces[name.to_s]
     end

@@ -25,7 +25,7 @@ FIX (describe your package)
 == LICENSE:
 
 Adhearsion, open source collaboration framework
-Copyright (C) 2006,2007 Jay Phillips
+Copyright (C) 2006,2007,2008 Jay Phillips
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

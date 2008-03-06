@@ -1,3 +1,8 @@
+unless defined? Adhearsion
+  require 'rubygems'
+  require 'adhearsion' 
+end
+
 Adhearsion::Configuration.configure do |config|
   
   # Supported levels (in increasing severity) -- :debug < :info < :warn < :error < :fatal
@@ -35,18 +40,12 @@ Adhearsion::Configuration.configure do |config|
   # Configure FreeSwitch
   # config.enable_freeswitch :listening_port => 4572
   
-  # Configure a database to use ActiveRecord-backed models.
+  # Configure a database to use ActiveRecord-backed models. See ActiveRecord::Base.establish_connection
+  # for the appropriate settings here.
   # config.enable_database :adapter  => 'mysql',
   #                        :username => 'joe', 
   #                        :password => 'secret',
   #                        :host     => 'db.example.org'
 end
 
-# If you want another applications to read your database settings
-# programatically, you can enable the database like this:
-#
-#  config.enable_database YAML.load_file("config/active_record.yml")
-#
-# You may want to name the file database.yml but this may conflict
-# when you're doing Rails app integration since Rails separates database
-# settings into environments (development, test, production).
+Adhearsion::Initializer.start_from_init_file(__FILE__, File.dirname(__FILE__) + "/..")
