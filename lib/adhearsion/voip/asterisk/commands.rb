@@ -176,7 +176,7 @@ module Adhearsion
       	end
 
         def last_dial_successful?
-          last_dial_status == :answer
+          last_dial_status == :answered
         end
 
         def last_dial_unsuccessful?
