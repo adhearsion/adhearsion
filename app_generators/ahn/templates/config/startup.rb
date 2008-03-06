@@ -1,5 +1,6 @@
 unless defined? Adhearsion
   require 'rubygems'
+  gem 'adhearsion', '>= 0.7.999'
   require 'adhearsion' 
 end
 
