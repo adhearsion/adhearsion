@@ -203,7 +203,7 @@ module Adhearsion
             variables.inject({}) do |new_variables,(key,value)|
               returning new_variables do
                 stripped_name = key.kind_of?(String) ? key[/^(agi_)?(.+)$/,2] : key
-                new_variables[stripped_name] = key.kind_of?(String) ? value.strip : value
+                new_variables[stripped_name] = value.kind_of?(String) ? value.strip : value
               end
             end
           end
@@ -306,7 +306,7 @@ module Adhearsion
           end
           
           def separate_line_into_key_value_pair(line)
-            line.match(/^([^:]+):\s?(\S*)/).captures
+            line.match(/^([^:]+):\s?(.+)/).captures
           end
         end
       

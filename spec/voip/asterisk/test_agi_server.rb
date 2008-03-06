@@ -113,6 +113,10 @@ context 'Call variable parsing with data that is treated specially' do
   end
   test "value of 'yes' converts to true"
   test "value of 'unknown' converts to nil"
+  test 'separate_line_into_key_value_pair parses values with spaces in them' do
+    key, value = Adhearsion::Call::Variables::Parser.separate_line_into_key_value_pair("foo: My Name")
+    value.should == 'My Name'
+  end
 end
 
 context 'Typical call variable line parsing with a typical line that is not treated specially' do
@@ -146,6 +150,7 @@ context 'Call variable line parsing with a line that is treated specially' do
     @key.should   == 'agi_request'
     @value.should == 'agi://10.0.0.152'
   end
+  
 end
 
 context "Extracting the query from the request URI" do
