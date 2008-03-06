@@ -56,6 +56,17 @@ module Adhearsion
             args[:data] = opts[:args] if opts[:args]
             originate args
           end
+          
+          def call_into_context(channel, context, options={})
+            args = {:channel => channel, :context => context}
+            args[:priority] = options[:priority] || 1
+            args[:extension] = options[:extension] if options[:extension]
+            args[:caller_id] = options[:caller_id] if options[:caller_id]
+            if options[:variables] && options[:variables].kind_of?(Hash)
+              args[:variable] = options[:variables].map {|pair| pair.join('=')}.join('|')
+            end
+            originate args
+          end
 
           def method_missing(name, hash={}, &block)
             execute_ami_command! name, hash, &block
