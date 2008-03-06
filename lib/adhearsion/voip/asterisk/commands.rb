@@ -160,6 +160,10 @@ module Adhearsion
       	  end
     	  end
       	
+        def get_dial_status
+          variable('DIALSTATUS').downcase.to_sym
+        end
+        
       	# Returns the status of the last dial(). Possible dial
         # statuses include :answer, :busy, :no_answer, :cancelled,
         # :congested, and :channel_unavailable. If :cancel is
@@ -172,7 +176,7 @@ module Adhearsion
       	end
 
         def last_dial_successful?
-          last_dial_status == 'ANSWER'
+          last_dial_status == :answer
         end
 
         def last_dial_unsuccessful?
@@ -236,7 +240,12 @@ module Adhearsion
   	    end
     	  
         def dial(number, options={})
-          set_caller_id options.delete(:caller_id)
+          *recognized_options = :caller_id, :name, :for, :options
+          
+          unrecognized_options = options.keys - recognized_options
+          raise ArgumentError, "Unknown dial options: #{unrecognized_options.to_sentence}" if unrecognized_options.any?
+          set_caller_id_name options[:name]
+          set_caller_id_number options[:caller_id]
           execute "Dial", number, options[:for], options[:options]
         end
         
@@ -289,10 +298,15 @@ module Adhearsion
             nil
           end
         
-          def set_caller_id(caller_id)
+          def set_caller_id_number(caller_id)
             return unless caller_id
             raise ArgumentError, "Caller ID must be numerical" if caller_id.to_s !~ /^\d+$/
             raw_response %(SET CALLERID %p) % caller_id
+          end
+
+          def set_caller_id_name(caller_id_name)
+            return unless caller_id_name
+            variable "CALLERID(name)" => caller_id_name
           end
           
           def timeout_from_dial_options(options)
@@ -310,10 +324,6 @@ module Adhearsion
             digit.to_i.chr if digit && digit.to_s != "-1"
           end
           
-          def get_dial_status
-            get_variable('DIALSTATUS').downcase.to_sym
-          end
-        
           def extract_input_from(result)
             return false if error?(result)
             # return false if input_timed_out?(result)

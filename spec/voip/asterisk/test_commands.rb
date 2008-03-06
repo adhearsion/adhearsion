@@ -1016,25 +1016,47 @@ end
 context "Dial command" do
   include DialplanCommandTestHelpers
   
-  test "should set the caller id if the callerid option is specified" do
-    mock_call.should_receive(:set_caller_id).once
+  test "should set the caller id if the caller_id option is specified" do
+    mock_call.should_receive(:set_caller_id_number).once
     mock_call.dial 123, :caller_id => "1234678901"
   end
   
-  test "should raise an exception when a non-numerical callerid is specified" do
+  test 'should raise an exception when unknown hash key arguments are given to it' do
+    the_following_code {
+      mock_call.dial 123, :asjndfhasndfahsbdfbhasbdfhabsd => "asbdfhabshdfbajhshfbajsf"
+    }.should.raise ArgumentError
+  end
+  
+  test 'should set the caller ID name when given the :name hash key argument' do
+    name = "Jay Phillips"
+    mock_call.should_receive(:set_caller_id_name).once.with(name)
+    mock_call.dial "BlahBlahBlah", :name => name
+  end
+  
+  test "should raise an exception when a non-numerical caller_id is specified" do
     the_following_code {
       mock_call.dial 911, :caller_id => "zomgz"
     }.should.raise ArgumentError
   end
 end
 
-context "set_caller_id command" do
+context "set_caller_id_number command" do
   include DialplanCommandTestHelpers
 
   test "should encapsulate the number with quotes" do
     caller_id = "14445556666"
     mock_call.should_receive(:raw_response).once.with(%(SET CALLERID "#{caller_id}")).and_return true
-    mock_call.send(:set_caller_id, caller_id)
+    mock_call.send(:set_caller_id_number, caller_id)
+  end
+end
+
+context 'set_caller_id_name command' do
+  include DialplanCommandTestHelpers
+  
+  test "should wrap the name in quotes" do
+    name = "Jay Phillips"
+    mock_call.should_receive(:raw_response).once.with(%(SET VARIABLE CALLERID(name) "#{name}")).and_return true
+    mock_call.send(:set_caller_id_name, name)
   end
 end
 
