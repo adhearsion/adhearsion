@@ -1038,6 +1038,62 @@ context "Dial command" do
       mock_call.dial 911, :caller_id => "zomgz"
     }.should.raise ArgumentError
   end
+  
+end
+
+context "the last_dial_status command and family" do
+  
+  include DialplanCommandTestHelpers
+  
+  test 'should convert common DIALSTATUS variables to their appropriate symbols' do
+    mock_call.should_receive(:variable).with("DIALSTATUS").once.and_return('ANSWER')
+    mock_call.last_dial_status.should.equal :answered
+    
+    mock_call.should_receive(:variable).with("DIALSTATUS").once.and_return('CONGESTION')
+    mock_call.last_dial_status.should.equal :congested
+    
+    mock_call.should_receive(:variable).once.with("DIALSTATUS").and_return("BUSY")
+    mock_call.last_dial_status.should.equal:busy
+    
+    mock_call.should_receive(:variable).once.with("DIALSTATUS").and_return("CANCEL")
+    mock_call.last_dial_status.should.equal :cancelled
+    
+    mock_call.should_receive(:variable).once.with("DIALSTATUS").and_return("NOANSWER")
+    mock_call.last_dial_status.should.equal :unanswered
+    
+    mock_call.should_receive(:variable).once.with("DIALSTATUS").and_return("CHANUNAVAIL")
+    mock_call.last_dial_status.should.equal :channel_unavailable
+    
+    mock_call.should_receive(:variable).once.with("DIALSTATUS").and_return("THISISNOTVALID")
+    mock_call.last_dial_status.should.equal :unknown
+  end
+  
+  test 'last_dial_successful? should return true if last_dial_status == :answered' do
+    mock_call.should_receive(:variable).with("DIALSTATUS").once.and_return('ANSWER')
+    mock_call.last_dial_successful?.should.equal true
+    
+    mock_call.should_receive(:variable).with("DIALSTATUS").once.and_return('CHANUNAVAIL')
+    mock_call.last_dial_successful?.should.equal false
+  end
+  
+  test 'last_dial_unsuccessful? should be the opposite of last_dial_successful?' do
+    mock_call.should_receive(:variable).with("DIALSTATUS").once.and_return('ANSWER')
+    mock_call.last_dial_unsuccessful?.should.equal false
+    
+    mock_call.should_receive(:variable).with("DIALSTATUS").once.and_return('CHANUNAVAIL')
+    mock_call.last_dial_unsuccessful?.should.equal true
+  end
+  
+  test 'get_dial_status should not blow up if variable() returns nil. it should return :cancelled' do
+    the_following_code {
+      mock_call.should_receive(:variable).once.with("DIALSTATUS").and_return nil
+      mock_call.last_dial_status.should.equal :cancelled
+      
+      mock_call.should_receive(:variable).once.with("DIALSTATUS").and_return nil
+      mock_call.last_dial_successful?.should.equal false
+    }.should.not.raise
+  end
+  
 end
 
 context "set_caller_id_number command" do

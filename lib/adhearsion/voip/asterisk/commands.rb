@@ -19,6 +19,7 @@ module Adhearsion
                                                    :busy        => :busy,
                                                    :cancel      => :cancelled,
                                                    :noanswer    => :unanswered,
+                                                   :cancelled   => :cancelled,
                                                    :chanunavail => :channel_unavailable) unless defined? DIAL_STATUSES
         
         def write(message)
@@ -161,7 +162,8 @@ module Adhearsion
     	  end
       	
         def get_dial_status
-          variable('DIALSTATUS').downcase.to_sym
+          dial_status = variable('DIALSTATUS')
+          dial_status ? dial_status.downcase.to_sym : :cancelled
         end
         
       	# Returns the status of the last dial(). Possible dial
