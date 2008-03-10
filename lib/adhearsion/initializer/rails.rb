@@ -18,16 +18,21 @@ module Adhearsion
           load_rails
           if defined? ActiveRecord
             ActiveRecord::Base.allow_concurrency = true
+            Hooks::BeforeCall.create_hook do
+              ActiveRecord::Base.verify_active_connections!
+            end
           end
         end
         
         private
+        
         def load_rails
           environment_file = File.expand_path(rails_root + "/config/environment.rb")
           raise "There is no config/environment.rb file!" unless File.exists?(environment_file)
           ENV['RAILS_ENV'] = environment.to_s
           require environment_file
         end
+        
       end
       
     end

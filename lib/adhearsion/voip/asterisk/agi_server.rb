@@ -13,6 +13,7 @@ module Adhearsion
             end
             
             def serve(io)
+              Hooks::BeforeCall.trigger_hooks
               begin
             	  call = Adhearsion.receive_call_from io
             	  ahn_log.agi "Handling call with variables #{call.variables.inspect}"

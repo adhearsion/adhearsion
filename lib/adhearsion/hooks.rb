@@ -29,6 +29,7 @@ module Adhearsion
     end
     
     AfterInitialized = GenericHook.new
+    BeforeCall       = GenericHook.new
     OnFailedCall     = HookWithArguments.new
     
     TearDown = GenericHook.new

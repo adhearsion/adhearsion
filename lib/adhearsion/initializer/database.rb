@@ -13,6 +13,7 @@ module Adhearsion
           @@config = Adhearsion::AHN_CONFIG.database
           ActiveRecord::Base.allow_concurrency = true
           establish_connection
+          create_call_hook_for_connection_cleanup
         end
 
         def stop
@@ -20,6 +21,12 @@ module Adhearsion
         end
 
         private
+
+        def create_call_hook_for_connection_cleanup
+          Hooks::BeforeCall.create_hook do
+            ActiveRecord::Base.verify_active_connections!
+          end
+        end
 
         def require_dependencies
           require 'active_record'

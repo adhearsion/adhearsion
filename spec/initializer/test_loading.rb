@@ -60,6 +60,7 @@ context "The Rails initializer" do
     environment_rb = rails_root + '/config/environment.rb'
     flexmock(Adhearsion::Initializer::RailsInitializer).should_receive(:require).once.with environment_rb
     stub_file_checking_methods!
+    stub_before_call_hook!
     initialize_rails_with_options :rails_root => rails_root, :environment => :development
   end
   
@@ -67,7 +68,7 @@ context "The Rails initializer" do
     flexmock(Adhearsion::AHN_CONFIG).should_receive(:database_enabled?).and_return true
     flexmock(Adhearsion::Initializer::RailsInitializer).should_receive(:require).and_return
     stub_file_checking_methods!
-    
+    stub_before_call_hook!
     the_following_code {
       initialize_rails_with_options :rails_root => '/tmp', :environment => :development  
     }.should.raise
@@ -77,6 +78,7 @@ context "The Rails initializer" do
     flexmock(ENV).should_receive(:[]=).once.with("RAILS_ENV", "development")
     flexmock(Adhearsion::Initializer::RailsInitializer).should_receive(:require).once.and_return
     stub_file_checking_methods!
+    stub_before_call_hook!
     initialize_rails_with_options :rails_root => '/tmp', :environment => :development
   end
   
@@ -84,8 +86,17 @@ context "The Rails initializer" do
     flexstub(Adhearsion::Initializer::RailsInitializer).should_receive :require
     flexstub(Adhearsion::Initializer::RailsInitializer).should_receive :load_rails
     stub_file_checking_methods!
+    stub_before_call_hook!
     initialize_rails_with_options :rails_root => '/path/somewhere', :environment => :development
     ActiveRecord::Base.send(:class_variable_get, :@@allow_concurrency).should.equal true
+  end
+  
+  test 'should create a BeforeCall hook (presumably to verify the active connections)' do    
+    flexstub(Adhearsion::Initializer::RailsInitializer).should_receive :require
+    flexstub(Adhearsion::Initializer::RailsInitializer).should_receive :load_rails
+    stub_file_checking_methods!
+    flexmock(Adhearsion::Hooks::BeforeCall).should_receive(:create_hook).once
+    initialize_rails_with_options :rails_root => '/path/somewhere', :environment => :development
   end
   
 end
@@ -140,6 +151,10 @@ module RailsInitializerTestHelper
   def stub_file_checking_methods!
     flexstub(File).should_receive(:directory?).and_return true
     flexstub(File).should_receive(:exists?).and_return true
+  end
+  
+  def stub_before_call_hook!
+    flexstub(Adhearsion::Hooks::BeforeCall).should_receive :create_hook
   end
   
 end
