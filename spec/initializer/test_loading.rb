@@ -24,6 +24,13 @@ context "The database initializer" do
     User.superclass.should.equal ActiveRecord::Base
   end
   
+  test 'should enable ActiveRecord concurrency' do
+    bogus_model = tempfile_with_contents sample_user_model
+    flexmock(Adhearsion::Initializer::DatabaseInitializer).should_receive(:all_models).and_return([bogus_model.path])
+    start_database_initializer
+    ActiveRecord::Base.send(:class_variable_get, :@@allow_concurrency).should.be true
+  end
+  
 end
 
 context "The Asterisk initializer" do
@@ -73,6 +80,14 @@ context "The Rails initializer" do
     initialize_rails_with_options :rails_root => '/tmp', :environment => :development
   end
   
+  test 'should enable ActiveRecord concurrency' do
+    flexstub(Adhearsion::Initializer::RailsInitializer).should_receive :require
+    flexstub(Adhearsion::Initializer::RailsInitializer).should_receive :load_rails
+    stub_file_checking_methods!
+    initialize_rails_with_options :rails_root => '/path/somewhere', :environment => :development
+    ActiveRecord::Base.send(:class_variable_get, :@@allow_concurrency).should.equal true
+  end
+  
 end
 
 BEGIN {
@@ -116,16 +131,15 @@ end
 
 module RailsInitializerTestHelper
   
-  
   def initialize_rails_with_options(options)
     rails_options = flexmock "Rails options mock", options
-    flexmock(Adhearsion::AHN_CONFIG).should_receive(:rails).once.and_return(rails_options)
+    flexstub(Adhearsion::AHN_CONFIG).should_receive(:rails).once.and_return(rails_options)
     Adhearsion::Initializer::RailsInitializer.start
   end
   
   def stub_file_checking_methods!
-    flexmock(File).should_receive(:directory?).and_return true
-    flexmock(File).should_receive(:exists?).and_return true
+    flexstub(File).should_receive(:directory?).and_return true
+    flexstub(File).should_receive(:exists?).and_return true
   end
   
 end

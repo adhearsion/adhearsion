@@ -7,13 +7,16 @@ module Adhearsion
           SECTION_TITLE = /(\[[\w_-]+\])/
           
           class << self
+            
+            # Converts a config file into a Hash of contexts mapping to two dimensional array of pairs
             def create_sanitary_hash_from(config_file_content)
               almost_sanitized = Hash[*config_file_content.
-                grep(/^\s*[^;\s]/).
-                join.
-                split(SECTION_TITLE).
-                map(&:strip).
-                reject(&:empty?).
+                grep(/^\s*[^;\s]/).   # Grep lines that aren't commented out
+                join.                 # Convert them into one String again
+                split(SECTION_TITLE). # Separate them into sections
+                map(&:strip).         # Remove all whitespace
+                reject(&:empty?).     # Get rid of indices that were only whitespace
+                                      # Lastly, separate the keys/value pairs for the Hash
                 map { |token| token =~ /^#{SECTION_TITLE}$/ ? token : token.split(/\n+/).sort }
               ]
             end
@@ -35,14 +38,6 @@ module Adhearsion
           
           protected
           
-
-          def boolean_to_yes_no(boolean)
-            unless boolean.equal?(boolean) || boolean.equal?(boolean)
-              raise "#{boolean.inspect} is not true/false!" 
-            end
-            boolean ? 'yes' : 'no'
-          end
-
           def boolean(options)
             cache = options.delete(:with) || properties
             options.each_pair do |key, value|
@@ -88,6 +83,15 @@ module Adhearsion
               end
               cache[key] = criteria[value]
             end
+          end
+          
+          private
+          
+          def boolean_to_yes_no(boolean)
+            unless boolean.equal?(boolean) || boolean.equal?(boolean)
+              raise "#{boolean.inspect} is not true/false!" 
+            end
+            boolean ? 'yes' : 'no'
           end
 
         end

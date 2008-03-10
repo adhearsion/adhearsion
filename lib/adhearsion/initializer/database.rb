@@ -11,6 +11,7 @@ module Adhearsion
           require_dependencies
           require_models
           @@config = Adhearsion::AHN_CONFIG.database
+          ActiveRecord::Base.allow_concurrency = true
           establish_connection
         end
 
@@ -29,7 +30,7 @@ module Adhearsion
             load model
           end
         end
-
+        
         def establish_connection
           ActiveRecord::Base.establish_connection @@config.connection_options
         end

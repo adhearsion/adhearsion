@@ -1,5 +1,13 @@
 class String
   
+  def unindent
+    gsub(/^\s*/,'')
+  end
+  
+  def unindent!
+    gsub!(/^\s*/,'')
+  end
+  
 	def self.random_char
 		case random_digit = rand(62)
 			when  0...10 : random_digit.to_s

@@ -16,6 +16,9 @@ module Adhearsion
           raise "Error loading Rails environment in #{rails_root.inspect}. "  +
                 "It's not a directory!" unless File.directory?(rails_root)
           load_rails
+          if defined? ActiveRecord
+            ActiveRecord::Base.allow_concurrency = true
+          end
         end
         
         private
