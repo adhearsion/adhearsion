@@ -1039,6 +1039,177 @@ context "Dial command" do
     }.should.raise ArgumentError
   end
   
+  test 'should pass the value of the :confirm key to dial_macro_option_compiler()' do
+    value_of_confirm_key = {:play => "ohai", :timeout => 30}
+    mock_call.should_receive(:dial_macro_option_compiler).once.with value_of_confirm_key
+    mock_call.dial 123, :confirm => value_of_confirm_key
+  end
+  
+  test "should add the return value of dial_macro_option_compiler to the :options key's value given to the dial command" do
+    channel   = "SIP/1337"
+    macro_arg = "THISSHOULDGETPASSEDTOASTERISK"
+    timeout   = 10
+    options   = 'hH'
+    
+    mock_call.should_receive(:dial_macro_option_compiler).once.and_return macro_arg
+    mock_call.should_receive(:execute).with('Dial', channel, timeout, options + macro_arg)
+    mock_call.dial channel, :for => timeout, :confirm => true, :options => options
+  end
+  
+  test 'should add the return value of dial_macro_option_compiler to the options field when NO :options are given' do
+    channel   = "SIP/1337"
+    macro_arg = "THISSHOULDGETPASSEDTOASTERISK"
+    timeout   = 10
+    options   = 'hH'
+    
+    mock_call.should_receive(:dial_macro_option_compiler).once.and_return macro_arg
+    mock_call.should_receive(:execute).with('Dial', channel, timeout, options + macro_arg)
+    mock_call.dial channel, :for => timeout, :confirm => true, :options => options
+  end
+  
+end
+
+context "The Dial command's :confirm option setting builder" do
+  
+  include DialplanCommandTestHelpers
+  
+  attr_reader :formatter
+  before :each do
+    @formatter = mock_call.method :dial_macro_option_compiler
+  end
+  
+  test 'should allow passing in the :confirm named argument with true' do
+    the_following_code {
+      formatter.call true
+    }.should.not.raise ArgumentError
+  end
+  
+  test 'should separate :play options with "++"' do
+    sound_files = *1..10
+    formatter.call(:play => sound_files).should.include sound_files.join('++')
+  end
+  
+  test 'should raise an ArgumentError if an invalid Hash key is given' do
+    the_following_code {
+      formatter.call :this_symbol_is_not_valid => 123
+    }.should.raise ArgumentError
+  end
+  
+  test 'should ensure the :fails_with key is only one of :kill_both_channels, :congestion, or :busy' do
+    *good_options = :kill_both_channels, :congestion, :busy
+    *bad_options  = "congestion", "foobar", 123, Time.now
+    good_options.each do |good_option|
+      the_following_code {
+        formatter.call(:fails_with => good_option)
+      }.should.not.raise ArgumentError
+    end
+    bad_options.each do |bad_option|
+      the_following_code {
+        formatter.call(:fails_with => bad_option)
+      }.should.raise ArgumentError
+    end
+  end
+  
+  test "should raise an ArgumentError if the argument's class is not recognized" do
+    the_following_code {
+      formatter.call Time.now # Time is an example strange case
+    }.should.raise ArgumentError
+  end
+  
+  test 'should return the contents within a M() Dial argument' do
+    formatter.call(true).should =~ /^M\(.+\)$/
+  end
+  
+  test 'should replace the default macro name when given the :macro options' do
+    macro_name = "ivegotalovelybunchofcoconuts"
+    formatter.call(:macro => macro_name).starts_with?("M(#{macro_name}").should.equal true
+  end
+  
+  test 'should allow a symbol macro name' do
+    the_following_code {
+      formatter.call(:macro => :foo)
+    }.should.not.raise ArgumentError
+  end
+  
+  test 'should only allow alphanumeric and underscores in the macro name' do
+    bad_options = ["this has a space", "foo,bar", 'exists?', 'x^z', '', "!&@&*^!@"]
+    bad_options.each do |bad_option|
+      the_following_code {
+        formatter.call(:macro => bad_option)
+      }.should.raise ArgumentError
+    end
+  end
+  
+  test 'should confirm :timeout => :none to 0' do
+    formatter.call(:timeout => :none).should.include "timeout:0"
+  end
+  
+  test 'should separate the macro name and the arguments with a caret (^)' do
+    formatter.call(:macro => "jay").should =~ /M\(jay\^.+/
+  end
+  
+  test 'should raise an ArgumentError if a caret existed anywhere in the resulting String' do
+    bad_options = [{:play => "foo^bar", :key => "^", :play => ["hello-world", 'lol^cats']}]
+    bad_options.each do |bad_option|      
+      the_following_code {
+        formatter.call(bad_option)
+      }.should.raise ArgumentError
+    end
+  end
+  
+  test 'should raise an ArgumentError if the :key is not [0-9#*]' do
+    bad_options = %w[& A $ @ . )]
+    bad_options.each do |bad_option|
+      the_following_code {
+        formatter.call :key => bad_option
+      }.should.raise ArgumentError
+    end
+  end
+  
+  test 'should raise an ArgumentError if the key is longer than one digit' do
+    the_following_code {
+      formatter.call :key => "55"
+    }.should.raise ArgumentError
+  end
+  
+  test 'should raise an ArgumentError if the timeout is not numeric and not :none' do
+    bad_options = [:nonee, Time.now, method(:inspect)]
+    bad_options.each do |bad_option|
+      the_following_code {
+        formatter.call bad_option
+      }.should.raise ArgumentError
+    end
+  end
+  
+  test 'should support passing a String argument as a timeout' do
+    the_following_code {
+      formatter.call :timeout => "123"
+    }.should.not.raise ArgumentError
+  end
+  
+  test 'should raise an ArgumentError if given a Float' do
+    the_following_code {
+      formatter.call :timeout => 100.0012
+    }.should.raise ArgumentError
+  end
+  
+  test 'should allow passing a ActiveSupport::Duration to :timeout' do
+    the_following_code {
+      formatter.call :timeout => 3.minutes
+    }.should.not.raise ArgumentError
+  end 
+  
+end
+
+context 'the dtmf command' do
+
+  include DialplanCommandTestHelpers
+  
+  test 'should send the proper AGI command' do  
+    digits = '8404#4*'
+    mock_call.dtmf digits
+    pbx_should_have_been_sent "EXEC SendDTMF #{digits}"
+  end
 end
 
 context "the last_dial_status command and family" do

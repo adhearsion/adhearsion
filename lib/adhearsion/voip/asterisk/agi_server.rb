@@ -4,7 +4,6 @@ module Adhearsion
     module Asterisk
       module AGI
         class Server
-          Thread.current.abort_on_exception=true
           
           class RubyServer < GServer
             
@@ -15,9 +14,13 @@ module Adhearsion
             def serve(io)
               Hooks::BeforeCall.trigger_hooks
               begin
+                puts 'before call'
             	  call = Adhearsion.receive_call_from io
+            	  puts 'after call'
             	  ahn_log.agi "Handling call with variables #{call.variables.inspect}"
+            	  puts 'call now manager'
             	  dialplan_manager = Adhearsion::DialPlan::Manager.new
+            	  puts '??'
                 dialplan_manager.handle call
               rescue Adhearsion::DialPlan::Manager::NoContextError => e
                 ahn_log.agi e.message

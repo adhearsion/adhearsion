@@ -69,6 +69,10 @@ module Adhearsion
           execute 'PlayTones', tone_code
         end
         
+        def dtmf digits
+      		execute "SendDTMF", digits.to_s
+      	end
+      	
         def menu(*args, &block)
           menu_instance = Menu.new(*args, &block)
 
@@ -242,13 +246,16 @@ module Adhearsion
   	    end
     	  
         def dial(number, options={})
-          *recognized_options = :caller_id, :name, :for, :options
+          *recognized_options = :caller_id, :name, :for, :options, :confirm
           
           unrecognized_options = options.keys - recognized_options
           raise ArgumentError, "Unknown dial options: #{unrecognized_options.to_sentence}" if unrecognized_options.any?
           set_caller_id_name options[:name]
           set_caller_id_number options[:caller_id]
-          execute "Dial", number, options[:for], options[:options]
+          confirm_option = dial_macro_option_compiler options[:confirm]
+          all_options = options[:options]
+          all_options = all_options ? all_options + confirm_option : confirm_option
+          execute "Dial", number, options[:for], all_options
         end
         
         # def dial(number, options={})
@@ -318,6 +325,61 @@ module Adhearsion
           def asterisk_options_from_dial_options(options)
             # TODO: Will become much more sophisticated soon to handle callerid, etc
             options[:options]
+          end
+          
+          def dial_macro_option_compiler(confirm_argument_value)
+            defaults = { :macro => 'ahn_dial_confirmer',
+                         :timeout => 20.seconds, 
+                         :fails_with => :busy, 
+                         :play => "beep",
+                         :key => '#' }
+            hash_formatter = lambda do |options|
+              options = options.clone
+              macro_name = options.delete :macro
+              encoded_options = options.map { |key,value| "#{key}:#{value}" }.join '!'
+              returning "M(#{macro_name}^{#{encoded_options}})" do |str|
+                if str.rindex('^') != str.index('^')
+                  raise ArgumentError, "You seem to have supplied a :confirm option with a caret (^) in it!" + 
+                                       " Please remove it. This will blow Asterisk up."
+                end
+              end
+            end
+            
+            case confirm_argument_value
+              when true
+                hash_formatter.call defaults
+              when false, nil
+                ''
+              when Proc
+                raise NotImplementedError, "Coming in the future, you can do :confirm => my_context."
+                
+              when Hash
+                options = defaults.merge confirm_argument_value
+                if((confirm_argument_value.keys - defaults.keys).any?)
+                  raise ArgumentError, "Known options: #{defaults.keys.to_sentence}"
+                end
+                raise ArgumentError, "Bad macro name!" unless options[:macro].to_s =~ /^[\w_]+$/
+                options[:timeout] = case options[:timeout]
+                  when Fixnum, ActiveSupport::Duration
+                    options[:timeout]
+                  when String
+                    raise ArgumentError, "Timeout must be numerical!" unless options[:timeout] =~ /^\d+$/
+                    options[:timeout].to_i
+                  when :none
+                    0
+                  else
+                    raise ArgumentError, "Unrecognized :timeout! #{options[:timeout].inspect}"
+                end
+                raise ArgumentError, "Unrecognized DTMF key: #{options[:key]}" unless options[:key].to_s =~ /^[\d#*]$/
+                unless [:kill_both_channels, :busy, :congestion].include? options[:fails_with]
+                  raise ArgumentError, "Unrecognized :fails_with option: #{options[:fails_with]}" 
+                end
+                options[:play] = Array(options[:play]).join('++')
+                hash_formatter.call options
+                
+              else
+                raise ArgumentError, "Unrecognized :confirm option: #{confirm_argument_value.inspect}!"
+            end
           end
           
           def result_digit_from(response_string)

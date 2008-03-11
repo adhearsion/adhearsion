@@ -64,6 +64,32 @@ context "DialPlan::Manager's handling a failed call" do
   end
 end
 
+context 'the DialPlan::Confirmer' do
+  
+  test 'should be a subclass of DialPlan::Manager' do
+    Adhearsion::DialPlan::ConfirmationManager.ancestors.should.include Adhearsion::DialPlan::Manager
+  end
+  
+  test 'should convert the String of key/value pairs into a Hash with Symbol keys' do
+    flunk
+  end
+  test 'should pass the :play files to interruptable_play properly' do
+    flunk
+  end
+  test 'when an timeout is encountered, it should set hte MACRO_RESULT variable to :fails_with if it exists' do
+    
+  end
+  test 'should raise an exception if ' do
+    flunk
+  end
+  test 'should wait the :timeout number of seconds if no digit was received when playing the files' do
+    flunk
+  end
+  test 'should restart playback if the key received was not recognized' do
+    flunk
+  end
+end
+
 context "DialPlan" do
   
   attr_accessor :loader, :loader_instance, :dial_plan

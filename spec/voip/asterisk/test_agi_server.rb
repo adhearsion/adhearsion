@@ -2,8 +2,42 @@ require File.dirname(__FILE__) + "/../../test_helper"
 require 'adhearsion/voip/asterisk'
 
 
+context "The AGI server's serve() method" do
+  
+  include AgiServerTestHelper
+  
+  attr_reader :server_class, :server
+  before :each do
+    @server_class = Adhearsion::VoIP::Asterisk::AGI::Server::RubyServer
+    @server = @server_class.new(:port,:host)
+  end
+  
+  test 'should instantiate a new Call with the IO object it receives' do
+    stub_before_call_hooks!
+    io_mock   = flexmock "Mock IO object that's passed to the serve() method"
+    call_mock = flexmock "A Call mock that's returned by Adhearsion#receive_call_from", :variable => {}
+    flexstub(server_class).should_receive(:ahn_log)
+    the_following_code {
+      flexmock(Adhearsion).should_receive(:receive_call_from).once.with(io_mock).and_throw :created_call!
+      @server.serve(io_mock)
+    }.should.throw :created_call!
+  end
+  
+  test 'should hand the call off to a new Manager if the request is agi://IP_ADDRESS_HERE' do
+    stub_before_call_hooks!
+    call_mock = flexmock 'A new mock call that will be passed to the manager'
+    
+    flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return call_mock
+    flexmock(Adhearsion::DialPlan::Manager).new_instances.should_receive(:handle).once.with(call_mock).and_throw :manager_received_call!
+    @server.serve(nil)
+  end
+  
+  test 'should hand off a call to a ConfirmationManager if the request begins with confirm!' do
+    flunk
+  end
+end
 
-context 'Active Calls' do
+context "Active Calls" do
   include CallVariableTestHelper
   attr_accessor :typical_call
   
@@ -281,6 +315,12 @@ agi_accountcode:
        :priority     => '1',
        :enhanced     => '0.0',
        :accountcode  => ''}
+    end
+  end
+  
+  module AgiServerTestHelper
+    def stub_before_call_hooks!
+      flexstub(Adhearsion::Hooks::BeforeCall).should_receive :trigger_hooks
     end
   end
 }
