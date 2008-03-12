@@ -1367,6 +1367,135 @@ context 'The join command' do
   
 end
 
+
+context 'the DialPlan::ConfirmationManager' do
+  
+  include ConfirmationManagerTestHelper
+  include DialplanCommandTestHelpers
+  
+  attr_reader :example_encoded_hash, :example_encoded_hash_without_macro_name
+  before :each do
+    @example_encoded_hash_without_macro_name = 'timeout:20!fails_with:busy!play:foo-bar++qaz_qwerty.gsm!key:#'
+    @example_encoded_hash = 'confirm!' + @example_encoded_hash_without_macro_name
+  end
+  
+  test '::decode_hash() should convert the String of key/value escaped pairs into a Hash with Symbol keys when the macro name is not given' do
+    Adhearsion::DialPlan::ConfirmationManager.decode_hash(example_encoded_hash).should == 
+      {:timeout => 20, :fails_with => :busy, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#'}
+  end
+  
+  test '::decode_hash() should convert the String of key/value escaped pairs into a Hash with Symbol keys when the macro name is not given' do
+    Adhearsion::DialPlan::ConfirmationManager.decode_hash(example_encoded_hash_without_macro_name).should == 
+      {:timeout => 20, :fails_with => :busy, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#'}
+  end
+  
+  test '::decode_hash() should split the sound files in the :play key to an array by splitting by "++"' do
+    decoded_sound_files = Adhearsion::DialPlan::ConfirmationManager.decode_hash(example_encoded_hash)[:play]
+    decoded_sound_files.should.be.kind_of Array
+    decoded_sound_files.size.should.equal 2
+  end
+  
+  test 'a call to a party which is acknowledged with the proper key during the call to interruptable_play' do
+    variables         = {:timeout => 20, :fails_with => :busy, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#', :macro => 'confirmer'}
+    encoded_variables = {:network_script => encode_hash(variables)}
+    io_mock           = StringIO.new
+    
+    mock_call.should_receive(:originating_voip_platform).once.and_return :asterisk
+    mock_call.should_receive(:variables).once.and_return encoded_variables
+    
+    sound_files = variables[:play]
+    
+    manager = Adhearsion::DialPlan::ConfirmationManager.new(mock_call)
+    
+    flexstub(manager).should_receive(:result_digit_from).and_return ?0
+    flexstub(manager).should_receive(:raw_response).and_return nil
+    
+    flexmock(manager).should_receive(:answer).once
+    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '#'
+    flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => 'CONTINUE')
+    
+    manager.handle
+  end
+  
+  test 'when an timeout is encountered, it should set the MACRO_RESULT variable to :fails_with if it exists' do
+    fails_with_value = :ohaiicanhascheezburger
+    variables = {:timeout => 20, :fails_with => fails_with_value,
+                 :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#', :macro => 'confirmer'}
+    encoded_variables = {:network_script => encode_hash(variables)}
+    io_mock           = StringIO.new
+    
+    mock_call.should_receive(:originating_voip_platform).once.and_return :asterisk
+    mock_call.should_receive(:variables).once.and_return encoded_variables
+    
+    sound_files = variables[:play]
+    
+    manager = Adhearsion::DialPlan::ConfirmationManager.new(mock_call)
+    
+    flexstub(manager).should_receive(:result_digit_from).and_return ?0
+    flexstub(manager).should_receive(:raw_response).and_return nil
+    
+    flexmock(manager).should_receive(:answer).once
+    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return nil
+    flexmock(manager).should_receive(:wait_for_digit).once.with(20).and_return nil
+    
+    flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => fails_with_value)
+    
+    manager.handle
+  end
+  
+  test 'should wait the :timeout number of seconds if no digit was received when playing the files and continue when the right key is pressed' do
+    variables         = {:timeout => 20, :fails_with => :busy, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#', :macro => 'confirmer'}
+    encoded_variables = {:network_script => encode_hash(variables)}
+    io_mock           = StringIO.new
+    
+    mock_call.should_receive(:originating_voip_platform).once.and_return :asterisk
+    mock_call.should_receive(:variables).once.and_return encoded_variables
+    
+    sound_files = variables[:play]
+    
+    manager = Adhearsion::DialPlan::ConfirmationManager.new(mock_call)
+    
+    flexstub(manager).should_receive(:result_digit_from).and_return ?0
+    flexstub(manager).should_receive(:raw_response).and_return nil
+    
+    flexmock(manager).should_receive(:answer).once
+    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return nil
+    flexmock(manager).should_receive(:wait_for_digit).once.with(20).and_return '#'
+    
+    flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => 'CONTINUE')
+    
+    manager.handle
+  end
+  
+  test 'should restart playback if the key received was not recognized' do
+    variables = {:timeout => 20, :fails_with => :busy,
+                 :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '2', :macro => 'confirmer'}
+    encoded_variables = {:network_script => encode_hash(variables)}
+    io_mock           = StringIO.new
+    
+    mock_call.should_receive(:originating_voip_platform).once.and_return :asterisk
+    mock_call.should_receive(:variables).once.and_return encoded_variables
+    
+    sound_files = variables[:play]
+    
+    manager = Adhearsion::DialPlan::ConfirmationManager.new(mock_call)
+    
+    flexstub(manager).should_receive(:result_digit_from).and_return ?0
+    flexstub(manager).should_receive(:raw_response).and_return nil
+    
+    flexmock(manager).should_receive(:answer).once
+    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '3'
+    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '#'
+    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '1'
+    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '2'
+    
+    flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => 'CONTINUE')
+    
+    manager.handle
+  end
+  
+end
+
 BEGIN {
   module DialplanCommandTestHelpers
     def self.included(test_case)
@@ -1550,6 +1679,12 @@ module MenuTestHelper
       digit = nil if digit == :timeout
       mock_call.should_receive(:interruptable_play).once.and_return(digit)
     end
+  end
+end
+
+module ConfirmationManagerTestHelper
+  def encode_hash(hash)
+    Adhearsion::DialPlan::ConfirmationManager.encode_hash_for_dial_macro_argument(hash)
   end
 end
   

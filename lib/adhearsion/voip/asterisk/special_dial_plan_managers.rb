@@ -5,8 +5,9 @@ module Adhearsion
       class << self
           
         def encode_hash_for_dial_macro_argument(options)
-          options = options.clone
+          options    = options.clone
           macro_name = options.delete :macro
+          options[:play] &&= options[:play].kind_of?(Array) ? options[:play].join('++') : options[:play]
           encoded_options = URI.escape options.map { |key,value| "#{key}:#{value}" }.join('!')
           returning "M(#{macro_name}^#{encoded_options})" do |str|
             if str.rindex('^') != str.index('^')
@@ -25,8 +26,12 @@ module Adhearsion
         end
                 
         def decode_hash(encoded_hash)
-          unencoded = URI.unescape(encoded_hash)[/^([^!]+)?!(.+)$/,2]
-          returning Hash[*unencoded.split('!').map { |pair| pair.split(':') }.map { |(key,value)| [key.to_sym, value]}.flatten] do |hash|
+          encoded_hash = encoded_hash =~ /^M\((.+)\)$/ ? $1 : encoded_hash
+          encoded_hash = encoded_hash =~ /^([^:]+\^)?(.+)$/ ? $2 : encoded_hash # Remove the macro name if it's there
+          unencoded = URI.unescape(encoded_hash).split('!')
+          unencoded.shift unless unencoded.first.include?(':')
+          unencoded = unencoded.map { |pair| key, value = pair.split(':'); [key.to_sym ,value] }.flatten
+          returning Hash[*unencoded] do |hash|
             hash[:timeout]    &&= hash[:timeout].to_i
             hash[:play]       &&= hash[:play].split('++')
             hash[:fails_with] &&= hash[:fails_with].to_sym
@@ -42,9 +47,30 @@ module Adhearsion
       end
       
       def handle
-        puts 'WORKS I THINK'
+        variables = self.class.decode_hash call.variables[:network_script]
+        
         answer
-        play 'hello-world'
+        loop do
+          response = interruptable_play(*variables[:play])
+          if response && response.to_s == variables[:key].to_s
+            variable 'MACRO_RESULT' => 'CONTINUE'
+            break
+          else
+            response = wait_for_digit variables[:timeout]
+            if response 
+              if response.to_s == variables[:key].to_s
+                variable 'MACRO_RESULT' => 'CONTINUE'
+                break
+              else
+                next
+              end
+            else
+              variable 'MACRO_RESULT' => variables[:fails_with]
+              break
+            end
+          end
+        end
+        
       end
       
     end

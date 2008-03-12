@@ -64,41 +64,6 @@ context "DialPlan::Manager's handling a failed call" do
   end
 end
 
-context 'the DialPlan::Confirmer' do
-  
-  attr_reader :example_encoded_hash, :example_encoded_hash_without_macro_name
-  before :each do
-    @example_encoded_hash_without_macro_name = 'timeout:20!fails_with:busy!play:foo-bar++qaz_qwerty.gsm!key:#'
-    @example_encoded_hash = 'confirm!' + @example_encoded_hash_without_macro_name
-  end
-  
-  test '::decode_hash() should convert the String of key/value escaped pairs into a Hash with Symbol keys when the macro name is not given' do
-    Adhearsion::DialPlan::ConfirmationManager.decode_hash(example_encoded_hash).should == 
-      {:timeout => 20, :fails_with => :busy, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#'}
-  end
-  
-  test '::decode_hash() should convert the String of key/value escaped pairs into a Hash with Symbol keys when the macro name is not given' do
-    flunk
-    @example_encoded_hash_without_macro_name
-  end
-  
-  test 'should pass the :play files to interruptable_play properly' do
-    flunk
-  end
-  test 'when an timeout is encountered, it should set hte MACRO_RESULT variable to :fails_with if it exists' do
-    flunk
-  end
-  test 'should raise an exception if ' do
-    flunk
-  end
-  test 'should wait the :timeout number of seconds if no digit was received when playing the files' do
-    flunk
-  end
-  test 'should restart playback if the key received was not recognized' do
-    flunk
-  end
-end
-
 context "DialPlan" do
   
   attr_accessor :loader, :loader_instance, :dial_plan
@@ -329,4 +294,5 @@ module DialplanTestingHelper
     Adhearsion::Call.new(StringIO.new, :context => context)
   end
 end
+
 }

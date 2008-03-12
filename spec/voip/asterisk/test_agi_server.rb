@@ -39,11 +39,12 @@ context "The AGI server's serve() method" do
     call_mock = flexmock "a call that has network_script as a variable", :variables => {:network_script => "confirm!{#{confirm_options}}"}
     manager_mock = flexmock 'a mock ConfirmationManager'
     
-    flexstub(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
-    flexmock(Adhearsion::DialPlan::ConfirmationManager).should_receive(:confirmation_call?).once.with(call_mock).and_return true
-    flexmock(Adhearsion::DialPlan::ConfirmationManager).should_receive(:handle).once.with(call_mock).and_throw :handled_call!
-    
-    server.serve(nil)
+    the_following_code {
+      flexstub(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
+      flexmock(Adhearsion::DialPlan::ConfirmationManager).should_receive(:confirmation_call?).once.with(call_mock).and_return true
+      flexmock(Adhearsion::DialPlan::ConfirmationManager).should_receive(:handle).once.with(call_mock).and_throw :handled_call!
+      server.serve(nil)
+    }.should.throw :handled_call!
   end
 end
 
