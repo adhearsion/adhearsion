@@ -38,6 +38,11 @@ module Adhearsion
           read
         end
         
+        def answer
+          raw_response "ANSWER"
+          true
+        end
+        
         def execute(application, *arguments)
           result = raw_response("EXEC #{application} #{arguments * '|'}")
           return false if error?(result)
@@ -291,7 +296,7 @@ module Adhearsion
           Time.now - start_time
         end
 
-        private
+        protected
         
           def wait_for_digit(timeout=-1)
             timeout *= 1_000 if timeout != -1
@@ -333,21 +338,10 @@ module Adhearsion
                          :fails_with => :busy, 
                          :play => "beep",
                          :key => '#' }
-            hash_formatter = lambda do |options|
-              options = options.clone
-              macro_name = options.delete :macro
-              encoded_options = options.map { |key,value| "#{key}:#{value}" }.join '!'
-              returning "M(#{macro_name}^{#{encoded_options}})" do |str|
-                if str.rindex('^') != str.index('^')
-                  raise ArgumentError, "You seem to have supplied a :confirm option with a caret (^) in it!" + 
-                                       " Please remove it. This will blow Asterisk up."
-                end
-              end
-            end
             
             case confirm_argument_value
               when true
-                hash_formatter.call defaults
+                DialPlan::ConfirmationManager.encode_hash_for_dial_macro_argument(defaults)
               when false, nil
                 ''
               when Proc
@@ -375,7 +369,7 @@ module Adhearsion
                   raise ArgumentError, "Unrecognized :fails_with option: #{options[:fails_with]}" 
                 end
                 options[:play] = Array(options[:play]).join('++')
-                hash_formatter.call options
+                DialPlan::ConfirmationManager.encode_hash_for_dial_macro_argument options
                 
               else
                 raise ArgumentError, "Unrecognized :confirm option: #{confirm_argument_value.inspect}!"

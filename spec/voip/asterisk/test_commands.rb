@@ -68,6 +68,16 @@ context 'wait_for_digit command' do
   end
 end
 
+context 'answer' do
+  include DialplanCommandTestHelpers
+  
+  test 'should send ANSWER over the AGI socket' do
+    mock_call.answer
+    pbx_should_have_been_sent 'ANSWER'
+  end
+  
+end
+
 context 'execute' do
   include DialplanCommandTestHelpers
   

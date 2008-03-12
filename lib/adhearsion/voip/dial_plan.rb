@@ -96,7 +96,7 @@ module Adhearsion
         dial_plan.lookup(call.context.to_sym)
       end
       
-      private
+      protected
       
       def inject_context_names_into_environment(environment)
         return unless dial_plan.entry_points

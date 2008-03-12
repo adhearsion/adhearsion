@@ -260,13 +260,13 @@ module Adhearsion
               variables[:request] = URI.parse(variables[:request]) unless variables[:request].kind_of? URI
             end
           end
-
+          
           def coerce_type_of_number_into_symbol(variables)
             returning variables do
               variables[:type_of_calling_number] = Adhearsion::VoIP::Constants::Q931_TYPE_OF_NUMBER[variables.delete(:callington).to_i]
             end
           end
-          
+
           def decompose_uri_query_into_hash(variables)
             returning variables do
               if variables[:request].query
@@ -280,7 +280,7 @@ module Adhearsion
               end
             end
           end
-
+          
           def remove_dashes_from_context_name(variables)
             returning variables do
               variables[:context].gsub!('-', '_')

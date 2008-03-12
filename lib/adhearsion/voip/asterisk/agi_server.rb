@@ -13,34 +13,36 @@ module Adhearsion
             
             def serve(io)
               Hooks::BeforeCall.trigger_hooks
-              begin
-                puts 'before call'
-            	  call = Adhearsion.receive_call_from io
-            	  puts 'after call'
-            	  ahn_log.agi "Handling call with variables #{call.variables.inspect}"
-            	  puts 'call now manager'
-            	  dialplan_manager = Adhearsion::DialPlan::Manager.new
-            	  puts '??'
-                dialplan_manager.handle call
-              rescue Adhearsion::DialPlan::Manager::NoContextError => e
-                ahn_log.agi e.message
-                call.hangup!
-              rescue Adhearsion::FailedExtensionCallException => failed_call
-                begin
-                  ahn_log.agi "Received \"failed\" meta-call with :failed_reason => #{failed_call.call.failed_reason.inspect}. Executing OnFailedCall hooks."
-                  Adhearsion::Hooks::OnFailedCall.trigger_hooks(failed_call.call)
+          	  call = Adhearsion.receive_call_from io
+          	  ahn_log.agi "Handling call with variables #{call.variables.inspect}"
+          	  
+          	  if DialPlan::ConfirmationManager.confirmation_call?(call)
+          	    DialPlan::ConfirmationManager.handle(call)
+        	    else
+        	      # This is what happens 99.9% of the time.
+        	      begin
+              	  dialplan_manager = Adhearsion::DialPlan::Manager.new
+                  dialplan_manager.handle call
+                rescue Adhearsion::DialPlan::Manager::NoContextError => e
+                  ahn_log.agi e.message
                   call.hangup!
-                rescue => e
-                  p e
+                rescue Adhearsion::FailedExtensionCallException => failed_call
+                  begin
+                    ahn_log.agi "Received \"failed\" meta-call with :failed_reason => #{failed_call.call.failed_reason.inspect}. Executing OnFailedCall hooks."
+                    Adhearsion::Hooks::OnFailedCall.trigger_hooks(failed_call.call)
+                    call.hangup!
+                  rescue => e
+                    p e
+                  end
+                rescue Adhearsion::UselessCallException
+                  ahn_log.agi "Ignoring meta-AGI request"
+                  call.hangup!
                 end
-              rescue Adhearsion::UselessCallException
-                ahn_log.agi "Ignoring meta-AGI request"
-                call.hangup!
-              rescue => e
-                ahn_log.agi.error e.inspect
-                ahn_log.agi.error e.backtrace.map { |s| " " * 5 + s }.join("\n")
-              end
-          	  # TBD: (may have more hooks than what Jay has defined in hooks.rb)
+      	      end
+        	  # TBD: (may have more hooks than what Jay has defined in hooks.rb)
+            rescue => e
+              ahn_log.agi.error e.inspect
+              ahn_log.agi.error e.backtrace.map { |s| " " * 5 + s }.join("\n")
             end
           end
          

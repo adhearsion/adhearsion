@@ -9,7 +9,7 @@ context "The AGI server's serve() method" do
   attr_reader :server_class, :server
   before :each do
     @server_class = Adhearsion::VoIP::Asterisk::AGI::Server::RubyServer
-    @server = @server_class.new(:port,:host)
+    @server       = @server_class.new(:port,:host)
   end
   
   test 'should instantiate a new Call with the IO object it receives' do
@@ -19,21 +19,31 @@ context "The AGI server's serve() method" do
     flexstub(server_class).should_receive(:ahn_log)
     the_following_code {
       flexmock(Adhearsion).should_receive(:receive_call_from).once.with(io_mock).and_throw :created_call!
-      @server.serve(io_mock)
+      server.serve(io_mock)
     }.should.throw :created_call!
   end
   
   test 'should hand the call off to a new Manager if the request is agi://IP_ADDRESS_HERE' do
     stub_before_call_hooks!
-    call_mock = flexmock 'A new mock call that will be passed to the manager'
+    call_mock = flexmock 'A new mock call that will be passed to the manager', :variables => {}
     
     flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return call_mock
-    flexmock(Adhearsion::DialPlan::Manager).new_instances.should_receive(:handle).once.with(call_mock).and_throw :manager_received_call!
-    @server.serve(nil)
+    manager_mock = flexmock 'a mock dialplan manager'
+    manager_mock.should_receive(:handle).once.with(call_mock)
+    flexmock(Adhearsion::DialPlan::Manager).should_receive(:new).once.and_return manager_mock
+    server.serve(nil)
   end
   
   test 'should hand off a call to a ConfirmationManager if the request begins with confirm!' do
-    flunk
+    confirm_options = Adhearsion::DialPlan::ConfirmationManager.encode_hash_for_dial_macro_argument :timeout => 20, :fails_with => :busy, :key => "#"
+    call_mock = flexmock "a call that has network_script as a variable", :variables => {:network_script => "confirm!{#{confirm_options}}"}
+    manager_mock = flexmock 'a mock ConfirmationManager'
+    
+    flexstub(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
+    flexmock(Adhearsion::DialPlan::ConfirmationManager).should_receive(:confirmation_call?).once.with(call_mock).and_return true
+    flexmock(Adhearsion::DialPlan::ConfirmationManager).should_receive(:handle).once.with(call_mock).and_throw :handled_call!
+    
+    server.serve(nil)
   end
 end
 
