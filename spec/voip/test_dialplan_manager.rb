@@ -32,10 +32,37 @@ context "Dialplan::Manager handling" do
   
   test "should raise a NoContextError exception if the targeted context is not found" do
     the_following_code {
-      # manager = flexmock Adhearsion::DialPlan::Manager.new
       flexmock(manager).should_receive(:entry_point_for).and_return nil
       manager.handle call
     }.should.raise(Adhearsion::DialPlan::Manager::NoContextError)
+  end
+  
+  test 'should send :answer to the execution environment if Adhearsion::AHN_CONFIG.automatically_answer_incoming_calls is set' do
+    mock_ahn_config = flexmock 'a mock of the Adhearsion::Configuration object that is normally set when an app is initialized'
+    mock_ahn_config.should_receive(:automatically_answer_incoming_calls).once.and_return true
+    flexmock(Adhearsion::Configuration).should_receive(:new).once.and_return(mock_ahn_config)
+    flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:answer).once.and_throw :answered_call!
+    Adhearsion::Configuration.configure
+    the_following_code {
+      manager.handle(call)
+    }.should.throw :answered_call!
+  end
+  
+  test 'should not send :answer to the executuon environment if Adhearsion::AHN_CONFIG.automatically_answer_incoming_calls is NOT set' do
+    
+    mock_ahn_config = flexmock 'a mock of the Adhearsion::Configuration object that is normally set when an app is initialized'
+    mock_ahn_config.should_receive(:automatically_answer_incoming_calls).once.and_return false
+    
+    entry_point = Adhearsion::DialPlan::DialplanContextProc.new(:does_not_matter) {}
+    flexmock(manager).should_receive(:entry_point_for).once.with(call).and_return(entry_point)
+    
+    flexmock(Adhearsion::Configuration).should_receive(:new).once.and_return(mock_ahn_config)
+    flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:entry_point).and_return entry_point
+    flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:answer).never
+    flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:instance_eval).and_throw :doing_dialplan
+    
+    Adhearsion::Configuration.configure
+    manager.handle(call)
   end
   
   private

@@ -4,6 +4,11 @@ context "Adhearsion::Initializer" do
   include InitializerStubs
   # TODO: create a specification for aliases
   
+  before :each do
+    Adhearsion.send(:remove_const, 'AHN_CONFIG') if Adhearsion.const_defined? 'AHN_CONFIG'
+    Adhearsion::AHN_CONFIG = Adhearsion::Configuration.new
+  end
+  
   test "initialization will start with only a path given" do
     with_new_initializer_with_no_path_changing_behavior do
       Adhearsion::Initializer.new path
@@ -50,7 +55,6 @@ context "Adhearsion::Initializer" do
      end
    end
    
-   disabled_test "These tests are running very slowly because I think a lot of stuff needs to be stubbed out that is hitting the file system and etc" 
    private
      def path
        '/any/ole/path'
