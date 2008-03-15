@@ -53,13 +53,13 @@ module Adhearsion
         loop do
           response = interruptable_play(*variables[:play])
           if response && response.to_s == variables[:key].to_s
-            variable 'MACRO_RESULT' => 'CONTINUE'
+            # variable 'MACRO_RESULT' => 'CONTINUE'
             break
           else
             response = wait_for_digit variables[:timeout]
             if response 
               if response.to_s == variables[:key].to_s
-                variable 'MACRO_RESULT' => 'CONTINUE'
+                # variable 'MACRO_RESULT' => 'CONTINUE'
                 break
               else
                 next

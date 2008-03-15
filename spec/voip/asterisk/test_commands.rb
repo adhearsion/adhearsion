@@ -248,6 +248,108 @@ context "the set_variable method" do
   
 end
 
+context 'the voicemail command' do
+  
+  include DialplanCommandTestHelpers
+  
+  test 'should not send the context name when none is given' do
+    mailbox_number = 123
+    mock_call.should_receive(:execute).once.with('voicemail', 123, '').and_throw :sent_voicemail!
+    should_throw(:sent_voicemail!) { mock_call.voicemail 123 }
+  end
+  
+  test 'should send the context name when one is given' do
+    mailbox_number, context_name = 333, 'doesntmatter'
+    mock_call.should_receive(:execute).once.with('voicemail', "#{mailbox_number}@#{context_name}", '').and_throw :sent_voicemail!
+    should_throw(:sent_voicemail!) { mock_call.voicemail(context_name => mailbox_number) }
+  end
+  
+  test 'should pass in the s option if :skip => true' do
+    mailbox_number = '012'
+    mock_call.should_receive(:execute).once.with('voicemail', mailbox_number, 's').and_throw :sent_voicemail!
+    should_throw(:sent_voicemail!) { mock_call.voicemail(mailbox_number, :skip => true) }
+  end
+  
+  test 'should combine mailbox numbers with the context name given when both are given' do
+    context   = "lolcats"
+    mailboxes = [1,2,3,4,5]
+    mailboxes_with_context = mailboxes.map { |mailbox| "#{mailbox}@#{context}"}
+    mock_call.should_receive(:execute).once.with('voicemail', mailboxes_with_context.join('&'), '')
+    mock_call.voicemail context => mailboxes
+  end
+  
+  test 'should raise an argument error if the mailbox number is not numerical' do
+    the_following_code {
+      mock_call.voicemail :foo => "bar"
+    }.should.raise ArgumentError
+  end
+  
+  test 'should raise an argument error if too many arguments are supplied' do
+    the_following_code {
+      mock_call.voicemail "wtfisthisargument", :context_name => 123, :greeting => :busy
+    }.should.raise ArgumentError
+  end
+  
+  test 'should raise an ArgumentError if multiple context names are given' do
+    the_following_code {
+      mock_call.voicemail :one => [1,2,3], :two => [11,22,33]
+    }.should.raise ArgumentError
+  end
+  
+  test "should raise an ArgumentError when the :greeting value isn't recognized" do
+    the_following_code {
+      mock_call.voicemail :context_name => 123, :greeting => :zomgz
+    }.should.raise ArgumentError
+  end
+  
+  test 'should pass in the u option if :greeting => :unavailable' do
+    mailbox_number = '776'
+    mock_call.should_receive(:execute).once.with('voicemail', mailbox_number, 'u').and_throw :sent_voicemail!
+    should_throw(:sent_voicemail!) { mock_call.voicemail(mailbox_number, :greeting => :unavailable) }
+  end
+  
+  test 'should pass in both the skip and greeting options if both are supplied' do
+    mailbox_number = '4'
+    mock_call.should_receive(:execute).once.with('voicemail', mailbox_number, 'u').and_throw :sent_voicemail!
+    should_throw(:sent_voicemail!) { mock_call.voicemail(mailbox_number, :greeting => :unavailable) }
+  end
+  
+  test 'should raise an ArgumentError if mailbox_number is blank?()' do
+    the_following_code {
+      mock_call.voicemail ''
+    }.should.raise ArgumentError    
+    
+    the_following_code {
+      mock_call.voicemail nil
+    }.should.raise ArgumentError
+  end
+  
+  test 'should pass in the b option if :gretting => :busy' do
+    mailbox_number = '1'
+    mock_call.should_receive(:execute).once.with('voicemail', mailbox_number, 'b').and_throw :sent_voicemail!
+    should_throw(:sent_voicemail!) { mock_call.voicemail(mailbox_number, :greeting => :busy) }
+  end
+  
+  test 'should return true if VMSTATUS == "SUCCESS"' do
+    mock_call.should_receive(:execute).once
+    mock_call.should_receive(:variable).once.with('VMSTATUS').and_return "SUCCESS"
+    mock_call.voicemail(3).should.equal true
+  end
+  
+  test 'should return false if VMSTATUS == "USEREXIT"' do
+    mock_call.should_receive(:execute).once
+    mock_call.should_receive(:variable).once.with('VMSTATUS').and_return "USEREXIT"
+    mock_call.voicemail(2).should.equal false
+  end
+  
+  test 'should return nil if VMSTATUS == "FAILED"' do
+    mock_call.should_receive(:execute).once
+    mock_call.should_receive(:variable).once.with('VMSTATUS').and_return "FAILED"
+    mock_call.voicemail(2).should.equal nil
+  end
+  
+end
+
 context "The queue management abstractions" do
   
   include DialplanCommandTestHelpers
@@ -1687,5 +1789,5 @@ module ConfirmationManagerTestHelper
     Adhearsion::DialPlan::ConfirmationManager.encode_hash_for_dial_macro_argument(hash)
   end
 end
-  
+
 }

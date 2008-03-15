@@ -250,6 +250,38 @@ module Adhearsion
     	    end
   	    end
     	  
+        def voicemail(*args)
+          options_hash    = args.last.kind_of?(Hash) ? args.pop : {}
+          mailbox_number  = args.shift
+          greeting_option = options_hash.delete(:greeting)
+          skip_option     = options_hash.delete(:skip)
+          raise ArgumentError, 'You supplied too many arguments!' if mailbox_number && options_hash.any?
+          greeting_option = case greeting_option
+            when :busy: 'b'
+            when :unavailable: 'u'
+            when nil: nil
+            else raise ArgumentError, "Unrecognized greeting #{greeting_option}"
+          end
+          skip_option &&= 's'
+          options = "#{greeting_option}#{skip_option}"
+          
+          raise ArgumentError, "Mailbox cannot be blank!" if !mailbox_number.nil? && mailbox_number.blank?
+          number_with_context = if mailbox_number then mailbox_number else
+            raise ArgumentError, "You must supply ONE context name!" if options_hash.size != 1
+            context_name, mailboxes = options_hash.to_a.first
+            Array(mailboxes).map do |mailbox|
+              raise ArgumentError, "Mailbox numbers must be numerical!" unless mailbox.to_s =~ /^\d+$/
+              "#{mailbox}@#{context_name}"
+            end.join('&')
+          end
+          execute('voicemail', number_with_context, options)
+          case variable('VMSTATUS')
+            when 'SUCCESS': true
+            when 'USEREXIT': false
+            else nil
+          end
+        end
+        
         def dial(number, options={})
           *recognized_options = :caller_id, :name, :for, :options, :confirm
           
