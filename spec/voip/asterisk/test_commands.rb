@@ -1207,21 +1207,6 @@ context "The Dial command's :confirm option setting builder" do
     }.should.raise ArgumentError
   end
   
-  test 'should ensure the :fails_with key is only one of :kill_both_channels, :congestion, or :busy' do
-    *good_options = :kill_both_channels, :congestion, :busy
-    *bad_options  = "congestion", "foobar", 123, Time.now
-    good_options.each do |good_option|
-      the_following_code {
-        formatter.call(:fails_with => good_option)
-      }.should.not.raise ArgumentError
-    end
-    bad_options.each do |bad_option|
-      the_following_code {
-        formatter.call(:fails_with => bad_option)
-      }.should.raise ArgumentError
-    end
-  end
-  
   test "should raise an ArgumentError if the argument's class is not recognized" do
     the_following_code {
       formatter.call Time.now # Time is an example strange case
@@ -1477,18 +1462,18 @@ context 'the DialPlan::ConfirmationManager' do
   
   attr_reader :example_encoded_hash, :example_encoded_hash_without_macro_name
   before :each do
-    @example_encoded_hash_without_macro_name = 'timeout:20!fails_with:busy!play:foo-bar++qaz_qwerty.gsm!key:#'
+    @example_encoded_hash_without_macro_name = 'timeout:20!play:foo-bar++qaz_qwerty.gsm!key:#'
     @example_encoded_hash = 'confirm!' + @example_encoded_hash_without_macro_name
   end
   
   test '::decode_hash() should convert the String of key/value escaped pairs into a Hash with Symbol keys when the macro name is not given' do
     Adhearsion::DialPlan::ConfirmationManager.decode_hash(example_encoded_hash).should == 
-      {:timeout => 20, :fails_with => :busy, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#'}
+      {:timeout => 20, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#'}
   end
   
   test '::decode_hash() should convert the String of key/value escaped pairs into a Hash with Symbol keys when the macro name is not given' do
     Adhearsion::DialPlan::ConfirmationManager.decode_hash(example_encoded_hash_without_macro_name).should == 
-      {:timeout => 20, :fails_with => :busy, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#'}
+      {:timeout => 20, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#'}
   end
   
   test '::decode_hash() should split the sound files in the :play key to an array by splitting by "++"' do
@@ -1498,7 +1483,7 @@ context 'the DialPlan::ConfirmationManager' do
   end
   
   test 'a call to a party which is acknowledged with the proper key during the call to interruptable_play' do
-    variables         = {:timeout => 20, :fails_with => :busy, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#', :macro => 'confirmer'}
+    variables         = {:timeout => 20, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#', :macro => 'confirmer'}
     encoded_variables = {:network_script => encode_hash(variables)}
     io_mock           = StringIO.new
     
@@ -1514,15 +1499,12 @@ context 'the DialPlan::ConfirmationManager' do
     
     flexmock(manager).should_receive(:answer).once
     flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '#'
-    # flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => 'CONTINUE')
     
     manager.handle
   end
   
-  test 'when an timeout is encountered, it should set the MACRO_RESULT variable to :fails_with if it exists' do
-    fails_with_value = :ohaiicanhascheezburger
-    variables = {:timeout => 20, :fails_with => fails_with_value,
-                 :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#', :macro => 'confirmer'}
+  test 'when an timeout is encountered, it should set the MACRO_RESULT variable to CONTINUE' do
+    variables = {:timeout => 20, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#', :macro => 'confirmer'}
     encoded_variables = {:network_script => encode_hash(variables)}
     io_mock           = StringIO.new
     
@@ -1540,13 +1522,13 @@ context 'the DialPlan::ConfirmationManager' do
     flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return nil
     flexmock(manager).should_receive(:wait_for_digit).once.with(20).and_return nil
     
-    flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => fails_with_value)
+    flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => 'CONTINUE')
     
     manager.handle
   end
   
   test 'should wait the :timeout number of seconds if no digit was received when playing the files and continue when the right key is pressed' do
-    variables         = {:timeout => 20, :fails_with => :busy, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#', :macro => 'confirmer'}
+    variables         = {:timeout => 20, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#', :macro => 'confirmer'}
     encoded_variables = {:network_script => encode_hash(variables)}
     io_mock           = StringIO.new
     
@@ -1564,14 +1546,11 @@ context 'the DialPlan::ConfirmationManager' do
     flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return nil
     flexmock(manager).should_receive(:wait_for_digit).once.with(20).and_return '#'
     
-    # flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => 'CONTINUE')
-    
     manager.handle
   end
   
   test 'should restart playback if the key received was not recognized' do
-    variables = {:timeout => 20, :fails_with => :busy,
-                 :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '2', :macro => 'confirmer'}
+    variables = {:timeout => 20, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '2', :macro => 'confirmer'}
     encoded_variables = {:network_script => encode_hash(variables)}
     io_mock           = StringIO.new
     
@@ -1590,8 +1569,7 @@ context 'the DialPlan::ConfirmationManager' do
     flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '#'
     flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '1'
     flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '2'
-    
-    # flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => 'CONTINUE')
+    flexmock(manager).should_receive(:variable).never
     
     manager.handle
   end

@@ -34,7 +34,6 @@ module Adhearsion
           returning Hash[*unencoded] do |hash|
             hash[:timeout]    &&= hash[:timeout].to_i
             hash[:play]       &&= hash[:play].split('++')
-            hash[:fails_with] &&= hash[:fails_with].to_sym
           end
         end
 
@@ -53,19 +52,20 @@ module Adhearsion
         loop do
           response = interruptable_play(*variables[:play])
           if response && response.to_s == variables[:key].to_s
-            # variable 'MACRO_RESULT' => 'CONTINUE'
+            # Don't set a variable to pass through to dial()
             break
           else
             response = wait_for_digit variables[:timeout]
             if response 
               if response.to_s == variables[:key].to_s
-                # variable 'MACRO_RESULT' => 'CONTINUE'
+                # Don't set a variable to pass through to dial()
                 break
               else
                 next
               end
             else
-              variable 'MACRO_RESULT' => variables[:fails_with]
+              # By setting MACRO_RESULT to CONTINUE, we cancel the dial.
+              variable 'MACRO_RESULT' => "CONTINUE"
               break
             end
           end

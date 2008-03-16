@@ -366,8 +366,7 @@ module Adhearsion
           
           def dial_macro_option_compiler(confirm_argument_value)
             defaults = { :macro => 'ahn_dial_confirmer',
-                         :timeout => 20.seconds, 
-                         :fails_with => :busy, 
+                         :timeout => 20.seconds,
                          :play => "beep",
                          :key => '#' }
             
@@ -397,9 +396,6 @@ module Adhearsion
                     raise ArgumentError, "Unrecognized :timeout! #{options[:timeout].inspect}"
                 end
                 raise ArgumentError, "Unrecognized DTMF key: #{options[:key]}" unless options[:key].to_s =~ /^[\d#*]$/
-                unless [:kill_both_channels, :busy, :congestion].include? options[:fails_with]
-                  raise ArgumentError, "Unrecognized :fails_with option: #{options[:fails_with]}" 
-                end
                 options[:play] = Array(options[:play]).join('++')
                 DialPlan::ConfirmationManager.encode_hash_for_dial_macro_argument options
                 

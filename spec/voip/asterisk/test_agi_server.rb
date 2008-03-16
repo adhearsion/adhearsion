@@ -35,8 +35,8 @@ context "The AGI server's serve() method" do
   end
   
   test 'should hand off a call to a ConfirmationManager if the request begins with confirm!' do
-    confirm_options = Adhearsion::DialPlan::ConfirmationManager.encode_hash_for_dial_macro_argument :timeout => 20, :fails_with => :busy, :key => "#"
-    call_mock = flexmock "a call that has network_script as a variable", :variables => {:network_script => "confirm!{#{confirm_options}}"}
+    confirm_options = Adhearsion::DialPlan::ConfirmationManager.encode_hash_for_dial_macro_argument :timeout => 20, :key => "#"
+    call_mock = flexmock "a call that has network_script as a variable", :variables => {:network_script => "confirm!#{confirm_options[/^M\(\^?(.+)\)$/,1]}"}
     manager_mock = flexmock 'a mock ConfirmationManager'
     
     the_following_code {
