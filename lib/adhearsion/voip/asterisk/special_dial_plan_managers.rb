@@ -54,6 +54,8 @@ module Adhearsion
           if response && response.to_s == variables[:key].to_s
             # Don't set a variable to pass through to dial()
             break
+          elsif response && response.to_s != variables[:key].to_s
+            next
           else
             response = wait_for_digit variables[:timeout]
             if response 

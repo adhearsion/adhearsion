@@ -1565,11 +1565,13 @@ context 'the DialPlan::ConfirmationManager' do
     flexstub(manager).should_receive(:raw_response).and_return nil
     
     flexmock(manager).should_receive(:answer).once
-    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '3'
-    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '#'
-    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '1'
-    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '2'
-    flexmock(manager).should_receive(:variable).never
+    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '3' # not :key
+    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '#' # not :key
+    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '1' # not :key
+    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '2' # matches :key
+    
+    flexmock(manager).should_receive(:wait_for_digit).never # We never let it get to the point where it may timeout
+    flexmock(manager).should_receive(:variable).never # We succeed by not setting the MACRO_RESULT variable
     
     manager.handle
   end
