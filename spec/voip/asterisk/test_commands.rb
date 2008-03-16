@@ -1514,7 +1514,7 @@ context 'the DialPlan::ConfirmationManager' do
     
     flexmock(manager).should_receive(:answer).once
     flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '#'
-    flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => 'CONTINUE')
+    # flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => 'CONTINUE')
     
     manager.handle
   end
@@ -1564,7 +1564,7 @@ context 'the DialPlan::ConfirmationManager' do
     flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return nil
     flexmock(manager).should_receive(:wait_for_digit).once.with(20).and_return '#'
     
-    flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => 'CONTINUE')
+    # flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => 'CONTINUE')
     
     manager.handle
   end
@@ -1591,7 +1591,7 @@ context 'the DialPlan::ConfirmationManager' do
     flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '1'
     flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '2'
     
-    flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => 'CONTINUE')
+    # flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => 'CONTINUE')
     
     manager.handle
   end

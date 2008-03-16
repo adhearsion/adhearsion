@@ -1,3 +1,4 @@
+.gitignore
 0.8.0 TODO.txt
 CHANGELOG
 History.txt
@@ -76,11 +77,13 @@ lib/adhearsion/voip/asterisk/commands.rb
 lib/adhearsion/voip/asterisk/config_generators/agents.conf.rb
 lib/adhearsion/voip/asterisk/config_generators/config_generator.rb
 lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb
+lib/adhearsion/voip/asterisk/config_generators/voicemail.conf.rb
 lib/adhearsion/voip/asterisk/config_manager.rb
 lib/adhearsion/voip/asterisk/menu_command/calculated_match.rb
 lib/adhearsion/voip/asterisk/menu_command/matchers.rb
 lib/adhearsion/voip/asterisk/menu_command/menu_builder.rb
 lib/adhearsion/voip/asterisk/menu_command/menu_class.rb
+lib/adhearsion/voip/asterisk/special_dial_plan_managers.rb
 lib/adhearsion/voip/call.rb
 lib/adhearsion/voip/call_routing.rb
 lib/adhearsion/voip/commands.rb
@@ -119,6 +122,7 @@ spec/test_plugin.rb
 spec/voip/asterisk/ami_response_definitions.rb
 spec/voip/asterisk/config_file_generators/test_agents.rb
 spec/voip/asterisk/config_file_generators/test_queues.rb
+spec/voip/asterisk/config_file_generators/test_voicemail.rb
 spec/voip/asterisk/menu_command/test_calculated_match.rb
 spec/voip/asterisk/menu_command/test_matchers.rb
 spec/voip/asterisk/mock_ami_server.rb
