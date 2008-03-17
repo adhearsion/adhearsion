@@ -151,6 +151,11 @@ module Adhearsion
       	#   input 9, :timeout => 7, :accept_key => "0" # Receives nine digits, returning
       	#                                              # when the timeout is encountered
       	#                                              # or when the "0" key is pressed.
+      	#   input 3, :play => "you-sound-cute"
+      	#   input :play => ["if-this-is-correct-press", 1, "otherwise-press", 2]
+      	# 
+      	# When specifying files to play, the playback of the sequence of files will stop
+      	# immediately when the user presses the first digit.
       	#
       	# The :timeout option works like a digit timeout, therefore each digit pressed
       	# causes the timer to reset. This is a much more user-friendly approach than an
@@ -193,7 +198,7 @@ module Adhearsion
               buffer << key
               return buffer if number_of_digits && number_of_digits == buffer.length
             end
-            key = wait_for_digit timeout
+            key = wait_for_digit timeout || -1
           end
       	end
       	
