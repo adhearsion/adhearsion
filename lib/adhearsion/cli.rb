@@ -26,8 +26,15 @@ USAGE
           when /^create(:([\w_.]+))?$/
             [:create, args.shift, $LAST_PAREN_MATCH || :default]
           when 'start'
-            daemon, path = args
-            path, daemon = daemon, path if !path || (path && daemon)
+            if args.first == 'daemon' && args.size == 2
+              path   = args.last
+              daemon = true
+            elsif args.size == 1
+              path, daemon = args.first, false
+            else
+              p args
+              raise CommandHandler::UnknownCommand, "Invalid format for the start CLI command!"
+            end
             [:start, path, daemon]
           when '-'
             [:start, Dir.pwd]

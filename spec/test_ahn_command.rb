@@ -59,22 +59,33 @@ context "A simulated use of the 'ahn' command" do
   test "arguments to 'start' are executed properly properly" do
     some_path = "/tmp/blargh"
     simulate_args "start", some_path
-    flexmock(Adhearsion::CLI::AhnCommand::CommandHandler).should_receive(:start).once.with(some_path, nil)
+    flexmock(Adhearsion::CLI::AhnCommand::CommandHandler).should_receive(:start).once.with(some_path, false)
     Adhearsion::CLI::AhnCommand.execute!
   end
   
   test "should execute arguments to 'start' for daemonizing properly" do
     somewhere = "/tmp/blarghh"
-    simulate_args "start", somewhere, true
+    simulate_args "start", 'daemon', somewhere
     flexmock(Adhearsion::CLI::AhnCommand::CommandHandler).should_receive(:start).once.with(somewhere, true)
     Adhearsion::CLI::AhnCommand.execute!
   end
   
-  test "if not path is provided, running Ahn command blows up" do
+  test 'parse_arguments should recognize start with daemon properly' do
+    path = '/path/to/somesuch'
+    arguments = ["start", 'daemon', path]
+    Adhearsion::CLI::AhnCommand.parse_arguments(arguments).should == [:start, path, true]
+  end
+  
+  test 'parse_arguments should recognize start without daemon properly' do
+    path = '/path/to/somewhere'
+    arguments = ['start', path]
+    Adhearsion::CLI::AhnCommand.parse_arguments(arguments).should == [:start, path, false]
+  end
+  
+  test "if no path is provided, running Ahn command blows up" do
     the_following_code {
-      simulate_args "start"
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise(NoMethodError)
+      Adhearsion::CLI::AhnCommand.parse_arguments(['start'])
+    }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::UnknownCommand
   end
   
   test "printing the version" do
