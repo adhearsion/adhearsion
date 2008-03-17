@@ -134,25 +134,67 @@ module Adhearsion
         end
         
         
-        # Input is used to receive keypad input from the user, pausing until they
-      	# have entered the desired number of digits (specified with the first
-      	# parameter) or the timeout has been reached (specified as a hash argument
-      	# with the key :timeout). By default, there is no timeout, waiting infinitely.
+        # This method is used to receive keypad input from the user. Digits are collected
+        # via DTMF (keypad) input until one of three things happens:
+        #
+        #  1. The number of digits you specify as the first argument is collected
+        #  2. The timeout you specify with the :timeout option elapses.
+        #  3. The "#" key (or the key you specify with :accept_key) is pressed
       	#
-      	# If you desire a sound to be played other than a simple beep to instruct
-      	# the callee to input data, pass the filename as an hash argument with either
-      	# the :play or :file key.
+      	# Usage examples
       	#
-      	# When called without any arguments (or a first argument of -1), the user is
-      	# able to enter digits ad infinitum until they press the pound (#) key.
+      	#   input   # Receives digits until the caller presses the "#" key
+      	#   input 3 # Receives three digits. Can be 0-9, * or #
+      	#   input 5, :accept_key => "*"   # Receive at most 5 digits, stopping if '*' is pressed
+      	#   input 1, :timeout => 1.minute # Receive a single digit, returning an empty
+      	#                                   string if the timeout is encountered
+      	#   input 9, :timeout => 7, :accept_key => "0" # Receives nine digits, returning
+      	#                                              # when the timeout is encountered
+      	#                                              # or when the "0" key is pressed.
       	#
-      	# Note: input() does NOT catch "#" character! Use wait_for_digit instead.
-        def input(digits = nil, options = {})
-          timeout = options[:timeout]
-          timeout = (timeout && timeout != -1) ? (timeout * 1000).to_i : -1
-          play    = options[:play] || 'beep'
-      	  result  = raw_response("GET DATA #{play} #{timeout} #{digits}") 
-      	  extract_input_from result
+      	# The :timeout option works like a digit timeout, therefore each digit pressed
+      	# causes the timer to reset. This is a much more user-friendly approach than an
+        # absolute timeout.
+      	#
+      	# Note that when you don't specify a digit limit, the :accept_key becomes "#"
+      	# because there'd be no other way to end the collection of digits. You can
+      	# obviously override this by passing in a new key with :accept_key.
+        def input(*args)
+          options = args.last.kind_of?(Hash) ? args.pop : {}
+          number_of_digits = args.shift
+          
+          sound_files     = Array options.delete(:play)
+          timeout         = options.delete(:timeout)
+          terminating_key = options.delete(:accept_key)
+          terminating_key = if terminating_key
+            terminating_key.to_s
+          elsif number_of_digits.nil? && !terminating_key.equal?(false)
+            '#'
+          end
+          
+          if number_of_digits && number_of_digits < 0
+            ahn_log.agi.warn "Giving -1 to input() is now deprecated. Don't specify a first " +
+                             "argument to simulate unlimited digits." if number_of_digits == -1
+            raise ArgumentError, "The number of digits must be positive!"
+          end
+          
+          buffer = ''
+          key = sound_files.any? ? interruptable_play(*sound_files) || '' : wait_for_digit(timeout || -1)
+          loop do
+            return buffer if key.nil?
+            if terminating_key
+              if key == terminating_key
+                return buffer
+              else
+                buffer << key
+                return buffer if number_of_digits && number_of_digits == buffer.length
+              end
+            else
+              buffer << key
+              return buffer if number_of_digits && number_of_digits == buffer.length
+            end
+            key = wait_for_digit timeout
+          end
       	end
       	
       	def queue(queue_name)

@@ -144,55 +144,79 @@ context 'play command' do
 end
 
 context 'input command' do
+  
   include DialplanCommandTestHelpers
   
-  test 'Can ask user for a specified number of digits worth of input via buttons on their phone' do
-    pbx_should_respond_with_digits('1234')
-    mock_call.input(4)
-    pbx_was_asked_for_input(4)
+  # pbx_should_respond_with_successful_background_response
+  # pbx_should_respond_with_a_wait_for_digit_timeout
+
+  test 'should raise an error when the number of digits expected is -1 (this is deprecated behavior)' do
+    the_following_code {
+      mock_call.input -1
+    }.should.raise ArgumentError
   end
   
-  test 'Does properly convert timeouts from seconds to milliseconds when applicable' do
-    timeout = 1.minute
-    pbx_should_respond_with_digits('4321')
-    mock_call.input(4, :timeout => timeout)
-    pbx_was_asked_for_input(4, :timeout => 1.minute)
-    
-    default_timeout_which_asterisk_interprets_as_infinity = -1
-    pbx_should_respond_with_digits('4321')
-    mock_call.input(4)
-    pbx_was_asked_for_input(4, :timeout => default_timeout_which_asterisk_interprets_as_infinity)
+  test 'input() calls wait_for_digit the specified number of times (when no sound files are given)' do
+    # mock_call.should_receive(:interruptable_play).never
+    mock_call.should_receive(:wait_for_digit).times(4).and_return('1', '2', '3', '4')
+    mock_call.input(4).should == '1234'
   end
   
-  test 'Can optionally ask for a specific termination sound when calling input()' do
-    pbx_should_respond_with_digits('54321')
-    mock_call.input(5, :play => 'arkansas')
-    pbx_was_asked_for_input(5, :play => 'arkansas')
+  test 'should execute wait_for_digit if no digit is pressed during interruptable_play' do
+    sound_files = %w[one two three]
+    mock_call.should_receive(:interruptable_play).once.with(*sound_files).and_return nil
+    mock_call.should_receive(:wait_for_digit).once.and_throw :digit_request
+    should_throw(:digit_request) { mock_call.input(10, :play => sound_files) }
   end
   
-  test 'Input getting a failure response returns false' do
-    pbx_should_respond_with_failure
-    assert !mock_call.input(1), "the pbx did not respond with failure"
+  test 'should default the :accept_key to "#" when unlimited digits are to be collected' do
+    mock_call.should_receive(:wait_for_digit).times(2).and_return '*', '#'
+    mock_call.input.should == '*'
   end
   
-  test 'Input timing out when no digits are pressed returns false' do
-    timeout = 1.minute
-    pbx_should_respond_to_timeout " (timeout)"
-    assert !mock_call.input(2, :timeout => timeout), "the pbx did not respond with failure"
+  test 'should raise an exception when unlimited digits are to be collected and :accept_key => false' do
+    the_following_code {
+      mock_call.input(:accept_key => false)  
+    }.should.raise ArgumentError
   end
   
-  test "Input timing out when digits are pressed returns those digits" do
-    timeout = 1.minute
-    pbx_should_respond_with_digits_and_timeout 1
-    mock_call.input(9, :timeout => timeout).should == '1'
+  test 'when :accept_key is false and input() is collecting a finite number of digits, it should allow all DTMFs' do
+    all_digits = %w[0 1 2 3 # * 4 5 6 7 8 9]
+    mock_call.should_receive(:wait_for_digit).times(all_digits.size).and_return(*all_digits)
+    the_following_code {
+      mock_call.input(all_digits.size, :accept_key => false)
+    }.should.not.raise ArgumentError
   end
   
-  test 'Both possible input timeout responses are recognized' do
-    timeout_results = ['200 result=123 (timeout)', '200 result= (timeout)']
-    timeout_results.each do |timeout_result|
-      assert mock_call.send(:input_timed_out?, timeout_result), "'#{timeout_result}' should have been recognized as a timeout"
-    end
+  test 'passes wait_for_digit the :timeout option when one is given' do
+    mock_call.should_receive(:interruptable_play).never
+    mock_call.should_receive(:wait_for_digit).twice.and_return '1', '2'
+    mock_call.input(2, :timeout => 1.minute).should == '12'
   end
+  
+  test 'executes interruptable_play() with all of the files given to :play' do
+    sound_files = %w[foo bar qaz]
+    mock_call.should_receive(:interruptable_play).once.with(*sound_files).and_return '#'
+    mock_call.should_receive(:wait_for_digit).once.and_return '*'
+    mock_call.input(2, :play => sound_files).should == '#*'
+  end
+  
+  test 'pressing the terminating key before any other digits returns an empty string' do
+    mock_call.should_receive(:wait_for_digit).once.and_return '*'
+    mock_call.input(:accept_key => '*').should == ''
+  end
+  
+  test 'should execute wait_for_digit first if no sound files are given' do
+    mock_call.should_receive(:interruptable_play).never
+    mock_call.should_receive(:wait_for_digit).once.and_throw :digit_request
+    should_throw(:digit_request) { mock_call.input(1) }
+  end
+  
+  test "Input timing out when digits are pressed returns only the collected digits" do
+    mock_call.should_receive(:wait_for_digit).twice.and_return '5', nil
+    mock_call.input(9, :timeout => 1.day).should == '5'
+  end
+  
 end
 
 context "The variable() command" do
@@ -1705,13 +1729,6 @@ BEGIN {
           audio_files.each do |audio_file|
             output_stream_matches(/playback #{audio_file}/)
           end
-        end
-
-        def pbx_was_asked_for_input(number_of_digits, options={})
-          timeout = options[:timeout]
-          timeout = (timeout && timeout != -1) ? (timeout * 1000).to_i : -1
-          play    = options[:play] || 'beep'
-          output_stream_matches(/GET DATA #{play} #{timeout} #{number_of_digits}/)
         end
 
         def pbx_was_asked_to_play_number(number)
