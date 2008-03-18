@@ -34,9 +34,25 @@ module Adhearsion
     
     class AdhearsionLogger < Log4r::Logger
       
+      @@outputters = [Log4r::Outputter.stdout]
+      
+      class << self
+        def outputters
+          @@outputters
+        end
+        
+        def outputters=(other)
+          @@outputters = other
+        end
+      end
+      
       def initialize(*args)
         super
-        self.outputters = Adhearsion::Logging::DefaultAdhearsionOutputter
+        redefine_outputters
+      end
+      
+      def redefine_outputters
+        self.outputters = @@outputters
       end
       
       def method_missing(logger_name, *args, &block)
@@ -60,11 +76,9 @@ module Adhearsion
           end
         CODE
       end
-      
     end
     
-    DefaultAdhearsionOutputter = Log4r::Outputter.stdout
-    DefaultAdhearsionLogger    = AdhearsionLogger.new 'ahn'
+    DefaultAdhearsionLogger = AdhearsionLogger.new 'ahn'
     
   end
 end

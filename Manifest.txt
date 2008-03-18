@@ -31,6 +31,7 @@ lib/adhearsion/cli.rb
 lib/adhearsion/component_manager.rb
 lib/adhearsion/core_extensions/all.rb
 lib/adhearsion/core_extensions/array.rb
+lib/adhearsion/core_extensions/custom_daemonizer.rb
 lib/adhearsion/core_extensions/global.rb
 lib/adhearsion/core_extensions/guid.rb
 lib/adhearsion/core_extensions/hash.rb

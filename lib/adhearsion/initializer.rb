@@ -62,7 +62,7 @@ module Adhearsion
       
     end
   
-    attr_reader :path, :daemon, :pid_file
+    attr_reader :path, :daemon, :pid_file, :log_file, :ahn_app_log_directory
     
     DEFAULT_RULES = { :pattern   => "*.rb",
                       :directory => "helpers"}
@@ -86,14 +86,15 @@ module Adhearsion
       @loaded_init_files = options[:loaded_init_files]
       
       self.class.ahn_root = path
-      initialize_log_file
-      resolve_pid_file
+      resolve_pid_file_path
+      resolve_log_file_path
       switch_to_root_directory
       catch_termination_signal
       bootstrap_rc
       load_all_init_files
       init_modules
-      daemonize! if running_in_daemon_mode?
+      daemonize! if should_daemonize?
+      initialize_log_file
       create_pid_file if pid_file
       load_components
       
@@ -103,12 +104,20 @@ module Adhearsion
     end
     
     def initialize_log_file
-      ahn_app_log_directory = AHN_ROOT + '/log'
       Dir.mkdir(ahn_app_log_directory) unless File.directory? ahn_app_log_directory
-      Adhearsion::Logging::DefaultAdhearsionLogger.outputters = [
-        Adhearsion::Logging::DefaultAdhearsionOutputter,
-        Log4r::FileOutputter.new("Main Adhearsion log file", :filename => ahn_app_log_directory + "/adhearsion.log", :trunc => false)
-      ]
+      file_logger = Log4r::FileOutputter.new("Main Adhearsion log file", :filename => log_file, :trunc => false)
+      
+      if should_daemonize?
+        Adhearsion::Logging::AdhearsionLogger.outputters  = file_logger
+      else
+        Adhearsion::Logging::AdhearsionLogger.outputters << file_logger
+      end
+      Adhearsion::Logging::DefaultAdhearsionLogger.redefine_outputters
+    end
+    
+    def resolve_log_file_path      
+      @ahn_app_log_directory = AHN_ROOT + '/log'
+      @log_file = File.expand_path(ahn_app_log_directory + "/adhearsion.log")
     end
     
     def create_pid_file(file = pid_file)
@@ -137,11 +146,7 @@ module Adhearsion
       # FreeswitchInitializer.start if AHN_CONFIG.freeswitch_enabled?
     end
     
-    def running_in_daemon_mode?
-      @daemon || ENV['DAEMON']
-    end
-    
-    def resolve_pid_file
+    def resolve_pid_file_path
       @pid_file = if pid_file.is_a? TrueClass then default_pid_path
       elsif pid_file then pid_file
       elsif !pid_file.nil? && pid_file.is_a?(FalseClass) then nil
@@ -166,9 +171,14 @@ module Adhearsion
       end
     end
     
+    def should_daemonize?
+      @daemon || ENV['DAEMON']
+    end
+    
     def daemonize!
-      puts "Daemonizing now! Creating #{pid_file}."
-      fork
+      ahn_log "Daemonizing now! Creating #{pid_file}."
+      extend Adhearsion::CustomDaemonizer
+      daemonize log_file
     end
     
     def load_components
@@ -192,17 +202,6 @@ module Adhearsion
           Paths.manager_for k, :pattern => File.join(directory,pattern)
         end
       end
-    end
-    
-    def fork(output = true)
-      begin 
-        require 'daemons'
-      rescue
-        raise InitializationFailedError, "To daemonize you must install the 'daemons' gem!"
-      end
-      
-      # log_file = log_path("adhearsion") if Adhearsion::Paths.manager_for? "logs"
-      Daemons.daemonize
     end
     
     def default_pid_path

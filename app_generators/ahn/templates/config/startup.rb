@@ -38,9 +38,6 @@ Adhearsion::Configuration.configure do |config|
   
   # config.asterisk.speech_engine = :cepstral
   
-  # Configure FreeSwitch
-  # config.enable_freeswitch :listening_port => 4572
-  
   # Configure a database to use ActiveRecord-backed models. See ActiveRecord::Base.establish_connection
   # for the appropriate settings here.
   # config.enable_database :adapter  => 'mysql',
