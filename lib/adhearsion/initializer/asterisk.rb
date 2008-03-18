@@ -42,10 +42,8 @@ module Adhearsion
         end
         
         def join_server_thread_after_initialized
-          Adhearsion::Hooks::AfterInitialized.create_hook do
-            agi_server.start
-            agi_server.join
-          end
+          Adhearsion::Hooks::AfterInitialized.create_hook { agi_server.start }
+          Adhearsion::Hooks::ThreadsJoinedAfterInitialized.create_hook { agi_server.join }
         end
         
         def start_ami_after_initialized

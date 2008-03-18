@@ -101,6 +101,7 @@ module Adhearsion
       ahn_log "Adhearsion initialized!"
       
       trigger_after_initialized_hooks
+      join_framework_threads
     end
     
     def initialize_log_file
@@ -188,6 +189,10 @@ module Adhearsion
     
     def trigger_after_initialized_hooks
       Hooks::AfterInitialized.trigger_hooks
+    end
+    
+    def join_framework_threads
+      Hooks::ThreadsJoinedAfterInitialized.trigger_hooks
     end
     
     def bootstrap_rc

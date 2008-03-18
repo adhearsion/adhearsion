@@ -15,13 +15,8 @@ if oes_enabled
 
   server = Adhearsion::VoIP::FreeSwitch::OesServer.new port, host
 
-  Adhearsion::Hooks::AfterInitialized.create_hook do
-    server.start
-    server.join
-  end
-
-  Adhearsion::Hooks::TearDown.create_hook do
-    server.stop
-  end
+  Adhearsion::Hooks::AfterInitialized.create_hook { server.start }
+  Adhearsion::Hooks::ThreadsJoinedAfterInitialized.create_hook { server.join }
+  Adhearsion::Hooks::TearDown.create_hook { server.stop }
 
 end

@@ -28,11 +28,13 @@ module Adhearsion
       end
     end
     
+    ThreadsJoinedAfterInitialized = GenericHook.new
+    
+    OnFailedCall     = HookWithArguments.new
     AfterInitialized = GenericHook.new
     BeforeCall       = GenericHook.new
-    OnFailedCall     = HookWithArguments.new
+    TearDown         = GenericHook.new
     
-    TearDown = GenericHook.new
     class << TearDown
       def aliases
         [:before_shutdown]
