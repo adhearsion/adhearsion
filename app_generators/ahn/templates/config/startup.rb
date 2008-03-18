@@ -1,7 +1,13 @@
 unless defined? Adhearsion
-  require 'rubygems'
-  gem 'adhearsion', '>= 0.7.999'
-  require 'adhearsion' 
+  if File.exists? File.dirname(__FILE__) + "/../adhearsion/lib/adhearsion.rb"
+    # If you wish to freeze a copy of Adhearsion to this app, simply place a copy of Adhearsion
+    # into a folder named "adhearsion" within this app's main directory.
+    require File.dirname(__FILE__) + "/../adhearsion/lib/adhearsion.rb"
+  else  
+    require 'rubygems'
+    gem 'adhearsion', '>= 0.7.999'
+    require 'adhearsion'
+  end
 end
 
 Adhearsion::Configuration.configure do |config|

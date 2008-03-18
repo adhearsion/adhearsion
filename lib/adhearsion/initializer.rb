@@ -56,7 +56,7 @@ module Adhearsion
       end
       
       def start_from_init_file(file, ahn_app_path)
-        return if @@started
+        return if defined?(@@started) && @@started
         new(ahn_app_path, :loaded_init_files => file)
       end
       
