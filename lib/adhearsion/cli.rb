@@ -32,7 +32,6 @@ USAGE
             elsif args.size == 1
               path, daemon = args.first, false
             else
-              p args
               raise CommandHandler::UnknownCommand, "Invalid format for the start CLI command!"
             end
             [:start, path, daemon]

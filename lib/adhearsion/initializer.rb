@@ -38,6 +38,7 @@ module Adhearsion
   end
   
   class Initializer
+    
     class << self
       def get_rules_from(location)
         if File.directory? location
@@ -55,6 +56,7 @@ module Adhearsion
       end
       
       def start_from_init_file(file, ahn_app_path)
+        return if @@started
         new(ahn_app_path, :loaded_init_files => file)
       end
       
@@ -77,6 +79,7 @@ module Adhearsion
     #    case one is created. You can force Adhearsion to not create one
     #    even in daemon mode by supplying "false".
     def initialize(path=nil, options={})
+      @@started = true
       @path              = path
       @daemon            = options[:daemon]
       @pid_file          = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
@@ -110,8 +113,8 @@ module Adhearsion
     
     def create_pid_file(file = pid_file)
       if file
-        File.open(pid_file, File::CREAT|File::WRONLY) do |file|
-          file.write Process.pid
+        open pid_file, 'w' do |file|
+          file.puts Process.pid
         end
         
         Hooks::TearDown.create_hook do
@@ -135,7 +138,7 @@ module Adhearsion
     end
     
     def running_in_daemon_mode?
-      ENV['DAEMON']
+      @daemon || ENV['DAEMON']
     end
     
     def resolve_pid_file
