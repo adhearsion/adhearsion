@@ -10,6 +10,8 @@ end
 AHN_COMMAND = File.expand_path File.dirname(__FILE__) + "/ahn"
 APP_DIR     = File.expand_path ARGV.last
 
+abort "Directory is not an Adhearsion application!" unless File.exists?(APP_DIR + "/.ahnrc")
+
 def terminate(pid) `kill -s TERM #{pid} 2> /dev/null` end
 def      kill(pid) `kill -s KILL #{pid} 2> /dev/null` end
 
