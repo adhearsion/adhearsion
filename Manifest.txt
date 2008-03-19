@@ -25,6 +25,7 @@ app_generators/ahn/templates/components/simon_game/test/test_simon_game.rb
 app_generators/ahn/templates/config/startup.rb
 app_generators/ahn/templates/dialplan.rb
 bin/ahn
+bin/ahnctl
 lib/adhearsion.rb
 lib/adhearsion/blank_slate.rb
 lib/adhearsion/cli.rb

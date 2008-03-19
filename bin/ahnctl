@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+
+# Blow up if the CLI arguments are invalid
+unless ARGV.size == 2 && %w[start stop restart].include?(ARGV.first)
+  abort "Usage: ahnctl start|stop|restart /path/to/adhearsion/app" 
+end
+
+# By default, ahnctl will use the version of Adhearsion it was installed with.
+
+AHN_COMMAND = File.expand_path File.dirname(__FILE__) + "/ahn"
+APP_DIR     = File.expand_path ARGV.last
+
+def terminate(pid) `kill -s TERM #{pid} 2> /dev/null` end
+def      kill(pid) `kill -s KILL #{pid} 2> /dev/null` end
+
+# Even if we're starting Adhearsion, we need to make sure to clean up after any stale
+# pid files. In effect, start is the same as restart.
+puts "Stopping Adhearsion app at #{APP_DIR}" if %w[stop restart].include? ARGV.first
+
+pid_file = APP_DIR + '/adhearsion.pid'
+
+if File.exists?(pid_file)
+  # An Adhearsion process may still be running. Let's kill the other one as cleanly as possible
+  pid = File.read(pid_file).to_i
+  
+  # Time to spend waiting for Adhearsion to exit
+  waiting_timeout = Time.now + 15
+  
+  terminate pid
+  sleep 0.25 until `ps -p #{pid} | sed -e '1d'`.strip.empty? || Time.now > waiting_timeout
+  kill pid
+  
+  `rm -f #{pid_file}`
+end
+
+if ['start', 'restart'].include? ARGV.first
+  puts "Starting Adhearsion app at #{APP_DIR}"
+  `#{AHN_COMMAND} start daemon #{APP_DIR}`
+end
