@@ -79,10 +79,15 @@ module Adhearsion
       end
       
       def handle(call)
+        puts 'in handle'
         if call.failed_call?
           environment = ExecutionEnvironment.new(call)
           call.extract_failed_reason_from(environment)
           raise FailedExtensionCallException.new(environment)
+        end
+        
+        if call.hungup_call?
+          raise HungupExtensionCallException.new(ExecutionEnvironment.new(call))
         end
         
         starting_entry_point = entry_point_for call

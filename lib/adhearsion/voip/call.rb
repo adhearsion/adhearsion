@@ -65,13 +65,18 @@ module Adhearsion
   
   class UselessCallException < Exception; end
   
-  class FailedExtensionCallException < Exception
+  class MetaAgiCallException < Exception
     attr_reader :call
     def initialize(call)
       super()
       @call = call
     end
   end
+  
+  
+  class FailedExtensionCallException < MetaAgiCallException; end
+  
+  class HungupExtensionCallException < MetaAgiCallException; end
   
   ##
   # Encapsulates call-related data and behavior.
@@ -135,7 +140,7 @@ module Adhearsion
       io.close
     end
 
-    def hung_up?
+    def closed?
       io.closed?
     end
     
@@ -144,6 +149,10 @@ module Adhearsion
     # figure that out.
     def failed_call?
       @failed_call
+    end
+    
+    def hungup_call?
+      @hungup_call
     end
     
     def define_variable_accessors(recipient=self)
@@ -170,7 +179,8 @@ module Adhearsion
       def check_if_valid_call
         extension = variables['extension'] || variables[:extension]
         @failed_call = true if extension == 'failed'
-        raise UselessCallException if extension == 't' || extension == 'h'
+        @hungup_call = true if extension == 'h'
+        raise UselessCallException if extension == 't' # TODO: Move this whole method to Manager
       end
     
       def set_originating_voip_platform!

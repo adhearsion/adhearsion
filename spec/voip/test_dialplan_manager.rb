@@ -77,7 +77,9 @@ context "Dialplan::Manager handling" do
 end
 
 context "DialPlan::Manager's handling a failed call" do
+  
   include DialplanTestingHelper
+  
   test 'should check if the call has failed and then instruct it to extract the reason from the environment' do
     flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:variable).with("REASON").once.and_return '3'
     call = Adhearsion::Call.new(nil, {'extension' => "failed"})
@@ -90,6 +92,23 @@ context "DialPlan::Manager's handling a failed call" do
     end
   end
 end
+
+context "DialPlan::Manager's handling a hungup call" do
+  
+  include DialplanTestingHelper
+  
+  test 'should check if the call was a hangup meta-AGI call and then raise a HangupExtensionCallException' do
+    call = Adhearsion::Call.new(nil, {'extension' => "h"})
+    call.should.be.hungup_call
+    flexmock(Adhearsion::DialPlan).should_receive(:new).once.and_return flexmock("bogus DialPlan which should never be used")
+    the_following_code {
+      Adhearsion::DialPlan::Manager.handle(call)
+    }.should.raise Adhearsion::HungupExtensionCallException
+  end
+  
+end
+
+
 
 context "DialPlan" do
   

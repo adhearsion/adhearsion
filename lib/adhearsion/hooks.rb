@@ -31,6 +31,7 @@ module Adhearsion
     ThreadsJoinedAfterInitialized = GenericHook.new
     
     OnFailedCall     = HookWithArguments.new
+    OnHungupCall     = HookWithArguments.new
     AfterInitialized = GenericHook.new
     BeforeCall       = GenericHook.new
     TearDown         = GenericHook.new

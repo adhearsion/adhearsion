@@ -46,6 +46,17 @@ context "The AGI server's serve() method" do
       server.serve(nil)
     }.should.throw :handled_call!
   end
+  
+  test 'should execute the OnHungupCall hooks when a HungupExtensionCallException is raised' do
+    call_mock = flexmock 'a bogus call', :hungup_call? => true, :variables => {:extension => "h"}
+    mock_env  = flexmock "A mock execution environment which gets passed along in the HungupExtensionCallException"
+    
+    flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
+    flexmock(Adhearsion::DialPlan::Manager).new_instances.should_receive(:handle).once.and_raise Adhearsion::HungupExtensionCallException.new(mock_env)
+    flexmock(Adhearsion::Hooks::OnHungupCall).should_receive(:trigger_hooks).once.with(mock_env)
+    server.serve(nil)
+  end
+  
 end
 
 context "Active Calls" do
@@ -98,9 +109,9 @@ context "Active Calls" do
   
   test 'When a call is received with a uniqueid already registered, the existing call should be hung up' do
     Adhearsion::active_calls << typical_call
-    typical_call.should.not.be.hung_up
+    typical_call.should.not.be.closed
     Adhearsion::active_calls << typical_call.dup # same uniqueid
-    typical_call.should.be.hung_up
+    typical_call.should.be.closed
   end
   
   test 'A call with an extension of "t" raises a UselessCallException' do
