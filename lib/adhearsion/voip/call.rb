@@ -22,7 +22,7 @@ module Adhearsion
     
     def <<(call)
       atomically do
-        hangup_existing_calls_with_this_calls_id(call)
+        # hangup_existing_calls_with_this_calls_id(call)
         calls << call
       end
     end

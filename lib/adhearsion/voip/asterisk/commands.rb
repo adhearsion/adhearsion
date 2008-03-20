@@ -724,6 +724,20 @@ module Adhearsion
                 proxy.environment.execute('AgentLogin', id, silent)
               end
               
+              # Removes the current channel from this queue
+              def logout!
+                # TODO: DRY this up. Repeated in the AgentProxy...
+                proxy.environment.execute 'RemoveQueueMember', proxy.name
+                case proxy.environment.variable("RQMSTATUS")
+                  when "REMOVED"     : true
+                  when "NOTINQUEUE"  : false
+                  when "NOSUCHQUEUE"
+                    raise QueueDoesNotExistError.new(proxy.name)
+                  else
+                    raise "Unrecognized RQMSTATUS variable!"
+                end
+              end
+              
               def each(&block)
                 check_agent_cache!
                 agents.each(&block)
@@ -769,7 +783,7 @@ module Adhearsion
             end
             
             class AgentProxy
-              
+
               attr_reader :interface, :proxy, :queue_name
               def initialize(interface, proxy)
                 @interface  = interface
