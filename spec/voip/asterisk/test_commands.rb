@@ -505,6 +505,38 @@ context "The queue management abstractions" do
     end
   end
   
+  test 'should properly retrieve metadata for an AgentProxy instance' do
+    agent_id, metadata_name = '22', 'status'
+    mock_env   = flexmock "a mock ExecutionEnvironment"
+    mock_queue = flexmock "a queue that references our mock ExecutionEnvironment", :environment => mock_env, :name => "doesntmatter"
+    mock_env.should_receive(:variable).once.with("AGENT(#{agent_id}:#{metadata_name})")
+    agent = Adhearsion::VoIP::Asterisk::Commands::QueueProxy::AgentProxy.new("Agent/#{agent_id}", mock_queue)
+    agent.send(:agent_metadata, metadata_name)
+  end
+  
+  test 'AgentProxy#logged_in? should return true if the "state" of an agent == LOGGEDIN' do
+    mock_env   = flexmock "a mock ExecutionEnvironment"
+    mock_queue = flexmock "a queue that references our mock ExecutionEnvironment", :environment => mock_env, :name => "doesntmatter"
+    
+    agent = Adhearsion::VoIP::Asterisk::Commands::QueueProxy::AgentProxy.new('Agent/123', mock_queue)
+    flexmock(agent).should_receive(:agent_metadata).once.with('status').and_return 'LOGGEDIN'
+    agent.should.be.logged_in
+    
+    flexmock(agent).should_receive(:agent_metadata).once.with('status').and_return 'LOGGEDOUT'
+    agent.should.not.be.logged_in
+  end
+  
+  test 'the AgentProxy should populate its own "id" property to the numerical ID of the "interface" with which it was constructed' do
+    mock_queue = flexmock :name => "doesntmatter"
+    id = '123'
+    
+    agent = Adhearsion::VoIP::Asterisk::Commands::QueueProxy::AgentProxy.new("Agent/#{id}", mock_queue)
+    agent.id.should == id
+    
+    agent = Adhearsion::VoIP::Asterisk::Commands::QueueProxy::AgentProxy.new(id, mock_queue)
+    agent.id.should == id
+  end
+  
   test 'QueueAgentsListProxy#<<() should new the channel driver given as the argument to the system' do
     queue_name, agent_channel = "metasyntacticvariablesftw", "Agent/123"
     pbx_should_respond_with_value "ADDED"

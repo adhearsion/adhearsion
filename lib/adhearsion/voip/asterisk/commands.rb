@@ -717,7 +717,7 @@ module Adhearsion
                 
                 silent = options.delete(:silent).equal?(false) ? '' : 's'
                 id     = args.shift
-                id   &&= id.to_s.starts_with?('Agent/') ? id[%r[^Agent/(.+)$],1] : id
+                id   &&= AgentProxy.id_from_agent_channel(id)
                 raise ArgumentError, "Unrecognized Hash options to login(): #{options.inspect}" if options.any?
                 raise ArgumentError, "Unrecognized argument to login(): #{args.inspect}" if args.any?
                 
@@ -783,10 +783,20 @@ module Adhearsion
             end
             
             class AgentProxy
+              
+              SUPPORTED_METADATA_NAMES = %w[status password name mohclass exten channel] unless defined? SUPPORTED_METADATA_NAMES
 
-              attr_reader :interface, :proxy, :queue_name
+              class << self
+                def id_from_agent_channel(id)
+                  id = id.to_s
+                  id.starts_with?('Agent/') ? id[%r[^Agent/(.+)$],1] : id
+                end
+              end
+
+              attr_reader :interface, :proxy, :queue_name, :id
               def initialize(interface, proxy)
                 @interface  = interface
+                @id         = self.class.id_from_agent_channel interface
                 @proxy      = proxy
                 @queue_name = proxy.name
               end
@@ -831,6 +841,23 @@ module Adhearsion
                   else
                     raise "Unrecognized UPQMSTATUS value!"
                 end
+              end
+              
+              # Returns true/false depending on whether this agent is logged in.
+              def logged_in?
+                status == 'LOGGEDIN'
+              end
+              
+              private
+              
+              def status
+                agent_metadata 'status'
+              end
+              
+              def agent_metadata(data_name)
+                data_name = data_name.to_s.downcase
+                raise ArgumentError, "unrecognized agent metadata name #{data_name}" unless SUPPORTED_METADATA_NAMES.include? data_name
+                proxy.environment.variable "AGENT(#{id}:#{data_name})"
               end
               
             end
