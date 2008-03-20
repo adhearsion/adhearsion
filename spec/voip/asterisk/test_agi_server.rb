@@ -57,6 +57,16 @@ context "The AGI server's serve() method" do
     server.serve(nil)
   end
   
+  test 'should execute the OnFailedCall hooks when a FailedExtensionCallException is raised' do
+    call_mock = flexmock 'a bogus call', :failed_call? => true, :variables => {:extension => "failed"}
+    mock_env  = flexmock "A mock execution environment which gets passed along in the HungupExtensionCallException", :failed_reason => "does not matter" 
+    
+    flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
+    flexmock(Adhearsion::DialPlan::Manager).new_instances.should_receive(:handle).once.and_raise Adhearsion::FailedExtensionCallException.new(mock_env)
+    flexmock(Adhearsion::Hooks::OnFailedCall).should_receive(:trigger_hooks).once.with(mock_env)
+    server.serve(nil)
+  end
+  
 end
 
 context "Active Calls" do
