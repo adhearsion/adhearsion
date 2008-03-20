@@ -84,7 +84,6 @@ module Adhearsion
       @daemon            = options[:daemon]
       @pid_file          = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
       @loaded_init_files = options[:loaded_init_files]
-      
       self.class.ahn_root = path
       resolve_pid_file_path
       resolve_log_file_path
@@ -123,7 +122,7 @@ module Adhearsion
     
     def create_pid_file(file = pid_file)
       if file
-        open pid_file, 'w' do |file|
+        File.open pid_file, 'w' do |file|
           file.puts Process.pid
         end
         

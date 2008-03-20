@@ -1,6 +1,7 @@
 require File.dirname(__FILE__) + '/test_helper'
 
 context "Adhearsion::Initializer" do
+  
   include InitializerStubs
   # TODO: create a specification for aliases
   
@@ -17,7 +18,7 @@ context "Adhearsion::Initializer" do
  
   test "should create a pid file in the app's path when given 'true' as the pid_file hash key argument" do
     with_new_initializer_with_no_path_changing_behavior do
-       flexmock(File).should_receive(:open).once.with(File.join(path, 'adhearsion.pid'), File::CREAT|File::WRONLY, Proc)
+       flexmock(File).should_receive(:open).once.with(File.join(path, 'adhearsion.pid'), 'w', Proc)
        ahn = Adhearsion::Initializer.new path, :pid_file => true
        ahn.pid_file[0, path.length].should.equal(path)
      end
@@ -32,7 +33,7 @@ context "Adhearsion::Initializer" do
    
    test "should create a pid file in the app's path by default when daemonizing" do
      with_new_initializer_with_no_path_changing_behavior do
-       flexmock(File).should_receive(:open).once.with(File.join(path, 'adhearsion.pid'), File::CREAT|File::WRONLY, Proc)
+       flexmock(File).should_receive(:open).once.with(File.join(path, 'adhearsion.pid'), 'w', Proc)
        ahn = Adhearsion::Initializer.new path, :daemon => true
        ahn.pid_file[0, path.size].should.equal(path)
      end

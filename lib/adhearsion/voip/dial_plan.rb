@@ -79,7 +79,6 @@ module Adhearsion
       end
       
       def handle(call)
-        puts 'in handle'
         if call.failed_call?
           environment = ExecutionEnvironment.new(call)
           call.extract_failed_reason_from(environment)
