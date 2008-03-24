@@ -50,6 +50,10 @@ context 'Logger level changing' do
     Adhearsion::Logging.logging_level = :info
   end
   
+  after :all do
+    Adhearsion::Logging.logging_level = :fatal # Silence them again
+  end
+  
   test 'changing the logging level should affect all loggers' do
     loggers = [ahn_log.one, ahn_log.two, ahn_log.three]
     loggers.map(&:level).should.not == [Log4r::WARN] * 3

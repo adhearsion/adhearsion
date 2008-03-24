@@ -21,7 +21,6 @@ module Adhearsion
       	      # This is what happens 99.9% of the time.
       	      
       	      DialPlan::Manager.handle call
-              
             rescue DialPlan::Manager::NoContextError => e
               ahn_log.agi e.message
               call.hangup!

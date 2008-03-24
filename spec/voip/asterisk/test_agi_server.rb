@@ -47,24 +47,35 @@ context "The AGI server's serve() method" do
     }.should.throw :handled_call!
   end
   
+  test 'calling the serve() method invokes any BeforeCall hooks' do
+    flexmock(Adhearsion::Hooks::BeforeCall).should_receive(:trigger_hooks).once.and_throw :before_call_hooks_executed
+    assert_throws :before_call_hooks_executed do
+      server.serve nil
+    end
+  end
+  
   test 'should execute the OnHungupCall hooks when a HungupExtensionCallException is raised' do
     call_mock = flexmock 'a bogus call', :hungup_call? => true, :variables => {:extension => "h"}
     mock_env  = flexmock "A mock execution environment which gets passed along in the HungupExtensionCallException"
     
-    flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
-    flexmock(Adhearsion::DialPlan::Manager).new_instances.should_receive(:handle).once.and_raise Adhearsion::HungupExtensionCallException.new(mock_env)
-    flexmock(Adhearsion::Hooks::OnHungupCall).should_receive(:trigger_hooks).once.with(mock_env)
-    server.serve(nil)
+    stub_confirmation_manager!
+    flexstub(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
+    flexmock(Adhearsion::DialPlan::Manager).should_receive(:handle).once.and_raise Adhearsion::HungupExtensionCallException.new(mock_env)
+    flexmock(Adhearsion::Hooks::OnHungupCall).should_receive(:trigger_hooks).once.with(mock_env).and_throw :hungup_call
+    
+    the_following_code { server.serve nil }.should.throw :hungup_call
   end
   
   test 'should execute the OnFailedCall hooks when a FailedExtensionCallException is raised' do
     call_mock = flexmock 'a bogus call', :failed_call? => true, :variables => {:extension => "failed"}
     mock_env  = flexmock "A mock execution environment which gets passed along in the HungupExtensionCallException", :failed_reason => "does not matter" 
     
+    server = Adhearsion::VoIP::Asterisk::AGI::Server::RubyServer.new :port, :host
+    
     flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
-    flexmock(Adhearsion::DialPlan::Manager).new_instances.should_receive(:handle).once.and_raise Adhearsion::FailedExtensionCallException.new(mock_env)
-    flexmock(Adhearsion::Hooks::OnFailedCall).should_receive(:trigger_hooks).once.with(mock_env)
-    server.serve(nil)
+    flexmock(Adhearsion::DialPlan::Manager).should_receive(:handle).once.and_raise Adhearsion::FailedExtensionCallException.new(mock_env)
+    flexmock(Adhearsion::Hooks::OnFailedCall).should_receive(:trigger_hooks).once.with(mock_env).and_throw :failed_call
+    the_following_code { server.serve nil }.should.throw :failed_call
   end
   
 end
@@ -115,13 +126,6 @@ context "Active Calls" do
     call = Adhearsion::Call.receive_from(typical_call_variable_io)
     call.should.be.kind_of(Adhearsion::Call)
     call.channel.should == typical_call_variables_hash[:channel]
-  end
-  
-  test 'When a call is received with a uniqueid already registered, the existing call should be hung up' do
-    Adhearsion::active_calls << typical_call
-    typical_call.should.not.be.closed
-    Adhearsion::active_calls << typical_call.dup # same uniqueid
-    typical_call.should.be.closed
   end
   
   test 'A call with an extension of "t" raises a UselessCallException' do
@@ -353,6 +357,10 @@ agi_accountcode:
   module AgiServerTestHelper
     def stub_before_call_hooks!
       flexstub(Adhearsion::Hooks::BeforeCall).should_receive :trigger_hooks
+    end
+    
+    def stub_confirmation_manager!
+      flexstub(Adhearsion::DialPlan::ConfirmationManager).should_receive(:confirmation_call?).and_return false
     end
   end
 }

@@ -26,6 +26,16 @@ USAGE
           when /^create(:([\w_.]+))?$/
             [:create, args.shift, $LAST_PAREN_MATCH || :default]
           when 'start'
+            pid_file_regexp = /^--pid-file=(.+)$/
+            if args.size > 3
+              raise CommandHandler::UnknownCommand, "Too many arguments supplied!" if args.size > 3
+            elsif args.size == 3
+              raise CommandHandler::UnknownCommand, "Unrecognized final argument #{args.last}" unless args.last =~ pid_file_regexp
+              pid_file = args.pop[pid_file_regexp, 1]
+            else
+              pid_file = nil
+            end
+            
             if args.first == 'daemon' && args.size == 2
               path   = args.last
               daemon = true
@@ -34,7 +44,7 @@ USAGE
             else
               raise CommandHandler::UnknownCommand, "Invalid format for the start CLI command!"
             end
-            [:start, path, daemon]
+            [:start, path, daemon, pid_file]
           when '-'
             [:start, Dir.pwd]
           else
@@ -55,9 +65,9 @@ USAGE
             RubiGen::Scripts::Generate.new.run([path], :generator => 'ahn')
           end
         
-          def start(path, daemon=false)
+          def start(path, daemon=false, pid_file=nil)
             raise PathInvalid, path unless File.exists? path + "/.ahnrc"
-            Adhearsion::Initializer.new path, :daemon => daemon
+            Adhearsion::Initializer.new path, :daemon => daemon, :pid_file => pid_file
           end
         
           def version

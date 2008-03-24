@@ -52,13 +52,7 @@ class Test::Unit::TestCase
   def self.disabled_test(*args, &block)
     xspecify(*args, &block)
   end
-
-  def the_result_of_the_following_expression(&block)
-    block.call
-  end
   
-  private
-   ## helper methods here
 end
 
 module InitializerStubs

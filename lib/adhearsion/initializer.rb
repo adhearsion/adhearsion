@@ -147,9 +147,9 @@ module Adhearsion
     end
     
     def resolve_pid_file_path
-      @pid_file = if pid_file.is_a? TrueClass then default_pid_path
+      @pid_file = if pid_file.equal?(true) then default_pid_path
       elsif pid_file then pid_file
-      elsif !pid_file.nil? && pid_file.is_a?(FalseClass) then nil
+      elsif pid_file.equal?(false) then nil
       # FIXME @pid_file = @daemon? Assignment or equality? I'm assuming equality.
       else @pid_file = @daemon ? default_pid_path : nil
       end

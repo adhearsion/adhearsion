@@ -1100,35 +1100,6 @@ context 'say_digits command' do
   
 end
 
-context 'tone command' do
-  include DialplanCommandTestHelpers
-  
-  test 'Supported tone codes are available in a look up table' do
-    predefined_tones.keys.map(&:to_s).sort.should.equal(%w(busy dial info record).sort)
-  end
-  
-  test 'Requesting to play a predefined tone plays the correct tone' do
-    name, tone = predefined_tones.to_a.first
-    pbx_should_respond_with_success
-    mock_call.tone name
-    pbx_was_asked_to_play_tone tone
-  end
-  
-  test 'Requesting to play a custom tone by passing a raw tone code plays that raw custom tone directly' do
-    custom_tone = "3333/33,0/15000"
-    pbx_should_respond_with_success
-    mock_call.tone custom_tone
-    pbx_was_asked_to_play_tone custom_tone
-  end
-  
-  test 'Requesting to play a custom tone by passing in its name plays it by name' do
-    custome_tone_name = :constipated
-    pbx_should_respond_with_success
-    mock_call.tone custome_tone_name
-    pbx_was_asked_to_play_tone custome_tone_name
-  end
-end
-
 context 'get variable command' do
   include DialplanCommandTestHelpers
   
@@ -1408,7 +1379,7 @@ context "the last_dial_status command and family" do
     mock_call.last_dial_unsuccessful?.should.equal true
   end
   
-  test 'get_dial_status should not blow up if variable() returns nil. it should return :cancelled' do
+  test 'last_dial_status should not blow up if variable() returns nil. it should return :cancelled' do
     the_following_code {
       mock_call.should_receive(:variable).once.with("DIALSTATUS").and_return nil
       mock_call.last_dial_status.should.equal :cancelled
@@ -1771,10 +1742,6 @@ BEGIN {
           output_stream_matches(/sayunixtime #{number}/)
         end
 
-        def pbx_was_asked_to_play_tone(tone)
-          output_stream_matches(/PlayTones #{Regexp.escape(tone.to_s)}/)
-        end
-        
         def pbx_was_asked_to_execute(application, *options)
           output_stream_matches(/exec saydigits #{options.join('|')}/i)
         end
@@ -1785,9 +1752,6 @@ BEGIN {
         response.should.equal pbx_success_response
       end
 
-      def predefined_tones
-        Adhearsion::VoIP::Asterisk::Commands::TONES
-      end
   end
   
   

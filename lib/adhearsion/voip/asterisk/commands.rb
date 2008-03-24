@@ -6,13 +6,6 @@ module Adhearsion
     module Asterisk
       module Commands
         
-        TONES = {
-          :busy   => "480+620/500,0/500",
-          :dial   => "440+480/2000,0/4000",
-          :info   => "!950/330,!1400/330,!1800/330,0",
-          :record => "1400/500,0/15000"
-        } unless defined? TONES
-        
         RESPONSE_PREFIX = "200 result=" unless defined? RESPONSE_PREFIX
         DIAL_STATUSES   = Hash.new(:unknown).merge(:answer      => :answered,
                                                    :congestion  => :congested, 
@@ -49,35 +42,153 @@ module Adhearsion
           result
         end
         
+        # Hangs up the current channel.
         def hangup
           raw_response 'HANGUP'
         end
         
+        # Plays the specified sound file names. This method will handle Time/DateTime objects (e.g. Time.now),
+        # Fixnums (e.g. 1000), Strings which are valid Fixnums (e.g "123"), and direct sound files. When playing
+        # numbers, Adhearsion assumes you're saying the number, not the digits. For example, play("100")
+        # is pronounced as "one hundred" instead of "one zero zero".
+        #
+        # Note: it's not necessary to supply a sound file extension; Asterisk will try to find a sound
+        # file encoded using the current channel's codec, if one exists. If not, it will transcode from
+        # the default codec (GSM). Asterisk stores its sound files in /var/lib/asterisk/sounds.
+        #
+        # Usage:
+        #
+        #   play 'hello-world'
+        #   play Time.now
+        #   play %w"a-connect-charge-of 22 cents-per-minute will-apply"
+        #   play "you-sound-cute", "what-are-you-wearing"
+        #
         def play(*arguments)
           arguments.flatten.each do |argument|
             play_time(argument) || play_numeric(argument) || play_string(argument)
           end
         end
         
-        # Plays a tone over the call.
-        #
-        # Usage:
-        #  - tone:busy
-        #  - tone:dial
-        #  - tone:info
-        #  - tone:record
-        #  - tone "3333/33,0/15000" # Random custom tone
-        #
-        # (http://www.voip-info.org/wiki/index.php?page=Asterisk+cmd+Playtones)
-        def tone(type_name_or_raw_tone)
-          tone_code = TONES[type_name_or_raw_tone] || type_name_or_raw_tone
-          execute 'PlayTones', tone_code
-        end
-        
-        def dtmf digits
+        # Simulates pressing the specified digits over the current channel. Can be used to
+        # traverse a phone menu.
+        def dtmf(digits)
       		execute "SendDTMF", digits.to_s
       	end
       	
+
+        # = Menu Command
+        #
+        # The following documentation was derived from this blog post on Jay Phillips' blog:
+        # 
+        # http://jicksta.com/articles/2008/02/11/menu-command
+        # 
+        # The menu() command solves the problem of building enormous input-fetching state machines in Ruby without first-class
+        # message passing facilities or an external DSL.
+        # 
+        # Here is an example dialplan which uses the menu() command effectively.
+        # 
+        #   from_pstn {
+        #     menu 'welcome', 'for-spanish-press-8', 'main-ivr',
+        #          :timeout => 8.seconds, :tries => 3 do |link|
+        #       link.shipment_status  1
+        #       link.ordering         2
+        #       link.representative   4
+        #       link.spanish          8
+        #       link.employee         900..999
+        # 
+        #       link.on_invalid { play 'invalid' }
+        # 
+        #       link.on_premature_timeout do |str|
+        #         play 'sorry'
+        #       end
+        # 
+        #       link.on_failure do
+        #         play 'goodbye'
+        #         hangup
+        #       end
+        #     end
+        #   }
+        # 
+        #   shipment_status {
+        #     # Fetch a tracking number and pass it to a web service.
+        #   }
+        # 
+        #   ordering {
+        #     # Enter another menu that lets them enter credit card
+        #     # information and place their order over the phone.
+        #   }
+        # 
+        #   representative {
+        #     # Place the caller into a queue
+        #   }
+        # 
+        #   spanish {
+        #     # Special options for the spanish menu.
+        #   }
+        # 
+        #   employee {
+        #     dial "SIP/#{extension}" # Overly simplistic
+        #   }
+        # 
+        # The main detail to note is the declarations within the menu() command’s block. Each line seems to refer to a link object
+        # executing a seemingly arbitrary method with an argument that’s either a number or a Range of numbers. The +link+ object
+        # collects these arbitrary method invocations and assembles a set of rules. The seemingly arbitrary method name is the name
+        # of the context to which the menu should jump in case its argument (the pattern) is found to be a match.
+        # 
+        # With these context names and patterns defined, the +menu()+ command plays in sequence the sound files you supply as
+        # arguments, stopping playback abruptly if the user enters a digit. If no digits were pressed when the files finish playing,
+        # it waits +:timeout+ seconds. If no digits are pressed after the timeout, it executes the +on_premature_timeout+ hook you
+        # define (if any) and then tries again a maximum of +:tries+ times. If digits are pressed that result in no possible match,
+        # it executes the +on_invalid+ hook. When/if all tries are exhausted with no positive match, it executes the +on_failure+
+        # hook after the other hook (e.g. +on_invalid+, then +on_failure+).
+        # 
+        # When the +menu()+ state machine runs through the defined rules, it must distinguish between exact and potential matches.
+        # It’s important to understand the differences between these and how they affect the overall outcome:
+        # 
+        # |---------------|-------------------|------------------------------------------------------|
+        # | exact matches |	potential matches	| result                                               |
+        # |---------------|-------------------|------------------------------------------------------|
+        # |  0	          |  0	              | Fail and start over                                  |
+        # |  1	          |  0	              | Match found!                                         |
+        # |  0	          | >0	              | Get another digit                                    |
+        # | >1	          |  0	              | Go with the first exact match                        |
+        # |  1	          | >0	              | Get another digit. If timeout, use exact match       |
+        # | >1	          | >0	              | Get another digit. If timeout, use first exact match |
+        # |---------------|-------------------|------------------------------------------------------|
+        # 
+        # == Database integration
+        # 
+        # To do database integration, I recommend programatically executing methods on the link object within the block. For example:
+        # 
+        #   menu do |link|
+        #     for employee in Employee.find(:all)
+        #       link.internal employee.extension
+        #     end
+        #   end
+        # 
+        # or this more efficient and Rubyish way
+        # 
+        #   menu do |link|
+        #     link.internal *Employee.find(:all).map(&:extension)
+        #   end
+        # 
+        # If this second example seems like too much Ruby magic, let me explain — +Employee.find(:all)+ effectively does a “SELECT *
+        # FROM employees” on the database with ActiveRecord, returning (what you’d think is) an Array. The +map(&:extension)+ is
+        # fanciness that means “replace every instance in this Array with the result of calling extension on that object”. Now we
+        # have an Array of every extension in the database. The splat operator (*) before the argument changes the argument from
+        # being one argument (an Array) into a sequence of n arguments, where n is the number of items in the Array it’s “splatting”.
+        # Lastly, these arguments are passed to the internal method, the name of a context which will handle dialing this user if one
+        # of the supplied patterns matches.
+        # 
+        # == Handling a successful pattern match
+        # 
+        # Which brings me to another important note. Let’s say that the user’s input successfully matched one of the patterns
+        # returned by that Employe.find... magic. When it jumps to the internal context, that context can access the variable entered
+        # through the extension variable. This was a tricky design decision that I think, overall, works great. It makes the +menu()+
+        # command feel much more first-class in the Adhearsion dialplan grammar and decouples the receiving context from the menu
+        # that caused the jump. After all, the context doesn’t necessary need to be the endpoint from a menu; it can be its own entry
+        # point, making menu() effectively a pipeline of re-creating the call.
+        # 
         def menu(*args, &block)
           menu_instance = Menu.new(*args, &block)
 
@@ -217,11 +328,6 @@ module Adhearsion
       	  end
     	  end
       	
-        def get_dial_status
-          dial_status = variable('DIALSTATUS')
-          dial_status ? dial_status.downcase.to_sym : :cancelled
-        end
-        
       	# Returns the status of the last dial(). Possible dial
         # statuses include :answer, :busy, :no_answer, :cancelled,
         # :congested, and :channel_unavailable. If :cancel is
@@ -233,14 +339,18 @@ module Adhearsion
       	  DIAL_STATUSES[get_dial_status]
       	end
 
+        # Returns true if your last call to dial() finished with the ANSWER state, as reported
+        # by Asterisk. Returns false otherwise
         def last_dial_successful?
           last_dial_status == :answered
         end
 
+        # Opposite of last_dial_successful?()
         def last_dial_unsuccessful?
           not last_dial_successful?
         end
         
+        # This feature is presently experimental! Do not use it!
         def speak(text, engine=:none)
           engine = Adhearsion::Configuration::AsteriskConfiguration.speech_engine || engine
           execute SpeechEngines.send(engine, text)
@@ -259,12 +369,6 @@ module Adhearsion
           command_flags += 'd' unless command_flags.include? 'd'
           
           execute "MeetMe", conference_id, command_flags, options[:pin]
-        end
-        
-        def record
-          # TODO
-          puts "RECORD NOT IMPLEMENTED."
-          String.random # Simulates the returned filename
         end
         
       	def get_variable(variable_name)
@@ -342,6 +446,9 @@ module Adhearsion
           execute "Dial", number, options[:for], all_options
         end
         
+        
+        # This implementation of dial() uses the experimental call routing DSL.
+        #
         # def dial(number, options={})
         #   rules = callable_routes_for number
         #   return :no_route if rules.empty?
@@ -359,6 +466,8 @@ module Adhearsion
         #   call_attempt_status
         # end
       	
+      	
+      	# Speaks the digits given as an argument. For example, "123" is spoken as "one two three".
       	def say_digits(digits)
       	  validate_digits(digits)
       	  execute("saydigits #{digits}")
@@ -472,6 +581,11 @@ module Adhearsion
             result[/^#{response_prefix}1 \((.+)\)/, 1]
           end
           
+          def get_dial_status
+            dial_status = variable('DIALSTATUS')
+            dial_status ? dial_status.downcase.to_sym : :cancelled
+          end
+
           def play_time(argument)
             if argument.kind_of? Time
               execute(:sayunixtime, argument.to_i)
