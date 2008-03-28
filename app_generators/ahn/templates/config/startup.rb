@@ -42,8 +42,6 @@ Adhearsion::Configuration.configure do |config|
   # Note: You CANNOT do enable_rails and enable_database at the same time. When you enable Rails,
   # it will automatically connect to same database Rails does and load the Rails app's models.
   
-  # config.asterisk.speech_engine = :cepstral
-  
   # Configure a database to use ActiveRecord-backed models. See ActiveRecord::Base.establish_connection
   # for the appropriate settings here.
   # config.enable_database :adapter  => 'mysql',
