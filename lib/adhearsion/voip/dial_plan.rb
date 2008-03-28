@@ -130,7 +130,7 @@ module Adhearsion
         private
           def inject_dial_plan_component_classes_into(dial_plan_as_string)
             dial_plan_as_string[0, 0] = ComponentManager.components_with_call_context.keys.map do |component| 
-              "#{component} = ::Adhearsion::ComponentManager.components_with_call_context['#{component}']\n"
+              "#{component} = ::Adhearsion::ComponentManager.components_with_call_context['#{component}'] unless defined? #{component}\n"
             end.join
           end
           
