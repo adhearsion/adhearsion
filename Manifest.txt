@@ -39,6 +39,7 @@ lib/adhearsion/core_extensions/hash.rb
 lib/adhearsion/core_extensions/metaprogramming.rb
 lib/adhearsion/core_extensions/numeric.rb
 lib/adhearsion/core_extensions/proc.rb
+lib/adhearsion/core_extensions/pseudo_uuid.rb
 lib/adhearsion/core_extensions/publishable.rb
 lib/adhearsion/core_extensions/string.rb
 lib/adhearsion/core_extensions/thread.rb
@@ -52,6 +53,7 @@ lib/adhearsion/distributed/gateways/xmlrpc_gateway.rb
 lib/adhearsion/distributed/peer_finder.rb
 lib/adhearsion/distributed/remote_cli.rb
 lib/adhearsion/hooks.rb
+lib/adhearsion/host_definitions.rb
 lib/adhearsion/initializer.rb
 lib/adhearsion/initializer/asterisk.rb
 lib/adhearsion/initializer/configuration.rb
@@ -118,9 +120,9 @@ spec/test_constants.rb
 spec/test_drb.rb
 spec/test_helper.rb
 spec/test_hooks.rb
+spec/test_host_definitions.rb
 spec/test_initialization.rb
 spec/test_logging.rb
-spec/test_plugin.rb
 spec/voip/asterisk/ami_response_definitions.rb
 spec/voip/asterisk/config_file_generators/test_agents.rb
 spec/voip/asterisk/config_file_generators/test_queues.rb
