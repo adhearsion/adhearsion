@@ -15,6 +15,15 @@ module Adhearsion
                                                    :cancelled   => :cancelled,
                                                    :chanunavail => :channel_unavailable) unless defined? DIAL_STATUSES
         
+        DYNAMIC_FEATURE_EXTENSIONS = {
+          :attended_transfer => lambda do |options|
+            if options && options.has_key?(:context)
+              variable "TRANSFER_CONTEXT" => options[:context]
+            end
+            extend_dynamic_features_with "atxfer"
+          end
+        } unless defined? DYNAMIC_FEATURE_EXTENSIONS
+        
         def write(message)
           to_pbx.print(message)
         end
@@ -356,6 +365,16 @@ module Adhearsion
           execute SpeechEngines.send(engine, text)
         end
         
+        def enable_feature(feature_name, optional_options=nil)
+          if DYNAMIC_FEATURE_EXTENSIONS.has_key? feature_name
+            instance_exec(optional_options, &DYNAMIC_FEATURE_EXTENSIONS[feature_name])
+          else
+            raise ArgumentError, "You cannot supply optional options when the feature name is " +
+                                 "not internally recognized!" if optional_options
+            extend_dynamic_features_with feature_name
+          end
+        end
+        
         # Used to join a particular conference with the MeetMe application. To
         # use MeetMe, be sure you have a proper timing device configured on your
         # Asterisk box. MeetMe is Asterisk's built-in conferencing program.
@@ -608,6 +627,15 @@ module Adhearsion
               digit = interruptable_play(*menu_instance.sound_files)
             end
             digit || wait_for_digit(menu_instance.timeout)
+          end
+          
+          def extend_dynamic_features_with(feature_name)
+            current_variable = variable("DYNAMIC_FEATURES") || ''
+            enabled_features = current_variable.split '#'
+            unless enabled_features.include? feature_name
+              enabled_features << feature_name 
+              variable "DYNAMIC_FEATURES" => enabled_features.join('#')
+            end
           end
 
           def jump_to_context_with_name(context_name)

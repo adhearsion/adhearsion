@@ -1100,6 +1100,82 @@ context 'say_digits command' do
   
 end
 
+context 'the enable_feature command' do
+  
+  include DialplanCommandTestHelpers
+  
+  test 'it should fetch the variable for DYNAMIC_FEATURES at first' do
+    mock_call.should_receive(:variable).once.with("DYNAMIC_FEATURES").and_throw :got_variable
+    should_throw :got_variable do
+      mock_call.enable_feature :foobar
+    end
+  end
+  
+  test 'should check Adhearsion::VoIP::Asterisk::Commands::DYNAMIC_FEATURE_EXTENSIONS mapping for configuration setters' do
+    feature_name = :attended_transfer
+    
+    assertion = lambda do |arg|
+      arg.should.equal :this_is_the_right_arg
+      throw :inside_assertion!
+    end
+    
+    # I had to do this ugly hack because of a bug in Flexmock which prevented me from mocking out Hash#[]  :(
+    old_hash_feature_extension = Adhearsion::VoIP::Asterisk::Commands::DYNAMIC_FEATURE_EXTENSIONS[feature_name]
+    begin
+      Adhearsion::VoIP::Asterisk::Commands::DYNAMIC_FEATURE_EXTENSIONS[feature_name] = assertion
+      # </uglyhack>
+      should_throw :inside_assertion! do
+        mock_call.enable_feature(feature_name, :this_is_the_right_arg)
+      end
+    ensure
+      Adhearsion::VoIP::Asterisk::Commands::DYNAMIC_FEATURE_EXTENSIONS[feature_name] = old_hash_feature_extension
+    end
+  end 
+  
+  test 'should separate enabled features with a "#"' do
+    mock_call.should_receive(:variable).once.with("DYNAMIC_FEATURES").and_return("one")
+    mock_call.should_receive(:variable).once.with("DYNAMIC_FEATURES" => 'one#bar')
+    mock_call.enable_feature "bar"
+  end
+  
+  test 'should not add duplicate enabled dynamic features' do
+    mock_call.should_receive(:variable).once.and_return('eins#zwei')
+    mock_call.enable_feature "eins"
+  end
+  
+  test 'should raise an ArgumentError if optional options are given when DYNAMIC_FEATURE_EXTENSIONS does not have a key for the feature name' do
+    the_following_code {
+      mock_call.enable_feature :this_is_not_recognized, :these_features => "are not going to be recognized"
+    }.should.raise ArgumentError
+  end
+  
+  test 'enabling :attended_transfer should actually enable the atxfer feature' do
+    mock_call.should_receive(:variable).once.with("DYNAMIC_FEATURES").and_return ''
+    mock_call.should_receive(:variable).once.with("DYNAMIC_FEATURES" => 'atxfer')
+    mock_call.enable_feature :attended_transfer
+  end
+  
+  test 'the :context optional option when enabling :attended_transfer should set the TRANSFER_CONTEXT variable to the String supplied as a Hash value' do
+    context_name = "direct_dial"
+    mock_call.should_receive(:variable).once.with("DYNAMIC_FEATURES").and_return ''
+    mock_call.should_receive(:variable).once.with("DYNAMIC_FEATURES" => 'atxfer')
+    mock_call.should_receive(:variable).once.with("TRANSFER_CONTEXT" => context_name)
+    mock_call.enable_feature :attended_transfer, :context => context_name
+  end
+  
+  test 'enabling :attended_transfer should not add a duplicate if atxfer has been enabled, but it should still set the TRANSFER_CONTEXT variable' do
+    context_name = 'blah'
+    mock_call.should_receive(:variable).once.with('DYNAMIC_FEATURES').and_return 'atxfer'
+    mock_call.should_receive(:variable).once.with('TRANSFER_CONTEXT' => context_name)
+    mock_call.enable_feature :attended_transfer, :context => context_name
+  end
+  
+end
+
+context 'the disable_feature command' do
+  
+end
+
 context 'get variable command' do
   include DialplanCommandTestHelpers
   
