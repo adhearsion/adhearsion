@@ -191,6 +191,10 @@ module Adhearsion
               string :emailbody => str
             end
             
+            def command(cmd)
+              string :mailcmd => cmd
+            end
+            
           end
           
           class RecordingDefinition < AsteriskConfigGenerator

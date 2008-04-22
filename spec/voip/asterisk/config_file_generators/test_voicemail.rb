@@ -69,8 +69,22 @@ context 'Defining email-related Voicemail settings' do
   
   test 'the body must not be allowed to exceed 512 characters' do
     the_following_code {
+      email.body "X" * 512
+    }.should.not.raise ArgumentError
+    
+    the_following_code {
       email.body "X" * 513
     }.should.raise ArgumentError
+    
+    the_following_code {
+      email.body "X" * 1000
+    }.should.raise ArgumentError
+  end
+  
+  test 'should store away the email command properly' do
+    mail_command = "/usr/sbin/sendmail -f alice@wonderland.com -t"
+    email.command mail_command
+    email.properties[:mailcmd].should == mail_command
   end
   
 end
@@ -231,6 +245,7 @@ context 'An expansive example of the Voicemail config generator' do
       voicemail.emails do |config|
         config.from :name => signature, :email => "noreply@adhearsion.com"
         config.attach_recordings true
+        config.command '/usr/sbin/sendmail -f alice@wonderland.com -t'
         config.body <<-BODY.unindent
           Dear #{config[:name]}:
           
@@ -251,6 +266,7 @@ attach=yes
 emailbody=Dear ${VM_NAME}:\\nThe caller ${VM_CALLERID} left you a ${VM_DUR} long voicemail\\n(number ${VM_MSGNUM}) on ${VM_DATE} in mailbox ${VM_MAILBOX}.\\nThe recording is attached to this email.\\n- Your Friendly Phone System\\n
 format=wav
 fromstring=Your Friendly Phone System
+mailcmd=/usr/sbin/sendmail -f alice@wonderland.com -t
 serveremail=noreply@adhearsion.com
 
 [zonemessages]
