@@ -17,10 +17,12 @@ module Adhearsion
         
         DYNAMIC_FEATURE_EXTENSIONS = {
           :attended_transfer => lambda do |options|
-            if options && options.has_key?(:context)
-              variable "TRANSFER_CONTEXT" => options[:context]
-            end
+            variable "TRANSFER_CONTEXT" => options[:context] if options && options.has_key?(:context)
             extend_dynamic_features_with "atxfer"
+          end,
+          :blind_transfer => lambda do
+            variable "TRANSFER_CONTEXT" => options[:context] if options && options.has_key?(:context)
+            extend_dynamic_features_with 'blindxfer'
           end
         } unless defined? DYNAMIC_FEATURE_EXTENSIONS
         
@@ -365,6 +367,23 @@ module Adhearsion
           execute SpeechEngines.send(engine, text)
         end
         
+        # This method is a high-level way of enabling features you create/uncomment from features.conf.
+        # 
+        # Certain Symbol features you enable (as defined in DYNAMIC_FEATURE_EXTENSIONS) have optional
+        # arguments that you can also specify here. The usage examples show how to do this.
+        #
+        # Usage examples:
+        #
+        #   enable_feature :attended_transfer                        # Enables "atxfer"
+        #
+        #   enable_feature :attended_transfer, :context => "my_dial" # Enables "atxfer" and then
+        #                                                            # sets "TRANSFER_CONTEXT" to :context's value
+        #
+        #   enable_feature :blind_transfer, :context => 'my_dial'    # Enables 'blindxfer' and sets TRANSFER_CONTEXT
+        #
+        #   enable_feature "foobar"                                  # Enables "foobar"
+        # 
+        #   enable_feature("dup"); enable_feature("dup")             # Enables "dup" only once.
         def enable_feature(feature_name, optional_options=nil)
           if DYNAMIC_FEATURE_EXTENSIONS.has_key? feature_name
             instance_exec(optional_options, &DYNAMIC_FEATURE_EXTENSIONS[feature_name])
@@ -372,6 +391,17 @@ module Adhearsion
             raise ArgumentError, "You cannot supply optional options when the feature name is " +
                                  "not internally recognized!" if optional_options
             extend_dynamic_features_with feature_name
+          end
+        end
+        
+        # Disables a feature name specified in features.conf. If you're disabling it, it was probably
+        # set by enable_feature().
+        def disable_feature(feature_name)
+          enabled_features_variable = variable 'DYNAMIC_FEATURES'
+          enabled_features = enabled_features_variable.split('#')
+          if enabled_features.include? feature_name
+            enabled_features.delete feature_name
+            variable 'DYNAMIC_FEATURES' => enabled_features.join('#')
           end
         end
         

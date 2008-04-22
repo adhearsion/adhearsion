@@ -1174,9 +1174,23 @@ end
 
 context 'the disable_feature command' do
   
+  include DialplanCommandTestHelpers
+  
+  test "should properly remove the feature from the DYNAMIC_FEATURES variable" do
+    mock_call.should_receive(:variable).once.with('DYNAMIC_FEATURES').and_return 'foobar#qaz'
+    mock_call.should_receive(:variable).once.with('DYNAMIC_FEATURES' => 'qaz')
+    mock_call.disable_feature "foobar"
+  end
+  
+  test "should not re-set the variable if the feature wasn't enabled in the first place" do
+    mock_call.should_receive(:variable).once.with('DYNAMIC_FEATURES').and_return 'atxfer'
+    mock_call.should_receive(:variable).never
+    mock_call.disable_feature "jay"
+  end
+  
 end
 
-context 'get variable command' do
+context "get variable command" do
   include DialplanCommandTestHelpers
   
   test "Getting a variable that isn't set returns nothing" do
