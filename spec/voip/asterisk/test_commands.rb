@@ -152,7 +152,7 @@ context 'input command' do
 
   test 'should raise an error when the number of digits expected is -1 (this is deprecated behavior)' do
     the_following_code {
-      mock_call.input -1
+      mock_call.input(-1)
     }.should.raise ArgumentError
   end
   
@@ -499,7 +499,7 @@ context "The queue management abstractions" do
     queue_name = 'doesnt_matter'
     mock_call.should_receive(:get_variable).with("QUEUE_MEMBER_LIST(#{queue_name})").and_return('Agent/007,Agent/003,Zap/2')
     agents = mock_call.queue(queue_name).agents(:cache => true).to_a
-    agents.size.should.be > 0
+    agents.size.should > 0
     agents.each do |agent|
       agent.should.be.kind_of Adhearsion::VoIP::Asterisk::Commands::QueueProxy::AgentProxy
     end
@@ -531,7 +531,7 @@ context "The queue management abstractions" do
     id = '123'
     
     agent = Adhearsion::VoIP::Asterisk::Commands::QueueProxy::AgentProxy.new("Agent/#{id}", mock_queue)
-    agent.id.should == id
+    agent.id.should.equal id
     
     agent = Adhearsion::VoIP::Asterisk::Commands::QueueProxy::AgentProxy.new(id, mock_queue)
     agent.id.should == id
@@ -747,8 +747,8 @@ context 'the menu() method' do
     pbx_should_respond_with_successful_background_response ?4
     pbx_should_respond_with_a_wait_for_digit_timeout
     
-    context_named_main  = lambda { throw :inside_main!  }
-    context_named_other = lambda { throw :inside_other! }
+    context_named_main  = Adhearsion::DialPlan::DialplanContextProc.new(:main)  { throw :inside_main!  }
+    context_named_other = Adhearsion::DialPlan::DialplanContextProc.new(:other) { throw :inside_other! }
     flexmock(mock_call).should_receive(:main).once.and_return(context_named_main)
     flexmock(mock_call).should_receive(:other).never
     
@@ -762,7 +762,8 @@ context 'the menu() method' do
   
   test "when the 'extension' variable is changed, it should be an instance of PhoneNumber" do
     pbx_should_respond_with_successful_background_response ?5
-    mock_call.should_receive(:foobar).once.and_return lambda { throw :foobar! }
+    foobar_context = Adhearsion::DialPlan::DialplanContextProc.new(:foobar) { throw :foobar! }
+    mock_call.should_receive(:foobar).once.and_return foobar_context
     should_pass_control_to_a_context_that_throws :foobar! do
       mock_call.menu do |link|
         link.foobar 5
@@ -908,7 +909,8 @@ context "the Menu class's high-level judgment" do
     pbx_should_respond_with_successful_background_response ?1
     pbx_should_respond_with_a_wait_for_digit_timeout
 
-    mock_call.should_receive(:main).and_return(lambda { throw :got_here! })
+    main_context = Adhearsion::DialPlan::DialplanContextProc.new(:main) { throw :got_here! }
+    mock_call.should_receive(:main).and_return main_context
     
     should_pass_control_to_a_context_that_throws :got_here! do
       mock_call.menu do |link|
@@ -924,7 +926,8 @@ context "the Menu class's high-level judgment" do
     pbx_should_respond_with_successful_background_response ?9
     pbx_should_respond_with_successful_background_response ?5
     
-    mock_call.should_receive(:conferences).and_return(lambda { throw :got_here! })
+    conferences_context = Adhearsion::DialPlan::DialplanContextProc.new(:conferences) { throw :got_here! }
+    mock_call.should_receive(:conferences).and_return conferences_context
 
     should_pass_control_to_a_context_that_throws :got_here! do
       mock_call.menu do |link|
@@ -1186,6 +1189,68 @@ context 'the disable_feature command' do
     mock_call.should_receive(:variable).once.with('DYNAMIC_FEATURES').and_return 'atxfer'
     mock_call.should_receive(:variable).never
     mock_call.disable_feature "jay"
+  end
+  
+end
+
+context 'jump_to command' do
+  
+  include DialplanCommandTestHelpers
+  
+  test 'when given a DialplanContextProc as the only argument, it should raise a ControlPassingException with that as the target' do
+    # Having to do this ugly hack because I can't do anything with the exception once I set up an expectation with it normally.
+    dialplan_context = Adhearsion::DialPlan::DialplanContextProc.new("my_context") {}
+    should_throw :finishing_the_rescue_block do
+      begin
+        mock_call.jump_to dialplan_context
+      rescue Adhearsion::VoIP::DSL::Dialplan::ControlPassingException => cpe
+        cpe.target.should.equal dialplan_context
+        throw :finishing_the_rescue_block
+      end
+    end
+  end
+  
+  test 'when given a String, it should perform a lookup of the context name' do
+    context_name = 'cool_context'
+    mock_call.should_receive(context_name).once.and_throw :found_context!
+    should_throw :found_context! do
+      mock_call.jump_to context_name
+    end
+  end
+  
+  test 'when given a Symbol, it should perform a lookup of the context name' do
+    context_name = :cool_context
+    mock_call.should_receive(context_name).once.and_throw :found_context!
+    should_throw :found_context! do
+      mock_call.jump_to context_name
+    end
+  end
+  
+  test "a clearly invalid context name should raise a ContextNotFoundException" do
+    bad_context_name = ' ZOMGS this is A REALLY! STUPID context name . wtf were you thinking?!'
+    the_following_code {
+      mock_call.jump_to bad_context_name
+    }.should.raise Adhearsion::VoIP::DSL::Dialplan::ContextNotFoundException
+  end
+  
+  test 'when given an :extension override, the new value should be boxed in a PhoneNumber' do
+    my_context = Adhearsion::DialPlan::DialplanContextProc.new("my_context") {}
+    begin
+      mock_call.jump_to my_context, :extension => 1337
+    rescue Adhearsion::VoIP::DSL::Dialplan::ControlPassingException
+      # Eating this exception
+    end
+    mock_call.extension.__real_num.should.equal 1337
+  end
+  
+  test 'other overrides should be simply metadef()d' do
+    test_context = Adhearsion::DialPlan::DialplanContextProc.new("test_context") {}
+    begin
+      mock_call.jump_to test_context, :caller_id => 1_444_555_6666
+    rescue Adhearsion::VoIP::DSL::Dialplan::ControlPassingException
+      # Eating this exception
+    end
+    mock_call.caller_id.should.equal 1_444_555_6666
   end
   
 end
@@ -1737,7 +1802,7 @@ BEGIN {
       def should_pass_control_to_a_context_that_throws(symbol, &block)
         did_the_rescue_block_get_executed = false
         begin
-          block.call
+          yield
         rescue Adhearsion::VoIP::DSL::Dialplan::ControlPassingException => cpe
           did_the_rescue_block_get_executed = true
           cpe.target.should.throw symbol

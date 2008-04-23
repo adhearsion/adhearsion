@@ -232,8 +232,7 @@ module Adhearsion
                   case result_of_menu
                     when Menu::MenuGetAnotherDigitOrFinish
                       # This raises a ControlPassingException
-                      redefine_extension_to_be result_of_menu.new_extension
-                      jump_to_context_with_name result_of_menu.context_name
+                      jump_to result_of_menu.context_name, :extension => result_of_menu.new_extension
                     when Menu::MenuGetAnotherDigitOrTimeout
                       # This should execute premature_timeout AND reset if the number of retries
                       # has not been exhausted.
@@ -242,8 +241,7 @@ module Adhearsion
                   end
                 end
               when Menu::MenuResultFound
-                redefine_extension_to_be result_of_menu.new_extension
-                jump_to_context_with_name result_of_menu.context_name
+                jump_to result_of_menu.context_name, :extension => result_of_menu.new_extension
               else
                 raise "Unrecognized MenuResult! This may be a bug!"
             end
@@ -254,7 +252,6 @@ module Adhearsion
 
           end
         end
-        
         
         # This method is used to receive keypad input from the user. Digits are collected
         # via DTMF (keypad) input until one of three things happens:
@@ -323,6 +320,34 @@ module Adhearsion
             key = wait_for_digit timeout || -1
           end
       	end
+      	
+        # An alternative to DialplanContextProc#+@. When jumping to a context, it will *not* resume executing
+        # the former context when the jumped-to context has finished executing. Make sure you don't have any
+        # +ensure+ closures which you expect to execute when the call has finished, as they will run when
+        # this method is called.
+        #
+        # You can optionally override certain dialplan variables when jumping to the context. A popular use of
+        # this is to redefine +extension+ (which this method automatically boxes with a PhoneNumber object) so
+        # you can effectively "restart" a call (from the perspective of the jumped-to context). When you override
+        # variables here, you're effectively blowing away the old variables. If you need them for some reason,
+        # you should assign the important ones to an instance variable first before calling this method.
+        def jump_to(context, overrides={})
+          context = lookup_context_with_name(context) if context.kind_of?(Symbol) || (context.kind_of?(String) && context =~ /^[\w_]+$/)
+          raise Adhearsion::VoIP::DSL::Dialplan::ContextNotFoundException unless context.kind_of?(Adhearsion::DialPlan::DialplanContextProc)
+          
+          if overrides.any?
+            overrides = overrides.symbolize_keys
+            if overrides.has_key?(:extension) && !overrides[:extension].kind_of?(Adhearsion::VoIP::DSL::PhoneNumber)
+              overrides[:extension] = Adhearsion::VoIP::DSL::PhoneNumber.new overrides[:extension]
+            end
+          
+            overrides.each_pair do |key, value|
+              meta_def(key) { value }
+            end
+          end
+          
+          raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(context)
+        end
       	
       	def queue(queue_name)
       	  queue_name = queue_name.to_s
@@ -669,12 +694,16 @@ module Adhearsion
           end
 
           def jump_to_context_with_name(context_name)
-            context_lambda = begin
+            context_lambda = lookup_context_with_name context_name
+            raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(context_lambda)
+          end
+
+          def lookup_context_with_name(context_name)
+            begin
               send context_name
             rescue NameError
               raise Adhearsion::VoIP::DSL::Dialplan::ContextNotFoundException
             end
-            raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(context_lambda)
           end
 
           def redefine_extension_to_be(new_extension)
