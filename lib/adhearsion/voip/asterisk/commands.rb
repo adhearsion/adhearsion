@@ -205,17 +205,15 @@ module Adhearsion
 
           initial_digit_prompt = menu_instance.sound_files.any?
 
-          # This method is basically one big begin/rescue block. When we
-          # start the Menu object by continue()ing into it, it will pass
-          # messages back to this method in the form of exceptions.
+          # This method is basically one big begin/rescue block. When we start the Menu state machine by continue()ing, the state
+          # machine will pass messages back to this method in the form of Exceptions. This decoupling allows the menu system to
+          # work on, say, Freeswitch and Asterisk both.
           begin
-            # When enter!() is sent, this menu() implementation should handle
-            # the is sent via an Exception subclass.
-            unless menu_instance.should_continue?
-              menu_instance.execute_failure_hook
-              return :failed 
-            else
+            if menu_instance.should_continue?
               menu_instance.continue
+            else
+              menu_instance.execute_failure_hook
+              return :failed
             end
           rescue Menu::MenuResult => result_of_menu
             case result_of_menu
@@ -246,8 +244,7 @@ module Adhearsion
                 raise "Unrecognized MenuResult! This may be a bug!"
             end
 
-            # Retry will re-execute the begin block, preserving our changes to the
-            # menu_instance object.
+            # Retry will re-execute the begin block, preserving our changes to the menu_instance object.
             retry
 
           end
