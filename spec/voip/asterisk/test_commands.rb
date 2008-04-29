@@ -374,6 +374,83 @@ context 'the voicemail command' do
   
 end
 
+context 'The voicemail_main command' do
+  
+  include DialplanCommandTestHelpers
+  
+  test "should not pass in the context or the delimiting @ sign if you don't supply one"
+  
+  test "the :folder Hash key argument should wrap the value in a()" do
+    folder = "foobar"
+    mailbox = 81
+    mock_call.should_receive(:execute).once.with("VoiceMailMain", "#{mailbox}","a(#{folder})")
+    mock_call.voicemail_main :mailbox => mailbox, :folder => folder
+  end
+  
+  test ':authenticate should pass in the "s" option if given false' do
+    mailbox = 333
+    mock_call.should_receive(:execute).once.with("VoiceMailMain", "#{mailbox}","s")
+    mock_call.voicemail_main :mailbox => mailbox, :authenticate => false
+  end
+
+  test ':authenticate should pass in the s option if given false' do
+    mailbox = 55
+    mock_call.should_receive(:execute).once.with("VoiceMailMain", "#{mailbox}")
+    mock_call.voicemail_main :mailbox => mailbox, :authenticate => true
+  end
+  
+  test 'should not pass any flags only a mailbox is given' do
+    mailbox = "1"
+    mock_call.should_receive(:execute).once.with("VoiceMailMain", "#{mailbox}")
+    mock_call.voicemail_main :mailbox => mailbox
+  end
+  
+  test 'when given no mailbox or context an empty string should be passed to execute as the first argument' do
+    mock_call.should_receive(:execute).once.with("VoiceMailMain", "", "s")
+    mock_call.voicemail_main :authenticate => false
+  end
+  
+  test 'should properly concatenate the options when given multiple ones' do
+    folder = "ohai"
+    mailbox = 9999
+    mock_call.should_receive(:execute).once.with("VoiceMailMain", "#{mailbox}", "sa(#{folder})")
+    mock_call.voicemail_main :mailbox => mailbox, :authenticate => false, :folder => folder
+  end
+  
+  test 'should not require any arguments' do
+    mock_call.should_receive(:execute).once.with("VoiceMailMain")
+    mock_call.voicemail_main
+  end
+  
+  test 'should pass in the "@context_name" part in if a :context is given and no mailbox is given' do
+    context_name = "icanhascheezburger"
+    mock_call.should_receive(:execute).once.with("VoiceMailMain", "@#{context_name}")
+    mock_call.voicemail_main :context => context_name
+  end
+  
+  test "should raise an exception if the folder has a space or malformed characters in it" do
+    ["i has a space", "exclaim!", ",", ""].each do |bad_folder_name|
+      the_following_code {
+        mock_call.voicemail_main :mailbox => 123, :folder => bad_folder_name
+      }.should.raise ArgumentError
+    end
+  end
+  
+end
+
+context 'the check_voicemail command' do
+  
+  include DialplanCommandTestHelpers
+  
+  test "should simply execute voicemail_main with no arguments after warning" do
+    flexmock(ahn_log.agi).should_receive(:warn).once.with(String)
+    mock_call.should_receive(:voicemail_main).once.and_return :mocked_out
+    mock_call.check_voicemail.should.equal :mocked_out
+  end
+  
+end
+
+
 context "The queue management abstractions" do
   
   include DialplanCommandTestHelpers

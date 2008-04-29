@@ -504,6 +504,42 @@ module Adhearsion
           end
         end
         
+        def voicemail_main(options={})
+          mailbox, context, folder = options.values_at :mailbox, :context, :folder
+          authenticate = options.has_key?(:authenticate) ? options[:authenticate] : true
+          
+          folder = if folder
+            if folder.to_s =~ /^[\w_]+$/
+              "a(#{folder})"
+            else
+              raise ArgumentError, "Voicemail folder must be alphanumerical/underscore characters only!" 
+            end
+          elsif folder == ''
+            raise "Folder name cannot be an empty String!"
+          else
+            nil
+          end
+          
+          real_mailbox = ""
+          real_mailbox << "#{mailbox}"  unless mailbox.blank?
+          real_mailbox << "@#{context}" unless context.blank?
+          
+          real_options = ""
+          real_options << "s" if !authenticate
+          real_options << folder unless folder.blank?
+          
+          command_args = [real_mailbox]
+          command_args << real_options unless real_options.blank?
+          command_args.clear if command_args == [""]
+          
+          execute 'VoiceMailMain', *command_args
+        end
+        
+        def check_voicemail
+          ahn_log.agi.warn "THE check_voicemail() DIALPLAN METHOD WILL SOON BE DEPRECATED! CHANGE THIS TO voicemail_main() INSTEAD"
+          voicemail_main
+        end
+        
         def dial(number, options={})
           *recognized_options = :caller_id, :name, :for, :options, :confirm
           
