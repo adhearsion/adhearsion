@@ -55,10 +55,15 @@ context 'Defining email-related Voicemail settings' do
     @email = Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail::EmailDefinition.new
   end
   
-  test 'the [] operator is overloaded to return conveniences for the body() method' do
-    email.body %{#{email[:name]} #{email[:mailbox]} #{email[:date]} #{email[:duration]} #{email[:message_number]} } +
-               %{#{email[:caller_id]} #{email[:caller_id_number]} #{email[:caller_id_name]}}
-    email.properties[:emailbody].should == %{${VM_NAME} ${VM_MAILBOX} ${VM_DATE} ${VM_DUR} ${VM_MSGNUM} ${VM_CALLERID} ${VM_CIDNUM} ${VM_CIDNAME}}
+  test 'the [] operator is overloaded to return conveniences for the body() and subject() methods' do
+    variables = %{#{email[:name]} #{email[:mailbox]} #{email[:date]} #{email[:duration]} } + 
+                %{#{email[:message_number]} #{email[:caller_id]} #{email[:caller_id_number]} } +
+                %{#{email[:caller_id_name]}}
+    formatted = %{${VM_NAME} ${VM_MAILBOX} ${VM_DATE} ${VM_DUR} ${VM_MSGNUM} ${VM_CALLERID} ${VM_CIDNUM} ${VM_CIDNAME}}      
+    email.body variables
+    email.subject variables
+    email.properties[:emailbody].should == formatted
+    email.properties[:emailsubject].should == formatted
   end
   
   test 'when defining a body, newlines should be escaped and carriage returns removed' do
@@ -246,6 +251,7 @@ context 'An expansive example of the Voicemail config generator' do
         config.from :name => signature, :email => "noreply@adhearsion.com"
         config.attach_recordings true
         config.command '/usr/sbin/sendmail -f alice@wonderland.com -t'
+        config.subject "New voicemail for #{config[:name]}"
         config.body <<-BODY.unindent
           Dear #{config[:name]}:
           
@@ -264,6 +270,7 @@ context 'An expansive example of the Voicemail config generator' do
 [general]
 attach=yes
 emailbody=Dear ${VM_NAME}:\\nThe caller ${VM_CALLERID} left you a ${VM_DUR} long voicemail\\n(number ${VM_MSGNUM}) on ${VM_DATE} in mailbox ${VM_MAILBOX}.\\nThe recording is attached to this email.\\n- Your Friendly Phone System\\n
+emailsubject=New voicemail for ${VM_NAME}
 format=wav
 fromstring=Your Friendly Phone System
 mailcmd=/usr/sbin/sendmail -f alice@wonderland.com -t

@@ -191,6 +191,10 @@ module Adhearsion
               string :emailbody => str
             end
             
+            def subject(str)
+              string :emailsubject => str
+            end
+            
             def command(cmd)
               string :mailcmd => cmd
             end
