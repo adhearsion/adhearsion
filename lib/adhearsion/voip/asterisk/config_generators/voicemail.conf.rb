@@ -39,7 +39,11 @@ module Adhearsion
           end
           
           def greeting_maximum(seconds)
-            int :maxgreet => seconds
+            int "maxgreet" => seconds
+          end
+          
+          def execute_on_pin_change(command)
+            string "externpass" => command 
           end
           
           def recordings

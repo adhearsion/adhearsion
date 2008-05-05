@@ -199,7 +199,7 @@ context 'An expansive example of the Voicemail config generator' do
     ].map { |hash| OpenStruct.new(hash) }
   end
   
-  test 'it works' do
+  test 'a huge, brittle integration test' do
     vm = Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail.new do |voicemail|
       voicemail.context :default do |context|
         context.mailbox 123 do |mailbox|
@@ -228,6 +228,7 @@ context 'An expansive example of the Voicemail config generator' do
         end
       end
 
+      voicemail.execute_on_pin_change "/path/to/my/changer_script.rb"
       ############################################################################
       ############################################################################
 
@@ -271,6 +272,7 @@ context 'An expansive example of the Voicemail config generator' do
 attach=yes
 emailbody=Dear ${VM_NAME}:\\nThe caller ${VM_CALLERID} left you a ${VM_DUR} long voicemail\\n(number ${VM_MSGNUM}) on ${VM_DATE} in mailbox ${VM_MAILBOX}.\\nThe recording is attached to this email.\\n- Your Friendly Phone System\\n
 emailsubject=New voicemail for ${VM_NAME}
+externpass=/path/to/my/changer_script.rb
 format=wav
 fromstring=Your Friendly Phone System
 mailcmd=/usr/sbin/sendmail -f alice@wonderland.com -t
