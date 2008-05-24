@@ -10,6 +10,10 @@ module Adhearsion
       active_calls << (call = Call.receive_from(io, &block))
       call
     end
+    
+    def remove_inactive_call(call)
+      active_calls.remove_inactive_call(call)
+    end
   end
   
   ##
@@ -36,6 +40,12 @@ module Adhearsion
     def size
       atomically do
         calls.size
+      end
+    end
+    
+    def remove_inactive_call(call)
+      atomically do
+        calls.delete call
       end
     end
     
@@ -138,6 +148,7 @@ module Adhearsion
 
     def hangup!
       io.close
+      Adhearsion.remove_inactive_call(self)
     end
 
     def closed?

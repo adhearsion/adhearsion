@@ -113,6 +113,18 @@ context "Active Calls" do
     Adhearsion.active_calls.size.should == 1
   end
   
+  test 'A hungup call removes itself from the active calls' do
+    mock_io = flexmock typical_call_variable_io
+    mock_io.should_receive(:close).once
+    
+    size_before = Adhearsion.active_calls.size
+    
+    call = Adhearsion.receive_call_from mock_io
+    Adhearsion.active_calls.size.should.be > size_before
+    call.hangup!
+    Adhearsion.active_calls.size.should == size_before
+  end
+  
   test 'Can find active call by unique ID' do
     Adhearsion.active_calls << typical_call
     assert_not_nil Adhearsion.active_calls.find(typical_call_variables_hash[:uniqueid])
