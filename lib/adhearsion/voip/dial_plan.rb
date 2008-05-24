@@ -26,7 +26,6 @@ module Adhearsion
         @call, @entry_point = call, entry_point
         extend_with_voip_commands!
         extend_with_call_variables!
-        extend_with_components_with_call_context!
       end
       
       def run
@@ -52,15 +51,6 @@ module Adhearsion
           call.define_variable_accessors self
         end
         
-        def extend_with_components_with_call_context!
-          ComponentManager.components_with_call_context.keys.each do |component_name|
-            eval <<-COMPONENT_BUILDER
-              def self.new_#{component_name.underscore}(*args, &block)
-                ComponentManager.components_with_call_context['#{component_name}'].instantiate_with_call_context(self, *args, &block)
-              end
-            COMPONENT_BUILDER
-          end
-        end
     end
     
     class Manager
