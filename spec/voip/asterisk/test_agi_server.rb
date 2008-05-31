@@ -1,7 +1,6 @@
 require File.dirname(__FILE__) + "/../../test_helper"
 require 'adhearsion/voip/asterisk'
 
-
 context "The AGI server's serve() method" do
   
   include AgiServerTestHelper
@@ -127,7 +126,7 @@ context "Active Calls" do
   
   test 'Can find active call by unique ID' do
     Adhearsion.active_calls << typical_call
-    assert_not_nil Adhearsion.active_calls.find(typical_call_variables_hash[:uniqueid])
+    assert_not_nil Adhearsion.active_calls.find_by_unique_id(typical_call_variables_hash[:uniqueid])
   end
   
   test 'A call can store the IO associated with the PBX/switch connection' do
@@ -147,15 +146,86 @@ context "Active Calls" do
   end
   
   test 'Can create a call and add it via a top-level method on the Adhearsion module' do
-    assert !Adhearsion::active_calls.any?
-    call = Adhearsion::receive_call_from(typical_call_variable_io)
+    assert !Adhearsion.active_calls.any?
+    call = Adhearsion.receive_call_from(typical_call_variable_io)
     call.should.be.kind_of(Adhearsion::Call)
-    Adhearsion::active_calls.size.should == 1
+    Adhearsion.active_calls.size.should == 1
   end
   
   test 'A call can identify its originating voip platform' do
     call = Adhearsion::receive_call_from(typical_call_variable_io)
     call.originating_voip_platform.should.equal(:asterisk)
+  end
+  
+end
+
+context 'A new Call object' do
+  
+  include CallVariableTestHelper
+  
+  test "it should have an @inbox object that's a synchronized Queue" do
+    new_call = Adhearsion::Call.new(nil, {})
+    new_call.inbox.should.be.kind_of Queue
+    new_call.should.respond_to :<<
+  end
+  
+  test 'the unique_identifier() method should return the "uniqueid" variable for :asterisk calls' do
+    variables = typical_call_variables_hash
+    new_call = Adhearsion::Call.new(nil, typical_call_variables_hash)
+    flexmock(new_call).should_receive(:originating_voip_platform).and_return :asterisk
+    new_call.unique_identifier.should == variables[:uniqueid]
+  end
+  
+  test "Call#define_singleton_accessor_with_pair should define a singleton method, not a class method" do
+    control    = Adhearsion::Call.new(nil, {})
+    experiment = Adhearsion::Call.new(nil, {})
+    
+    experiment.send(:define_singleton_accessor_with_pair, "ohai", 123)
+    experiment.should.respond_to "ohai"
+    control.should.not.respond_to "ohai"
+  end
+  
+end
+
+context 'the Calls collection' do
+  test 'the #<< method should add a Call to the Hash with its unique_id' do
+    id = rand
+    collection = Adhearsion::Calls.new
+    call = Adhearsion::Call.new(nil, {})
+    flexmock(call).should_receive(:unique_identifier).and_return id
+    collection << call
+    hash = collection.instance_variable_get("@calls")
+    hash.should.not.be.empty
+    hash[id].should.equal call
+  end
+  
+  test '#size should return the size of the Hash' do
+    collection = Adhearsion::Calls.new
+    collection.size.should.equal 0
+    collection << Adhearsion::Call.new(nil, {})
+    collection.size.should.equal 1
+  end
+  
+  test '#remove_inactive_call should delete the call in the Hash' do
+    collection = Adhearsion::Calls.new
+    
+    number_of_calls = 10
+    unique_ids = Array.new(number_of_calls) { rand }
+    calls = unique_ids.map { |id| Adhearsion::Call.new(nil, {:uniqueid => id}) }
+    calls.each { |call| collection << call }
+    
+    deleted_call = calls[number_of_calls / 2]
+    collection.remove_inactive_call deleted_call
+    collection.size.should.equal number_of_calls - 1
+  end
+  
+  test '#find_by_unique_id should pull the Call from the Hash using the unique_id' do
+    id = rand
+    call_database = flexmock "a mock Hash in which calls are stored"
+    call_database.should_receive(:[]).once.with(id)
+    collection = Adhearsion::Calls.new
+    flexmock(collection).should_receive(:calls).once.and_return(call_database)
+    collection.find_by_unique_id(id)
   end
   
 end

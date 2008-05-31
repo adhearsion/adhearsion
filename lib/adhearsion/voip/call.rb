@@ -21,13 +21,12 @@ module Adhearsion
   class Calls
     def initialize
       @semaphore = Monitor.new
-      @calls     = []
+      @calls     = {}
     end
     
     def <<(call)
       atomically do
-        # hangup_existing_calls_with_this_calls_id(call)
-        calls << call
+        calls[call.unique_identifier] = call
       end
     end
     
@@ -45,18 +44,20 @@ module Adhearsion
     
     def remove_inactive_call(call)
       atomically do
-        calls.delete call
+        calls.delete call.unique_identifier
       end
     end
     
-    def find(id)
+    def find_by_unique_id(id)
       atomically do
-        calls.detect {|call| call.uniqueid == id}
+        return calls[id]
       end
     end
     
     def clear!
-      calls.clear
+      atomically do
+        calls.clear
+      end
     end
     
     private
@@ -65,12 +66,7 @@ module Adhearsion
       def atomically(&block)
         semaphore.synchronize(&block)
       end
-        
-      def hangup_existing_calls_with_this_calls_id(call)
-        if existing_call = find(call.uniqueid)
-          existing_call.hangup!
-        end
-      end
+      
   end
   
   class UselessCallException < Exception; end
@@ -120,6 +116,7 @@ module Adhearsion
       :vidupdate    # Indicate video frame update
     ]
     
+    
     class << self
       ##
       # The primary public interface for creating a Call instance.
@@ -138,17 +135,23 @@ module Adhearsion
       
     end
     
-    attr_accessor :io, :type, :variables, :originating_voip_platform
+    attr_accessor :io, :type, :variables, :originating_voip_platform, :inbox
     def initialize(io, variables)
-      @io, @variables = io, variables
+      @io, @variables = io, variables.symbolize_keys
+      @inbox = Queue.new
       check_if_valid_call
       define_variable_accessors
       set_originating_voip_platform!
     end
 
+    def deliver_message(message)
+      @inbox << message
+    end
+    alias << deliver_message
+
     def hangup!
       io.close
-      Adhearsion.remove_inactive_call(self)
+      Adhearsion.remove_inactive_call self
     end
 
     def closed?
@@ -164,6 +167,15 @@ module Adhearsion
     
     def hungup_call?
       @hungup_call
+    end
+    
+    def unique_identifier
+      case originating_voip_platform
+        when :asterisk
+          variables[:uniqueid]
+        else
+          raise NotImplementedError
+      end
     end
     
     def define_variable_accessors(recipient=self)
@@ -183,19 +195,19 @@ module Adhearsion
     private
       
       def define_singleton_accessor_with_pair(key, value, recipient=self)
-        recipient.class.send :attr_accessor, key unless recipient.class.respond_to?("#{key}=")
+        recipient.metaclass.send :attr_accessor, key unless recipient.class.respond_to?("#{key}=")
         recipient.send "#{key}=", value
       end
       
       def check_if_valid_call
-        extension = variables['extension'] || variables[:extension]
+        extension = variables[:extension]
         @failed_call = true if extension == 'failed'
         @hungup_call = true if extension == 'h'
         raise UselessCallException if extension == 't' # TODO: Move this whole method to Manager
       end
     
       def set_originating_voip_platform!
-        #TODO: we can make this determination programatically at some point,
+        # TODO: we can make this determination programatically at some point,
         # but it will probably involve a bit more engineering than just a case statement (like
         # subclasses of Call for the various platforms), so we'll be totally cheap for now.
         self.originating_voip_platform = :asterisk

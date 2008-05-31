@@ -39,7 +39,7 @@ module Adhearsion
                 call.hangup!
               rescue => e
                 ahn_log.agi.error e
-              end                
+              end
             rescue UselessCallException
               ahn_log.agi "Ignoring meta-AGI request"
               call.hangup!

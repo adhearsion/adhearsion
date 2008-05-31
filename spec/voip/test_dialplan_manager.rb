@@ -108,8 +108,6 @@ context "DialPlan::Manager's handling a hungup call" do
   
 end
 
-
-
 context "DialPlan" do
   
   attr_accessor :loader, :loader_instance, :dial_plan

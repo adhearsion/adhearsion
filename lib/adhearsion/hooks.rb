@@ -34,6 +34,7 @@ module Adhearsion
     OnHungupCall     = HookWithArguments.new
     AfterInitialized = GenericHook.new
     BeforeCall       = GenericHook.new
+    AfterCall        = GenericHook.new
     TearDown         = GenericHook.new
     
     class << TearDown
