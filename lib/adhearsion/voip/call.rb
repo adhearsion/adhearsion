@@ -138,16 +138,19 @@ module Adhearsion
     attr_accessor :io, :type, :variables, :originating_voip_platform, :inbox
     def initialize(io, variables)
       @io, @variables = io, variables.symbolize_keys
-      @inbox = Queue.new
       check_if_valid_call
       define_variable_accessors
       set_originating_voip_platform!
     end
 
     def deliver_message(message)
-      @inbox << message
+      inbox << message
     end
     alias << deliver_message
+
+    def inbox
+      @inbox ||= Queue.new
+    end
 
     def hangup!
       io.close
