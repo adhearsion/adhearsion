@@ -88,13 +88,12 @@ module Adhearsion
       catch_termination_signal
       bootstrap_rc
       load_all_init_files
-      init_events
       init_modules
       daemonize! if should_daemonize?
       initialize_log_file
       create_pid_file if pid_file
       load_components
-      
+      init_events
       ahn_log "Adhearsion initialized!"
       
       trigger_after_initialized_hooks
