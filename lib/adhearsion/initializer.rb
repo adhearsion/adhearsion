@@ -41,9 +41,7 @@ module Adhearsion
     
     class << self
       def get_rules_from(location)
-        if File.directory? location
-          location = File.join location, ".ahnrc"
-        end
+        location = File.join location, ".ahnrc" if File.directory? location
         File.exists?(location) ? YAML.load_file(location) : nil
       end
       
@@ -64,8 +62,7 @@ module Adhearsion
   
     attr_reader :path, :daemon, :pid_file, :log_file, :ahn_app_log_directory
     
-    DEFAULT_RULES = { :pattern   => "*.rb",
-                      :directory => "helpers"}
+    DEFAULT_FRAMEWORK_EVENT_CALLBACK_NAMES = [:after_initialized, :shutdown]
     
     # Creation of pid_files
     #
@@ -80,10 +77,10 @@ module Adhearsion
     #    even in daemon mode by supplying "false".
     def initialize(path=nil, options={})
       @@started = true
-      @path              = path
-      @daemon            = options[:daemon]
-      @pid_file          = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
-      @loaded_init_files = options[:loaded_init_files]
+      @path     = path
+      @daemon   = options[:daemon]
+      @pid_file = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
+      @loaded_init_files  = options[:loaded_init_files]
       self.class.ahn_root = path
       resolve_pid_file_path
       resolve_log_file_path
@@ -91,6 +88,7 @@ module Adhearsion
       catch_termination_signal
       bootstrap_rc
       load_all_init_files
+      init_events
       init_modules
       daemonize! if should_daemonize?
       initialize_log_file
@@ -103,16 +101,24 @@ module Adhearsion
       join_framework_threads
     end
     
+    def init_events
+      framework = Events.register_namespace_path(:framework)
+      DEFAULT_FRAMEWORK_EVENT_CALLBACK_NAMES.each do |framework_event_callback_name|
+        framework.register_callback_name framework_event_callback_name
+      end
+      Events.load_definitions_from_files *all_events
+    end
+    
     def initialize_log_file
       Dir.mkdir(ahn_app_log_directory) unless File.directory? ahn_app_log_directory
       file_logger = Log4r::FileOutputter.new("Main Adhearsion log file", :filename => log_file, :trunc => false)
       
       if should_daemonize?
-        Adhearsion::Logging::AdhearsionLogger.outputters  = file_logger
+        Logging::AdhearsionLogger.outputters  = file_logger
       else
-        Adhearsion::Logging::AdhearsionLogger.outputters << file_logger
+        Logging::AdhearsionLogger.outputters << file_logger
       end
-      Adhearsion::Logging::DefaultAdhearsionLogger.redefine_outputters
+      Logging::DefaultAdhearsionLogger.redefine_outputters
     end
     
     def resolve_log_file_path      
@@ -195,15 +201,15 @@ module Adhearsion
     end
     
     def bootstrap_rc
-      rules = Initializer.get_rules_from(AHN_ROOT) || DEFAULT_RULES
-      paths = rules['paths'] || DEFAULT_RULES
-      paths.each_pair do |k,v|
-        if v.kind_of? Hash
-          directory, pattern = v['directory'] || '.', v['pattern'] || '*'
-          Paths.manager_for k, :pattern => File.join(directory, pattern)
+      rules = Initializer.get_rules_from AHN_ROOT
+      paths = rules['paths']
+      paths.each_pair do |path_name, pattern_or_ruleset|
+        if pattern_or_ruleset.kind_of? Hash
+          directory, pattern = pattern_or_ruleset['directory'] || '.', pattern_or_ruleset['pattern'] || '*'
+          Paths.manager_for path_name, :pattern => File.join(directory, pattern)
         else
-          directory, pattern = '.', v
-          Paths.manager_for k, :pattern => File.join(directory,pattern)
+          directory, pattern = '.', pattern_or_ruleset
+          Paths.manager_for path_name, :pattern => File.join(directory,pattern)
         end
       end
     end
