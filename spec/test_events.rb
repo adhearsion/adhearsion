@@ -27,8 +27,11 @@ context 'an events.rb file' do
   end
   
   test 'addressing a non-existent path raises an Exception' do
-    [%{ events.monkeys! }, %{events.framework.icanhascheezburger}, %{events.framework}]
-    
+    [%{ events.monkeys! }, %{events.framework.icanhascheezburger}, %{events.framework}].each do |bad_code|
+      the_following_code {
+        load_code_from_mocked_filesystem bad_code
+      }.should.raise Adhearsion::Events::UndefinedEventNamespace
+    end
   end
   
 end
