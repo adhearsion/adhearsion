@@ -15,8 +15,16 @@ module Adhearsion
       end
       alias load_definitions_from_file load_definitions_from_files
       
+      def namespace_registered?(*paths)
+        framework_events_container.namespace_registered?(*paths)
+      end
+      
       def reinitialize_framework_events_container!
         @@framework_events_container = EventsDefinitionContainer.new
+      end
+      
+      def register_namespace_path(*paths)
+        framework_events_container.register_namespace_path(*paths)
       end
       
     end
@@ -36,6 +44,12 @@ module Adhearsion
       
       def events
         root.capturer
+      end
+      
+      def namespace_registered?(*paths)
+        !! inject_across_path(*paths) { |namespace,path| namespace[path] }
+      rescue UndefinedEventNamespace
+        false
       end
       
       def callbacks_at_path(*paths)
@@ -150,9 +164,11 @@ module Adhearsion
       
       class RegisteredEventCallback
         
-        attr_reader :registrar
-        def initialize(registrar)
+        attr_reader :registrar, :block
+        def initialize(registrar, &block)
+          raise ArgumentError, "Must supply a callback in the form of a block!" unless block_given?
           @registrar = registrar
+          @block = block
         end
         
       end
