@@ -7,6 +7,8 @@ paths:
 
   dialplan: dialplan.rb
 
+  events: events.rb
+
   models:
     directory: models
     pattern: "*.rb"
