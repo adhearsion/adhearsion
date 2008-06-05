@@ -1,11 +1,11 @@
+require 'thread'
 module Adhearsion
   module Events
     
     class << self
       
       def framework_events_container
-        # defined?(@@framework_events_container) ? @@framework_events_container : reinitialize_framework_events_container!
-        @@framework_events_container ||= EventsDefinitionContainer.new
+        defined?(@@framework_events_container) ? @@framework_events_container : reinitialize_framework_events_container!
       end
       
       def load_definitions_from_files(*files)
@@ -70,15 +70,15 @@ module Adhearsion
         @namespace = namespace
       end
       
-      def method_missing(name)
-        super if name == :each
-        nested_namespace = namespace[name.to_sym]
-        raise UndefinedEventNamespace.new(name) unless nested_namespace
-        case nested_namespace
+      def method_missing(name, *args)
+        super if name == :each # Added to prevent confusion
+        nested_namespace_or_registrar = namespace[name.to_sym]
+        raise UndefinedEventNamespace.new(name) unless nested_namespace_or_registrar
+        case nested_namespace_or_registrar
           when EventCallbackRegistrar
-            nested_namespace
+            nested_namespace_or_registrar
           when RegisteredEventNamespace
-            nested_namespace.capturer
+            nested_namespace_or_registrar.capturer
         end
       end
     end
@@ -137,43 +137,126 @@ module Adhearsion
         @parent = parent
       end
       
-      def register_callback_name(name)
-        children[name] = Adhearsion::Events::EventCallbackRegistrar.new(self)
+      def register_callback_name(name, mode=:sync, &block)
+        children[name] = case mode
+          when :sync  then  SynchronousEventCallbackRegistrar
+          when :async then AsynchronousEventCallbackRegistrar
+          else
+            raise ArgumentError, "Unsupported mode #{mode.inspect} !"
+        end.new(self, &block)
       end
       
     end
 
     class EventCallbackRegistrar
       
-      attr_reader :callbacks, :namespace
-      def initialize(namespace)
+      attr_reader   :namespace, :callbacks
+      attr_accessor :notified_on_new_callback
+      
+      
+      def initialize(namespace, &notified_on_new_callback)
         @namespace = namespace
         @callbacks = []
+        @mutex     = Mutex.new
+        @notified_on_new_callback = notified_on_new_callback
       end
       
+      # This is effectively called when you define a new callback with each()
       def register_callback(&block)
         returning RegisteredEventCallback.new(self, &block) do |callback|
-          callbacks << callback
+          with_lock { callbacks << callback }
+          notified_on_new_callback.call callback if notified_on_new_callback
         end
       end
       alias each register_callback
       
-      def remove_callback(callback)
-        @callbacks.delete callback
+      def <<(message)
+        raise NotImplementedError
       end
       
-      class RegisteredEventCallback
+      def remove_callback(callback)
+        with_lock { callbacks.delete callback }
+      end
+      
+      protected
+      
+      def with_lock(&block)
+        @mutex.synchronize(&block)
+      end
+      
+      def threadsafe_callback_collection
+        with_lock { callbacks.clone }
+      end
+            
+    end
+    
+    class SynchronousEventCallbackRegistrar < EventCallbackRegistrar
+      def <<(event)
+        threadsafe_callback_collection.each do |callback|
+          callback.run_with_event event
+        end
+      end
+    end
+    
+    class AsynchronousEventCallbackRegistrar < EventCallbackRegistrar
+      
+      attr_reader :thread
+      def initialize(namespace, &notified_on_new_callback)
+        super
+        @thread = AsynchronousEventCallbackRegistrar.new
+      end
+      
+      def <<(event)
+        threadsafe_callback_collection.each do |callback|
+          
+        end
+      end
+      
+      protected
+      
+      attr_reader :queue
+      
+      class AsynchronousEventHandlerThread < Thread
         
-        attr_reader :registrar, :block
-        def initialize(registrar, &block)
-          raise ArgumentError, "Must supply a callback in the form of a block!" unless block_given?
-          @registrar = registrar
-          @block = block
+        def initialize(&block)
+          @queue = Queue.new
+          super do
+            loop { block.call @queue.pop }
+          end
+        end
+        
+        def <<(event)
+          @queue << event
         end
         
       end
       
     end
-
+    
+    # A RegisteredEventCallback is stored away each time you call each() on an event namespace.
+    # It keeps a copy of the namespace 
+    class RegisteredEventCallback
+      
+      attr_reader :registrar, :args, :block
+      def initialize(registrar, *args, &block)
+        raise ArgumentError, "Must supply a callback in the form of a block!" unless block_given?
+        @registrar, @args, @block = registrar, args, block
+      end
+      
+      def run_with_event(event)
+        begin
+          block.call event
+        rescue => e
+          indenter = "\n" + (" " * 5)
+          ahn_log.events.error e.message + indenter + e.backtrace.join(indenter)
+        end
+      end
+      
+      def namespace
+        registrar.namespace
+      end
+      
+    end
+    
   end
 end

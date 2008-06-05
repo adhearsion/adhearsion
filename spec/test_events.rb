@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 
-context 'an events.rb file' do
+context 'Definitions within an events.rb file' do
   
   include EventsSubsystemTestHelper
   
@@ -17,7 +17,7 @@ context 'an events.rb file' do
     load_events_file_from_mocked_filesystem
     
     callbacks.size.should.equal 1
-    callbacks.first.should.be.kind_of Adhearsion::Events::EventCallbackRegistrar::RegisteredEventCallback
+    callbacks.first.should.be.kind_of Adhearsion::Events::RegisteredEventCallback
   end
   
   test 'the each() method does not exist on the object returned by events()' do
@@ -36,7 +36,42 @@ context 'an events.rb file' do
   
 end
 
-context 'An EventsDefinitionContainer' do
+
+# Hierarchy tests?
+
+context 'Executing synchronous events defined within an events.rb file' do
+  
+  before :each do
+    Adhearsion::Events.reinitialize_framework_events_container!
+  end
+  
+  test 'an exception in a callback should be passed to ahn_log.events.error' do
+    flexmock(ahn_log.events).should_receive(:error).once.with(/lolrus/)
+    Adhearsion::Events.register_namespace_path(:ceiling_cat).register_callback_name(:watches_you)
+    Adhearsion::Events.framework_events_container.events.ceiling_cat.watches_you.each { |prophecy| raise prophecy }
+    the_following_code {
+      Adhearsion::Events.framework_events_container.events.ceiling_cat.watches_you << "I has a lolrus!"
+    }.should.not.raise RuntimeError
+  end
+  
+  test 'events should execute the callbacks in the order in which they were defined' do
+    order_keeper = []
+    Adhearsion::Events.register_namespace_path(:foo, :bar).register_callback_name(:before_explosion)
+    Adhearsion::Events.framework_events_container.events.foo.bar.before_explosion.each { |event| order_keeper << 1 }
+    Adhearsion::Events.framework_events_container.events.foo.bar.before_explosion.each { |event| order_keeper << 2 }
+    
+    [:one, :two, :three].each do |number|
+      Adhearsion::Events.framework_events_container.events.foo.bar.before_explosion << number
+    end
+    order_keeper.should == [1,2] * 3
+  end
+end
+
+context 'Executing asynchronous events defined within an events.rb file' do
+  
+end
+
+context "Defining new namespaces and events within an EventsDefinitionContainer's object graph" do
   
   attr_reader :container
   before :each do
@@ -49,7 +84,15 @@ context 'An EventsDefinitionContainer' do
   
   test 'allows the registration of new namespaces' do
     container.register_namespace_path(:framework).register_callback_name(:after_call)
-    container.send(:callbacks_at_path, :framework, :after_call).empty?.should == true
+    container.callbacks_at_path(:framework, :after_call).empty?.should == true
+  end
+  
+  test 'the callback is executed with the proper message' do
+    container.register_namespace_path(:reporters).register_callback_name(:report)
+    message_from_block = :has_not_executed_yet
+    container.events.reporters.report(:foobar).each { |event| message_from_block = event }
+    container.events.reporters.report << :got_here
+    message_from_block.should.equal :got_here
   end
   
 end
@@ -91,121 +134,3 @@ BEGIN {
     
   end
 }
-
-# context 'Dispatching an event' do
-#   
-#   test "should enqueue the message"
-#   
-#   test "should pass the message into the event handler's block" do
-#     real_message = Object.new
-#     event_block = lambda do |block_message|
-#       block_message.should.equal real_message
-#       throw :handled_message
-#     end
-#     the_following_code do
-#       Adhearsion::Events.handler_for(:framework, :before_call).enqueue_event(real_message)
-#     end.should.throw(:handled_message)
-#   end
-#   
-# end
-# 
-# context 'Defining new events handlers' do
-#   
-#   before :each do
-#     Adhearsion::Events.clear_handlers!
-#   end
-#   
-#   test 'should not allow defining handler blocks for non-leaf objects'
-#   
-#   test 'should return an EventHook object'
-#   
-#   test 'should register and make accessible new event handlers' do
-#     Adhearsion::Events.register :dbus
-#     Adhearsion::Events.all_handlers.size.should == 1
-#   end
-#   
-#   test 'it works' do
-#     # What are the kind of arguments that can be passed to an event? Can be any object (e.g. Hash, Call, Symbol)
-#     # Is it necessary to specify them in the definiton? Would one ever need to specify both in different cases?
-#     Adhearsion::Events.all_handlers.should.be.empty
-#     Adhearsion::Events.register :freeswitch
-#     Adhearsion::Events.all_handlers.size.should.equal 1
-#   end
-# end
-# 
-# 
-# context 'Deferring a block to run asynchronously' do
-#   
-#   test 'A new Thread object is instantiated with the block given'
-#   
-# end
-# 
-# context 'Loading a file' do
-#   
-#   test "Creates a new instance in which the file's code is instance_eval()'d" do
-#     filename = '/path/to/events.rb'
-#     events_content = rand.to_s
-#     flexmock(File).should_receive(:read).once.with(filename).and_return events_content
-#     flexmock(Adhearsion::Events::EventsDefinitionContainer).new_instances.
-#       should_receive(:instance_eval).once.with(events_content, String)
-#     Adhearsion::Events::EventsDefinitionContainer.from(filename).should.
-#       be.kind_of(Adhearsion::Events::EventsDefinitionContainer)
-#   end
-#   
-# end
-# 
-# context 'A high-level test for loading sample events.rb implementations' do
-#   
-#   test 'unrecognized event handler names raise EventHandlerHierarchyNotFound'
-#   test 'enqueued events invoke the proper block'
-# end
-# 
-# context 'The default event sources' do
-#   test 'framework'
-#   test 'voip'
-# end
-# 
-# context 'Unrecognized event handlers' do
-#   test 'should very loudly print ahn_log.warn warnings before initialized'
-# end
-# 
-# context 'DeferredEventGroup' do
-#   
-#   test 'should be a subclass of ThreadGroup' do
-#     assert DeferredEventGroup < ThreadGroup
-#   end
-#   
-#   test 'the constructor should enforce the name be a Symbol' do
-#     bad_names  = [123, "Foobar", Object.new]
-#     good_names = [:foo, :qaz, :'o hai wtf']
-#     
-#     bad_names.each do |bad_name|
-#       the_following_code {
-#         DeferredEventGroup.new(bad_name)
-#       }.should.raise ArgumentError
-#     end
-#     
-#     good_names.each do |good_name|
-#       the_following_code {
-#         DeferredEventGroup.new(good_name)
-#       }.should.not.raise
-#     end
-#   end
-#   
-# end
-# 
-# module EventProcessingTestHelper
-#   def sample_events_file
-#     File.read(File.join(File.dirname(__FILE__), 'sample.rb'))
-#   end
-# end
-# 
-# # context 'Hierarchy tests' do
-# #   test 'the private #ancestors method with three generations' do
-# #     granny = Adhearsion::Events::HandlerProxy.new
-# #     papa   = Adhearsion::Events::HandlerProxy.new(granny)
-# #     sonny  = Adhearsion::Events::HandlerProxy.new(papa)
-# #     
-# #     sonny.send(:ancestors).should == [sonny, papa, granny]
-# #   end
-# # end
