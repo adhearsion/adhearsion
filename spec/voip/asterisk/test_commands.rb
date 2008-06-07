@@ -1178,6 +1178,12 @@ context 'say_digits command' do
     }.should.raise(ArgumentError)
   end
   
+  test 'Digits that start with a 0 are considered valid and parsed properly' do
+    digits = "0123"
+    mock_call.should_receive(:execute).once.with("saydigits", digits)
+    mock_call.say_digits digits
+  end
+  
 end
 
 context 'the enable_feature command' do

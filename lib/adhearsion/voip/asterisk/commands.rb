@@ -576,8 +576,7 @@ module Adhearsion
       	
       	# Speaks the digits given as an argument. For example, "123" is spoken as "one two three".
       	def say_digits(digits)
-      	  validate_digits(digits)
-      	  execute("saydigits #{digits}")
+      	  execute "saydigits", validate_digits(digits)
       	end
       	
       	# Returns the number of seconds the given block takes to execute as a Float. This
@@ -753,9 +752,9 @@ module Adhearsion
           end
           
           def validate_digits(digits)
-            Integer(digits)
-          rescue
-            raise ArgumentError, "Can only be called with valid digits!"
+            returning digits.to_s do |digits_as_string|
+              raise ArgumentError, "Can only be called with valid digits!" unless digits_as_string =~ /^\d+$/
+            end
           end
           
           def error?(result)
