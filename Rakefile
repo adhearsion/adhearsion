@@ -5,7 +5,6 @@ require 'rubygems'
 require 'hoe'
 require 'lib/adhearsion/version'
 
-
 begin
   require 'rcov/rcovtask'
   Rcov::RcovTask.new do |t|
@@ -31,9 +30,9 @@ Hoe.new('adhearsion', Adhearsion::VERSION::STRING) do |p|
   p.author = 'Jay Phillips'
   p.email = 'Jay -at- Codemecca.com'
   p.summary = 'Adhearsion, open-source telephony integrator.'
-  p.description = p.paragraphs_of('README.txt', 2..5).join("\n\n")
-  p.url = p.paragraphs_of('README.txt', 0).first.split(/\n/)[1..-1]
-  p.changes = p.paragraphs_of('History.txt', 0..1).join("\n\n")
+  p.description = "Adhearsion is an open-source VoIP development framework written in Ruby"
+  p.url = "http://adhearsion.com"
+  p.changes = "" # Removed because History.txt is tedious.
   p.test_globs = TestGlob
   p.extra_deps = [['rubigen', '>=1.0.6'], ['log4r', '>=1.0.5']]
 end
