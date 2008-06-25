@@ -86,6 +86,14 @@ module Adhearsion
       		execute "SendDTMF", digits.to_s
       	end
       	
+      	def with_next_message(&block)
+      	  raise LocalJumpError, "Must supply a block" unless block_given?
+      	  block.call @call.inbox.pop
+    	  end
+
+        def messages_waiting?
+          not @call.inbox.empty?
+        end
 
         # = Menu Command
         #

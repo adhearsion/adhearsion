@@ -11,7 +11,6 @@ context 'Asterisk VoIP Commands' do
     pbx_should_have_been_sent message
   end
 end
-
 context 'hangup command' do
   include DialplanCommandTestHelpers
   
@@ -1852,6 +1851,7 @@ BEGIN {
         @input      = MockSocket.new
         @output     = MockSocket.new
         @mock_call  = Object.new
+        @mock_call.metaclass.send(:attr_reader, :call)
         mock_call.extend(Adhearsion::VoIP::Asterisk::Commands)
         flexmock(mock_call) do |call|
           call.should_receive(:from_pbx).and_return(input)

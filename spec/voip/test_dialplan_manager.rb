@@ -180,6 +180,35 @@ context "DialPlan loader" do
   
 end
 
+context "The inbox-related dialplan methods" do
+  
+  include DialplanTestingHelper
+  
+  test "with_next_message should execute its block with the message from the inbox" do
+    mock_call = new_call_for_context :entrance
+    [:one, :two, :three].each { |message| mock_call.inbox << message }
+    
+    dialplan = %{ entrance {  with_next_message { |message| throw message } } }
+    executing_dialplan(:entrance => dialplan, :call => mock_call).should.throw :one
+  end
+
+  
+  test "messages_waiting? should return false if the inbox is empty" do
+    mock_call = new_call_for_context :entrance
+    dialplan = %{ entrance { throw messages_waiting? ? :yes : :no } }
+    executing_dialplan(:entrance => dialplan, :call => mock_call).should.throw :no
+  end
+  
+  test "messages_waiting? should return false if the inbox is not empty" do
+    mock_call = new_call_for_context :entrance
+    mock_call.inbox << Object.new
+    dialplan = %{ entrance { throw messages_waiting? ? :yes : :no } }
+    executing_dialplan(:entrance => dialplan, :call => mock_call).should.throw :yes
+  end
+
+end
+
+
 context "ExecutionEnvironemnt" do
   attr_accessor :call, :entry_point
   
@@ -314,8 +343,7 @@ module DialplanTestingHelper
   end
   
   def mock_dialplan_with(string)
-    flexmock(Adhearsion::DialPlan::Loader).should_receive(:read_dialplan_file).
-        at_least.once.and_return(string)
+    flexstub(Adhearsion::DialPlan::Loader).should_receive(:read_dialplan_file).and_return(string)
   end
   
   def new_manager_with_entry_points_loaded_from_dialplan_contexts
@@ -325,12 +353,14 @@ module DialplanTestingHelper
   end
   
   def executing_dialplan(options)
+    call         = options.delete(:call)
     context_name = options.keys.first
     dialplan     = options[context_name]
+    call       ||= new_call_for_context context_name
     
     mock_dialplan_with dialplan
     lambda do
-      Adhearsion::DialPlan::Manager.new.handle new_call_for_context(context_name)
+      Adhearsion::DialPlan::Manager.new.handle call
     end
   end
   
