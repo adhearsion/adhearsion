@@ -126,7 +126,7 @@ context "Active Calls" do
   
   test 'Can find active call by unique ID' do
     Adhearsion.active_calls << typical_call
-    assert_not_nil Adhearsion.active_calls.find_by_unique_id(typical_call_variables_hash[:uniqueid])
+    assert_not_nil Adhearsion.active_calls.find(typical_call_variables_hash[:channel])
   end
   
   test 'A call can store the IO associated with the PBX/switch connection' do
@@ -169,11 +169,11 @@ context 'A new Call object' do
     new_call.should.respond_to :<<
   end
   
-  test 'the unique_identifier() method should return the "uniqueid" variable for :asterisk calls' do
+  test 'the unique_identifier() method should return the :channel variable for :asterisk calls' do
     variables = typical_call_variables_hash
     new_call = Adhearsion::Call.new(nil, typical_call_variables_hash)
     flexmock(new_call).should_receive(:originating_voip_platform).and_return :asterisk
-    new_call.unique_identifier.should == variables[:uniqueid]
+    new_call.unique_identifier.should == variables[:channel]
   end
   
   test "Call#define_singleton_accessor_with_pair should define a singleton method, not a class method" do
@@ -188,6 +188,9 @@ context 'A new Call object' do
 end
 
 context 'the Calls collection' do
+  
+  include CallVariableTestHelper
+  
   test 'the #<< method should add a Call to the Hash with its unique_id' do
     id = rand
     collection = Adhearsion::Calls.new
@@ -225,7 +228,7 @@ context 'the Calls collection' do
     call_database.should_receive(:[]).once.with(id)
     collection = Adhearsion::Calls.new
     flexmock(collection).should_receive(:calls).once.and_return(call_database)
-    collection.find_by_unique_id(id)
+    collection.find(id)
   end
   
 end
