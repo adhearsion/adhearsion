@@ -810,10 +810,11 @@ context 'the menu() method' do
 
   include DialplanCommandTestHelpers
   
-  test "should instantiate a new Menu object, passing in its own arguments" do
-    *args = 1,2,3,4,5
+  test "should instantiate a new Menu object with only the Hash given as menu() options" do
+    args = [1,2,3,4,5, {:timeout => 1.year, :tries => (1.0/0.0)}]
     
-    flexmock(Adhearsion::VoIP::Asterisk::Commands::Menu).should_receive(:new).once.with(*args).and_throw(:instantiating_menu!)
+    flexmock(Adhearsion::VoIP::Asterisk::Commands::Menu).should_receive(:new).once.
+        with(args.last).and_throw(:instantiating_menu!)
     
     should_throw(:instantiating_menu!) { mock_call.menu(*args) }
   end

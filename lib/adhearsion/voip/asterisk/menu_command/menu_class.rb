@@ -8,15 +8,11 @@ module Adhearsion
           DEFAULT_MAX_NUMBER_OF_TRIES = 1
           DEFAULT_TIMEOUT             = 5 # seconds
 
-          attr_reader :builder, :timeout, :tries_count, :sound_files,
-                      :max_number_of_tries, :string_of_digits
-
-          def initialize(*sound_files, &block)
-            options = sound_files.last.kind_of?(Hash) ? sound_files.pop : Hash.new
-  
+          attr_reader :builder, :timeout, :tries_count, :max_number_of_tries, :string_of_digits
+          def initialize(options={}, &block)
             @string_of_digits    = String.new
             @tries_count         = 0 # Counts the number of tries the menu's been executed
-            @sound_files         = sound_files.flatten
+            
             @timeout             = options[:timeout] || DEFAULT_TIMEOUT
             @max_number_of_tries = options[:tries]   || DEFAULT_MAX_NUMBER_OF_TRIES
   

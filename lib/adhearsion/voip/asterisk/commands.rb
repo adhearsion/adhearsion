@@ -209,9 +209,12 @@ module Adhearsion
         # point, making menu() effectively a pipeline of re-creating the call.
         # 
         def menu(*args, &block)
-          menu_instance = Menu.new(*args, &block)
-
-          initial_digit_prompt = menu_instance.sound_files.any?
+          options = args.last.kind_of?(Hash) ? args.pop : {}
+          sound_files = args.flatten
+          
+          menu_instance = Menu.new(options, &block)
+          
+          initial_digit_prompt = sound_files.any?
 
           # This method is basically one big begin/rescue block. When we start the Menu state machine by continue()ing, the state
           # machine will pass messages back to this method in the form of Exceptions. This decoupling allows the menu system to
@@ -230,7 +233,7 @@ module Adhearsion
                 menu_instance.restart!
               when Menu::MenuGetAnotherDigit
                 
-                next_digit = play_files_in_menu menu_instance
+                next_digit = play_sound_files_for_menu(menu_instance, sound_files)
                 if next_digit
                   menu_instance << next_digit
                 else
@@ -716,10 +719,10 @@ module Adhearsion
             execute(:playback, argument)
           end
 
-          def play_files_in_menu(menu_instance)
+          def play_sound_files_for_menu(menu_instance, sound_files)
             digit = nil
-            if menu_instance.sound_files.any? && menu_instance.string_of_digits.empty?
-              digit = interruptable_play(*menu_instance.sound_files)
+            if sound_files.any? && menu_instance.string_of_digits.empty?
+              digit = interruptable_play(*sound_files)
             end
             digit || wait_for_digit(menu_instance.timeout)
           end
