@@ -8,6 +8,8 @@ module Adhearsion
           DEFAULT_MAX_NUMBER_OF_TRIES = 1
           DEFAULT_TIMEOUT             = 5 # seconds
 
+          relationships :menu_builder => MenuBuilder
+
           attr_reader :builder, :timeout, :tries_count, :max_number_of_tries, :string_of_digits
           def initialize(options={}, &block)
             @string_of_digits    = String.new
@@ -16,7 +18,7 @@ module Adhearsion
             @timeout             = options[:timeout] || DEFAULT_TIMEOUT
             @max_number_of_tries = options[:tries]   || DEFAULT_MAX_NUMBER_OF_TRIES
   
-            @builder = Adhearsion::VoIP::Asterisk::Commands::MenuBuilder.new
+            @builder = menu_builder.new
             yield @builder
   
           end
