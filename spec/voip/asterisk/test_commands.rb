@@ -11,7 +11,6 @@ context 'Asterisk VoIP Commands' do
     pbx_should_have_been_sent message
   end
 end
-
 context 'hangup command' do
   include DialplanCommandTestHelpers
   
@@ -1178,6 +1177,12 @@ context 'say_digits command' do
     }.should.raise(ArgumentError)
   end
   
+  test 'Digits that start with a 0 are considered valid and parsed properly' do
+    digits = "0123"
+    mock_call.should_receive(:execute).once.with("saydigits", digits)
+    mock_call.say_digits digits
+  end
+  
 end
 
 context 'the enable_feature command' do
@@ -1846,6 +1851,7 @@ BEGIN {
         @input      = MockSocket.new
         @output     = MockSocket.new
         @mock_call  = Object.new
+        @mock_call.metaclass.send(:attr_reader, :call)
         mock_call.extend(Adhearsion::VoIP::Asterisk::Commands)
         flexmock(mock_call) do |call|
           call.should_receive(:from_pbx).and_return(input)

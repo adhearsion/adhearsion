@@ -48,7 +48,8 @@ module Adhearsion
       end
     end
     
-    def find_by_unique_id(id)
+    # Searches all active calls by their unique_identifier. See Call#unique_identifier.
+    def find(id)
       atomically do
         return calls[id]
       end
@@ -172,10 +173,17 @@ module Adhearsion
       @hungup_call
     end
     
+    # Adhearsion indexes calls by this identifier so they may later be found and manipulated. For calls from Asterisk, this
+    # method uses the following properties for uniqueness, falling back to the next if one is for some reason unavailable:
+    #
+    #     Asterisk channel ID     ->        unique ID        -> Call#object_id
+    # (e.g. SIP/mytrunk-jb12c88a) -> (e.g. 1215039989.47033) -> (e.g. 2792080)
+    #
+    # Note: channel is used over unique ID because channel may be used to bridge two channels together.
     def unique_identifier
       case originating_voip_platform
         when :asterisk
-          variables[:uniqueid]
+          variables[:channel] || variables[:uniqueid] || object_id
         else
           raise NotImplementedError
       end

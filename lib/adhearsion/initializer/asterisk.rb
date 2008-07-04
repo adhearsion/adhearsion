@@ -4,19 +4,19 @@ module Adhearsion
     
     class AsteriskInitializer
       
-      cattr_accessor :config, :agi_server, :ami_server
+      cattr_accessor :config, :agi_server, :ami_client
       class << self
         
         def start
           self.config     = Adhearsion::AHN_CONFIG.asterisk
           self.agi_server = initialize_agi
-          self.ami_server = initialize_ami if config.ami_enabled?
+          self.ami_client = initialize_ami if config.ami_enabled?
           join_server_thread_after_initialized
         end
 
         def stop
           agi_server.stop
-          ami_server.disconnect! if ami_server
+          ami_client.disconnect! if ami_client
         end
 
         private
@@ -48,7 +48,7 @@ module Adhearsion
         
         def start_ami_after_initialized
           Adhearsion::Hooks::AfterInitialized.create_hook do
-            ami_server.connect!
+            ami_client.connect!
           end
         end
 
