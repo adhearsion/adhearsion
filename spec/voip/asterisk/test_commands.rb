@@ -1031,10 +1031,9 @@ context 'the MenuBuilder' do
     returning builder do |link|
       link.foo 1,2,3
       link.bar "4", "5", 6
-      link.qaz? {}
     end
     
-    builder.weighted_match_calculators.size.should.equal 7
+    builder.weighted_match_calculators.size.should.equal 6
     builder.weighted_match_calculators.each do |match_calculator|
       match_calculator.should.be.kind_of Adhearsion::VoIP::Asterisk::Commands::MatchCalculator
     end
@@ -1137,24 +1136,6 @@ context 'the MenuBuilder' do
     end
     matches = builder.calculate_matches_for 1
     matches.potential_match_count.should.equal 100
-  end
-  
-  test "custom blocks" do
-    strange_use_case = %w[321 4321 54321]
-    returning builder do |link|
-      link.arbitrary? do |str|
-        strange_use_case.select { |num| num.reverse.starts_with?(str) }
-      end
-    end
-    
-    builder_should_match_with_these_quantities_of_calculated_matches \
-      1      => { :exact_match_count => 3 },
-      12     => { :exact_match_count => 3 },
-      123    => { :exact_match_count => 3 },
-      1234   => { :exact_match_count => 2 },
-      12345  => { :exact_match_count => 1 },
-      123456 => { :exact_match_count => 0 }
-
   end
   
 end

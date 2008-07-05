@@ -123,24 +123,6 @@ module Adhearsion
           end
         end
 
-        class SymbolMatchCalculator < MatchCalculator
-
-          attr_reader :block
-          def initialize(pattern,context_name, &block)
-            raise ArgumentError, "Only supported Symbol pattern is :custom !" unless pattern == :custom
-            raise LocalJumpError, "No block given!" unless block_given?
-
-            context_name = context_name.to_s.chop.to_sym if context_name.to_s.ends_with?('?')
-            super(pattern,context_name)
-            @block = block
-          end
-
-          def match(query)
-            exact_matches = Array block.call(query)
-            new_calculated_match :query => query, :exact_matches => exact_matches
-          end
-
-        end
       end
     end
   end
