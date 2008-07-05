@@ -8,8 +8,8 @@ module Adhearsion
 
           class << self
 
-            def build_with_pattern(pattern, context_name, &block)
-              class_for_pattern_type(pattern.class.name).new(pattern, context_name, &block)
+            def build_with_pattern(pattern, match_payload, &block)
+              class_for_pattern_type(pattern.class.name).new(pattern, match_payload, &block)
             end
 
             def inherited(klass)
@@ -30,15 +30,15 @@ module Adhearsion
 
           end
 
-          attr_reader :pattern, :context_name
-          def initialize(pattern, context_name)
-            @pattern, @context_name = pattern, context_name
+          attr_reader :pattern, :match_payload
+          def initialize(pattern, match_payload)
+            @pattern, @match_payload = pattern, match_payload
           end
 
           protected
 
           def new_calculated_match(options)
-            CalculatedMatch.new({:pattern => pattern, :context_name => context_name}.merge(options))
+            CalculatedMatch.new({:pattern => pattern, :match_payload => match_payload}.merge(options))
           end
 
           def coerce_to_numeric(victim)
@@ -48,7 +48,7 @@ module Adhearsion
 
         class RangeMatchCalculator < MatchCalculator
 
-          def initialize(pattern, context_name)
+          def initialize(pattern, match_payload)
             raise unless pattern.first.kind_of?(Numeric) && pattern.last.kind_of?(Numeric)
             super
           end
@@ -63,7 +63,7 @@ module Adhearsion
               new_calculated_match :query => query, :exact_matches => exact_match,
                                    :potential_matches => potential_matches
             else
-              CalculatedMatch.failed_match!(pattern, query, context_name)
+              CalculatedMatch.failed_match!(pattern, query, match_payload)
             end
           end
 

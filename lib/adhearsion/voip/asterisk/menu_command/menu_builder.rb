@@ -11,11 +11,11 @@ module Adhearsion
             @menu_callbacks = {}
           end
 
-          def method_missing(context_name, *patterns, &block)
-            name_string = context_name.to_s
+          def method_missing(match_payload, *patterns, &block)
+            name_string = match_payload.to_s
             if patterns.any?
               patterns.each do |pattern|
-                @patterns << MatchCalculator.build_with_pattern(pattern, context_name)
+                @patterns << MatchCalculator.build_with_pattern(pattern, match_payload)
               end
             else
               raise ArgumentError, "You cannot call this method without patterns!"

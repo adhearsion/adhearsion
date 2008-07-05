@@ -5,14 +5,14 @@ module Adhearsion
         class CalculatedMatch
   
           # Convenience method for instantiating failed matches
-          def self.failed_match!(pattern, query, context_name)
-            new :pattern => pattern, :query => query, :context_name => context_name
+          def self.failed_match!(pattern, query, match_payload)
+            new :pattern => pattern, :query => query, :match_payload => match_payload
           end
   
-          attr_reader :context_name, :potential_matches, :exact_matches, :pattern, :query
+          attr_reader :match_payload, :potential_matches, :exact_matches, :pattern, :query
   
           def initialize(options={})
-            @pattern, @query, @context_name = options.values_at :pattern, :query, :context_name
+            @pattern, @query, @match_payload = options.values_at :pattern, :query, :match_payload
             @potential_matches = options[:potential_matches] ? Array(options[:potential_matches]) : []
             @exact_matches     = options[:exact_matches] ? Array(options[:exact_matches])     : []
           end

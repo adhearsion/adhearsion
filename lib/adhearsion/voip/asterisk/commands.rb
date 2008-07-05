@@ -241,7 +241,7 @@ module Adhearsion
                   case result_of_menu
                     when Menu::MenuGetAnotherDigitOrFinish
                       # This raises a ControlPassingException
-                      jump_to result_of_menu.context_name, :extension => result_of_menu.new_extension
+                      jump_to result_of_menu.match_payload, :extension => result_of_menu.new_extension
                     when Menu::MenuGetAnotherDigitOrTimeout
                       # This should execute premature_timeout AND reset if the number of retries
                       # has not been exhausted.
@@ -250,7 +250,7 @@ module Adhearsion
                   end
                 end
               when Menu::MenuResultFound
-                jump_to result_of_menu.context_name, :extension => result_of_menu.new_extension
+                jump_to result_of_menu.match_payload, :extension => result_of_menu.new_extension
               else
                 raise "Unrecognized MenuResult! This may be a bug!"
             end
