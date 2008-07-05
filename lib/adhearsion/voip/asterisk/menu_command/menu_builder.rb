@@ -13,14 +13,12 @@ module Adhearsion
 
           def method_missing(context_name, *patterns, &block)
             name_string = context_name.to_s
-            if patterns.empty? && block_given?
-              @patterns << MatchCalculator.build_with_pattern(:custom, context_name, &block)
-            elsif patterns.any?
+            if patterns.any?
               patterns.each do |pattern|
                 @patterns << MatchCalculator.build_with_pattern(pattern, context_name)
               end
             else
-              raise ArgumentError, "You cannot call this method without a pattern or a block!"
+              raise ArgumentError, "You cannot call this method without patterns!"
             end
             nil
           end
