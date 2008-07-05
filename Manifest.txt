@@ -100,7 +100,6 @@ lib/adhearsion/voip/freeswitch/event_handler.rb
 lib/adhearsion/voip/freeswitch/freeswitch_dialplan_command_factory.rb
 lib/adhearsion/voip/freeswitch/inbound_connection_manager.rb
 lib/adhearsion/voip/freeswitch/oes_server.rb
-lib/adhearsion/voip/manifest_patch
 lib/adhearsion/voip/menu_state_machine/calculated_match.rb
 lib/adhearsion/voip/menu_state_machine/matchers.rb
 lib/adhearsion/voip/menu_state_machine/menu_builder.rb
