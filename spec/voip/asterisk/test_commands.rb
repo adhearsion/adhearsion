@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + "/../../test_helper"
-require 'adhearsion/voip/asterisk/menu_command/menu_class'
-require 'adhearsion/voip/asterisk/menu_command/menu_builder'
+require 'adhearsion/voip/menu_state_machine/menu_class'
+require 'adhearsion/voip/menu_state_machine/menu_builder'
 
 context 'Asterisk VoIP Commands' do
   include DialplanCommandTestHelpers
@@ -813,7 +813,7 @@ context 'the menu() method' do
   test "should instantiate a new Menu object with only the Hash given as menu() options" do
     args = [1,2,3,4,5, {:timeout => 1.year, :tries => (1.0/0.0)}]
     
-    flexmock(Adhearsion::VoIP::Asterisk::Commands::Menu).should_receive(:new).once.
+    flexmock(Adhearsion::VoIP::Menu).should_receive(:new).once.
         with(args.last).and_throw(:instantiating_menu!)
     
     should_throw(:instantiating_menu!) { mock_call.menu(*args) }
@@ -858,8 +858,8 @@ context 'the Menu class' do
   
   test "should yield a MenuBuilder when instantiated" do
     lambda {
-      Adhearsion::VoIP::Asterisk::Commands::Menu.new do |block_argument|
-        block_argument.should.be.kind_of Adhearsion::VoIP::Asterisk::Commands::MenuBuilder
+      Adhearsion::VoIP::Menu.new do |block_argument|
+        block_argument.should.be.kind_of Adhearsion::VoIP::MenuBuilder
         throw :inside_block
       end
     }.should.throw :inside_block
@@ -1024,7 +1024,7 @@ context 'the MenuBuilder' do
   
   attr_reader :builder
   before:each do
-    @builder = Adhearsion::VoIP::Asterisk::Commands::MenuBuilder.new
+    @builder = Adhearsion::VoIP::MenuBuilder.new
   end
   
   test "should convert each pattern given to it into a MatchCalculator instance" do
@@ -1035,7 +1035,7 @@ context 'the MenuBuilder' do
     
     builder.weighted_match_calculators.size.should.equal 6
     builder.weighted_match_calculators.each do |match_calculator|
-      match_calculator.should.be.kind_of Adhearsion::VoIP::Asterisk::Commands::MatchCalculator
+      match_calculator.should.be.kind_of Adhearsion::VoIP::MatchCalculator
     end
   end
   

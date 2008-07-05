@@ -2185,10 +2185,10 @@ lib/adhearsion/voip/asterisk/config_generators/config_generator.rb
 lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb
 lib/adhearsion/voip/asterisk/config_generators/voicemail.conf.rb
 lib/adhearsion/voip/asterisk/config_manager.rb
-lib/adhearsion/voip/asterisk/menu_command/calculated_match.rb
-lib/adhearsion/voip/asterisk/menu_command/matchers.rb
-lib/adhearsion/voip/asterisk/menu_command/menu_builder.rb
-lib/adhearsion/voip/asterisk/menu_command/menu_class.rb
+lib/adhearsion/voip/menu_state_machine/calculated_match.rb
+lib/adhearsion/voip/menu_state_machine/matchers.rb
+lib/adhearsion/voip/menu_state_machine/menu_builder.rb
+lib/adhearsion/voip/menu_state_machine/menu_class.rb
 lib/adhearsion/voip/asterisk/special_dial_plan_managers.rb
 lib/adhearsion/voip/call.rb
 lib/adhearsion/voip/call_routing.rb

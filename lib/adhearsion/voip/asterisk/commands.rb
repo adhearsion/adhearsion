@@ -1,5 +1,5 @@
 
-require 'adhearsion/voip/asterisk/menu_command/menu_class'
+require 'adhearsion/voip/menu_state_machine/menu_class'
 
 module Adhearsion
   module VoIP
