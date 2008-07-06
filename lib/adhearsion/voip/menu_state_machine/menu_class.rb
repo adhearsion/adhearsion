@@ -8,7 +8,7 @@ module Adhearsion
 
       relationships :menu_builder => MenuBuilder
 
-      attr_reader :builder, :timeout, :tries_count, :max_number_of_tries, :digit_container
+      attr_reader :builder, :timeout, :tries_count, :max_number_of_tries
       def initialize(options={}, &block)
         @tries_count         = 0 # Counts the number of tries the menu's been executed
         
@@ -18,23 +18,35 @@ module Adhearsion
         @builder = menu_builder.new
         yield @builder
 
-        initialize_digit_container
+        initialize_digit_buffer
       end
 
       def <<(other)
-        digit_container << other
+        digit_buffer << other
+      end
+      
+      def digit_buffer
+        @digit_buffer
+      end
+      
+      def digit_buffer_string
+        digit_buffer.to_s
+      end
+      
+      def digit_buffer_empty?
+        digit_buffer.empty?
       end
 
       def continue
-        raise MenuGetAnotherDigitOrTimeout if digit_container.empty?
+        raise MenuGetAnotherDigitOrTimeout if digit_buffer_empty?
 
-        calculated_matches = builder.calculate_matches_for digit_container
+        calculated_matches = builder.calculate_matches_for digit_buffer_string
 
         if calculated_matches.exact_match_count >= 1
           first_exact_match = calculated_matches.exact_matches.first
           if calculated_matches.potential_match_count.zero?
             # Match found with no extenuating ambiguities! Go with the first exact match
-            menu_result_found! first_exact_match.match_payload, digit_container
+            menu_result_found! first_exact_match.match_payload, digit_buffer_string
           else
             get_another_digit_or_finish!(first_exact_match.match_payload, first_exact_match.query)
           end
@@ -51,27 +63,27 @@ module Adhearsion
 
       def restart!
         @tries_count += 1
-        @digit_container.clear!
+        digit_buffer.clear!
       end
 
       def execute_invalid_hook
-        builder.execute_hook_for(:invalid, digit_container)
+        builder.execute_hook_for(:invalid, digit_buffer_string)
       end
 
       def execute_timeout_hook
-        builder.execute_hook_for(:premature_timeout, digit_container)
+        builder.execute_hook_for(:premature_timeout, digit_buffer_string)
       end
 
       def execute_failure_hook
-        builder.execute_hook_for(:failure, digit_container)
+        builder.execute_hook_for(:failure, digit_buffer_string)
       end
 
       protected
       
       # If you're using a more complex class in subclasses, you may want to override this method in addition to the 
-      # digit_container method
-      def initialize_digit_container
-        @digit_container = ClearableString.new
+      # digit_buffer, digit_buffer_empty, and digit_buffer_string methods
+      def initialize_digit_buffer
+        @digit_buffer = ClearableString.new
       end
 
       def invalid!
@@ -119,7 +131,7 @@ module Adhearsion
       # Raised when the user's input matches no patterns
       class MenuResultInvalid < MenuResult; end
 
-      # For our default purposes, we need the digit_container to behave much like a normal String except that it should 
+      # For our default purposes, we need the digit_buffer to behave much like a normal String except that it should 
       # handle its own resetting (clearing).
       class ClearableString < String
         def clear!
