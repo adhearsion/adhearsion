@@ -96,7 +96,7 @@ module Adhearsion
 						@mutex          = Mutex.new
 						@events         = Queue.new
 						@current_packet = nil
-            @logger         = Logger.new "/dev/null"
+            @logger         = Logger.new STDOUT
 					end
 
 					private
@@ -176,12 +176,7 @@ module Adhearsion
 
           # Receive an event packet from the event packet queue.
 					def receive
-						@mutex.synchronize do
-							loop do
-								return @events.pop if not @events.empty?
-								@signal.wait(@mutex)
-							end
-						end
+						@events.pop
 					end
 
           # Stop the scanner.
