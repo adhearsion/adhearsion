@@ -83,7 +83,7 @@ module Adhearsion
       # If you're using a more complex class in subclasses, you may want to override this method in addition to the 
       # digit_buffer, digit_buffer_empty, and digit_buffer_string methods
       def initialize_digit_buffer
-        @digit_buffer = ClearableString.new
+        @digit_buffer = ClearableStringBuffer.new
       end
 
       def invalid!
@@ -133,10 +133,16 @@ module Adhearsion
 
       # For our default purposes, we need the digit_buffer to behave much like a normal String except that it should 
       # handle its own resetting (clearing).
-      class ClearableString < String
+      class ClearableStringBuffer < String
         def clear!
           replace ""
         end
+        
+        alias old_shift_operator <<
+        def <<(other)
+          old_shift_operator other.to_s
+        end
+        
       end
 
     end
