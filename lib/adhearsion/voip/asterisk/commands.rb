@@ -79,6 +79,31 @@ module Adhearsion
             play_time(argument) || play_numeric(argument) || play_string(argument)
           end
         end
+
+        # Records a sound file with the given name. If no filename is specified a file named by Asterisk
+        # will be created and returned. Else the given filename will be returned. If a relative path is
+        # given, the file will be saved in the default Asterisk sound directory, /var/lib/spool/asterisk
+        # by default.
+        #
+        # Silence and maxduration is specified in seconds.
+        #
+        # Usage:
+        #   record
+        #   record '/path/to/my-file.gsm'
+        #   record 'my-file.gsm', :silence => 5, :maxduration => 120
+        #
+        def record(*args)
+          options = args.last.kind_of?(Hash) ? args.pop : {}
+          filename = args.shift || "/tmp/recording_%d.gsm"
+          silence     = options.delete(:silence) || 0
+          maxduration = options.delete(:maxduration) || 0
+
+          execute("Record", filename, silence, maxduration)
+
+          # If the user hangs up before the recording is entered, -1 is returned and RECORDED_FILE
+          # will not contain the name of the file, even though it IS in fact recorded.
+          filename.index("%d") ? get_variable('RECORDED_FILE') : filename
+        end
         
         # Simulates pressing the specified digits over the current channel. Can be used to
         # traverse a phone menu.

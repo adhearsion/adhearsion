@@ -138,9 +138,8 @@ module Adhearsion
           replace ""
         end
         
-        alias old_shift_operator <<
         def <<(other)
-          old_shift_operator other.to_s
+          super other.to_s
         end
         
       end
