@@ -26,15 +26,12 @@ Gem::Specification.new do |s|
     if current_version >= 3 then
       s.add_runtime_dependency(%q<rubigen>, [">= 1.0.6"])
       s.add_runtime_dependency(%q<log4r>, [">= 1.0.5"])
-      s.add_development_dependency(%q<hoe>, [">= 1.7.0"])
     else
       s.add_dependency(%q<rubigen>, [">= 1.0.6"])
       s.add_dependency(%q<log4r>, [">= 1.0.5"])
-      s.add_dependency(%q<hoe>, [">= 1.7.0"])
     end
   else
     s.add_dependency(%q<rubigen>, [">= 1.0.6"])
     s.add_dependency(%q<log4r>, [">= 1.0.5"])
-    s.add_dependency(%q<hoe>, [">= 1.7.0"])
   end
 end
