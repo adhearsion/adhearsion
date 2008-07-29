@@ -9,7 +9,10 @@ context "Connecting via AMI" do
     host, port = "localhost", 5038
     ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "bad_password", "localhost", :port => port
   
-    flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return AmiServer.new
+    ami_server = AmiServer.new
+    flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return(ami_server)
+    flexmock(IO).should_receive(:select).at_least.once.with([ami_server], nil, nil, 1.0).and_return(true)
+
     the_following_code do
       ami.connect!
     end.should.raise Adhearsion::VoIP::Asterisk::AMI::AuthenticationFailedException
@@ -23,7 +26,10 @@ context "Connecting via AMI" do
     host, port = "localhost", 5038
     ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "password", "localhost", :port => port, :events => true
   
-    flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return(AmiServer.new)
+    ami_server = AmiServer.new
+    flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return(ami_server)
+    flexmock(IO).should_receive(:select).at_least.once.with([ami_server], nil, nil, 1.0).and_return(true)
+
     ami.connect!
     ami.instance_eval { meta_eval { attr_accessor :event_thread } }
     ami.event_thread.should.be.a.kind_of Thread
@@ -34,7 +40,10 @@ context "Connecting via AMI" do
     host, port = "localhost", 5038
     ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "password", "localhost", :port => port
   
-    flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return AmiServer.new
+    ami_server = AmiServer.new
+    flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return(ami_server)
+    flexmock(IO).should_receive(:select).at_least.once.with([ami_server], nil, nil, 1.0).and_return(true)
+
     ami.connect!
     ami.version.should == "1.0"
     ami.disconnect!
@@ -45,7 +54,11 @@ context "The AMI command interface" do
   before do
     host, port = "localhost", 5038
     @ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "password", host, :port => port, :events => false
-    flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return(AmiServer.new)
+
+    ami_server = AmiServer.new
+    flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return(ami_server)
+    flexmock(IO).should_receive(:select).at_least.once.with([ami_server], nil, nil, 1.0).and_return(true)
+
     @ami.connect!
   end
   
@@ -150,7 +163,11 @@ context "The manager proxy" do
   before do
     host, port = "localhost", 5038
     @ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "password", "localhost", :port => port, :events => false
-    flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return(AmiServer.new)
+
+    ami_server = AmiServer.new
+    flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return(ami_server)
+    flexmock(IO).should_receive(:select).at_least.once.with([ami_server], nil, nil, 1.0).and_return(true)
+
     @ami.connect!
     @door = DRb.start_service "druby://127.0.0.1:9050", Adhearsion::DrbDoor.instance
   end
