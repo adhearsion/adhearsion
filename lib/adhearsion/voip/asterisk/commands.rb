@@ -113,8 +113,12 @@ module Adhearsion
       	
       	def with_next_message(&block)
       	  raise LocalJumpError, "Must supply a block" unless block_given?
-      	  block.call @call.inbox.pop
+      	  block.call(next_message)
     	  end
+
+        def next_message
+          @call.inbox.pop
+        end
 
         def messages_waiting?
           not @call.inbox.empty?
