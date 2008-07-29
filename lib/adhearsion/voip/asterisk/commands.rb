@@ -1,5 +1,5 @@
 
-require 'adhearsion/voip/asterisk/menu_command/menu_class'
+require 'adhearsion/voip/menu_state_machine/menu_class'
 
 module Adhearsion
   module VoIP
@@ -79,6 +79,31 @@ module Adhearsion
             play_time(argument) || play_numeric(argument) || play_string(argument)
           end
         end
+
+        # Records a sound file with the given name. If no filename is specified a file named by Asterisk
+        # will be created and returned. Else the given filename will be returned. If a relative path is
+        # given, the file will be saved in the default Asterisk sound directory, /var/lib/spool/asterisk
+        # by default.
+        #
+        # Silence and maxduration is specified in seconds.
+        #
+        # Usage:
+        #   record
+        #   record '/path/to/my-file.gsm'
+        #   record 'my-file.gsm', :silence => 5, :maxduration => 120
+        #
+        def record(*args)
+          options = args.last.kind_of?(Hash) ? args.pop : {}
+          filename = args.shift || "/tmp/recording_%d.gsm"
+          silence     = options.delete(:silence) || 0
+          maxduration = options.delete(:maxduration) || 0
+
+          execute("Record", filename, silence, maxduration)
+
+          # If the user hangs up before the recording is entered, -1 is returned and RECORDED_FILE
+          # will not contain the name of the file, even though it IS in fact recorded.
+          filename.index("%d") ? get_variable('RECORDED_FILE') : filename
+        end
         
         # Simulates pressing the specified digits over the current channel. Can be used to
         # traverse a phone menu.
@@ -88,8 +113,12 @@ module Adhearsion
       	
       	def with_next_message(&block)
       	  raise LocalJumpError, "Must supply a block" unless block_given?
-      	  block.call @call.inbox.pop
+      	  block.call(next_message)
     	  end
+
+        def next_message
+          @call.inbox.pop
+        end
 
         def messages_waiting?
           not @call.inbox.empty?
@@ -209,9 +238,12 @@ module Adhearsion
         # point, making menu() effectively a pipeline of re-creating the call.
         # 
         def menu(*args, &block)
-          menu_instance = Menu.new(*args, &block)
-
-          initial_digit_prompt = menu_instance.sound_files.any?
+          options = args.last.kind_of?(Hash) ? args.pop : {}
+          sound_files = args.flatten
+          
+          menu_instance = Menu.new(options, &block)
+          
+          initial_digit_prompt = sound_files.any?
 
           # This method is basically one big begin/rescue block. When we start the Menu state machine by continue()ing, the state
           # machine will pass messages back to this method in the form of Exceptions. This decoupling allows the menu system to
@@ -230,7 +262,7 @@ module Adhearsion
                 menu_instance.restart!
               when Menu::MenuGetAnotherDigit
                 
-                next_digit = play_files_in_menu menu_instance
+                next_digit = play_sound_files_for_menu(menu_instance, sound_files)
                 if next_digit
                   menu_instance << next_digit
                 else
@@ -238,7 +270,7 @@ module Adhearsion
                   case result_of_menu
                     when Menu::MenuGetAnotherDigitOrFinish
                       # This raises a ControlPassingException
-                      jump_to result_of_menu.context_name, :extension => result_of_menu.new_extension
+                      jump_to result_of_menu.match_payload, :extension => result_of_menu.new_extension
                     when Menu::MenuGetAnotherDigitOrTimeout
                       # This should execute premature_timeout AND reset if the number of retries
                       # has not been exhausted.
@@ -247,7 +279,7 @@ module Adhearsion
                   end
                 end
               when Menu::MenuResultFound
-                jump_to result_of_menu.context_name, :extension => result_of_menu.new_extension
+                jump_to result_of_menu.match_payload, :extension => result_of_menu.new_extension
               else
                 raise "Unrecognized MenuResult! This may be a bug!"
             end
@@ -716,10 +748,10 @@ module Adhearsion
             execute(:playback, argument)
           end
 
-          def play_files_in_menu(menu_instance)
+          def play_sound_files_for_menu(menu_instance, sound_files)
             digit = nil
-            if menu_instance.sound_files.any? && menu_instance.string_of_digits.empty?
-              digit = interruptable_play(*menu_instance.sound_files)
+            if sound_files.any? && menu_instance.digit_buffer_empty?
+              digit = interruptable_play(*sound_files)
             end
             digit || wait_for_digit(menu_instance.timeout)
           end

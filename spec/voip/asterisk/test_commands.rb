@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + "/../../test_helper"
-require 'adhearsion/voip/asterisk/menu_command/menu_class'
-require 'adhearsion/voip/asterisk/menu_command/menu_builder'
+require 'adhearsion/voip/menu_state_machine/menu_class'
+require 'adhearsion/voip/menu_state_machine/menu_builder'
 
 context 'Asterisk VoIP Commands' do
   include DialplanCommandTestHelpers
@@ -810,10 +810,11 @@ context 'the menu() method' do
 
   include DialplanCommandTestHelpers
   
-  test "should instantiate a new Menu object, passing in its own arguments" do
-    *args = 1,2,3,4,5
+  test "should instantiate a new Menu object with only the Hash given as menu() options" do
+    args = [1,2,3,4,5, {:timeout => 1.year, :tries => (1.0/0.0)}]
     
-    flexmock(Adhearsion::VoIP::Asterisk::Commands::Menu).should_receive(:new).once.with(*args).and_throw(:instantiating_menu!)
+    flexmock(Adhearsion::VoIP::Menu).should_receive(:new).once.
+        with(args.last).and_throw(:instantiating_menu!)
     
     should_throw(:instantiating_menu!) { mock_call.menu(*args) }
   end
@@ -857,8 +858,8 @@ context 'the Menu class' do
   
   test "should yield a MenuBuilder when instantiated" do
     lambda {
-      Adhearsion::VoIP::Asterisk::Commands::Menu.new do |block_argument|
-        block_argument.should.be.kind_of Adhearsion::VoIP::Asterisk::Commands::MenuBuilder
+      Adhearsion::VoIP::Menu.new do |block_argument|
+        block_argument.should.be.kind_of Adhearsion::VoIP::MenuBuilder
         throw :inside_block
       end
     }.should.throw :inside_block
@@ -1023,19 +1024,18 @@ context 'the MenuBuilder' do
   
   attr_reader :builder
   before:each do
-    @builder = Adhearsion::VoIP::Asterisk::Commands::MenuBuilder.new
+    @builder = Adhearsion::VoIP::MenuBuilder.new
   end
   
   test "should convert each pattern given to it into a MatchCalculator instance" do
     returning builder do |link|
       link.foo 1,2,3
       link.bar "4", "5", 6
-      link.qaz? {}
     end
     
-    builder.weighted_match_calculators.size.should.equal 7
+    builder.weighted_match_calculators.size.should.equal 6
     builder.weighted_match_calculators.each do |match_calculator|
-      match_calculator.should.be.kind_of Adhearsion::VoIP::Asterisk::Commands::MatchCalculator
+      match_calculator.should.be.kind_of Adhearsion::VoIP::MatchCalculator
     end
   end
   
@@ -1136,24 +1136,6 @@ context 'the MenuBuilder' do
     end
     matches = builder.calculate_matches_for 1
     matches.potential_match_count.should.equal 100
-  end
-  
-  test "custom blocks" do
-    strange_use_case = %w[321 4321 54321]
-    returning builder do |link|
-      link.arbitrary? do |str|
-        strange_use_case.select { |num| num.reverse.starts_with?(str) }
-      end
-    end
-    
-    builder_should_match_with_these_quantities_of_calculated_matches \
-      1      => { :exact_match_count => 3 },
-      12     => { :exact_match_count => 3 },
-      123    => { :exact_match_count => 3 },
-      1234   => { :exact_match_count => 2 },
-      12345  => { :exact_match_count => 1 },
-      123456 => { :exact_match_count => 0 }
-
   end
   
 end
