@@ -9,12 +9,12 @@ module Adhearsion
       obj = @interfaces[interface]
       obj.__methods ||= {}
       obj.__methods[name] = meth
-      obj.instance_eval <<-STR
+      obj.instance_eval(<<-STR, __FILE__, __LINE__)
         def #{name}(*args, &block)
           begin
             __methods["#{name}"].call(*args, &block)
           rescue => exception
-            raise RuntimeError, exception.message
+            raise RuntimeError, exception.message, exception.backtrace
           end
         end
       STR

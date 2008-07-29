@@ -207,7 +207,11 @@ module Adhearsion
 									bytes = 0
 									begin
                     socket.synchronize do
-											bytes = socket.read_nonblock(space)
+                      if IO.select([socket], nil, nil, 1.0)
+                        bytes = socket.read_nonblock(space)
+                      else
+                        retry
+                      end
                     end
 									rescue Errno::EAGAIN
                     # Nothing available. Try again.
