@@ -264,7 +264,7 @@ context 'Call variable parsing with data that is treated specially' do
   end
   test "normalizes the context to be a valid Ruby method name"
   test "value of 'no' converts to false" do
-    merged_hash_with_call_variables(:foo => "no")[:foo].should.equal(false)
+    merged_hash_with_call_variables(:no_var => "no")[:no_var].should.equal(false)
   end
   test "value of 'yes' converts to true"
   test "value of 'unknown' converts to nil"
@@ -413,6 +413,8 @@ agi_accountcode:
 
       coerced_variable_map = uncoerced_variable_map
       coerced_variable_map[:query] = {"foo" => "bar", "qaz" => "qwerty"}
+      coerced_variable_map[:foo] = 'bar'
+      coerced_variable_map[:qaz] = 'qwerty'
       coerced_variable_map
     end
 

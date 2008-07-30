@@ -237,6 +237,7 @@ module Adhearsion
           replace_yes_no_answers_with_booleans
           coerce_request_into_uri_object
           decompose_uri_query_into_hash
+          override_variables_with_query_params
           remove_dashes_from_context_name
           coerce_type_of_number_into_symbol
         }
@@ -321,6 +322,16 @@ module Adhearsion
                 end
               else
                 variables[:query] = {}
+              end
+            end
+          end
+          
+          def override_variables_with_query_params(variables)
+            returning variables do
+              if variables[:query]
+                variables[:query].each do |key, value|
+                  variables[key.to_sym] = value
+                end
               end
             end
           end
