@@ -123,6 +123,15 @@ context "Call tagging" do
     call.tagged_with?(:authorized).should.equal false
   end
   
+  test "Call#remove_tag" do
+    call = new_call_for_context "roflcopter"
+    call.tag :moderator
+    call.tag :female
+    call.remove_tag :female
+    call.tag :male
+    call.tags.should == [:moderator, :male]
+  end
+  
   test 'Call#tagged_with? with many tags' do
     call = new_call_for_context "roflcopter"
     call.tag :customer

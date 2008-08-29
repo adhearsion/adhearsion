@@ -88,7 +88,6 @@ module Adhearsion
     end
   end
   
-  
   class FailedExtensionCallException < MetaAgiCallException; end
   
   class HungupExtensionCallException < MetaAgiCallException; end
@@ -164,6 +163,12 @@ module Adhearsion
       raise ArgumentError, "tag must be a Symbol" unless symbol.is_a? Symbol
       @tag_mutex.synchronize do
         @tags << symbol
+      end
+    end
+    
+    def remove_tag(symbol)
+      @tag_mutex.synchronize do
+        @tags.reject! { |tag| tag == symbol }
       end
     end
     
