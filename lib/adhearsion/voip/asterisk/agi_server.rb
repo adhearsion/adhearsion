@@ -47,7 +47,10 @@ module Adhearsion
             rescue => e
               ahn_log.agi.error e.inspect
               ahn_log.agi.error e.backtrace.map { |s| " " * 5 + s }.join("\n")
+            ensure
+              Adhearsion.remove_inactive_call call
             end
+            
           end
          
           DEFAULT_OPTIONS = { :server_class => RubyServer, :port => 4573, :host => "0.0.0.0" } unless defined? DEFAULT_OPTIONS
