@@ -61,6 +61,14 @@ module Adhearsion
       end
     end
     
+    def with_tag(tag)
+      atomically do
+        calls.inject(Array.new) do |calls_with_tag,(key,call)|
+          call.tagged_with?(tag) ? calls_with_tag << call : calls_with_tag
+        end
+      end
+    end
+    
     private
       attr_reader :semaphore, :calls
       
@@ -142,6 +150,27 @@ module Adhearsion
       check_if_valid_call
       define_variable_accessors
       set_originating_voip_platform!
+      @tag_mutex = Mutex.new
+      @tags = []
+    end
+
+    def tags
+      @tag_mutex.synchronize do
+        return @tags.clone
+      end
+    end
+
+    def tag(symbol)
+      raise ArgumentError, "tag must be a Symbol" unless symbol.is_a? Symbol
+      @tag_mutex.synchronize do
+        @tags << symbol
+      end
+    end
+    
+    def tagged_with?(symbol)
+      @tag_mutex.synchronize do
+        @tags.include? symbol
+      end
     end
 
     def deliver_message(message)

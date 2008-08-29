@@ -93,6 +93,67 @@ context "DialPlan::Manager's handling a failed call" do
   end
 end
 
+context "Call tagging" do
+  
+  include DialplanTestingHelper
+  
+  after :all do
+    Adhearsion.active_calls.clear!
+  end
+  
+  test 'tagging a call with a single Symbol' do
+    the_following_code {
+      call = new_call_for_context "roflcopter"
+      call.tag :moderator
+    }.should.not.raise
+  end
+  
+  test 'tagging a call with multiple Symbols' do
+    the_following_code {
+      call = new_call_for_context "roflcopter"
+      call.tag :moderator
+      call.tag :female
+    }.should.not.raise
+  end
+  
+  test 'Call#tagged_with? with one tag' do
+    call = new_call_for_context "roflcopter"
+    call.tag :guest
+    call.tagged_with?(:guest).should.equal true
+    call.tagged_with?(:authorized).should.equal false
+  end
+  
+  test 'Call#tagged_with? with many tags' do
+    call = new_call_for_context "roflcopter"
+    call.tag :customer
+    call.tag :authorized
+    call.tagged_with?(:customer).should.equal true
+    call.tagged_with?(:authorized).should.equal true
+  end
+  
+  test 'tagging a call with a non-Symbol object' do
+    bad_objects = ["moderator", 123, Object.new, 888.88, nil, true, false, StringIO.new]
+    bad_objects.each do |bad_object|
+      the_following_code {
+        new_call_for_context("roflcopter").tag bad_object
+      }.should.raise ArgumentError
+    end
+  end
+  
+  test "findings calls by a tag" do
+    Adhearsion.active_calls.clear!
+    
+    calls = Array.new(5) { new_call_for_context "roflcopter" }
+    calls.each { |call| Adhearsion.active_calls << call }
+    
+    tagged_call = calls.last
+    tagged_call.tag :moderator
+    
+    Adhearsion.active_calls.with_tag(:moderator).should == [tagged_call]
+  end
+  
+end
+
 context "DialPlan::Manager's handling a hungup call" do
   
   include DialplanTestingHelper
