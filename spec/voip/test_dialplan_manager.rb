@@ -140,7 +140,7 @@ context "Call tagging" do
     end
   end
   
-  test "findings calls by a tag" do
+  test "finding calls by a tag" do
     Adhearsion.active_calls.clear!
     
     calls = Array.new(5) { new_call_for_context "roflcopter" }
