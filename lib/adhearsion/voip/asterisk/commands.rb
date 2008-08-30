@@ -639,7 +639,7 @@ module Adhearsion
           end
         
           def interruptable_play(*files)
-            files.each do |file|
+            files.flatten.each do |file|
               result = result_digit_from raw_response("EXEC BACKGROUND #{file}")
               return result if result != 0.chr
             end
