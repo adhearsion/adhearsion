@@ -4,6 +4,7 @@ ENV['RUBY_FLAGS'] = "-I#{%w(lib ext bin test).join(File::PATH_SEPARATOR)}"
 require 'rubygems'
 require 'hoe'
 require 'lib/adhearsion/version'
+# require File.dirname(__FILE__) + "/support/yard/lib/yard"
 
 begin
   require 'rcov/rcovtask'
@@ -23,6 +24,11 @@ task :test do
   STDERR.puts "\nTry using \"rake spec\" for something less noisy.\n\n"
   # The other :test task is created by Hoe below.
 end
+
+# YARD::Rake::YardocTask.new do |t|
+#   t.files   = ['lib/**/*.rb']   # optional
+#   # t.options = ['--any', '--extra', '--opts'] # optional
+# end
 
 # Need to migrate away from Hoe...
 Hoe.new('adhearsion', Adhearsion::VERSION::STRING) do |p|
