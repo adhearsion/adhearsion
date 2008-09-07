@@ -48,7 +48,7 @@ module Adhearsion
               ahn_log.agi.error e.inspect
               ahn_log.agi.error e.backtrace.map { |s| " " * 5 + s }.join("\n")
             ensure
-              Adhearsion.remove_inactive_call call
+              Adhearsion.remove_inactive_call call rescue nil
             end
             
           end
