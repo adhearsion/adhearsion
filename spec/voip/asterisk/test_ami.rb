@@ -51,6 +51,7 @@ context "Connecting via AMI" do
 end
 
 context "The AMI command interface" do
+  
   before do
     host, port = "localhost", 5038
     @ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "password", host, :port => port, :events => false
@@ -207,11 +208,6 @@ context "AMI Packets" do
   test "An ErrorPacket should be an error" do
     Adhearsion::VoIP::Asterisk::AMI::ErrorPacket.new.error?.should.be true
   end
-end
-
-context "The event parser" do
-  test "should parse the the YAML-like format "
-  test "should allow a Hash to specify multiple matches"
 end
 
 BEGIN {
