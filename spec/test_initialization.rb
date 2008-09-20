@@ -65,6 +65,27 @@ context "Adhearsion::Initializer" do
     end
   end
   
+  test "should require() the lib when .ahnrc contains a require section with one name" do
+    stub_behavior_for_initializer_with_no_path_changing_behavior do
+      ahn_rc = {
+        "gems" => {
+          "twitter" => {
+            "require" => "sometwitterstuffs"
+          }
+        },
+        # Paths are unnecessary except to make the other part of bootstrap_rc happy.
+        "paths"=>{"dialplan"=>"dialplan.rb", "init"=>"config/startup.rb", "events"=>"events.rb",
+            "models"=>{"directory"=>"models", "pattern"=>"*.rb"}}
+      }
+      ahn = Adhearsion::Initializer.new path
+      flexmock(Adhearsion::Initializer).should_receive(:get_rules_from).once.and_return ahn_rc
+      flexstub(ahn).should_receive(:gem).once.with("twitter")
+      flexmock(ahn).should_receive(:require).once.with("sometwitterstuffs")
+      flexmock(ahn).should_receive(:require).at_least.once.with(String)
+      ahn.start
+    end
+  end
+  
   test "should create a designated pid file when supplied a String path as :pid_file" do
     random_file = "/tmp/AHN_TEST_#{rand 100000}.pid"
     stub_behavior_for_initializer_with_no_path_changing_behavior do

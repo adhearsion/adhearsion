@@ -234,6 +234,14 @@ module Adhearsion
           else
             gem gem_name
           end
+          if properties_hash
+            case properties_hash["require"]
+              when Array
+                properties_hash["require"].each { |lib| require lib }
+              when String
+                require properties_hash["require"]
+            end 
+          end
         end
       end
     end
