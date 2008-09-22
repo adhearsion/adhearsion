@@ -2,6 +2,8 @@ require File.dirname(__FILE__) + "/../test_helper"
 
 context "Files from config" do
   
+  include PathsTestHelper
+  
   test "the old way of doing paths should not still be around" do
     should.not.respond_to(:all_helpers)
     should.not.respond_to(:helper_path)
@@ -29,7 +31,7 @@ end
 BEGIN {
   module PathsTestHelper
     def mock_ahnrc_with(raw_yaml)
-      raise NotImplementedError
+      Adhearsion::AHN_CONFIG.ahnrc = YAML.load raw_yaml
     end
   end
 }
