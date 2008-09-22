@@ -113,15 +113,14 @@ module Adhearsion
     end
     
     def init_events
-      if Paths.manager_for? "events"
         # 
         # framework = 
         # DEFAULT_FRAMEWORK_EVENT_NAMESPACES.each do |namespace|
         #   .register_callback_name framework_event_callback_name
         # end
-      else
-        ahn_log.events.warn 'No "events" section in .ahnrc. Skipping its initialization.'
-      end
+        ############
+        # else #...
+        # ahn_log.events.warn 'No "events" section in .ahnrc. Skipping its initialization.'
     end
     
     def initialize_log_file
@@ -185,11 +184,9 @@ module Adhearsion
     end
     
     def load_all_init_files
-      if Paths.manager_for? "init"
-        init_files_from_rc = all_inits.map { |file| File.expand_path(file) }
-        already_loaded_init_files = Array(@loaded_init_files).map { |file| File.expand_path(file) }
-        (init_files_from_rc - already_loaded_init_files).each { |init| load init }
-      end
+      init_files_from_rc = AHN_CONFIG.files_from_setting("paths", "init").map { |file| File.expand_path(file) }
+      already_loaded_init_files = Array(@loaded_init_files).map { |file| File.expand_path(file) }
+      (init_files_from_rc - already_loaded_init_files).each { |init| load init }
     end
     
     def should_daemonize?
@@ -218,16 +215,7 @@ module Adhearsion
     def bootstrap_rc
       rules = self.class.get_rules_from AHN_ROOT
       
-      paths = rules['paths']
-      paths.each_pair do |path_name, pattern_or_ruleset|
-        if pattern_or_ruleset.kind_of? Hash
-          directory, pattern = pattern_or_ruleset['directory'] || '.', pattern_or_ruleset['pattern'] || '*'
-          Paths.manager_for path_name, :pattern => File.join(directory, pattern)
-        else
-          directory, pattern = '.', pattern_or_ruleset
-          Paths.manager_for path_name, :pattern => File.join(directory,pattern)
-        end
-      end
+      AHN_CONFIG.ahnrc = rules
       
       gems = rules['gems']
       if gems.kind_of?(Hash) && gems.any? && respond_to?(:gem)

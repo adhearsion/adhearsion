@@ -52,7 +52,7 @@ module Adhearsion
           # If the target context does not exist, warn and don't handle the call
           unless first_context
             log "No context '#{first_context_name}' found in " +
-                "#{all_dialplans.to_sentence(:connector => "or")}. Ignoring request!"
+                "#{AHN_CONFIG.files_from_setting("paths", "").to_sentence(:connector => "or")}. Ignoring request!"
             return
           end
           
@@ -91,7 +91,7 @@ module Adhearsion
         # time.
         def should_reload_contexts?
           !@abstract_contexts || !@abstract_dispatcher ||
-            all_dialplans.map { |x| File.mtime(x) }.max < Time.now
+            AHN_CONFIG.files_from_setting("paths", "dialplan").map { |x| File.mtime(x) }.max < Time.now
         end
         
         def rubyize_keys_for(hash)
