@@ -62,7 +62,10 @@ module Adhearsion
   
     attr_reader :path, :daemon, :pid_file, :log_file, :ahn_app_log_directory
     
-    DEFAULT_FRAMEWORK_EVENT_CALLBACK_NAMES = [:after_initialized, :shutdown]
+    DEFAULT_FRAMEWORK_EVENT_NAMESPACES = %w[
+      /framework/after_initialized
+      /framework/shutdown
+    ]
     
     # Creation of pid_files
     #
@@ -102,11 +105,11 @@ module Adhearsion
     
     def init_events
       if Paths.manager_for? "events"
-        framework = Events.register_namespace_path(:framework)
-        DEFAULT_FRAMEWORK_EVENT_CALLBACK_NAMES.each do |framework_event_callback_name|
-          framework.register_callback_name framework_event_callback_name
+        
+        framework = 
+        DEFAULT_FRAMEWORK_EVENT_NAMESPACES.each do |namespace|
+          .register_callback_name framework_event_callback_name
         end
-        Events.load_definitions_from_files *all_events
       else
         ahn_log.events.warn 'No "events" section in .ahnrc. Skipping its initialization.'
       end
