@@ -47,7 +47,7 @@ module Adhearsion
     
     def files_from_setting(*path_through_config)
       value = path_through_config.inject(@ahnrc) do |hash,key_name|
-        if hash.has_key? key_name
+        if hash && hash.has_key?(key_name)
           hash[key_name]
         else
           raise ArgumentError, "Paths #{path_through_config.inspect} not found in .ahnrc!"
