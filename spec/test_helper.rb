@@ -70,7 +70,7 @@ module InitializerStubs
   
   def with_new_initializer_with_no_path_changing_behavior(&block)
     stub_behavior_for_initializer_with_no_path_changing_behavior do
-      block.call Adhearsion::Initializer.new('path does not matter')
+      block.call Adhearsion::Initializer.start('path does not matter')
     end
   end
   

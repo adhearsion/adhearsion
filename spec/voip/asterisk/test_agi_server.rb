@@ -24,7 +24,7 @@ context "The AGI server's serve() method" do
   
   test 'should hand the call off to a new Manager if the request is agi://IP_ADDRESS_HERE' do
     stub_before_call_hooks!
-    call_mock = flexmock 'A new mock call that will be passed to the manager', :variables => {}
+    call_mock = flexmock 'A new mock call that will be passed to the manager', :variables => {}, :unique_identifier => "X"
     
     flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return call_mock
     manager_mock = flexmock 'a mock dialplan manager'
@@ -35,7 +35,7 @@ context "The AGI server's serve() method" do
   
   test 'should hand off a call to a ConfirmationManager if the request begins with confirm!' do
     confirm_options = Adhearsion::DialPlan::ConfirmationManager.encode_hash_for_dial_macro_argument :timeout => 20, :key => "#"
-    call_mock = flexmock "a call that has network_script as a variable", :variables => {:network_script => "confirm!#{confirm_options[/^M\(\^?(.+)\)$/,1]}"}
+    call_mock = flexmock "a call that has network_script as a variable", :variables => {:network_script => "confirm!#{confirm_options[/^M\(\^?(.+)\)$/,1]}"}, :unique_identifier => "X"
     manager_mock = flexmock 'a mock ConfirmationManager'
     
     the_following_code {
@@ -54,7 +54,7 @@ context "The AGI server's serve() method" do
   end
   
   test 'should execute the OnHungupCall hooks when a HungupExtensionCallException is raised' do
-    call_mock = flexmock 'a bogus call', :hungup_call? => true, :variables => {:extension => "h"}
+    call_mock = flexmock 'a bogus call', :hungup_call? => true, :variables => {:extension => "h"}, :unique_identifier => "X"
     mock_env  = flexmock "A mock execution environment which gets passed along in the HungupExtensionCallException"
     
     stub_confirmation_manager!
@@ -66,7 +66,7 @@ context "The AGI server's serve() method" do
   end
   
   test 'should execute the OnFailedCall hooks when a FailedExtensionCallException is raised' do
-    call_mock = flexmock 'a bogus call', :failed_call? => true, :variables => {:extension => "failed"}
+    call_mock = flexmock 'a bogus call', :failed_call? => true, :variables => {:extension => "failed"}, :unique_identifier => "X"
     mock_env  = flexmock "A mock execution environment which gets passed along in the HungupExtensionCallException", :failed_reason => "does not matter" 
     
     server = Adhearsion::VoIP::Asterisk::AGI::Server::RubyServer.new :port, :host

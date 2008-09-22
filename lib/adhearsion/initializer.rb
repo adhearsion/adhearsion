@@ -53,9 +53,13 @@ module Adhearsion
         end
       end
       
+      def start(*args, &block)
+        new(*args, &block).start
+      end
+      
       def start_from_init_file(file, ahn_app_path)
         return if defined?(@@started) && @@started
-        new(ahn_app_path, :loaded_init_files => file)
+        start ahn_app_path, :loaded_init_files => file
       end
       
     end
@@ -84,6 +88,9 @@ module Adhearsion
       @daemon   = options[:daemon]
       @pid_file = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
       @loaded_init_files  = options[:loaded_init_files]
+    end
+    
+    def start
       self.class.ahn_root = path
       resolve_pid_file_path
       resolve_log_file_path
@@ -101,6 +108,8 @@ module Adhearsion
       
       trigger_after_initialized_hooks
       join_framework_threads
+      
+      self
     end
     
     def init_events
@@ -207,7 +216,8 @@ module Adhearsion
     end
     
     def bootstrap_rc
-      rules = Initializer.get_rules_from AHN_ROOT
+      rules = self.class.get_rules_from AHN_ROOT
+      
       paths = rules['paths']
       paths.each_pair do |path_name, pattern_or_ruleset|
         if pattern_or_ruleset.kind_of? Hash
@@ -216,6 +226,25 @@ module Adhearsion
         else
           directory, pattern = '.', pattern_or_ruleset
           Paths.manager_for path_name, :pattern => File.join(directory,pattern)
+        end
+      end
+      
+      gems = rules['gems']
+      if gems.kind_of?(Hash) && gems.any? && respond_to?(:gem)
+        gems.each_pair do |gem_name,properties_hash|
+          if properties_hash && properties_hash["version"]
+            gem gem_name, properties_hash["version"]
+          else
+            gem gem_name
+          end
+          if properties_hash
+            case properties_hash["require"]
+              when Array
+                properties_hash["require"].each { |lib| require lib }
+              when String
+                require properties_hash["require"]
+            end 
+          end
         end
       end
     end
