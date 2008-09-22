@@ -58,7 +58,6 @@ lib/adhearsion/initializer/configuration.rb
 lib/adhearsion/initializer/database.rb
 lib/adhearsion/initializer/drb.rb
 lib/adhearsion/initializer/freeswitch.rb
-lib/adhearsion/initializer/paths.rb
 lib/adhearsion/initializer/rails.rb
 lib/adhearsion/logging.rb
 lib/adhearsion/services/scheduler.rb

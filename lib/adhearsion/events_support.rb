@@ -1,4 +1,4 @@
-require 'theatre'
+# require 'theatre'
 
 module Adhearsion
   module Events

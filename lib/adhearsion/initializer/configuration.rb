@@ -37,6 +37,15 @@ module Adhearsion
       Adhearsion::Logging.logging_level = options[:level]
     end
     
+    def files_from_setting(*path_through_config)
+      value = path_through_config.inject { |hash,key_name| hash[key_name] }
+      raise ArgumentError, "Paths #{path_through_config.inspect} not found in .ahnrc!"
+      value = Array value
+      value.map do |file_name|
+        File.glob file_name
+      end.flatten.uniq
+    end
+    
     def initialize
       @automatically_answer_incoming_calls = true
       @end_call_on_hangup                  = true

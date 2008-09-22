@@ -114,11 +114,11 @@ module Adhearsion
     
     def init_events
       if Paths.manager_for? "events"
-        
-        framework = 
-        DEFAULT_FRAMEWORK_EVENT_NAMESPACES.each do |namespace|
-          .register_callback_name framework_event_callback_name
-        end
+        # 
+        # framework = 
+        # DEFAULT_FRAMEWORK_EVENT_NAMESPACES.each do |namespace|
+        #   .register_callback_name framework_event_callback_name
+        # end
       else
         ahn_log.events.warn 'No "events" section in .ahnrc. Skipping its initialization.'
       end

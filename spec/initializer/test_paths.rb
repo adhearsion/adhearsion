@@ -8,8 +8,8 @@ context "Files from config" do
   end
   
   test "should work when only one filename is present" do
-    AHN_CONFIG.files_from_setting("paths", "init")
-    fail
+    mock_ahnrc_with "paths:\n    helpers: foobar.rb"
+    AHN_CONFIG.files_from_setting("paths", "init").should eql(%w[foobar.rb])
   end
   
   test "should work when an Array of filenames is present" do
