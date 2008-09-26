@@ -53,9 +53,11 @@ module Adhearsion
         end
         
         # This method is the underlying method executed by nearly all the command methods in this module.
-        # this method is what is used to send the plaintext commands in the proper AGI format back to an Asterisk server.
-        # It is not recommended you call this method directly unless you plan to write your a new command method
-        # in which case this is the method you should use to communicate directly back to Asterisk.
+        # It is used to send the plaintext commands in the proper AGI format over TCP/IP back to an Asterisk server via the
+        # FAGI protocol.
+        # It is not recommended that you call this method directly unless you plan to write a new command method
+        # in which case use this method you to communicate directly with an Asterisk server via the FAGI protocol.
+        # For more information about FAGI visit: http://www.voip-info.org/wiki/view/Asterisk+FastAGI
         def raw_response(message = nil)
           ahn_log.agi.debug ">>> #{message}"
           write message if message
@@ -63,7 +65,7 @@ module Adhearsion
         end
         
         # The answer command must be called first before any other commands can be issued.
-        # In typical adhearsion application the answer command is called by default as soon
+        # In typical adhearsion applications the answer command is called by default as soon
         # as a call is transfered to a valid context in dialplan.rb.
         # If you do not want your adhearsion application to automatically issue an answer command,
         # then you must edit your startup.rb file and configure this setting.
@@ -101,7 +103,7 @@ module Adhearsion
         # After this command is issued, your application will stop executing.
         # This should be used in the same way you would call the ruby exit() method to exit an application.
         # If it is necessary to do some additional cleanup tasks before returning control back to asterisk, then
-        # make sure you have setup a begin...ensure block in your dialplan context.
+        # make sure you have setup a begin...ensure block in the context of your adhearsion application dialplan.
         def hangup
           raw_response 'HANGUP'
         end
@@ -164,7 +166,7 @@ module Adhearsion
       	  block.call(next_message)
     	  end
 
-        # This command shouled be used to advance to the next message in the Asterisk Comedia Voicemail application
+        # This command shouled be used to advance to the next message in the Asterisk Comedian Voicemail application
         def next_message
           @call.inbox.pop
         end
@@ -532,7 +534,7 @@ module Adhearsion
           execute "MeetMe", conference_id, command_flags, options[:pin]
         end
         
-        # This command should be issued to access a variable that was set in the asterisk dialplan (i.e. extensions.conf)
+        # Issue this command to access a channel variable that exists in the asterisk dialplan (i.e. extensions.conf)
         # A complete description is available here: http://www.voip-info.org/wiki/view/get+variable
         # Use get_variable to pass information from other modules or high level configurations from the asterisk dialplan
         # to the adhearsion dialplan.
@@ -641,7 +643,7 @@ module Adhearsion
         end
         
         # Use this command to dial an extension i.e. "phone number" in asterisk
-        # This command maps to the Asterisk DIAL command in the dialplan: http://www.voip-info.org/wiki-Asterisk+cmd+Dial
+        # This command maps to the Asterisk DIAL command in the asterisk dialplan: http://www.voip-info.org/wiki-Asterisk+cmd+Dial
         #
         # The first parameter, number, must be a string that represents the extension or "number" that asterisk should dial.
         # Be careful to not just specify a number like 5001, 9095551001
@@ -658,6 +660,24 @@ module Adhearsion
         #
         # Make a call using the IAX provider to the PSTN 
         # dial("IAX2/my.id@voipjet/19095551234", :name=>"John Doe", :caller_id=>"9095551234")
+        #
+        # Options Parameter:
+        # :caller_id - the caller id number to be used when the call is placed.  It is advised you properly adhere to the
+        # policy of VoIP termination providers with respect to caller id values.
+        #
+        # :name - this is the name which should be passed with the caller ID information 
+        # if :name=>"John Doe" and :caller_id => "444-333-1000" then the compelete CID and name would be "John Doe" <4443331000>
+        # support for caller id information varies from country to country and from one VoIP termination provider to another.
+        #
+        # :for - this option can be thought of best as a timeout.  i.e. timeout after :for if no one answers the call
+        # For example, dial("SIP/jay-desk-650&SIP/jay-desk-601&SIP/jay-desk-601-2", :for => 15.seconds, :caller_id => callerid)
+        # this call will timeout after 15 seconds if 1 of the 3 extensions being dialed do not pick prior to the 15 second time limit 
+        #
+        # :options - This is a string of options like "Tr" which are supported by the asterisk DIAL application.
+        # for a complete list of these options and their usage please visit: http://www.voip-info.org/wiki-Asterisk+cmd+Dial
+        #
+        # :confirm - ?
+        # 
         def dial(number, options={})
           *recognized_options = :caller_id, :name, :for, :options, :confirm
           
