@@ -1,5 +1,5 @@
 # gem 'theatre', '>= 0.8.0'
-# require 'theatre'
+require 'theatre'
 
 module Adhearsion
   module Events
