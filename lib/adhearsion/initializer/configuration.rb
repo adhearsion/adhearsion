@@ -50,10 +50,10 @@ module Adhearsion
         if hash && hash.has_key?(key_name)
           hash[key_name]
         else
-          raise ArgumentError, "Paths #{path_through_config.inspect} not found in .ahnrc!"
+          raise NameError, "Paths #{path_through_config.inspect} not found in .ahnrc!"
         end
       end
-      raise ArgumentError, "Paths #{path_through_config.inspect} not found in .ahnrc!" unless value
+      raise NameError, "Paths #{path_through_config.inspect} not found in .ahnrc!" unless value
       value = Array value
       value.map do |file_name|
         Dir.glob file_name

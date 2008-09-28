@@ -15,15 +15,36 @@ context "Files from config" do
   end
   
   test "should work when an Array of filenames is present" do
-    fail
+    yaml = <<-YML
+paths:
+  init:
+    - foo.rb
+    - bar.rb
+    - qaz.rb
+    YML
+    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should eql(%w[foo.rb bar.rb qaz.rb])
   end
   
   test "should work when one glob filename is present" do
-    fail
+    files = %w[foo.rb bar.rb qaz.rb]
+    flexmock(Dir).should_receive(:glob).once.with("*.rb").and_return files
+    yaml = <<-YML
+    paths:
+      init: *.rb
+    YML
+    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should eql(%w[foo.rb bar.rb qaz.rb])
   end
-  
-  test "should work when an Array of filenames are present" do
-    fail
+    
+  test "should work when an Array of globs are present" do
+    files = %w[aaa.rb aba.rb aca.rb]
+    yaml = <<-YML
+paths:
+  init:
+#{
+    files.map { |f| "    - #{f}" }
+}
+    YML
+    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should eql(%w[foo.rb bar.rb qaz.rb])
   end
   
 end
