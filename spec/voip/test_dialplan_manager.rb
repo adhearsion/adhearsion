@@ -67,8 +67,7 @@ context "Dialplan::Manager handling" do
   
   private
     def hack_to_work_around_parser_coupling
-      flexmock(Adhearsion::Paths).should_receive(:manager_for?).and_return(true)
-      flexmock(Adhearsion::VoIP::DSL::Dialplan::DialplanParser).should_receive(:all_dialplans).and_return([])
+      flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return []
     end
     
     def mock_dial_plan_lookup_for_context_name
