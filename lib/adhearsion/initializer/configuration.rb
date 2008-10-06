@@ -33,8 +33,31 @@ module Adhearsion
     attr_accessor :end_call_on_hangup
     attr_accessor :end_call_on_error
     
+    def ahnrc
+      @ahnrc
+    end
+    
+    def ahnrc=(ahnrc)
+      @ahnrc = ahnrc.clone.freeze
+    end
+    
     def logging(options)
       Adhearsion::Logging.logging_level = options[:level]
+    end
+    
+    def files_from_setting(*path_through_config)
+      value = path_through_config.inject(@ahnrc) do |hash,key_name|
+        if hash && hash.has_key?(key_name)
+          hash[key_name]
+        else
+          raise NameError, "Paths #{path_through_config.inspect} not found in .ahnrc!"
+        end
+      end
+      raise NameError, "Paths #{path_through_config.inspect} not found in .ahnrc!" unless value
+      value = Array value
+      value.map do |file_name|
+        Dir.glob file_name
+      end.flatten.uniq
     end
     
     def initialize

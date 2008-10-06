@@ -19,14 +19,16 @@ context "The database initializer" do
   
   test "should make any required models available in the main namespace" do
     bogus_model = tempfile_with_contents sample_user_model
-    flexmock(Adhearsion::Initializer::DatabaseInitializer).should_receive(:all_models).and_return([bogus_model.path])
+    
+    flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.
+        with("paths", "models").and_return [bogus_model.path]
     start_database_initializer
     User.superclass.should.equal ActiveRecord::Base
   end
   
   test 'should enable ActiveRecord concurrency' do
     bogus_model = tempfile_with_contents sample_user_model
-    flexmock(Adhearsion::Initializer::DatabaseInitializer).should_receive(:all_models).and_return([bogus_model.path])
+    flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "models").and_return [bogus_model.path]
     start_database_initializer
     ActiveRecord::Base.send(:class_variable_get, :@@allow_concurrency).should.be true
   end
