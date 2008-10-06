@@ -10,8 +10,8 @@ context "Files from config" do
   end
   
   test "should work when only one filename is present" do
-    mock_ahnrc_with "paths:\n    helpers: foobar.rb"
-    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should eql(%w[foobar.rb])
+    mock_ahnrc_with "paths:\n    init: foobar.rb"
+    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should.eql ["foobar.rb"]
   end
   
   test "should work when an Array of filenames is present" do
@@ -22,7 +22,8 @@ paths:
     - bar.rb
     - qaz.rb
     YML
-    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should eql(%w[foo.rb bar.rb qaz.rb])
+    Adhearsion::AHN_CONFIG.ahnrc = yaml
+    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should.eql(%w[foo.rb bar.rb qaz.rb])
   end
   
   test "should work when one glob filename is present" do
@@ -32,7 +33,8 @@ paths:
     paths:
       init: *.rb
     YML
-    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should eql(%w[foo.rb bar.rb qaz.rb])
+    Adhearsion::AHN_CONFIG.ahnrc = yaml
+    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should.eql(%w[foo.rb bar.rb qaz.rb])
   end
     
   test "should work when an Array of globs are present" do
@@ -44,7 +46,7 @@ paths:
     files.map { |f| "    - #{f}" }
 }
     YML
-    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should eql(%w[foo.rb bar.rb qaz.rb])
+    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should.eql(%w[foo.rb bar.rb qaz.rb])
   end
   
 end

@@ -37,8 +37,15 @@ module Adhearsion
       @ahnrc
     end
     
-    def ahnrc=(ahnrc)
-      @ahnrc = ahnrc.clone.freeze
+    def ahnrc=(new_ahnrc)
+      case new_ahnrc
+        when Hash
+          @raw_ahnrc = new_ahnrc.to_yaml.freeze
+          @ahnrc = new_ahnrc.clone.freeze
+        when String
+          @raw_ahnrc = new_ahnrc.clone.freeze
+          @ahnrc = YAML.load(new_ahnrc).freeze
+      end
     end
     
     def logging(options)
@@ -47,7 +54,7 @@ module Adhearsion
     
     def files_from_setting(*path_through_config)
       value = path_through_config.inject(@ahnrc) do |hash,key_name|
-        if hash && hash.has_key?(key_name)
+        if hash.kind_of?(Hash) && hash.has_key?(key_name)
           hash[key_name]
         else
           raise NameError, "Paths #{path_through_config.inspect} not found in .ahnrc!"
