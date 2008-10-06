@@ -11,9 +11,11 @@ context "Dialplan::Manager handling" do
     @context_name = :some_context_name
     @mock_context = flexmock('a context')
     
-    hack_to_work_around_parser_coupling
     mock_dial_plan_lookup_for_context_name
-    flexmock(Adhearsion::DialPlan::Loader).should_receive(:load_dial_plan).and_return{flexmock("loaded contexts", :contexts => nil)}
+    
+    flexmock(Adhearsion::DialPlan::Loader).should_receive(:load_dial_plan).and_return {
+      flexmock("loaded contexts", :contexts => nil)
+    }
     @manager = Adhearsion::DialPlan::Manager.new
     @call    = new_call_for_context context_name
     
@@ -38,9 +40,8 @@ context "Dialplan::Manager handling" do
   end
   
   test 'should send :answer to the execution environment if Adhearsion::AHN_CONFIG.automatically_answer_incoming_calls is set' do
-    mock_ahn_config = flexmock 'a mock of the Adhearsion::Configuration object that is normally set when an app is initialized'
-    mock_ahn_config.should_receive(:automatically_answer_incoming_calls).once.and_return true
-    flexmock(Adhearsion::Configuration).should_receive(:new).once.and_return(mock_ahn_config)
+    flexmock(Adhearsion::Configuration).new_instances.
+        should_receive(:automatically_answer_incoming_calls).once.and_return true
     flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:answer).once.and_throw :answered_call!
     Adhearsion::Configuration.configure
     the_following_code {
@@ -66,13 +67,11 @@ context "Dialplan::Manager handling" do
   end
   
   private
-    def hack_to_work_around_parser_coupling
-      flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return []
-    end
-    
-    def mock_dial_plan_lookup_for_context_name
-      flexmock(Adhearsion::DialPlan).new_instances.should_receive(:lookup).with(context_name).and_return(mock_context)
-    end
+  
+  def mock_dial_plan_lookup_for_context_name
+    flexstub(Adhearsion::DialPlan).new_instances.should_receive(:lookup).with(context_name).and_return(mock_context)
+  end
+  
 end
 
 context "DialPlan::Manager's handling a failed call" do

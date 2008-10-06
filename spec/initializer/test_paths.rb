@@ -11,6 +11,7 @@ context "Files from config" do
   
   test "should work when only one filename is present" do
     mock_ahnrc_with "paths:\n    init: foobar.rb"
+    flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_glob).once.with("foobar.rb").and_return "foobar.rb"
     Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should.eql ["foobar.rb"]
   end
   
@@ -23,12 +24,17 @@ paths:
     - qaz.rb
     YML
     Adhearsion::AHN_CONFIG.ahnrc = yaml
+    
+    flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_glob).once.with("foo.rb").and_return "foo.rb"
+    flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_glob).once.with("bar.rb").and_return "bar.rb"
+    flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_glob).once.with("qaz.rb").and_return "qaz.rb"
+    
     Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should.eql(%w[foo.rb bar.rb qaz.rb])
   end
   
   test "should work when one glob filename is present" do
     files = %w[foo.rb bar.rb qaz.rb]
-    flexmock(Dir).should_receive(:glob).once.with("*.rb").and_return files
+    flexmock(Dir).should_receive(:glob).once.with(/\*.rb$/).and_return files
     yaml = <<-YML
     paths:
       init: *.rb
@@ -43,10 +49,14 @@ paths:
 paths:
   init:
 #{
-    files.map { |f| "    - #{f}" }
+    files.map { |filename| "    - #{filename}" }.join("\n") + "\n"
 }
     YML
-    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should.eql(%w[foo.rb bar.rb qaz.rb])
+    Adhearsion::AHN_CONFIG.ahnrc = yaml
+    files.each do |file|
+      flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_glob).once.with(file).and_return file
+    end
+    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should.eql(files)
   end
   
 end
