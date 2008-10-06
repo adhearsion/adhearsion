@@ -37,16 +37,39 @@ module Adhearsion
       @ahnrc
     end
     
+    ##
+    # Load the contents of an .ahnrc file into this Configuration.
+    #
+    # @param [String, Hash] ahnrc String of YAML .ahnrc data or a Hash of the pre-loaded YAML data structure
+    #
     def ahnrc=(ahnrc)
-      @ahnrc = ahnrc.clone.freeze
+      case ahnrc
+        when Hash
+          @ahnrc     = ahnrc.clone.freeze
+          @ahnrc_raw = ahnrc.to_yaml.freeze
+        when String
+          @ahnrc_raw = ahnrc.clone.freeze
+          @ahnrc     = YAML.load(@ahnrc_raw).freeze
+        else raise ArgumentError, "Do not recognize argument of type #{ahnrc.class}!"
+      end
     end
     
     def logging(options)
       Adhearsion::Logging.logging_level = options[:level]
     end
     
+    ##
+    # Adhearsion's .ahnrc file is used to define paths to certain parts of the framework. For example, the name dialplan.rb
+    # is actually specified in .ahnrc. This file can actually be just a filename, a filename with a glob (.e.g "*.rb"), an
+    # Array of filenames or even an Array of globs.
+    #
+    # @param [String,Array] String segments which convey the nesting of Hash keys through .ahnrc
+    # @raise [RuntimeError] If ahnrc has not been set yet with #ahnrc=()
+    # @raise [NameError] If the path through the ahnrc is invalid
+    #
     def files_from_setting(*path_through_config)
-      value = path_through_config.inject(@ahnrc) do |hash,key_name|
+      raise RuntimeError, "No ahnrc has been set yet!" unless @ahnrc
+      value = path_through_config.flatten.inject(@ahnrc) do |hash,key_name|
         if hash && hash.has_key?(key_name)
           hash[key_name]
         else
@@ -55,8 +78,8 @@ module Adhearsion
       end
       raise NameError, "Paths #{path_through_config.inspect} not found in .ahnrc!" unless value
       value = Array value
-      value.map do |file_name|
-        Dir.glob file_name
+      value.map do |filename|
+        filename.include?("*") ? Dir.glob(filename) : filename
       end.flatten.uniq
     end
     

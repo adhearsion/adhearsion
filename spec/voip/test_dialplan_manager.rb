@@ -13,7 +13,7 @@ context "Dialplan::Manager handling" do
     
     hack_to_work_around_parser_coupling
     mock_dial_plan_lookup_for_context_name
-    flexmock(Adhearsion::DialPlan::Loader).should_receive(:load_dial_plan).and_return{flexmock("loaded contexts", :contexts => nil)}
+    flexmock(Adhearsion::DialPlan::Loader).should_receive(:load_dialplans).and_return{flexmock("loaded contexts", :contexts => nil)}
     @manager = Adhearsion::DialPlan::Manager.new
     @call    = new_call_for_context context_name
     
@@ -38,9 +38,11 @@ context "Dialplan::Manager handling" do
   end
   
   test 'should send :answer to the execution environment if Adhearsion::AHN_CONFIG.automatically_answer_incoming_calls is set' do
-    mock_ahn_config = flexmock 'a mock of the Adhearsion::Configuration object that is normally set when an app is initialized'
-    mock_ahn_config.should_receive(:automatically_answer_incoming_calls).once.and_return true
-    flexmock(Adhearsion::Configuration).should_receive(:new).once.and_return(mock_ahn_config)
+    flexmock(Adhearsion::Configuration).new_instances.should_receive(:automatically_answer_incoming_calls).
+        once.and_return true
+    flexmock(Adhearsion::Configuration).new_instances.should_receive(:files_from_setting).
+        once.with("paths", "dialplan").and_return "doesntmatter.rb"
+    
     flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:answer).once.and_throw :answered_call!
     Adhearsion::Configuration.configure
     the_following_code {
@@ -49,14 +51,12 @@ context "Dialplan::Manager handling" do
   end
   
   test 'should not send :answer to the executuon environment if Adhearsion::AHN_CONFIG.automatically_answer_incoming_calls is NOT set' do
-    
-    mock_ahn_config = flexmock 'a mock of the Adhearsion::Configuration object that is normally set when an app is initialized'
-    mock_ahn_config.should_receive(:automatically_answer_incoming_calls).once.and_return false
+    flexmock(Adhearsion::Configuration).new_instances.should_receive(:automatically_answer_incoming_calls).
+        once.and_return false
     
     entry_point = Adhearsion::DialPlan::DialplanContextProc.new(:does_not_matter) {}
     flexmock(manager).should_receive(:entry_point_for).once.with(call).and_return(entry_point)
     
-    flexmock(Adhearsion::Configuration).should_receive(:new).once.and_return(mock_ahn_config)
     flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:entry_point).and_return entry_point
     flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:answer).never
     flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:instance_eval).and_throw :doing_dialplan
@@ -67,7 +67,7 @@ context "Dialplan::Manager handling" do
   
   private
     def hack_to_work_around_parser_coupling
-      flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return []
+      flexstub(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return ["dialplan.rb"]
     end
     
     def mock_dial_plan_lookup_for_context_name
@@ -184,8 +184,8 @@ context "DialPlan" do
   before do
     @loader = Adhearsion::DialPlan::Loader
     @loader_instance = @loader.new
-    flexmock(Adhearsion::DialPlan::Loader).should_receive(:load_dial_plan).once.and_return(@loader_instance)
-    @dial_plan   = Adhearsion::DialPlan.new(Adhearsion::DialPlan::Loader)
+    flexmock(Adhearsion::DialPlan::Loader).should_receive(:load_dialplans).once.and_return(@loader_instance)
+    @dial_plan = Adhearsion::DialPlan.new(@loader)
   end
   
   test "When a dial plan is instantiated, the dialplans are loaded and stored for lookup" do
@@ -239,7 +239,7 @@ context "DialPlan loader" do
     loader = nil
     the_following_code {
       AHN_ROOT.using_base_path(File.expand_path(File.dirname(__FILE__) + '/../fixtures')) do
-        loader = Adhearsion::DialPlan::Loader.load_dial_plan
+        loader = Adhearsion::DialPlan::Loader.load_dialplans
       end
     }.should.not.raise
     
@@ -261,7 +261,6 @@ context "The inbox-related dialplan methods" do
     executing_dialplan(:entrance => dialplan, :call => mock_call).should.throw :one
   end
 
-  
   test "messages_waiting? should return false if the inbox is empty" do
     mock_call = new_call_for_context :entrance
     dialplan = %{ entrance { throw messages_waiting? ? :yes : :no } }
@@ -397,22 +396,28 @@ context "VoIP platform operations" do
   end
 end
 
-context 'ContextNameCollector' do
+context 'DialPlan::Loader' do
   test '::build should raise a SyntaxError when the dialplan String contains one' do
     the_following_code {
-      Adhearsion::DialPlan::Loader::ContextNameCollector.build "foo { ((((( *@!^*@&*^!^@ }"
+      Adhearsion::DialPlan::Loader.new.load "foo { ((((( *@!^*@&*^!^@ }"
     }.should.raise SyntaxError
   end
 end
 
 BEGIN {
 module DialplanTestingHelper
+  
   def load(dial_plan_as_string)
     Adhearsion::DialPlan::Loader.load(dial_plan_as_string)
   end
   
   def mock_dialplan_with(string)
-    flexstub(Adhearsion::DialPlan::Loader).should_receive(:read_dialplan_file).and_return(string)
+    string_io = StringIO.new(string)
+    def string_io.path
+      "dialplan.rb"
+    end
+    flexstub(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).with("paths", "dialplan").and_return "dialplan.rb"
+    flexstub(File).should_receive(:new).with("dialplan.rb").and_return string_io
   end
   
   def new_manager_with_entry_points_loaded_from_dialplan_contexts

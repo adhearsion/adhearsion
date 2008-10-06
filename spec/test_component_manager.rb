@@ -42,7 +42,7 @@ context "Referencing a component class in a dial plan context" do
       }
     DIAL_PLAN
     
-    flexmock(Adhearsion::DialPlan::Loader).should_receive(:load_dial_plan).and_return(loader)
+    flexmock(Adhearsion::DialPlan::Loader).should_receive(:load_dialplan).and_return(loader)
     tested_call = Adhearsion::Call.new(nil, :context => :some_context)
     mock_config = flexmock 'a Configuration which communicates automatically_answer_incoming_calls properly',
                     :automatically_answer_incoming_calls => false

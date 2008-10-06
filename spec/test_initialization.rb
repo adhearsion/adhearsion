@@ -130,6 +130,7 @@ context "AHN_ROOT" do
 
   test "creating the AHN_ROOT will set defaults" do
     stub_behavior_for_initializer_with_no_path_changing_behavior do
+      flexstub(Adhearsion::Initializer).new_instances.should_receive(:load).and_return
       ahn = Adhearsion::Initializer.start path
       full_path = File.expand_path(path)
       AHN_ROOT.to_s.should.equal(full_path)

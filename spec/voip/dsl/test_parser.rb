@@ -6,7 +6,7 @@ describe "The Adhearsion VoIP dialplan parser" do
   
   test "should return a list of dialplans properly from dialplan code" do
     file = "foobar.rb"
-    flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return [file]
+    flexstub(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return [file]
       
     flexmock(File).should_receive(:exists?).with(file).and_return true
     flexmock(File).should_receive(:read).once.with(file).and_return <<-DIALPLAN
@@ -33,7 +33,7 @@ describe "The Adhearsion VoIP dialplan parser" do
     lambda do
       # Not loading it here is the same as it not existing in the "paths" sub-Hash
       Adhearsion::VoIP::DSL::Dialplan::DialplanParser.get_contexts
-    end.should.raise NoMethodError
+    end.should.raise RuntimeError
   end
   
 end
@@ -42,7 +42,7 @@ describe "The Adhearsion VoIP dialplan interpreter" do
   
   test "should make dialplan contexts available within the context's block" do    
     file = "contexts_from_code_helper_pseudo_dialplan.rb"
-    flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return [file]
+    flexstub(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return [file]
         
     flexmock(File).should_receive(:exists?).with(file).and_return true
     flexmock(File).should_receive(:read).with(file).and_return "foo { cool_method }"

@@ -4,5 +4,6 @@ require File.dirname(__FILE__) + "/asterisk/ami"
 require File.dirname(__FILE__) + "/asterisk/commands"
 
 [:before_call, :after_call, :hungup_call, :failed_call].each do |callback_name|
-  Adhearsion::Events.framework_theatre.namespace_manager.register_namespace_name [:asterisk, callback_name]
+  # TODO: Coming back soon.
+  # Adhearsion::Events.framework_theatre.namespace_manager.register_namespace_name [:asterisk, callback_name]
 end
