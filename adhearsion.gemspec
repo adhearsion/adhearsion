@@ -27,12 +27,10 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/core_extensions/array.rb
   lib/adhearsion/core_extensions/custom_daemonizer.rb
   lib/adhearsion/core_extensions/global.rb
-  lib/adhearsion/core_extensions/guid.rb
   lib/adhearsion/core_extensions/hash.rb
   lib/adhearsion/core_extensions/metaprogramming.rb
   lib/adhearsion/core_extensions/numeric.rb
   lib/adhearsion/core_extensions/proc.rb
-  lib/adhearsion/core_extensions/pseudo_uuid.rb
   lib/adhearsion/core_extensions/publishable.rb
   lib/adhearsion/core_extensions/relationship_properties.rb
   lib/adhearsion/core_extensions/string.rb
@@ -54,7 +52,6 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/initializer/database.rb
   lib/adhearsion/initializer/drb.rb
   lib/adhearsion/initializer/freeswitch.rb
-  lib/adhearsion/initializer/paths.rb
   lib/adhearsion/initializer/rails.rb
   lib/adhearsion/logging.rb
   lib/adhearsion/tasks.rb
