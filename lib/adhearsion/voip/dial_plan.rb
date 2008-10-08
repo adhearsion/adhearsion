@@ -13,12 +13,14 @@ module Adhearsion
     
     ##
     # Lookup and return an entry point by context name
+    #
     def lookup(context_name)
       entry_points[context_name]
     end
     
     ##
-    # Executable environment for a dial plan in the scope of a call
+    # Executable environment for a dial plan in the scope of a call. This class has all the dialplan methods mixed into it.
+    #
     class ExecutionEnvironment
       
       attr_reader :call
