@@ -50,6 +50,10 @@ module Adhearsion
             call_and_exec caller, "Dial", :args => dial_args, :caller_id => opts[:caller_id]
           end
 
+          def hangup(channel)
+            execute_ami_command! "hangup", :channel => channel
+          end
+
           def call_and_exec(channel, app, opts={})
             args = { :channel => channel, :application => app }
             args[:caller_id] = opts[:caller_id] if opts[:caller_id]
