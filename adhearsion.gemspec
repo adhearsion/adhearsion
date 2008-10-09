@@ -6,7 +6,6 @@ ADHEARSION_FILES = %w{
   app_generators/ahn/USAGE
   app_generators/ahn/ahn_generator.rb
   app_generators/ahn/templates/.ahnrc
-  app_generators/ahn/templates/events.rb
   app_generators/ahn/templates/README
   app_generators/ahn/templates/Rakefile
   app_generators/ahn/templates/components/simon_game/configuration.rb
