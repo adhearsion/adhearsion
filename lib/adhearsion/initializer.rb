@@ -113,14 +113,26 @@ module Adhearsion
     end
     
     def init_events
-        # 
-        # framework = 
-        # DEFAULT_FRAMEWORK_EVENT_NAMESPACES.each do |namespace|
-        #   .register_callback_name framework_event_callback_name
-        # end
-        ############
-        # else #...
-        # ahn_log.events.warn 'No "events" section in .ahnrc. Skipping its initialization.'
+      DEFAULT_FRAMEWORK_EVENT_NAMESPACES.each do |namespace|
+        Events.framework_theatre.register_namespace_name namespace
+      end
+      application_events_files = AHN_CONFIG.files_from_setting("paths", "events")
+      if application_events_files.any?
+        application_events_files.each do |file|
+          Events.framework_theatre.load_events_file file
+        end
+        Hooks::TearDown.create_hook do
+          ahn_log.events "Performing a graceful stop of events subsystem"
+          Events.framework_theatre.graceful_stop!
+        end
+        Events.framework_theatre.start!
+      else
+        ahn_log.events.warn 'No entries in the "events" section of .ahnrc. Skipping its initialization.'
+      end
+    rescue LoadError
+      ahn_log.events.fatal 'Cannot load dependent library "theatre"! See http://github.com/jicksta/theatre'
+    rescue NameError
+      ahn_log.events.warn 'No "events" section in .ahnrc. Skipping its initialization.'
     end
     
     def initialize_log_file
