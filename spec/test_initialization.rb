@@ -97,6 +97,7 @@ context "Adhearsion::Initializer" do
   end
   
   test "should initialze events properly" do
+    require 'theatre'
     events_rb = Tempfile.new "events.rb"
     initializer = Adhearsion::Initializer.new("/does/not/matter")
     flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "events").
@@ -140,6 +141,7 @@ context "AHN_ROOT" do
 
   test "creating the AHN_ROOT will set defaults" do
     stub_behavior_for_initializer_with_no_path_changing_behavior do
+      flexstub(Adhearsion::Initializer).new_instances.should_receive(:load).and_return
       ahn = Adhearsion::Initializer.start path
       full_path = File.expand_path(path)
       AHN_ROOT.to_s.should.equal(full_path)

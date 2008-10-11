@@ -28,7 +28,8 @@ module Adhearsion
     end
     
     def dial_plan_named(name)
-      File.join(dialplan_path, name)
+      raise "DEPRECATED"
+      # File.join(dialplan_path, name)
     end
     
     private

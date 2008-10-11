@@ -37,6 +37,11 @@ module Adhearsion
       @ahnrc
     end
     
+    ##
+    # Load the contents of an .ahnrc file into this Configuration.
+    #
+    # @param [String, Hash] ahnrc String of YAML .ahnrc data or a Hash of the pre-loaded YAML data structure
+    #
     def ahnrc=(new_ahnrc)
       case new_ahnrc
         when Hash
@@ -52,7 +57,17 @@ module Adhearsion
       Adhearsion::Logging.logging_level = options[:level]
     end
     
+    ##
+    # Adhearsion's .ahnrc file is used to define paths to certain parts of the framework. For example, the name dialplan.rb
+    # is actually specified in .ahnrc. This file can actually be just a filename, a filename with a glob (.e.g "*.rb"), an
+    # Array of filenames or even an Array of globs.
+    #
+    # @param [String,Array] String segments which convey the nesting of Hash keys through .ahnrc
+    # @raise [RuntimeError] If ahnrc has not been set yet with #ahnrc=()
+    # @raise [NameError] If the path through the ahnrc is invalid
+    #
     def files_from_setting(*path_through_config)
+      raise RuntimeError, "No ahnrc has been set yet!" unless @ahnrc
       queried_nested_setting = path_through_config.flatten.inject(@ahnrc) do |hash,key_name|
         if hash.kind_of?(Hash) && hash.has_key?(key_name)
           hash[key_name]

@@ -19,7 +19,6 @@ context "The database initializer" do
   
   test "should make any required models available in the main namespace" do
     bogus_model = tempfile_with_contents sample_user_model
-    
     flexmock(Adhearsion::Configuration).new_instances.should_receive(:files_from_setting).once.
         with("paths", "models").and_return [bogus_model.path]
     start_database_initializer
@@ -67,7 +66,7 @@ context "The Rails initializer" do
   end
   
   test "should raise an exception if the database is initialized at the same time" do
-    flexmock(Adhearsion::AHN_CONFIG).should_receive(:database_enabled?).and_return true
+    flexstub(Adhearsion::AHN_CONFIG).should_receive(:database_enabled?).and_return true
     flexmock(Adhearsion::Initializer::RailsInitializer).should_receive(:require).and_return
     stub_file_checking_methods!
     stub_before_call_hook!
