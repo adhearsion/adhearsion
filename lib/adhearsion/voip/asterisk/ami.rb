@@ -127,13 +127,13 @@ module Adhearsion
         end
         
         def start_event_thread!
-          @event_thread = Thread.new(scanner) do |scanner|
-            loop do
-              # TODO: This is totally screwed up. __read_event doesn't exist.
-              AMI::EventHandler.handle! __read_event(scanner.events.pop)
-            end
-          end
-          event_thread.abort_on_exception = true
+          # @event_thread = Thread.new(scanner) do |scanner|
+          #   loop do
+          #     # TODO: This is totally screwed up. __read_event doesn't exist.
+          #     AMI::EventHandler.handle! __read_event(scanner.events.pop)
+          #   end
+          # end
+          # event_thread.abort_on_exception = true
         end
   
         # Method simply defined as private to prevent method_missing from catching it.
