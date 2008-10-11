@@ -24,14 +24,24 @@ module Adhearsion
     
     class << self
       def configure(&block)
-        Adhearsion.module_eval { remove_const(:AHN_CONFIG) } if Adhearsion.const_defined?(:AHN_CONFIG)
-        Adhearsion.const_set(:AHN_CONFIG, new(&block))
+        if Adhearsion.const_defined?(:AHN_CONFIG)
+          yield AHN_CONFIG if block_given?
+        else
+          Adhearsion.const_set(:AHN_CONFIG, new(&block))
+        end
       end
     end
     
     attr_accessor :automatically_answer_incoming_calls
     attr_accessor :end_call_on_hangup
     attr_accessor :end_call_on_error
+    
+    def initialize
+      @automatically_answer_incoming_calls = true
+      @end_call_on_hangup                  = true
+      @end_call_on_error                   = true
+      yield self if block_given?
+    end
     
     def ahnrc
       @ahnrc
@@ -78,13 +88,6 @@ module Adhearsion
       raise NameError, "Paths #{path_through_config.inspect} not found in .ahnrc!" unless queried_nested_setting
       queried_nested_setting = Array queried_nested_setting
       queried_nested_setting.map { |filename| files_from_glob(filename) }.flatten.uniq
-    end
-    
-    def initialize
-      @automatically_answer_incoming_calls = true
-      @end_call_on_hangup                  = true
-      @end_call_on_error                   = true
-      yield self if block_given?
     end
     
     private

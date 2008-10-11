@@ -111,12 +111,13 @@ module Adhearsion
       catch_termination_signal
       bootstrap_rc
       load_all_init_files
+      init_default_event_namespaces
       init_modules
+      init_events
       daemonize! if should_daemonize?
       initialize_log_file
       create_pid_file if pid_file
       load_components
-      init_events
       ahn_log "Adhearsion initialized!"
       
       trigger_after_initialized_hooks
@@ -125,10 +126,13 @@ module Adhearsion
       self
     end
     
-    def init_events
+    def init_default_event_namespaces
       DEFAULT_FRAMEWORK_EVENT_NAMESPACES.each do |namespace|
         Events.framework_theatre.register_namespace_name namespace
       end
+    end
+    
+    def init_events
       application_events_files = AHN_CONFIG.files_from_setting("paths", "events")
       if application_events_files.any?
         application_events_files.each do |file|
@@ -236,7 +240,7 @@ module Adhearsion
     end
     
     def trigger_after_initialized_hooks
-      Events.trigger :after_initialized
+      Events.trigger_immediately :after_initialized
     end
     
     ##
@@ -258,6 +262,10 @@ module Adhearsion
       end
     end
     
+    ##
+    # This step in the initialization process loads the .ahnrc in the given app folder. With the information in .ahnrc, we
+    # can continue the initialization knowing where certain files are specifically.
+    #
     def bootstrap_rc
       rules = self.class.get_rules_from AHN_ROOT
       

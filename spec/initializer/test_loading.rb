@@ -8,6 +8,10 @@ context "The database initializer" do
   
   include DatabaseInitializationTestHelper
   
+  after :each do
+    Adhearsion.send(:remove_const, :AHN_CONFIG) if Adhearsion.const_defined? :AHN_CONFIG
+  end
+  
   test "starts a connection through ActiveRecord" do
     connection_options = { :adapter => "sqlite3",
                            :dbfile => "foo.sqlite3" }
