@@ -64,7 +64,6 @@ module Adhearsion
           # Size of the scanner buffer
           BUFSIZE = 1024
           
-          attr_accessor :logger
           attr_reader :events
 
           def initialize
@@ -96,7 +95,6 @@ module Adhearsion
             @mutex          = Mutex.new
             @events         = Queue.new
             @current_packet = nil
-            @logger         = Logger.new STDOUT
           end
 
           private
@@ -144,8 +142,8 @@ module Adhearsion
             if not @current_packet.is_event? or @current_packet['ActionID']
               action_id = @current_packet['ActionID'] || 0
             end
-            logger.debug "Packet end: #{@__ragel_p}, #{@current_packet.class}, #{action_id.inspect}"
-            logger.debug "=====>#{@current_packet[:raw]}<=====" if @current_packet.raw?
+            ahn_log.asterisk.ami.debug "Packet end: #{@__ragel_p}, #{@current_packet.class}, #{action_id.inspect}"
+            ahn_log.asterisk.ami.debug "=====>#{@current_packet[:raw]}<=====" if @current_packet.raw?
             if action_id
               # Packets with IDs are associated with the action of the same ID
               action = Actions::Action[action_id]
@@ -164,7 +162,7 @@ module Adhearsion
           # Do not stop waiting until all of the packets for the specified Action ID
           # have been seen.
           def wait(action)
-            logger.debug "Waiting for #{action.action_id.inspect}"
+            ahn_log.asterisk.ami.debug "Waiting for #{action.action_id.inspect}"
             @mutex.synchronize do
               loop do
                 action.check_error!
@@ -222,11 +220,11 @@ module Adhearsion
                   end
 
                   # Adjust the pointers.
-                  logger.debug "Got #{bytes.length} bytes, #{bytes.inspect}"
+                  ahn_log.asterisk.ami.debug "Got #{bytes.length} bytes, #{bytes.inspect}"
                   @__ragel_p = have
                   @__ragel_data[@__ragel_p..@__ragel_p + bytes.size - 1] = bytes
                   @__ragel_pe = @__ragel_p + bytes.size
-                  logger.debug "P: #{@__ragel_p} PE: #{@__ragel_pe}"
+                  ahn_log.asterisk.ami.debug "P: #{@__ragel_p} PE: #{@__ragel_pe}"
 
                   # Run the scanner state machine.
                   @mutex.synchronize do
@@ -238,11 +236,11 @@ module Adhearsion
                   else
                     # Slide the window.
                     have = @__ragel_pe - @__ragel_tokstart
-                    logger.debug "Sliding #{have} from #{@__ragel_tokstart} to 0 (tokend: #{@__ragel_tokend.inspect})"
+                    ahn_log.asterisk.ami.debug "Sliding #{have} from #{@__ragel_tokstart} to 0 (tokend: #{@__ragel_tokend.inspect})"
                     @__ragel_data[0..have-1] = @__ragel_data[@__ragel_tokstart..@__ragel_tokstart + have - 1]
                     @__ragel_tokend -= @__ragel_tokstart if @__ragel_tokend
                     @__ragel_tokstart = 0
-                    logger.debug "Data: #{@__ragel_data[0..have-1].inspect}"
+                    ahn_log.asterisk.ami.debug "Data: #{@__ragel_data[0..have-1].inspect}"
                   end
                 end
                 @thread = nil
