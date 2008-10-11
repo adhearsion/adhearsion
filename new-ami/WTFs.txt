@@ -1,0 +1,15 @@
+This is LITERALLY a problem with AMI:
+
+>> Action: Queues
+>> ActionID: 12378
+>> 
+<< No queues.
+
+WHAT DOES THIS PROTOCOL MEAN TO THESE PEOPLE?! THIS IS HORRIBLE!!!!!!
+
+
+Response: Follows
+Privilege: Command
+ActionID: 123123
+Host                            Username       Refresh State                Reg.Time                 
+--END COMMAND--

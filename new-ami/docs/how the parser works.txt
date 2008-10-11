@@ -1,0 +1,14 @@
+The socket that connects to AMI will run inside its own Thread.
+
+A string is built that contains all the bytes that Asterisk would send over non-blocking IO. when the non-blocking IO starts returning EAGAIN, it is considered a packet and sent to Ragel.
+
+Ragel is separated into two things:
+
+ - Event parser
+ - Action parser
+
+The event parser should receive events as quickly as possible and hand them to the EventHandler class. The EventHandler class should handle the actions then to whatever has registered with it.
+
+The action socket reads responses to actions that it writes and should be thread safe.
+
+Sometimes, weird events are sent on the action socket and should be parsed too. it could be that the action should even wait for all the events coming in, though the action you execute should have metadata in it that it, without a doubt, should or should not receive the action.
