@@ -104,7 +104,7 @@ module Adhearsion
       initialize_log_file
       create_pid_file if pid_file
       load_components
-      init_events
+      # init_events
       ahn_log "Adhearsion initialized!"
       
       trigger_after_initialized_hooks
