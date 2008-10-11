@@ -96,7 +96,7 @@ context "The Rails initializer" do
     flexstub(Adhearsion::Initializer::RailsInitializer).should_receive :require
     flexstub(Adhearsion::Initializer::RailsInitializer).should_receive :load_rails
     stub_file_checking_methods!
-    flexmock(Adhearsion::Hooks::BeforeCall).should_receive(:create_hook).once
+    flexmock(Adhearsion::Events).should_receive(:register_callback).once.with([:asterisk, :before_call], Proc)
     initialize_rails_with_options :rails_root => '/path/somewhere', :environment => :development
   end
   
@@ -155,7 +155,7 @@ module RailsInitializerTestHelper
   end
   
   def stub_before_call_hook!
-    flexstub(Adhearsion::Hooks::BeforeCall).should_receive :create_hook
+    flexstub(Adhearsion::Events.framework_theatre).should_receive(:register_namespace_name).with([:asterisk, :before_call]).and_return
   end
   
 end

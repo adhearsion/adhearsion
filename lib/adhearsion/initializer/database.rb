@@ -23,7 +23,7 @@ module Adhearsion
         private
 
         def create_call_hook_for_connection_cleanup
-          Hooks::BeforeCall.create_hook do
+          Events.register_callback([:asterisk, :before_call]) do
             ActiveRecord::Base.verify_active_connections!
           end
         end

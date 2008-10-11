@@ -1,5 +1,17 @@
 module Adhearsion
   
+  class << self
+    
+    ##
+    # Shuts down the framework.
+    #
+    def self.shutdown!
+      ahn_log "Shutting down gracefully at #{Time.now}."
+      Events.stop!
+      exit
+    end    
+    
+  end
   class PathString < String
     attr_accessor :component_path, :dialplan_path, :log_path
     
@@ -68,8 +80,8 @@ module Adhearsion
     attr_reader :path, :daemon, :pid_file, :log_file, :ahn_app_log_directory
     
     DEFAULT_FRAMEWORK_EVENT_NAMESPACES = %w[
-      /framework/after_initialized
-      /framework/shutdown
+      /after_initialized
+      /shutdown
     ]
     
     # Creation of pid_files
@@ -108,7 +120,7 @@ module Adhearsion
       ahn_log "Adhearsion initialized!"
       
       trigger_after_initialized_hooks
-      join_framework_threads
+      join_important_threads
       
       self
     end
@@ -122,7 +134,7 @@ module Adhearsion
         application_events_files.each do |file|
           Events.framework_theatre.load_events_file file
         end
-        Hooks::TearDown.create_hook do
+        Events.register_callback(:shutdown) do
           ahn_log.events "Performing a graceful stop of events subsystem"
           Events.framework_theatre.graceful_stop!
         end
@@ -159,7 +171,7 @@ module Adhearsion
           file.puts Process.pid
         end
         
-        Hooks::TearDown.create_hook do
+        Events.register_callback :shutdown do
           File.delete(pid_file) if File.exists?(pid_file)
         end
       end
@@ -193,7 +205,13 @@ module Adhearsion
     end
     
     def catch_termination_signal
-      Hooks::TearDown.catch_termination_signals
+      %w'INT TERM'.each do |process_signal|
+        trap process_signal do
+          ahn_log "Shutting down gracefully at #{Time.now}."
+          Events.trigger :shutdown
+          exit
+        end
+      end
     end
     
     def load_all_init_files
@@ -218,11 +236,26 @@ module Adhearsion
     end
     
     def trigger_after_initialized_hooks
-      Hooks::AfterInitialized.trigger_hooks
+      Events.trigger :after_initialized
     end
     
-    def join_framework_threads
-      Hooks::ThreadsJoinedAfterInitialized.trigger_hooks
+    ##
+    # This method will block Thread.main() until calling join() has returned for all Threads in IMPORTANT_THREADS.
+    # Note: IMPORTANT_THREADS won't always contain Thread instances. It simply requires the objects respond to join().
+    #
+    def join_important_threads
+      # Note: we're using this ugly accumulator to ensure that all threads have ended since IMPORTANT_THREADS will almost
+      # certainly change sizes after this method is called.
+      index = 0
+      until index == IMPORTANT_THREADS.size
+        begin
+          IMPORTANT_THREADS[index].join
+        rescue => e
+          ahn_log.error "Error after join()ing Thread #{thread.inspect}. #{e.message}"
+        ensure
+          index = index + 1
+        end
+      end
     end
     
     def bootstrap_rc

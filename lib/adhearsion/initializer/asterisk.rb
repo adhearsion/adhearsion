@@ -8,7 +8,7 @@ module Adhearsion
       class << self
         
         def start
-          self.config     = Adhearsion::AHN_CONFIG.asterisk
+          self.config     = AHN_CONFIG.asterisk
           self.agi_server = initialize_agi
           self.ami_client = initialize_ami if config.ami_enabled?
           join_server_thread_after_initialized
@@ -22,14 +22,14 @@ module Adhearsion
         private
 
         def initialize_agi
-          Adhearsion::VoIP::Asterisk::AGI::Server.new :host => config.listening_host,
+          VoIP::Asterisk::AGI::Server.new :host => config.listening_host,
                                                       :port => config.listening_port
         end
         
         def initialize_ami
           options = ami_options
           start_ami_after_initialized
-          Adhearsion::VoIP::Asterisk::AMI.new options[:username], options[:password],
+          VoIP::Asterisk::AMI.new options[:username], options[:password],
                                               options[:host], :port => options[:port],
                                               :events => options[:events]
         end
@@ -42,14 +42,12 @@ module Adhearsion
         end
         
         def join_server_thread_after_initialized
-          Adhearsion::Hooks::AfterInitialized.create_hook { agi_server.start }
-          Adhearsion::Hooks::ThreadsJoinedAfterInitialized.create_hook { agi_server.join }
+          Events.register_callback(:after_initialized) { agi_server.start }
+          IMPORTANT_THREADS << agi_server
         end
         
         def start_ami_after_initialized
-          Adhearsion::Hooks::AfterInitialized.create_hook do
-            ami_client.connect!
-          end
+          Events.register_callback(:after_initialized) { ami_client.connect! }
         end
 
       end

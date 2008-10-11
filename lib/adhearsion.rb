@@ -12,7 +12,6 @@ require 'adhearsion/voip/dial_plan'
 require 'adhearsion/voip/asterisk/special_dial_plan_managers'
 require 'adhearsion/core_extensions/all'
 require 'adhearsion/blank_slate'
-require 'adhearsion/hooks'
 require 'adhearsion/events_support'
 require 'adhearsion/logging'
 require 'adhearsion/initializer/configuration'
@@ -27,6 +26,11 @@ require 'adhearsion/voip/call_routing'
 module Adhearsion
   # Sets up the Gem require path.
   AHN_INSTALL_DIR = File.expand_path(File.dirname(__FILE__) + "/..")
-  CONFIG = {}
   AHN_CONFIG = Configuration.new
+  
+  ##
+  # This Array holds all the Threads whose life matters. Adhearsion will not exit until all of these have died.
+  #
+  IMPORTANT_THREADS = []
+  
 end

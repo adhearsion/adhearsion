@@ -58,7 +58,6 @@ module InitializerStubs
   UNWANTED_BEHAVIOR = {
     Adhearsion::Initializer           => [:initialize_log_file, :switch_to_root_directory, :daemonize!, :load],
     Adhearsion::Initializer.metaclass => { :get_rules_from => DEFAULT_AHNRC_DATA_STRUCTURE },
-    Adhearsion::Hooks::AfterInitialized.metaclass => [:create_hook, :trigger_hooks]
   } unless defined? UNWANTED_BEHAVIOR
   
   def stub_behavior_for_initializer_with_no_path_changing_behavior

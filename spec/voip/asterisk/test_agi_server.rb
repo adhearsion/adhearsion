@@ -47,10 +47,10 @@ context "The AGI server's serve() method" do
   end
   
   test 'calling the serve() method invokes any BeforeCall hooks' do
-    flexmock(Adhearsion::Hooks::BeforeCall).should_receive(:trigger_hooks).once.and_throw :before_call_hooks_executed
-    assert_throws :before_call_hooks_executed do
-      server.serve nil
-    end
+    has_executed = false
+    Adhearsion::Events.register_callback([:asterisk, :before_call]) { has_executed = true }
+    server.serve nil
+    has_executed.should.equal(true)
   end
   
   test 'should execute the OnHungupCall hooks when a HungupExtensionCallException is raised' do
@@ -60,7 +60,7 @@ context "The AGI server's serve() method" do
     stub_confirmation_manager!
     flexstub(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
     flexmock(Adhearsion::DialPlan::Manager).should_receive(:handle).once.and_raise Adhearsion::HungupExtensionCallException.new(mock_env)
-    flexmock(Adhearsion::Hooks::OnHungupCall).should_receive(:trigger_hooks).once.with(mock_env).and_throw :hungup_call
+    flexmock(Adhearsion::Events).should_receive(:trigger).once.with([:asterisk, :call_hangup], mock_env).and_throw :hungup_call
     
     the_following_code { server.serve nil }.should.throw :hungup_call
   end
@@ -73,7 +73,7 @@ context "The AGI server's serve() method" do
     
     flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
     flexmock(Adhearsion::DialPlan::Manager).should_receive(:handle).once.and_raise Adhearsion::FailedExtensionCallException.new(mock_env)
-    flexmock(Adhearsion::Hooks::OnFailedCall).should_receive(:trigger_hooks).once.with(mock_env).and_throw :failed_call
+    flexmock(Adhearsion::Events).should_receive(:trigger).once.with([:asterisk, :failed_call], mock_env).and_throw :failed_call
     the_following_code { server.serve nil }.should.throw :failed_call
   end
   
@@ -443,7 +443,7 @@ agi_accountcode:
   
   module AgiServerTestHelper
     def stub_before_call_hooks!
-      flexstub(Adhearsion::Hooks::BeforeCall).should_receive :trigger_hooks
+      flexstub(Adhearsion::Events).should_receive(:trigger).with([:asterisk, :before_call], Proc).and_return
     end
     
     def stub_confirmation_manager!
