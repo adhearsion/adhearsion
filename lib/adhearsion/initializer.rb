@@ -105,6 +105,7 @@ module Adhearsion
     
     def start
       self.class.ahn_root = path
+      
       resolve_pid_file_path
       resolve_log_file_path
       switch_to_root_directory
@@ -126,73 +127,8 @@ module Adhearsion
       self
     end
     
-    def init_default_event_namespaces
-      DEFAULT_FRAMEWORK_EVENT_NAMESPACES.each do |namespace|
-        Events.framework_theatre.register_namespace_name namespace
-      end
-    end
-    
-    def init_events
-      application_events_files = AHN_CONFIG.files_from_setting("paths", "events")
-      if application_events_files.any?
-        application_events_files.each do |file|
-          Events.framework_theatre.load_events_file file
-        end
-        Events.register_callback(:shutdown) do
-          ahn_log.events "Performing a graceful stop of events subsystem"
-          Events.framework_theatre.graceful_stop!
-        end
-        Events.framework_theatre.start!
-      else
-        ahn_log.events.warn 'No entries in the "events" section of .ahnrc. Skipping its initialization.'
-      end
-    rescue LoadError
-      ahn_log.events.fatal 'Cannot load dependent library "theatre"! See http://github.com/jicksta/theatre'
-    rescue NameError
-      ahn_log.events.warn 'No "events" section in .ahnrc. Skipping its initialization.'
-    end
-    
-    def initialize_log_file
-      Dir.mkdir(ahn_app_log_directory) unless File.directory? ahn_app_log_directory
-      file_logger = Log4r::FileOutputter.new("Main Adhearsion log file", :filename => log_file, :trunc => false)
-      
-      if should_daemonize?
-        Logging::AdhearsionLogger.outputters  = file_logger
-      else
-        Logging::AdhearsionLogger.outputters << file_logger
-      end
-      Logging::DefaultAdhearsionLogger.redefine_outputters
-    end
-    
-    def resolve_log_file_path      
-      @ahn_app_log_directory = AHN_ROOT + '/log'
-      @log_file = File.expand_path(ahn_app_log_directory + "/adhearsion.log")
-    end
-    
-    def create_pid_file(file = pid_file)
-      if file
-        File.open pid_file, 'w' do |file|
-          file.puts Process.pid
-        end
-        
-        Events.register_callback :shutdown do
-          File.delete(pid_file) if File.exists?(pid_file)
-        end
-      end
-    end
-    
-    def init_modules
-      require 'adhearsion/initializer/database.rb'
-      require 'adhearsion/initializer/asterisk.rb'
-      require 'adhearsion/initializer/drb.rb'
-      require 'adhearsion/initializer/rails.rb'
-      # require 'adhearsion/initializer/freeswitch.rb'
-      
-      DatabaseInitializer.start if AHN_CONFIG.database_enabled?
-      AsteriskInitializer.start if AHN_CONFIG.asterisk_enabled?
-      DrbInitializer.start      if AHN_CONFIG.drb_enabled?
-      RailsInitializer.start    if AHN_CONFIG.rails_enabled?
-      # FreeswitchInitializer.start if AHN_CONFIG.freeswitch_enabled?
+    def default_pid_path
+      File.join AHN_ROOT, 'adhearsion.pid'
     end
     
     def resolve_pid_file_path
@@ -202,6 +138,11 @@ module Adhearsion
       # FIXME @pid_file = @daemon? Assignment or equality? I'm assuming equality.
       else @pid_file = @daemon ? default_pid_path : nil
       end
+    end
+    
+    def resolve_log_file_path      
+      @ahn_app_log_directory = AHN_ROOT + '/log'
+      @log_file = File.expand_path(ahn_app_log_directory + "/adhearsion.log")
     end
     
     def switch_to_root_directory
@@ -214,50 +155,6 @@ module Adhearsion
           ahn_log "Shutting down gracefully at #{Time.now}."
           Events.trigger :shutdown
           exit
-        end
-      end
-    end
-    
-    def load_all_init_files
-      init_files_from_rc = AHN_CONFIG.files_from_setting("paths", "init").map { |file| File.expand_path(file) }
-      already_loaded_init_files = Array(@loaded_init_files).map { |file| File.expand_path(file) }
-      (init_files_from_rc - already_loaded_init_files).each { |init| load init }
-    end
-    
-    def should_daemonize?
-      @daemon || ENV['DAEMON']
-    end
-    
-    def daemonize!
-      ahn_log "Daemonizing now! Creating #{pid_file}."
-      extend Adhearsion::CustomDaemonizer
-      daemonize log_file
-    end
-    
-    def load_components
-      ComponentManager.load
-      ComponentManager.start
-    end
-    
-    def trigger_after_initialized_hooks
-      Events.trigger_immediately :after_initialized
-    end
-    
-    ##
-    # This method will block Thread.main() until calling join() has returned for all Threads in IMPORTANT_THREADS.
-    # Note: IMPORTANT_THREADS won't always contain Thread instances. It simply requires the objects respond to join().
-    #
-    def join_important_threads
-      # Note: we're using this ugly accumulator to ensure that all threads have ended since IMPORTANT_THREADS will almost
-      # certainly change sizes after this method is called.
-      index = 0
-      until index == IMPORTANT_THREADS.size
-        begin
-          IMPORTANT_THREADS[index].join
-        rescue => e
-          ahn_log.error "Error after join()ing Thread #{thread.inspect}. #{e.message}"
-        ensure
-          index = index + 1
         end
       end
     end
@@ -291,8 +188,112 @@ module Adhearsion
       end
     end
     
-    def default_pid_path
-      File.join AHN_ROOT, 'adhearsion.pid'
+    def load_all_init_files
+      init_files_from_rc = AHN_CONFIG.files_from_setting("paths", "init").map { |file| File.expand_path(file) }
+      already_loaded_init_files = Array(@loaded_init_files).map { |file| File.expand_path(file) }
+      (init_files_from_rc - already_loaded_init_files).each { |init| load init }
+    end
+    
+    def init_default_event_namespaces
+      DEFAULT_FRAMEWORK_EVENT_NAMESPACES.each do |namespace|
+        Events.framework_theatre.register_namespace_name namespace
+      end
+    end
+    
+    def init_modules
+      require 'adhearsion/initializer/database.rb'
+      require 'adhearsion/initializer/asterisk.rb'
+      require 'adhearsion/initializer/drb.rb'
+      require 'adhearsion/initializer/rails.rb'
+      # require 'adhearsion/initializer/freeswitch.rb'
+      
+      DatabaseInitializer.start if AHN_CONFIG.database_enabled?
+      AsteriskInitializer.start if AHN_CONFIG.asterisk_enabled?
+      DrbInitializer.start      if AHN_CONFIG.drb_enabled?
+      RailsInitializer.start    if AHN_CONFIG.rails_enabled?
+      # FreeswitchInitializer.start if AHN_CONFIG.freeswitch_enabled?
+    end
+    
+    def init_events
+      application_events_files = AHN_CONFIG.files_from_setting("paths", "events")
+      if application_events_files.any?
+        application_events_files.each do |file|
+          Events.framework_theatre.load_events_file file
+        end
+        Events.register_callback(:shutdown) do
+          ahn_log.events "Performing a graceful stop of events subsystem"
+          Events.framework_theatre.graceful_stop!
+        end
+        Events.framework_theatre.start!
+      else
+        ahn_log.events.warn 'No entries in the "events" section of .ahnrc. Skipping its initialization.'
+      end
+    rescue LoadError
+      ahn_log.events.fatal 'Cannot load dependent library "theatre"! See http://github.com/jicksta/theatre'
+    rescue NameError
+      ahn_log.events.warn 'No "events" section in .ahnrc. Skipping its initialization.'
+    end
+    
+    def should_daemonize?
+      @daemon || ENV['DAEMON']
+    end
+    
+    def daemonize!
+      ahn_log "Daemonizing now! Creating #{pid_file}."
+      extend Adhearsion::CustomDaemonizer
+      daemonize log_file
+    end
+    
+    def initialize_log_file
+      Dir.mkdir(ahn_app_log_directory) unless File.directory? ahn_app_log_directory
+      file_logger = Log4r::FileOutputter.new("Main Adhearsion log file", :filename => log_file, :trunc => false)
+      
+      if should_daemonize?
+        Logging::AdhearsionLogger.outputters  = file_logger
+      else
+        Logging::AdhearsionLogger.outputters << file_logger
+      end
+      Logging::DefaultAdhearsionLogger.redefine_outputters
+    end
+    
+    def create_pid_file(file = pid_file)
+      if file
+        File.open pid_file, 'w' do |file|
+          file.puts Process.pid
+        end
+        
+        Events.register_callback :shutdown do
+          File.delete(pid_file) if File.exists?(pid_file)
+        end
+      end
+    end
+    
+    def load_components
+      ComponentManager.load
+      ComponentManager.start
+    end
+    
+    def trigger_after_initialized_hooks
+      Events.trigger_immediately :after_initialized
+    end
+    
+    ##
+    # This method will block Thread.main() until calling join() has returned for all Threads in IMPORTANT_THREADS.
+    # Note: IMPORTANT_THREADS won't always contain Thread instances. It simply requires the objects respond to join().
+    #
+    def join_important_threads
+      # Note: we're using this ugly accumulator to ensure that all threads have ended since IMPORTANT_THREADS will almost
+      # certainly change sizes after this method is called.
+      index = 0
+      until index == IMPORTANT_THREADS.size
+        begin
+          IMPORTANT_THREADS[index].join
+        rescue => e
+          ahn_log.error "Error after join()ing Thread #{thread.inspect}. #{e.message}"
+        ensure
+          index = index + 1
+        end
+      end
     end
     
     class InitializationFailedError < Exception; end
