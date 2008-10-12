@@ -98,6 +98,8 @@ module InitializerStubs
   end
 end
 
+RAGEL_FILES = %W[lib/adhearsion/voip/asterisk/new-ami/ami.rl]
+
 Adhearsion::Initializer.ahn_root = File.dirname(__FILE__) + '/fixtures'
 require 'spec/silence' unless ENV['SHOW_DISABLED']
 

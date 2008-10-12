@@ -1,5 +1,5 @@
-require File.join(File.dirname(__FILE__), "spec_helper")
-require File.join(File.dirname(__FILE__), *%w[.. ami.rb])
+require File.join(File.dirname(__FILE__), "ami_helper")
+require 'adhearsion/voip/asterisk/new-ami/ami'
 
 # MUST ALWAYS SEPARATE THE COLONS WITH WHITESPAC
 # TEST THAT IT CAN PARSE EVENTS

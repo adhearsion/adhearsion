@@ -1,5 +1,5 @@
-require File.join(File.dirname(__FILE__), "spec_helper")
-require File.join(File.dirname(__FILE__), *%w[.. event_handler.rb])
+require File.join(File.dirname(__FILE__), "ami_helper")
+require 'adhearsion/voip/asterisk/new-ami/event_handler'
 
 context "Registration of events" do
   

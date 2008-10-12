@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + "/spec_helper"
+require File.dirname(__FILE__) + "/ami_helper"
 
 context "The fixture searching logic" do
   it "should properly travel a path through the YAML and return a String" do
