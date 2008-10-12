@@ -1,3 +1,4 @@
+# -*- ruby -*-
 require 'rubygems'
 require 'active_support'
 
@@ -12,7 +13,7 @@ class AmiStreamParser
 
   %%{ #%#
   	machine ami_protocol_parser;
-        
+    
     action before_prompt { before_prompt }
     action after_prompt  { after_prompt  }
     action open_version  { open_version }
@@ -50,7 +51,6 @@ class AmiStreamParser
     action start_capturing_follows_text { start_capturing_follows_text }
     action end_capturing_follows_text   {
       end_capturing_follows_text;
-      fgoto main;
     }
     
     action begin_capturing_event_name { begin_capturing_event_name }
@@ -90,7 +90,7 @@ class AmiStreamParser
   end
   
   def <<(new_data)
-    p [:starting, {:current_pointer => @current_pointer, :data => @data, :ending => @data_ending_pointer}]
+    p [:starting, {:current_pointer => @current_pointer, :data_before => @data, :ending => @data_ending_pointer}]
     if new_data.size + @data.size > BUFFER_SIZE
       @data.slice! 0...new_data.size
       @current_pointer = @data.size
@@ -201,11 +201,15 @@ class AmiStreamParser
   end
   
   def start_ignoring_syntax_error
+    puts "\nSYNTAX ERROR: #{@current_pointer} in \n" + "*" * 30 + "\n" +@data.inspect + "\n" + "*" * 30
     @current_syntax_error_start = @current_pointer + 1 # Adding 1 since the pointer is still set to the last successful match
   end
   
   def end_ignoring_syntax_error
-    syntax_error! @data[@current_syntax_error_start...@current_pointer - 3] # Subtracting 3 for "\r\n\r" which separates a stanza
+    # Subtracting 3 from @current_pointer below for "\r\n\r" which separates a stanza
+    offending_data = @data[@current_syntax_error_start...@current_pointer - 3]
+    puts "DONE Ignoring syntax error at #{@current_pointer} in \n" + "&" * 30 + "\n" + offending_data.inspect + "\n"+"&"*30
+    syntax_error! offending_data
     @current_syntax_error_start = nil
   end
   

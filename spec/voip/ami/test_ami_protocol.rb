@@ -31,9 +31,10 @@ context "Reading of an action" do
   
   include AmiProtocolTestHelper
   
-  attr_reader :parser, :incomplete_packet
+  attr_reader :parser
   before :each do
     @parser = new_parser
+    flexmock(@parser).should_receive(:syntax_error!).never
   end
   
   it "should handle a 'Response: Follows' action properly" do
@@ -52,17 +53,32 @@ ActionID: 123123\r
 RESPONSE
     
     parser.meta_def(:message_received) do |message|
-      puts" O PLEEZE GOD"
       message.text.should == multi_line_response_body
       throw :got_here!
     end
     
     # flexmock(parser).should_receive(:message_received).once
     # the_following_code {
-    puts "\n\n\n\nI DO IT NOW\n\n\n\n"
       parser << multi_line_response
-    puts "\n\n\n\nI DONE DONE IT\n\n\n\n"
     # }.should.throw :got_here!
+  end
+  
+  it "should work with a pong containing an Action ID" do
+    pong = fixture("pong/with_action_id")
+    parser << (pong * 2)
+    parser.send(:instance_variable_get, :@current_pointer).should.equal(pong.size * 2)
+  end
+  
+  it "should work with a pong not containing an action ID" do  
+    pong = fixture("pong/without_action_id")
+    parser << (pong * 2)
+    parser.send(:instance_variable_get, :@current_pointer).should.equal(pong.size * 2)
+  end
+  
+  it "should work with a pong not containing arbitrary key/value pairs" do  
+    pong = fixture("pong/with_extra_keys")
+    parser << (pong * 2)
+    parser.send(:instance_variable_get, :@current_pointer).should.equal(pong.size * 2)
   end
   
   it "should resume when given an arbirary amount of data" do
@@ -87,13 +103,39 @@ RESPONSE
     parser.send(:instance_variable_get, :@data_ending_pointer).should.equal error_message.size * 2
   end
   
+  it "should read a properly formatted stanza properly" do
+    10.times do
+      puts "PROPERLY FORMATTED STANZA START"
+    end
+    times = 3
+    flexmock(parser).should_receive(:message_received).times(times).and_return nil
+    data = fixture("login/standard/success")
+    data *= times
+    parser << data
+  end
+  
+end
+
+context "Syntax errors" do
+  
+  include AmiProtocolTestHelper
+  
+  attr_reader :parser
+  before :each do
+    @parser = new_parser
+  end
+  
   it "should recover from unexpected protocol irregularities" do
+    10.times { puts "STARTING ERROR RECOVERY" }
     fuzz = "!IJ@MHY!&@B*!B @ ! @^! @ !@ !\r!@ ! @ !@ ! !!m, \n\\n\n"
     flexmock(parser).should_receive(:ami_error!).once.and_return nil
     flexmock(parser).should_receive(:message_received).once.and_return nil
     flexmock(parser).should_receive(:syntax_error!).once.with(fuzz)
-    parser << fixture('errors/missing_action')
-    parser << fuzz + "\r\n\r\n" + fixture('login/standard/success')
+    data_simulation = fixture('errors/missing_action') + fuzz + "\r\n\r\n" + fixture('login/standard/success')
+    puts
+    puts data_simulation.inspect
+    puts
+    parser << data_simulation
   end
   
 end
