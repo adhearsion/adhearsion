@@ -4,6 +4,7 @@ require 'stringio'
 require 'rubygems'
 require 'active_support'
 require 'test/spec'
+require 'flexmock'
 require 'flexmock/test_unit'
 require File.dirname(__FILE__) + "/../generate_code"
 

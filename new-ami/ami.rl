@@ -12,13 +12,7 @@ class AmiStreamParser
 
   %%{ #%#
   	machine ami_protocol_parser;
-    
-  	carriage_return = "\r";
-  	line_feed       = "\n";
-  	crlf            = carriage_return line_feed;
-  	stanza_break    = crlf crlf;
-    rest_of_line    = (any* -- crlf);
-    
+        
     action before_prompt { before_prompt }
     action after_prompt  { after_prompt  }
     action open_version  { open_version }
@@ -35,7 +29,9 @@ class AmiStreamParser
     
     action before_action_id { before_action_id }
     action after_action_id  { after_action_id  }
-    
+
+    action message_received { message_received @current_message }
+
     action start_ignoring_syntax_error {
       fhold;
       start_ignoring_syntax_error;
@@ -65,41 +61,7 @@ class AmiStreamParser
       fgoto response_follows;
     }
     
-  	Prompt = "Asterisk Call Manager/" digit+ >open_version "." digit+ %close_version crlf;
-  	KeyValuePair = (alnum | print)+ >before_key %after_key ": " rest_of_line >before_value %after_value crlf;
-  	
-  	action message_received { message_received @current_message }
-  	
-    ActionID = "ActionID: "i rest_of_line >before_action_id %after_action_id crlf;
-    
-    FollowsDelimiter = crlf "--END COMMAND--";
-    
-		Response = "Response: "i;
-		Success	 = Response "Success"i %init_success crlf;
-    Pong     = Response "Pong"i %init_success crlf;
-    Error    = Response "Error"i crlf "Message: "i @error_reason_start rest_of_line crlf crlf @error_reason_end;
-    Follows  = Response "Follows" crlf @init_response_follows;
-    Event    = "Event: "i %begin_capturing_event_name rest_of_line %init_event crlf @{ fgoto success; };
-    
-    # For "Response: Follows"
-    FollowsBody = (any* -- FollowsDelimiter) >start_capturing_follows_text FollowsDelimiter @end_capturing_follows_text crlf crlf;
-    
-    # Events		= Response "Events " ("On" | "Off") crlf;
-    
-    # Can't use a Ragel Scanner because Scanners don't handle errors to my knowledge.
-  	main := Prompt? ((((Success | Pong | Event) crlf @message_received) | (Error) | (Follows crlf))) $err(start_ignoring_syntax_error);
-    
-    success := (ActionID | KeyValuePair)+ crlf @message_received;
-    
-    # Skip over everything until we get back to crlf{2}
-    error_recovery := (any* -- stanza_break) stanza_break @end_ignoring_syntax_error; 
-    
-    # For the "Response: Follows" protocol abnormality. What happens if there's a protocol irregularity in this state???
-    response_follows := |*
-      ActionID;
-      KeyValuePair;
-      FollowsBody;
-    *|;
+    include ami_protocol_parser_common "common.rl";
     
   }%% # %
 
@@ -116,10 +78,11 @@ class AmiStreamParser
       variable p @current_pointer;
 			variable pe @data_ending_pointer;
 			variable cs @current_state;
-			variable tokstart @token_start;
+			variable ts @token_start;
+			variable te @token_end;
 			variable stack @stack;
-			variable tokend @token_end;
 			variable act @ragel_act;
+			variable eof @eof;
 			
 			write data nofinal;
       write init;
