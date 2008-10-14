@@ -12,8 +12,8 @@ module Adhearsion
             end
             
             def serve(io)
-              Events.trigger_immediately [:asterisk, :before_call]
-          	  call = Adhearsion.receive_call_from(io)
+              call = Adhearsion.receive_call_from(io)
+              Events.trigger_immediately [:asterisk, :before_call], call
           	  ahn_log.agi "Handling call with variables #{call.variables.inspect}"
           	  
           	  return DialPlan::ConfirmationManager.handle(call) if DialPlan::ConfirmationManager.confirmation_call?(call)
