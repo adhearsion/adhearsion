@@ -166,6 +166,7 @@ module Adhearsion
           
           def build(dial_plan_as_string)
             builder = new
+            # TODO: The SyntaxError for dialplans is gobbled by this line FOR SOME WEIRD ASS REASON
             builder.instance_eval(dial_plan_as_string)
             builder.contexts
           end

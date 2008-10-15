@@ -69,6 +69,10 @@ module Adhearsion
       end
     end
     
+    def to_a
+      calls.values
+    end
+    
     private
       attr_reader :semaphore, :calls
       
