@@ -4,6 +4,7 @@ require 'adhearsion/tasks/database'
 require 'adhearsion/tasks/testing'
 require 'adhearsion/tasks/generating'
 require 'adhearsion/tasks/lint'
+require 'adhearsion/tasks/deprecations'
 
 namespace :adhearsion do
   desc "Dump useful information about this application's adhearsion environment"
