@@ -4,6 +4,15 @@ require 'theatre'
 module Adhearsion
   module Events
     
+    DEFAULT_FRAMEWORK_EVENT_NAMESPACES = %w[
+      /after_initialized
+      /shutdown
+      /asterisk/before_call
+      /asterisk/after_call
+      /asterisk/hungup_call
+      /asterisk/failed_call
+    ]
+    
     class << self
       
       def framework_theatre
@@ -25,6 +34,9 @@ module Adhearsion
       ensure
         # TODO: Extract number of threads to use from AHN_CONFIG
         @@framework_theatre = Theatre::Theatre.new
+        DEFAULT_FRAMEWORK_EVENT_NAMESPACES.each do |namespace|
+          @@framework_theatre.register_namespace_name namespace
+        end
         return @@framework_theatre
       end
       

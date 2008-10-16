@@ -31,6 +31,4 @@ paths:
 
   events: events.rb
 
-  models:
-    directory: models
-    pattern: "*.rb"
+  models: models/*.rb
