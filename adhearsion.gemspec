@@ -1,26 +1,23 @@
 ADHEARSION_FILES = %w{
   adhearsion.gemspec
-  LICENSE
-  README.txt
-  Rakefile
-  app_generators/ahn/USAGE
   app_generators/ahn/ahn_generator.rb
   app_generators/ahn/templates/.ahnrc
-  app_generators/ahn/templates/README
-  app_generators/ahn/templates/Rakefile
   app_generators/ahn/templates/components/simon_game/configuration.rb
   app_generators/ahn/templates/components/simon_game/lib/simon_game.rb
   app_generators/ahn/templates/components/simon_game/test/test_helper.rb
   app_generators/ahn/templates/components/simon_game/test/test_simon_game.rb
   app_generators/ahn/templates/config/startup.rb
   app_generators/ahn/templates/dialplan.rb
+  app_generators/ahn/templates/Rakefile
+  app_generators/ahn/templates/README
+  app_generators/ahn/USAGE
   bin/ahn
   bin/ahnctl
   bin/jahn
+  EVENTS
   lib/adhearsion.rb
   lib/adhearsion/blank_slate.rb
   lib/adhearsion/cli.rb
-  lib/adhearsion/events_support.rb
   lib/adhearsion/component_manager.rb
   lib/adhearsion/core_extensions/all.rb
   lib/adhearsion/core_extensions/array.rb
@@ -30,6 +27,7 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/core_extensions/metaprogramming.rb
   lib/adhearsion/core_extensions/numeric.rb
   lib/adhearsion/core_extensions/proc.rb
+  lib/adhearsion/core_extensions/pseudo_guid.rb
   lib/adhearsion/core_extensions/publishable.rb
   lib/adhearsion/core_extensions/relationship_properties.rb
   lib/adhearsion/core_extensions/string.rb
@@ -43,7 +41,7 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/distributed/gateways/xmlrpc_gateway.rb
   lib/adhearsion/distributed/peer_finder.rb
   lib/adhearsion/distributed/remote_cli.rb
-  lib/adhearsion/hooks.rb
+  lib/adhearsion/events_support.rb
   lib/adhearsion/host_definitions.rb
   lib/adhearsion/initializer.rb
   lib/adhearsion/initializer/asterisk.rb
@@ -55,6 +53,7 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/logging.rb
   lib/adhearsion/tasks.rb
   lib/adhearsion/tasks/database.rb
+  lib/adhearsion/tasks/deprecations.rb
   lib/adhearsion/tasks/generating.rb
   lib/adhearsion/tasks/lint.rb
   lib/adhearsion/tasks/testing.rb
@@ -95,6 +94,9 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/voip/menu_state_machine/matchers.rb
   lib/adhearsion/voip/menu_state_machine/menu_builder.rb
   lib/adhearsion/voip/menu_state_machine/menu_class.rb
+  LICENSE
+  Rakefile
+  README.txt
 }
 
 Gem::Specification.new do |s|
@@ -123,13 +125,16 @@ Gem::Specification.new do |s|
     s.specification_version = 2
 
     if current_version >= 3 then
+      s.add_runtime_dependency("theatre", [">= 0.8.0"])
       s.add_runtime_dependency("rubigen", [">= 1.0.6"])
       s.add_runtime_dependency("log4r", [">= 1.0.5"])
     else
+      s.add_dependency("theatre", [">= 0.8.0"])
       s.add_dependency("rubigen", [">= 1.0.6"])
       s.add_dependency("log4r", [">= 1.0.5"])
     end
   else
+    s.add_dependency("theatre", [">= 0.8.0"])
     s.add_dependency("rubigen", [">= 1.0.6"])
     s.add_dependency("log4r", [">= 1.0.5"])
   end

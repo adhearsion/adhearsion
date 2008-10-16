@@ -1,0 +1,10 @@
+# Below are a list of framework events:
+  
+- after_initialized
+- shutdown
+- asterisk:
+  - before_call
+  - failed_call
+  - call_hangup
+
+# Note: This file is valid YAML for programatic parsing.

@@ -1,5 +1,17 @@
 module Adhearsion
   
+  class << self
+    
+    ##
+    # Shuts down the framework.
+    #
+    def self.shutdown!
+      ahn_log "Shutting down gracefully at #{Time.now}."
+      Events.stop!
+      exit
+    end    
+    
+  end
   class PathString < String
     attr_accessor :component_path, :dialplan_path, :log_path
     
@@ -28,7 +40,8 @@ module Adhearsion
     end
     
     def dial_plan_named(name)
-      File.join(dialplan_path, name)
+      raise "DEPRECATED"
+      # File.join(dialplan_path, name)
     end
     
     private
@@ -66,11 +79,6 @@ module Adhearsion
   
     attr_reader :path, :daemon, :pid_file, :log_file, :ahn_app_log_directory
     
-    DEFAULT_FRAMEWORK_EVENT_NAMESPACES = %w[
-      /framework/after_initialized
-      /framework/shutdown
-    ]
-    
     # Creation of pid_files
     #
     #  - You may want to have Adhearsion create a process identification
@@ -92,6 +100,7 @@ module Adhearsion
     
     def start
       self.class.ahn_root = path
+      
       resolve_pid_file_path
       resolve_log_file_path
       switch_to_root_directory
@@ -99,71 +108,21 @@ module Adhearsion
       bootstrap_rc
       load_all_init_files
       init_modules
+      init_events
       daemonize! if should_daemonize?
       initialize_log_file
       create_pid_file if pid_file
       load_components
-      # init_events
       ahn_log "Adhearsion initialized!"
       
       trigger_after_initialized_hooks
-      join_framework_threads
+      join_important_threads
       
       self
     end
     
-    def init_events
-        # 
-        # framework = 
-        # DEFAULT_FRAMEWORK_EVENT_NAMESPACES.each do |namespace|
-        #   .register_callback_name framework_event_callback_name
-        # end
-        ############
-        # else #...
-        # ahn_log.events.warn 'No "events" section in .ahnrc. Skipping its initialization.'
-    end
-    
-    def initialize_log_file
-      Dir.mkdir(ahn_app_log_directory) unless File.directory? ahn_app_log_directory
-      file_logger = Log4r::FileOutputter.new("Main Adhearsion log file", :filename => log_file, :trunc => false)
-      
-      if should_daemonize?
-        Logging::AdhearsionLogger.outputters  = file_logger
-      else
-        Logging::AdhearsionLogger.outputters << file_logger
-      end
-      Logging::DefaultAdhearsionLogger.redefine_outputters
-    end
-    
-    def resolve_log_file_path      
-      @ahn_app_log_directory = AHN_ROOT + '/log'
-      @log_file = File.expand_path(ahn_app_log_directory + "/adhearsion.log")
-    end
-    
-    def create_pid_file(file = pid_file)
-      if file
-        File.open pid_file, 'w' do |file|
-          file.puts Process.pid
-        end
-        
-        Hooks::TearDown.create_hook do
-          File.delete(pid_file) if File.exists?(pid_file)
-        end
-      end
-    end
-    
-    def init_modules
-      require 'adhearsion/initializer/database.rb'
-      require 'adhearsion/initializer/asterisk.rb'
-      require 'adhearsion/initializer/drb.rb'
-      require 'adhearsion/initializer/rails.rb'
-      # require 'adhearsion/initializer/freeswitch.rb'
-      
-      DatabaseInitializer.start if AHN_CONFIG.database_enabled?
-      AsteriskInitializer.start if AHN_CONFIG.asterisk_enabled?
-      DrbInitializer.start      if AHN_CONFIG.drb_enabled?
-      RailsInitializer.start    if AHN_CONFIG.rails_enabled?
-      # FreeswitchInitializer.start if AHN_CONFIG.freeswitch_enabled?
+    def default_pid_path
+      File.join AHN_ROOT, 'adhearsion.pid'
     end
     
     def resolve_pid_file_path
@@ -175,47 +134,79 @@ module Adhearsion
       end
     end
     
+    def resolve_log_file_path      
+      @ahn_app_log_directory = AHN_ROOT + '/log'
+      @log_file = File.expand_path(ahn_app_log_directory + "/adhearsion.log")
+    end
+    
     def switch_to_root_directory
       Dir.chdir AHN_ROOT
     end
     
     def catch_termination_signal
-      Hooks::TearDown.catch_termination_signals
+      %w'INT TERM'.each do |process_signal|
+        trap process_signal do
+          ahn_log "Shutting down gracefully at #{Time.now}."
+          Events.trigger :shutdown
+          exit
+        end
+      end
     end
     
-    def load_all_init_files
-      init_files_from_rc = AHN_CONFIG.files_from_setting("paths", "init").map { |file| File.expand_path(file) }
-      already_loaded_init_files = Array(@loaded_init_files).map { |file| File.expand_path(file) }
-      (init_files_from_rc - already_loaded_init_files).each { |init| load init }
-    end
-    
-    def should_daemonize?
-      @daemon || ENV['DAEMON']
-    end
-    
-    def daemonize!
-      ahn_log "Daemonizing now! Creating #{pid_file}."
-      extend Adhearsion::CustomDaemonizer
-      daemonize log_file
-    end
-    
-    def load_components
-      ComponentManager.load
-      ComponentManager.start
-    end
-    
-    def trigger_after_initialized_hooks
-      Hooks::AfterInitialized.trigger_hooks
-    end
-    
-    def join_framework_threads
-      Hooks::ThreadsJoinedAfterInitialized.trigger_hooks
-    end
-    
+    ##
+    # This step in the initialization process loads the .ahnrc in the given app folder. With the information in .ahnrc, we
+    # can continue the initialization knowing where certain files are specifically.
+    #
     def bootstrap_rc
       rules = self.class.get_rules_from AHN_ROOT
       
       AHN_CONFIG.ahnrc = rules
+      
+      # DEPRECATION: Check if the old paths format is being used. If so, abort and notify.
+      if rules.has_key?("paths") && rules["paths"].kind_of?(Hash)
+        paths = rules["paths"].each_pair do |key,value|
+          if value.kind_of?(Hash)
+            if value.has_key?("directory") || value.has_key?("pattern")
+              puts
+              puts *caller
+              puts
+                            
+              abort <<-WARNING
+Deprecation Warning
+-------------------
+The (hidden) .ahnrc file in this app is of an older format and needs to be fixed.
+
+There is a rake task to automatically fix it or you can do it manually. Note: it's
+best if you do it manually so you can retain the YAML comments in your .ahnrc file.
+  
+The rake task is called "deprecations:fix_ahnrc_path_format". 
+
+To do it manually, find all entries in the "paths" section of your ".ahnrc" file
+which look like the following:
+
+paths:
+  key_name_could_be_anything:
+    directory: some_folder
+    pattern: *.rb
+
+Note: the "models" section had this syntax before:
+
+models:
+  directory: models
+  pattern: "*.rb"
+
+The NEW syntax is as follows (using models as an example):
+
+models: models/*.rb
+
+This new format is much cleaner.
+
+Adhearsion will abort until you fix this. Sorry for the incovenience.
+              WARNING
+            end
+          end
+        end
+      end
       
       gems = rules['gems']
       if gems.kind_of?(Hash) && gems.any? && respond_to?(:gem)
@@ -237,8 +228,106 @@ module Adhearsion
       end
     end
     
-    def default_pid_path
-      File.join AHN_ROOT, 'adhearsion.pid'
+    def load_all_init_files
+      init_files_from_rc = AHN_CONFIG.files_from_setting("paths", "init").map { |file| File.expand_path(file) }
+      already_loaded_init_files = Array(@loaded_init_files).map { |file| File.expand_path(file) }
+      (init_files_from_rc - already_loaded_init_files).each { |init| load init }
+    end
+    
+    def init_modules
+      require 'adhearsion/initializer/database.rb'
+      require 'adhearsion/initializer/asterisk.rb'
+      require 'adhearsion/initializer/drb.rb'
+      require 'adhearsion/initializer/rails.rb'
+      # require 'adhearsion/initializer/freeswitch.rb'
+      
+      DatabaseInitializer.start if AHN_CONFIG.database_enabled?
+      AsteriskInitializer.start if AHN_CONFIG.asterisk_enabled?
+      DrbInitializer.start      if AHN_CONFIG.drb_enabled?
+      RailsInitializer.start    if AHN_CONFIG.rails_enabled?
+      # FreeswitchInitializer.start if AHN_CONFIG.freeswitch_enabled?
+    end
+    
+    def init_events
+      application_events_files = AHN_CONFIG.files_from_setting("paths", "events")
+      if application_events_files.any?
+        application_events_files.each do |file|
+          Events.framework_theatre.load_events_file file
+        end
+        Events.register_callback(:shutdown) do
+          ahn_log.events "Performing a graceful stop of events subsystem"
+          Events.framework_theatre.graceful_stop!
+        end
+        Events.framework_theatre.start!
+      else
+        ahn_log.events.warn 'No entries in the "events" section of .ahnrc. Skipping its initialization.'
+      end
+    rescue LoadError
+      ahn_log.events.fatal 'Cannot load dependent library "theatre"! See http://github.com/jicksta/theatre'
+    rescue NameError
+      ahn_log.events.warn 'No "events" section in .ahnrc. Skipping its initialization.'
+    end
+    
+    def should_daemonize?
+      @daemon || ENV['DAEMON']
+    end
+    
+    def daemonize!
+      ahn_log "Daemonizing now! Creating #{pid_file}."
+      extend Adhearsion::CustomDaemonizer
+      daemonize log_file
+    end
+    
+    def initialize_log_file
+      Dir.mkdir(ahn_app_log_directory) unless File.directory? ahn_app_log_directory
+      file_logger = Log4r::FileOutputter.new("Main Adhearsion log file", :filename => log_file, :trunc => false)
+      
+      if should_daemonize?
+        Logging::AdhearsionLogger.outputters  = file_logger
+      else
+        Logging::AdhearsionLogger.outputters << file_logger
+      end
+      Logging::DefaultAdhearsionLogger.redefine_outputters
+    end
+    
+    def create_pid_file(file = pid_file)
+      if file
+        File.open pid_file, 'w' do |file|
+          file.puts Process.pid
+        end
+        
+        Events.register_callback :shutdown do
+          File.delete(pid_file) if File.exists?(pid_file)
+        end
+      end
+    end
+    
+    def load_components
+      ComponentManager.load
+      ComponentManager.start
+    end
+    
+    def trigger_after_initialized_hooks
+      Events.trigger_immediately :after_initialized
+    end
+    
+    ##
+    # This method will block Thread.main() until calling join() has returned for all Threads in IMPORTANT_THREADS.
+    # Note: IMPORTANT_THREADS won't always contain Thread instances. It simply requires the objects respond to join().
+    #
+    def join_important_threads
+      # Note: we're using this ugly accumulator to ensure that all threads have ended since IMPORTANT_THREADS will almost
+      # certainly change sizes after this method is called.
+      index = 0
+      until index == IMPORTANT_THREADS.size
+        begin
+          IMPORTANT_THREADS[index].join
+        rescue => e
+          ahn_log.error "Error after join()ing Thread #{thread.inspect}. #{e.message}"
+        ensure
+          index = index + 1
+        end
+      end
     end
     
     class InitializationFailedError < Exception; end

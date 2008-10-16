@@ -11,6 +11,10 @@ context "The AGI server's serve() method" do
     @server       = @server_class.new(:port,:host)
   end
   
+  before :each do
+    Adhearsion::Events.reinitialize_theatre!
+  end
+  
   test 'should instantiate a new Call with the IO object it receives' do
     stub_before_call_hooks!
     io_mock   = flexmock "Mock IO object that's passed to the serve() method"
@@ -46,21 +50,34 @@ context "The AGI server's serve() method" do
     }.should.throw :handled_call!
   end
   
-  test 'calling the serve() method invokes any BeforeCall hooks' do
-    flexmock(Adhearsion::Hooks::BeforeCall).should_receive(:trigger_hooks).once.and_throw :before_call_hooks_executed
-    assert_throws :before_call_hooks_executed do
-      server.serve nil
-    end
+  test 'calling the serve() method invokes the before_call event' do
+    mock_io   = flexmock "mock IO object given to AGIServer#serve"
+    mock_call = flexmock "mock Call"
+    flexmock(Adhearsion).should_receive(:receive_call_from).once.with(mock_io).and_return mock_call
+    has_executed = false
+    Adhearsion::Events.register_callback([:asterisk, :before_call]) { |call| 10.times { puts "WEE" }; has_executed = true }
+    server.serve mock_call
+    has_executed.should.equal(true)
   end
   
-  test 'should execute the OnHungupCall hooks when a HungupExtensionCallException is raised' do
+  test "the before_call event should receive the call object" do
+    mock_io   = flexmock "mock IO object given to AGIServer#serve"
+    mock_call = flexmock "mock Call"
+    flexmock(Adhearsion).should_receive(:receive_call_from).once.with(mock_io).and_return mock_call
+    has_executed = false
+    Adhearsion::Events.register_callback([:asterisk, :before_call]) { |call| mock_call.should.equal(call) }
+    server.serve mock_io
+    has_executed.should.equal true
+  end
+  
+  test 'should execute the call_hangup event when a HungupExtensionCallException is raised' do
     call_mock = flexmock 'a bogus call', :hungup_call? => true, :variables => {:extension => "h"}, :unique_identifier => "X"
     mock_env  = flexmock "A mock execution environment which gets passed along in the HungupExtensionCallException"
     
     stub_confirmation_manager!
     flexstub(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
     flexmock(Adhearsion::DialPlan::Manager).should_receive(:handle).once.and_raise Adhearsion::HungupExtensionCallException.new(mock_env)
-    flexmock(Adhearsion::Hooks::OnHungupCall).should_receive(:trigger_hooks).once.with(mock_env).and_throw :hungup_call
+    flexmock(Adhearsion::Events).should_receive(:trigger).once.with([:asterisk, :call_hangup], mock_env).and_throw :hungup_call
     
     the_following_code { server.serve nil }.should.throw :hungup_call
   end
@@ -73,7 +90,7 @@ context "The AGI server's serve() method" do
     
     flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
     flexmock(Adhearsion::DialPlan::Manager).should_receive(:handle).once.and_raise Adhearsion::FailedExtensionCallException.new(mock_env)
-    flexmock(Adhearsion::Hooks::OnFailedCall).should_receive(:trigger_hooks).once.with(mock_env).and_throw :failed_call
+    flexmock(Adhearsion::Events).should_receive(:trigger).once.with([:asterisk, :failed_call], mock_env).and_throw :failed_call
     the_following_code { server.serve nil }.should.throw :failed_call
   end
   
@@ -443,7 +460,7 @@ agi_accountcode:
   
   module AgiServerTestHelper
     def stub_before_call_hooks!
-      flexstub(Adhearsion::Hooks::BeforeCall).should_receive :trigger_hooks
+      flexstub(Adhearsion::Events).should_receive(:trigger).with([:asterisk, :before_call], Proc).and_return
     end
     
     def stub_confirmation_manager!
