@@ -26,7 +26,7 @@ module Adhearsion
               call.hangup!
             rescue FailedExtensionCallException => failed_call
               begin
-                ahn_log.agi "Received \"failed\" meta-call with :failed_reason => #{failed_call.call.failed_reason.inspect}. Executing OnFailedCall hooks."
+                ahn_log.agi "Received \"failed\" meta-call with :failed_reason => #{failed_call.call.failed_reason.inspect}. Executing Executing /asterisk/failed_call event callbacks."
                 Events.trigger [:asterisk, :failed_call], failed_call.call
                 call.hangup!
               rescue => e
@@ -34,7 +34,7 @@ module Adhearsion
               end
             rescue HungupExtensionCallException => hungup_call
               begin
-                ahn_log.agi "Received \"h\" meta-call. Executing OnHungupCall hooks."
+                ahn_log.agi "Received \"h\" meta-call. Executing /asterisk/call_hangup event callbacks."
                 Events.trigger [:asterisk, :call_hangup], hungup_call.call
                 call.hangup!
               rescue => e
