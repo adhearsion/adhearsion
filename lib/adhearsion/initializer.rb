@@ -79,11 +79,6 @@ module Adhearsion
   
     attr_reader :path, :daemon, :pid_file, :log_file, :ahn_app_log_directory
     
-    DEFAULT_FRAMEWORK_EVENT_NAMESPACES = %w[
-      /after_initialized
-      /shutdown
-    ]
-    
     # Creation of pid_files
     #
     #  - You may want to have Adhearsion create a process identification
@@ -112,7 +107,6 @@ module Adhearsion
       catch_termination_signal
       bootstrap_rc
       load_all_init_files
-      init_default_event_namespaces
       init_modules
       init_events
       daemonize! if should_daemonize?
@@ -168,6 +162,52 @@ module Adhearsion
       
       AHN_CONFIG.ahnrc = rules
       
+      # DEPRECATION: Check if the old paths format is being used. If so, abort and notify.
+      if rules.has_key?("paths") && rules["paths"].kind_of?(Hash)
+        paths = rules["paths"].each_pair do |key,value|
+          if value.kind_of?(Hash)
+            if value.has_key?("directory") || value.has_key?("pattern")
+              puts
+              puts *caller
+              puts
+                            
+              abort <<-WARNING
+Deprecation Warning
+-------------------
+The (hidden) .ahnrc file in this app is of an older format and needs to be fixed.
+
+There is a rake task to automatically fix it or you can do it manually. Note: it's
+best if you do it manually so you can retain the YAML comments in your .ahnrc file.
+  
+The rake task is called "deprecations:fix_ahnrc_path_format". 
+
+To do it manually, find all entries in the "paths" section of your ".ahnrc" file
+which look like the following:
+
+paths:
+  key_name_could_be_anything:
+    directory: some_folder
+    pattern: *.rb
+
+Note: the "models" section had this syntax before:
+
+models:
+  directory: models
+  pattern: "*.rb"
+
+The NEW syntax is as follows (using models as an example):
+
+models: models/*.rb
+
+This new format is much cleaner.
+
+Adhearsion will abort until you fix this. Sorry for the incovenience.
+              WARNING
+            end
+          end
+        end
+      end
+      
       gems = rules['gems']
       if gems.kind_of?(Hash) && gems.any? && respond_to?(:gem)
         gems.each_pair do |gem_name,properties_hash|
@@ -192,12 +232,6 @@ module Adhearsion
       init_files_from_rc = AHN_CONFIG.files_from_setting("paths", "init").map { |file| File.expand_path(file) }
       already_loaded_init_files = Array(@loaded_init_files).map { |file| File.expand_path(file) }
       (init_files_from_rc - already_loaded_init_files).each { |init| load init }
-    end
-    
-    def init_default_event_namespaces
-      DEFAULT_FRAMEWORK_EVENT_NAMESPACES.each do |namespace|
-        Events.framework_theatre.register_namespace_name namespace
-      end
     end
     
     def init_modules

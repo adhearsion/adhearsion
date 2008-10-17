@@ -11,6 +11,10 @@ context "The AGI server's serve() method" do
     @server       = @server_class.new(:port,:host)
   end
   
+  before :each do
+    Adhearsion::Events.reinitialize_theatre!
+  end
+  
   test 'should instantiate a new Call with the IO object it receives' do
     stub_before_call_hooks!
     io_mock   = flexmock "Mock IO object that's passed to the serve() method"
@@ -46,14 +50,27 @@ context "The AGI server's serve() method" do
     }.should.throw :handled_call!
   end
   
-  test 'calling the serve() method invokes any BeforeCall hooks' do
+  test 'calling the serve() method invokes the before_call event' do
+    mock_io   = flexmock "mock IO object given to AGIServer#serve"
+    mock_call = flexmock "mock Call"
+    flexmock(Adhearsion).should_receive(:receive_call_from).once.with(mock_io).and_return mock_call
     has_executed = false
-    Adhearsion::Events.register_callback([:asterisk, :before_call]) { has_executed = true }
-    server.serve nil
+    Adhearsion::Events.register_callback([:asterisk, :before_call]) { |call| 10.times { puts "WEE" }; has_executed = true }
+    server.serve mock_call
     has_executed.should.equal(true)
   end
   
-  test 'should execute the OnHungupCall hooks when a HungupExtensionCallException is raised' do
+  test "the before_call event should receive the call object" do
+    mock_io   = flexmock "mock IO object given to AGIServer#serve"
+    mock_call = flexmock "mock Call"
+    flexmock(Adhearsion).should_receive(:receive_call_from).once.with(mock_io).and_return mock_call
+    has_executed = false
+    Adhearsion::Events.register_callback([:asterisk, :before_call]) { |call| mock_call.should.equal(call) }
+    server.serve mock_io
+    has_executed.should.equal true
+  end
+  
+  test 'should execute the call_hangup event when a HungupExtensionCallException is raised' do
     call_mock = flexmock 'a bogus call', :hungup_call? => true, :variables => {:extension => "h"}, :unique_identifier => "X"
     mock_env  = flexmock "A mock execution environment which gets passed along in the HungupExtensionCallException"
     

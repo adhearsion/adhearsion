@@ -10,6 +10,10 @@ context "Adhearsion::Initializer" do
     Adhearsion::AHN_CONFIG = Adhearsion::Configuration.new
   end
   
+  after :each do
+    Adhearsion::Events.reinitialize_theatre!
+  end
+  
   test "initialization will start with only a path given" do
     stub_behavior_for_initializer_with_no_path_changing_behavior do
       Adhearsion::Initializer.start path
@@ -55,7 +59,7 @@ context "Adhearsion::Initializer" do
         },
         # Paths are unnecessary except to make the other part of bootstrap_rc happy.
         "paths"=>{"dialplan"=>"dialplan.rb", "init"=>"config/startup.rb", "events"=>"events.rb",
-            "models"=>{"directory"=>"models", "pattern"=>"*.rb"}}
+            "models"=> "models/*.rb"}
       }
       ahn = Adhearsion::Initializer.new path
       flexmock(Adhearsion::Initializer).should_receive(:get_rules_from).once.and_return ahn_rc
@@ -75,7 +79,7 @@ context "Adhearsion::Initializer" do
         },
         # Paths are unnecessary except to make the other part of bootstrap_rc happy.
         "paths"=>{"dialplan"=>"dialplan.rb", "init"=>"config/startup.rb", "events"=>"events.rb",
-            "models"=>{"directory"=>"models", "pattern"=>"*.rb"}}
+            "models"=>"models/*.rb"}
       }
       ahn = Adhearsion::Initializer.new path
       flexmock(Adhearsion::Initializer).should_receive(:get_rules_from).once.and_return ahn_rc

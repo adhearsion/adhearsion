@@ -46,7 +46,7 @@ paths:
     Adhearsion::AHN_CONFIG.ahnrc = yaml
     Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should.eql(%w[foo.rb bar.rb qaz.rb])
   end
-    
+  
   test "should work when an Array of globs are present" do
     files = %w[aaa.rb aba.rb aca.rb]
     flexstub(Dir).should_receive(:glob).with(*files).and_return(*files)

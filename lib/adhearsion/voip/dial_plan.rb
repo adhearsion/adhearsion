@@ -189,7 +189,7 @@ module Adhearsion
       class ContextNameCollector# < ::BlankSlate
         
         class << self
-                    
+
           def const_missing(name)
             super
           rescue ArgumentError
