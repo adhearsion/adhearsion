@@ -6,10 +6,10 @@ require File.join(File.dirname(__FILE__), 'packets.rb')
 
 class AmiStreamParser
 
-  BUFFER_SIZE = 8.kilobytes
+  BUFFER_SIZE = 8.kilobytes unless defined? BUFFER_SIZE
 
-  CAPTURED_VARIABLES   = {}
-  CAPTURE_CALLBACKS    = {}
+  CAPTURED_VARIABLES = {} unless defined? CAPTURED_VARIABLES
+  CAPTURE_CALLBACKS  = {} unless defined? CAPTURE_CALLBACKS
 
   %%{ #%#
   	machine ami_protocol_parser;
