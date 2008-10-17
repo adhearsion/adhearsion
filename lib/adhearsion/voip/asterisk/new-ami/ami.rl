@@ -65,7 +65,7 @@ class AmiStreamParser
     
   }%% # %
 
-  attr_reader :ami_version
+  attr_accessor :ami_version
   def initialize
     
     @data = ""
@@ -90,7 +90,6 @@ class AmiStreamParser
   end
   
   def <<(new_data)
-    p [:starting, {:current_pointer => @current_pointer, :data_before => @data, :ending => @data_ending_pointer}]
     if new_data.size + @data.size > BUFFER_SIZE
       @data.slice! 0...new_data.size
       @current_pointer = @data.size
@@ -98,21 +97,20 @@ class AmiStreamParser
     @data << new_data
     @data_ending_pointer = @data.size
     resume!
-    p [:ending, {:current_pointer => @current_pointer, :data => @data, :ending => @data_ending_pointer, :message => @current_message}]
   end
-  
-  protected
   
   def resume!
     %%{ write exec; }%%
   end
+  
+  protected
   
   def open_version
     @start_of_version = @current_pointer
   end
   
   def close_version
-    @ami_version = @data[@start_of_version...@current_pointer].to_f
+    self.ami_version = @data[@start_of_version...@current_pointer].to_f
     @start_of_version = nil
   end
   
@@ -201,14 +199,15 @@ class AmiStreamParser
   end
   
   def start_ignoring_syntax_error
-    puts "\nSYNTAX ERROR: #{@current_pointer} in \n" + "*" * 30 + "\n" +@data.inspect + "\n" + "*" * 30
+    puts "Syntax error"
+    view_buffer
     @current_syntax_error_start = @current_pointer + 1 # Adding 1 since the pointer is still set to the last successful match
   end
   
   def end_ignoring_syntax_error
     # Subtracting 3 from @current_pointer below for "\r\n\r" which separates a stanza
     offending_data = @data[@current_syntax_error_start...@current_pointer - 3]
-    puts "DONE Ignoring syntax error at #{@current_pointer} in \n" + "&" * 30 + "\n" + offending_data.inspect + "\n"+"&"*30
+    view_buffer
     syntax_error! offending_data
     @current_syntax_error_start = nil
   end
@@ -218,12 +217,28 @@ class AmiStreamParser
   end
   
   def ami_error!(reason)
-    puts "errroz! #{reason}"
     # raise "AMI Error: #{reason}"
   end
   
   def syntax_error!(ignored_chunk)
     p "Ignoring this: #{ignored_chunk}"
+  end
+  
+  def view_buffer
+    buffer = @data.clone
+    buffer.insert(@current_pointer, "^")
+    # buffer.gsub("\r", "\\r\r")
+    # buffer.gsub("\n", "\\n\n")
+    puts <<-INSPECTION
+
+VVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+####  Viewing the buffer ####
+#############################
+#{buffer}
+#############################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    INSPECTION
   end
   
 end

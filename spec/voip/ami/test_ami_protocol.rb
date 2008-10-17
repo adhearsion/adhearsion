@@ -104,9 +104,6 @@ RESPONSE
   end
   
   it "should read a properly formatted stanza properly" do
-    10.times do
-      puts "PROPERLY FORMATTED STANZA START"
-    end
     times = 3
     flexmock(parser).should_receive(:message_received).times(times).and_return nil
     data = fixture("login/standard/success")
@@ -126,15 +123,11 @@ context "Syntax errors" do
   end
   
   it "should recover from unexpected protocol irregularities" do
-    10.times { puts "STARTING ERROR RECOVERY" }
     fuzz = "!IJ@MHY!&@B*!B @ ! @^! @ !@ !\r!@ ! @ !@ ! !!m, \n\\n\n"
     flexmock(parser).should_receive(:ami_error!).once.and_return nil
     flexmock(parser).should_receive(:message_received).once.and_return nil
     flexmock(parser).should_receive(:syntax_error!).once.with(fuzz)
     data_simulation = fixture('errors/missing_action') + fuzz + "\r\n\r\n" + fixture('login/standard/success')
-    puts
-    puts data_simulation.inspect
-    puts
     parser << data_simulation
   end
   

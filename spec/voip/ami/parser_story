@@ -1,0 +1,15 @@
+Story: Parsing AMI
+
+	As an Asterisk user
+	I want to parse the AMI protocol
+	So that I can control Asterisk
+	
+	Scenario: Parsing the initial AMI version header
+	
+		Given a new parser
+		And a standard version header for AMI 1.0
+		
+		When I parse the protocol
+		
+		Then the protocol have parsed without syntax errors
+		And the version should be set to 1.0
