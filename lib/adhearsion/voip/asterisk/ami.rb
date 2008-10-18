@@ -63,9 +63,10 @@ module Adhearsion
           
           def call_into_context(channel, context, options={})
             args = {:channel => channel, :context => context}
-            args[:priority] = options[:priority] || 1
+            args[:priority]  = options[:priority] || 1
             args[:extension] = options[:extension] if options[:extension]
             args[:caller_id] = options[:caller_id] if options[:caller_id]
+            args[:timeout]   = options[:timeout]   if options[:timeout]
             if options[:variables] && options[:variables].kind_of?(Hash)
               args[:variable] = options[:variables].map {|pair| pair.join('=')}.join('|')
             end
