@@ -11,7 +11,9 @@ steps_for :ami_parser do
   end
   
   Given("a normal login attempt with events") do
-    @parser << fixture('login/standard/client')
+    @parser << fixture('login/standard/success')
+    p @parser.instance_variable_get(:@data)
+    
   end
   
   When("I parse the protocol") do

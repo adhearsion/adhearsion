@@ -229,8 +229,8 @@ class AmiStreamParser
     buffer = @data.clone
     buffer.insert(@current_pointer, "^")
     
-    # buffer.gsub("\r", "\\r\r")
-    # buffer.gsub("\n", "\\n\n")
+    buffer.gsub!("\r", "\\\\r")
+    buffer.gsub!("\n", "\\n\n")
     
     puts <<-INSPECTION
 
