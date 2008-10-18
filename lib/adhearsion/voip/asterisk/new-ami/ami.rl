@@ -199,15 +199,13 @@ class AmiStreamParser
   end
   
   def start_ignoring_syntax_error
-    puts "Syntax error"
-    view_buffer
+    view_buffer "Syntax error"
     @current_syntax_error_start = @current_pointer + 1 # Adding 1 since the pointer is still set to the last successful match
   end
   
   def end_ignoring_syntax_error
     # Subtracting 3 from @current_pointer below for "\r\n\r" which separates a stanza
     offending_data = @data[@current_syntax_error_start...@current_pointer - 3]
-    view_buffer
     syntax_error! offending_data
     @current_syntax_error_start = nil
   end
@@ -224,21 +222,27 @@ class AmiStreamParser
     p "Ignoring this: #{ignored_chunk}"
   end
   
-  def view_buffer
+  def view_buffer(message=nil)
+    
+    message ||= "Viewing the buffer"
+    
     buffer = @data.clone
     buffer.insert(@current_pointer, "^")
+    
     # buffer.gsub("\r", "\\r\r")
     # buffer.gsub("\n", "\\n\n")
+    
     puts <<-INSPECTION
 
 VVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-####  Viewing the buffer ####
+####  #{message}
 #############################
 #{buffer}
 #############################
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     INSPECTION
+    
   end
   
 end

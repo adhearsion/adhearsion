@@ -1,5 +1,4 @@
-# -*- ragel -*-
-%%{
+%%{ #%
 
 #########
 ## This file is written with the Ragel programming language and parses the Asterisk Manager Interface protocol. It depends
@@ -12,12 +11,13 @@ machine ami_protocol_parser_common;
 
 carriage_return = "\r";
 line_feed       = "\n";
+white           = [\t ];
 crlf            = carriage_return line_feed;
 stanza_break    = crlf crlf;
 rest_of_line    = (any* -- crlf);
 
 Prompt = "Asterisk Call Manager/" digit+ >open_version "." digit+ %close_version crlf;
-KeyValuePair = (alnum | print)+ >before_key %after_key ": " rest_of_line >before_value %after_value crlf;
+KeyValuePair = (alnum | print)+ >before_key %after_key (":" white**) rest_of_line >before_value %after_value crlf;
 
 ActionID = "ActionID: "i rest_of_line >before_action_id %after_action_id crlf;
 

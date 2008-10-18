@@ -1,13 +1,17 @@
 steps_for :ami_parser do
   
   Given("a new parser") do
-    @syntax_errors = []
+    @syntax_errors = syntax_errors = []
     @parser = AmiStreamParser.new
-    @parser.meta_def(:ami_error!) { |ignored_chunk| @syntax_errors << ignored_chunk }
+    @parser.meta_def(:syntax_error!) { |ignored_chunk| syntax_errors << ignored_chunk }
   end
   
-  Given("a standard version header for AMI $version") do |version|
+  Given("a version header for AMI $version") do |version|
     @parser << "Asterisk Call Manager/1.0\r\n"
+  end
+  
+  Given("a normal login attempt with events") do
+    @parser << fixture('login/standard/client')
   end
   
   When("I parse the protocol") do

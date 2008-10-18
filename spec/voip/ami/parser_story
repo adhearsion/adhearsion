@@ -4,12 +4,20 @@ Story: Parsing AMI
 	I want to parse the AMI protocol
 	So that I can control Asterisk
 	
-	Scenario: Parsing the initial AMI version header
+	Scenario: Parsing only the initial AMI version header
 	
 		Given a new parser
-		And a standard version header for AMI 1.0
+		And a version header for AMI 1.0
 		
 		When I parse the protocol
 		
 		Then the protocol have parsed without syntax errors
 		And the version should be set to 1.0
+		
+	Scenario: Parsing the initial AMI header and a login attempt
+	
+		Given a new parser
+		And a version header for AMI 1.0
+		And a normal login attempt with events
+		
+		Then the protocol have parsed without syntax errors
