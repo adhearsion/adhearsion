@@ -38,12 +38,12 @@ RESPONSE
     @syntax_errors.should be_empty
   end
   
-  Then "the 'follows' body of a message received should equal $method_name" do |method_name|
+  Then "the 'follows' body of $number messages? received should equal $method_name" do |number, method_name|
     multi_line_response = send method_name
     @received_messages.should_not be_empty
-    @received_messages.find do |message|
-      message.text.should eql(multi_line_response)
-    end
+    @received_messages.select do |message|
+      message.text == multi_line_response
+    end.size.should eql(number.to_i)
   end
   
   Then "the version should be set to $version" do |version|
