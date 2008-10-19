@@ -19,12 +19,6 @@ context "Establishing a socket" do
     parser.ami_version.should.equal sample_version
   end
   
-  it "should raise an error when the version is not there" do
-    the_following_code {
-      parser << "Asterisk Call Manager/1.0\r\n"
-      parser.ami_version.should.not.be.nil
-    }.should.not.raise
-  end
 end
 
 context "Reading of an action" do

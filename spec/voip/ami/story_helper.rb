@@ -87,11 +87,30 @@ end
 
 def hash_to_stanza(hash)
   ordered_hash = hash.to_a
-  starter = hash.find { |(key, value)| key =~ /^(Response|Action)$/i }
+  starter = hash.find { |(key, value)| key.strip =~ /^(Response|Action)$/i }
   ordered_hash.unshift ordered_hash.delete(starter) if starter
   ordered_hash.inject(String.new) do |stanza,(key, value)|
     stanza + "#{key}: #{value}\r\n"
   end + "\r\n"
+end
+
+def format_newlines(string)
+  # HOLY FUCK THIS IS UGLY
+  tmp_replacement = random_string
+  string.gsub("\r\n", tmp_replacement).
+         gsub("\n", "\r\n").
+         gsub(tmp_replacement, "\r\n")
+end
+
+def random_string
+  (rand(1_000_000_000_000) + 1_000_000_000).to_s
+end
+
+def ragel_description
+  "Ragel is a software development tool that allows user actions to
+  be embedded into the transitions of a regular expression's corresponding state machine,
+  eliminating the need to switch from the regular expression engine and user code execution
+  environment and back again."
 end
 
 Dir.chdir(File.dirname(__FILE__) + "/../../..") { regenerate_ragel }

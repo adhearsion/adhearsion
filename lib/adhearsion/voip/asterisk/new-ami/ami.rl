@@ -28,9 +28,6 @@ class AmiStreamParser
     action error_reason_start { error_reason_start }
     action error_reason_end   { error_reason_end; fgoto main; }
     
-    action before_action_id { before_action_id }
-    action after_action_id  { after_action_id  }
-
     action message_received { message_received @current_message }
 
     action start_ignoring_syntax_error {
@@ -135,11 +132,10 @@ class AmiStreamParser
     event_name = @data[@event_name_start]
     @event_name_start = nil
     @current_message = Event.new(event_name)
-    puts "Instantiated new event"
   end
   
-  # This method must do someting with @current_message or it'll be lost.
-  def message_received(current_message)
+  # This method must do someting with @current_message or it'll be lost. TODO: Add it to events system.
+  def message_received(current_message=@current_message)
     current_message
   end
   
@@ -157,17 +153,8 @@ class AmiStreamParser
   
   def finish_capturing_value
     @current_value = @data[@current_value_position...@current_pointer]
+    @last_seen_value_end = @current_pointer + 2 # 2 for \r\n
     add_pair_to_current_message
-  end
-  
-  def before_action_id
-    @start_action_id = @current_pointer
-  end
-  
-  def after_action_id
-    @current_message.action_id = @data[@start_action_id...@current_pointer]
-    puts "ActionID: #{current_message.action_id}"
-    @start_action_id = nil
   end
   
   def error_reason_start
@@ -184,7 +171,7 @@ class AmiStreamParser
   end
   
   def end_capturing_follows_text
-    text = @data[@follows_text_start..(@current_pointer - "\r\n--END COMMAND--".size)]
+    text = @data[@last_seen_value_end..(@current_pointer - "\r\n--END COMMAND--".size)]
     @current_message.text = text
     @follows_text_start = nil
   end

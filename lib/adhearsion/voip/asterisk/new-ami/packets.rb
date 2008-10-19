@@ -13,7 +13,7 @@ class NormalAmiResponse
   end
   
   def []=(key,value)
-    puts "Setting '#{key}' to '#{value}'!"
+    # puts "Setting '#{key}' to '#{value}'!"
     @pairs[key] = value
   end
   

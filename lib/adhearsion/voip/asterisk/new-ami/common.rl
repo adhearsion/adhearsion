@@ -9,46 +9,46 @@
 
 machine ami_protocol_parser_common;
 
-carriage_return = "\r";
-line_feed       = "\n";
-white           = [\t ];
-crlf            = carriage_return line_feed;
-stanza_break    = crlf crlf;
-rest_of_line    = (any* -- crlf);
+carriage_return = "\r";           # A carriage return. Used before (almost) every newline character.
+line_feed = "\n";                 # Newline. Used (with carriage_return) to separate key/value pairs and stanzas.
+crlf = carriage_return line_feed; # Means "carriage return and line feed". Used to separate key/value pairs and stanzas
+white = [\t ];                    # Single whitespace character, either a tab or a space
+colon = ":" [ ]**;                # Separates keys from values. "A colon followed by any number of spaces"
+stanza_break    = crlf crlf;      # The seperator between two stanzas.
+rest_of_line    = (any* -- crlf); # Match all characters until the next line seperator.
 
 Prompt = "Asterisk Call Manager/" digit+ >open_version "." digit+ %close_version crlf;
-KeyValuePair = (alnum | print)+ >before_key %after_key (":" white**) rest_of_line >before_value %after_value crlf;
 
-ActionID = "ActionID: "i rest_of_line >before_action_id %after_action_id crlf;
+Key = (alnum | print -- line_feed)+;
+KeyValuePair = Key >before_key %after_key colon rest_of_line >before_value %after_value crlf;
 
 FollowsDelimiter = crlf "--END COMMAND--";
 
-Response = "Response: "i;
-Success	 = Response "Success"i %init_success crlf %{ fgoto success; };
+Response = "Response"i colon;
+Success	 = Response "Success"i %init_success crlf @{ fgoto success; };
 Pong     = Response "Pong"i %init_success crlf;
-Error    = Response "Error"i crlf "Message: "i @error_reason_start rest_of_line crlf crlf @error_reason_end;
+Error    = Response "Error"i crlf "Message"i colon @error_reason_start rest_of_line crlf crlf @error_reason_end;
 Follows  = Response "Follows" crlf @init_response_follows;
-Event    = "Event: "i %begin_capturing_event_name rest_of_line %init_event crlf;
+Event    = "Event"i colon %begin_capturing_event_name rest_of_line %init_event crlf;
 
 # For "Response: Follows"
-FollowsBody = (any* -- FollowsDelimiter) >start_capturing_follows_text FollowsDelimiter >end_capturing_follows_text crlf @{ fgoto main; };
+FollowsBody = (any* -- FollowsDelimiter) >start_capturing_follows_text FollowsDelimiter @end_capturing_follows_text crlf;
 
 # Events = Response "Events " ("On" | "Off") crlf;
 
 # Can't use a Ragel Scanner because Scanners don't handle errors to my knowledge.
 main := Prompt? ((((Success | Pong | Event) @message_received) | Error | (Follows crlf))) $err(start_ignoring_syntax_error);
 
-success := (ActionID | KeyValuePair)+ crlf @message_received;
+success := KeyValuePair+ crlf @message_received;
 
 # Skip over everything until we get back to crlf{2}
 error_recovery := (any* -- stanza_break) stanza_break @end_ignoring_syntax_error; 
 
 # For the "Response: Follows" protocol abnormality. What happens if there's a protocol irregularity in this state???
 response_follows := |*
-    ActionID;
-    KeyValuePair;
+    KeyValuePair+;
     FollowsBody;
-    crlf;
+    crlf @{ message_received; fgoto main; };
 *|;
  
 
