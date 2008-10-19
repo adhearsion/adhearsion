@@ -31,9 +31,7 @@ class AmiStreamParser
     action message_received { message_received @current_message }
 
     action start_ignoring_syntax_error {
-      fhold;
       start_ignoring_syntax_error;
-      fgoto error_recovery;
     }
     action end_ignoring_syntax_error {
       end_ignoring_syntax_error;
@@ -186,8 +184,7 @@ class AmiStreamParser
   end
   
   def start_ignoring_syntax_error
-    view_buffer "Syntax error"
-    @current_syntax_error_start = @current_pointer + 1 # Adding 1 since the pointer is still set to the last successful match
+    @current_syntax_error_start = @current_pointer # Adding 1 since the pointer is still set to the last successful match
   end
   
   def end_ignoring_syntax_error
@@ -214,7 +211,7 @@ class AmiStreamParser
     message ||= "Viewing the buffer"
     
     buffer = @data.clone
-    buffer.insert(@current_pointer, "^")
+    buffer.insert(@current_pointer, "\033[0;31m\033[1;31m^\033[0m")
     
     buffer.gsub!("\r", "\\\\r")
     buffer.gsub!("\n", "\\n\n")

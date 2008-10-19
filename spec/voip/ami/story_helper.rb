@@ -1,7 +1,6 @@
 require 'rubygems'
 require 'spec/story'
 require File.dirname(__FILE__) + "/../../../lib/adhearsion"
-require 'adhearsion/voip/asterisk/new-ami/ami'
 
 RAGEL_FILES = %W[lib/adhearsion/voip/asterisk/new-ami/ami.rl]
 
@@ -31,6 +30,10 @@ def regenerate_ragel
     # end
   end
 end
+
+Dir.chdir(File.dirname(__FILE__) + "/../../..") { regenerate_ragel }
+
+require 'adhearsion/voip/asterisk/new-ami/ami'
 
 FIXTURES = YAML.load_file File.dirname(__FILE__) + "/ami_fixtures.yml"
 
@@ -122,8 +125,6 @@ def syntax_error_data(name)
       "!IJ@MHY!&@B*!B @ ! @^! @ !@ !\r!@ ! @ !@ ! !!m, \n\\n\n"
   end
 end
-
-Dir.chdir(File.dirname(__FILE__) + "/../../..") { regenerate_ragel }
 
 # module ManagerProtocolSpecHelper
 #   

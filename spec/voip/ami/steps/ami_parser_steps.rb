@@ -8,7 +8,10 @@ steps_for :ami_parser do
     @received_messages = received_messages = []
     @syntax_errors = syntax_errors = []
     @parser = AmiStreamParser.new
-    @parser.meta_def(:message_received) { |message| received_messages << @current_message }
+    @parser.meta_def(:message_received) do |*message|
+      message = message.first || @current_message
+      received_messages << message
+    end
     @parser.meta_def(:syntax_error!) { |ignored_chunk| syntax_errors << ignored_chunk }
   end
   
@@ -21,7 +24,7 @@ steps_for :ami_parser do
   end
   
   Given "a stanza break" do
-    @parser << "\r\n"
+    @parser << "\r\n\r\n"
   end
   
   Given "a multi-line Response:Follows body of $method_name" do |method_name|

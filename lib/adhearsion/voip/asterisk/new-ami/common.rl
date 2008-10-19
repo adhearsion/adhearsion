@@ -37,12 +37,18 @@ FollowsBody = (any* -- FollowsDelimiter) >start_capturing_follows_text FollowsDe
 # Events = Response "Events " ("On" | "Off") crlf;
 
 # Can't use a Ragel Scanner because Scanners don't handle errors to my knowledge.
-main := Prompt? ((((Success | Pong | Event) @message_received) | Error | (Follows crlf))) $err(start_ignoring_syntax_error);
-
-success := KeyValuePair+ crlf @message_received;
+main := |*
+  Prompt;
+  Success | Pong | Event => message_received;
+  Error;
+  Follows crlf;
+  any => { fhold; fgoto error_recovery; };
+*|;
 
 # Skip over everything until we get back to crlf{2}
-error_recovery := (any* -- stanza_break) stanza_break @end_ignoring_syntax_error; 
+error_recovery := (any**) >start_ignoring_syntax_error stanza_break @end_ignoring_syntax_error; 
+
+success := KeyValuePair+ crlf @message_received;
 
 # For the "Response: Follows" protocol abnormality. What happens if there's a protocol irregularity in this state???
 response_follows := |*
