@@ -118,7 +118,6 @@ class AmiStreamParser
     return :failed if !start || start > stop
     capture = @data[start...stop]
     CAPTURED_VARIABLES[variable_name] = capture
-    CAPTURE_CALLBACKS[variable_name].call(capture) if CAPTURE_CALLBACKS.has_key? variable_name
     capture
   end
   
@@ -192,10 +191,6 @@ class AmiStreamParser
     offending_data = @data[@current_syntax_error_start...@current_pointer - 3]
     syntax_error! offending_data
     @current_syntax_error_start = nil
-  end
-  
-  def capture_callback_for(variable_name, &block)
-    CAPTURE_CALLBACKS[variable_name] = block
   end
   
   def ami_error!(reason)
