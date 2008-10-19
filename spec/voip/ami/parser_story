@@ -4,7 +4,6 @@ Story: Parsing AMI
 	I want to parse the AMI protocol
 	So that I can control Asterisk
 	
-	
 	TODO:
 	- Ensure misc key/value pairs are is set exactly properly
 	- Have a chop_buffer_for_new_data_of_size() method which kills old pointer-related variables
@@ -23,9 +22,10 @@ Story: Parsing AMI
 	
 		Given a new parser
 		And a version header for AMI 1.0
-		And a normal login attempt with events
+		And a normal login success with events
 		
 		Then the protocol should have parsed without syntax errors
+		And 1 message should have been received
 	
 	Scenario: Parsing the initial AMI header and then a Response:Follows section
 	
@@ -36,12 +36,30 @@ Story: Parsing AMI
 		Then the protocol should have parsed without syntax errors
 		And the 'follows' body of 1 message received should equal ragel_description
 		
-		Scenario: Parsing the initial AMI header and then a Response:Follows section
+	Scenario: Parsing the initial AMI header and then a Response:Follows section
 
-			Given a new parser
-			And a version header for AMI 1.0
-			And a multi-line Response:Follows body of ragel_description
-			And a multi-line Response:Follows body of ragel_description
+		Given a new parser
+		And a version header for AMI 1.0
+		And a multi-line Response:Follows body of ragel_description
+		And a multi-line Response:Follows body of ragel_description
 
-			Then the protocol should have parsed without syntax errors
-			And the 'follows' body of 2 messages received should equal ragel_description
+		Then the protocol should have parsed without syntax errors
+		And the 'follows' body of 2 messages received should equal ragel_description
+
+	Scenario: Parsing a stanza without receiving an AMI header
+
+		Given a new parser
+		And a normal login success with events
+
+		Then the protocol should have parsed without syntax errors
+		And 1 message should have been received
+		
+	Scenario: Receiving a bunch of random crap as soon as the socket is opened
+
+		Given a new parser
+		And syntactically invalid fuzz
+		And a stanza break
+
+		Then the protocol should have parsed with 1 syntax error
+		And the syntax error fixture named fuzz should have been encountered
+		And 0 messages should have been received

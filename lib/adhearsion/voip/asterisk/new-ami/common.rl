@@ -51,5 +51,4 @@ response_follows := |*
     crlf @{ message_received; fgoto main; };
 *|;
  
-
 }%%

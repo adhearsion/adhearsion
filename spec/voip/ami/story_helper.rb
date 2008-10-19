@@ -106,11 +106,21 @@ def random_string
   (rand(1_000_000_000_000) + 1_000_000_000).to_s
 end
 
-def ragel_description
-  "Ragel is a software development tool that allows user actions to
-  be embedded into the transitions of a regular expression's corresponding state machine,
-  eliminating the need to switch from the regular expression engine and user code execution
-  environment and back again."
+def follows_body_text(name)
+  case name
+    when "ragel_description"
+      "Ragel is a software development tool that allows user actions to
+      be embedded into the transitions of a regular expression's corresponding state machine,
+      eliminating the need to switch from the regular expression engine and user code execution
+      environment and back again."
+  end
+end
+
+def syntax_error_data(name)
+  case name
+    when "fuzz"
+      "!IJ@MHY!&@B*!B @ ! @^! @ !@ !\r!@ ! @ !@ ! !!m, \n\\n\n"
+  end
 end
 
 Dir.chdir(File.dirname(__FILE__) + "/../../..") { regenerate_ragel }
