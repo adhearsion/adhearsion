@@ -480,9 +480,9 @@ self._ami_protocol_parser_trans_actions = [
 	0, 47, 0, 47, 0, 47, 0, 0, 
 	47, 0, 0, 47, 0, 0, 47, 0, 
 	0, 47, 0, 0, 47, 0, 0, 47, 
-	0, 0, 47, 13, 47, 0, 13, 0, 
+	0, 0, 47, 0, 47, 13, 13, 13, 
 	0, 0, 0, 0, 0, 0, 47, 68, 
-	47, 0, 13, 0, 0, 47, 0, 47, 
+	47, 13, 13, 13, 0, 47, 0, 47, 
 	0, 47, 0, 47, 0, 47, 0, 47, 
 	0, 47, 29, 47, 0, 47, 41, 47, 
 	0, 0, 47, 0, 0, 47, 0, 0, 
@@ -1246,7 +1246,7 @@ end
   end
   
   def error_reason_end
-    ami_error! @data[@error_reason_start...@current_pointer]
+    ami_error! @data[@error_reason_start...@current_pointer - 3]
     @error_reason_start = nil
   end
   

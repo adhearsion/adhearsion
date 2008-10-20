@@ -7,6 +7,7 @@ steps_for :ami_parser do
   Given "a new parser" do
     @received_messages = received_messages = []
     @syntax_errors = syntax_errors = []
+    @ami_errors = ami_errors = []
     @parser = AmiStreamParser.new
     @custom_stanzas = {}
     @parser.meta_def(:message_received) do |*message|
@@ -14,6 +15,7 @@ steps_for :ami_parser do
       received_messages << message
     end
     @parser.meta_def(:syntax_error!) { |ignored_chunk| syntax_errors << ignored_chunk }
+    @parser.meta_def(:ami_error!) { |error| ami_errors << error }
     
     @GivenPong = lambda do |with_or_without, action_id, number|
       number = number == "a" ? 1 : number.to_i
@@ -80,6 +82,10 @@ RESPONSE
     @custom_stanzas[name] << "#{key}: #{value}\r\n"
   end
   
+  Given 'an AMI error whose message is "$message"' do |message|
+    @parser << "Response: Error\r\nMessage: #{message}\r\n\r\n"
+  end
+  
   ########################################
   #### WHEN
   ########################################
@@ -130,4 +136,13 @@ RESPONSE
     @received_messages[ordered][key].should eql(value)
   end
   
+  Then "$number AMI error should have been received" do |number|
+    @ami_errors.size.should equal(number.to_i)
+  end
+  
+  Then 'the $order AMI error should have the message "$message"' do |order, message|
+    order = order[/^(\d+)\w+$/, 1].to_i - 1
+    @ami_errors[order].should eql(message)
+  end
+    
 end

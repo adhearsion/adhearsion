@@ -7,6 +7,10 @@ Story: Parsing AMI
 	TODO:
 	- Have a chop_buffer_for_new_data_of_size() method which kills old pointer-related variables
 	
+	THINGS TO PARSE IN NORMAL SPEC:
+	- That the various methods do integrate with theatre
+	- That the ami_error! method does raise an AMIError exception
+	
 	Scenario: Parsing only the initial AMI version header
 	
 		Given a new parser
@@ -151,3 +155,15 @@ Story: Parsing AMI
 		Then the protocol should have parsed without syntax errors
 		And 1 message should have been received
 	
+	Scenario: Receiving an AMI error followed by a normal event
+	
+		Given a new parser
+		And an AMI error whose message is "Missing action in request"
+		And a normal login success with events
+		
+		When the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
+		And 1 AMI error should have been received
+		And the 1st AMI error should have the message "Missing action in request"
+		And 1 message should have been received

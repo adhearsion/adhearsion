@@ -159,7 +159,7 @@ class AmiStreamParser
   end
   
   def error_reason_end
-    ami_error! @data[@error_reason_start...@current_pointer]
+    ami_error! @data[@error_reason_start...@current_pointer - 3]
     @error_reason_start = nil
   end
   
