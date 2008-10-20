@@ -92,7 +92,7 @@ Story: Parsing AMI
 		Given a new parser
 		And a version header for AMI 1.0
 		And a normal login success with events
-		And a Pong response with an ActionID
+		And a Pong response with an ActionID of randomness
 		
 		When the buffer is parsed
 		
@@ -103,13 +103,22 @@ Story: Parsing AMI
 	
 		Given a new parser
 		And 5 Pong responses without an ActionID
-		And 5 Pong responses with an ActionID
+		And 5 Pong responses with an ActionID of randomness
 		
 		When the buffer is parsed
 		
 		Then the protocol should have parsed without syntax errors
 		And 10 messages should have been received
 		
+	Scenario: A Pong with an ActionID
+	
+		Given a new parser
+		And a Pong response with an ActionID of 1224469850.61673
+		
+		When the buffer is parsed
+		
+		Then the first message received should have a key "ActionID" with value "1224469850.61673"
+	
 	Scenario: Receiving a message with custom key/value pairs
 	
 		Given a new parser

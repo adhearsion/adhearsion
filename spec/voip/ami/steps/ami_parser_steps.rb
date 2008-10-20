@@ -1,5 +1,5 @@
 steps_for :ami_parser do
-  
+
   ########################################
   #### GIVEN
   ########################################
@@ -14,6 +14,18 @@ steps_for :ami_parser do
       received_messages << message
     end
     @parser.meta_def(:syntax_error!) { |ignored_chunk| syntax_errors << ignored_chunk }
+    
+    @GivenPong = lambda do |with_or_without, action_id, number|
+      number = number == "a" ? 1 : number.to_i
+      data = case with_or_without
+        when "with"    then "Response: Pong\r\nActionID: #{action_id}\r\n\r\n"
+        when "without" then "Response: Pong\r\n\r\n"
+        else raise "Do not recognize preposition #{with_or_without.inspect}. Should be either 'with' or 'without'"
+      end
+      number.times do
+        @parser << data
+      end
+    end
   end
   
   Given "a version header for AMI $version" do |version|
@@ -45,18 +57,14 @@ RESPONSE
   Given "syntactically invalid $name" do |name|
     @parser << send(:syntax_error_data, name)
   end
-  
-  Given "$number Pong responses? $with_or_without an ActionID" do |number, with_or_without|
-    number = number == "a" ? 1 : number.to_i
-    data = case with_or_without
-      when "with"    then "Response: Pong\r\nActionID: 28312.11\r\n\r\n"
-      when "without" then "Response: Pong\r\n\r\n"
-      else raise "Do not recognize preposition #{with_or_without.inspect}. Should be either 'with' or 'without'"
-    end
-    number.times do
-      @parser << data
-    end
+
+  Given "$number Pong responses? with an ActionID of $action_id" do |number, action_id|
+    @GivenPong.call "with", action_id, number
   end
+  
+  Given "$number Pong responses? without an ActionID" do |number|
+    @GivenPong.call "without", Time.now.to_f, number
+  end  
   
   Given 'a custom stanza named "$name"' do |name|
     @custom_stanzas[name] = "Response: Success\r\n"
