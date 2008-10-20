@@ -5,7 +5,6 @@ Story: Parsing AMI
 	So that I can control Asterisk asynchronously
 	
 	TODO:
-	- Ensure misc key/value pairs are is set exactly properly
 	- Have a chop_buffer_for_new_data_of_size() method which kills old pointer-related variables
 	
 	Scenario: Parsing only the initial AMI version header
@@ -141,3 +140,14 @@ Story: Parsing AMI
 		And the first message received should have a key "Location" with value "San Francisco, CA"
 		And the first message received should have a key "x-header" with value "<FooBAR>"
 		And the first message received should have a key "I have spaces" with value "i have trailing padding   "
+		
+	Scenario: Executing a stanza that was partially received
+	
+		Given a new parser
+		And a normal login success with events split into two pieces
+		
+		When the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
+		And 1 message should have been received
+	

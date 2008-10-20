@@ -36,6 +36,12 @@ steps_for :ami_parser do
     @parser << fixture('login/standard/success')
   end
   
+  Given "a normal login success with events split into two pieces" do
+    stanza = fixture('login/standard/success')
+    @parser << stanza[0...3]
+    @parser << stanza[3..-1]
+  end
+  
   Given "a stanza break" do
     @parser << "\r\n\r\n"
   end
