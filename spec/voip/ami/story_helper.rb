@@ -114,30 +114,3 @@ def syntax_error_data(name)
       "!IJ@MHY!&@B*!B @ ! @^! @ !@ !\r!@ ! @ !@ ! !!m, \n\\n\n"
   end
 end
-
-# module ManagerProtocolSpecHelper
-#   
-#   class NoSyntaxErrors
-#     def matches?(_)
-#       @syntax_errors.size == 0
-#     end
-#     
-#     def description
-#       "have no syntax errors"
-#     end
-#     
-#     def failure_message
-#       chunks = @syntax_errors.map { |error| (" " * 4) + error.inspect }.join("\n")
-#       " expected to have encountered no SYNTAX errors, but encountered the following unrecognized chunk(s):\n#{chunks}"
-#     end
-#     
-#     def negative_failure_message
-#     " expected to have encountered SYNTAX errors but none were found"
-#     end
-#     
-#   end
-#   
-#   def have_no_syntax_errors
-#     NoSyntaxErrors.new
-#   end
-# end
