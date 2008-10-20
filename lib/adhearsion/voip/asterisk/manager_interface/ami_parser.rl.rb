@@ -25,7 +25,7 @@ module Adhearsion
           action after_value   { finish_capturing_value }
     
           action error_reason_start { error_reason_start }
-          action error_reason_end   { error_reason_end; fgoto protocol; }
+          action error_reason_end   { error_reason_end   }
     
           action message_received { message_received @current_message }
 
@@ -44,21 +44,16 @@ module Adhearsion
           }
 
           # Executed after a "Respone: Success" or a Pong
-          action init_success {
-            @current_message = NormalAmiResponse.new
-          }
+          action init_success { @current_message = NormalAmiResponse.new }
     
           action start_capturing_follows_text { start_capturing_follows_text }
-          action end_capturing_follows_text   {
-            end_capturing_follows_text;
-          }
+          action   end_capturing_follows_text { end_capturing_follows_text   }
     
           action begin_capturing_event_name { begin_capturing_event_name }
           action init_event { init_event }
     
           action init_response_follows {
             @current_message = NormalAmiResponse.new(true)
-            fgoto response_follows;
           }
     
           include ami_protocol_parser_common "ami_protocol_parser_machine.rl";

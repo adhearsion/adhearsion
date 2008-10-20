@@ -30,7 +30,7 @@ Response = "Response"i colon;
 Success	 = Response "Success"i %init_success crlf @{ fgoto success; };
 Pong     = Response "Pong"i %init_success crlf @{ fgoto success; };
 Error    = Response "Error"i crlf "Message"i colon rest_of_line >error_reason_start crlf crlf @error_reason_end;
-Follows  = Response "Follows" crlf @init_response_follows;
+Follows  = Response "Follows" crlf @init_response_follows @{ fgoto response_follows; };
 Event    = "Event"i colon %begin_capturing_event_name rest_of_line %init_event crlf;
 
 # For "Response: Follows"
