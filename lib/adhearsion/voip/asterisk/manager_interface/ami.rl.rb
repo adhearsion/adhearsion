@@ -1,4 +1,3 @@
-# -*- ruby -*-
 require File.join(File.dirname(__FILE__), 'packets.rb')
 
 module Adhearsion
@@ -62,7 +61,7 @@ module Adhearsion
             fgoto response_follows;
           }
     
-          include ami_protocol_parser_common "common.rl";
+          include ami_protocol_parser_common "ami_protocol_parser.rl";
     
         }%% # %
 
