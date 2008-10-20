@@ -61,7 +61,7 @@ module Adhearsion
             fgoto response_follows;
           }
     
-          include ami_protocol_parser_common "ami_protocol_parser.rl";
+          include ami_protocol_parser_common "ami_protocol_parser_machine.rl";
     
         }%% # %
 
