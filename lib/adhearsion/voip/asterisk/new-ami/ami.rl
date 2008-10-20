@@ -26,7 +26,7 @@ class AmiStreamParser
     action after_value   { finish_capturing_value }
     
     action error_reason_start { error_reason_start }
-    action error_reason_end   { error_reason_end; fgoto main; }
+    action error_reason_end   { error_reason_end; fgoto protocol; }
     
     action message_received { message_received @current_message }
 
@@ -35,7 +35,7 @@ class AmiStreamParser
     }
     action end_ignoring_syntax_error {
       end_ignoring_syntax_error;
-      fgoto main;
+      fgoto protocol;
     }
     
     action start_capturing_immediate_response {

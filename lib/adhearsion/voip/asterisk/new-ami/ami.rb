@@ -51,18 +51,18 @@ self._ami_protocol_parser_key_offsets = [
 	0, 0, 1, 2, 3, 4, 5, 6, 
 	7, 8, 9, 10, 11, 12, 13, 14, 
 	15, 16, 17, 18, 19, 20, 22, 25, 
-	27, 30, 31, 34, 37, 39, 41, 43, 
-	44, 46, 47, 49, 51, 53, 55, 57, 
-	59, 61, 63, 64, 72, 80, 82, 84, 
-	86, 88, 89, 90, 92, 94, 96, 98, 
-	100, 102, 104, 105, 107, 108, 110, 111, 
-	112, 114, 115, 116, 117, 118, 119, 120, 
-	121, 122, 123, 124, 126, 128, 130, 131, 
-	132, 134, 136, 138, 140, 142, 144, 145, 
-	146, 147, 148, 149, 151, 153, 154, 155, 
-	156, 157, 158, 159, 160, 161, 162, 163, 
-	164, 165, 166, 167, 168, 169, 170, 171, 
-	172, 173, 175, 178, 180, 183, 184, 187, 
+	27, 30, 31, 34, 37, 38, 39, 40, 
+	42, 44, 45, 46, 47, 48, 49, 50, 
+	51, 52, 53, 54, 55, 56, 57, 58, 
+	59, 60, 61, 62, 63, 64, 66, 69, 
+	71, 74, 75, 78, 81, 83, 85, 87, 
+	88, 90, 91, 93, 95, 97, 99, 101, 
+	103, 105, 107, 108, 116, 124, 126, 128, 
+	130, 132, 133, 134, 136, 138, 140, 142, 
+	144, 146, 148, 149, 151, 152, 154, 155, 
+	156, 158, 159, 160, 161, 162, 163, 164, 
+	165, 166, 167, 168, 170, 172, 174, 175, 
+	176, 178, 180, 182, 184, 186, 188, 189, 
 	190, 191, 192, 194, 195, 197, 212, 213, 
 	228, 243, 258, 275, 276, 278, 293, 308, 
 	325, 341, 357, 374, 375, 377, 379, 381, 
@@ -74,7 +74,7 @@ self._ami_protocol_parser_key_offsets = [
 	768, 785, 801, 816, 831, 848, 849, 851, 
 	866, 881, 898, 914, 930, 947, 963, 980, 
 	996, 1012, 1029, 1046, 1062, 1078, 1095, 1111, 
-	1117, 1118, 1119, 1121, 1123, 1123, 1124, 1125, 
+	1112, 1113, 1113, 1119, 1120, 1121, 1123, 1125, 
 	1126, 1126, 1141, 1143, 1159, 1175
 ]
 
@@ -87,26 +87,26 @@ self._ami_protocol_parser_trans_keys = [
 	97, 108, 108, 32, 77, 97, 110, 97, 
 	103, 101, 114, 47, 48, 57, 46, 48, 
 	57, 48, 57, 13, 48, 57, 10, 13, 
-	48, 57, 46, 48, 57, 69, 101, 78, 
-	110, 84, 116, 58, 13, 32, 13, 10, 
-	13, 13, 32, 83, 115, 80, 112, 79, 
-	111, 78, 110, 83, 115, 69, 101, 58, 
-	32, 69, 70, 80, 83, 101, 112, 115, 
-	32, 69, 70, 80, 83, 101, 112, 115, 
-	82, 114, 82, 114, 79, 111, 82, 114, 
-	13, 10, 77, 109, 69, 101, 83, 115, 
-	83, 115, 65, 97, 71, 103, 69, 101, 
-	58, 13, 32, 13, 10, 13, 13, 10, 
-	13, 32, 111, 108, 108, 111, 119, 115, 
-	13, 10, 13, 10, 79, 111, 78, 110, 
-	71, 103, 13, 10, 85, 117, 67, 99, 
-	67, 99, 69, 101, 83, 115, 83, 115, 
-	13, 10, 13, 13, 13, 10, 13, 10, 
-	13, 116, 101, 114, 105, 115, 107, 32, 
-	67, 97, 108, 108, 32, 77, 97, 110, 
-	97, 103, 101, 114, 47, 48, 57, 46, 
-	48, 57, 48, 57, 13, 48, 57, 10, 
-	13, 48, 57, 46, 48, 57, 13, 13, 
+	48, 57, 46, 48, 57, 13, 13, 13, 
+	10, 13, 10, 13, 116, 101, 114, 105, 
+	115, 107, 32, 67, 97, 108, 108, 32, 
+	77, 97, 110, 97, 103, 101, 114, 47, 
+	48, 57, 46, 48, 57, 48, 57, 13, 
+	48, 57, 10, 13, 48, 57, 46, 48, 
+	57, 69, 101, 78, 110, 84, 116, 58, 
+	13, 32, 13, 10, 13, 13, 32, 83, 
+	115, 80, 112, 79, 111, 78, 110, 83, 
+	115, 69, 101, 58, 32, 69, 70, 80, 
+	83, 101, 112, 115, 32, 69, 70, 80, 
+	83, 101, 112, 115, 82, 114, 82, 114, 
+	79, 111, 82, 114, 13, 10, 77, 109, 
+	69, 101, 83, 115, 83, 115, 65, 97, 
+	71, 103, 69, 101, 58, 13, 32, 13, 
+	10, 13, 13, 10, 13, 32, 111, 108, 
+	108, 111, 119, 115, 13, 10, 13, 10, 
+	79, 111, 78, 110, 71, 103, 13, 10, 
+	85, 117, 67, 99, 67, 99, 69, 101, 
+	83, 115, 83, 115, 13, 10, 13, 13, 
 	10, 13, 13, 10, 13, 13, 32, 47, 
 	48, 57, 58, 64, 65, 90, 91, 96, 
 	97, 122, 123, 126, 10, 58, 32, 47, 
@@ -221,9 +221,9 @@ self._ami_protocol_parser_trans_keys = [
 	58, 33, 47, 48, 57, 59, 64, 65, 
 	90, 91, 96, 97, 122, 123, 126, 13, 
 	58, 32, 47, 48, 57, 59, 64, 65, 
-	90, 91, 96, 97, 122, 123, 126, 13, 
-	65, 69, 82, 101, 114, 10, 115, 86, 
-	118, 69, 101, 65, 115, 13, 13, 32, 
+	90, 91, 96, 97, 122, 123, 126, 65, 
+	115, 13, 65, 69, 82, 101, 114, 10, 
+	115, 86, 118, 69, 101, 13, 13, 32, 
 	47, 48, 57, 58, 64, 65, 90, 91, 
 	96, 97, 122, 123, 126, 13, 45, 13, 
 	45, 32, 47, 48, 57, 58, 64, 65, 
@@ -242,6 +242,10 @@ self._ami_protocol_parser_single_lengths = [
 	0, 1, 1, 1, 1, 1, 1, 1, 
 	1, 1, 1, 1, 1, 1, 1, 1, 
 	1, 1, 1, 1, 1, 0, 1, 0, 
+	1, 1, 1, 1, 1, 1, 1, 2, 
+	2, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 1, 1, 1, 
+	1, 1, 1, 1, 1, 0, 1, 0, 
 	1, 1, 1, 1, 2, 2, 2, 1, 
 	2, 1, 2, 2, 2, 2, 2, 2, 
 	2, 2, 1, 8, 8, 2, 2, 2, 
@@ -250,10 +254,6 @@ self._ami_protocol_parser_single_lengths = [
 	2, 1, 1, 1, 1, 1, 1, 1, 
 	1, 1, 1, 2, 2, 2, 1, 1, 
 	2, 2, 2, 2, 2, 2, 1, 1, 
-	1, 1, 1, 2, 2, 1, 1, 1, 
-	1, 1, 1, 1, 1, 1, 1, 1, 
-	1, 1, 1, 1, 1, 1, 1, 1, 
-	1, 0, 1, 0, 1, 1, 1, 1, 
 	1, 1, 2, 1, 2, 1, 1, 1, 
 	1, 1, 3, 1, 2, 1, 1, 3, 
 	2, 2, 3, 1, 2, 2, 2, 2, 
@@ -264,8 +264,8 @@ self._ami_protocol_parser_single_lengths = [
 	3, 3, 3, 3, 3, 3, 3, 3, 
 	3, 2, 1, 1, 3, 1, 2, 1, 
 	1, 3, 2, 2, 3, 2, 3, 2, 
-	2, 3, 3, 2, 2, 3, 2, 6, 
-	1, 1, 2, 2, 0, 1, 1, 1, 
+	2, 3, 3, 2, 2, 3, 2, 1, 
+	1, 0, 6, 1, 1, 2, 2, 1, 
 	0, 1, 2, 2, 2, 0
 ]
 
@@ -280,6 +280,8 @@ self._ami_protocol_parser_range_lengths = [
 	1, 0, 1, 1, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 1, 1, 1, 
+	1, 0, 1, 1, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
@@ -287,8 +289,6 @@ self._ami_protocol_parser_range_lengths = [
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 1, 1, 1, 1, 0, 1, 1, 
 	0, 0, 0, 0, 0, 7, 0, 7, 
 	7, 7, 7, 0, 0, 7, 7, 7, 
 	7, 7, 7, 0, 0, 0, 0, 0, 
@@ -312,18 +312,18 @@ self._ami_protocol_parser_index_offsets = [
 	0, 0, 2, 4, 6, 8, 10, 12, 
 	14, 16, 18, 20, 22, 24, 26, 28, 
 	30, 32, 34, 36, 38, 40, 42, 45, 
-	47, 50, 52, 55, 58, 61, 64, 67, 
-	69, 72, 74, 77, 80, 83, 86, 89, 
-	92, 95, 98, 100, 109, 118, 121, 124, 
-	127, 130, 132, 134, 137, 140, 143, 146, 
-	149, 152, 155, 157, 160, 162, 165, 167, 
-	169, 172, 174, 176, 178, 180, 182, 184, 
-	186, 188, 190, 192, 195, 198, 201, 203, 
-	205, 208, 211, 214, 217, 220, 223, 225, 
-	227, 229, 231, 233, 236, 239, 241, 243, 
-	245, 247, 249, 251, 253, 255, 257, 259, 
-	261, 263, 265, 267, 269, 271, 273, 275, 
-	277, 279, 281, 284, 286, 289, 291, 294, 
+	47, 50, 52, 55, 58, 60, 62, 64, 
+	67, 70, 72, 74, 76, 78, 80, 82, 
+	84, 86, 88, 90, 92, 94, 96, 98, 
+	100, 102, 104, 106, 108, 110, 112, 115, 
+	117, 120, 122, 125, 128, 131, 134, 137, 
+	139, 142, 144, 147, 150, 153, 156, 159, 
+	162, 165, 168, 170, 179, 188, 191, 194, 
+	197, 200, 202, 204, 207, 210, 213, 216, 
+	219, 222, 225, 227, 230, 232, 235, 237, 
+	239, 242, 244, 246, 248, 250, 252, 254, 
+	256, 258, 260, 262, 265, 268, 271, 273, 
+	275, 278, 281, 284, 287, 290, 293, 295, 
 	297, 299, 301, 304, 306, 309, 318, 320, 
 	329, 338, 347, 358, 360, 363, 372, 381, 
 	392, 402, 412, 423, 425, 428, 431, 434, 
@@ -335,7 +335,7 @@ self._ami_protocol_parser_index_offsets = [
 	715, 726, 736, 745, 754, 765, 767, 770, 
 	779, 788, 799, 809, 819, 830, 840, 851, 
 	861, 871, 882, 893, 903, 913, 924, 934, 
-	941, 943, 945, 948, 951, 952, 954, 956, 
+	936, 938, 939, 946, 948, 950, 953, 956, 
 	958, 959, 968, 971, 981, 991
 ]
 
@@ -351,37 +351,37 @@ self._ami_protocol_parser_trans_targs = [
 	18, 207, 19, 207, 20, 207, 21, 207, 
 	22, 207, 23, 27, 207, 24, 207, 25, 
 	26, 207, 207, 207, 25, 26, 207, 23, 
-	27, 207, 29, 29, 207, 30, 30, 207, 
-	31, 31, 207, 32, 207, 34, 35, 33, 
-	34, 33, 207, 34, 33, 34, 35, 33, 
-	37, 37, 207, 38, 38, 207, 39, 39, 
-	207, 40, 40, 207, 41, 41, 207, 42, 
-	42, 207, 43, 207, 44, 45, 65, 75, 
-	80, 45, 75, 80, 207, 44, 45, 65, 
-	75, 80, 45, 75, 80, 207, 46, 46, 
-	207, 47, 47, 207, 48, 48, 207, 49, 
-	49, 207, 50, 207, 51, 207, 52, 52, 
-	207, 53, 53, 207, 54, 54, 207, 55, 
-	55, 207, 56, 56, 207, 57, 57, 207, 
-	58, 58, 207, 59, 207, 61, 64, 60, 
-	61, 60, 62, 61, 60, 63, 207, 207, 
-	207, 61, 64, 60, 66, 207, 67, 207, 
-	68, 207, 69, 207, 70, 207, 71, 207, 
-	72, 207, 73, 207, 74, 207, 207, 207, 
-	76, 76, 207, 77, 77, 207, 78, 78, 
-	207, 79, 207, 207, 207, 81, 81, 207, 
-	82, 82, 207, 83, 83, 207, 84, 84, 
-	207, 85, 85, 207, 86, 86, 207, 87, 
-	207, 207, 207, 92, 89, 91, 90, 91, 
-	90, 212, 91, 90, 0, 91, 90, 94, 
-	213, 95, 213, 96, 213, 97, 213, 98, 
-	213, 99, 213, 100, 213, 101, 213, 102, 
-	213, 103, 213, 104, 213, 105, 213, 106, 
-	213, 107, 213, 108, 213, 109, 213, 110, 
-	213, 111, 213, 112, 213, 113, 213, 114, 
-	213, 115, 119, 213, 116, 213, 117, 118, 
-	213, 213, 213, 117, 118, 213, 115, 119, 
-	213, 122, 121, 122, 121, 123, 122, 121, 
+	27, 207, 32, 29, 31, 30, 31, 30, 
+	209, 31, 30, 0, 31, 30, 34, 210, 
+	35, 210, 36, 210, 37, 210, 38, 210, 
+	39, 210, 40, 210, 41, 210, 42, 210, 
+	43, 210, 44, 210, 45, 210, 46, 210, 
+	47, 210, 48, 210, 49, 210, 50, 210, 
+	51, 210, 52, 210, 53, 210, 54, 210, 
+	55, 59, 210, 56, 210, 57, 58, 210, 
+	210, 210, 57, 58, 210, 55, 59, 210, 
+	61, 61, 210, 62, 62, 210, 63, 63, 
+	210, 64, 210, 66, 67, 65, 66, 65, 
+	210, 66, 65, 66, 67, 65, 69, 69, 
+	210, 70, 70, 210, 71, 71, 210, 72, 
+	72, 210, 73, 73, 210, 74, 74, 210, 
+	75, 210, 76, 77, 97, 107, 112, 77, 
+	107, 112, 210, 76, 77, 97, 107, 112, 
+	77, 107, 112, 210, 78, 78, 210, 79, 
+	79, 210, 80, 80, 210, 81, 81, 210, 
+	82, 210, 83, 210, 84, 84, 210, 85, 
+	85, 210, 86, 86, 210, 87, 87, 210, 
+	88, 88, 210, 89, 89, 210, 90, 90, 
+	210, 91, 210, 93, 96, 92, 93, 92, 
+	94, 93, 92, 95, 210, 210, 210, 93, 
+	96, 92, 98, 210, 99, 210, 100, 210, 
+	101, 210, 102, 210, 103, 210, 104, 210, 
+	105, 210, 106, 210, 210, 210, 108, 108, 
+	210, 109, 109, 210, 110, 110, 210, 111, 
+	210, 210, 210, 113, 113, 210, 114, 114, 
+	210, 115, 115, 210, 116, 116, 210, 117, 
+	117, 210, 118, 118, 210, 119, 210, 210, 
+	210, 122, 121, 122, 121, 123, 122, 121, 
 	124, 121, 215, 122, 121, 126, 127, 134, 
 	127, 134, 127, 134, 127, 0, 216, 0, 
 	130, 128, 129, 128, 129, 128, 129, 128, 
@@ -460,10 +460,10 @@ self._ami_protocol_parser_trans_targs = [
 	205, 203, 204, 203, 204, 203, 204, 203, 
 	163, 164, 202, 205, 203, 204, 203, 204, 
 	203, 204, 203, 163, 140, 162, 160, 161, 
-	160, 161, 160, 161, 160, 139, 208, 209, 
-	210, 211, 210, 211, 207, 207, 207, 1, 
-	207, 28, 28, 207, 36, 36, 207, 0, 
-	214, 213, 93, 213, 124, 121, 0, 158, 
+	160, 161, 160, 161, 160, 139, 208, 207, 
+	1, 207, 0, 211, 212, 213, 214, 213, 
+	214, 210, 210, 210, 33, 210, 60, 60, 
+	210, 68, 68, 210, 124, 121, 0, 158, 
 	159, 206, 159, 206, 159, 206, 159, 139, 
 	140, 142, 139, 140, 171, 165, 197, 165, 
 	197, 165, 197, 165, 139, 140, 171, 165, 
@@ -472,25 +472,25 @@ self._ami_protocol_parser_trans_targs = [
 	207, 207, 207, 207, 207, 207, 207, 207, 
 	207, 207, 207, 207, 207, 207, 207, 207, 
 	207, 207, 207, 207, 207, 207, 207, 207, 
-	207, 207, 207, 207, 207, 207, 207, 207, 
-	207, 207, 207, 207, 207, 207, 207, 207, 
-	207, 207, 207, 207, 207, 207, 207, 207, 
-	207, 207, 207, 207, 207, 207, 207, 207, 
-	207, 207, 207, 207, 207, 207, 207, 207, 
-	207, 207, 207, 207, 207, 207, 207, 207, 
-	207, 207, 207, 207, 207, 207, 207, 207, 
-	207, 207, 207, 207, 207, 207, 213, 213, 
-	213, 213, 213, 213, 213, 213, 213, 213, 
-	213, 213, 213, 213, 213, 213, 213, 213, 
-	213, 213, 213, 213, 213, 213, 213, 213, 
-	213, 217, 217, 217, 217, 217, 217, 217, 
+	207, 207, 210, 210, 210, 210, 210, 210, 
+	210, 210, 210, 210, 210, 210, 210, 210, 
+	210, 210, 210, 210, 210, 210, 210, 210, 
+	210, 210, 210, 210, 210, 210, 210, 210, 
+	210, 210, 210, 210, 210, 210, 210, 210, 
+	210, 210, 210, 210, 210, 210, 210, 210, 
+	210, 210, 210, 210, 210, 210, 210, 210, 
+	210, 210, 210, 210, 210, 210, 210, 210, 
+	210, 210, 210, 210, 210, 210, 210, 210, 
+	210, 210, 210, 210, 210, 210, 210, 210, 
+	210, 210, 210, 210, 210, 210, 210, 210, 
+	210, 217, 217, 217, 217, 217, 217, 217, 
 	217, 217, 217, 217, 217, 217, 217, 217, 
 	217, 217, 217, 217, 217, 217, 217, 217, 
 	217, 217, 217, 217, 217, 217, 217, 217, 
 	217, 217, 217, 217, 217, 217, 217, 217, 
 	217, 217, 217, 217, 217, 217, 217, 217, 
 	217, 217, 217, 217, 217, 217, 217, 217, 
-	217, 207, 207, 207, 207, 213, 217, 217, 
+	217, 207, 210, 210, 210, 210, 217, 217, 
 	217, 217, 0
 ]
 
@@ -499,44 +499,44 @@ class << self
 	private :_ami_protocol_parser_trans_actions, :_ami_protocol_parser_trans_actions=
 end
 self._ami_protocol_parser_trans_actions = [
+	0, 49, 0, 49, 0, 49, 0, 49, 
+	0, 49, 0, 49, 0, 49, 0, 49, 
+	0, 49, 0, 49, 0, 49, 0, 49, 
+	0, 49, 0, 49, 0, 49, 0, 49, 
+	0, 49, 0, 49, 0, 49, 0, 49, 
+	1, 49, 0, 0, 49, 0, 49, 3, 
+	0, 49, 43, 49, 3, 0, 49, 0, 
+	0, 49, 19, 19, 21, 0, 21, 0, 
+	35, 21, 0, 0, 21, 0, 0, 63, 
 	0, 63, 0, 63, 0, 63, 0, 63, 
 	0, 63, 0, 63, 0, 63, 0, 63, 
 	0, 63, 0, 63, 0, 63, 0, 63, 
 	0, 63, 0, 63, 0, 63, 0, 63, 
-	0, 63, 0, 63, 0, 63, 0, 63, 
-	1, 63, 0, 0, 63, 0, 63, 3, 
-	0, 63, 51, 63, 3, 0, 63, 0, 
+	0, 63, 0, 63, 0, 63, 1, 63, 
+	0, 0, 63, 0, 63, 3, 0, 63, 
+	51, 63, 3, 0, 63, 0, 0, 63, 
+	0, 0, 63, 0, 0, 63, 0, 0, 
+	63, 0, 63, 90, 29, 29, 31, 0, 
+	53, 31, 0, 90, 29, 29, 0, 0, 
+	63, 0, 0, 63, 0, 0, 63, 0, 
 	0, 63, 0, 0, 63, 0, 0, 63, 
-	0, 0, 63, 0, 63, 90, 29, 29, 
-	31, 0, 53, 31, 0, 90, 29, 29, 
-	0, 0, 63, 0, 0, 63, 0, 0, 
-	63, 0, 0, 63, 0, 0, 63, 0, 
-	0, 63, 0, 63, 0, 0, 0, 0, 
-	0, 0, 0, 0, 63, 0, 0, 0, 
-	0, 0, 0, 0, 0, 63, 0, 0, 
-	63, 0, 0, 63, 0, 0, 63, 0, 
-	0, 63, 0, 63, 0, 63, 0, 0, 
-	63, 0, 0, 63, 0, 0, 63, 0, 
+	0, 63, 0, 0, 0, 0, 0, 0, 
+	0, 0, 63, 0, 0, 0, 0, 0, 
+	0, 0, 0, 63, 0, 0, 63, 0, 
 	0, 63, 0, 0, 63, 0, 0, 63, 
-	0, 0, 63, 0, 63, 13, 13, 13, 
-	0, 0, 0, 0, 0, 0, 63, 84, 
-	63, 13, 13, 13, 0, 63, 0, 63, 
+	0, 63, 0, 63, 0, 0, 63, 0, 
+	0, 63, 0, 0, 63, 0, 0, 63, 
+	0, 0, 63, 0, 0, 63, 0, 0, 
+	63, 0, 63, 13, 13, 13, 0, 0, 
+	0, 0, 0, 0, 63, 84, 63, 13, 
+	13, 13, 0, 63, 0, 63, 0, 63, 
 	0, 63, 0, 63, 0, 63, 0, 63, 
-	0, 63, 33, 63, 0, 63, 55, 63, 
-	0, 0, 63, 0, 0, 63, 0, 0, 
-	63, 23, 63, 96, 63, 0, 0, 63, 
-	0, 0, 63, 0, 0, 63, 0, 0, 
+	33, 63, 0, 63, 55, 63, 0, 0, 
 	63, 0, 0, 63, 0, 0, 63, 23, 
-	63, 93, 63, 19, 19, 21, 0, 21, 
-	0, 35, 21, 0, 0, 21, 0, 0, 
-	49, 0, 49, 0, 49, 0, 49, 0, 
-	49, 0, 49, 0, 49, 0, 49, 0, 
-	49, 0, 49, 0, 49, 0, 49, 0, 
-	49, 0, 49, 0, 49, 0, 49, 0, 
-	49, 0, 49, 0, 49, 0, 49, 1, 
-	49, 0, 0, 49, 0, 49, 3, 0, 
-	49, 43, 49, 3, 0, 49, 0, 0, 
-	49, 15, 15, 0, 0, 0, 0, 0, 
+	63, 96, 63, 0, 0, 63, 0, 0, 
+	63, 0, 0, 63, 0, 0, 63, 0, 
+	0, 63, 0, 0, 63, 23, 63, 93, 
+	63, 15, 15, 0, 0, 0, 0, 0, 
 	0, 0, 17, 0, 0, 0, 5, 5, 
 	5, 5, 5, 5, 5, 0, 87, 0, 
 	7, 0, 0, 0, 0, 0, 0, 0, 
@@ -615,37 +615,37 @@ self._ami_protocol_parser_trans_actions = [
 	7, 0, 0, 0, 0, 0, 0, 0, 
 	0, 81, 9, 78, 9, 9, 9, 9, 
 	9, 9, 9, 9, 0, 7, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 41, 
-	41, 41, 41, 41, 59, 57, 61, 0, 
-	61, 0, 0, 61, 0, 0, 61, 0, 
-	41, 45, 0, 47, 0, 0, 0, 25, 
+	0, 0, 0, 0, 0, 0, 41, 45, 
+	0, 47, 0, 0, 41, 41, 41, 41, 
+	41, 59, 57, 61, 0, 61, 0, 0, 
+	61, 0, 0, 61, 0, 0, 0, 25, 
 	75, 75, 75, 75, 75, 75, 75, 25, 
 	0, 0, 0, 0, 5, 5, 5, 5, 
 	5, 5, 5, 5, 0, 0, 5, 5, 
 	5, 5, 5, 5, 5, 5, 0, 5, 
-	5, 5, 5, 5, 5, 5, 67, 63, 
-	63, 63, 63, 63, 63, 63, 63, 63, 
-	63, 63, 63, 63, 63, 63, 63, 63, 
-	63, 63, 63, 63, 63, 63, 63, 63, 
-	63, 63, 63, 63, 63, 63, 63, 63, 
-	63, 63, 63, 63, 63, 63, 63, 63, 
-	63, 63, 63, 63, 63, 63, 63, 63, 
-	63, 63, 63, 63, 63, 63, 63, 63, 
-	63, 63, 63, 63, 63, 63, 63, 63, 
-	63, 63, 63, 63, 63, 63, 63, 63, 
-	63, 63, 63, 63, 63, 63, 63, 63, 
-	63, 63, 63, 63, 63, 63, 49, 49, 
+	5, 5, 5, 5, 5, 5, 67, 49, 
 	49, 49, 49, 49, 49, 49, 49, 49, 
 	49, 49, 49, 49, 49, 49, 49, 49, 
 	49, 49, 49, 49, 49, 49, 49, 49, 
-	49, 73, 73, 73, 73, 73, 73, 73, 
+	49, 49, 63, 63, 63, 63, 63, 63, 
+	63, 63, 63, 63, 63, 63, 63, 63, 
+	63, 63, 63, 63, 63, 63, 63, 63, 
+	63, 63, 63, 63, 63, 63, 63, 63, 
+	63, 63, 63, 63, 63, 63, 63, 63, 
+	63, 63, 63, 63, 63, 63, 63, 63, 
+	63, 63, 63, 63, 63, 63, 63, 63, 
+	63, 63, 63, 63, 63, 63, 63, 63, 
+	63, 63, 63, 63, 63, 63, 63, 63, 
+	63, 63, 63, 63, 63, 63, 63, 63, 
+	63, 63, 63, 63, 63, 63, 63, 63, 
+	63, 73, 73, 73, 73, 73, 73, 73, 
 	73, 73, 73, 73, 73, 73, 73, 73, 
 	73, 73, 73, 73, 71, 71, 71, 71, 
 	71, 71, 71, 71, 71, 71, 71, 71, 
 	71, 71, 71, 71, 71, 71, 71, 71, 
 	71, 71, 71, 71, 71, 71, 71, 71, 
 	71, 71, 71, 71, 71, 71, 71, 71, 
-	71, 61, 61, 61, 61, 47, 69, 67, 
+	71, 47, 61, 61, 61, 61, 69, 67, 
 	67, 67, 0
 ]
 
@@ -657,6 +657,7 @@ self._ami_protocol_parser_to_state_actions = [
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 37, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
@@ -665,7 +666,6 @@ self._ami_protocol_parser_to_state_actions = [
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	37, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
@@ -680,7 +680,7 @@ self._ami_protocol_parser_to_state_actions = [
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 37, 
-	0, 0, 0, 0, 0, 37, 0, 0, 
+	0, 0, 37, 0, 0, 0, 0, 0, 
 	0, 99, 0, 0, 0, 0
 ]
 
@@ -715,7 +715,7 @@ self._ami_protocol_parser_from_state_actions = [
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 39, 
-	0, 0, 0, 0, 0, 39, 0, 0, 
+	0, 0, 39, 0, 0, 0, 0, 0, 
 	0, 39, 0, 0, 0, 0
 ]
 
@@ -724,18 +724,18 @@ class << self
 	private :_ami_protocol_parser_eof_trans, :_ami_protocol_parser_eof_trans=
 end
 self._ami_protocol_parser_eof_trans = [
-	0, 1086, 1086, 1086, 1086, 1086, 1086, 1086, 
-	1086, 1086, 1086, 1086, 1086, 1086, 1086, 1086, 
-	1086, 1086, 1086, 1086, 1086, 1086, 1086, 1086, 
-	1086, 1086, 1086, 1086, 1086, 1086, 1086, 1086, 
-	1086, 1086, 1086, 1086, 1086, 1086, 1086, 1086, 
-	1086, 1086, 1086, 1086, 1086, 1086, 1086, 1086, 
-	1086, 1086, 1086, 1086, 1086, 1086, 1086, 1086, 
-	1086, 1086, 1086, 1086, 1086, 1086, 1086, 1086, 
-	1086, 1086, 1086, 1086, 1086, 1086, 1086, 1086, 
-	1086, 1086, 1086, 1086, 1086, 1086, 1086, 1086, 
-	1086, 1086, 1086, 1086, 1086, 1086, 1086, 1086, 
-	0, 0, 0, 0, 0, 1113, 1113, 1113, 
+	0, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 
+	1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 
+	1026, 1026, 1026, 1026, 1026, 1026, 1026, 1026, 
+	1026, 1026, 1026, 1026, 0, 0, 0, 0, 
+	0, 1113, 1113, 1113, 1113, 1113, 1113, 1113, 
+	1113, 1113, 1113, 1113, 1113, 1113, 1113, 1113, 
+	1113, 1113, 1113, 1113, 1113, 1113, 1113, 1113, 
+	1113, 1113, 1113, 1113, 1113, 1113, 1113, 1113, 
+	1113, 1113, 1113, 1113, 1113, 1113, 1113, 1113, 
+	1113, 1113, 1113, 1113, 1113, 1113, 1113, 1113, 
+	1113, 1113, 1113, 1113, 1113, 1113, 1113, 1113, 
+	1113, 1113, 1113, 1113, 1113, 1113, 1113, 1113, 
 	1113, 1113, 1113, 1113, 1113, 1113, 1113, 1113, 
 	1113, 1113, 1113, 1113, 1113, 1113, 1113, 1113, 
 	1113, 1113, 1113, 1113, 1113, 1113, 1113, 1113, 
@@ -750,7 +750,7 @@ self._ami_protocol_parser_eof_trans = [
 	1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 
 	1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 
 	1169, 1169, 0, 0, 0, 0, 0, 0, 
-	1173, 1173, 1173, 1173, 0, 0, 1174, 0, 
+	1170, 0, 0, 1174, 1174, 1174, 1174, 0, 
 	0, 0, 1175, 1178, 1178, 1178
 ]
 
@@ -766,15 +766,15 @@ self.ami_protocol_parser_error = 0;
 class << self
 	attr_accessor :ami_protocol_parser_en_immediate_response
 end
-self.ami_protocol_parser_en_immediate_response = 88;
-class << self
-	attr_accessor :ami_protocol_parser_en_entry
-end
-self.ami_protocol_parser_en_entry = 213;
+self.ami_protocol_parser_en_immediate_response = 28;
 class << self
 	attr_accessor :ami_protocol_parser_en_main
 end
 self.ami_protocol_parser_en_main = 207;
+class << self
+	attr_accessor :ami_protocol_parser_en_protocol
+end
+self.ami_protocol_parser_en_protocol = 210;
 class << self
 	attr_accessor :ami_protocol_parser_en_error_recovery
 end
@@ -954,7 +954,7 @@ when 7 then
 # line 29 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  error_reason_end; 	begin
-		 @current_state = 207
+		 @current_state = 210
 		_trigger_goto = true
 		_goto_level = _again
 		break
@@ -979,7 +979,7 @@ when 10 then
 
       end_ignoring_syntax_error;
       	begin
-		 @current_state = 207
+		 @current_state = 210
 		_trigger_goto = true
 		_goto_level = _again
 		break
@@ -1070,7 +1070,7 @@ when 21 then
 # line 38 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  	begin
-		 @current_state = 207
+		 @current_state = 210
 		_trigger_goto = true
 		_goto_level = _again
 		break
@@ -1078,27 +1078,27 @@ when 21 then
  		end
 # line 38 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 22 then
-# line 68 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 67 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  	begin
-		 @current_state = 207
+		 @current_state = 210
 		_trigger_goto = true
 		_goto_level = _again
 		break
 	end
  		end
-# line 68 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 67 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 23 then
-# line 74 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 73 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  message_received; 	begin
-		 @current_state = 207
+		 @current_state = 210
 		_trigger_goto = true
 		_goto_level = _again
 		break
 	end
  		end
-# line 74 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 73 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 27 then
 # line 1 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
@@ -1109,47 +1109,72 @@ when 28 then
 # line 44 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  @token_end =  @current_pointer+1
- begin 
-    # fgoto protocol
-   end
+ begin  	begin
+		 @current_state = 210
+		_trigger_goto = true
+		_goto_level = _again
+		break
+	end
+  end
 		end
 # line 44 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 29 then
-# line 47 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 45 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  @token_end =  @current_pointer+1
  begin 
+    # If this scanner's look-ahead capability didn't match the prompt, let's ignore the need for a prompt
      @current_pointer =  @current_pointer - 1;
-    # fgoto protocol;
+    	begin
+		 @current_state = 210
+		_trigger_goto = true
+		_goto_level = _again
+		break
+	end
+
    end
 		end
-# line 47 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 45 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 30 then
-# line 47 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 45 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  @token_end =  @current_pointer
  @current_pointer =  @current_pointer - 1; begin 
+    # If this scanner's look-ahead capability didn't match the prompt, let's ignore the need for a prompt
      @current_pointer =  @current_pointer - 1;
-    # fgoto protocol;
+    	begin
+		 @current_state = 210
+		_trigger_goto = true
+		_goto_level = _again
+		break
+	end
+
    end
 		end
-# line 47 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 45 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 31 then
-# line 47 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 45 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  begin  @current_pointer = (( @token_end))-1; end
  begin 
+    # If this scanner's look-ahead capability didn't match the prompt, let's ignore the need for a prompt
      @current_pointer =  @current_pointer - 1;
-    # fgoto protocol;
+    	begin
+		 @current_state = 210
+		_trigger_goto = true
+		_goto_level = _again
+		break
+	end
+
    end
 		end
-# line 47 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 45 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 32 then
-# line 54 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 53 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  @token_end =  @current_pointer+1
 		end
-# line 54 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 53 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 33 then
 # line 31 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
@@ -1158,38 +1183,38 @@ when 33 then
 		end
 # line 31 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 34 then
-# line 56 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 55 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  @token_end =  @current_pointer+1
 		end
-# line 56 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 55 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 35 then
-# line 57 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 56 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  @token_end =  @current_pointer+1
 		end
-# line 57 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 56 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 36 then
-# line 58 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 57 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  @token_end =  @current_pointer+1
  begin  	begin
-		 @current_state = 207
+		 @current_state = 210
 		_trigger_goto = true
 		_goto_level = _again
 		break
 	end
   end
 		end
-# line 58 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 57 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 37 then
-# line 59 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 58 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  @token_end =  @current_pointer+1
  begin 
      @current_pointer =  @current_pointer - 1;
     	begin
-		 @current_state = 88
+		 @current_state = 28
 		_trigger_goto = true
 		_goto_level = _again
 		break
@@ -1197,15 +1222,15 @@ when 37 then
 
    end
 		end
-# line 59 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 58 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 38 then
-# line 59 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 58 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  @token_end =  @current_pointer
  @current_pointer =  @current_pointer - 1; begin 
      @current_pointer =  @current_pointer - 1;
     	begin
-		 @current_state = 88
+		 @current_state = 28
 		_trigger_goto = true
 		_goto_level = _again
 		break
@@ -1213,15 +1238,15 @@ when 38 then
 
    end
 		end
-# line 59 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 58 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 39 then
-# line 59 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 58 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  begin  @current_pointer = (( @token_end))-1; end
  begin 
      @current_pointer =  @current_pointer - 1;
     	begin
-		 @current_state = 88
+		 @current_state = 28
 		_trigger_goto = true
 		_goto_level = _again
 		break
@@ -1229,41 +1254,41 @@ when 39 then
 
    end
 		end
-# line 59 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 58 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 40 then
-# line 72 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 71 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  @ragel_act = 9;		end
-# line 72 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 71 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 41 then
-# line 74 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 73 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  @ragel_act = 11;		end
-# line 74 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
-when 42 then
 # line 73 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+when 42 then
+# line 72 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  @token_end =  @current_pointer+1
 		end
-# line 73 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 72 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 43 then
-# line 72 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 71 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  @token_end =  @current_pointer
  @current_pointer =  @current_pointer - 1;		end
-# line 72 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 71 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 44 then
-# line 74 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 73 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  @token_end =  @current_pointer
  @current_pointer =  @current_pointer - 1;		end
-# line 74 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 73 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 45 then
-# line 72 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 71 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
  begin  @current_pointer = (( @token_end))-1; end
 		end
-# line 72 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
+# line 71 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 when 46 then
 # line 1 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
 		begin
@@ -1282,7 +1307,7 @@ end
 end 
 			end
 # line 1 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
-# line 1286 "lib/adhearsion/voip/asterisk/new-ami/ami.rb"
+# line 1311 "lib/adhearsion/voip/asterisk/new-ami/ami.rb"
 			end # action switch
 		end
 	end
@@ -1309,7 +1334,7 @@ when 25 then
  @ragel_act = 0
 		end
 # line 1 "lib/adhearsion/voip/asterisk/new-ami/ami.rl"
-# line 1313 "lib/adhearsion/voip/asterisk/new-ami/ami.rb"
+# line 1338 "lib/adhearsion/voip/asterisk/new-ami/ami.rb"
 		end # to state action switch
 	end
 	if _trigger_goto

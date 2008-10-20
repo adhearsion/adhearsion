@@ -35,27 +35,26 @@ Event    = "Event"i colon %begin_capturing_event_name rest_of_line %init_event c
 FollowsBody = (any* -- FollowsDelimiter) >start_capturing_follows_text FollowsDelimiter @end_capturing_follows_text crlf;
 
 # An "immediate" response is one which is not in the key/value pair format.
-immediate_response := (any+ -- crlf) >start_capturing_immediate_response crlf >finish_capturing_immediate_response @{ fgoto main; };
+immediate_response := (any+ -- crlf) >start_capturing_immediate_response crlf >finish_capturing_immediate_response @{ fgoto protocol; };
 
 # When a new socket is established, Asterisk will send the version of the protocol per the Prompt machine. Because it's
 # tedious for unit tests to always send this, we'll put some intelligence into this parser to support going straight into
 # the protocol-parsing machine. It's also conceivable that a variant of AMI would not send this initial information.
-entry := |*
-  Prompt => {
-    # fgoto protocol
-  };
+main := |*
+  Prompt => { fgoto protocol; };
   any => {
+    # If this scanner's look-ahead capability didn't match the prompt, let's ignore the need for a prompt
     fhold;
-    # fgoto protocol;
+    fgoto protocol;
   };
 *|;
 
-main := |*
+protocol := |*
   Prompt;
   Success | Pong | Event => message_received;
   Error;
   Follows crlf;
-  crlf => { fgoto main; }; # If we get a crlf out of place, let's just ignore it.
+  crlf => { fgoto protocol; }; # If we get a crlf out of place, let's just ignore it.
   any  => {
     fhold;
     fgoto immediate_response;
@@ -65,13 +64,13 @@ main := |*
 # Skip over everything until we get back to crlf{2}
 error_recovery := (any**) >start_ignoring_syntax_error stanza_break @end_ignoring_syntax_error; 
 
-success := KeyValuePair* crlf @message_received @{ fgoto main; };
+success := KeyValuePair* crlf @message_received @{ fgoto protocol; };
 
 # For the "Response: Follows" protocol abnormality. What happens if there's a protocol irregularity in this state???
 response_follows := |*
     KeyValuePair+;
     FollowsBody;
-    crlf @{ message_received; fgoto main; };
+    crlf @{ message_received; fgoto protocol; };
 *|;
  
 }%%
