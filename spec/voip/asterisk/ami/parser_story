@@ -15,10 +15,6 @@ Story: Parsing AMI
 	WHEN DOING INTEGRATION TESTS:
 	- Try sending it an originate with a bad priority, a timeout of 
 	
-	THINGS TO PARSE IN NORMAL SPEC:
-	- That the various methods do integrate with theatre
-	- That the ami_error! method does raise an AMIError exception
-	
 	Scenario: Parsing only the initial AMI version header
 	
 		Given a new parser

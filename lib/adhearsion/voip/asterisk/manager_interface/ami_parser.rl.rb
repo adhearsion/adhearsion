@@ -139,7 +139,7 @@ module Adhearsion
         #
         # @param [String] reason The reason given in the Message: header for the error stanza.
         #
-        def ami_error!(reason)
+        def error_received(reason)
           raise NotImplementedError, "Must be implemented in subclass!"
         end
         
@@ -148,7 +148,7 @@ module Adhearsion
         # it's impossible to distinguish between a syntax error and an immediate packet.
         #
         # @param [String] ignored_chunk The offending text which caused the syntax error.
-        def syntax_error!(ignored_chunk)
+        def syntax_error_encountered(ignored_chunk)
           raise NotImplementedError, "Must be implemented in subclass!"
         end
 
@@ -175,7 +175,7 @@ module Adhearsion
         end
   
         def error_reason_end
-          ami_error! @data[@error_reason_start...@current_pointer - 3]
+          error_received @data[@error_reason_start...@current_pointer - 3]
           @error_reason_start = nil
         end
   
@@ -205,7 +205,7 @@ module Adhearsion
         def end_ignoring_syntax_error
           # Subtracting 3 from @current_pointer below for "\r\n\r" which separates a stanza
           offending_data = @data[@current_syntax_error_start...@current_pointer - 3]
-          syntax_error! offending_data
+          syntax_error_encountered offending_data
           @current_syntax_error_start = nil
         end
   

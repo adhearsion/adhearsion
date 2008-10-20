@@ -14,12 +14,12 @@ class IntrospectiveManagerStreamParser < Adhearsion::VoIP::Asterisk::AbstractAst
     @received_messages << message
   end
   
-  def syntax_error!(ignored_chunk)
-    @syntax_errors << ignored_chunk
+  def error_received(error_message)
+    @ami_errors << error_message
   end
   
-  def ami_error!(error_message)
-    @ami_errors << error_message
+  def syntax_error_encountered(ignored_chunk)
+    @syntax_errors << ignored_chunk
   end
   
 end
