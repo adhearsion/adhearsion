@@ -30,9 +30,7 @@ class AmiStreamParser
     
     action message_received { message_received @current_message }
 
-    action start_ignoring_syntax_error {
-      start_ignoring_syntax_error;
-    }
+    action start_ignoring_syntax_error { start_ignoring_syntax_error; }
     action end_ignoring_syntax_error {
       end_ignoring_syntax_error;
       fgoto protocol;

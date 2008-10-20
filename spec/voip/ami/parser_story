@@ -5,13 +5,15 @@ Story: Parsing AMI
 	So that I can control Asterisk asynchronously
 	
 	TODO:
-	- Have a chop_buffer_for_new_data_of_size() method which kills old pointer-related variables
 	- Limit the size of keys to be 50 characters
 	
 	UNCERTAINTIES:
 	- How do I test non-immediate syntax errors?
 	- What is the delimiter between immediate responses?
 	- Are there any pairs with non-unique keys? Could Hash be blowing stuff away?
+	
+	WHEN DOING INTEGRATION TESTS:
+	- Try sending it an originate with a bad priority, a timeout of 
 	
 	THINGS TO PARSE IN NORMAL SPEC:
 	- That the various methods do integrate with theatre
@@ -185,4 +187,3 @@ Story: Parsing AMI
 		Then the protocol should have parsed without syntax errors
 		And 3 messages should have been received
 		And 1 message should be an immediate response with text "Yes, plain English is sent sometimes over AMI."
-	

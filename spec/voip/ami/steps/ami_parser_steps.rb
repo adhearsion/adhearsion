@@ -56,7 +56,7 @@ Response: Follows\r
 Privilege: Command\r
 ActionID: 123123\r
 %s\r
---END COMMAND--\r
+--END COMMAND--\r\n\r
 RESPONSE
 
     @parser << multi_line_response
@@ -107,6 +107,9 @@ RESPONSE
   ########################################
   
   Then "the protocol should have parsed without syntax errors" do
+    current_pointer     = @parser.send(:instance_variable_get, :@current_pointer)
+    data_ending_pointer = @parser.send(:instance_variable_get, :@data_ending_pointer)
+    current_pointer.should equal(data_ending_pointer)
     @syntax_errors.should be_empty
   end
   
@@ -155,5 +158,4 @@ RESPONSE
     end.size.should equal(number.to_i)
   end
   
-    
 end
