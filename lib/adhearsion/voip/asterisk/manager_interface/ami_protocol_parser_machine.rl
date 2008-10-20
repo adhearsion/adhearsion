@@ -64,7 +64,7 @@ protocol := |*
 *|;
 
 # Skip over everything until we get back to crlf{2}
-error_recovery := (any**) >start_ignoring_syntax_error stanza_break @end_ignoring_syntax_error; 
+error_recovery := (any**) >start_ignoring_syntax_error stanza_break @end_ignoring_syntax_error @{ fgoto protocol; }; 
 
 success := KeyValuePair* crlf @message_received @{ fgoto protocol; };
 

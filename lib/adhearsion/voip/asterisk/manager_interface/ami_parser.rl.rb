@@ -29,19 +29,11 @@ module Adhearsion
     
           action message_received { message_received @current_message }
 
-          action start_ignoring_syntax_error { start_ignoring_syntax_error; }
-          action end_ignoring_syntax_error {
-            end_ignoring_syntax_error;
-            fgoto protocol;
-          }
+          action start_ignoring_syntax_error { start_ignoring_syntax_error }
+          action   end_ignoring_syntax_error { end_ignoring_syntax_error   }
     
-          action start_capturing_immediate_response {
-            start_capturing_immediate_response;
-          }
-    
-          action finish_capturing_immediate_response {
-            finish_capturing_immediate_response;
-          }
+          action start_capturing_immediate_response  { start_capturing_immediate_response  }
+          action finish_capturing_immediate_response { finish_capturing_immediate_response }
 
           # Executed after a "Respone: Success" or a Pong
           action init_success { @current_message = NormalAmiResponse.new }
