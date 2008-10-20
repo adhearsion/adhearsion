@@ -7,7 +7,7 @@
 ## Note:This file is language agnostic. From this AMI parsers in many other languages can be generated.
 #########
 
-machine ami_protocol_parser_common;
+machine ami_protocol_parser_machine;
 
 cr = "\r";           # A carriage return. Used before (almost) every newline character.
 lf = "\n";                 # Newline. Used (with cr) to separate key/value pairs and stanzas.

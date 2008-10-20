@@ -44,7 +44,7 @@ module Adhearsion
           action event_name_starts { event_name_starts }
           action event_name_stops  { event_name_stops  }
           
-          include ami_protocol_parser_common "ami_protocol_parser_machine.rl";
+          include ami_protocol_parser_machine "ami_protocol_parser_machine.rl";
     
         }%% # %
 
