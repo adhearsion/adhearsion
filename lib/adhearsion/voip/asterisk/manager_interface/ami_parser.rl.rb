@@ -13,35 +13,34 @@ module Adhearsion
         %%{ #%#
         	machine ami_protocol_parser;
     
-          action before_prompt { before_prompt }
-          action after_prompt  { after_prompt  }
-          action open_version  { open_version }
-          action close_version { close_version }
+          action version_starts { version_starts }
+          action version_stops  { version_stops  }
     
-          action before_key    { begin_capturing_key  }
-          action after_key     { finish_capturing_key }
+          action key_starts { key_starts }
+          action key_stops  { key_stops  }
     
-          action before_value  { begin_capturing_value  }
-          action after_value   { finish_capturing_value }
+          action value_starts { value_starts }
+          action value_stops  { value_stops  }
     
-          action error_reason_start { error_reason_start }
-          action error_reason_end   { error_reason_end   }
-    
-          action message_received { message_received @current_message }
+          action error_reason_starts { error_reason_starts }
+          action error_reason_stops  { error_reason_stops }
 
-          action start_ignoring_syntax_error { start_ignoring_syntax_error }
-          action   end_ignoring_syntax_error { end_ignoring_syntax_error   }
+          action syntax_error_starts { syntax_error_starts }
+          action syntax_error_stops  { syntax_error_stops  }
     
-          action start_capturing_immediate_response  { start_capturing_immediate_response  }
-          action finish_capturing_immediate_response { finish_capturing_immediate_response }
+          action immediate_response_starts { immediate_response_starts }
+          action immediate_response_stops  { immediate_response_stops  }
 
+          action follows_text_starts { follows_text_starts }
+          action follows_text_stops  { follows_text_stops  }
+    
+          action event_name_starts { event_name_starts }
+          
           # Executed after a "Respone: Success" or a Pong
           action init_success { @current_message = NormalAmiResponse.new }
     
-          action start_capturing_follows_text { start_capturing_follows_text }
-          action   end_capturing_follows_text { end_capturing_follows_text   }
-    
-          action begin_capturing_event_name { begin_capturing_event_name }
+          action message_received { message_received @current_message }
+          
           action init_event { init_event }
     
           action init_response_follows {
@@ -92,11 +91,11 @@ module Adhearsion
   
         protected
   
-        def open_version
+        def version_starts
           @start_of_version = @current_pointer
         end
   
-        def close_version
+        def version_stops
           self.ami_version = @data[@start_of_version...@current_pointer].to_f
           @start_of_version = nil
         end
@@ -113,12 +112,12 @@ module Adhearsion
           capture
         end
   
-        def begin_capturing_event_name
+        def event_name_starts
           @event_name_start = @current_pointer
         end
   
         def init_event
-          event_name = @data[@event_name_start]
+          event_name = @data[@event_name_start...@current_pointer]
           @event_name_start = nil
           @current_message = Event.new(event_name)
         end
@@ -152,38 +151,38 @@ module Adhearsion
           raise NotImplementedError, "Must be implemented in subclass!"
         end
 
-        def begin_capturing_key
+        def key_starts
           @current_key_position = @current_pointer
         end
   
-        def finish_capturing_key
+        def key_stops
           @current_key = @data[@current_key_position...@current_pointer]
         end
   
-        def begin_capturing_value
+        def value_starts
           @current_value_position = @current_pointer
         end
   
-        def finish_capturing_value
+        def value_stops
           @current_value = @data[@current_value_position...@current_pointer]
           @last_seen_value_end = @current_pointer + 2 # 2 for \r\n
           add_pair_to_current_message
         end
   
-        def error_reason_start
+        def error_reason_starts
           @error_reason_start = @current_pointer
         end
   
-        def error_reason_end
+        def error_reason_stops
           error_received @data[@error_reason_start...@current_pointer - 3]
           @error_reason_start = nil
         end
   
-        def start_capturing_follows_text
+        def follows_text_starts
           @follows_text_start = @current_pointer
         end
   
-        def end_capturing_follows_text
+        def follows_text_stops
           text = @data[@last_seen_value_end..(@current_pointer - "\r\n--END COMMAND--".size)]
           @current_message.text = text
           @follows_text_start = nil
@@ -198,22 +197,22 @@ module Adhearsion
           @current_key, @current_value, @current_key_position, @current_value_position = nil
         end
   
-        def start_ignoring_syntax_error
+        def syntax_error_starts
           @current_syntax_error_start = @current_pointer # Adding 1 since the pointer is still set to the last successful match
         end
   
-        def end_ignoring_syntax_error
+        def syntax_error_stops
           # Subtracting 3 from @current_pointer below for "\r\n\r" which separates a stanza
           offending_data = @data[@current_syntax_error_start...@current_pointer - 3]
           syntax_error_encountered offending_data
           @current_syntax_error_start = nil
         end
   
-        def start_capturing_immediate_response
+        def immediate_response_starts
           @immediate_response_start = @current_pointer
         end
   
-        def finish_capturing_immediate_response
+        def immediate_response_stops
           message = @data[@immediate_response_start...@current_pointer]
           message_received ImmediateResponse.new(message)
         end

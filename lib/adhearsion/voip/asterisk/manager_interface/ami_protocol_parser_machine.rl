@@ -19,25 +19,25 @@ colon = ":" [ ]**;                # Separates keys from values. "A colon followe
 stanza_break    = crlf crlf;      # The seperator between two stanzas.
 rest_of_line    = (any* -- crlf); # Match all characters until the next line seperator.
 
-Prompt = "Asterisk Call Manager/" digit+ >open_version "." digit+ %close_version crlf;
+Prompt = "Asterisk Call Manager/" digit+ >version_starts "." digit+ %version_stops crlf;
 
 Key = ((alnum | print) -- (cr | lf))+;
-KeyValuePair = Key >before_key %after_key colon rest_of_line >before_value %after_value crlf;
+KeyValuePair = Key >key_starts %key_stops colon rest_of_line >value_starts %value_stops crlf;
 
 FollowsDelimiter = crlf "--END COMMAND--";
 
 Response = "Response"i colon;
 Success	 = Response "Success"i %init_success crlf @{ fgoto success; };
 Pong     = Response "Pong"i %init_success crlf @{ fgoto success; };
-Error    = Response "Error"i crlf "Message"i colon rest_of_line >error_reason_start crlf crlf @error_reason_end;
+Error    = Response "Error"i crlf "Message"i colon rest_of_line >error_reason_starts crlf crlf @error_reason_stops;
 Follows  = Response "Follows" crlf @init_response_follows @{ fgoto response_follows; };
-Event    = "Event"i colon %begin_capturing_event_name rest_of_line %init_event crlf;
+Event    = "Event"i colon %event_name_starts rest_of_line %init_event crlf;
 
 # For "Response: Follows"
-FollowsBody = (any* -- FollowsDelimiter) >start_capturing_follows_text FollowsDelimiter @end_capturing_follows_text crlf;
+FollowsBody = (any* -- FollowsDelimiter) >follows_text_starts FollowsDelimiter @follows_text_stops crlf;
 
 # An "immediate" response is one which is not in the key/value pair format.
-immediate_response := (any+ -- loose_newline) >start_capturing_immediate_response (crlf) >finish_capturing_immediate_response @{ fgoto protocol; };
+immediate_response := (any+ -- loose_newline) >immediate_response_starts (crlf) >immediate_response_stops @{fgoto protocol;};
 
 # When a new socket is established, Asterisk will send the version of the protocol per the Prompt machine. Because it's
 # tedious for unit tests to always send this, we'll put some intelligence into this parser to support going straight into
@@ -64,9 +64,9 @@ protocol := |*
 *|;
 
 # Skip over everything until we get back to crlf{2}
-error_recovery := (any**) >start_ignoring_syntax_error stanza_break @end_ignoring_syntax_error @{ fgoto protocol; }; 
+error_recovery := (any**) >syntax_error_starts stanza_break @syntax_error_stops @{fgoto protocol;}; 
 
-success := KeyValuePair* crlf @message_received @{ fgoto protocol; };
+success := KeyValuePair* crlf @message_received @{fgoto protocol;};
 
 # For the "Response: Follows" protocol abnormality. What happens if there's a protocol irregularity in this state???
 response_follows := |*

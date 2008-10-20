@@ -183,3 +183,14 @@ Story: Parsing AMI
 		Then the protocol should have parsed without syntax errors
 		And 3 messages should have been received
 		And 1 message should be an immediate response with text "Yes, plain English is sent sometimes over AMI."
+
+  Scenario: Parsing an AMI event
+
+		Given a new parser
+		And a custom event with name "New Channel Event"
+		
+		When the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
+		And 1 event should have been received
+		And the first event should have the name "New Channel Event"
