@@ -131,7 +131,7 @@ class AmiStreamParser
     @current_message = Event.new(event_name)
   end
   
-  # This method must do someting with @current_message or it'll be lost. TODO: Add it to events system.
+  # TODO: Add it to events system.
   def message_received(current_message=@current_message)
     current_message
   end
@@ -193,10 +193,12 @@ class AmiStreamParser
     @current_syntax_error_start = nil
   end
   
+  # TODO: Invoke Theatre
   def ami_error!(reason)
     # raise "AMI Error: #{reason}"
   end
   
+  # TODO: Invoke Theatre
   def syntax_error!(ignored_chunk)
     p "Ignoring this: #{ignored_chunk}"
   end

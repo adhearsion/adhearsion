@@ -45,6 +45,18 @@ RESPONSE
     @parser << send(:syntax_error_data, name)
   end
   
+  Given "$number Pong responses? $with_or_without an ActionID" do |number, with_or_without|
+    number = number == "a" ? 1 : number.to_i
+    data = case with_or_without
+      when "with"    then "Response: Pong\r\nActionID: 28312.11\r\n\r\n"
+      when "without" then "Response: Pong\r\n\r\n"
+      else raise "Do not recognize preposition #{with_or_without.inspect}. Should be either 'with' or 'without'"
+    end
+    number.times do
+      @parser << data
+    end
+  end
+  
   ########################################
   #### WHEN
   ########################################

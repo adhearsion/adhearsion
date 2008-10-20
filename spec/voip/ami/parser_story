@@ -24,6 +24,8 @@ Story: Parsing AMI
 		And a version header for AMI 1.0
 		And a normal login success with events
 		
+		When I parse the protocol
+		
 		Then the protocol should have parsed without syntax errors
 		And 1 message should have been received
 	
@@ -32,6 +34,8 @@ Story: Parsing AMI
 		Given a new parser
 		And a version header for AMI 1.0
 		And a multi-line Response:Follows body of ragel_description
+		
+		When I parse the protocol
 		
 		Then the protocol should have parsed without syntax errors
 		And the 'follows' body of 1 message received should equal ragel_description
@@ -43,6 +47,8 @@ Story: Parsing AMI
 		And a multi-line Response:Follows body of ragel_description
 		And a multi-line Response:Follows body of ragel_description
 
+		When I parse the protocol
+
 		Then the protocol should have parsed without syntax errors
 		And the 'follows' body of 2 messages received should equal ragel_description
 
@@ -50,6 +56,8 @@ Story: Parsing AMI
 
 		Given a new parser
 		And a normal login success with events
+
+		When I parse the protocol
 
 		Then the protocol should have parsed without syntax errors
 		And 1 message should have been received
@@ -60,6 +68,44 @@ Story: Parsing AMI
 		And syntactically invalid fuzz
 		And a stanza break
 
+		When I parse the protocol
+
 		Then the protocol should have parsed with 1 syntax error
 		And the syntax error fixture named fuzz should have been encountered
 		And 0 messages should have been received
+	
+	Scenario: Receiving a random crap followed by an actual message
+
+		Given a new parser
+		And syntactically invalid fuzz
+		And a stanza break
+		And a normal login success with events
+
+		When I parse the protocol
+
+		Then the protocol should have parsed with 1 syntax error
+		And the syntax error fixture named fuzz should have been encountered
+		And 1 message should have been received
+
+	Scenario: Receiving a Pong after a simulated login
+		
+		Given a new parser
+		And a version header for AMI 1.0
+		And a normal login success with events
+		And a Pong response with an ActionID
+		
+		When I parse the protocol
+		
+		Then the protocol should have parsed without syntax errors
+		And 2 messages should have been received
+	
+	Scenario: Ten Pong responses in a row
+	
+		Given a new parser
+		And 5 Pong responses without an ActionID
+		And 5 Pong responses with an ActionID
+		
+		When I parse the protocol
+		
+		Then the protocol should have parsed without syntax errors
+		And 10 messages should have been received

@@ -26,7 +26,7 @@ FollowsDelimiter = crlf "--END COMMAND--";
 
 Response = "Response"i colon;
 Success	 = Response "Success"i %init_success crlf @{ fgoto success; };
-Pong     = Response "Pong"i %init_success crlf;
+Pong     = Response "Pong"i %init_success crlf @{ fgoto success; };
 Error    = Response "Error"i crlf "Message"i colon @error_reason_start rest_of_line crlf crlf @error_reason_end;
 Follows  = Response "Follows" crlf @init_response_follows;
 Event    = "Event"i colon %begin_capturing_event_name rest_of_line %init_event crlf;
@@ -48,7 +48,7 @@ main := |*
 # Skip over everything until we get back to crlf{2}
 error_recovery := (any**) >start_ignoring_syntax_error stanza_break @end_ignoring_syntax_error; 
 
-success := KeyValuePair+ crlf @message_received;
+success := KeyValuePair* crlf @message_received @{ fgoto main; };
 
 # For the "Response: Follows" protocol abnormality. What happens if there's a protocol irregularity in this state???
 response_follows := |*
