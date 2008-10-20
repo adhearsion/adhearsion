@@ -8,6 +8,7 @@ steps_for :ami_parser do
     @received_messages = received_messages = []
     @syntax_errors = syntax_errors = []
     @parser = AmiStreamParser.new
+    @custom_stanzas = {}
     @parser.meta_def(:message_received) do |*message|
       message = message.first || @current_message
       received_messages << message
@@ -57,11 +58,23 @@ RESPONSE
     end
   end
   
+  Given 'a custom stanza named "$name"' do |name|
+    @custom_stanzas[name] = "Response: Success\r\n"
+  end
+  
+  Given 'the custom stanza named "$name" has key "$key" with value "$value"' do |name,key,value|
+    @custom_stanzas[name] << "#{key}: #{value}\r\n"
+  end
+  
   ########################################
   #### WHEN
   ########################################
   
-  When "I parse the protocol" do
+  When 'the custom stanza named "$name" is added to the buffer' do |name|
+    @parser << (@custom_stanzas[name] + "\r\n")
+  end
+  
+  When "the buffer is parsed" do
     @parser.resume!
   end
   
@@ -96,6 +109,11 @@ RESPONSE
   
   Then "the version should be set to $version" do |version|
     @parser.ami_version.should eql(version.to_f)
+  end
+  
+  Then 'the $ordered message received should have a key "$key" with value "$value"' do |ordered,key,value|
+    ordered = ordered[/^(\d+)\w+$/, 1].to_i - 1
+    @received_messages[ordered][key].should eql(value)
   end
   
 end
