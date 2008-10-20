@@ -86,6 +86,10 @@ RESPONSE
     @parser << "Response: Error\r\nMessage: #{message}\r\n\r\n"
   end
   
+  Given 'an immediate response with text "$text"' do |text|
+    @parser << "#{text}\r\n\r\n"
+  end
+  
   ########################################
   #### WHEN
   ########################################
@@ -114,7 +118,7 @@ RESPONSE
     irregularity = send(:syntax_error_data, name)
     @syntax_errors.find { |error| error == irregularity }.should_not be_nil
   end
-  
+    
   Then "$number_received messages? should have been received" do |number_received|
     @received_messages.size.should equal(number_received.to_i)
   end
@@ -144,5 +148,12 @@ RESPONSE
     order = order[/^(\d+)\w+$/, 1].to_i - 1
     @ami_errors[order].should eql(message)
   end
+  
+  Then '$number message should be an immediate response with text "$text"' do |number, text|
+    @received_messages.select do |response|
+      response.kind_of?(ImmediateResponse) && response.message == text
+    end.size.should equal(number.to_i)
+  end
+  
     
 end

@@ -34,15 +34,32 @@ Event    = "Event"i colon %begin_capturing_event_name rest_of_line %init_event c
 # For "Response: Follows"
 FollowsBody = (any* -- FollowsDelimiter) >start_capturing_follows_text FollowsDelimiter @end_capturing_follows_text crlf;
 
-# Events = Response "Events " ("On" | "Off") crlf;
+# An "immediate" response is one which is not in the key/value pair format.
+immediate_response := (any+ -- crlf) >start_capturing_immediate_response crlf >finish_capturing_immediate_response @{ fgoto main; };
 
-# Can't use a Ragel Scanner because Scanners don't handle errors to my knowledge.
+# When a new socket is established, Asterisk will send the version of the protocol per the Prompt machine. Because it's
+# tedious for unit tests to always send this, we'll put some intelligence into this parser to support going straight into
+# the protocol-parsing machine. It's also conceivable that a variant of AMI would not send this initial information.
+entry := |*
+  Prompt => {
+    # fgoto protocol
+  };
+  any => {
+    fhold;
+    # fgoto protocol;
+  };
+*|;
+
 main := |*
   Prompt;
   Success | Pong | Event => message_received;
   Error;
   Follows crlf;
-  any => { fhold; fgoto error_recovery; };
+  crlf => { fgoto main; }; # If we get a crlf out of place, let's just ignore it.
+  any  => {
+    fhold;
+    fgoto immediate_response;
+  };
 *|;
 
 # Skip over everything until we get back to crlf{2}

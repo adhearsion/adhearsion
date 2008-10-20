@@ -38,6 +38,14 @@ class AmiStreamParser
       fgoto main;
     }
     
+    action start_capturing_immediate_response {
+      start_capturing_immediate_response;
+    }
+    
+    action finish_capturing_immediate_response {
+      finish_capturing_immediate_response;
+    }
+
     # Executed after a "Respone: Success" or a Pong
     action init_success {
       @current_message = NormalAmiResponse.new
@@ -191,6 +199,15 @@ class AmiStreamParser
     offending_data = @data[@current_syntax_error_start...@current_pointer - 3]
     syntax_error! offending_data
     @current_syntax_error_start = nil
+  end
+  
+  def start_capturing_immediate_response
+    @immediate_response_start = @current_pointer
+  end
+  
+  def finish_capturing_immediate_response
+    message = @data[@immediate_response_start...@current_pointer]
+    message_received ImmediateResponse.new(message)
   end
   
   # TODO: Invoke Theatre

@@ -1,4 +1,9 @@
-class NormalAmiResponse
+
+class AbstractPacket
+  
+end
+
+class NormalAmiResponse < AbstractPacket
   
   attr_accessor :action_id
   attr_accessor :text # For "Response: Follows" sections
@@ -16,6 +21,13 @@ class NormalAmiResponse
     @pairs[key] = value
   end
   
+end
+
+class ImmediateResponse < AbstractPacket
+  attr_reader :message
+  def initialize(message)
+    @message = message
+  end
 end
 
 class Event < NormalAmiResponse
