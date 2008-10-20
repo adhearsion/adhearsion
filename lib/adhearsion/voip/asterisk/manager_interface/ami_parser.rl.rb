@@ -12,41 +12,38 @@ module Adhearsion
 
         %%{ #%#
         	machine ami_protocol_parser;
-    
-          action version_starts { version_starts }
-          action version_stops  { version_stops  }
-    
-          action key_starts { key_starts }
-          action key_stops  { key_stops  }
-    
-          action value_starts { value_starts }
-          action value_stops  { value_stops  }
-    
-          action error_reason_starts { error_reason_starts }
-          action error_reason_stops  { error_reason_stops }
-
-          action syntax_error_starts { syntax_error_starts }
-          action syntax_error_stops  { syntax_error_stops  }
-    
-          action immediate_response_starts { immediate_response_starts }
-          action immediate_response_stops  { immediate_response_stops  }
-
-          action follows_text_starts { follows_text_starts }
-          action follows_text_stops  { follows_text_stops  }
-    
-          action event_name_starts { event_name_starts }
           
-          # Executed after a "Respone: Success" or a Pong
-          action init_success { @current_message = NormalAmiResponse.new }
-    
+          # Executed after a "Respone: Success" or "Response: Pong"
+          action init_success { init_success }
+          
+          action init_response_follows { init_response_follows }
+          
           action message_received { message_received @current_message }
           
-          action init_event { init_event }
-    
-          action init_response_follows {
-            @current_message = NormalAmiResponse.new(true)
-          }
-    
+          action version_starts { version_starts }
+          action version_stops  { version_stops  }
+          
+          action key_starts { key_starts }
+          action key_stops  { key_stops  }
+          
+          action value_starts { value_starts }
+          action value_stops  { value_stops  }
+          
+          action error_reason_starts { error_reason_starts }
+          action error_reason_stops  { error_reason_stops }
+          
+          action syntax_error_starts { syntax_error_starts }
+          action syntax_error_stops  { syntax_error_stops  }
+          
+          action immediate_response_starts { immediate_response_starts }
+          action immediate_response_stops  { immediate_response_stops  }
+          
+          action follows_text_starts { follows_text_starts }
+          action follows_text_stops  { follows_text_stops  }
+          
+          action event_name_starts { event_name_starts }
+          action event_name_stops  { event_name_stops  }
+          
           include ami_protocol_parser_common "ami_protocol_parser_machine.rl";
     
         }%% # %
@@ -76,20 +73,32 @@ module Adhearsion
         end
   
         def <<(new_data)
+          extend_buffer_with new_data
+          resume!
+        end
+        
+        def resume!
+          %%{ write exec; }%%
+        end
+        
+        def extend_buffer_with(new_data)
           if new_data.size + @data.size > BUFFER_SIZE
             @data.slice! 0...new_data.size
             @current_pointer = @data.size
           end
           @data << new_data
           @data_ending_pointer = @data.size
-          resume!
         end
-  
-        def resume!
-          %%{ write exec; }%%
-        end
-  
+        
         protected
+  
+        def init_success
+          @current_message = NormalAmiResponse.new
+        end
+        
+        def init_response_follows
+          @current_message = NormalAmiResponse.new(true)
+        end
   
         def version_starts
           @start_of_version = @current_pointer
@@ -116,7 +125,7 @@ module Adhearsion
           @event_name_start = @current_pointer
         end
   
-        def init_event
+        def event_name_stops
           event_name = @data[@event_name_start...@current_pointer]
           @event_name_start = nil
           @current_message = Event.new(event_name)

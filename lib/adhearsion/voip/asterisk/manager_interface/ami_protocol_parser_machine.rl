@@ -31,7 +31,7 @@ Success	 = Response "Success"i %init_success crlf @{ fgoto success; };
 Pong     = Response "Pong"i %init_success crlf @{ fgoto success; };
 Error    = Response "Error"i crlf "Message"i colon rest_of_line >error_reason_starts crlf crlf @error_reason_stops;
 Follows  = Response "Follows" crlf @init_response_follows @{ fgoto response_follows; };
-Event    = "Event"i colon %event_name_starts rest_of_line %init_event crlf;
+Event    = "Event"i colon %event_name_starts rest_of_line %event_name_stops crlf;
 
 # For "Response: Follows"
 FollowsBody = (any* -- FollowsDelimiter) >follows_text_starts FollowsDelimiter @follows_text_stops crlf;
