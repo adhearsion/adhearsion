@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'spec/story'
-require File.dirname(__FILE__) + "/../../../lib/adhearsion"
+require File.dirname(__FILE__) + "/../../../../lib/adhearsion"
 
 RAGEL_FILES = %w[lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb]
 
@@ -20,7 +20,7 @@ def regenerate_ragel
   end
 end
 
-Dir.chdir(File.dirname(__FILE__) + "/../../..") { regenerate_ragel }
+Dir.chdir(File.dirname(__FILE__) + "/../../../..") { regenerate_ragel }
 
 require 'adhearsion/voip/asterisk/manager_interface/ami_parser'
 
