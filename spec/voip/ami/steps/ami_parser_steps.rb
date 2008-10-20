@@ -1,3 +1,27 @@
+class IntrospectiveManagerStreamParser < Adhearsion::VoIP::Asterisk::AbstractAsteriskManagerInterfaceStreamParser
+  
+  attr_reader :received_messages, :syntax_errors, :ami_errors
+  def initialize(*args)
+    super
+    @received_messages = []
+    @syntax_errors     = []
+    @ami_errors        = []
+  end
+  
+  def message_received(message=@current_message)
+    @received_messages << message
+  end
+  
+  def syntax_error!(ignored_chunk)
+    @syntax_errors << ignored_chunk
+  end
+  
+  def ami_error!(error_message)
+    @ami_errors << error_message
+  end
+  
+end
+
 steps_for :ami_parser do
 
   ########################################
@@ -5,17 +29,8 @@ steps_for :ami_parser do
   ########################################
   
   Given "a new parser" do
-    @received_messages = received_messages = []
-    @syntax_errors = syntax_errors = []
-    @ami_errors = ami_errors = []
-    @parser = AmiStreamParser.new
+    @parser = IntrospectiveManagerStreamParser.new
     @custom_stanzas = {}
-    @parser.meta_def(:message_received) do |*message|
-      message = message.first || @current_message
-      received_messages << message
-    end
-    @parser.meta_def(:syntax_error!) { |ignored_chunk| syntax_errors << ignored_chunk }
-    @parser.meta_def(:ami_error!) { |error| ami_errors << error }
     
     @GivenPong = lambda do |with_or_without, action_id, number|
       number = number == "a" ? 1 : number.to_i
@@ -110,26 +125,26 @@ RESPONSE
     current_pointer     = @parser.send(:instance_variable_get, :@current_pointer)
     data_ending_pointer = @parser.send(:instance_variable_get, :@data_ending_pointer)
     current_pointer.should equal(data_ending_pointer)
-    @syntax_errors.should be_empty
+    @parser.syntax_errors.should be_empty
   end
   
   Then "the protocol should have parsed with $number syntax errors?" do |number|
-    @syntax_errors.size.should equal(number.to_i)
+    @parser.syntax_errors.size.should equal(number.to_i)
   end
   
   Then "the syntax error fixture named $name should have been encountered" do |name|
     irregularity = send(:syntax_error_data, name)
-    @syntax_errors.find { |error| error == irregularity }.should_not be_nil
+    @parser.syntax_errors.find { |error| error == irregularity }.should_not be_nil
   end
     
   Then "$number_received messages? should have been received" do |number_received|
-    @received_messages.size.should equal(number_received.to_i)
+    @parser.received_messages.size.should equal(number_received.to_i)
   end
   
   Then "the 'follows' body of $number messages? received should equal $method_name" do |number, method_name|
     multi_line_response = send(:follows_body_text, method_name)
-    @received_messages.should_not be_empty
-    @received_messages.select do |message|
+    @parser.received_messages.should_not be_empty
+    @parser.received_messages.select do |message|
       message.text == multi_line_response
     end.size.should eql(number.to_i)
   end
@@ -140,20 +155,20 @@ RESPONSE
   
   Then 'the $ordered message received should have a key "$key" with value "$value"' do |ordered,key,value|
     ordered = ordered[/^(\d+)\w+$/, 1].to_i - 1
-    @received_messages[ordered][key].should eql(value)
+    @parser.received_messages[ordered][key].should eql(value)
   end
   
   Then "$number AMI error should have been received" do |number|
-    @ami_errors.size.should equal(number.to_i)
+    @parser.ami_errors.size.should equal(number.to_i)
   end
   
   Then 'the $order AMI error should have the message "$message"' do |order, message|
     order = order[/^(\d+)\w+$/, 1].to_i - 1
-    @ami_errors[order].should eql(message)
+    @parser.ami_errors[order].should eql(message)
   end
   
   Then '$number message should be an immediate response with text "$text"' do |number, text|
-    @received_messages.select do |response|
+    @parser.received_messages.select do |response|
       response.kind_of?(ImmediateResponse) && response.message == text
     end.size.should equal(number.to_i)
   end

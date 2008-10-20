@@ -5,7 +5,7 @@ Story: Parsing AMI
 	So that I can control Asterisk asynchronously
 	
 	TODO:
-	- Limit the size of keys to be 50 characters
+	- Events MUST be given to a separate method, not message_received!
 	
 	UNCERTAINTIES:
 	- How do I test non-immediate syntax errors?
