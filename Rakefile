@@ -6,9 +6,9 @@ require 'rubygems'
 
 require 'lib/adhearsion/version'
 
-TestGlob = ['spec/**/test_*.rb']
-
-GEMSPEC = eval File.read("adhearsion.gemspec")
+TestGlob    = ['spec/**/test_*.rb']
+GEMSPEC     = eval File.read("adhearsion.gemspec")
+RAGEL_FILES = %w[lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb]
 
 begin
   require 'rcov/rcovtask'
@@ -36,26 +36,32 @@ task :spec do
   end
 end
 
-desc "Used to regenerate the AMI source code files"
-task :ragel do
-  # Check Ragel version:
+desc "Check Ragel version"
+task :check_ragel_version do
   ragel_version_match = `ragel --version`.match(/(\d)\.(\d)+/)
   abort "Could not get Ragel version! Is it installed? You must have at least version 6.3" unless ragel_version_match
   big, small = ragel_version_match.captures.map { |n| n.to_i }
   if big < 6 || (big == 6 && small < 3)
     abort "Please upgrade Ragel! You're on version #{ragel_version_match[0]} and must be on 6.3 or later"
   end
-  
-  ragel_files = %w[lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb]
+end
 
-  ragel_files.each do |ragel_file|
-    
+desc "Used to regenerate the AMI source code files. Note: requires Ragel 6.3 or later be installed on your system"
+task :ragel => :check_ragel_version do
+  RAGEL_FILES.each do |ragel_file|
     ruby_file = ragel_file.sub(".rl.rb", ".rb")
-    
-    # Generate output
     puts `ragel -n -R #{ragel_file} -o #{ruby_file} 2>&1`
     raise "Failed generating code from Ragel file #{ragel_file}" if $?.to_i.nonzero?
-    
+  end
+end
+
+desc "Generates a GraphVis document showing the Ragel state machine"
+task :visualize_ragel => :check_ragel_version do
+  RAGEL_FILES.each do |ragel_file|
+    base_name = File.basename ragel_file, ".rl.rb"
+    puts "ragel -V #{ragel_file} -o #{base_name}.dot 2>&1"
+    puts `ragel -V #{ragel_file} -o #{base_name}.dot 2>&1`
+    raise "Failed generating code from Ragel file #{ragel_file}" if $?.to_i.nonzero?
   end
 end
 

@@ -4,15 +4,12 @@ require 'yaml'
 require 'socket'
 require 'thread'
 require 'monitor'
-require 'adhearsion/voip/asterisk/ami/parser'
-require 'adhearsion/voip/asterisk/ami/actions'
+require 'adhearsion/voip/asterisk/manager_interface/ami_parser'
 
 module Adhearsion
   module VoIP
     module Asterisk
       class AMI
-        
-        include Actions
         
         attr_reader :action_sock, :host, :user, :password, :port, :event_thread, :scanner, :version
 

@@ -4,23 +4,24 @@ require File.join(File.dirname(__FILE__), 'packets.rb')
 module Adhearsion
   module VoIP
     module Asterisk
-      class AbstractAsteriskManagerInterfaceStreamParser
+      module Manager
+        class AbstractAsteriskManagerInterfaceStreamParser
 
-        BUFFER_SIZE = 8.kilobytes unless defined? BUFFER_SIZE
+          BUFFER_SIZE = 8.kilobytes unless defined? BUFFER_SIZE
 
-        CAPTURED_VARIABLES = {} unless defined? CAPTURED_VARIABLES
-        CAPTURE_CALLBACKS  = {} unless defined? CAPTURE_CALLBACKS
+          CAPTURED_VARIABLES = {} unless defined? CAPTURED_VARIABLES
+          CAPTURE_CALLBACKS  = {} unless defined? CAPTURE_CALLBACKS
 
-        # line 49 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+          # line 50 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
  # %
 
-        attr_accessor :ami_version
-        def initialize
+          attr_accessor :ami_version
+          def initialize
     
-          @data = ""
-          @current_pointer = 0
-          
-# line 24 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
+            @data = ""
+            @current_pointer = 0
+            
+# line 25 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
 class << self
 	attr_accessor :_ami_protocol_parser_actions
 	private :_ami_protocol_parser_actions, :_ami_protocol_parser_actions=
@@ -789,7 +790,7 @@ end
 self.ami_protocol_parser_en_response_follows = 217;
 
 
-# line 793 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
+# line 794 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
 begin
 	 @current_pointer ||= 0
 	 @data_ending_pointer ||=  @data.length
@@ -798,18 +799,18 @@ begin
 	 @token_end = nil
 	 @ragel_act = 0
 end
-# line 72 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 73 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 
-        end
+          end
   
-        def <<(new_data)
-          extend_buffer_with new_data
-          resume!
-        end
+          def <<(new_data)
+            extend_buffer_with new_data
+            resume!
+          end
         
-        def resume!
-          
-# line 813 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
+          def resume!
+            
+# line 814 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
 begin
 	_klen, _trans, _keys, _acts, _nacts = nil
 	_goto_level = 0
@@ -844,7 +845,7 @@ begin
  @token_start =  @current_pointer
 		end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-# line 848 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
+# line 849 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
 		end # from state action switch
 	end
 	if _trigger_goto
@@ -911,100 +912,100 @@ begin
 			_acts += 1
 			case _ami_protocol_parser_actions[_acts - 1]
 when 0 then
-# line 17 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 18 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  init_success 		end
-# line 17 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 18 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 1 then
-# line 19 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 20 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  init_response_follows 		end
-# line 19 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 20 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 2 then
-# line 21 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 22 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  message_received @current_message 		end
-# line 21 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 22 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 3 then
-# line 23 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 24 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  version_starts 		end
-# line 23 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 4 then
 # line 24 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 4 then
+# line 25 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  version_stops  		end
-# line 24 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 25 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 5 then
-# line 26 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 27 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  key_starts 		end
-# line 26 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 6 then
 # line 27 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 6 then
+# line 28 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  key_stops  		end
-# line 27 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 28 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 7 then
-# line 29 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 30 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  value_starts 		end
-# line 29 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 8 then
 # line 30 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 8 then
+# line 31 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  value_stops  		end
-# line 30 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 31 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 9 then
-# line 32 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 33 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  error_reason_starts 		end
-# line 32 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 10 then
 # line 33 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 10 then
+# line 34 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  error_reason_stops 		end
-# line 33 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 34 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 11 then
-# line 35 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 36 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  syntax_error_starts 		end
-# line 35 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 12 then
 # line 36 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 12 then
+# line 37 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  syntax_error_stops  		end
-# line 36 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 37 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 13 then
-# line 38 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 39 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  immediate_response_starts 		end
-# line 38 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 14 then
 # line 39 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 14 then
+# line 40 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  immediate_response_stops  		end
-# line 39 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 40 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 15 then
-# line 41 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 42 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  follows_text_starts 		end
-# line 41 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 16 then
 # line 42 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 16 then
+# line 43 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  follows_text_stops  		end
-# line 42 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 43 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 17 then
-# line 44 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 45 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  event_name_starts 		end
-# line 44 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 18 then
 # line 45 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 18 then
+# line 46 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  event_name_stops  		end
-# line 45 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 46 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 19 then
 # line 30 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
@@ -1159,12 +1160,12 @@ when 34 then
 		end
 # line 55 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 35 then
-# line 21 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 22 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @token_end =  @current_pointer+1
  begin  message_received @current_message  end
 		end
-# line 21 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 22 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 36 then
 # line 57 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
@@ -1290,7 +1291,7 @@ end
 end 
 			end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-# line 1294 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
+# line 1295 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
 			end # action switch
 		end
 	end
@@ -1317,7 +1318,7 @@ when 27 then
  @ragel_act = 0
 		end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-# line 1321 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
+# line 1322 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
 		end # to state action switch
 	end
 	if _trigger_goto
@@ -1347,179 +1348,180 @@ end
 	end
 	end
 	end
-# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 82 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 
-        end
-        
-        def extend_buffer_with(new_data)
-          if new_data.size + @data.size > BUFFER_SIZE
-            @data.slice! 0...new_data.size
-            @current_pointer = @data.size
           end
-          @data << new_data
-          @data_ending_pointer = @data.size
-        end
         
-        protected
-  
-        def init_success
-          @current_message = NormalAmiResponse.new
-        end
+          def extend_buffer_with(new_data)
+            if new_data.size + @data.size > BUFFER_SIZE
+              @data.slice! 0...new_data.size
+              @current_pointer = @data.size
+            end
+            @data << new_data
+            @data_ending_pointer = @data.size
+          end
         
-        def init_response_follows
-          @current_message = NormalAmiResponse.new(true)
-        end
-  
-        def version_starts
-          @start_of_version = @current_pointer
-        end
-  
-        def version_stops
-          self.ami_version = @data[@start_of_version...@current_pointer].to_f
-          @start_of_version = nil
-        end
-  
-        def begin_capturing_variable(variable_name)
-          @start_of_current_capture = @current_pointer
-        end
-  
-        def finish_capturing_variable(variable_name)
-          start, stop = @start_of_current_capture, @current_pointer
-          return :failed if !start || start > stop
-          capture = @data[start...stop]
-          CAPTURED_VARIABLES[variable_name] = capture
-          capture
-        end
-  
-        def event_name_starts
-          @event_name_start = @current_pointer
-        end
-  
-        def event_name_stops
-          event_name = @data[@event_name_start...@current_pointer]
-          @event_name_start = nil
-          @current_message = Event.new(event_name)
-        end
-  
-        ##
-        # Called after a message has been successfully parsed.
-        #
-        # @param [NormalAmiResponse, ImmediateResponse] message The message just received
-        #
-        def message_received(message)
-          raise NotImplementedError, "Must be implemented in subclass!"
-        end
-        
-        ##
-        # Called when there is an Error: stanza on the socket. Could be caused by executing an unrecognized command, trying
-        # to originate into an invalid priority, etc. Note: many errors' responses are actually tightly coupled to an Event
-        # which comes directly after it. Often the message will say something like "Channel status will follow".
-        #
-        # @param [String] reason The reason given in the Message: header for the error stanza.
-        #
-        def error_received(reason)
-          raise NotImplementedError, "Must be implemented in subclass!"
-        end
-        
-        ##
-        # Called when there's a syntax error on the socket. This doesn't happen as often as it should because, in many cases,
-        # it's impossible to distinguish between a syntax error and an immediate packet.
-        #
-        # @param [String] ignored_chunk The offending text which caused the syntax error.
-        def syntax_error_encountered(ignored_chunk)
-          raise NotImplementedError, "Must be implemented in subclass!"
-        end
+          protected
+                
+          ##
+          # Called after a response or event has been successfully parsed.
+          #
+          # @param [NormalAmiResponse, ImmediateResponse, Event] message The message just received
+          #
+          def message_received(message)
+            raise NotImplementedError, "Must be implemented in subclass!"
+          end
 
-        def key_starts
-          @current_key_position = @current_pointer
-        end
-  
-        def key_stops
-          @current_key = @data[@current_key_position...@current_pointer]
-        end
-  
-        def value_starts
-          @current_value_position = @current_pointer
-        end
-  
-        def value_stops
-          @current_value = @data[@current_value_position...@current_pointer]
-          @last_seen_value_end = @current_pointer + 2 # 2 for \r\n
-          add_pair_to_current_message
-        end
-  
-        def error_reason_starts
-          @error_reason_start = @current_pointer
-        end
-  
-        def error_reason_stops
-          error_received @data[@error_reason_start...@current_pointer - 3]
-          @error_reason_start = nil
-        end
-  
-        def follows_text_starts
-          @follows_text_start = @current_pointer
-        end
-  
-        def follows_text_stops
-          text = @data[@last_seen_value_end..(@current_pointer - "\r\n--END COMMAND--".size)]
-          @current_message.text = text
-          @follows_text_start = nil
-        end
-  
-        def add_pair_to_current_message
-          @current_message[@current_key] = @current_value
-          reset_key_and_value_positions
-        end
-  
-        def reset_key_and_value_positions
-          @current_key, @current_value, @current_key_position, @current_value_position = nil
-        end
-  
-        def syntax_error_starts
-          @current_syntax_error_start = @current_pointer # Adding 1 since the pointer is still set to the last successful match
-        end
-  
-        def syntax_error_stops
-          # Subtracting 3 from @current_pointer below for "\r\n\r" which separates a stanza
-          offending_data = @data[@current_syntax_error_start...@current_pointer - 3]
-          syntax_error_encountered offending_data
-          @current_syntax_error_start = nil
-        end
-  
-        def immediate_response_starts
-          @immediate_response_start = @current_pointer
-        end
-  
-        def immediate_response_stops
-          message = @data[@immediate_response_start...@current_pointer]
-          message_received ImmediateResponse.new(message)
-        end
-  
-        ##
-        # This method is used primarily in debugging.
-        #
-        def view_buffer(message=nil)
-    
-          message ||= "Viewing the buffer"
-    
-          buffer = @data.clone
-          buffer.insert(@current_pointer, "\033[0;31m\033[1;31m^\033[0m")
-    
-          buffer.gsub!("\r", "\\\\r")
-          buffer.gsub!("\n", "\\n\n")
-    
-          puts <<-INSPECTION
+          ##
+          # Called when there is an Error: stanza on the socket. Could be caused by executing an unrecognized command, trying
+          # to originate into an invalid priority, etc. Note: many errors' responses are actually tightly coupled to an Event
+          # which comes directly after it. Often the message will say something like "Channel status will follow".
+          #
+          # @param [String] reason The reason given in the Message: header for the error stanza.
+          #
+          def error_received(reason)
+            raise NotImplementedError, "Must be implemented in subclass!"
+          end
 
-      VVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-      ####  #{message}
-      #############################
-      #{buffer}
-      #############################
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-          INSPECTION
+          ##
+          # Called when there's a syntax error on the socket. This doesn't happen as often as it should because, in many cases,
+          # it's impossible to distinguish between a syntax error and an immediate packet.
+          #
+          # @param [String] ignored_chunk The offending text which caused the syntax error.
+          def syntax_error_encountered(ignored_chunk)
+            raise NotImplementedError, "Must be implemented in subclass!"
+          end
+        
+          def init_success
+            @current_message = NormalAmiResponse.new
+          end
+        
+          def init_response_follows
+            @current_message = NormalAmiResponse.new(true)
+          end
+  
+          def version_starts
+            @start_of_version = @current_pointer
+          end
+  
+          def version_stops
+            self.ami_version = @data[@start_of_version...@current_pointer].to_f
+            @start_of_version = nil
+          end
+  
+          def begin_capturing_variable(variable_name)
+            @start_of_current_capture = @current_pointer
+          end
+  
+          def finish_capturing_variable(variable_name)
+            start, stop = @start_of_current_capture, @current_pointer
+            return :failed if !start || start > stop
+            capture = @data[start...stop]
+            CAPTURED_VARIABLES[variable_name] = capture
+            capture
+          end
+  
+          def event_name_starts
+            @event_name_start = @current_pointer
+          end
+  
+          def event_name_stops
+            event_name = @data[@event_name_start...@current_pointer]
+            @event_name_start = nil
+            @current_message = Event.new(event_name)
+          end
+  
+          def key_starts
+            @current_key_position = @current_pointer
+          end
+  
+          def key_stops
+            @current_key = @data[@current_key_position...@current_pointer]
+          end
+  
+          def value_starts
+            @current_value_position = @current_pointer
+          end
+  
+          def value_stops
+            @current_value = @data[@current_value_position...@current_pointer]
+            @last_seen_value_end = @current_pointer + 2 # 2 for \r\n
+            add_pair_to_current_message
+          end
+  
+          def error_reason_starts
+            @error_reason_start = @current_pointer
+          end
+  
+          def error_reason_stops
+            error_received @data[@error_reason_start...@current_pointer - 3]
+            @error_reason_start = nil
+          end
+  
+          def follows_text_starts
+            @follows_text_start = @current_pointer
+          end
+  
+          def follows_text_stops
+            text = @data[@last_seen_value_end..(@current_pointer - "\r\n--END COMMAND--".size)]
+            @current_message.text = text
+            @follows_text_start = nil
+          end
+  
+          def add_pair_to_current_message
+            @current_message[@current_key] = @current_value
+            reset_key_and_value_positions
+          end
+  
+          def reset_key_and_value_positions
+            @current_key, @current_value, @current_key_position, @current_value_position = nil
+          end
+  
+          def syntax_error_starts
+            @current_syntax_error_start = @current_pointer # Adding 1 since the pointer is still set to the last successful match
+          end
+  
+          def syntax_error_stops
+            # Subtracting 3 from @current_pointer below for "\r\n\r" which separates a stanza
+            offending_data = @data[@current_syntax_error_start...@current_pointer - 3]
+            syntax_error_encountered offending_data
+            @current_syntax_error_start = nil
+          end
+  
+          def immediate_response_starts
+            @immediate_response_start = @current_pointer
+          end
+  
+          def immediate_response_stops
+            message = @data[@immediate_response_start...@current_pointer]
+            message_received ImmediateResponse.new(message)
+          end
+  
+          ##
+          # This method is used primarily in debugging.
+          #
+          def view_buffer(message=nil)
     
+            message ||= "Viewing the buffer"
+    
+            buffer = @data.clone
+            buffer.insert(@current_pointer, "\033[0;31m\033[1;31m^\033[0m")
+    
+            buffer.gsub!("\r", "\\\\r")
+            buffer.gsub!("\n", "\\n\n")
+    
+            puts <<-INSPECTION
+
+        VVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+        ####  #{message}
+        #############################
+        #{buffer}
+        #############################
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+            INSPECTION
+    
+          end
         end
       end
     end

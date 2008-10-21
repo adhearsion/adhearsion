@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + "/story_helper"
 
-class IntrospectiveManagerStreamParser < Adhearsion::VoIP::Asterisk::AbstractAsteriskManagerInterfaceStreamParser
+class IntrospectiveManagerStreamParser < Adhearsion::VoIP::Asterisk::Manager::AbstractAsteriskManagerInterfaceStreamParser
   
   attr_reader :received_messages, :syntax_errors, :ami_errors
   def initialize(*args)
@@ -171,7 +171,7 @@ RESPONSE
   
   Then '$number message should be an immediate response with text "$text"' do |number, text|
     @parser.received_messages.select do |response|
-      response.kind_of?(ImmediateResponse) && response.message == text
+      response.kind_of?(Adhearsion::VoIP::Asterisk::Manager::ImmediateResponse) && response.message == text
     end.size.should equal(number.to_i)
   end
   
