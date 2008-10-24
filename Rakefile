@@ -118,3 +118,10 @@ task :debug_gem do
   Thread.new { spec = eval("$SAFE = 3\n#{gemspec}") }.join
   puts "SUCCESS: Gemspec runs at the $SAFE level 3."
 end
+
+desc 'Install the package as a gem.'
+task :install_gem => [:clobber_package, :package] do
+  windows = /djgpp|(cyg|ms|bcc)win|mingw/ =~ RUBY_PLATFORM
+  gem = Dir['pkg/*.gem'].first
+  sh "#{'sudo ' unless windows}gem install --local #{gem}"
+end
