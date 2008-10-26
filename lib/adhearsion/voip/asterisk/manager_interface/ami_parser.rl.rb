@@ -213,8 +213,8 @@ module Adhearsion
           end
   
           def syntax_error_stops
-            # Subtracting 3 from @current_pointer below for "\r\n\r" which separates a stanza
-            offending_data = @data[@current_syntax_error_start...@current_pointer - 3]
+            # Subtracting 3 from @current_pointer below for "\r\n" which separates a stanza
+            offending_data = @data[@current_syntax_error_start...@current_pointer - 1]
             syntax_error_encountered offending_data
             @current_syntax_error_start = nil
           end
@@ -224,7 +224,7 @@ module Adhearsion
           end
   
           def immediate_response_stops
-            message = @data[@immediate_response_start...@current_pointer]
+            message = @data[@immediate_response_start...(@current_pointer -1)]
             message_received ImmediateResponse.new(message)
           end
   

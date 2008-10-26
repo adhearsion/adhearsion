@@ -198,3 +198,15 @@ Story: Parsing AMI
 		And 1 event should have been received
 		And the 1st event should have the name "NewChannelEvent"
 		And the 1st event should have key "Foo" with value "Bar"
+		
+	Scenario: Parsing an immediate packet with a colon in it (syntax error)
+	
+		Given a new parser
+		And syntactically invalid immediate_packet_with_colon
+		And a stanza break
+		
+		When the buffer is parsed
+		
+		Then 0 messages should have been received
+		And the protocol should have parsed with 1 syntax error
+		And the syntax error fixture named immediate_packet_with_colon should have been encountered

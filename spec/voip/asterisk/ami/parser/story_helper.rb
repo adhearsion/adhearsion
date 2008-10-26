@@ -111,7 +111,7 @@ end
 
 def syntax_error_data(name)
   case name
-    when "fuzz"
-      "!IJ@MHY!&@B*!B @ ! @^! @ !@ !\r!@ ! @ !@ ! !!m, \n\\n\n"
+    when "immediate_packet_with_colon"
+      "!IJ@MHY:!&@B*!B @ ! @^! @ !@ !\r!@ ! @ !@ ! !!m, \n\\n\n"
   end
 end

@@ -151,6 +151,9 @@ ActionID: 123123\r
   end
   
   Then "the protocol should have parsed with $number syntax errors?" do |number|
+    # puts
+    # p @parser
+    # puts
     @parser.syntax_errors.size.should equal(number.to_i)
   end
   

@@ -27,17 +27,23 @@ KeyValuePair = Key >key_starts %key_stops colon rest_of_line >value_starts %valu
 FollowsDelimiter = crlf "--END COMMAND--";
 
 Response = "Response"i colon;
+
 Success	 = Response "Success"i %init_success crlf @{ fgoto success; };
 Pong     = Response "Pong"i %init_success crlf @{ fgoto success; };
-Error    = Response "Error"i crlf "Message"i colon rest_of_line >error_reason_starts crlf crlf @error_reason_stops;
-Follows  = Response "Follows" crlf @init_response_follows @{ fgoto response_follows; };
 Event    = "Event"i colon %event_name_starts rest_of_line %event_name_stops crlf @{ fgoto success; };
+Error    = Response "Error"i crlf "Message"i colon rest_of_line >error_reason_starts crlf crlf @error_reason_stops;
+Follows  = Response "Follows"i crlf @init_response_follows @{ fgoto response_follows; };
 
 # For "Response: Follows"
 FollowsBody = (any* -- FollowsDelimiter) >follows_text_starts FollowsDelimiter @follows_text_stops crlf;
 
-# An "immediate" response is one which is not in the key/value pair format.
-immediate_response := (any+ -- loose_newline) >immediate_response_starts (crlf) >immediate_response_stops @{fgoto protocol;};
+ImmediateResponse = (any+ -- (loose_newline | ":")) >immediate_response_starts loose_newline @immediate_response_stops @{fgoto protocol;};
+SyntaxError       = (any+ -- crlf) >syntax_error_starts crlf @syntax_error_stops;
+
+irregularity := |*
+  ImmediateResponse => { fgoto protocol; };
+  SyntaxError       => { fgoto protocol; };
+*|;
 
 # When a new socket is established, Asterisk will send the version of the protocol per the Prompt machine. Because it's
 # tedious for unit tests to always send this, we'll put some intelligence into this parser to support going straight into
@@ -59,7 +65,7 @@ protocol := |*
   crlf => { fgoto protocol; }; # If we get a crlf out of place, let's just ignore it.
   any  => {
     fhold;
-    fgoto immediate_response;
+    fgoto irregularity;
   };
 *|;
 
