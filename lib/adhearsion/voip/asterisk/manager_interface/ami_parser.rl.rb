@@ -54,6 +54,7 @@ module Adhearsion
     
             @data = ""
             @current_pointer = 0
+            @ragel_stack = []
             
             %%{
               # All other variables become local, letting Ruby garbage collect them. This
@@ -68,10 +69,13 @@ module Adhearsion
         			variable stack @stack;
         			variable act @ragel_act;
         			variable eof @eof;
-			
+			        variable stack @ragel_stack;
+			        variable top @ragel_stack_top;
+			        
         			write data nofinal;
               write init;
             }%%##
+            
           end
   
           def <<(new_data)

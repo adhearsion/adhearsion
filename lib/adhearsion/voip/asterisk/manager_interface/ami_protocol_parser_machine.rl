@@ -41,8 +41,8 @@ ImmediateResponse = (any+ -- (loose_newline | ":")) >immediate_response_starts l
 SyntaxError       = (any+ -- crlf) >syntax_error_starts crlf @syntax_error_stops;
 
 irregularity := |*
-  ImmediateResponse => { fgoto protocol; };
-  SyntaxError       => { fgoto protocol; };
+  ImmediateResponse => { fret; };
+  SyntaxError       => { fret; };
 *|;
 
 # When a new socket is established, Asterisk will send the version of the protocol per the Prompt machine. Because it's
@@ -59,18 +59,15 @@ main := |*
 
 protocol := |*
   Prompt;
-  Success | Pong | Event => message_received;
+  Success | Pong | Event;
   Error;
   Follows crlf;
   crlf => { fgoto protocol; }; # If we get a crlf out of place, let's just ignore it.
   any  => {
     fhold;
-    fgoto irregularity;
+    fcall irregularity;
   };
 *|;
-
-# Skip over everything until we get back to crlf{2}
-error_recovery := (any**) >syntax_error_starts stanza_break @syntax_error_stops @{fgoto protocol;}; 
 
 success := KeyValuePair* crlf @message_received @{fgoto protocol;};
 
