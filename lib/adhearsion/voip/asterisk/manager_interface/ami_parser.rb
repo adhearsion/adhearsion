@@ -11,17 +11,18 @@ module Adhearsion
 
           CAPTURED_VARIABLES = {} unless defined? CAPTURED_VARIABLES
           CAPTURE_CALLBACKS  = {} unless defined? CAPTURE_CALLBACKS
-
+          
           # line 50 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
- # %
+##
 
-          attr_accessor :ami_version
+          attr_accessor(:ami_version)
           def initialize
     
             @data = ""
             @current_pointer = 0
             
-# line 25 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
+            
+# line 26 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
 class << self
 	attr_accessor :_ami_protocol_parser_actions
 	private :_ami_protocol_parser_actions, :_ami_protocol_parser_actions=
@@ -31,16 +32,16 @@ self._ami_protocol_parser_actions = [
 	5, 1, 6, 1, 7, 1, 8, 1, 
 	9, 1, 11, 1, 13, 1, 14, 1, 
 	15, 1, 16, 1, 17, 1, 18, 1, 
-	22, 1, 26, 1, 28, 1, 29, 1, 
-	30, 1, 31, 1, 32, 1, 33, 1, 
-	34, 1, 35, 1, 37, 1, 38, 1, 
-	39, 1, 40, 1, 41, 1, 44, 1, 
-	45, 1, 46, 1, 47, 1, 48, 2, 
-	1, 21, 2, 2, 24, 2, 5, 15, 
-	2, 6, 7, 2, 7, 8, 2, 10, 
-	36, 2, 12, 23, 2, 17, 18, 2, 
-	19, 35, 2, 20, 35, 2, 26, 27, 
-	2, 29, 42, 3, 29, 25, 43
+	23, 1, 27, 1, 29, 1, 30, 1, 
+	31, 1, 32, 1, 33, 1, 34, 1, 
+	35, 1, 38, 1, 39, 1, 40, 1, 
+	41, 1, 42, 1, 45, 1, 46, 1, 
+	47, 1, 48, 1, 49, 2, 1, 21, 
+	2, 2, 25, 2, 5, 15, 2, 6, 
+	7, 2, 7, 8, 2, 10, 37, 2, 
+	12, 24, 2, 17, 18, 2, 19, 36, 
+	2, 20, 36, 2, 22, 36, 2, 27, 
+	28, 2, 30, 43, 3, 30, 26, 44
 ]
 
 class << self
@@ -509,69 +510,69 @@ self._ami_protocol_parser_trans_actions = [
 	0, 45, 39, 45, 5, 0, 45, 0, 
 	0, 45, 0, 19, 19, 0, 21, 0, 
 	0, 21, 0, 31, 21, 0, 0, 21, 
-	0, 0, 59, 0, 59, 0, 59, 0, 
-	59, 0, 59, 0, 59, 0, 59, 0, 
-	59, 0, 59, 0, 59, 0, 59, 0, 
-	59, 0, 59, 0, 59, 0, 59, 0, 
-	59, 0, 59, 0, 59, 0, 59, 0, 
-	59, 3, 59, 0, 0, 59, 0, 59, 
-	5, 0, 59, 47, 59, 5, 0, 59, 
-	0, 0, 59, 0, 0, 59, 0, 0, 
-	59, 0, 0, 59, 0, 59, 92, 27, 
-	27, 29, 0, 49, 29, 0, 92, 27, 
-	27, 0, 0, 59, 0, 0, 59, 0, 
-	0, 59, 0, 0, 59, 0, 0, 59, 
-	0, 0, 59, 0, 59, 0, 0, 0, 
-	0, 0, 0, 0, 0, 59, 0, 0, 
-	0, 0, 0, 0, 0, 0, 59, 0, 
-	0, 59, 0, 0, 59, 0, 0, 59, 
-	0, 0, 59, 0, 59, 0, 59, 0, 
-	0, 59, 0, 0, 59, 0, 0, 59, 
-	0, 0, 59, 0, 0, 59, 0, 0, 
-	59, 0, 0, 59, 0, 59, 15, 15, 
-	15, 0, 0, 0, 0, 0, 0, 59, 
-	86, 59, 15, 15, 15, 0, 59, 0, 
-	59, 0, 59, 0, 59, 0, 59, 0, 
-	59, 0, 59, 71, 59, 0, 59, 51, 
-	59, 0, 0, 59, 0, 0, 59, 0, 
-	0, 59, 1, 59, 98, 59, 0, 0, 
-	59, 0, 0, 59, 0, 0, 59, 0, 
-	0, 59, 0, 0, 59, 0, 0, 59, 
-	1, 59, 95, 59, 17, 17, 0, 0, 
-	0, 0, 0, 0, 0, 89, 0, 0, 
+	0, 0, 57, 0, 57, 0, 57, 0, 
+	57, 0, 57, 0, 57, 0, 57, 0, 
+	57, 0, 57, 0, 57, 0, 57, 0, 
+	57, 0, 57, 0, 57, 0, 57, 0, 
+	57, 0, 57, 0, 57, 0, 57, 0, 
+	57, 3, 57, 0, 0, 57, 0, 57, 
+	5, 0, 57, 47, 57, 5, 0, 57, 
+	0, 0, 57, 0, 0, 57, 0, 0, 
+	57, 0, 0, 57, 0, 57, 90, 27, 
+	27, 29, 0, 99, 29, 0, 90, 27, 
+	27, 0, 0, 57, 0, 0, 57, 0, 
+	0, 57, 0, 0, 57, 0, 0, 57, 
+	0, 0, 57, 0, 57, 0, 0, 0, 
+	0, 0, 0, 0, 0, 57, 0, 0, 
+	0, 0, 0, 0, 0, 0, 57, 0, 
+	0, 57, 0, 0, 57, 0, 0, 57, 
+	0, 0, 57, 0, 57, 0, 57, 0, 
+	0, 57, 0, 0, 57, 0, 0, 57, 
+	0, 0, 57, 0, 0, 57, 0, 0, 
+	57, 0, 0, 57, 0, 57, 15, 15, 
+	15, 0, 0, 0, 0, 0, 0, 57, 
+	84, 57, 15, 15, 15, 0, 57, 0, 
+	57, 0, 57, 0, 57, 0, 57, 0, 
+	57, 0, 57, 69, 57, 0, 57, 49, 
+	57, 0, 0, 57, 0, 0, 57, 0, 
+	0, 57, 1, 57, 96, 57, 0, 0, 
+	57, 0, 0, 57, 0, 0, 57, 0, 
+	0, 57, 0, 0, 57, 0, 0, 57, 
+	1, 57, 93, 57, 17, 17, 0, 0, 
+	0, 0, 0, 0, 0, 87, 0, 0, 
 	0, 7, 7, 7, 7, 7, 7, 7, 
-	0, 74, 0, 9, 0, 0, 0, 0, 
+	0, 72, 0, 9, 0, 0, 0, 0, 
 	0, 0, 0, 0, 9, 0, 0, 0, 
 	0, 0, 0, 0, 0, 9, 0, 0, 
-	0, 0, 0, 0, 0, 0, 83, 11, 
-	80, 11, 11, 11, 11, 11, 11, 11, 
+	0, 0, 0, 0, 0, 0, 81, 11, 
+	78, 11, 11, 11, 11, 11, 11, 11, 
 	11, 13, 0, 0, 13, 0, 0, 7, 
 	7, 7, 7, 7, 7, 7, 0, 9, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	83, 11, 80, 11, 11, 11, 11, 11, 
+	81, 11, 78, 11, 11, 11, 11, 11, 
 	11, 11, 11, 13, 9, 0, 0, 0, 
 	0, 0, 0, 0, 0, 13, 9, 0, 
-	0, 0, 0, 0, 0, 0, 0, 83, 
-	11, 80, 11, 11, 11, 11, 11, 11, 
+	0, 0, 0, 0, 0, 0, 0, 81, 
+	11, 78, 11, 11, 11, 11, 11, 11, 
 	11, 11, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 25, 0, 0, 69, 61, 69, 
-	107, 0, 0, 0, 9, 0, 0, 0, 
+	0, 0, 25, 0, 0, 67, 59, 67, 
+	108, 0, 0, 0, 9, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 9, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	9, 0, 0, 0, 0, 0, 0, 0, 
-	0, 83, 11, 80, 11, 11, 11, 11, 
-	11, 11, 11, 11, 13, 0, 104, 13, 
+	0, 81, 11, 78, 11, 11, 11, 11, 
+	11, 11, 11, 11, 13, 0, 105, 13, 
 	0, 0, 9, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 9, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 9, 0, 
-	0, 0, 0, 0, 0, 0, 0, 83, 
-	11, 80, 11, 11, 11, 11, 11, 11, 
-	11, 11, 13, 0, 104, 13, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 81, 
+	11, 78, 11, 11, 11, 11, 11, 11, 
+	11, 11, 13, 0, 105, 13, 0, 0, 
 	0, 9, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 9, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 9, 0, 
@@ -592,62 +593,62 @@ self._ami_protocol_parser_trans_actions = [
 	0, 0, 0, 0, 0, 0, 0, 25, 
 	9, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 9, 0, 0, 0, 0, 0, 
-	0, 0, 67, 9, 0, 0, 0, 0, 
-	0, 0, 0, 67, 9, 0, 0, 0, 
-	0, 0, 0, 0, 67, 83, 11, 80, 
+	0, 0, 65, 9, 0, 0, 0, 0, 
+	0, 0, 0, 65, 9, 0, 0, 0, 
+	0, 0, 0, 0, 65, 81, 11, 78, 
 	11, 11, 11, 11, 11, 11, 11, 11, 
 	13, 0, 37, 13, 0, 9, 0, 0, 
-	0, 0, 0, 0, 0, 67, 9, 0, 
-	0, 0, 0, 0, 0, 0, 67, 83, 
-	11, 80, 11, 11, 11, 11, 11, 11, 
+	0, 0, 0, 0, 0, 65, 9, 0, 
+	0, 0, 0, 0, 0, 0, 65, 81, 
+	11, 78, 11, 11, 11, 11, 11, 11, 
 	11, 11, 13, 9, 0, 0, 0, 0, 
 	0, 0, 0, 0, 13, 9, 0, 0, 
-	0, 0, 0, 0, 0, 0, 83, 11, 
-	80, 11, 11, 11, 11, 11, 11, 11, 
+	0, 0, 0, 0, 0, 0, 81, 11, 
+	78, 11, 11, 11, 11, 11, 11, 11, 
 	11, 0, 9, 0, 0, 0, 0, 0, 
-	0, 0, 0, 83, 11, 80, 11, 11, 
+	0, 0, 0, 81, 11, 78, 11, 11, 
 	11, 11, 11, 11, 11, 11, 13, 9, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	13, 9, 0, 0, 0, 0, 0, 0, 
-	0, 0, 83, 11, 80, 11, 11, 11, 
-	11, 11, 11, 11, 11, 83, 11, 80, 
+	0, 0, 81, 11, 78, 11, 11, 11, 
+	11, 11, 11, 11, 11, 81, 11, 78, 
 	11, 11, 11, 11, 11, 11, 11, 11, 
 	13, 9, 0, 0, 0, 0, 0, 0, 
 	0, 0, 13, 9, 0, 0, 0, 0, 
-	0, 0, 0, 0, 83, 11, 80, 11, 
+	0, 0, 0, 0, 81, 11, 78, 11, 
 	11, 11, 11, 11, 11, 11, 11, 0, 
 	9, 0, 0, 0, 0, 0, 0, 0, 
 	0, 37, 41, 0, 43, 0, 0, 37, 
-	37, 37, 37, 37, 55, 53, 57, 0, 
-	57, 0, 0, 57, 0, 0, 57, 0, 
-	0, 0, 23, 77, 77, 77, 77, 77, 
-	77, 77, 23, 0, 0, 0, 0, 7, 
+	37, 37, 37, 37, 53, 51, 55, 0, 
+	55, 0, 0, 55, 0, 0, 55, 0, 
+	0, 0, 23, 75, 75, 75, 75, 75, 
+	75, 75, 23, 0, 0, 0, 0, 7, 
 	7, 7, 7, 7, 7, 7, 7, 0, 
 	0, 7, 7, 7, 7, 7, 7, 7, 
 	7, 0, 7, 7, 7, 7, 7, 7, 
-	7, 63, 45, 45, 45, 45, 45, 45, 
+	7, 61, 45, 45, 45, 45, 45, 45, 
 	45, 45, 45, 45, 45, 45, 45, 45, 
 	45, 45, 45, 45, 45, 45, 45, 45, 
-	45, 45, 45, 45, 45, 59, 59, 59, 
-	59, 59, 59, 59, 59, 59, 59, 59, 
-	59, 59, 59, 59, 59, 59, 59, 59, 
-	59, 59, 59, 59, 59, 59, 59, 59, 
-	59, 59, 59, 59, 59, 59, 59, 59, 
-	59, 59, 59, 59, 59, 59, 59, 59, 
-	59, 59, 59, 59, 59, 59, 59, 59, 
-	59, 59, 59, 59, 59, 59, 59, 59, 
-	59, 59, 59, 59, 59, 59, 59, 59, 
-	59, 59, 59, 59, 59, 59, 59, 59, 
-	59, 59, 59, 59, 59, 59, 59, 59, 
-	59, 59, 59, 59, 69, 69, 69, 69, 
-	69, 69, 69, 69, 69, 69, 69, 69, 
-	69, 69, 69, 69, 69, 69, 69, 67, 
+	45, 45, 45, 45, 45, 57, 57, 57, 
+	57, 57, 57, 57, 57, 57, 57, 57, 
+	57, 57, 57, 57, 57, 57, 57, 57, 
+	57, 57, 57, 57, 57, 57, 57, 57, 
+	57, 57, 57, 57, 57, 57, 57, 57, 
+	57, 57, 57, 57, 57, 57, 57, 57, 
+	57, 57, 57, 57, 57, 57, 57, 57, 
+	57, 57, 57, 57, 57, 57, 57, 57, 
+	57, 57, 57, 57, 57, 57, 57, 57, 
+	57, 57, 57, 57, 57, 57, 57, 57, 
+	57, 57, 57, 57, 57, 57, 57, 57, 
+	57, 57, 57, 57, 67, 67, 67, 67, 
 	67, 67, 67, 67, 67, 67, 67, 67, 
-	67, 67, 67, 67, 67, 67, 67, 67, 
-	67, 67, 67, 67, 67, 67, 67, 67, 
-	67, 67, 67, 67, 67, 67, 67, 67, 
-	67, 67, 67, 67, 43, 57, 57, 57, 
-	57, 65, 63, 63, 63, 0
+	67, 67, 67, 67, 67, 67, 67, 65, 
+	65, 65, 65, 65, 65, 65, 65, 65, 
+	65, 65, 65, 65, 65, 65, 65, 65, 
+	65, 65, 65, 65, 65, 65, 65, 65, 
+	65, 65, 65, 65, 65, 65, 65, 65, 
+	65, 65, 65, 65, 43, 55, 55, 55, 
+	55, 63, 61, 61, 61, 0
 ]
 
 class << self
@@ -682,7 +683,7 @@ self._ami_protocol_parser_to_state_actions = [
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 33, 
 	0, 0, 33, 0, 0, 0, 0, 0, 
-	0, 101, 0, 0, 0, 0
+	0, 102, 0, 0, 0, 0
 ]
 
 class << self
@@ -790,7 +791,7 @@ end
 self.ami_protocol_parser_en_response_follows = 217;
 
 
-# line 794 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
+# line 795 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
 begin
 	 @current_pointer ||= 0
 	 @data_ending_pointer ||=  @data.length
@@ -799,8 +800,8 @@ begin
 	 @token_end = nil
 	 @ragel_act = 0
 end
-# line 73 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-
+# line 74 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+##
           end
   
           def <<(new_data)
@@ -810,7 +811,7 @@ end
         
           def resume!
             
-# line 814 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
+# line 815 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
 begin
 	_klen, _trans, _keys, _acts, _nacts = nil
 	_goto_level = 0
@@ -839,13 +840,13 @@ begin
 		_nacts -= 1
 		_acts += 1
 		case _ami_protocol_parser_actions[_acts - 1]
-			when 28 then
+			when 29 then
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @token_start =  @current_pointer
 		end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-# line 849 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
+# line 850 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
 		end # from state action switch
 	end
 	if _trigger_goto
@@ -1040,18 +1041,18 @@ when 21 then
  		end
 # line 33 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 22 then
-# line 40 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 34 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
-	begin
-		 @current_state = 210
+ 	begin
+		 @current_state = 125
 		_trigger_goto = true
 		_goto_level = _again
 		break
 	end
-		end
-# line 40 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+ 		end
+# line 34 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 23 then
-# line 67 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 40 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
 	begin
 		 @current_state = 210
@@ -1060,8 +1061,19 @@ when 23 then
 		break
 	end
 		end
-# line 67 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 40 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 24 then
+# line 67 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+		begin
+	begin
+		 @current_state = 210
+		_trigger_goto = true
+		_goto_level = _again
+		break
+	end
+		end
+# line 67 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 25 then
 # line 69 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
 	begin
@@ -1072,7 +1084,7 @@ when 24 then
 	end
 		end
 # line 69 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 25 then
+when 26 then
 # line 75 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  message_received; 	begin
@@ -1083,13 +1095,13 @@ when 25 then
 	end
  		end
 # line 75 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 29 then
+when 30 then
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @token_end =  @current_pointer+1
 		end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 30 then
+when 31 then
 # line 46 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @token_end =  @current_pointer+1
@@ -1102,28 +1114,11 @@ when 30 then
   end
 		end
 # line 46 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 31 then
+when 32 then
 # line 47 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @token_end =  @current_pointer+1
  begin 
-    # If this scanner's look-ahead capability didn't match the prompt, let's ignore the need for a prompt
-     @current_pointer =  @current_pointer - 1;
-    	begin
-		 @current_state = 210
-		_trigger_goto = true
-		_goto_level = _again
-		break
-	end
-
-   end
-		end
-# line 47 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 32 then
-# line 47 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-		begin
- @token_end =  @current_pointer
- @current_pointer =  @current_pointer - 1; begin 
     # If this scanner's look-ahead capability didn't match the prompt, let's ignore the need for a prompt
      @current_pointer =  @current_pointer - 1;
     	begin
@@ -1139,6 +1134,23 @@ when 32 then
 when 33 then
 # line 47 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
+ @token_end =  @current_pointer
+ @current_pointer =  @current_pointer - 1; begin 
+    # If this scanner's look-ahead capability didn't match the prompt, let's ignore the need for a prompt
+     @current_pointer =  @current_pointer - 1;
+    	begin
+		 @current_state = 210
+		_trigger_goto = true
+		_goto_level = _again
+		break
+	end
+
+   end
+		end
+# line 47 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 34 then
+# line 47 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+		begin
  begin  @current_pointer = (( @token_end))-1; end
  begin 
     # If this scanner's look-ahead capability didn't match the prompt, let's ignore the need for a prompt
@@ -1153,32 +1165,32 @@ when 33 then
    end
 		end
 # line 47 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 34 then
+when 35 then
 # line 55 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @token_end =  @current_pointer+1
 		end
 # line 55 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 35 then
+when 36 then
 # line 22 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @token_end =  @current_pointer+1
  begin  message_received @current_message  end
 		end
 # line 22 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 36 then
-# line 57 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-		begin
- @token_end =  @current_pointer+1
-		end
-# line 57 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 37 then
+# line 57 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+		begin
+ @token_end =  @current_pointer+1
+		end
+# line 57 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 38 then
 # line 58 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @token_end =  @current_pointer+1
 		end
 # line 58 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 38 then
+when 39 then
 # line 59 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @token_end =  @current_pointer+1
@@ -1191,7 +1203,7 @@ when 38 then
   end
 		end
 # line 59 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 39 then
+when 40 then
 # line 60 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @token_end =  @current_pointer+1
@@ -1207,7 +1219,7 @@ when 39 then
    end
 		end
 # line 60 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 40 then
+when 41 then
 # line 60 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @token_end =  @current_pointer
@@ -1223,7 +1235,7 @@ when 40 then
    end
 		end
 # line 60 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 41 then
+when 42 then
 # line 60 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  begin  @current_pointer = (( @token_end))-1; end
@@ -1239,41 +1251,41 @@ when 41 then
    end
 		end
 # line 60 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 42 then
+when 43 then
 # line 73 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @ragel_act = 9;		end
 # line 73 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 43 then
+when 44 then
 # line 75 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @ragel_act = 11;		end
 # line 75 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 44 then
+when 45 then
 # line 74 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @token_end =  @current_pointer+1
 		end
 # line 74 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 45 then
-# line 73 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-		begin
- @token_end =  @current_pointer
- @current_pointer =  @current_pointer - 1;		end
-# line 73 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 46 then
+# line 73 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+		begin
+ @token_end =  @current_pointer
+ @current_pointer =  @current_pointer - 1;		end
+# line 73 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 47 then
 # line 75 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @token_end =  @current_pointer
  @current_pointer =  @current_pointer - 1;		end
 # line 75 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 47 then
+when 48 then
 # line 73 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  begin  @current_pointer = (( @token_end))-1; end
 		end
 # line 73 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 48 then
+when 49 then
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
 	case  @ragel_act
@@ -1291,7 +1303,7 @@ end
 end 
 			end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-# line 1295 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
+# line 1307 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
 			end # action switch
 		end
 	end
@@ -1307,18 +1319,18 @@ end
 		_nacts -= 1
 		_acts += 1
 		case _ami_protocol_parser_actions[_acts - 1]
-when 26 then
+when 27 then
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @token_start = nil;		end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 27 then
+when 28 then
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  @ragel_act = 0
 		end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-# line 1322 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
+# line 1334 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
 		end # to state action switch
 	end
 	if _trigger_goto
@@ -1348,8 +1360,8 @@ end
 	end
 	end
 	end
-# line 82 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-
+# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+##
           end
         
           def extend_buffer_with(new_data)
@@ -1511,14 +1523,12 @@ end
             buffer.gsub!("\n", "\\n\n")
     
             puts <<-INSPECTION
-
-        VVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-        ####  #{message}
-        #############################
-        #{buffer}
-        #############################
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+VVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+####  #{message}
+#############################
+#{buffer}
+#############################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             INSPECTION
     
           end

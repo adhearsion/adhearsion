@@ -6,6 +6,7 @@ Story: Parsing AMI
 	
 	TODO:
 	- Events MUST be given to a separate method, not message_received!
+	- A syntax error is an immediate packet WITH a colon
 	
 	UNCERTAINTIES:
 	- How do I test non-immediate syntax errors?
@@ -187,10 +188,13 @@ Story: Parsing AMI
   Scenario: Parsing an AMI event
 
 		Given a new parser
-		And a custom event with name "New Channel Event"
+		And a custom event with name "NewChannelEvent" identified by "this_event"
+		And a custom header for event identified by "this_event" whose key is "Foo" and value is "Bar"
 		
-		When the buffer is parsed
+		When the custom event identified by "this_event" is added to the buffer
+		And the buffer is parsed
 		
 		Then the protocol should have parsed without syntax errors
 		And 1 event should have been received
-		And the first event should have the name "New Channel Event"
+		And the 1st event should have the name "NewChannelEvent"
+		And the 1st event should have key "Foo" with value "Bar"

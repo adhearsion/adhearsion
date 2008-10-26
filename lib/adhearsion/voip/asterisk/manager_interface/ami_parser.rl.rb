@@ -10,8 +10,8 @@ module Adhearsion
 
           CAPTURED_VARIABLES = {} unless defined? CAPTURED_VARIABLES
           CAPTURE_CALLBACKS  = {} unless defined? CAPTURE_CALLBACKS
-
-          %%{ #%#
+          
+          %%{
           	machine ami_protocol_parser;
           
             # Executed after a "Respone: Success" or "Response: Pong"
@@ -47,13 +47,14 @@ module Adhearsion
           
             include ami_protocol_parser_machine "ami_protocol_parser_machine.rl";
     
-          }%% # %
+          }%%##
 
-          attr_accessor :ami_version
+          attr_accessor(:ami_version)
           def initialize
     
             @data = ""
             @current_pointer = 0
+            
             %%{
               # All other variables become local, letting Ruby garbage collect them. This
               # prevents us from having to manually reset them.
@@ -70,7 +71,7 @@ module Adhearsion
 			
         			write data nofinal;
               write init;
-            }%%
+            }%%##
           end
   
           def <<(new_data)
@@ -79,7 +80,7 @@ module Adhearsion
           end
         
           def resume!
-            %%{ write exec; }%%
+            %%{ write exec; }%%##
           end
         
           def extend_buffer_with(new_data)
@@ -241,14 +242,12 @@ module Adhearsion
             buffer.gsub!("\n", "\\n\n")
     
             puts <<-INSPECTION
-
-        VVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-        ####  #{message}
-        #############################
-        #{buffer}
-        #############################
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+VVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+####  #{message}
+#############################
+#{buffer}
+#############################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             INSPECTION
     
           end

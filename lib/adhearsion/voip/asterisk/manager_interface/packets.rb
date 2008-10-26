@@ -42,7 +42,7 @@ module Adhearsion
           attr_reader :name
           def initialize(name)
             super()
-            @name = name.underscore.to_sym
+            @name = name
           end
         end
       end

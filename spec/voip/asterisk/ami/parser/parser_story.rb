@@ -33,6 +33,7 @@ steps_for :ami_parser do
   Given "a new parser" do
     @parser = IntrospectiveManagerStreamParser.new
     @custom_stanzas = {}
+    @custom_events  = {}
     
     @GivenPong = lambda do |with_or_without, action_id, number|
       number = number == "a" ? 1 : number.to_i
@@ -74,7 +75,7 @@ Privilege: Command\r
 ActionID: 123123\r
 %s\r
 --END COMMAND--\r\n\r
-RESPONSE
+    RESPONSE
 
     @parser << multi_line_response
   end
@@ -107,12 +108,31 @@ RESPONSE
     @parser << "#{text}\r\n\r\n"
   end
   
+  Given 'a custom event with name "$event_name" identified by "$identifier"' do |event_name, identifer|
+    @custom_events[identifer] = {:Event => event_name }
+  end
+  
+  Given 'a custom header for event identified by "$identifier" whose key is "$key" and value is "$value"' do |identifier, key, value|
+    @custom_events[identifier][key] = value
+  end
+  
   ########################################
   #### WHEN
   ########################################
   
   When 'the custom stanza named "$name" is added to the buffer' do |name|
     @parser << (@custom_stanzas[name] + "\r\n")
+  end
+  
+  When 'the custom event identified by "$identifier" is added to the buffer' do |identifier|
+    custom_event = @custom_events[identifier].clone
+    event_name = custom_event.delete :Event
+    stringified_event = "Event: #{event_name}\r\n"
+    custom_event.each_pair do |key,value|
+      stringified_event << "#{key}: #{value}\r\n"
+    end
+    stringified_event << "\r\n"
+    @parser << stringified_event
   end
   
   When "the buffer is parsed" do
@@ -173,6 +193,26 @@ RESPONSE
     @parser.received_messages.select do |response|
       response.kind_of?(Adhearsion::VoIP::Asterisk::Manager::ImmediateResponse) && response.message == text
     end.size.should equal(number.to_i)
+  end
+  
+  Then 'the $order event should have the name "$name"' do |order, name|
+    order = order[/^(\d+)\w+$/, 1].to_i - 1
+    @parser.received_messages.select do |response|
+      response.kind_of?(Adhearsion::VoIP::Asterisk::Manager::Event)
+    end[order].name.should eql(name)
+  end
+  
+  Then '$number event should have been received' do |number|
+    @parser.received_messages.select do |response|
+      response.kind_of?(Adhearsion::VoIP::Asterisk::Manager::Event)
+    end.size.should equal(number.to_i)
+  end
+  
+  Then 'the $order event should have key "$key" with value "$value"' do |order, key, value|
+    order = order[/^(\d+)\w+$/, 1].to_i - 1
+    @parser.received_messages.select do |response|
+      response.kind_of?(Adhearsion::VoIP::Asterisk::Manager::Event)
+    end[order][key].should eql(value)
   end
   
 end
