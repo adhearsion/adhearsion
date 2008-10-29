@@ -8,18 +8,17 @@ module Adhearsion
 
           BUFFER_SIZE = 8.kilobytes unless defined? BUFFER_SIZE
 
-          CAPTURED_VARIABLES = {} unless defined? CAPTURED_VARIABLES
-          CAPTURE_CALLBACKS  = {} unless defined? CAPTURE_CALLBACKS
-          
           %%{
           	machine ami_protocol_parser;
+          
+            # All required Ragel actions are implemented as Ruby methods.
           
             # Executed after a "Respone: Success" or "Response: Pong"
             action init_success { init_success }
           
             action init_response_follows { init_response_follows }
           
-            action message_received { message_received @current_message }
+            action message_received { message_received }
           
             action version_starts { version_starts }
             action version_stops  { version_stops  }
@@ -60,19 +59,19 @@ module Adhearsion
               # All other variables become local, letting Ruby garbage collect them. This
               # prevents us from having to manually reset them.
       
-        			variable data @data;
-              variable p @current_pointer;
-        			variable pe @data_ending_pointer;
-        			variable cs @current_state;
-        			variable ts @token_start;
-        			variable te @token_end;
+        			variable data  @data;
+              variable p     @current_pointer;
+        			variable pe    @data_ending_pointer;
+        			variable cs    @current_state;
+        			variable ts    @token_start;
+        			variable te    @token_end;
         			variable stack @stack;
-        			variable act @ragel_act;
-        			variable eof @eof;
+        			variable act   @ragel_act;
+        			variable eof   @eof;
 			        variable stack @ragel_stack;
-			        variable top @ragel_stack_top;
+			        variable top   @ragel_stack_top;
 			        
-        			write data nofinal;
+        			write data;
               write init;
             }%%##
             
@@ -90,6 +89,7 @@ module Adhearsion
           def extend_buffer_with(new_data)
             if new_data.size + @data.size > BUFFER_SIZE
               @data.slice! 0...new_data.size
+              # TODO: What if the current_pointer wasn't at the end of the data for some reason?
               @current_pointer = @data.size
             end
             @data << new_data
@@ -142,18 +142,6 @@ module Adhearsion
           def version_stops
             self.ami_version = @data[@start_of_version...@current_pointer].to_f
             @start_of_version = nil
-          end
-  
-          def begin_capturing_variable(variable_name)
-            @start_of_current_capture = @current_pointer
-          end
-  
-          def finish_capturing_variable(variable_name)
-            start, stop = @start_of_current_capture, @current_pointer
-            return :failed if !start || start > stop
-            capture = @data[start...stop]
-            CAPTURED_VARIABLES[variable_name] = capture
-            capture
           end
   
           def event_name_starts
@@ -255,6 +243,31 @@ VVVVVVVVVVVVVVVVVVVVVVVVVVVVV
             INSPECTION
     
           end
+        end
+        class DelegatingAsteriskManagerInterfaceParser < AbstractAsteriskManagerInterfaceStreamParser
+          
+          def initialize(delegate, method_delegation_map=nil)
+            super()
+            @delegate = delegate
+            
+            @message_received_method = method_delegation_map ? method_delegation_map[:message_received] : :message_received
+            @error_received_method = method_delegation_map   ? method_delegation_map[:error_received]   : :error_received
+            @syntax_error_method = method_delegation_map ? method_delegation_map[:syntax_error_encountered] :
+                :syntax_error_encountered
+          end
+          
+          def message_received(message)
+            @delegate.send(@message_received_method, message)
+          end
+          
+          def error_received(message)
+            @delegate.send(@error_received_method, message)
+          end
+          
+          def syntax_error_encountered(ignored_chunk)
+            @delegate.send(@syntax_error_method, ignored_chunk)
+          end
+          
         end
       end
     end

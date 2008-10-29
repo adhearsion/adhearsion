@@ -6,15 +6,13 @@ Story: Parsing AMI
 	
 	TODO:
 	- Events MUST be given to a separate method, not message_received!
-	- A syntax error is an immediate packet WITH a colon
 	
 	UNCERTAINTIES:
-	- How do I test non-immediate syntax errors?
-	- What is the delimiter between immediate responses?
+	- Check Asterisk source code: What is the delimiter between immediate responses?
 	- Are there any pairs with non-unique keys? Could Hash be blowing stuff away?
 	
 	WHEN DOING INTEGRATION TESTS:
-	- Try sending it an originate with a bad priority, a timeout of 
+	- Try sending it an originate with a bad priority, a timeout of -1... and other improper stuff.
 	
 	Scenario: Parsing only the initial AMI version header
 	

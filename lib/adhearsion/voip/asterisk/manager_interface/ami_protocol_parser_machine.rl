@@ -2,22 +2,25 @@
 
 #########
 ## This file is written with the Ragel programming language and parses the Asterisk Manager Interface protocol. It depends
-## upon Ragel actions which should be implemented in the Ragel which which includes this file.
+## upon Ragel actions which should be implemented in another Ragel-parsed file which includes this file.
 ##
-## Note:This file is language agnostic. From this AMI parsers in many other languages can be generated.
+## Ragel was used because the AMI protocol is extremely non-deterministic and, in the edge cases, requires something both
+## very robust and something which can recover from syntax errors.
+##
+## Note: This file is language agnostic. From this AMI parsers in many other languages can be generated.
 #########
 
 machine ami_protocol_parser_machine;
 
-cr = "\r";           # A carriage return. Used before (almost) every newline character.
-lf = "\n";                 # Newline. Used (with cr) to separate key/value pairs and stanzas.
-crlf = cr lf; # Means "carriage return and line feed". Used to separate key/value pairs and stanzas
-loose_newline = cr? lf;
+cr = "\r";              # A carriage return. Used before (almost) every newline character.
+lf = "\n";              # Newline. Used (with cr) to separate key/value pairs and stanzas.
+crlf = cr lf;           # Means "carriage return and line feed". Used to separate key/value pairs and stanzas
+loose_newline = cr? lf; # Used sometimes when the AMI protocol is nondeterministic about the delimiter
 
-white = [\t ];                    # Single whitespace character, either a tab or a space
-colon = ":" [ ]**;                # Separates keys from values. "A colon followed by any number of spaces"
-stanza_break    = crlf crlf;      # The seperator between two stanzas.
-rest_of_line    = (any* -- crlf); # Match all characters until the next line seperator.
+white = [\t ];                 # Single whitespace character, either a tab or a space
+colon = ":" [ ]**;             # Separates keys from values. "A colon followed by any number of spaces"
+stanza_break = crlf crlf;      # The seperator between two stanzas.
+rest_of_line = (any* -- crlf); # Match all characters until the next line seperator.
 
 Prompt = "Asterisk Call Manager/" digit+ >version_starts "." digit+ %version_stops crlf;
 
@@ -37,11 +40,11 @@ Follows  = Response "Follows"i crlf @init_response_follows @{ fgoto response_fol
 # For "Response: Follows"
 FollowsBody = (any* -- FollowsDelimiter) >follows_text_starts FollowsDelimiter @follows_text_stops crlf;
 
-ImmediateResponse = (any+ -- (loose_newline | ":")) >immediate_response_starts loose_newline @immediate_response_stops @{fgoto protocol;};
+ImmediateResponse = (any+ -- (loose_newline | ":")) >immediate_response_starts loose_newline @immediate_response_stops @{fret;};
 SyntaxError       = (any+ -- crlf) >syntax_error_starts crlf @syntax_error_stops;
 
 irregularity := |*
-  ImmediateResponse => { fret; };
+  ImmediateResponse; # Performs the fret in the ImmediateResponse FSM
   SyntaxError       => { fret; };
 *|;
 
