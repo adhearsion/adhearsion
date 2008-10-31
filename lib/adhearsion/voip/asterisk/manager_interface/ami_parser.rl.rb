@@ -18,7 +18,7 @@ module Adhearsion
           
             action init_response_follows { init_response_follows }
           
-            action message_received { message_received }
+            action message_received { message_received @current_message }
           
             action version_starts { version_starts }
             action version_stops  { version_stops  }

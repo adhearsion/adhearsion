@@ -125,15 +125,18 @@ Gem::Specification.new do |s|
     if current_version >= 3 then
       s.add_runtime_dependency("theatre", [">= 0.8.0"])
       s.add_runtime_dependency("rubigen", [">= 1.0.6"])
+      s.add_runtime_dependency("eventmachine", [">= 0.12.2"])
       s.add_runtime_dependency("log4r", [">= 1.0.5"])
     else
       s.add_dependency("theatre", [">= 0.8.0"])
       s.add_dependency("rubigen", [">= 1.0.6"])
+      s.add_dependency("eventmachine", [">= 0.12.2"])
       s.add_dependency("log4r", [">= 1.0.5"])
     end
   else
     s.add_dependency("theatre", [">= 0.8.0"])
     s.add_dependency("rubigen", [">= 1.0.6"])
+    s.add_dependency("eventmachine", [">= 0.12.2"])
     s.add_dependency("log4r", [">= 1.0.5"])
   end
 end

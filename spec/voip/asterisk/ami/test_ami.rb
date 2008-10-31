@@ -3,14 +3,38 @@ require 'adhearsion'
 require 'adhearsion/voip/asterisk/manager_interface'
 
 context "ManagerInterface" do
-  test "should receive data and not die" do
-    new_socket_data = %{Asterisk Manager Version/1.0\r\nResponse: Success\r\nMessage: Authentication accepted\r\n\r\n}
-    flexmock(Adhearsion::VoIP::Asterisk::Manager::ManagerInterface).new_instances.should_receive(:bhASHBDBHASDA)
-    manager = Adhearsion::VoIP::Asterisk::Manager::ManagerInterface.new
-    manager.connect
-    flexmock(manager).should_receive(:message_received).once.with(Adhearsion::VoIP::Asterisk::Manager::NormalAmiResponse)
-    manager.receive_action_data new_socket_data
+  
+  before :each do
+    @socket_connect_data = "Asterisk Call Manager/1.0\r\nResponse: Success\r\nMessage: Authentication accepted\r\n\r\n"
+    @Manager = Adhearsion::VoIP::Asterisk::Manager
   end
+  
+  test "should receive data and not die" do
+    host, port = "localhost", 9999
+    
+    manager = @Manager::ManagerInterface.new :hostname => host, :port => port
+    
+    mock_em_connection = flexmock "mock object with ManagerInterfaceActionsConnection mixin"
+    mock_em_connection.extend @Manager::ManagerInterface::ManagerInterfaceActionsConnection.new(manager)
+    mock_em_connection.should_receive(:send_data).zero_or_more_times.with(String).and_return
+    flexmock(EventMachine).should_receive(:connect).with(host, port, Module).and_return mock_em_connection
+    
+    manager.connect!
+    
+    flexmock(manager).should_receive(:action_message_received).once.with(@Manager::NormalAmiResponse)
+    manager.send(:instance_variable_get, :@actions_connection).receive_data(@socket_connect_data)
+  end
+  
+  test "a received message that matches an action ID for which we're waiting" do
+    # mock out new_action_id
+    # mock out send_data so that sent messages aren't actually sent
+    # send the action
+    # test that the hash table is waiting for the hash table
+    # invoke message_received with a simulated object which has the correct actionid
+    # test whether the returned object has the correct action_id
+    # test that the hash table of action ids is empty
+  end
+  
 end
 
 context "DelegatingAsteriskManagerInterfaceParser" do

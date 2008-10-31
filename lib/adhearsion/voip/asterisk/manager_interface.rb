@@ -1,4 +1,5 @@
 require 'adhearsion/voip/asterisk/manager_interface/ami_parser'
+require 'adhearsion/voip/asterisk/manager_interface/connections'
 
 module Adhearsion
   module VoIP
@@ -67,9 +68,9 @@ module Adhearsion
             end
 
           end
-        
+          
           include Abstractions
-        
+          
           DEFAULT_SETTINGS = {
             :hostname => "localhost",
             :port     => 5038,
@@ -77,65 +78,54 @@ module Adhearsion
             :password => "secret",
             :events   => true
           }.freeze unless defined? DEFAULT_SETTINGS
-        
+          
           attr_reader *DEFAULT_SETTINGS.keys
-        
+          
           ##
           # Creates a new Asterisk Manager Interface connection and exposes certain methods to control it.
           #
-          # @param [Hash] options Supply
+          # @param [Hash] options Available options are :hostname, :port, :username, :password, and :events
           #
           def initialize(options={})
             options = DEFAULT_SETTINGS.merge options
-            @hostname,@port,@username,@password,@events = options.values_at :hostname, :port, :username, :password, :events
-            @outgoing_message_queue = Queue.new
-            @action_parser = DelegatingAsteriskManagerInterfaceParser.new(self)
-            # @events_parser = DelegatingAsteriskManagerInterfaceParser
+            @hostname = options[:host] || options[:hostname]
+            @username = options[:user] || options[:username]
+            @password = options[:pass] || options[:password]
+            @events   = options[:events]
+            @port     = options[:port]
+            
+            @sent_messages = {}
+            @sent_messages_lock = Mutex.new
           end
         
-          def message_received(message)
+          def action_message_received(message)
             if message.kind_of? Manager::Event
               Events.trigger %w[asterisk manager event], message
+            elsif message.kind_of? Manager::ImmediateResponse
+              # No ActionID! Release the write lock and wake up the waiter
             else
-              raise "WEEEE. I GOT HERE"
+              action_id = message["ActionID"]
+              data = data_for_message_received_with_action_id action_id
+              
             end
           end
         
-          def error_received(message)
+          def action_error_received(message)
             raise "GOT AN ERROR: #{message}"
           end
-        
+          
           def syntax_error_encountered(ignored_chunk)
             ahn_log.ami.error "ADHEARSION'S AMI PARSER ENCOUNTERED A SYNTAX ERROR! " + 
                 "PLEASE REPORT THIS ON http://bugs.adhearsion.com! OFFENDING TEXT:\n#{ignored_chunk.inspect}"
           end
 
-          ##
-          # 
-          #
-          # @return [EventMachine::Connection]
-          def establish_connection
-            EventMachine.connect @hostname, @port do |connection|
-              SUPPORTED_EVENTMACHINE_CALLBACKS.each do |callback_name|
-                connection.send(callback_name, &method(callback_name))
-              end
-            end
-          end
-        
-          def receive_action_socket_data(data)
-            @action_parser << data
-          end
-        
           def connect!
-            disconnect!
-            start_event_thread! if events_enabled?
-            login! host, user, password, port, events_enabled?
+            establish_actions_connection
           end
         
           def disconnect!
-            action_sock.close if action_sock && !action_sock.closed?
-            event_thread.kill if event_thread
-            scanner.stop if scanner
+            # TODO: Go through all the waiting condition variables and raise an exception
+            raise NotImplementedError
           end
         
           def events_enabled?
@@ -148,10 +138,6 @@ module Adhearsion
         
           def post_init
             login!
-          end
-        
-          def receive_action_data(data)
-            @parser << data
           end
         
           ##
@@ -171,12 +157,44 @@ module Adhearsion
               command = "Action: #{action_name}\r\n"
               headers.each_pair { |key,value| command << "#{key}: #{value}\r\n" }
               command << "\r\n"
+              
+              condition_variable = register_sent_action_with_action_id(action_id, name, headers)
+              
+              @actions_connection.send_data command
+              condition_variable.wait
             end
           
           end
         
           protected
-        
+          
+          def register_sent_action_with_action_id(action_id, name, headers)
+            condition_variable = ConditionVariable.new
+            @sent_messages_lock.synchronize do
+              @sent_messages[action_id] = {
+                :name               => name,
+                :headers            => headers,
+                :action_id          => action_id,
+                :condition_variable => condition_variable
+              }
+            end
+            condition_variable
+          end
+          
+          def data_for_message_received_with_action_id(action_id)
+            @sent_messages_lock.synchronize do
+              @sent_messages.delete action_id
+            end
+          end
+          
+          ##
+          # Instantiates a new ManagerInterfaceActionsConnection and assigns it to @actions_connection.
+          #
+          # @return [EventMachine::Connection]
+          def establish_actions_connection
+            @actions_connection = EventMachine.connect @hostname, @port, ManagerInterfaceActionsConnection.new(self)
+          end
+
           def new_action_id
             new_guid
           end

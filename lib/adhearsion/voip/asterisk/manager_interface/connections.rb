@@ -1,43 +1,58 @@
 module Adhearsion
   module VoIP
     module Asterisk
-      class ManagerInterface
+      module Manager
+        class ManagerInterface
         
-        ##
-        # 
-        #
-        class ManagerInterfaceActionsConnection < EventMachine::Connection
-
-          def initialize(manager_interface)
-            @manager_interface = manager_interface
-            @parser = DelegatingAsteriskManagerInterfaceParser.new(manager_interface)
+          module ManagerInterfaceActionsConnection
+        
+            class << self
+              def new(manager_interface)
+                parser = DelegatingAsteriskManagerInterfaceParser.new manager_interface, \
+                    :message_received => :action_message_received,
+                    :error_received   => :action_error_received
+                Module.new do
+                  include ManagerInterfaceActionsConnection
+                  define_method(:manager_interface) { manager_interface }
+                  define_method(:parser) { parser }
+                end
+              end
+            end
+            
+            def receive_data(data)
+              parser << data
+            end
+            
+            def post_init
+              manager_interface.actions_connection_established
+            end
+            
+            def unbind
+              manager_interface.actions_connection_disconnected
+            end
+            
           end
-
-          def receive_data(data)
-            @parser << data
-          end
-
-          def post_init
-            @manager_interface.actions_connection_established
-          end
-
-          def unbind
-            @manager_interface.actions_connection_disconnected
-          end
-
-        end
       
-        ##
-        # 
-        #
-        class ManagerInterfaceEventsConnection < EventMachine::Connection
-          
-          def initialize(manager_interface)
-            @parser = DelegatingAsteriskManagerInterfaceParser.new(manager_interface)
-          end
-          
-          def 
-          
+          ##
+          # Very simple class which only delegates some EventMachine methods off to its referencing ManagerInterface
+          #
+          # class ManagerInterfaceEventsConnection
+          # 
+          #   def initialize(manager_interface)
+          #     @parser = DelegatingAsteriskManagerInterfaceParser.new manager_interface, \
+          #         :message_received => :events_message_received,
+          #         :error_received   => :events_error_received
+          #   end
+          # 
+          #   def post_init
+          #     @manager_interface.events_connection_established
+          #   end
+          #   
+          #   def unbind
+          #     @manager_interface.events_connection_disconnected
+          #   end
+          #   
+          # end
         end
       end
     end

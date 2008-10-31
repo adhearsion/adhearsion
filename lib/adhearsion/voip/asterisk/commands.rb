@@ -743,13 +743,13 @@ module Adhearsion
             end
             nil
           end
-        
+          
           def set_caller_id_number(caller_id)
             return unless caller_id
             raise ArgumentError, "Caller ID must be numerical" if caller_id.to_s !~ /^\d+$/
             raw_response %(SET CALLERID %p) % caller_id
           end
-
+          
           def set_caller_id_name(caller_id_name)
             return unless caller_id_name
             variable "CALLERID(name)" => caller_id_name

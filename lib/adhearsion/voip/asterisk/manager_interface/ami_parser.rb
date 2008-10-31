@@ -930,7 +930,7 @@ when 1 then
 when 2 then
 # line 21 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
- message_received 		end
+ message_received @current_message 		end
 # line 21 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 3 then
 # line 23 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
