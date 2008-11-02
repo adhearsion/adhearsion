@@ -127,8 +127,7 @@ module Adhearsion
           #
           def event_message_received(event)
             # TODO: convert the event name to a certain namespace.
-            puts "ZOMGS I GOT AN EVENT! LOLS! #{event.inspect}"
-            # Events.trigger %w[asterisk manager event], message
+            Events.trigger %w[asterisk events], event
           end
           
           def event_error_received(message)
@@ -271,7 +270,7 @@ module Adhearsion
             
             instance_variable_set(connection_instance_variable_name, connection)
             
-            response = send_action_asynchronously_with_connection connection, "Login",
+            send_action_asynchronously_with_connection connection, "Login",
                 "Username" => @username, "Secret" => @password,
                 "Events" => connection_instance_variable_name == "@events_connection" ? "On" : "Off"
             

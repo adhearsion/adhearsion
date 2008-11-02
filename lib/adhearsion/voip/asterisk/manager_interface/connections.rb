@@ -49,7 +49,6 @@ module Adhearsion
             end
             
             def receive_data(data)
-              puts "RECEIVED DATA ON EVNETS #{data}"
               parser << data
             end
             

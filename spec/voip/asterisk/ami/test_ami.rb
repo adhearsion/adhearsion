@@ -6,42 +6,43 @@ context "ManagerInterface" do
   
   before :each do
     @socket_connect_data = "Asterisk Call Manager/1.0\r\nResponse: Success\r\nMessage: Authentication accepted\r\n\r\n"
+    @reload_event = %{Event: ChannelReload\r\nPrivilege: system,all\r\nChannel: SIP\r\n} +
+        %{ReloadReason: RELOAD (Channel module reload)\r\nRegistry_Count: 1\r\nPeer_Count: 2\r\nUser_Count: 1\r\n\r\n}
+    
     @Manager = Adhearsion::VoIP::Asterisk::Manager
+    @host, @port = "localhost", 9999
   end
   
   test "should receive data and not die" do
-    host, port = "localhost", 9999
-    
-    manager = @Manager::ManagerInterface.new :hostname => host, :port => port
+    manager = @Manager::ManagerInterface.new :hostname => @host, :port => @port
     
     mock_em_connection = flexmock "mock object with ManagerInterfaceActionsConnection mixin"
     mock_em_connection.extend @Manager::ManagerInterface::ManagerInterfaceActionsConnection.new(manager)
     mock_em_connection.should_receive(:send_data).zero_or_more_times.with(String).and_return
-    flexmock(EventMachine).should_receive(:connect).with(host, port, Module).and_return mock_em_connection
+    flexmock(EventMachine).should_receive(:connect).with(@host, @port, Module).and_return mock_em_connection
     
     manager.connect!
     
     flexmock(manager).should_receive(:action_message_received).once.with(@Manager::NormalAmiResponse)
-    manager.send(:instance_variable_get, :@actions_connection).receive_data(@socket_connect_data)
+    mock_em_connection.receive_data @socket_connect_data
   end
   
   test "a received message that matches an action ID for which we're waiting" do
-    host, port = "localhost", 9999
-    
     # mock out new_action_id
     action_id = "OHAILOLZ"
     
     # instantiate a new ManagerInterface
-    manager = @Manager::ManagerInterface.new :hostname => host, :port => port
+    manager = @Manager::ManagerInterface.new :hostname => @host, :port => @port, :events => false
     
-    flexmock(manager).should_receive(:new_action_id).once.and_return action_id
+    flexmock(manager).should_receive(:new_action_id).twice.and_return action_id
     
     mock_em_connection = flexmock "mock object with ManagerInterfaceActionsConnection mixin"
     mock_em_connection.extend @Manager::ManagerInterface::ManagerInterfaceActionsConnection.new(manager)
-    mock_em_connection.should_receive(:send_data).once.and_return
-    flexmock(EventMachine).should_receive(:connect).with(host, port, Module).and_return mock_em_connection
+    mock_em_connection.should_receive(:send_data).twice.and_return
+    flexmock(EventMachine).should_receive(:connect).once.with(@host, @port, Module).and_return mock_em_connection
     
     manager.connect!
+    mock_em_connection.post_init
     
     flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return :THREAD_WAITING_MOCKED_OUT
     flexmock(FutureResource).new_instances.should_receive(:resource=).once.with(@Manager::NormalAmiResponse)
@@ -58,7 +59,32 @@ context "ManagerInterface" do
     manager.send(:instance_variable_get, :@sent_messages).has_key?(action_id).should.equal false
   end
   
-  # TODO: TEST THAT EVENTS GO OFF TO THEATRE!
+  
+  test "a received event is received by Theatre" do
+    flexmock(Adhearsion::Events).should_receive(:trigger).once.with(%w[asterisk events], @Manager::Event)
+    
+    manager = @Manager::ManagerInterface.new :hostname => @host, :port => @port, :events => true
+    mock_actions_connection = flexmock "mock object with ManagerInterfaceActionsConnection mixin"
+    mock_actions_connection.extend @Manager::ManagerInterface::ManagerInterfaceActionsConnection.new(manager)
+    
+    mock_actions_connection.should_receive(:send_data).once.with(/Login/).and_return # Login
+    flexmock(EventMachine).should_receive(:connect).with(@host, @port, Module).and_return mock_actions_connection
+    
+    
+    mock_events_connection = flexmock "mock object with ManagerInterfaceEventsConnection mixin"
+    mock_events_connection.extend @Manager::ManagerInterface::ManagerInterfaceEventsConnection.new(manager)
+    
+    mock_events_connection.should_receive(:send_data).once.with(/Login/) # Login
+    flexmock(EventMachine).should_receive(:connect).with(@host, @port, Module).and_return mock_events_connection
+    
+    manager.connect!
+    mock_actions_connection.post_init
+    mock_events_connection.post_init
+    
+    mock_events_connection.receive_data @reload_event
+    
+  end
+  
   
   # TODO: TEST THAT "will follow" actions include the events relevant to their crap.
   
