@@ -45,6 +45,16 @@ Story: Parsing AMI
 		
 		Then the protocol should have parsed without syntax errors
 		And the 'follows' body of 1 message received should equal ragel_description
+	
+	Scenario: Parsing the initial AMI header and then an "Authentication Required" error.
+	
+		Given a new parser
+		And a version header for AMI 1.0
+		And an Authentication Required error
+		
+		When the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
 		
 	Scenario: Parsing the initial AMI header and then a Response:Follows section
 

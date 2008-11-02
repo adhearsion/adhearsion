@@ -18,8 +18,11 @@ module Adhearsion
           
             action init_response_follows { init_response_follows }
           
+            action init_error { init_error }
+            
             action message_received { message_received @current_message }
-          
+            action error_received   {   error_received @current_message }
+              
             action version_starts { version_starts }
             action version_stops  { version_stops  }
           
@@ -30,7 +33,7 @@ module Adhearsion
             action value_stops  { value_stops  }
           
             action error_reason_starts { error_reason_starts }
-            action error_reason_stops  { error_reason_stops }
+            action error_reason_stops  { error_reason_stops  }
           
             action syntax_error_starts { syntax_error_starts }
             action syntax_error_stops  { syntax_error_stops  }
@@ -134,7 +137,11 @@ module Adhearsion
           def init_response_follows
             @current_message = NormalAmiResponse.new(true)
           end
-  
+          
+          def init_error
+            @current_message = AMIError.new()
+          end
+          
           def version_starts
             @start_of_version = @current_pointer
           end
@@ -171,16 +178,15 @@ module Adhearsion
             @last_seen_value_end = @current_pointer + 2 # 2 for \r\n
             add_pair_to_current_message
           end
-  
+          
           def error_reason_starts
             @error_reason_start = @current_pointer
           end
-  
+          
           def error_reason_stops
-            error_received @data[@error_reason_start...@current_pointer - 3]
-            @error_reason_start = nil
+            @current_message.message = @data[@error_reason_start...@current_pointer]
           end
-  
+          
           def follows_text_starts
             @follows_text_start = @current_pointer
           end
@@ -250,10 +256,14 @@ VVVVVVVVVVVVVVVVVVVVVVVVVVVVV
             super()
             @delegate = delegate
             
-            @message_received_method = method_delegation_map ? method_delegation_map[:message_received] : :message_received
-            @error_received_method = method_delegation_map   ? method_delegation_map[:error_received]   : :error_received
-            @syntax_error_method = method_delegation_map ? method_delegation_map[:syntax_error_encountered] :
-                :syntax_error_encountered
+            @message_received_method = method_delegation_map && method_delegation_map.has_key?(:message_received) ?
+                method_delegation_map[:message_received] : :message_received
+            
+            @error_received_method = method_delegation_map && method_delegation_map.has_key?(:error_received) ?
+                method_delegation_map[:error_received] : :error_received
+            
+            @syntax_error_method = method_delegation_map && method_delegation_map.has_key?(:syntax_error_encountered) ?
+                method_delegation_map[:syntax_error_encountered] : :syntax_error_encountered
           end
           
           def message_received(message)

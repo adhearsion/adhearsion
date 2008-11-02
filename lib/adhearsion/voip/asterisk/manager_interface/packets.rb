@@ -30,6 +30,23 @@ module Adhearsion
   
         end
       
+        class AMIError < Exception
+          
+          attr_accessor :message
+          def initialize
+            @headers = {}
+          end
+          
+          def [](key)
+            @headers[key]
+          end
+          
+          def []=(key,value)
+            @headers[key] = value
+          end
+          
+        end
+        
         class ImmediateResponse < AbstractPacket
           attr_reader :message
           def initialize(message)

@@ -58,6 +58,20 @@ context "ManagerInterface" do
     manager.send(:instance_variable_get, :@sent_messages).has_key?(action_id).should.equal false
   end
   
+  # TODO: TEST THAT EVENTS GO OFF TO THEATRE!
+  
+  # TODO: TEST THAT "will follow" actions include the events relevant to their crap.
+  
+  # TODO: TEST THE WRITE LOCK FOR MESSAGES WHICH DO NOT REPLY WITH AN ACTION ID DO LOCK EVERYTHING..
+  
+  # TODO: TEST THAT AMI ERRORS RAISE AN EXCEPTION
+  
+  # TODO: Do AMI errors respond with action id? Answer: NOT ALL OF THEM!
+  
+  # TODO: test that login happens after connecting!
+  
+  # TODO: test that logging in with bad credentials raises an AuthenticationFailedException
+  
 end
 
 context "DelegatingAsteriskManagerInterfaceParser" do

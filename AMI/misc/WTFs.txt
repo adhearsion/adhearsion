@@ -5,7 +5,6 @@ This is LITERALLY a problem with AMI:
 >> 
 << No queues.
 
-WHAT DOES THIS PROTOCOL MEAN TO THESE PEOPLE?! THIS IS HORRIBLE!!!!!!
 
 
 Response: Follows
@@ -13,3 +12,7 @@ Privilege: Command
 ActionID: 123123
 Host                            Username       Refresh State                Reg.Time                 
 --END COMMAND--
+
+
+
+When doing a login, if you give it an ActionID, it won't send it back if there's an error.

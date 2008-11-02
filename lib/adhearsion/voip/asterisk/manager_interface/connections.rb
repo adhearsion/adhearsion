@@ -24,7 +24,7 @@ module Adhearsion
             end
             
             def post_init
-              manager_interface.actions_connection_established
+              manager_interface.send(:login, self)
             end
             
             def unbind
@@ -32,27 +32,37 @@ module Adhearsion
             end
             
           end
-      
-          ##
-          # Very simple class which only delegates some EventMachine methods off to its referencing ManagerInterface
-          #
-          # class ManagerInterfaceEventsConnection
-          # 
-          #   def initialize(manager_interface)
-          #     @parser = DelegatingAsteriskManagerInterfaceParser.new manager_interface, \
-          #         :message_received => :events_message_received,
-          #         :error_received   => :events_error_received
-          #   end
-          # 
-          #   def post_init
-          #     @manager_interface.events_connection_established
-          #   end
-          #   
-          #   def unbind
-          #     @manager_interface.events_connection_disconnected
-          #   end
-          #   
-          # end
+          
+          module ManagerInterfaceEventsConnection
+          
+            class << self
+              def new(manager_interface)
+                parser = DelegatingAsteriskManagerInterfaceParser.new manager_interface, \
+                    :message_received => :event_message_received,
+                    :error_received   => :event_error_received
+                Module.new do
+                  include ManagerInterfaceEventsConnection
+                  define_method(:manager_interface) { manager_interface }
+                  define_method(:parser) { parser }
+                end
+              end
+            end
+          
+            def initialize(manager_interface)
+              @parser = DelegatingAsteriskManagerInterfaceParser.new manager_interface, \
+                  :message_received => :events_message_received,
+                  :error_received   => :events_error_received
+            end
+          
+            def post_init
+              @manager_interface.events_connection_established
+            end
+            
+            def unbind
+              @manager_interface.events_connection_disconnected
+            end
+            
+          end
         end
       end
     end

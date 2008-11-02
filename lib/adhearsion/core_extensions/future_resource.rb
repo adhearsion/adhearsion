@@ -3,8 +3,8 @@ require "thread"
 class FutureResource
   
   def initialize
-    @resource_lock          = Mutex.new
-    @resource_value_blocker = ConditionVariable.new
+    @resource_lock          = Monitor.new
+    @resource_value_blocker = @resource_lock.new_cond#ConditionVariable.new
   end
   
   def resource

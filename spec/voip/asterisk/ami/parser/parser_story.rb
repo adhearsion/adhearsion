@@ -116,6 +116,10 @@ ActionID: 123123\r
     @custom_events[identifier][key] = value
   end
   
+  Given "an Authentication Required error" do
+    @parser << "Response: Error\r\nActionID: BPJeKqW2-SnVg-PyFs-vkXT-7AWVVPD0N3G7\r\nMessage: Authentication Required\r\n\r\n"
+  end
+  
   ########################################
   #### WHEN
   ########################################
@@ -147,7 +151,7 @@ ActionID: 123123\r
     current_pointer     = @parser.send(:instance_variable_get, :@current_pointer)
     data_ending_pointer = @parser.send(:instance_variable_get, :@data_ending_pointer)
     current_pointer.should equal(data_ending_pointer)
-    @parser.syntax_errors.should be_empty
+    @parser.syntax_errors.size.should equal(0)
   end
   
   Then "the protocol should have parsed with $number syntax errors?" do |number|
@@ -189,7 +193,8 @@ ActionID: 123123\r
   
   Then 'the $order AMI error should have the message "$message"' do |order, message|
     order = order[/^(\d+)\w+$/, 1].to_i - 1
-    @parser.ami_errors[order].should eql(message)
+    @parser.ami_errors[order].should be_kind_of(Adhearsion::VoIP::Asterisk::Manager::AMIError)
+    @parser.ami_errors[order].message.should eql(message)
   end
   
   Then '$number message should be an immediate response with text "$text"' do |number, text|

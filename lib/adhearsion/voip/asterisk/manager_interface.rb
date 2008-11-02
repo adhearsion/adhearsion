@@ -82,17 +82,20 @@ module Adhearsion
           attr_reader *DEFAULT_SETTINGS.keys
           
           ##
-          # Creates a new Asterisk Manager Interface connection and exposes certain methods to control it.
+          # Creates a new Asterisk Manager Interface connection and exposes certain methods to control it. The constructor
+          # takes named parameters as Symbols. Note: if the :events option is given, this library will establish a separate
+          # socket for just events. Two sockets are used because some actions actually respond with events, making it very
+          # complicated to differentiate between response-type events and normal events.
           #
           # @param [Hash] options Available options are :hostname, :port, :username, :password, and :events
           #
           def initialize(options={})
             options = DEFAULT_SETTINGS.merge options
-            @hostname = options[:host] || options[:hostname]
-            @username = options[:user] || options[:username]
-            @password = options[:pass] || options[:password]
-            @events   = options[:events]
-            @port     = options[:port]
+            @hostname       = options[:host] || options[:hostname]
+            @username       = options[:user] || options[:username]
+            @password       = options[:pass] || options[:password]
+            @port           = options[:port]
+            @events_enabled = options[:events]
             
             @sent_messages = {}
             @sent_messages_lock = Mutex.new
@@ -100,21 +103,42 @@ module Adhearsion
           
           def action_message_received(message)
             if message.kind_of? Manager::Event
-              Events.trigger %w[asterisk manager event], message
+              # Trigger the return value of the waiting action id...
             elsif message.kind_of? Manager::ImmediateResponse
               # No ActionID! Release the write lock and wake up the waiter
             else
               action_id = message["ActionID"]
               sent_action_metadata = data_for_message_received_with_action_id action_id
-              name, headers, future_resource = sent_action_metadata.values_at :name, :headers, :future_resource
-              future_resource.resource = message
+              if sent_action_metadata
+                name, headers, future_resource = sent_action_metadata.values_at :name, :headers, :future_resource
+                future_resource.resource = message
+              else
+                ahn_log.ami.error "Received an AMI message with an unrecognized ActionID!! This may be an error! #{message.inspect}"
+              end
             end
           end
           
-          def action_error_received(message)
-            raise "GOT AN ERROR: #{message}"
+          def action_error_received(ami_error)
+            raise ami_error
           end
           
+          ##
+          # Called only when this ManagerInterface is instantiated with events enabled.
+          #
+          def event_message_received(event)
+            # TODO: convert the event name to a certain namespace.
+            Events.trigger %w[asterisk manager event], message
+          end
+          
+          def event_error_received(message)
+            # Does this ever even occur?
+          end
+          
+          ##
+          # Called when our Ragel parser encounters some unexpected syntax from Asterisk. Anytime this is called, it should
+          # be considered a bug in Adhearsion. Note: this same method is called regardless of whether the syntax error
+          # happened on the actions socket or on the events socket.
+          #
           def syntax_error_encountered(ignored_chunk)
             ahn_log.ami.error "ADHEARSION'S AMI PARSER ENCOUNTERED A SYNTAX ERROR! " + 
                 "PLEASE REPORT THIS ON http://bugs.adhearsion.com! OFFENDING TEXT:\n#{ignored_chunk.inspect}"
@@ -122,6 +146,11 @@ module Adhearsion
 
           def connect!
             establish_actions_connection
+            establish_events_connection if events_enabled?
+          end
+          
+          def actions_connection_established
+            login
           end
         
           def disconnect!
@@ -130,23 +159,19 @@ module Adhearsion
           end
         
           def events_enabled?
-            !! @events
+            !! @events_enabled
           end
         
           def dynamic
             # TODO: Return an object which responds to method_missing
           end
         
-          def post_init
-            login!
-          end
-          
           ##
           # Used to directly send a new action to Asterisk. Note: NEVER supply an ActionID; these are handled internally.
           #
           # @param [String, Symbol] action_name The name of the action (e.g. Originate)
           #
-          def send_action(action_name, headers={})
+          def send_action_asynchronously(action_name, headers={})
             headers = headers.stringify_keys
             
             if MANAGER_ACTIONS_WHICH_DONT_SEND_BACK_AN_ACTIONID.include? action_name.to_s.downcase
@@ -158,18 +183,25 @@ module Adhearsion
               command = "Action: #{action_name}\r\n"
               headers.each_pair { |key,value| command << "#{key}: #{value}\r\n" }
               command << "\r\n"
-              
               future_resource = register_sent_action_with_metadata(action_id, action_name, headers)
+              
+              ahn_log.ami.debug "Sending AMI action: #{command.inspect}"
               
               @actions_connection.send_data command
               
               # Block this Thread until the FutureResource becomes available.
               # TODO: Maybe enforce some kind of timeout.
               # TODO: Maybe wrap the returned action in a more convenient object.
-              future_resource.resource
+              future_resource
             end
           
           end
+          
+          def send_action_synchronously(*args)
+            send_action_asynchronously(*args).resource
+          end
+          
+          alias send_action send_action_synchronously
         
           protected
           
@@ -198,7 +230,6 @@ module Adhearsion
           end
           
           def data_for_message_received_with_action_id(action_id)
-            p action_id
             @sent_messages_lock.synchronize do
               @sent_messages.delete action_id
             end
@@ -208,33 +239,50 @@ module Adhearsion
           # Instantiates a new ManagerInterfaceActionsConnection and assigns it to @actions_connection.
           #
           # @return [EventMachine::Connection]
+          #
           def establish_actions_connection
-            @actions_connection = EventMachine.connect @hostname, @port, ManagerInterfaceActionsConnection.new(self)
+            # Note: the @actions_connection instance variable is set in login()
+            EventMachine.connect @hostname, @port, ManagerInterfaceActionsConnection.new(self)
+          end
+          
+          ##
+          # Instantiates a new ManagerInterfaceEventsConnection and assigns it to @events_connection.
+          #
+          # @return [EventMachine::Connection]
+          #
+          def establish_events_connection
+            # Note: the @events_connection instance variable is set in login()
+            EventMachine.connect @hostname, @port, ManagerInterfaceEventsConnection.new(self)
           end
 
           def new_action_id
             new_guid
           end
         
-          def login
-            begin
-              @action_sock = TCPSocket.new host, port
-            rescue Errno::ECONNREFUSED => refusal_error
-              raise Errno::ECONNREFUSED, "Could not connect with AMI to Asterisk server at #{host}:#{port}. " +
-                                         "Is enabled set to 'yes' in manager.conf?"
+          def login(connection)
+            
+            connection_instance_variable_name = case connection
+              when ManagerInterfaceActionsConnection
+                "@actions_connection"
+              when ManagerInterfaceEventsConnection
+                "@events_connection"
             end
-
-            begin
-              execute_ami_command! :login, :username => user, :secret => password, :events => (events_enabled? ? "On" : "Off")
-            rescue ActionError
-              raise AuthenticationFailedException, "Invalid AMI username/password! Check manager.conf."
-            else
-
-            end
+            
+            instance_variable_set(connection_instance_variable_name, connection)
+            
+            response = send_action_asynchronously "Login", "Username" => @username,
+                                                           "Secret"   => @password,
+                                                           "Events"   => (events_enabled? ? "On" : "Off")
+            
+          rescue ActionError
+            raise AuthenticationFailedException, "Invalid AMI username/password! Check manager.conf."
+          rescue => exception
+            # We must rescue all exceptions because EventMachine gives VERY cryptic error messages when an exception is
+            # raised in post_init (which is what calls this method, usually).
+            ahn_log.ami.error "Error logging in! #{exception.inspect}\n#{exception.backtrace.join("\n")}"
           end
                 
           class AuthenticationFailedException < Exception; end
-          class ActionError < RuntimeError; end
         end
       end
     end
