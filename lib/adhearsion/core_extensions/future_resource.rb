@@ -4,7 +4,7 @@ class FutureResource
   
   def initialize
     @resource_lock          = Monitor.new
-    @resource_value_blocker = @resource_lock.new_cond#ConditionVariable.new
+    @resource_value_blocker = @resource_lock.new_cond
   end
   
   def resource

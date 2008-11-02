@@ -14,7 +14,7 @@ module Adhearsion
         class ManagerInterface
           
           MANAGER_ACTIONS_WHICH_DONT_SEND_BACK_AN_ACTIONID = %w[
-          
+            queues
           ] unless defined? MANAGER_ACTIONS_WHICH_DONT_SEND_BACK_AN_ACTIONID
         
           module Abstractions
@@ -127,7 +127,8 @@ module Adhearsion
           #
           def event_message_received(event)
             # TODO: convert the event name to a certain namespace.
-            Events.trigger %w[asterisk manager event], message
+            puts "ZOMGS I GOT AN EVENT! LOLS! #{event.inspect}"
+            # Events.trigger %w[asterisk manager event], message
           end
           
           def event_error_received(message)
@@ -149,10 +150,6 @@ module Adhearsion
             establish_events_connection if events_enabled?
           end
           
-          def actions_connection_established
-            login
-          end
-        
           def disconnect!
             # TODO: Go through all the waiting condition variables and raise an exception
             raise NotImplementedError
@@ -165,13 +162,8 @@ module Adhearsion
           def dynamic
             # TODO: Return an object which responds to method_missing
           end
-        
-          ##
-          # Used to directly send a new action to Asterisk. Note: NEVER supply an ActionID; these are handled internally.
-          #
-          # @param [String, Symbol] action_name The name of the action (e.g. Originate)
-          #
-          def send_action_asynchronously(action_name, headers={})
+          
+          def send_action_asynchronously_with_connection(connection, action_name, headers={})
             headers = headers.stringify_keys
             
             if MANAGER_ACTIONS_WHICH_DONT_SEND_BACK_AN_ACTIONID.include? action_name.to_s.downcase
@@ -187,14 +179,23 @@ module Adhearsion
               
               ahn_log.ami.debug "Sending AMI action: #{command.inspect}"
               
-              @actions_connection.send_data command
+              connection.send_data command
               
               # Block this Thread until the FutureResource becomes available.
               # TODO: Maybe enforce some kind of timeout.
               # TODO: Maybe wrap the returned action in a more convenient object.
               future_resource
             end
+          end
           
+          ##
+          # Used to directly send a new action to Asterisk. Note: NEVER supply an ActionID; these are handled internally.
+          #
+          # @param [String, Symbol] action_name The name of the action (e.g. Originate)
+          # @param [Hash] headers Other key/value pairs to send in this action. Note: don't provide an ActionID
+          #
+          def send_action_asynchronously(action_name, headers={})
+            send_action_asynchronously_with_connection(@actions_connection, action_name, headers)
           end
           
           def send_action_synchronously(*args)
@@ -270,12 +271,10 @@ module Adhearsion
             
             instance_variable_set(connection_instance_variable_name, connection)
             
-            response = send_action_asynchronously "Login", "Username" => @username,
-                                                           "Secret"   => @password,
-                                                           "Events"   => (events_enabled? ? "On" : "Off")
+            response = send_action_asynchronously_with_connection connection, "Login",
+                "Username" => @username, "Secret" => @password,
+                "Events" => connection_instance_variable_name == "@events_connection" ? "On" : "Off"
             
-          rescue ActionError
-            raise AuthenticationFailedException, "Invalid AMI username/password! Check manager.conf."
           rescue => exception
             # We must rescue all exceptions because EventMachine gives VERY cryptic error messages when an exception is
             # raised in post_init (which is what calls this method, usually).

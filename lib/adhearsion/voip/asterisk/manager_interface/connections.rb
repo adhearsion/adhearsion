@@ -47,19 +47,18 @@ module Adhearsion
                 end
               end
             end
-          
-            def initialize(manager_interface)
-              @parser = DelegatingAsteriskManagerInterfaceParser.new manager_interface, \
-                  :message_received => :events_message_received,
-                  :error_received   => :events_error_received
+            
+            def receive_data(data)
+              puts "RECEIVED DATA ON EVNETS #{data}"
+              parser << data
             end
-          
+            
             def post_init
-              @manager_interface.events_connection_established
+              manager_interface.send(:login, self)
             end
             
             def unbind
-              @manager_interface.events_connection_disconnected
+              manager_interface.events_connection_disconnected
             end
             
           end
