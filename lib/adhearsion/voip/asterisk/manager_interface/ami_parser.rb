@@ -32,17 +32,17 @@ self._ami_protocol_parser_actions = [
 	19, 1, 20, 1, 28, 1, 30, 1, 
 	31, 1, 35, 1, 36, 1, 37, 1, 
 	38, 1, 39, 1, 40, 1, 41, 1, 
-	44, 1, 45, 1, 46, 1, 47, 1, 
-	48, 1, 51, 1, 52, 1, 53, 1, 
-	54, 1, 55, 2, 1, 24, 2, 3, 
-	26, 2, 4, 43, 2, 7, 17, 2, 
+	46, 1, 47, 1, 48, 1, 49, 1, 
+	50, 1, 53, 1, 54, 1, 55, 1, 
+	56, 1, 57, 2, 1, 24, 2, 3, 
+	26, 2, 4, 45, 2, 7, 17, 2, 
 	8, 9, 2, 9, 10, 2, 11, 9, 
 	2, 12, 10, 2, 14, 34, 2, 15, 
 	13, 2, 19, 20, 2, 21, 42, 2, 
-	22, 42, 2, 23, 42, 2, 28, 29, 
-	2, 31, 49, 3, 11, 8, 9, 3, 
+	22, 43, 2, 23, 44, 2, 28, 29, 
+	2, 31, 51, 3, 11, 8, 9, 3, 
 	12, 9, 10, 3, 16, 25, 33, 3, 
-	31, 27, 50, 4, 11, 12, 9, 10, 
+	31, 27, 52, 4, 11, 12, 9, 10, 
 	4, 16, 25, 33, 14, 4, 31, 16, 
 	25, 32
 ]
@@ -1198,7 +1198,7 @@ when 25 then
 		end
 # line 43 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 26 then
-# line 75 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 77 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
 	begin
 		    @current_state = 252
@@ -1207,9 +1207,9 @@ when 26 then
 		break
 	end
 		end
-# line 75 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 77 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 27 then
-# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  message_received; 	begin
 		    @current_state = 252
@@ -1218,7 +1218,7 @@ when 27 then
 		break
 	end
  		end
-# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 31 then
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
@@ -1366,6 +1366,18 @@ when 45 then
 # line 68 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
     @token_end =      @current_pointer+1
+		end
+# line 68 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 46 then
+# line 69 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+		begin
+    @token_end =      @current_pointer+1
+		end
+# line 69 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 47 then
+# line 70 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+		begin
+    @token_end =      @current_pointer+1
  begin  	begin
 		    @current_state = 252
 		_trigger_goto = true
@@ -1374,9 +1386,9 @@ when 45 then
 	end
   end
 		end
-# line 68 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 46 then
-# line 69 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 70 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 48 then
+# line 71 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
     @token_end =      @current_pointer+1
  begin 
@@ -1392,9 +1404,9 @@ when 46 then
 
    end
 		end
-# line 69 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 47 then
-# line 69 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 71 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 49 then
+# line 71 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
     @token_end =      @current_pointer
      @current_pointer =      @current_pointer - 1; begin 
@@ -1410,9 +1422,9 @@ when 47 then
 
    end
 		end
-# line 69 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 48 then
-# line 69 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 71 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 50 then
+# line 71 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  begin      @current_pointer = ((    @token_end))-1; end
  begin 
@@ -1428,42 +1440,42 @@ when 48 then
 
    end
 		end
-# line 69 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 49 then
-# line 79 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-		begin
-   @ragel_act = 11;		end
-# line 79 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 50 then
+# line 71 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 51 then
 # line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
    @ragel_act = 13;		end
 # line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 51 then
-# line 80 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 52 then
+# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+		begin
+   @ragel_act = 15;		end
+# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 53 then
+# line 82 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
     @token_end =      @current_pointer+1
 		end
-# line 80 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 52 then
-# line 79 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-		begin
-    @token_end =      @current_pointer
-     @current_pointer =      @current_pointer - 1;		end
-# line 79 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 53 then
-# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-		begin
-    @token_end =      @current_pointer
-     @current_pointer =      @current_pointer - 1;		end
-# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 82 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 when 54 then
-# line 79 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+		begin
+    @token_end =      @current_pointer
+     @current_pointer =      @current_pointer - 1;		end
+# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 55 then
+# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+		begin
+    @token_end =      @current_pointer
+     @current_pointer =      @current_pointer - 1;		end
+# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 56 then
+# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
  begin      @current_pointer = ((    @token_end))-1; end
 		end
-# line 79 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-when 55 then
+# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
+when 57 then
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
 		begin
 	case    @ragel_act
@@ -1481,7 +1493,7 @@ end
 end 
 			end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-# line 1485 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
+# line 1497 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
 			end # action switch
 		end
 	end
@@ -1508,7 +1520,7 @@ when 29 then
    @ragel_act = 0
 		end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb"
-# line 1512 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
+# line 1524 "lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb"
 		end # to state action switch
 	end
 	if _trigger_goto

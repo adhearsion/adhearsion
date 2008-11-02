@@ -62,7 +62,9 @@ main := |*
 
 protocol := |*
   Prompt;
-  Success | Pong | Event;
+  Success;
+  Pong;
+  Event;
   Error;
   Follows crlf;
   crlf => { fgoto protocol; }; # If we get a crlf out of place, let's just ignore it.
