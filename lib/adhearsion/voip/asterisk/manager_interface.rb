@@ -97,7 +97,7 @@ module Adhearsion
             @sent_messages = {}
             @sent_messages_lock = Mutex.new
           end
-        
+          
           def action_message_received(message)
             if message.kind_of? Manager::Event
               Events.trigger %w[asterisk manager event], message
@@ -105,11 +105,12 @@ module Adhearsion
               # No ActionID! Release the write lock and wake up the waiter
             else
               action_id = message["ActionID"]
-              data = data_for_message_received_with_action_id action_id
-              
+              sent_action_metadata = data_for_message_received_with_action_id action_id
+              name, headers, future_resource = sent_action_metadata.values_at :name, :headers, :future_resource
+              future_resource.resource = message
             end
           end
-        
+          
           def action_error_received(message)
             raise "GOT AN ERROR: #{message}"
           end
@@ -139,7 +140,7 @@ module Adhearsion
           def post_init
             login!
           end
-        
+          
           ##
           # Used to directly send a new action to Asterisk. Note: NEVER supply an ActionID; these are handled internally.
           #
@@ -147,41 +148,57 @@ module Adhearsion
           #
           def send_action(action_name, headers={})
             headers = headers.stringify_keys
-          
+            
             if MANAGER_ACTIONS_WHICH_DONT_SEND_BACK_AN_ACTIONID.include? action_name.to_s.downcase
               raise NotImplementedError
             else
               action_id = headers["ActionID"] = new_action_id
-          
+              
               # TODO: Do some checking of the action name here and make sure it's something that's not totally fucked.
               command = "Action: #{action_name}\r\n"
               headers.each_pair { |key,value| command << "#{key}: #{value}\r\n" }
               command << "\r\n"
               
-              condition_variable = register_sent_action_with_action_id(action_id, name, headers)
+              future_resource = register_sent_action_with_metadata(action_id, action_name, headers)
               
               @actions_connection.send_data command
-              condition_variable.wait
+              
+              # Block this Thread until the FutureResource becomes available.
+              # TODO: Maybe enforce some kind of timeout.
+              # TODO: Maybe wrap the returned action in a more convenient object.
+              future_resource.resource
             end
           
           end
         
           protected
           
-          def register_sent_action_with_action_id(action_id, name, headers)
-            condition_variable = ConditionVariable.new
-            @sent_messages_lock.synchronize do
-              @sent_messages[action_id] = {
-                :name               => name,
-                :headers            => headers,
-                :action_id          => action_id,
-                :condition_variable => condition_variable
-              }
+          ##
+          # When we send out an AMI action, we need to track the ActionID and have the other Thread handling the socket IO
+          # notify the sending Thread that a response has been received. This method instantiates a new FutureResource and
+          # keeps it around in a synchronized Hash for the IO-handling Thread to notify when a response with a matching
+          # ActionID is seen again. See also data_for_message_received_with_action_id() which is how the IO-handling Thread
+          # gets the metadata registered in the method back later.
+          #
+          # @param [String] action_id The already-generated ActionID associated with this action
+          # @param [String] name The name of the action being sent
+          # @param [Hash] headers The other key/value pairs being sent with this message
+          #
+          def register_sent_action_with_metadata(action_id, name, headers)
+            returning FutureResource.new do |future_resource|
+              @sent_messages_lock.synchronize do
+                @sent_messages[action_id] = {
+                  :name            => name,
+                  :headers         => headers,
+                  :action_id       => action_id,
+                  :future_resource => future_resource
+                }
+              end
             end
-            condition_variable
           end
           
           def data_for_message_received_with_action_id(action_id)
+            p action_id
             @sent_messages_lock.synchronize do
               @sent_messages.delete action_id
             end

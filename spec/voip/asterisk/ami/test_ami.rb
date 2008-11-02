@@ -26,13 +26,36 @@ context "ManagerInterface" do
   end
   
   test "a received message that matches an action ID for which we're waiting" do
+    host, port = "localhost", 9999
+    
     # mock out new_action_id
-    # mock out send_data so that sent messages aren't actually sent
-    # send the action
-    # test that the hash table is waiting for the hash table
-    # invoke message_received with a simulated object which has the correct actionid
-    # test whether the returned object has the correct action_id
-    # test that the hash table of action ids is empty
+    action_id = "OHAILOLZ"
+    
+    # instantiate a new ManagerInterface
+    manager = @Manager::ManagerInterface.new :hostname => host, :port => port
+    
+    flexmock(manager).should_receive(:new_action_id).once.and_return action_id
+    
+    mock_em_connection = flexmock "mock object with ManagerInterfaceActionsConnection mixin"
+    mock_em_connection.extend @Manager::ManagerInterface::ManagerInterfaceActionsConnection.new(manager)
+    mock_em_connection.should_receive(:send_data).once.and_return
+    flexmock(EventMachine).should_receive(:connect).with(host, port, Module).and_return mock_em_connection
+    
+    manager.connect!
+    
+    flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return :THREAD_WAITING_MOCKED_OUT
+    flexmock(FutureResource).new_instances.should_receive(:resource=).once.with(@Manager::NormalAmiResponse)
+    
+    manager.send_action("ping").should.equal :THREAD_WAITING_MOCKED_OUT
+    
+    # test that the hash table is waiting for the action
+    manager.send(:instance_variable_get, :@sent_messages).has_key?(action_id).should.equal true
+    
+    # flexmock(manager).should_receive(:action_message_received).once.with(@Manager::NormalAmiResponse)
+    
+    mock_em_connection.receive_data("Response: Pong\r\nActionID: #{action_id}\r\n\r\n")
+    
+    manager.send(:instance_variable_get, :@sent_messages).has_key?(action_id).should.equal false
   end
   
 end

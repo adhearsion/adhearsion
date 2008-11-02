@@ -1,0 +1,32 @@
+require "thread"
+
+class FutureResource
+  
+  def initialize
+    @resource_lock          = Mutex.new
+    @resource_value_blocker = ConditionVariable.new
+  end
+  
+  def resource
+    @resource_lock.synchronize do
+      @resource_value_blocker.wait @resource_lock unless defined? @resource
+      @resource
+    end
+  end
+  
+  def resource=(resource)
+    @resource_lock.synchronize do
+      raise ResourceAlreadySetException if defined? @resource
+      @resource = resource
+      @resource_value_blocker.broadcast
+      @resource_value_blocker = nil # Don't really need it anymore.
+    end
+  end
+  
+  class ResourceAlreadySetException < Exception
+    def initialize
+      super "Cannot set this resource twice!"
+    end
+  end
+  
+end
