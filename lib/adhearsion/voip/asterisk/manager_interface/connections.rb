@@ -5,7 +5,7 @@ module Adhearsion
         class ManagerInterface
         
           module ManagerInterfaceActionsConnection
-        
+            
             class << self
               def new(manager_interface)
                 parser = DelegatingAsteriskManagerInterfaceParser.new manager_interface, \
@@ -24,7 +24,7 @@ module Adhearsion
             end
             
             def post_init
-              manager_interface.send(:login, self)
+              manager_interface.actions_connection_established
             end
             
             def unbind

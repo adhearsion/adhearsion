@@ -17,6 +17,29 @@ module Adhearsion
             queues
           ] unless defined? MANAGER_ACTIONS_WHICH_DONT_SEND_BACK_AN_ACTIONID
         
+          class << self
+            
+            def connect(*args)
+              returning new do |connection|
+                connection.connect!
+              end
+            end
+            
+            def standalone(&block)
+              EM.run do
+                Thread.new do
+                  begin
+                    yield
+                  rescue => e
+                    ahn_log.ami "Stopping AMI because of an exception #{e.inspect}\n#{e.backtrace.join("\n")}"
+                  ensure
+                    EM.stop
+                  end
+                end
+              end
+            end
+          end
+        
           module Abstractions
                     
             def originate(options={})
@@ -97,6 +120,8 @@ module Adhearsion
             @port           = options[:port]
             @events_enabled = options[:events]
             
+            @state = :new
+            
             @sent_messages = {}
             @sent_messages_lock = Mutex.new
           end
@@ -113,13 +138,21 @@ module Adhearsion
                 name, headers, future_resource = sent_action_metadata.values_at :name, :headers, :future_resource
                 future_resource.resource = message
               else
-                ahn_log.ami.error "Received an AMI message with an unrecognized ActionID!! This may be an error! #{message.inspect}"
+                ahn_log.ami.error "Received an AMI message with an unrecognized ActionID!! This may be an bug! #{message.inspect}"
               end
             end
           end
           
           def action_error_received(ami_error)
-            raise ami_error
+            action_id = ami_error["ActionID"]
+            
+            sent_action_metadata = data_for_message_received_with_action_id action_id
+            if sent_action_metadata
+              name, headers, future_resource = sent_action_metadata.values_at :name, :headers, :future_resource
+              future_resource.resource = ami_error
+            else
+              ahn_log.ami.error "Received an AMI error with an unrecognized ActionID!! This may be an bug! #{event.inspect}"
+            end
           end
           
           ##
@@ -147,6 +180,14 @@ module Adhearsion
           def connect!
             establish_actions_connection
             establish_events_connection if events_enabled?
+          end
+          
+          def actions_connection_established
+            transition_to :connected
+          end
+          
+          def transition_to(new_state)
+            @state = new_state
           end
           
           def disconnect!
@@ -192,13 +233,25 @@ module Adhearsion
           #
           # @param [String, Symbol] action_name The name of the action (e.g. Originate)
           # @param [Hash] headers Other key/value pairs to send in this action. Note: don't provide an ActionID
+          # @return [FutureResource] Call resource() on this object if you wish to access the response (optional). Note: if the response has not come in yet, your Thread will wait until it does.
           #
           def send_action_asynchronously(action_name, headers={})
             send_action_asynchronously_with_connection(@actions_connection, action_name, headers)
           end
           
+          ##
+          # Sends an action over the AMI connection and blocks your Thread until the response comes in. If there was an error
+          # for some reason, the error will be raised as an AMIError.
+          #
+          # @param [String, Symbol] action_name The name of the action (e.g. Originate)
+          # @param [Hash] headers Other key/value pairs to send in this action. Note: don't provide an ActionID
+          # @raise [AMIError] When Asterisk can't execute this action, it sends back an Error which is converted into an AMIError object and raised. Access AMIError#message for the reported message from Asterisk.
+          # @return [NormalAmiResponse, ImmediateResponse] Contains the response from Asterisk and all headers
+          #
           def send_action_synchronously(*args)
-            send_action_asynchronously(*args).resource
+            returning send_action_asynchronously(*args).resource do |response|
+              raise response if response.kind_of?(AMIError)
+            end
           end
           
           alias send_action send_action_synchronously
@@ -242,7 +295,13 @@ module Adhearsion
           #
           def establish_actions_connection
             # Note: the @actions_connection instance variable is set in login()
-            EventMachine.connect @hostname, @port, ManagerInterfaceActionsConnection.new(self)
+            returning EventMachine.connect(@hostname, @port, ManagerInterfaceActionsConnection.new(self)) do |connection|
+            case @state
+              when :connected
+                login connection
+              else
+                raise NotImplementedError
+            end
           end
           
           ##
