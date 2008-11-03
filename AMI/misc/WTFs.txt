@@ -1,0 +1,18 @@
+This is LITERALLY a problem with AMI:
+
+>> Action: Queues
+>> ActionID: 12378
+>> 
+<< No queues.
+
+
+
+Response: Follows
+Privilege: Command
+ActionID: 123123
+Host                            Username       Refresh State                Reg.Time                 
+--END COMMAND--
+
+
+
+When doing a login, if you give it an ActionID, it won't send it back if there's an error.

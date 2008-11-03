@@ -4,21 +4,31 @@ require 'yaml'
 require 'socket'
 require 'thread'
 require 'monitor'
-require 'adhearsion/voip/asterisk/ami/parser'
-require 'adhearsion/voip/asterisk/ami/actions'
+require 'adhearsion/voip/asterisk/manager_interface/ami_parser'
 
 module Adhearsion
   module VoIP
     module Asterisk
       class AMI
         
-        include Actions
-        
         attr_reader :action_sock, :host, :user, :password, :port, :event_thread, :scanner, :version
 
-        def initialize(user, pass, host='127.0.0.1', options={})
-          @host, @user, @password, @port = host, user, pass, options[:port] || 5038
+        ##
+        # Creates a new Asterisk Manager Interface connection and exposes certain methods to control it.
+        #
+        # @param [Hash] options 
+        #
+        def initialize(*options)
+          if options.size == 1 && options.first.kind_of?(Hash)
+            options = options.first
+          else
+            options = check_deprecation options
+          end
+          
+          
+          @host, @user, @password, @port = options.values_athost, user, pass, options[:port] || 5038
           @events_enabled = options[:events]
+          create
         end
         
         include Adhearsion::Publishable
@@ -97,6 +107,15 @@ module Adhearsion
         
         private
   
+        def check_deprecation(options)
+          # old initialize: user, pass, host='127.0.0.1', options={}
+          if (2..4).include? options.size
+            {}
+          else
+            raise ArgumentError
+          end
+        end
+  
         def login!(host, user, pass, port, events)
           begin
             @action_sock = TCPSocket.new host, port
@@ -104,46 +123,29 @@ module Adhearsion
             raise Errno::ECONNREFUSED, "Could not connect with AMI to Asterisk server at #{host}:#{port}. " +
                                        "Is enabled set to 'yes' in manager.conf?"
           end
-          action_sock.extend(MonitorMixin)
-          @scanner = Parser.new
-          @version = scanner.run(action_sock)
+          
           begin
             execute_ami_command! :login, :username => user, :secret => password, :events => (events_enabled? ? "On" : "Off")
           rescue ActionError
             raise AuthenticationFailedException, "Invalid AMI username/password! Check manager.conf."
           else
-            # puts "Manager connection established to #{host}:#{port} with user '#{user}'"
+            
           end
         end
-  
+        
+        def execute_ami_command!
+          ahn_log.ami.error "Sorry, this method has been deprecated."
+        end
+        
         def execute_ami_command!(name, options={}, &block)
-          action = Action.build(name, options, &block)
           action_sock.synchronize do
             connect! if !action_sock || action_sock.closed?
             action_sock.write action.to_s
           end
           
           return unless action.has_response?
-          scanner.wait(action)
         end
         
-        def start_event_thread!
-          # @event_thread = Thread.new(scanner) do |scanner|
-          #   loop do
-          #     # TODO: This is totally screwed up. __read_event doesn't exist.
-          #     AMI::EventHandler.handle! __read_event(scanner.events.pop)
-          #   end
-          # end
-          # event_thread.abort_on_exception = true
-        end
-  
-        # Method simply defined as private to prevent method_missing from catching it.
-        def events() end
-  
-        class EventHandler
-          # TODO: Refactor me!
-        end
-  
         class AuthenticationFailedException < Exception; end
         class ActionError < RuntimeError; end
       end

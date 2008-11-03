@@ -1,5 +1,6 @@
 class Module
   
+  ##
   # In OOP, relationships between classes should be treated as *properties* of those classes. Often, in a complex OO 
   # architecture, you'll end up with many relationships that intermingle in monolithic ways, blunting the effectiveness of
   # subclassing.

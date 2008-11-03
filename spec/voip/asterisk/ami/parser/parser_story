@@ -1,0 +1,220 @@
+Story: Parsing AMI
+
+	As an Adhearsion user
+	I want to parse the AMI protocol
+	So that I can control Asterisk asynchronously
+	
+	TODO:
+	- Events MUST be given to a separate method, not message_received!
+	
+	UNCERTAINTIES:
+	- Check Asterisk source code: What is the delimiter between immediate responses?
+	- Are there any pairs with non-unique keys? Could Hash be blowing stuff away?
+	
+	WHEN DOING INTEGRATION TESTS:
+	- Try sending it an originate with a bad priority, a timeout of -1... and other improper stuff.
+	
+	Scenario: Parsing only the initial AMI version header
+	
+		Given a new parser
+		And a version header for AMI 1.0
+		
+		When the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
+		And the version should be set to 1.0
+	
+	Scenario: Parsing the initial AMI header and a login attempt
+	
+		Given a new parser
+		And a version header for AMI 1.0
+		And a normal login success with events
+		
+		When the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
+		And 1 message should have been received
+	
+	Scenario: Parsing the initial AMI header and then a Response:Follows section
+	
+		Given a new parser
+		And a version header for AMI 1.0
+		And a multi-line Response:Follows body of ragel_description
+		
+		When the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
+		And the 'follows' body of 1 message received should equal ragel_description
+	
+	Scenario: Parsing the initial AMI header and then an "Authentication Required" error.
+	
+		Given a new parser
+		And a version header for AMI 1.0
+		And an Authentication Required error
+		
+		When the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
+		
+	Scenario: Parsing the initial AMI header and then a Response:Follows section
+
+		Given a new parser
+		And a version header for AMI 1.0
+		And a multi-line Response:Follows body of ragel_description
+		And a multi-line Response:Follows body of ragel_description
+
+		When the buffer is parsed
+
+		Then the protocol should have parsed without syntax errors
+		And the 'follows' body of 2 messages received should equal ragel_description
+
+	Scenario: Parsing a stanza without receiving an AMI header
+
+		Given a new parser
+		And a normal login success with events
+
+		When the buffer is parsed
+
+		Then the protocol should have parsed without syntax errors
+		And 1 message should have been received
+		
+	Scenario: Receiving an immediate response as soon as the socket is opened
+
+		Given a new parser
+		And an immediate response with text "Immediate responses are so ridiuculous"
+		
+		When the buffer is parsed
+
+		Then the protocol should have parsed with no syntax errors
+		And 1 message should have been received
+		And 1 message should be an immediate response with text "Immediate responses are so ridiuculous"
+	
+	Scenario: Receiving an immediate message surrounded by real messages
+
+		Given a new parser
+		And a normal login success with events
+		And an immediate response with text "No queues have been created."
+		And a normal login success with events
+
+		When the buffer is parsed
+
+		Then the protocol should have parsed without syntax errors
+		And 3 messages should have been received
+		And 1 message should be an immediate response with text "No queues have been created."
+
+	Scenario: Receiving a Pong after a simulated login
+		
+		Given a new parser
+		And a version header for AMI 1.0
+		And a normal login success with events
+		And a Pong response with an ActionID of randomness
+		
+		When the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
+		And 2 messages should have been received
+	
+	Scenario: Ten Pong responses in a row
+	
+		Given a new parser
+		And 5 Pong responses without an ActionID
+		And 5 Pong responses with an ActionID of randomness
+		
+		When the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
+		And 10 messages should have been received
+		
+	Scenario: A Pong with an ActionID
+	
+		Given a new parser
+		And a Pong response with an ActionID of 1224469850.61673
+		
+		When the buffer is parsed
+		
+		Then the first message received should have a key "ActionID" with value "1224469850.61673"
+	
+	Scenario: Receiving a message with custom key/value pairs
+	
+		Given a new parser
+		And a custom stanza named "person"
+		And the custom stanza named "person" has key "ActionID" with value "1224469850.61673"
+		And the custom stanza named "person" has key "Name" with value "Jay Phillips"
+		And the custom stanza named "person" has key "Age" with value "21"
+		And the custom stanza named "person" has key "Location" with value "San Francisco, CA"
+		And the custom stanza named "person" has key "x-header" with value "<FooBAR>"
+		And the custom stanza named "person" has key "I have spaces" with value "i have trailing padding   "
+		
+		When the custom stanza named "person" is added to the buffer
+		And the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
+		And the first message received should have a key "Name" with value "Jay Phillips"
+		And the first message received should have a key "ActionID" with value "1224469850.61673"
+		And the first message received should have a key "Name" with value "Jay Phillips"
+		And the first message received should have a key "Age" with value "21"
+		And the first message received should have a key "Location" with value "San Francisco, CA"
+		And the first message received should have a key "x-header" with value "<FooBAR>"
+		And the first message received should have a key "I have spaces" with value "i have trailing padding   "
+		
+	Scenario: Executing a stanza that was partially received
+	
+		Given a new parser
+		And a normal login success with events split into two pieces
+		
+		When the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
+		And 1 message should have been received
+	
+	Scenario: Receiving an AMI error followed by a normal event
+	
+		Given a new parser
+		And an AMI error whose message is "Missing action in request"
+		And a normal login success with events
+		
+		When the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
+		And 1 AMI error should have been received
+		And the 1st AMI error should have the message "Missing action in request"
+		And 1 message should have been received
+	
+	Scenario: Parsing an immediate response
+	
+		Given a new parser
+		And a normal login success with events
+		And an immediate response with text "Yes, plain English is sent sometimes over AMI."
+		And a normal login success with events
+		
+		When the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
+		And 3 messages should have been received
+		And 1 message should be an immediate response with text "Yes, plain English is sent sometimes over AMI."
+
+  Scenario: Parsing an AMI event
+
+		Given a new parser
+		And a custom event with name "NewChannelEvent" identified by "this_event"
+		And a custom header for event identified by "this_event" whose key is "Foo" and value is "Bar"
+		
+		When the custom event identified by "this_event" is added to the buffer
+		And the buffer is parsed
+		
+		Then the protocol should have parsed without syntax errors
+		And 1 event should have been received
+		And the 1st event should have the name "NewChannelEvent"
+		And the 1st event should have key "Foo" with value "Bar"
+		
+	Scenario: Parsing an immediate packet with a colon in it (syntax error)
+	
+		Given a new parser
+		And syntactically invalid immediate_packet_with_colon
+		And a stanza break
+		
+		When the buffer is parsed
+		
+		Then 0 messages should have been received
+		And the protocol should have parsed with 1 syntax error
+		And the syntax error fixture named immediate_packet_with_colon should have been encountered

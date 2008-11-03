@@ -6,6 +6,25 @@ Please upgrade to at least Ruby v1.8.5." if RUBY_VERSION < "1.8.5"
 $: << File.expand_path(File.dirname(__FILE__))
 
 require 'rubygems'
+
+begin
+  require 'eventmachine'
+rescue LoadError
+  abort("
+It seems you don't have EventMachine installed. This is now a gem dependency of Adhearsion.
+
+You can get it by simply doing:
+
+gem install eventmachine
+
+Note: EventMachine will optionally try to compile native extensions if possible. If this
+succeeds, parts of Adhearsion will run slightly faster. If not, you may reinstall
+EventMachine later when you do have Ruby and C-related build essentials installed.
+  
+See also the EventMachine website for more info: http://rubyeventmachine.com
+")
+end
+
 require 'adhearsion/version'
 require 'adhearsion/voip/call'
 require 'adhearsion/voip/dial_plan'

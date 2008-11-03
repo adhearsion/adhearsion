@@ -3,6 +3,7 @@
 - after_initialized
 - shutdown
 - asterisk:
+  - events
   - before_call
   - failed_call
   - call_hangup

@@ -8,6 +8,7 @@ ADHEARSION_FILES = %w{
   app_generators/ahn/templates/components/simon_game/test/test_simon_game.rb
   app_generators/ahn/templates/config/startup.rb
   app_generators/ahn/templates/dialplan.rb
+  app_generators/ahn/templates/events.rb
   app_generators/ahn/templates/Rakefile
   app_generators/ahn/templates/README
   app_generators/ahn/USAGE
@@ -34,13 +35,6 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/core_extensions/thread.rb
   lib/adhearsion/core_extensions/thread_safety.rb
   lib/adhearsion/core_extensions/time.rb
-  lib/adhearsion/distributed/gateways/dbus_gateway.rb
-  lib/adhearsion/distributed/gateways/osa_gateway.rb
-  lib/adhearsion/distributed/gateways/rest_gateway.rb
-  lib/adhearsion/distributed/gateways/soap_gateway.rb
-  lib/adhearsion/distributed/gateways/xmlrpc_gateway.rb
-  lib/adhearsion/distributed/peer_finder.rb
-  lib/adhearsion/distributed/remote_cli.rb
   lib/adhearsion/events_support.rb
   lib/adhearsion/host_definitions.rb
   lib/adhearsion/initializer.rb
@@ -60,11 +54,6 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/version.rb
   lib/adhearsion/voip/asterisk.rb
   lib/adhearsion/voip/asterisk/agi_server.rb
-  lib/adhearsion/voip/asterisk/ami.rb
-  lib/adhearsion/voip/asterisk/ami/actions.rb
-  lib/adhearsion/voip/asterisk/ami/machine.rb
-  lib/adhearsion/voip/asterisk/ami/machine.rl
-  lib/adhearsion/voip/asterisk/ami/parser.rb
   lib/adhearsion/voip/asterisk/commands.rb
   lib/adhearsion/voip/asterisk/config_generators/agents.conf.rb
   lib/adhearsion/voip/asterisk/config_generators/config_generator.rb
@@ -72,6 +61,15 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/voip/asterisk/config_generators/voicemail.conf.rb
   lib/adhearsion/voip/asterisk/config_manager.rb
   lib/adhearsion/voip/asterisk/special_dial_plan_managers.rb
+  lib/adhearsion/voip/asterisk/manager_interface.rb
+  lib/adhearsion/voip/asterisk/manager_interface/actions_socket.rb
+  lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb
+  lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb
+  lib/adhearsion/voip/asterisk/manager_interface/ami_protocol_parser_machine.rl
+  lib/adhearsion/voip/asterisk/manager_interface/events_socket.rb
+  lib/adhearsion/voip/asterisk/manager_interface/packets.rb
+  lib/adhearsion/voip/asterisk/manager_interface/Rakefile
+  lib/adhearsion/voip/asterisk/manager_interface.rb
   lib/adhearsion/voip/call.rb
   lib/adhearsion/voip/call_routing.rb
   lib/adhearsion/voip/commands.rb
@@ -127,15 +125,18 @@ Gem::Specification.new do |s|
     if current_version >= 3 then
       s.add_runtime_dependency("theatre", [">= 0.8.0"])
       s.add_runtime_dependency("rubigen", [">= 1.0.6"])
+      s.add_runtime_dependency("eventmachine", [">= 0.12.2"])
       s.add_runtime_dependency("log4r", [">= 1.0.5"])
     else
       s.add_dependency("theatre", [">= 0.8.0"])
       s.add_dependency("rubigen", [">= 1.0.6"])
+      s.add_dependency("eventmachine", [">= 0.12.2"])
       s.add_dependency("log4r", [">= 1.0.5"])
     end
   else
     s.add_dependency("theatre", [">= 0.8.0"])
     s.add_dependency("rubigen", [">= 1.0.6"])
+    s.add_dependency("eventmachine", [">= 0.12.2"])
     s.add_dependency("log4r", [">= 1.0.5"])
   end
 end
