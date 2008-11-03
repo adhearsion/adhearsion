@@ -1,5 +1,4 @@
 # Hardcoding require for now since for some reason it's not being loaded
-require 'adhearsion/blank_slate'
 require 'adhearsion/component_manager'
 require 'adhearsion/voip/dsl/dialplan/control_passing_exception'
 
