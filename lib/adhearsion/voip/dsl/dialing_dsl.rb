@@ -15,7 +15,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-require 'adhearsion/core_extensions/metaprogramming'
+require 'adhearsion/foundation/metaprogramming'
 require 'adhearsion/voip/conveniences'
 require 'adhearsion/voip/constants'
 require 'adhearsion/voip/dsl/dialing_dsl/dialing_dsl_monkey_patches'

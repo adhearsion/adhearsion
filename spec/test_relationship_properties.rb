@@ -1,5 +1,5 @@
 require File.dirname(__FILE__) + "/test_helper.rb"
-require 'adhearsion/core_extensions/relationship_properties'
+require 'adhearsion/foundation/relationship_properties'
 
 describe "Module#relationships" do
   

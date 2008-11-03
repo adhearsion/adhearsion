@@ -20,21 +20,21 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/blank_slate.rb
   lib/adhearsion/cli.rb
   lib/adhearsion/component_manager.rb
-  lib/adhearsion/core_extensions/all.rb
-  lib/adhearsion/core_extensions/array.rb
-  lib/adhearsion/core_extensions/custom_daemonizer.rb
-  lib/adhearsion/core_extensions/global.rb
-  lib/adhearsion/core_extensions/hash.rb
-  lib/adhearsion/core_extensions/metaprogramming.rb
-  lib/adhearsion/core_extensions/numeric.rb
-  lib/adhearsion/core_extensions/proc.rb
-  lib/adhearsion/core_extensions/pseudo_guid.rb
-  lib/adhearsion/core_extensions/publishable.rb
-  lib/adhearsion/core_extensions/relationship_properties.rb
-  lib/adhearsion/core_extensions/string.rb
-  lib/adhearsion/core_extensions/thread.rb
-  lib/adhearsion/core_extensions/thread_safety.rb
-  lib/adhearsion/core_extensions/time.rb
+  lib/adhearsion/foundation/all.rb
+  lib/adhearsion/foundation/array.rb
+  lib/adhearsion/foundation/custom_daemonizer.rb
+  lib/adhearsion/foundation/global.rb
+  lib/adhearsion/foundation/hash.rb
+  lib/adhearsion/foundation/metaprogramming.rb
+  lib/adhearsion/foundation/numeric.rb
+  lib/adhearsion/foundation/proc.rb
+  lib/adhearsion/foundation/pseudo_guid.rb
+  lib/adhearsion/foundation/publishable.rb
+  lib/adhearsion/foundation/relationship_properties.rb
+  lib/adhearsion/foundation/string.rb
+  lib/adhearsion/foundation/thread.rb
+  lib/adhearsion/foundation/thread_safety.rb
+  lib/adhearsion/foundation/time.rb
   lib/adhearsion/events_support.rb
   lib/adhearsion/host_definitions.rb
   lib/adhearsion/initializer.rb
