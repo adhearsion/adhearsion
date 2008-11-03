@@ -8,17 +8,19 @@ module Adhearsion
     attr_accessor :loader, :entry_points
     def initialize(loader = Loader)
       @loader       = loader
-      @entry_points = @loader.load_dial_plan.contexts
+      @entry_points = @loader.load_dialplans.contexts
     end
     
     ##
     # Lookup and return an entry point by context name
+    #
     def lookup(context_name)
       entry_points[context_name]
     end
     
     ##
-    # Executable environment for a dial plan in the scope of a call
+    # Executable environment for a dial plan in the scope of a call. This class has all the dialplan methods mixed into it.
+    #
     class ExecutionEnvironment
       
       attr_reader :call
@@ -103,7 +105,7 @@ module Adhearsion
       def entry_point_for(call)
         if entry_point = dial_plan.lookup(call.context.to_sym)
           entry_point
-        elsif m = call.request.path.match(%r{/([^/]+)})
+        elsif call.respond_to?(:request) && m = call.request.path.match(%r{/([^/]+)})
           dial_plan.lookup(m[1].to_sym)
         end
       end
@@ -124,14 +126,32 @@ module Adhearsion
         attr_accessor :default_dial_plan_file_name
         
         def load(dial_plan_as_string)
-          returning new do |loader|
-            inject_dial_plan_component_classes_into dial_plan_as_string
-            loader.load(dial_plan_as_string)
+          string_io = StringIO.new dial_plan_as_string
+          def string_io.path
+            "(eval)"
           end
+          load_dialplans string_io
         end
         
-        def load_dial_plan(file_name = default_dial_plan_file_name)
-          load read_dialplan_file(AHN_ROOT.dial_plan_named(file_name))
+        def load_dialplans(*files)
+          files = Adhearsion::AHN_CONFIG.files_from_setting("paths", "dialplan") if files.empty?
+          files = Array files
+          files.map! do |file|
+            case file
+              when File, StringIO
+                file
+              when String
+                File.new file
+              else
+                raise ArgumentError, "Unrecognized type of file #{file.inspect}"
+            end
+          end
+          returning new do |loader|
+            loader.load_components!
+            files.each do |file|
+              loader.load file
+            end
+          end
         end
         
         private
@@ -141,33 +161,35 @@ module Adhearsion
             end.join
           end
           
-          def read_dialplan_file(filename)
-            File.read filename
-          end
-          
       end
       
       self.default_dial_plan_file_name ||= 'dialplan.rb'
 
-      attr_reader :contexts
       def initialize
-        @contexts = {}
+        @context_collector = ContextNameCollector.new
       end
       
-      def load(dial_plan_as_string)
-        contexts.update(ContextNameCollector.build(dial_plan_as_string))
+      def contexts
+        @context_collector.contexts
+      end
+      
+      def load(dialplan_file)
+        dialplan_code = dialplan_file.read
+        @context_collector.instance_eval(dialplan_code, dialplan_file.path)
+        nil
+      end
+      
+      def load_components!
+        component_code = ComponentManager.components_with_call_context.keys.map do |component| 
+          "#{component} = ::Adhearsion::ComponentManager.components_with_call_context['#{component}'] unless defined? #{component}\n"
+        end.join
+        @context_collector.instance_eval component_code
       end
       
       class ContextNameCollector# < ::BlankSlate
         
         class << self
-          
-          def build(dial_plan_as_string)
-            builder = new
-            builder.instance_eval(dial_plan_as_string)
-            builder.contexts
-          end
-          
+
           def const_missing(name)
             super
           rescue ArgumentError
@@ -185,6 +207,7 @@ module Adhearsion
           super if !block_given? || args.any?
           contexts[name] = DialplanContextProc.new(name, &block)
         end
+        
       end
     end
     class DialplanContextProc < Proc

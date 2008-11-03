@@ -41,7 +41,7 @@ module Adhearsion
     attr_reader :name, :host, :username, :password, :key
     def initialize(hash)
       @host, @username, @password, @key, @name = hash.values_at(*SUPPORTED_KEYS)
-      @name ||= uuid
+      @name ||= new_guid
       
       unrecognized_keys = hash.keys - SUPPORTED_KEYS
       raise HostDefinitionException, "Unrecognized key(s): #{unrecognized_keys.map(&:inspect).to_sentence}" if unrecognized_keys.any? 

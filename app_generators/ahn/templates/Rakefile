@@ -1,6 +1,11 @@
 require 'rubygems'
-require 'adhearsion'
-require 'adhearsion/tasks'
+
+begin
+  require 'adhearsion'
+  require 'adhearsion/tasks'
+rescue LoadError
+  STDERR.puts "\nCannot load Adhearsion! Not all Rake tasks will be loaded!\n\n"
+end
 
 desc "Writes a .gitignore file that ignores certain SCM annoyances such as log files"
 task :gitignore do

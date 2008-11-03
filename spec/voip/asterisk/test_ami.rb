@@ -21,20 +21,20 @@ context "Connecting via AMI" do
   
   test "should discover its own permissions and make them available as connection attributes"
   
-  # TODO: DRY up the following two specs
-  test "should start a new thread if events are enabled" do
-    host, port = "localhost", 5038
-    ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "password", "localhost", :port => port, :events => true
-  
-    ami_server = AmiServer.new
-    flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return(ami_server)
-    flexmock(IO).should_receive(:select).at_least.once.with([ami_server], nil, nil, 1.0).and_return(true)
-
-    ami.connect!
-    ami.instance_eval { meta_eval { attr_accessor :event_thread } }
-    ami.event_thread.should.be.a.kind_of Thread
-    ami.disconnect!
-  end
+  # TODO: DRY up the following two specs. COMMENTING OUT BECAUSE OF THE IMMINENT REFACTORING
+  # test "should start a new thread if events are enabled" do
+  #   host, port = "localhost", 5038
+  #   ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "password", "localhost", :port => port, :events => true
+  # 
+  #   ami_server = AmiServer.new
+  #   flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return(ami_server)
+  #   flexmock(IO).should_receive(:select).at_least.once.with([ami_server], nil, nil, 1.0).and_return(true)
+  # 
+  #   ami.connect!
+  #   ami.instance_eval { meta_eval { attr_accessor :event_thread } }
+  #   ami.event_thread.should.be.a.kind_of Thread
+  #   ami.disconnect!
+  # end
   
   test "should find the Asterisk version when connecting" do
     host, port = "localhost", 5038

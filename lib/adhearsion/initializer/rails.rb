@@ -18,7 +18,7 @@ module Adhearsion
           load_rails
           if defined? ActiveRecord
             ActiveRecord::Base.allow_concurrency = true
-            Hooks::BeforeCall.create_hook do
+            Events.register_callback([:asterisk, :before_call]) do
               ActiveRecord::Base.verify_active_connections!
             end
           end

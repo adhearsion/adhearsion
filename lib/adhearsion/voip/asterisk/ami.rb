@@ -50,6 +50,10 @@ module Adhearsion
             call_and_exec caller, "Dial", :args => dial_args, :caller_id => opts[:caller_id]
           end
 
+          def hangup(channel)
+            execute_ami_command! "hangup", :channel => channel
+          end
+
           def call_and_exec(channel, app, opts={})
             args = { :channel => channel, :application => app }
             args[:caller_id] = opts[:caller_id] if opts[:caller_id]
@@ -59,9 +63,10 @@ module Adhearsion
           
           def call_into_context(channel, context, options={})
             args = {:channel => channel, :context => context}
-            args[:priority] = options[:priority] || 1
+            args[:priority]  = options[:priority] || 1
             args[:extension] = options[:extension] if options[:extension]
             args[:caller_id] = options[:caller_id] if options[:caller_id]
+            args[:timeout]   = options[:timeout]   if options[:timeout]
             if options[:variables] && options[:variables].kind_of?(Hash)
               args[:variable] = options[:variables].map {|pair| pair.join('=')}.join('|')
             end
@@ -123,13 +128,13 @@ module Adhearsion
         end
         
         def start_event_thread!
-          @event_thread = Thread.new(scanner) do |scanner|
-            loop do
-              # TODO: This is totally screwed up. __read_event doesn't exist.
-              AMI::EventHandler.handle! __read_event(scanner.events.pop)
-            end
-          end
-          event_thread.abort_on_exception = true
+          # @event_thread = Thread.new(scanner) do |scanner|
+          #   loop do
+          #     # TODO: This is totally screwed up. __read_event doesn't exist.
+          #     AMI::EventHandler.handle! __read_event(scanner.events.pop)
+          #   end
+          # end
+          # event_thread.abort_on_exception = true
         end
   
         # Method simply defined as private to prevent method_missing from catching it.

@@ -10,6 +10,10 @@ context "Adhearsion::Initializer" do
     Adhearsion::AHN_CONFIG = Adhearsion::Configuration.new
   end
   
+  after :each do
+    Adhearsion::Events.reinitialize_theatre!
+  end
+  
   test "initialization will start with only a path given" do
     stub_behavior_for_initializer_with_no_path_changing_behavior do
       Adhearsion::Initializer.start path
@@ -55,12 +59,33 @@ context "Adhearsion::Initializer" do
         },
         # Paths are unnecessary except to make the other part of bootstrap_rc happy.
         "paths"=>{"dialplan"=>"dialplan.rb", "init"=>"config/startup.rb", "events"=>"events.rb",
-            "models"=>{"directory"=>"models", "pattern"=>"*.rb"}}
+            "models"=> "models/*.rb"}
       }
       ahn = Adhearsion::Initializer.new path
       flexmock(Adhearsion::Initializer).should_receive(:get_rules_from).once.and_return ahn_rc
       flexmock(ahn).should_receive(:gem).once.with("activerecord", ">= 1.2.0")
       flexmock(ahn).should_receive(:gem).once.with("twitter")
+      ahn.start
+    end
+  end
+  
+  test "should require() the lib when .ahnrc contains a require section with one name" do
+    stub_behavior_for_initializer_with_no_path_changing_behavior do
+      ahn_rc = {
+        "gems" => {
+          "twitter" => {
+            "require" => "sometwitterstuffs"
+          }
+        },
+        # Paths are unnecessary except to make the other part of bootstrap_rc happy.
+        "paths"=>{"dialplan"=>"dialplan.rb", "init"=>"config/startup.rb", "events"=>"events.rb",
+            "models"=>"models/*.rb"}
+      }
+      ahn = Adhearsion::Initializer.new path
+      flexmock(Adhearsion::Initializer).should_receive(:get_rules_from).once.and_return ahn_rc
+      flexstub(ahn).should_receive(:gem).once.with("twitter")
+      flexmock(ahn).should_receive(:require).once.with("sometwitterstuffs")
+      flexmock(ahn).should_receive(:require).at_least.once.with(String)
       ahn.start
     end
   end
@@ -73,6 +98,17 @@ context "Adhearsion::Initializer" do
       assert File.exists?(random_file)
       File.delete random_file
     end
+  end
+  
+  test "should initialze events properly" do
+    require 'theatre'
+    events_rb = Tempfile.new "events.rb"
+    initializer = Adhearsion::Initializer.new("/does/not/matter")
+    flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "events").
+        and_return([events_rb.path])
+    flexmock(Theatre::Theatre).new_instances.should_receive(:load_events_file).once.with events_rb.path
+    flexmock(Adhearsion::Events.framework_theatre).should_receive(:start!).once
+    initializer.send(:init_events)
   end
   
   private
@@ -109,6 +145,7 @@ context "AHN_ROOT" do
 
   test "creating the AHN_ROOT will set defaults" do
     stub_behavior_for_initializer_with_no_path_changing_behavior do
+      flexstub(Adhearsion::Initializer).new_instances.should_receive(:load).and_return
       ahn = Adhearsion::Initializer.start path
       full_path = File.expand_path(path)
       AHN_ROOT.to_s.should.equal(full_path)

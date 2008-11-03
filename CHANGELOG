@@ -1,3 +1,0 @@
-If you depended on the method last_dial_status, the Symbols returned have been slighted changed. See the documentation for the new names.
-
-the :callerid option for dial has been renamed to caller_id
