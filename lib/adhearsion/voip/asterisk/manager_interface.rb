@@ -7,9 +7,10 @@ module Adhearsion
       
       class AMI
         def initialize
-          raise "Sorry, this AMI object has been deprecated. Please see http://docs.adhearsion.com/Asterisk_Manager_Interface for documentation on the new way of handling AMI. This new version is much better and should not require an enormous migration on your part."
+          raise "Sorry, this AMI class has been deprecated. Please see http://docs.adhearsion.com/Asterisk_Manager_Interface for documentation on the new way of handling AMI. This new version is much better and should not require an enormous migration on your part."
         end
       end
+      
       module Manager
         class ManagerInterface
           
@@ -120,8 +121,6 @@ module Adhearsion
             @port           = options[:port]
             @events_enabled = options[:events]
             
-            @state = :new
-            
             @sent_messages = {}
             @sent_messages_lock = Mutex.new
           end
@@ -183,11 +182,13 @@ module Adhearsion
           end
           
           def actions_connection_established
-            transition_to :connected
+            puts "ESTABLISHED ACTIONS SOCKET"
+            @actions_state = :connected
           end
           
-          def transition_to(new_state)
-            @state = new_state
+          def events_connection_established
+            puts "ESTABLISHED EVENTS SOCKET"
+            @events_state = :connected
           end
           
           def disconnect!
@@ -296,11 +297,12 @@ module Adhearsion
           def establish_actions_connection
             # Note: the @actions_connection instance variable is set in login()
             returning EventMachine.connect(@hostname, @port, ManagerInterfaceActionsConnection.new(self)) do |connection|
-            case @state
-              when :connected
-                login connection
-              else
-                raise NotImplementedError
+              case @actions_state
+                when :connected
+                  login connection
+                else
+                  raise NotImplementedError
+              end
             end
           end
           
