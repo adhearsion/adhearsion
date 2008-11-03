@@ -7,6 +7,10 @@ class FutureResource
     @resource_value_blocker = @resource_lock.new_cond
   end
   
+  def set_yet?
+    @resource_lock.synchronize { defined? @resource }
+  end
+  
   def resource
     @resource_lock.synchronize do
       @resource_value_blocker.wait @resource_lock unless defined? @resource
