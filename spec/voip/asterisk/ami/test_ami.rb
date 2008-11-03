@@ -4,27 +4,24 @@ require 'adhearsion/voip/asterisk/manager_interface'
 
 context "ManagerInterface" do
   
+  include ManagerInterfaceTestHelper
+  
   before :each do
-    @socket_connect_data = "Asterisk Call Manager/1.0\r\nResponse: Success\r\nMessage: Authentication accepted\r\n\r\n"
-    @reload_event = %{Event: ChannelReload\r\nPrivilege: system,all\r\nChannel: SIP\r\n} +
-        %{ReloadReason: RELOAD (Channel module reload)\r\nRegistry_Count: 1\r\nPeer_Count: 2\r\nUser_Count: 1\r\n\r\n}
-    
     @Manager = Adhearsion::VoIP::Asterisk::Manager
     @host, @port = "localhost", 9999
   end
   
   test "should receive data and not die" do
-    manager = @Manager::ManagerInterface.new :hostname => @host, :port => @port
+    manager = new_manager_without_events
     
-    mock_em_connection = flexmock "mock object with ManagerInterfaceActionsConnection mixin"
-    mock_em_connection.extend @Manager::ManagerInterface::ManagerInterfaceActionsConnection.new(manager)
+    mock_em_connection = mock_actions_connection_for_manager manager
     mock_em_connection.should_receive(:send_data).zero_or_more_times.with(String).and_return
     flexmock(EventMachine).should_receive(:connect).with(@host, @port, Module).and_return mock_em_connection
     
     manager.connect!
     
     flexmock(manager).should_receive(:action_message_received).once.with(@Manager::NormalAmiResponse)
-    mock_em_connection.receive_data @socket_connect_data
+    mock_em_connection.receive_data ami_packets.fresh_socket_connection
   end
   
   test "a received message that matches an action ID for which we're waiting" do
@@ -32,12 +29,12 @@ context "ManagerInterface" do
     action_id = "OHAILOLZ"
     
     # instantiate a new ManagerInterface
-    manager = @Manager::ManagerInterface.new :hostname => @host, :port => @port, :events => false
+    manager = new_manager_without_events
     
     flexmock(manager).should_receive(:new_action_id).twice.and_return action_id
     
-    mock_em_connection = flexmock "mock object with ManagerInterfaceActionsConnection mixin"
-    mock_em_connection.extend @Manager::ManagerInterface::ManagerInterfaceActionsConnection.new(manager)
+    mock_em_connection = mock_actions_connection_for_manager manager
+    
     mock_em_connection.should_receive(:send_data).twice.and_return
     flexmock(EventMachine).should_receive(:connect).once.with(@host, @port, Module).and_return mock_em_connection
     
@@ -63,16 +60,14 @@ context "ManagerInterface" do
   test "a received event is received by Theatre" do
     flexmock(Adhearsion::Events).should_receive(:trigger).once.with(%w[asterisk events], @Manager::Event)
     
-    manager = @Manager::ManagerInterface.new :hostname => @host, :port => @port, :events => true
-    mock_actions_connection = flexmock "mock object with ManagerInterfaceActionsConnection mixin"
-    mock_actions_connection.extend @Manager::ManagerInterface::ManagerInterfaceActionsConnection.new(manager)
+    manager = new_manager_with_events
+    mock_actions_connection = mock_actions_connection_for_manager manager
     
     mock_actions_connection.should_receive(:send_data).once.with(/Login/).and_return # Login
     flexmock(EventMachine).should_receive(:connect).with(@host, @port, Module).and_return mock_actions_connection
     
     
-    mock_events_connection = flexmock "mock object with ManagerInterfaceEventsConnection mixin"
-    mock_events_connection.extend @Manager::ManagerInterface::ManagerInterfaceEventsConnection.new(manager)
+    mock_events_connection = mock_events_connection_for_manager manager
     
     mock_events_connection.should_receive(:send_data).once.with(/Login/) # Login
     flexmock(EventMachine).should_receive(:connect).with(@host, @port, Module).and_return mock_events_connection
@@ -81,16 +76,20 @@ context "ManagerInterface" do
     mock_actions_connection.post_init
     mock_events_connection.post_init
     
-    mock_events_connection.receive_data @reload_event
+    mock_events_connection.receive_data ami_packets.reload_event
     
   end
   
+  test "an AMI Response:Error response should raise an AMIError" do
+    manager = @Manager::ManagerInterface.new :hostname => @host, :port => @port, :events => false
+    @Manager::AMIError
+  end
+  
+  # TODO: TEST THAT AMI ERRORS RAISE AN EXCEPTION
   
   # TODO: TEST THAT "will follow" actions include the events relevant to their crap.
   
   # TODO: TEST THE WRITE LOCK FOR MESSAGES WHICH DO NOT REPLY WITH AN ACTION ID DO LOCK EVERYTHING..
-  
-  # TODO: TEST THAT AMI ERRORS RAISE AN EXCEPTION
   
   # TODO: Do AMI errors respond with action id? Answer: NOT ALL OF THEM!
   
@@ -159,3 +158,37 @@ context "EventManagerInterfaceConnection" do
   test "should stop gracefully by allowing the Queue to finish writing to the Theatre"
   test "should stop forcefully by not allowing the Queue to finish writing to the Theatre"
 end
+
+BEGIN {
+  
+  module ManagerInterfaceTestHelper
+    
+    def ami_packets
+      returning OpenStruct.new do |struct|
+        struct.fresh_socket_connection = "Asterisk Call Manager/1.0\r\nResponse: Success\r\nMessage: Authentication accepted\r\n\r\n"
+        struct.reload_event = %{Event: ChannelReload\r\nPrivilege: system,all\r\nChannel: SIP\r\n} +
+            %{ReloadReason: RELOAD (Channel module reload)\r\nRegistry_Count: 1\r\nPeer_Count: 2\r\nUser_Count: 1\r\n\r\n}
+      end
+    end
+    
+    def new_manager_with_events
+      @Manager::ManagerInterface.new :hostname => @host, :port => @port, :events => true
+    end
+    
+    def new_manager_without_events
+    @Manager::ManagerInterface.new :hostname => @host, :port => @port, :events => false
+    end
+    
+    def mock_actions_connection_for_manager(manager)
+      returning flexmock("mock object with ManagerInterfaceActionsConnection mixin") do |connection|
+        connection.extend @Manager::ManagerInterface::ManagerInterfaceActionsConnection.new(manager)
+      end
+    end
+    
+    def mock_events_connection_for_manager(manager)
+      returning flexmock("mock object with ManagerInterfaceEventsConnection mixin") do |connection|
+        connection.extend @Manager::ManagerInterface::ManagerInterfaceEventsConnection.new(manager)
+      end
+    end
+  end
+}
