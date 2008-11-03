@@ -17,25 +17,22 @@ ADHEARSION_FILES = %w{
   bin/jahn
   EVENTS
   lib/adhearsion.rb
-  lib/adhearsion/blank_slate.rb
   lib/adhearsion/cli.rb
   lib/adhearsion/component_manager.rb
+  lib/adhearsion/events_support.rb
   lib/adhearsion/foundation/all.rb
-  lib/adhearsion/foundation/array.rb
+  lib/adhearsion/foundation/blank_slate.rb
   lib/adhearsion/foundation/custom_daemonizer.rb
+  lib/adhearsion/foundation/future_resource.rb
   lib/adhearsion/foundation/global.rb
-  lib/adhearsion/foundation/hash.rb
   lib/adhearsion/foundation/metaprogramming.rb
   lib/adhearsion/foundation/numeric.rb
-  lib/adhearsion/foundation/proc.rb
   lib/adhearsion/foundation/pseudo_guid.rb
   lib/adhearsion/foundation/publishable.rb
   lib/adhearsion/foundation/relationship_properties.rb
   lib/adhearsion/foundation/string.rb
-  lib/adhearsion/foundation/thread.rb
+  lib/adhearsion/foundation/synchronized_hash.rb
   lib/adhearsion/foundation/thread_safety.rb
-  lib/adhearsion/foundation/time.rb
-  lib/adhearsion/events_support.rb
   lib/adhearsion/host_definitions.rb
   lib/adhearsion/initializer.rb
   lib/adhearsion/initializer/asterisk.rb
@@ -60,16 +57,14 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb
   lib/adhearsion/voip/asterisk/config_generators/voicemail.conf.rb
   lib/adhearsion/voip/asterisk/config_manager.rb
-  lib/adhearsion/voip/asterisk/special_dial_plan_managers.rb
   lib/adhearsion/voip/asterisk/manager_interface.rb
-  lib/adhearsion/voip/asterisk/manager_interface/actions_socket.rb
+  lib/adhearsion/voip/asterisk/manager_interface.rb
   lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rb
   lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb
   lib/adhearsion/voip/asterisk/manager_interface/ami_protocol_parser_machine.rl
-  lib/adhearsion/voip/asterisk/manager_interface/events_socket.rb
+  lib/adhearsion/voip/asterisk/manager_interface/connections.rb
   lib/adhearsion/voip/asterisk/manager_interface/packets.rb
-  lib/adhearsion/voip/asterisk/manager_interface/Rakefile
-  lib/adhearsion/voip/asterisk/manager_interface.rb
+  lib/adhearsion/voip/asterisk/special_dial_plan_managers.rb
   lib/adhearsion/voip/call.rb
   lib/adhearsion/voip/call_routing.rb
   lib/adhearsion/voip/commands.rb
@@ -95,6 +90,7 @@ ADHEARSION_FILES = %w{
   LICENSE
   Rakefile
   README.txt
+
 }
 
 Gem::Specification.new do |s|
