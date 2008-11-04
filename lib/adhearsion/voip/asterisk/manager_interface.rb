@@ -1,4 +1,4 @@
-require 'adhearsion/voip/asterisk/manager_interface/ami_parser'
+require 'adhearsion/voip/asterisk/manager_interface/ami_lexer'
 require 'adhearsion/voip/asterisk/manager_interface/connections'
 
 module Adhearsion

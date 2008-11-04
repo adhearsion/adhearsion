@@ -1,6 +1,10 @@
 require 'yaml'
 
 module Adhearsion
+  
+  ##
+  # This class isn't yet tied into Adhearsion.
+  #
   class HostDefinition
     
     SUPPORTED_KEYS = [:host, :username, :password, :key, :name]

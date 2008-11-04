@@ -4,7 +4,7 @@ require 'yaml'
 require 'socket'
 require 'thread'
 require 'monitor'
-require 'adhearsion/voip/asterisk/manager_interface/ami_parser'
+require 'adhearsion/voip/asterisk/manager_interface/ami_lexer'
 
 module Adhearsion
   module VoIP

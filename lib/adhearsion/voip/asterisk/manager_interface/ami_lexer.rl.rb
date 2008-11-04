@@ -4,7 +4,7 @@ module Adhearsion
   module VoIP
     module Asterisk
       module Manager
-        class AbstractAsteriskManagerInterfaceStreamParser
+        class AbstractAsteriskManagerInterfaceStreamLexer
 
           BUFFER_SIZE = 8.kilobytes unless defined? BUFFER_SIZE
 
@@ -47,7 +47,7 @@ module Adhearsion
             action event_name_starts { event_name_starts }
             action event_name_stops  { event_name_stops  }
           
-            include ami_protocol_parser_machine "ami_protocol_parser_machine.rl";
+            include ami_protocol_parser_machine "ami_protocol_lexer_machine.rl";
     
           }%%##
 
@@ -250,7 +250,7 @@ VVVVVVVVVVVVVVVVVVVVVVVVVVVVV
     
           end
         end
-        class DelegatingAsteriskManagerInterfaceParser < AbstractAsteriskManagerInterfaceStreamParser
+        class DelegatingAsteriskManagerInterfaceLexer < AbstractAsteriskManagerInterfaceStreamLexer
           
           def initialize(delegate, method_delegation_map=nil)
             super()

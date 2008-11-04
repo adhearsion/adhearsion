@@ -8,7 +8,7 @@ module Adhearsion
             
             class << self
               def new(manager_interface)
-                parser = DelegatingAsteriskManagerInterfaceParser.new manager_interface, \
+                parser = DelegatingAsteriskManagerInterfaceLexer.new manager_interface, \
                     :message_received => :action_message_received,
                     :error_received   => :action_error_received
                 Module.new do
@@ -37,7 +37,7 @@ module Adhearsion
           
             class << self
               def new(manager_interface)
-                parser = DelegatingAsteriskManagerInterfaceParser.new manager_interface, \
+                parser = DelegatingAsteriskManagerInterfaceLexer.new manager_interface, \
                     :message_received => :event_message_received,
                     :error_received   => :event_error_received
                 Module.new do

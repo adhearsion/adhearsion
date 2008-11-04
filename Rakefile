@@ -8,7 +8,7 @@ require 'lib/adhearsion/version'
 
 TestGlob    = ['spec/**/test_*.rb']
 GEMSPEC     = eval File.read("adhearsion.gemspec")
-RAGEL_FILES = %w[lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb]
+RAGEL_FILES = %w[lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb]
 
 begin
   require 'rcov/rcovtask'

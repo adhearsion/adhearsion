@@ -110,13 +110,13 @@ context "ManagerInterface" do
   
 end
 
-context "DelegatingAsteriskManagerInterfaceParser" do
+context "DelegatingAsteriskManagerInterfaceLexer" do
   test "should translate the :syntax_error_encountered method call when a method_delegation_map is given" do
     official_method, new_method = :syntax_error_encountered, :ohai_syntax_error!
     method_argument = :testing123
     mock_manager_interface = flexmock "ManagerInterface which receives callbacks"
     mock_manager_interface.should_receive(new_method).once.with(method_argument).and_return
-    parser = Adhearsion::VoIP::Asterisk::Manager::DelegatingAsteriskManagerInterfaceParser.new mock_manager_interface,
+    parser = Adhearsion::VoIP::Asterisk::Manager::DelegatingAsteriskManagerInterfaceLexer.new mock_manager_interface,
         official_method => new_method
     parser.send official_method, method_argument
   end
@@ -125,7 +125,7 @@ context "DelegatingAsteriskManagerInterfaceParser" do
     method_argument = :message_message_message_message
     mock_manager_interface = flexmock "ManagerInterface which receives callbacks"
     mock_manager_interface.should_receive(new_method).once.with(method_argument).and_return
-    parser = Adhearsion::VoIP::Asterisk::Manager::DelegatingAsteriskManagerInterfaceParser.new mock_manager_interface,
+    parser = Adhearsion::VoIP::Asterisk::Manager::DelegatingAsteriskManagerInterfaceLexer.new mock_manager_interface,
         official_method => new_method
     parser.send official_method, method_argument
   end
@@ -134,7 +134,7 @@ context "DelegatingAsteriskManagerInterfaceParser" do
     method_argument = :errrrrrr
     mock_manager_interface = flexmock "ManagerInterface which receives callbacks"
     mock_manager_interface.should_receive(new_method).once.with(method_argument).and_return
-    parser = Adhearsion::VoIP::Asterisk::Manager::DelegatingAsteriskManagerInterfaceParser.new mock_manager_interface,
+    parser = Adhearsion::VoIP::Asterisk::Manager::DelegatingAsteriskManagerInterfaceLexer.new mock_manager_interface,
         official_method => new_method
     parser.send official_method, method_argument
   end
@@ -149,7 +149,7 @@ context "DelegatingAsteriskManagerInterfaceParser" do
     method_delegation_map.each_pair do |old_method,new_method|
       mock_manager_interface.should_receive(new_method).once.with(old_method).and_return
     end
-    parser=Adhearsion::VoIP::Asterisk::Manager::DelegatingAsteriskManagerInterfaceParser.new mock_manager_interface, method_delegation_map
+    parser=Adhearsion::VoIP::Asterisk::Manager::DelegatingAsteriskManagerInterfaceLexer.new mock_manager_interface, method_delegation_map
     method_delegation_map.each_pair do |old_method, new_method|
       parser.send(old_method, old_method)
     end

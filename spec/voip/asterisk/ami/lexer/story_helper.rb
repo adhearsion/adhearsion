@@ -3,7 +3,7 @@ gem 'rspec', "= 1.1.4"
 require 'spec/story'
 require File.dirname(__FILE__) + "/../../../../../lib/adhearsion"
 
-RAGEL_FILES = %w[lib/adhearsion/voip/asterisk/manager_interface/ami_parser.rl.rb]
+RAGEL_FILES = %w[lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb]
 
 def regenerate_ragel
   # Check Ragel version:
@@ -23,7 +23,7 @@ end
 
 Dir.chdir(File.dirname(__FILE__) + "/../../../../..") { regenerate_ragel }
 
-require 'adhearsion/voip/asterisk/manager_interface/ami_parser'
+require 'adhearsion/voip/asterisk/manager_interface/ami_lexer'
 
 FIXTURES = YAML.load_file File.dirname(__FILE__) + "/ami_fixtures.yml"
 
