@@ -32,6 +32,7 @@ class Module
   # class HybridAutomobile < Automobile
   #   relationship :battery => HybridBattery
   # end
+  #
   def relationships(relationship_mapping)
     relationship_mapping.each_pair do |class_name, class_object|
       define_method(class_name) { class_object } 

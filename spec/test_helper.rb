@@ -56,7 +56,7 @@ module InitializerStubs
   ) unless defined? DEFAULT_AHNRC_DATA_STRUCTURE
   
   UNWANTED_BEHAVIOR = {
-    Adhearsion::Initializer           => [:initialize_log_file, :switch_to_root_directory, :daemonize!, :load],
+    Adhearsion::Initializer => [:initialize_log_file, :switch_to_root_directory, :daemonize!, :load],
     Adhearsion::Initializer.metaclass => { :get_rules_from => DEFAULT_AHNRC_DATA_STRUCTURE },
   } unless defined? UNWANTED_BEHAVIOR
   
