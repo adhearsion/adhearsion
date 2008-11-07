@@ -3,10 +3,10 @@
 PATH_TO_ADHEARSION = File.join(File.dirname(__FILE__), "/../..")
 
 MANAGER_CONNECTION_INFORMATION = {
-  :hostname => "10.0.1.97",
-  :user => "jicksta",
+  :host     => "10.0.1.97",
+  :user     => "jicksta",
   :password => "roflcopter",
-  :events => true
+  :events   => true
 }
 
 require 'rubygems'
@@ -23,7 +23,6 @@ end
 require 'adhearsion/voip/asterisk/manager_interface'
 include Adhearsion::VoIP::Asterisk::Manager
 
-ManagerInterface.standalone do
-  interface = ManagerInterface.connect MANAGER_CONNECTION_INFORMATION
-  interface.send_action "Ping"
-end
+
+interface = ManagerInterface.connect MANAGER_CONNECTION_INFORMATION
+p interface.send_action("Ping")

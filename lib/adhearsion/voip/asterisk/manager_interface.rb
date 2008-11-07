@@ -82,7 +82,7 @@ module Adhearsion
           include Abstractions
           
           DEFAULT_SETTINGS = {
-            :hostname => "localhost",
+            :host     => "localhost",
             :port     => 5038,
             :username => "admin",
             :password => "secret",
@@ -97,15 +97,15 @@ module Adhearsion
           # socket for just events. Two sockets are used because some actions actually respond with events, making it very
           # complicated to differentiate between response-type events and normal events.
           #
-          # @param [Hash] options Available options are :hostname, :port, :username, :password, and :events
+          # @param [Hash] options Available options are :host, :port, :username, :password, and :events
           #
           def initialize(options={})
             options = DEFAULT_SETTINGS.merge options
-            @hostname       = options[:host] || options[:hostname]
-            @username       = options[:user] || options[:username]
-            @password       = options[:pass] || options[:password]
-            @port           = options[:port]
-            @events_enabled = options[:events]
+            @host = options[:host]
+            @username = options[:username] 
+            @password = options[:password]
+            @port     = options[:port]
+            @events   = options[:events]
             
             @sent_messages = {}
             @sent_messages_lock = Mutex.new
@@ -114,7 +114,7 @@ module Adhearsion
                 :message_received => :action_message_received,
                 :error_received   => :action_error_received
             
-            if events_enabled?
+            if @events
               @events_lexer = DelegatingAsteriskManagerInterfaceLexer.new self, \
                   :message_received => :event_message_received,
                   :error_received   => :event_error_received 
@@ -174,7 +174,7 @@ module Adhearsion
 
           def connect!
             establish_actions_connection
-            establish_events_connection if events_enabled?
+            establish_events_connection if @events
           end
           
           def actions_connection_established
@@ -198,10 +198,6 @@ module Adhearsion
           def disconnect!
             # TODO: Go through all the waiting condition variables and raise an exception
             raise NotImplementedError
-          end
-        
-          def events_enabled?
-            !! @events_enabled
           end
         
           def dynamic

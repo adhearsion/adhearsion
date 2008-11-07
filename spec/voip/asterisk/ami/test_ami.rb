@@ -8,7 +8,7 @@ context "ManagerInterface" do
   
   before :each do
     @Manager = Adhearsion::VoIP::Asterisk::Manager
-    @host, @port = "localhost", 9999
+    @host, @port = "foobar", 9999
   end
   
   test "should receive data and not die" do
@@ -21,6 +21,27 @@ context "ManagerInterface" do
     flexmock(manager).should_receive(:action_message_received).once.with(@Manager::NormalAmiResponse)
     manager.connect!
     
+  end
+  
+  test "should use the defaults specified in DEFAULT_SETTINGS when no overrides are given" do
+    manager = @Manager::ManagerInterface.new
+    %w[host port username password events].each do |property|
+      manager.send(property).should.eql @Manager::ManagerInterface::DEFAULT_SETTINGS[property.to_sym]
+    end
+  end
+  
+  test "should override the DEFAULT_SETTINGS settings with overrides given to the constructor" do
+    overrides = {
+      :host     => "yayiamahost",
+      :port     => 1337,
+      :username => "root",
+      :password => "toor",
+      :events   => false
+    }
+    manager = @Manager::ManagerInterface.new overrides
+    %w[host port username password events].each do |property|
+      manager.send(property).should.eql overrides[property.to_sym]
+    end
   end
   
   test "a received message that matches an action ID for which we're waiting" do
@@ -176,11 +197,11 @@ BEGIN {
     end
     
     def new_manager_with_events
-      @Manager::ManagerInterface.new :hostname => @host, :port => @port, :events => true
+      @Manager::ManagerInterface.new :host => @host, :port => @port, :events => true
     end
     
     def new_manager_without_events
-      @Manager::ManagerInterface.new :hostname => @host, :port => @port, :events => false
+      @Manager::ManagerInterface.new :host => @host, :port => @port, :events => false
     end
     
     def mock_for_next_created_socket
