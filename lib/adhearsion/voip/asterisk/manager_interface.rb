@@ -20,7 +20,7 @@ module Adhearsion
           class << self
             
             def connect(*args)
-              returning new do |connection|
+              returning new(*args) do |connection|
                 connection.connect!
               end
             end
@@ -100,7 +100,9 @@ module Adhearsion
           # @param [Hash] options Available options are :host, :port, :username, :password, and :events
           #
           def initialize(options={})
+            p options
             options = DEFAULT_SETTINGS.merge options
+            p options
             @host = options[:host]
             @username = options[:username] 
             @password = options[:password]
