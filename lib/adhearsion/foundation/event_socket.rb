@@ -69,6 +69,7 @@ class EventSocket
       if @state.equal? :connected
         raise ConnectionError, "Already connected!"
       else
+        p [@host, @port]
         @socket = TCPSocket.new(@host, @port)
         @state  = :connected
       end

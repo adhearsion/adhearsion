@@ -294,7 +294,7 @@ module Adhearsion
           # @return [EventSocket]
           #
           def establish_actions_connection
-            @actions_connection = EventSocket.connect(@hostname, @port) do |handler|
+            @actions_connection = EventSocket.connect(@host, @port) do |handler|
               handler.receive_data { |data| @actions_lexer << data  }
               handler.connected    { actions_connection_established  }
               handler.disconnected { actions_connection_disconnected }
@@ -309,7 +309,7 @@ module Adhearsion
           #
           def establish_events_connection
             # Note: the @events_connection instance variable is set in login()
-            @events_connection = EventSocket.connect(@hostname, @port) do |handler|
+            @events_connection = EventSocket.connect(@host, @port) do |handler|
               handler.receive_data { |data| @events_lexer << data  }
               handler.connected    { events_connection_established  }
               handler.disconnected { events_connection_disconnected }
