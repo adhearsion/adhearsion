@@ -100,9 +100,8 @@ module Adhearsion
           # @param [Hash] options Available options are :host, :port, :username, :password, and :events
           #
           def initialize(options={})
-            p options
-            options = DEFAULT_SETTINGS.merge options
-            p options
+            options = parse_options options
+            
             @host = options[:host]
             @username = options[:username] 
             @password = options[:password]
@@ -181,7 +180,6 @@ module Adhearsion
           
           def actions_connection_established
             @actions_state = :connected
-            login @actions_connection, false
           end
           
           def actions_connection_disconnected
@@ -190,7 +188,6 @@ module Adhearsion
           
           def events_connection_established
             @events_state = :connected
-            login @events_connection, true
           end
           
           def actions_connection_disconnected
@@ -301,7 +298,7 @@ module Adhearsion
               handler.connected    { actions_connection_established  }
               handler.disconnected { actions_connection_disconnected }
             end
-            @actions_connection
+            login @actions_connection, false
           end
           
           ##
@@ -316,6 +313,7 @@ module Adhearsion
               handler.connected    { events_connection_established  }
               handler.disconnected { events_connection_disconnected }
             end
+            login @events_connection, true
           end
 
           def new_action_id
@@ -323,12 +321,26 @@ module Adhearsion
           end
         
           def login(connection, with_events)
-            send_action connection, "Login",
-                "Username" => @username, "Secret" => @password, "Events" => with_events ? "On" : "Off"
+            response = send_action_asynchronously_with_connection(connection, "Login",
+                "Username" => @username, "Secret" => @password, "Events" => with_events ? "On" : "Off").resource
+            
+            if response.kind_of? AMIError
+              raise AuthenticationFailedException, "Incorrect username and password! #{response.message}"
+            else
+              response
+            end
           rescue => exception
             # We must rescue all exceptions because EventMachine gives VERY cryptic error messages when an exception is
             # raised in post_init (which is what calls this method, usually).
             ahn_log.ami.error "Error logging in! #{exception.inspect}\n#{exception.backtrace.join("\n")}"
+          end
+          
+          def parse_options(options)
+            unrecognized_keys = options.keys.map { |key| key.to_sym } - DEFAULT_SETTINGS.keys
+            if unrecognized_keys.any?
+              raise ArgumentError, "Unrecognized named argument(s): #{unrecognized_keys.to_sentence}"
+            end
+            DEFAULT_SETTINGS.merge options
           end
                 
           class AuthenticationFailedException < Exception; end

@@ -15,6 +15,9 @@ context "ManagerInterface" do
     manager = new_manager_without_events
     flexmock(Thread).should_receive(:new).once.and_yield
     mock_em_connection = mock_for_next_created_socket
+    
+    flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return
+    
     mock_em_connection.should_receive(:readpartial).once.and_return ami_packets.fresh_socket_connection
     mock_em_connection.should_receive(:readpartial).once.and_raise EOFError
     
@@ -44,12 +47,19 @@ context "ManagerInterface" do
     end
   end
   
+  test "should raise an ArgumentError when it's instantiated with an unrecognized named argument" do
+    the_following_code {
+      @Manager::ManagerInterface.new :ifeelsopretty => "OH SO PRETTY!"
+    }.should.raise ArgumentError
+  end
+  
   test "a received message that matches an action ID for which we're waiting" do
     action_id = "OHAILOLZ"
     
     manager = new_manager_without_events
     
     flexmock(manager).should_receive(:new_action_id).once.and_return action_id
+    flexmock(manager).should_receive(:login).once.and_return
     
     mock_em_connection = mock_for_next_created_socket
     
@@ -74,6 +84,7 @@ context "ManagerInterface" do
     flexmock(Adhearsion::Events).should_receive(:trigger).once.with(%w[asterisk events], @Manager::Event)
     
     manager = new_manager_with_events
+    flexmock(manager).should_receive(:login).twice.and_return
     
     mock_actions_connection = mock_for_next_created_socket
     mock_events_connection  = mock_for_next_created_socket
@@ -91,12 +102,26 @@ context "ManagerInterface" do
     
     manager            = new_manager_without_events
     actions_connection = mock_for_next_created_socket
+    flexmock(manager).should_receive(:login).once.and_return
     
     manager.connect!
     
     the_following_code {
       manager.send_action "Foobar"
     }.should.raise @Manager::AMIError
+    
+  end
+  
+  test "an AuthenticationFailedException should be raised when the action's FutureResource is set to an AMIError instance" do
+
+    flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return @Manager::AMIError.new
+    
+    manager            = new_manager_without_events
+    actions_connection = mock_for_next_created_socket
+    
+    the_following_code {
+      manager.connect!
+    }.should.raise @Manager::ManagerInterface::AuthenticationFailedException
     
   end
   
@@ -115,6 +140,8 @@ context "ManagerInterface" do
   # TODO: TEST THE WRITE LOCK FOR MESSAGES WHICH DO NOT REPLY WITH AN ACTION ID DO LOCK EVERYTHING..
   
   # TODO: test that logging in with bad credentials raises an AuthenticationFailedException
+  
+  # TODO: When logging in, if the actions socket has an invalid user/pass, it should not try to log in the events socket
   
   # QUESTION: Do AMI errors respond with action id? Answer: NOT ALL OF THEM!
   

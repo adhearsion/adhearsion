@@ -4,7 +4,7 @@ PATH_TO_ADHEARSION = File.join(File.dirname(__FILE__), "/../..")
 
 MANAGER_CONNECTION_INFORMATION = {
   :host     => "10.0.1.97",
-  :user     => "jicksta",
+  :username     => "jicksta",
   :password => "roflcopter",
   :events   => true
 }
