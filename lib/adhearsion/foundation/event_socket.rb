@@ -35,6 +35,10 @@ require "socket"
 class EventSocket
 
   class << self
+    
+    ##
+    # Creates and returns a connected EventSocket instance.
+    #
     def connect(*args, &block)
       instance = new(*args, &block)
       instance.connect!
@@ -53,9 +57,7 @@ class EventSocket
     @port  = port
     
     @state = :new
-    
     @handler = handler || new_handler_from_block(&block)
-    
   end
   
   def state
@@ -70,9 +72,10 @@ class EventSocket
         @socket = TCPSocket.new(@host, @port)
         @state  = :connected
       end
-    end  
-    @handler.connected
+    end
+    @handler.connected rescue nil
     @reader_thread = spawn_reader_thread
+    self
   rescue => error
     @state = :failed
     raise error
@@ -83,7 +86,7 @@ class EventSocket
   #
   # @param [String] data Data to write
   #
-  def write(data)
+  def send_data(data)
     # Note: TCPSocket#write is intrinsically Thread-safe
     @socket.write data
   rescue
@@ -116,7 +119,6 @@ class EventSocket
   protected
   
   def connection_dropped!
-    puts "got conneciton dropped"
     @state_lock.synchronize do
       unless @state.equal? :connection_dropped
         @state = :connection_dropped
@@ -136,8 +138,6 @@ class EventSocket
     end
   rescue EOFError
     connection_dropped!
-  rescue => e
-    puts "SOME OTHER ERROR?"
   end
 
   def new_handler_from_block(&handler_block)
@@ -146,18 +146,18 @@ class EventSocket
     handler.set_callbacks = {:receive_data => false, :disconnected => false, :connected => false }
     
     def handler.receive_data(&block)
-      self.metaclass.send :remove_method, :receive_data
-      self.metaclass.send :define_method, :receive_data, &block
+      self.metaclass.send(:remove_method, :receive_data)
+      self.metaclass.send(:define_method, :receive_data) { |data| block.call data }
       set_callbacks[:receive_data] = true
     end
     def handler.connected(&block)
-      self.metaclass.send :remove_method, :connected
-      self.metaclass.send :define_method, :connected, &block
+      self.metaclass.send(:remove_method, :connected)
+      self.metaclass.send(:define_method, :connected) { block.call }
       set_callbacks[:connected] = true
     end
     def handler.disconnected(&block)
-      self.metaclass.send :remove_method, :disconnected
-      self.metaclass.send :define_method, :disconnected, &block
+      self.metaclass.send(:remove_method, :disconnected)
+      self.metaclass.send(:define_method, :disconnected) { block.call }
       set_callbacks[:disconnected] = true
     end
     

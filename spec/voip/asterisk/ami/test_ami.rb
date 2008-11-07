@@ -13,15 +13,14 @@ context "ManagerInterface" do
   
   test "should receive data and not die" do
     manager = new_manager_without_events
-    
-    mock_em_connection = mock_actions_connection_for_manager manager
-    mock_em_connection.should_receive(:send_data).zero_or_more_times.with(String).and_return
-    mock_eventmachine_connection_with mock_em_connection
-    
-    manager.connect!
+    flexmock(Thread).should_receive(:new).once.and_yield
+    mock_em_connection = mock_for_next_created_socket
+    mock_em_connection.should_receive(:readpartial).once.and_return ami_packets.fresh_socket_connection
+    mock_em_connection.should_receive(:readpartial).once.and_raise EOFError
     
     flexmock(manager).should_receive(:action_message_received).once.with(@Manager::NormalAmiResponse)
-    mock_em_connection.receive_data ami_packets.fresh_socket_connection
+    manager.connect!
+    
   end
   
   test "a received message that matches an action ID for which we're waiting" do
@@ -29,14 +28,11 @@ context "ManagerInterface" do
     
     manager = new_manager_without_events
     
-    flexmock(manager).should_receive(:new_action_id).twice.and_return action_id
+    flexmock(manager).should_receive(:new_action_id).once.and_return action_id
     
-    mock_em_connection = mock_actions_connection_for_manager manager
-    
-    mock_eventmachine_connection_with mock_em_connection
+    mock_em_connection = mock_for_next_created_socket
     
     manager.connect!
-    mock_em_connection.post_init
     
     flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return :THREAD_WAITING_MOCKED_OUT
     flexmock(FutureResource).new_instances.should_receive(:resource=).once.with(@Manager::NormalAmiResponse)
@@ -45,7 +41,9 @@ context "ManagerInterface" do
     
     manager.send(:instance_variable_get, :@sent_messages).has_key?(action_id).should.equal true
     
-    mock_em_connection.receive_data("Response: Pong\r\nActionID: #{action_id}\r\n\r\n")
+    manager.send(:instance_variable_get, :@actions_connection).
+        send(:instance_variable_get, :@handler).
+        receive_data("Response: Pong\r\nActionID: #{action_id}\r\n\r\n")
     
     manager.send(:instance_variable_get, :@sent_messages).has_key?(action_id).should.equal false
   end
@@ -54,36 +52,26 @@ context "ManagerInterface" do
   test "a received event is received by Theatre" do
     flexmock(Adhearsion::Events).should_receive(:trigger).once.with(%w[asterisk events], @Manager::Event)
     
-    manager                 = new_manager_with_events
-    mock_actions_connection = mock_actions_connection_for_manager manager
+    manager = new_manager_with_events
     
-    mock_eventmachine_connection_with mock_actions_connection
-    
-    
-    mock_events_connection = mock_events_connection_for_manager manager
-    
-    mock_eventmachine_connection_with mock_events_connection
+    mock_actions_connection = mock_for_next_created_socket
+    mock_events_connection  = mock_for_next_created_socket
     
     manager.connect!
-    mock_actions_connection.post_init
-    mock_events_connection.post_init
     
-    mock_events_connection.receive_data ami_packets.reload_event
-    
+    manager.send(:instance_variable_get, :@events_connection).
+        send(:instance_variable_get, :@handler).
+        receive_data ami_packets.reload_event
   end
   
   test "an AMIError should be raised when the action's FutureResource is set to an AMIError instance" do
-    
-    flexmock(FutureResource).should_receive(:new).once
+
     flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return @Manager::AMIError.new
     
     manager            = new_manager_without_events
-    actions_connection = mock_actions_connection_for_manager manager
-    
-    mock_eventmachine_connection_with actions_connection
+    actions_connection = mock_for_next_created_socket
     
     manager.connect!
-    actions_connection.post_init
     
     the_following_code {
       manager.send_action "Foobar"
@@ -93,10 +81,11 @@ context "ManagerInterface" do
   
   test "after calling connect!() with events enabled, both connections perform a login"
   
-  # QUESTION: post_init
   test "a failed login on the actions socket raises an AuthenticationFailedException"
   
   test "a failed login on the events socket raises an AuthenticationFailedException"
+  
+  test "a failed login on the events socket sets the state to :failed"
   
   # TEST THAT BOTH CONNECTIONS DO A LOGIN
   
@@ -149,7 +138,7 @@ context "DelegatingAsteriskManagerInterfaceLexer" do
     method_delegation_map.each_pair do |old_method,new_method|
       mock_manager_interface.should_receive(new_method).once.with(old_method).and_return
     end
-    parser=Adhearsion::VoIP::Asterisk::Manager::DelegatingAsteriskManagerInterfaceLexer.new mock_manager_interface, method_delegation_map
+    parser = Adhearsion::VoIP::Asterisk::Manager::DelegatingAsteriskManagerInterfaceLexer.new mock_manager_interface, method_delegation_map
     method_delegation_map.each_pair do |old_method, new_method|
       parser.send(old_method, old_method)
     end
@@ -194,21 +183,10 @@ BEGIN {
       @Manager::ManagerInterface.new :hostname => @host, :port => @port, :events => false
     end
     
-    def mock_actions_connection_for_manager(manager)
-      returning flexmock("mock object with ManagerInterfaceActionsConnection mixin") do |connection|
-        connection.extend @Manager::ManagerInterface::ManagerInterfaceActionsConnection.new(manager)
-        flexstub(connection).should_receive(:send_data).and_return
-      end
-    end
-    
-    def mock_events_connection_for_manager(manager)
-      returning flexmock("mock object with ManagerInterfaceEventsConnection mixin") do |connection|
-        connection.extend @Manager::ManagerInterface::ManagerInterfaceEventsConnection.new(manager)
-      end
-    end
-    
-    def mock_eventmachine_connection_with(connection)
-      flexmock(EventMachine).should_receive(:connect).once.with(@host, @port, Module).and_return connection
+    def mock_for_next_created_socket
+      actions_socket_mock = flexmock "TCPSocket"
+      flexmock(TCPSocket).should_receive(:new).once.and_return actions_socket_mock
+      actions_socket_mock
     end
     
   end

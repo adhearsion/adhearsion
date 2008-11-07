@@ -141,10 +141,8 @@ context "the reader_loop method" do
     
     event_socket = EventSocket.new("foo", 123, mock_handler_object)
     
-    flexmock(event_socket).should_receive(:state=).once.with(:connected)
-    flexmock(event_socket).should_receive(:state=).once.with(:connection_dropped)
-    
     event_socket.connect!
+    event_socket.state.should.equal :connection_dropped
   end
   
 end

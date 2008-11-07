@@ -1,5 +1,4 @@
 require 'adhearsion/voip/asterisk/manager_interface/ami_lexer'
-require 'adhearsion/voip/asterisk/manager_interface/connections'
 
 module Adhearsion
   module VoIP
@@ -26,19 +25,6 @@ module Adhearsion
               end
             end
             
-            def standalone(&block)
-              EM.run do
-                Thread.new do
-                  begin
-                    yield
-                  rescue => e
-                    ahn_log.ami "Stopping AMI because of an exception #{e.inspect}\n#{e.backtrace.join("\n")}"
-                  ensure
-                    EM.stop
-                  end
-                end
-              end
-            end
           end
         
           module Abstractions
@@ -123,6 +109,16 @@ module Adhearsion
             
             @sent_messages = {}
             @sent_messages_lock = Mutex.new
+            
+            @actions_lexer = DelegatingAsteriskManagerInterfaceLexer.new self, \
+                :message_received => :action_message_received,
+                :error_received   => :action_error_received
+            
+            if events_enabled?
+              @events_lexer = DelegatingAsteriskManagerInterfaceLexer.new self, \
+                  :message_received => :event_message_received,
+                  :error_received   => :event_error_received 
+            end
           end
           
           def action_message_received(message)
@@ -182,13 +178,21 @@ module Adhearsion
           end
           
           def actions_connection_established
-            puts "ESTABLISHED ACTIONS SOCKET"
             @actions_state = :connected
+            login @actions_connection, false
+          end
+          
+          def actions_connection_disconnected
+            @actions_state = :disconnected
           end
           
           def events_connection_established
-            puts "ESTABLISHED EVENTS SOCKET"
             @events_state = :connected
+            login @events_connection, true
+          end
+          
+          def actions_connection_disconnected
+            @events_state = :disconnected
           end
           
           def disconnect!
@@ -222,7 +226,6 @@ module Adhearsion
               
               connection.send_data command
               
-              # Block this Thread until the FutureResource becomes available.
               # TODO: Maybe enforce some kind of timeout.
               # TODO: Maybe wrap the returned action in a more convenient object.
               future_resource
@@ -292,49 +295,38 @@ module Adhearsion
           ##
           # Instantiates a new ManagerInterfaceActionsConnection and assigns it to @actions_connection.
           #
-          # @return [EventMachine::Connection]
+          # @return [EventSocket]
           #
           def establish_actions_connection
-            # Note: the @actions_connection instance variable is set in login()
-            returning EventMachine.connect(@hostname, @port, ManagerInterfaceActionsConnection.new(self)) do |connection|
-              case @actions_state
-                when :connected
-                  login connection
-                else
-                  raise NotImplementedError
-              end
+            @actions_connection = EventSocket.connect(@hostname, @port) do |handler|
+              handler.receive_data { |data| @actions_lexer << data  }
+              handler.connected    { actions_connection_established  }
+              handler.disconnected { actions_connection_disconnected }
             end
+            @actions_connection
           end
           
           ##
           # Instantiates a new ManagerInterfaceEventsConnection and assigns it to @events_connection.
           #
-          # @return [EventMachine::Connection]
+          # @return [EventSocket]
           #
           def establish_events_connection
             # Note: the @events_connection instance variable is set in login()
-            EventMachine.connect @hostname, @port, ManagerInterfaceEventsConnection.new(self)
+            @events_connection = EventSocket.connect(@hostname, @port) do |handler|
+              handler.receive_data { |data| @events_lexer << data  }
+              handler.connected    { events_connection_established  }
+              handler.disconnected { events_connection_disconnected }
+            end
           end
 
           def new_action_id
-            new_guid
+            new_guid # Implemented in lib/adhearsion/foundation/pseudo_guid.rb
           end
         
-          def login(connection)
-            
-            connection_instance_variable_name = case connection
-              when ManagerInterfaceActionsConnection
-                "@actions_connection"
-              when ManagerInterfaceEventsConnection
-                "@events_connection"
-            end
-            
-            instance_variable_set(connection_instance_variable_name, connection)
-            
-            send_action_asynchronously_with_connection connection, "Login",
-                "Username" => @username, "Secret" => @password,
-                "Events" => connection_instance_variable_name == "@events_connection" ? "On" : "Off"
-            
+          def login(connection, with_events)
+            send_action connection, "Login",
+                "Username" => @username, "Secret" => @password, "Events" => with_events ? "On" : "Off"
           rescue => exception
             # We must rescue all exceptions because EventMachine gives VERY cryptic error messages when an exception is
             # raised in post_init (which is what calls this method, usually).
