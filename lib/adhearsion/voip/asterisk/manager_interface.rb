@@ -147,7 +147,7 @@ module Adhearsion
               name, headers, future_resource = sent_action_metadata.values_at :name, :headers, :future_resource
               future_resource.resource = ami_error
             else
-              ahn_log.ami.error "Received an AMI error with an unrecognized ActionID!! This may be an bug! #{event.inspect}"
+              ahn_log.ami.error "Received an AMI error with an unrecognized ActionID!! This may be an bug! #{ami_error.inspect}"
             end
           end
           
@@ -316,6 +316,10 @@ module Adhearsion
             login @events_connection, true
           end
 
+          ##
+          # Abstracts the generation of new ActionIDs. This could be implemented virutally any way, provided each invocation
+          # returns something unique, so this will generate a GUID and return it.
+          #
           def new_action_id
             new_guid # Implemented in lib/adhearsion/foundation/pseudo_guid.rb
           end
@@ -342,8 +346,9 @@ module Adhearsion
             end
             DEFAULT_SETTINGS.merge options
           end
-                
+          
           class AuthenticationFailedException < Exception; end
+          
         end
       end
     end

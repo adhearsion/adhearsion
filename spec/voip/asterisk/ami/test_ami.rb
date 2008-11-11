@@ -125,11 +125,71 @@ context "ManagerInterface" do
     
   end
   
-  test "after calling connect!() with events enabled, both connections perform a login"
+  test "after calling connect!() with events enabled, both connections perform a login" do
+    mock_actions_socket = flexmock "actions TCPSocket"
+    mock_events_socket  = flexmock "events TCPSocket"
+    
+    flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return @Manager::NormalAmiResponse.new
+    
+    mock_actions_socket.should_receive(:write).once.with(/Login/)
+    mock_events_socket.should_receive(:write).once.with(/Login/)
+    
+    flexmock(TCPSocket).should_receive(:new).twice.and_return mock_actions_socket, mock_events_socket
+    
+    manager = new_manager_with_events
+    
+    manager.connect!
+  end
   
-  test "a failed login on the actions socket raises an AuthenticationFailedException"
+  test "a failed login on the actions socket raises an AuthenticationFailedException" do
+    manager = new_manager_with_events
+    
+    mock_socket = flexmock("mock TCPSocket")
+    
+    # By saying this should happen only once, we're also asserting that the events thread never does a login.
+    flexmock(EventSocket).should_receive(:connect).once.and_return mock_socket
+    
+    future_resource                  = FutureResource.new
+    future_resource.resource         = @Manager::AMIError.new
+    future_resource.resource.message = "Authentication failed"
+    
+    flexmock(manager).should_receive(:send_action_asynchronously_with_connection).once.with(mock_socket, "Login", Hash).and_return future_resource
+    
+    the_following_code {
+      manager.connect!
+    }.should.raise @Manager::ManagerInterface::AuthenticationFailedException
+  end
   
-  test "a failed login on the events socket raises an AuthenticationFailedException"
+  test "a failed login on the events socket raises an AuthenticationFailedException" do
+    
+    success = @Manager::NormalAmiResponse.new
+    success["Message"] = "Authentication accepted"
+    
+    failed = @Manager::AMIError.new
+    failed.message = "Authentication failed"
+    
+    manager = new_manager_with_events
+    
+    mock_actions_socket = flexmock "mock actions EventSocket"
+    mock_events_socket = flexmock "mock actions EventSocket"
+    
+    # By saying this should happen only once, we're also asserting that the events thread never does a login.
+    flexmock(EventSocket).should_receive(:connect).once.and_return mock_actions_socket
+    flexmock(EventSocket).should_receive(:connect).once.and_return mock_events_socket
+    
+    success_resource = FutureResource.new
+    success_resource.resource = success
+    
+    failed_resource = FutureResource.new
+    failed_resource.resource = failed
+    
+    flexmock(manager).should_receive(:send_action_asynchronously_with_connection).once.with(mock_actions_socket, "Login", Hash).and_return success_resource
+    flexmock(manager).should_receive(:send_action_asynchronously_with_connection).once.with(mock_events_socket, "Login", Hash).and_return failed_resource
+    
+    the_following_code {
+      manager.connect!
+    }.should.raise @Manager::ManagerInterface::AuthenticationFailedException
+  end
   
   test "a failed login on the events socket sets the state to :failed"
   
@@ -218,6 +278,8 @@ BEGIN {
         
         struct.reload_event = %{Event: ChannelReload\r\nPrivilege: system,all\r\nChannel: SIP\r\n} +
             %{ReloadReason: RELOAD (Channel module reload)\r\nRegistry_Count: 1\r\nPeer_Count: 2\r\nUser_Count: 1\r\n\r\n}
+
+        struct.authentication_failed = %{Asterisk Call Manager/1.0\r\nResponse: Error\r\nMessage: Authentication failed\r\nActionID: %s\r\n\r\n}
         
         struct.unknown_command_error = "Response: Error\r\nActionID: 2123123\r\nMessage: Invalid/unknown command\r\n\r\n"
       end
