@@ -106,11 +106,11 @@ module Adhearsion
       switch_to_root_directory
       catch_termination_signal
       bootstrap_rc
+      daemonize! if should_daemonize?
+      initialize_log_file
       load_all_init_files
       init_modules
       init_events
-      daemonize! if should_daemonize?
-      initialize_log_file
       create_pid_file if pid_file
       load_components
       ahn_log "Adhearsion initialized!"
