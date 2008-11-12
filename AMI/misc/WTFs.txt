@@ -16,3 +16,9 @@ Host                            Username       Refresh State                Reg.
 
 
 When doing a login, if you give it an ActionID, it won't send it back if there's an error.
+
+
+
+WOW: immediate responses can have up to four \r\n's. This is an example immediate response:
+
+"markq        has 0 calls (max unlimited) in 'ringall' strategy (0s holdtime), W:0, C:0, A:0, SL:0.0% within 0s\r\n   No Members\r\n   No Callers\r\n\r\n\r\n\r\n"

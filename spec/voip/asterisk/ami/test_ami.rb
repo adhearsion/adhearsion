@@ -158,6 +158,7 @@ context "ManagerInterface" do
     the_following_code {
       manager.connect!
     }.should.raise @Manager::ManagerInterface::AuthenticationFailedException
+    
   end
   
   test "a failed login on the events socket raises an AuthenticationFailedException" do
@@ -189,21 +190,23 @@ context "ManagerInterface" do
     the_following_code {
       manager.connect!
     }.should.raise @Manager::ManagerInterface::AuthenticationFailedException
+    
   end
   
-  test "a failed login on the events socket sets the state to :failed"
+  test 'a "will follow" AMI action' do
+    
+    manager = new_manager_without_events
+    
+    manager.send_action "Command", "Command" => "help"
+  end
   
-  # TEST THAT BOTH CONNECTIONS DO A LOGIN
-  
-  # TODO: TEST THAT "will follow" actions include the events relevant to their crap.
+  # TODO: TEST THAT actions with causal events are combined.
   
   # TODO: TEST THE WRITE LOCK FOR MESSAGES WHICH DO NOT REPLY WITH AN ACTION ID DO LOCK EVERYTHING..
   
-  # TODO: test that logging in with bad credentials raises an AuthenticationFailedException
+  # QUESTION: Do AMI errors respond with action id?
   
-  # TODO: When logging in, if the actions socket has an invalid user/pass, it should not try to log in the events socket
-  
-  # QUESTION: Do AMI errors respond with action id? Answer: NOT ALL OF THEM!
+  # YAGNI? test "a failed login on sets the state to :failed"
   
 end
 

@@ -172,10 +172,16 @@ module Adhearsion
             ahn_log.ami.error "ADHEARSION'S AMI PARSER ENCOUNTERED A SYNTAX ERROR! " + 
                 "PLEASE REPORT THIS ON http://bugs.adhearsion.com! OFFENDING TEXT:\n#{ignored_chunk.inspect}"
           end
-
+          
+          ##
+          # Must be called after instantiation. Also see ManagerInterface::connect().
+          #
+          # @raise [AuthenticationFailedException] if username or password are rejected
+          #
           def connect!
             establish_actions_connection
             establish_events_connection if @events
+            self
           end
           
           def actions_connection_established
