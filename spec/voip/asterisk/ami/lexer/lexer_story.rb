@@ -120,6 +120,10 @@ ActionID: 123123\r
     @lexer << "Response: Error\r\nActionID: BPJeKqW2-SnVg-PyFs-vkXT-7AWVVPD0N3G7\r\nMessage: Authentication Required\r\n\r\n"
   end
   
+  Given "a follows packet with a colon in it" do
+    @lexer << follows_body_text("with_colon")
+  end
+  
   ########################################
   #### WHEN
   ########################################
@@ -168,7 +172,7 @@ ActionID: 123123\r
   end
   
   Then "the 'follows' body of $number messages? received should equal $method_name" do |number, method_name|
-    multi_line_response = send(:follows_body_text, method_name)
+    multi_line_response = follows_body_text method_name
     @lexer.received_messages.should_not be_empty
     @lexer.received_messages.select do |message|
       message.text == multi_line_response

@@ -1,5 +1,4 @@
 require 'adhearsion/voip/asterisk/manager_interface/ami_lexer'
-require 'adhearsion/voip/asterisk/manager_interface/connections'
 
 module Adhearsion
   module VoIP
@@ -14,31 +13,35 @@ module Adhearsion
       module Manager
         class ManagerInterface
           
-          MANAGER_ACTIONS_WHICH_DONT_SEND_BACK_AN_ACTIONID = %w[
-            queues
-          ] unless defined? MANAGER_ACTIONS_WHICH_DONT_SEND_BACK_AN_ACTIONID
-        
           class << self
             
             def connect(*args)
-              returning new do |connection|
+              returning new(*args) do |connection|
                 connection.connect!
               end
             end
             
-            def standalone(&block)
-              EM.run do
-                Thread.new do
-                  begin
-                    yield
-                  rescue => e
-                    ahn_log.ami "Stopping AMI because of an exception #{e.inspect}\n#{e.backtrace.join("\n")}"
-                  ensure
-                    EM.stop
-                  end
-                end
+            def replies_with_action_id?(name, headers={})
+              name = name.to_s.downcase
+              # TODO: Expand this case statement
+              case name
+                when "queues"
+                  true
+                else
+                  false
+              end                
+            end
+            
+            def has_causal_events?(name, headers={})
+              name = name.to_s.downcase
+              case name
+                when "queuestatus"
+                  true
+                else
+                  false
               end
             end
+            
           end
         
           module Abstractions
@@ -96,7 +99,7 @@ module Adhearsion
           include Abstractions
           
           DEFAULT_SETTINGS = {
-            :hostname => "localhost",
+            :host     => "localhost",
             :port     => 5038,
             :username => "admin",
             :password => "secret",
@@ -111,18 +114,31 @@ module Adhearsion
           # socket for just events. Two sockets are used because some actions actually respond with events, making it very
           # complicated to differentiate between response-type events and normal events.
           #
-          # @param [Hash] options Available options are :hostname, :port, :username, :password, and :events
+          # @param [Hash] options Available options are :host, :port, :username, :password, and :events
           #
           def initialize(options={})
-            options = DEFAULT_SETTINGS.merge options
-            @hostname       = options[:host] || options[:hostname]
-            @username       = options[:user] || options[:username]
-            @password       = options[:pass] || options[:password]
-            @port           = options[:port]
-            @events_enabled = options[:events]
+            options = parse_options options
+            
+            @host = options[:host]
+            @username = options[:username] 
+            @password = options[:password]
+            @port     = options[:port]
+            @events   = options[:events]
             
             @sent_messages = {}
             @sent_messages_lock = Mutex.new
+            
+            @actions_lexer = DelegatingAsteriskManagerInterfaceLexer.new self, \
+                :message_received => :action_message_received,
+                :error_received   => :action_error_received
+            
+            @write_queue = Queue.new
+            
+            if @events
+              @events_lexer = DelegatingAsteriskManagerInterfaceLexer.new self, \
+                  :message_received => :event_message_received,
+                  :error_received   => :event_error_received 
+            end
           end
           
           def action_message_received(message)
@@ -150,7 +166,7 @@ module Adhearsion
               name, headers, future_resource = sent_action_metadata.values_at :name, :headers, :future_resource
               future_resource.resource = ami_error
             else
-              ahn_log.ami.error "Received an AMI error with an unrecognized ActionID!! This may be an bug! #{event.inspect}"
+              ahn_log.ami.error "Received an AMI error with an unrecognized ActionID!! This may be an bug! #{ami_error.inspect}"
             end
           end
           
@@ -175,29 +191,37 @@ module Adhearsion
             ahn_log.ami.error "ADHEARSION'S AMI PARSER ENCOUNTERED A SYNTAX ERROR! " + 
                 "PLEASE REPORT THIS ON http://bugs.adhearsion.com! OFFENDING TEXT:\n#{ignored_chunk.inspect}"
           end
-
+          
+          ##
+          # Must be called after instantiation. Also see ManagerInterface::connect().
+          #
+          # @raise [AuthenticationFailedException] if username or password are rejected
+          #
           def connect!
             establish_actions_connection
-            establish_events_connection if events_enabled?
+            establish_events_connection if @events
+            self
           end
           
           def actions_connection_established
-            puts "ESTABLISHED ACTIONS SOCKET"
             @actions_state = :connected
           end
           
+          def actions_connection_disconnected
+            @actions_state = :disconnected
+          end
+          
           def events_connection_established
-            puts "ESTABLISHED EVENTS SOCKET"
             @events_state = :connected
+          end
+          
+          def actions_connection_disconnected
+            @events_state = :disconnected
           end
           
           def disconnect!
             # TODO: Go through all the waiting condition variables and raise an exception
             raise NotImplementedError
-          end
-        
-          def events_enabled?
-            !! @events_enabled
           end
         
           def dynamic
@@ -207,7 +231,7 @@ module Adhearsion
           def send_action_asynchronously_with_connection(connection, action_name, headers={})
             headers = headers.stringify_keys
             
-            if MANAGER_ACTIONS_WHICH_DONT_SEND_BACK_AN_ACTIONID.include? action_name.to_s.downcase
+            if self.class.replies_with_action_id?(action_name.to_s.downcase, headers)
               raise NotImplementedError
             else
               action_id = headers["ActionID"] = new_action_id
@@ -222,7 +246,6 @@ module Adhearsion
               
               connection.send_data command
               
-              # Block this Thread until the FutureResource becomes available.
               # TODO: Maybe enforce some kind of timeout.
               # TODO: Maybe wrap the returned action in a more convenient object.
               future_resource
@@ -259,6 +282,18 @@ module Adhearsion
         
           protected
           
+          def write_loop
+            loop do
+              next_action = @writer_queue.pop
+              @actions_connection.write next_action
+              
+              # Since we shouldn't continue writing if there are relevant events which we may confuse with
+              next_action.response if next_action.has_causal_events?
+            end
+          rescue
+            #
+          end
+          
           ##
           # When we send out an AMI action, we need to track the ActionID and have the other Thread handling the socket IO
           # notify the sending Thread that a response has been received. This method instantiates a new FutureResource and
@@ -292,56 +327,93 @@ module Adhearsion
           ##
           # Instantiates a new ManagerInterfaceActionsConnection and assigns it to @actions_connection.
           #
-          # @return [EventMachine::Connection]
+          # @return [EventSocket]
           #
           def establish_actions_connection
-            # Note: the @actions_connection instance variable is set in login()
-            returning EventMachine.connect(@hostname, @port, ManagerInterfaceActionsConnection.new(self)) do |connection|
-              case @actions_state
-                when :connected
-                  login connection
-                else
-                  raise NotImplementedError
-              end
+            @actions_connection = EventSocket.connect(@host, @port) do |handler|
+              handler.receive_data { |data| @actions_lexer << data  }
+              handler.connected    { actions_connection_established  }
+              handler.disconnected { actions_connection_disconnected }
             end
+            login @actions_connection, false
           end
           
           ##
           # Instantiates a new ManagerInterfaceEventsConnection and assigns it to @events_connection.
           #
-          # @return [EventMachine::Connection]
+          # @return [EventSocket]
           #
           def establish_events_connection
             # Note: the @events_connection instance variable is set in login()
-            EventMachine.connect @hostname, @port, ManagerInterfaceEventsConnection.new(self)
+            @events_connection = EventSocket.connect(@host, @port) do |handler|
+              handler.receive_data { |data| @events_lexer << data  }
+              handler.connected    { events_connection_established  }
+              handler.disconnected { events_connection_disconnected }
+            end
+            login @events_connection, true
           end
 
+          ##
+          # Abstracts the generation of new ActionIDs. This could be implemented virutally any way, provided each invocation
+          # returns something unique, so this will generate a GUID and return it.
+          #
           def new_action_id
-            new_guid
+            new_guid # Implemented in lib/adhearsion/foundation/pseudo_guid.rb
           end
         
-          def login(connection)
+          def login(connection, with_events)
+            response = send_action_asynchronously_with_connection(connection, "Login",
+                "Username" => @username, "Secret" => @password, "Events" => with_events ? "On" : "Off").resource
             
-            connection_instance_variable_name = case connection
-              when ManagerInterfaceActionsConnection
-                "@actions_connection"
-              when ManagerInterfaceEventsConnection
-                "@events_connection"
+            if response.kind_of? AMIError
+              raise AuthenticationFailedException, "Incorrect username and password! #{response.message}"
+            else
+              response
             end
-            
-            instance_variable_set(connection_instance_variable_name, connection)
-            
-            send_action_asynchronously_with_connection connection, "Login",
-                "Username" => @username, "Secret" => @password,
-                "Events" => connection_instance_variable_name == "@events_connection" ? "On" : "Off"
-            
           rescue => exception
             # We must rescue all exceptions because EventMachine gives VERY cryptic error messages when an exception is
             # raised in post_init (which is what calls this method, usually).
             ahn_log.ami.error "Error logging in! #{exception.inspect}\n#{exception.backtrace.join("\n")}"
           end
-                
+          
+          def parse_options(options)
+            unrecognized_keys = options.keys.map { |key| key.to_sym } - DEFAULT_SETTINGS.keys
+            if unrecognized_keys.any?
+              raise ArgumentError, "Unrecognized named argument(s): #{unrecognized_keys.to_sentence}"
+            end
+            DEFAULT_SETTINGS.merge options
+          end
+          
           class AuthenticationFailedException < Exception; end
+          
+          
+          ##
+          # Each time ManagerInterface#send_action is invoked, a new ManagerInterfaceAction is invoked.
+          #
+          class ManagerInterfaceAction
+            
+            def initialize(name, headers)
+              @name, @headers = name, headers
+              @future_resource = FutureResource.new
+            end
+            
+            def replies_with_action_id?(name, headers={})
+              ManagerInterface.replies_with_action_id?(@name, @headers)
+            end
+            
+            def has_causal_events?
+              ManagerInterface.has_causal_events?(@name, @headers)
+            end
+            
+            def to_s
+              # TODO: cut out the logic from ManagerInterface
+            end
+            
+            def response
+              @future_resource.resource
+            end
+            
+          end
         end
       end
     end

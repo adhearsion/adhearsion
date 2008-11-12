@@ -106,7 +106,11 @@ def follows_body_text(name)
       be embedded into the transitions of a regular expression's corresponding state machine,
       eliminating the need to switch from the regular expression engine and user code execution
       environment and back again."
+    when "with_colon_after_first_line"
+      "Host                            Username       Refresh State                Reg.Time                 \r\nlax.teliax.net:5060             jicksta            105 Registered           Tue, 11 Nov 2008 02:29:55"
+
   end
+  
 end
 
 def syntax_error_data(name)
