@@ -79,7 +79,6 @@ context "ManagerInterface" do
     manager.send(:instance_variable_get, :@sent_messages).has_key?(action_id).should.equal false
   end
   
-  
   test "a received event is received by Theatre" do
     flexmock(Adhearsion::Events).should_receive(:trigger).once.with(%w[asterisk events], @Manager::Event)
     
@@ -193,12 +192,13 @@ context "ManagerInterface" do
     
   end
   
-  test 'a "will follow" AMI action' do
-    
+  test "sending an Action on the ManagerInterface" do
+    flexmock(Queue).new_instances.should_recieve(:<<).once.with ManagerInterfaceAction
     manager = new_manager_without_events
-    
-    manager.send_action "Command", "Command" => "help"
+    flexmock(manager).should_receive(:writer_loop)
   end
+  
+  # test 'a "will follow" AMI action' do
   
   # TODO: TEST THAT actions with causal events are combined.
   
@@ -207,6 +207,10 @@ context "ManagerInterface" do
   # QUESTION: Do AMI errors respond with action id?
   
   # YAGNI? test "a failed login on sets the state to :failed"
+  
+end
+
+context "WritableManagerInterfaceAction" do
   
 end
 

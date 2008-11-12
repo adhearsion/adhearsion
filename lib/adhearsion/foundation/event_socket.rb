@@ -1,33 +1,53 @@
 ##
-# EventSocket is a small abstraction of TCPSocket which causes it to behave much like an EventMachine Connection object.
-# It acts as a Thread-safe Finite State Machine.
+# EventSocket is a small abstraction of TCPSocket which causes it to behave much like an EventMachine Connection object for
+# the sake of better testability. The EventMachine Connection paradigm (as well as other networking libraries such as the 
+# Objective-C HTTP library) uses callbacks to signal different stages of a socket's lifecycle. 
 #
-# The handler object has these methods called on it:
-#  - connected
-#  - disconnected
-#  - receive_data
+# A handler can be registered in one of two ways: through registrations on an object yielded by the constructor or 
+# pre-defined on the object given as a constructor parameter. Below is an example definition which uses the block way:
 #
-# Note: the EventSocket's state will be changed before these callbacks are executed.
+#   EventSocket.new do |handler|
+#     def handler.receive_data(data)
+#       # Do something here
+#     end
+#     def handler.disconnected
+#       # Do something here
+#     end
+#     def handler.connected
+#       # Do something here
+#     end
+#   end
 #
-# The various states are:
+# Note: this is also a valid way of defining block callbacks:
+#
+#   EventSocket.new do |handler|
+#     handler.receive_data { |data| do_something }
+#     handler.disconnected { do_something }
+#     handler.connected    { do_something }
+#   end
+#
+# and here is an example of using a handler object:
+#
+#   class MyCallbackHandler
+#     def receive_data(data) end
+#     def connected() end
+#     def disconnected() end
+#   end
+#   EventSocket.new(MyCallbackHandler.new)
+#
+# If you wish to ask the EventSocket what state it is in, you can call the Thread-safe EventSocket#state method. The 
+# supported states are:
+#
 #  - :new
 #  - :connected
 #  - :stopped
 #  - :connection_dropped
 #
-# When instantiating this EventSocket with a block, you register callbacks by defining the methods on the yielded object.
-# For example:
-#   EventSocket.new do |handler|
-#     def handler.receive_data(data)
-#       # Do something here
-#     end
-#     def handler.disconnected(data)
-#       # Do something here
-#     end
-#     def handler.connected(data)
-#       # Do something here
-#     end
-#   end
+# Note: the EventSocket's state will be changed before these callbacks are executed. For example, if your "connected" 
+# callback queried its own EventSocket for its state, it will have already transitioned to the connected() state.
+#
+# Warning: If an exception occurs in your EventSocket callbacks, they will be "eaten" and never bubbled up the call stack. 
+# You should always wrap your callbacks in a begin/rescue clause and handle exceptions explicitly.
 #
 require "thread"
 require "socket"

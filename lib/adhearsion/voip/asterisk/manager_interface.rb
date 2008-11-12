@@ -13,15 +13,32 @@ module Adhearsion
       module Manager
         class ManagerInterface
           
-          MANAGER_ACTIONS_WHICH_DONT_SEND_BACK_AN_ACTIONID = %w[
-            queues
-          ] unless defined? MANAGER_ACTIONS_WHICH_DONT_SEND_BACK_AN_ACTIONID
-        
           class << self
             
             def connect(*args)
               returning new(*args) do |connection|
                 connection.connect!
+              end
+            end
+            
+            def replies_with_action_id?(name, headers={})
+              name = name.to_s.downcase
+              # TODO: Expand this case statement
+              case name
+                when "queues"
+                  true
+                else
+                  false
+              end                
+            end
+            
+            def has_causal_events?(name, headers={})
+              name = name.to_s.downcase
+              case name
+                when "queuestatus"
+                  true
+                else
+                  false
               end
             end
             
@@ -114,6 +131,8 @@ module Adhearsion
             @actions_lexer = DelegatingAsteriskManagerInterfaceLexer.new self, \
                 :message_received => :action_message_received,
                 :error_received   => :action_error_received
+            
+            @write_queue = Queue.new
             
             if @events
               @events_lexer = DelegatingAsteriskManagerInterfaceLexer.new self, \
@@ -212,7 +231,7 @@ module Adhearsion
           def send_action_asynchronously_with_connection(connection, action_name, headers={})
             headers = headers.stringify_keys
             
-            if MANAGER_ACTIONS_WHICH_DONT_SEND_BACK_AN_ACTIONID.include? action_name.to_s.downcase
+            if self.class.replies_with_action_id?(action_name.to_s.downcase, headers)
               raise NotImplementedError
             else
               action_id = headers["ActionID"] = new_action_id
@@ -262,6 +281,18 @@ module Adhearsion
           alias send_action send_action_synchronously
         
           protected
+          
+          def write_loop
+            loop do
+              next_action = @writer_queue.pop
+              @actions_connection.write next_action
+              
+              # Since we shouldn't continue writing if there are relevant events which we may confuse with
+              next_action.response if next_action.has_causal_events?
+            end
+          rescue
+            #
+          end
           
           ##
           # When we send out an AMI action, we need to track the ActionID and have the other Thread handling the socket IO
@@ -355,6 +386,34 @@ module Adhearsion
           
           class AuthenticationFailedException < Exception; end
           
+          
+          ##
+          # Each time ManagerInterface#send_action is invoked, a new ManagerInterfaceAction is invoked.
+          #
+          class ManagerInterfaceAction
+            
+            def initialize(name, headers)
+              @name, @headers = name, headers
+              @future_resource = FutureResource.new
+            end
+            
+            def replies_with_action_id?(name, headers={})
+              ManagerInterface.replies_with_action_id?(@name, @headers)
+            end
+            
+            def has_causal_events?
+              ManagerInterface.has_causal_events?(@name, @headers)
+            end
+            
+            def to_s
+              # TODO: cut out the logic from ManagerInterface
+            end
+            
+            def response
+              @future_resource.resource
+            end
+            
+          end
         end
       end
     end
