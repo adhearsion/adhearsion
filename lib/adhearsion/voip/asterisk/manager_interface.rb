@@ -388,7 +388,7 @@ module Adhearsion
           
           
           ##
-          # Each time ManagerInterface#send_action is invoked, a new ManagerInterfaceAction is invoked.
+          # Each time ManagerInterface#send_action is invoked, a new ManagerInterfaceAction is instantiated.
           #
           class ManagerInterfaceAction
             

@@ -193,9 +193,18 @@ context "ManagerInterface" do
   end
   
   test "sending an Action on the ManagerInterface" do
-    flexmock(Queue).new_instances.should_recieve(:<<).once.with ManagerInterfaceAction
+    mock_event_socket = flexmock "EventSocket"
+    flexmock(EventSocket).should_receive(:connect).once.and_return mock_event_socket
+    mock_event_socket.should_receive(:send_data).and_return
+    
+    flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return @Manager::NormalAmiResponse.new
+    
+    flexmock(Queue).new_instances.should_receive(:<<).once.with @Manager::ManagerInterface::ManagerInterfaceAction
     manager = new_manager_without_events
-    flexmock(manager).should_receive(:writer_loop)
+    flexmock(manager).should_receive(:write_loop).once
+    flexmock(manager).should_receive(:login).once.and_return
+    manager.connect!
+    manager.send_action "Ping", "ArbitraryHeader" => "Foobar"
   end
   
   # test 'a "will follow" AMI action' do
