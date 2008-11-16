@@ -13,7 +13,7 @@ context "ManagerInterface" do
   
   test "should receive data and not die" do
     manager = new_manager_without_events
-    flexmock(Thread).should_receive(:new).once.and_yield
+    flexmock(Thread).should_receive(:new).twice.and_yield
     mock_em_connection = mock_for_next_created_socket
     
     flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return
@@ -112,7 +112,7 @@ context "ManagerInterface" do
   end
   
   test "an AuthenticationFailedException should be raised when the action's FutureResource is set to an AMIError instance" do
-
+    raise
     flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return @Manager::AMIError.new
     
     manager            = new_manager_without_events
@@ -124,23 +124,56 @@ context "ManagerInterface" do
     
   end
   
+  test "that we can test shit sending" do
+    response = @Manager::NormalAmiResponse.new
+    flexmock(@Manager::ManagerInterface::ManagerInterfaceAction).new_instances.should_receive(:response).once.and_return response
+    
+    mock_event_socket = flexmock "EventSocket"
+    
+    flexmock(EventSocket).should_receive(:connect).once.and_return mock_event_socket
+    
+    write_queue_mock = TestableQueueMock.new
+    flexmock(Queue).should_receive(:new).once.and_return write_queue_mock
+    
+    manager = new_manager_without_events
+    
+    write_queue_mock.manager = manager
+    
+    flexmock(manager).should_receive(:login).and_return
+    
+    manager.connect!
+    manager.send_action "Ping"
+    
+    write_queue_mock.map_action_to_response ""
+    write_queue_mock.received_action?(response).should.equal true
+  end
+  
   test "after calling connect!() with events enabled, both connections perform a login" do
-    mock_actions_socket = flexmock "actions TCPSocket"
-    mock_events_socket  = flexmock "events TCPSocket"
+    
+    raise
+    mock_actions_socket = flexmock "actions EventSocket"
+    mock_events_socket  = flexmock "events EventSocket"
+    
+    write_queue = TestableQueueMock.new(mock_actions_socket)
     
     flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return @Manager::NormalAmiResponse.new
     
-    mock_actions_socket.should_receive(:write).once.with(/Login/)
-    mock_events_socket.should_receive(:write).once.with(/Login/)
+    mock_actions_socket.should_receive(:send_data).once.with(/Login/)
+    mock_events_socket. should_receive(:send_data).once.with(/Login/)
     
-    flexmock(TCPSocket).should_receive(:new).twice.and_return mock_actions_socket, mock_events_socket
+    flexmock(EventSocket).should_receive(:connect).twice.and_return mock_actions_socket, mock_events_socket
+    
+    flexmock(Queue).should_receive(:new).twice.and_return mock_actions_socket, mock_events_socket
     
     manager = new_manager_with_events
+    
+    
     
     manager.connect!
   end
   
   test "a failed login on the actions socket raises an AuthenticationFailedException" do
+    raise
     manager = new_manager_with_events
     
     mock_socket = flexmock("mock TCPSocket")
@@ -166,7 +199,7 @@ context "ManagerInterface" do
   end
   
   test "a failed login on the events socket raises an AuthenticationFailedException" do
-    
+    raise
     success = @Manager::NormalAmiResponse.new
     success["Message"] = "Authentication accepted"
     
@@ -198,6 +231,7 @@ context "ManagerInterface" do
   end
   
   test "sending an Action on the ManagerInterface" do
+    raise
     mock_event_socket = flexmock "EventSocket"
     flexmock(EventSocket).should_receive(:connect).once.and_return mock_event_socket
     mock_event_socket.should_receive(:send_data).and_return
@@ -205,8 +239,10 @@ context "ManagerInterface" do
     flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return @Manager::NormalAmiResponse.new
     
     flexmock(Queue).new_instances.should_receive(:<<).once.with @Manager::ManagerInterface::ManagerInterfaceAction
+    flexmock(Queue).new_instances.should_receive(:pop).once
+    
     manager = new_manager_without_events
-    flexmock(manager).should_receive(:write_loop).once
+    # flexmock(manager).should_receive(:write_loop).once
     flexmock(manager).should_receive(:login).once.and_return
     manager.connect!
     manager.send_action "Ping", "ArbitraryHeader" => "Foobar"
@@ -219,6 +255,7 @@ context "ManagerInterface" do
   # end
   
   test "sending an Action on the ManagerInterface should be received by the EventSocket" do
+    raise
     name, headers = "foobar", {"ActionID" => 1226534602.32764}
     
     response = @Manager::NormalAmiResponse.new
@@ -271,12 +308,11 @@ context "ManagerInterfaceAction" do
   end
   
   test "should properly convert itself into a String" do
-    name, headers = "Hawtsawce", {"ActionID" => "123", "Monkey" => "Zoo"}
+    name, headers = "Hawtsawce", {"Monkey" => "Zoo"}
     string = @ManagerInterface::ManagerInterfaceAction.new(name, headers).to_s
     string.should =~ /^Action: Hawtsawce\r\n/
     string.should =~ /\r\n\r\n$/
-    string.should =~ /ActionID: 123\r\n/
-    string.should =~ /([\w]+:\s*\w+\r\n){3}/
+    string.should =~ /^(\w+:\s*[\w-]+\r\n){3}\r\n$/
   end
   
 end
@@ -345,6 +381,14 @@ BEGIN {
   
   module ManagerInterfaceTestHelper
     
+    def mocked_queue
+      # This mock queue receives a ManagerInterfaceAction with <<(). Within the semantics of the OO design, this should be
+      # immediately picked up by the writer queue. The writer queue calls to_s on each object and passes that string to the
+      # event socket, blocking if it's an event with causal events.
+      mock_queue = TestableQueue.new
+
+    end
+    
     def ami_packets
       returning OpenStruct.new do |struct|
         struct.fresh_socket_connection = "Asterisk Call Manager/1.0\r\nResponse: Success\r\n"+
@@ -371,6 +415,35 @@ BEGIN {
       actions_socket_mock = flexmock "TCPSocket"
       flexmock(TCPSocket).should_receive(:new).once.and_return actions_socket_mock
       actions_socket_mock
+    end
+    
+  end
+  
+
+  ##
+  # Had to implement this class to make the Thread-based testing simpler.
+  #
+  class TestableQueueMock
+    
+    attr_accessor :manager
+    def initialize
+      @actions = []
+      @action_to_response_hash = {}
+    end
+    
+    def <<(action)
+      @actions << action
+      @manager.send(:instance_variable_get, :@actions_connection).send_data action.to_s
+      response = @action_to_response_hash[action.name]
+      @event_socket.receive_data(response)
+    end
+    
+    def map_action_to_response(new_map)
+      @action_to_response_hash.update new_map
+    end
+    
+    def received_action?(action)
+      @actions.include?(action)
     end
     
   end

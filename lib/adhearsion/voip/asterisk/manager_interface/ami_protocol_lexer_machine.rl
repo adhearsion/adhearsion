@@ -69,6 +69,7 @@ protocol := |*
   Follows crlf;
   crlf => { fgoto protocol; }; # If we get a crlf out of place, let's just ignore it.
   any  => {
+    # If NONE of the above patterns match, we consider this a syntax error. The irregularity machine can recover gracefully.
     fhold;
     fcall irregularity;
   };

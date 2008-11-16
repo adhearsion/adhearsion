@@ -204,6 +204,7 @@ module Adhearsion
           
           def actions_connection_established
             @actions_state = :connected
+            @actions_writer_thread = Thread.new(&method(:write_loop))
           end
           
           def actions_connection_disconnected
@@ -219,7 +220,9 @@ module Adhearsion
           end
           
           def disconnect!
+            # PSEUDO CODE
             # TODO: Go through all the waiting condition variables and raise an exception
+            #@write_queue << :STOP!
             raise NotImplementedError
           end
         
@@ -243,7 +246,7 @@ module Adhearsion
           # @param [Hash] headers Other key/value pairs to send in this action. Note: don't provide an ActionID
           # @return [FutureResource] Call resource() on this object if you wish to access the response (optional). Note: if the response has not come in yet, your Thread will wait until it does.
           #
-          def send_action_asynchronously(action)
+          def send_action_asynchronously(action_name, headers={})
             action = ManagerInterfaceAction.new(action_name, headers)
             send_action_asynchronously_with_connection(@actions_connection, action)
           end
@@ -270,6 +273,7 @@ module Adhearsion
           def write_loop
             loop do
               next_action = @write_queue.pop
+              return if next_action.equal? :STOP!
               register_action_with_metadata next_action
               
               ahn_log.ami.debug "Sending AMI action: #{action}"

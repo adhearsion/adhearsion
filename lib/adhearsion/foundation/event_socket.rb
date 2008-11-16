@@ -112,8 +112,7 @@ class EventSocket
   rescue
     connection_dropped!
   end
-  
-  ##
+    ##
   # Disconnects this EventSocket and sets the state to :stopped
   #
   def disconnect!
@@ -134,6 +133,10 @@ class EventSocket
         nil
       end
     end
+  end
+  
+  def receive_data(data)
+    @handler.receive_data(data)
   end
   
   protected
