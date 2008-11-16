@@ -58,7 +58,7 @@ context "ManagerInterface" do
     
     manager = new_manager_without_events
     
-    flexmock(manager).should_receive(:new_action_id).once.and_return action_id
+    flexmock(@Manager::ManagerInterface::ManagerInterfaceAction).new_instances.should_receive(:action_id).once.and_return action_id
     flexmock(manager).should_receive(:login).once.and_return
     
     mock_em_connection = mock_for_next_created_socket
@@ -152,7 +152,12 @@ context "ManagerInterface" do
     future_resource.resource         = @Manager::AMIError.new
     future_resource.resource.message = "Authentication failed"
     
-    flexmock(manager).should_receive(:send_action_asynchronously_with_connection).once.with(mock_socket, "Login", Hash).and_return future_resource
+    action = @Manager::ManagerInterface::ManagerInterfaceAction.new "Login", "Username" => "restdoesntmatter"
+    flexmock(action).should_receive(:future_resource).once.and_return future_resource
+    
+    flexmock(@Manager::ManagerInterface::ManagerInterfaceAction).should_receive(:new).once.and_return action
+    
+    flexmock(manager).should_receive(:send_action_asynchronously_with_connection).once.with(mock_socket, action).and_return action
     
     the_following_code {
       manager.connect!
@@ -192,10 +197,32 @@ context "ManagerInterface" do
     
   end
   
-  test "sending an Action on the ManagerInterface" do
-    flexmock(Queue).new_instances.should_recieve(:<<).once.with ManagerInterfaceAction
+  # test "should raise an error if trying to send an action before connecting" do
+  #   the_following_code {
+  #     new_manager_without_events.send_action "foo"
+  #   }.should.raise( @Manager::ManagerInterface::NotConnectedError)
+  # end
+  
+  test "sending an Action on the ManagerInterface should be received by the EventSocket" do
+    name, headers = "foobar", {"ActionID" => 1226534602.32764}
+    
+    response = @Manager::NormalAmiResponse.new
+    flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return response
+    
+    mock_connection = flexmock "EventSocket", :connect! => true
+    flexmock(EventSocket).should_receive(:new).once.and_return mock_connection
+    
+    action = @Manager::ManagerInterface::ManagerInterfaceAction.new(name, headers)
+    flexmock(@Manager::ManagerInterface::ManagerInterfaceAction).should_receive(:new).once.with(name, headers).and_return action
+    
+    mock_connection.should_receive(:send_data).once.with action.to_s
+    
+    flexmock(Queue).new_instances.should_receive(:<<).once.with @Manager::ManagerInterface::ManagerInterfaceAction
+    
     manager = new_manager_without_events
-    flexmock(manager).should_receive(:writer_loop)
+    manager.connect!
+    manager.send_action(name, headers)
+    
   end
   
   # test 'a "will follow" AMI action' do
@@ -210,7 +237,32 @@ context "ManagerInterface" do
   
 end
 
-context "WritableManagerInterfaceAction" do
+context "ManagerInterfaceAction" do
+  
+  before :each do
+    @ManagerInterface = Adhearsion::VoIP::Asterisk::Manager::ManagerInterface
+  end
+  
+  test "should simply proxy the replies_with_action_id?() method" do
+    name, headers = "foobar", {"foo" => "bar"}
+    flexmock(@ManagerInterface).should_receive(:replies_with_action_id?).once.and_return
+    @ManagerInterface::ManagerInterfaceAction.new(name, headers).replies_with_action_id?
+  end
+  
+  test "should simply proxy the has_causal_events?() method" do
+    name, headers = "foobar", {"foo" => "bar"}
+    flexmock(@ManagerInterface).should_receive(:has_causal_events?).once.and_return
+    @ManagerInterface::ManagerInterfaceAction.new(name, headers).has_causal_events?
+  end
+  
+  test "should properly convert itself into a String" do
+    name, headers = "Hawtsawce", {"ActionID" => "123", "Monkey" => "Zoo"}
+    string = @ManagerInterface::ManagerInterfaceAction.new(name, headers).to_s
+    string.should =~ /^Action: Hawtsawce\r\n/
+    string.should =~ /\r\n\r\n$/
+    string.should =~ /ActionID: 123\r\n/
+    string.should =~ /([\w]+:\s*\w+\r\n){3}/
+  end
   
 end
 

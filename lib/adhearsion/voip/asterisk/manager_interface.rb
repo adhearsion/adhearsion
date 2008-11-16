@@ -148,10 +148,9 @@ module Adhearsion
               # No ActionID! Release the write lock and wake up the waiter
             else
               action_id = message["ActionID"]
-              sent_action_metadata = data_for_message_received_with_action_id action_id
-              if sent_action_metadata
-                name, headers, future_resource = sent_action_metadata.values_at :name, :headers, :future_resource
-                future_resource.resource = message
+              corresponding_action = data_for_message_received_with_action_id action_id
+              if corresponding_action
+                corresponding_action.future_resource.resource = message
               else
                 ahn_log.ami.error "Received an AMI message with an unrecognized ActionID!! This may be an bug! #{message.inspect}"
               end
@@ -228,27 +227,12 @@ module Adhearsion
             # TODO: Return an object which responds to method_missing
           end
           
-          def send_action_asynchronously_with_connection(connection, action_name, headers={})
-            headers = headers.stringify_keys
-            
-            if self.class.replies_with_action_id?(action_name.to_s.downcase, headers)
+          def send_action_asynchronously_with_connection(connection, action)
+            if action.replies_with_action_id?
               raise NotImplementedError
             else
-              action_id = headers["ActionID"] = new_action_id
-              
-              # TODO: Do some checking of the action name here and make sure it's something that's not totally fucked.
-              command = "Action: #{action_name}\r\n"
-              headers.each_pair { |key,value| command << "#{key}: #{value}\r\n" }
-              command << "\r\n"
-              future_resource = register_sent_action_with_metadata(action_id, action_name, headers)
-              
-              ahn_log.ami.debug "Sending AMI action: #{command.inspect}"
-              
-              connection.send_data command
-              
-              # TODO: Maybe enforce some kind of timeout.
-              # TODO: Maybe wrap the returned action in a more convenient object.
-              future_resource
+              @write_queue << action
+              action
             end
           end
           
@@ -259,8 +243,9 @@ module Adhearsion
           # @param [Hash] headers Other key/value pairs to send in this action. Note: don't provide an ActionID
           # @return [FutureResource] Call resource() on this object if you wish to access the response (optional). Note: if the response has not come in yet, your Thread will wait until it does.
           #
-          def send_action_asynchronously(action_name, headers={})
-            send_action_asynchronously_with_connection(@actions_connection, action_name, headers)
+          def send_action_asynchronously(action)
+            action = ManagerInterfaceAction.new(action_name, headers)
+            send_action_asynchronously_with_connection(@actions_connection, action)
           end
           
           ##
@@ -273,7 +258,7 @@ module Adhearsion
           # @return [NormalAmiResponse, ImmediateResponse] Contains the response from Asterisk and all headers
           #
           def send_action_synchronously(*args)
-            returning send_action_asynchronously(*args).resource do |response|
+            returning send_action_asynchronously(*args).response do |response|
               raise response if response.kind_of?(AMIError)
             end
           end
@@ -284,10 +269,14 @@ module Adhearsion
           
           def write_loop
             loop do
-              next_action = @writer_queue.pop
-              @actions_connection.write next_action
+              next_action = @write_queue.pop
+              register_action_with_metadata next_action
               
-              # Since we shouldn't continue writing if there are relevant events which we may confuse with
+              ahn_log.ami.debug "Sending AMI action: #{action}"
+              
+              @actions_connection.send_data next_action.to_s
+              
+              # If it's "causal event" action, we must wait here until it's fully responded
               next_action.response if next_action.has_causal_events?
             end
           rescue
@@ -301,20 +290,12 @@ module Adhearsion
           # ActionID is seen again. See also data_for_message_received_with_action_id() which is how the IO-handling Thread
           # gets the metadata registered in the method back later.
           #
-          # @param [String] action_id The already-generated ActionID associated with this action
-          # @param [String] name The name of the action being sent
+          # @param [ManagerInterfaceAction] action The ManagerInterfaceAction to send
           # @param [Hash] headers The other key/value pairs being sent with this message
           #
-          def register_sent_action_with_metadata(action_id, name, headers)
-            returning FutureResource.new do |future_resource|
-              @sent_messages_lock.synchronize do
-                @sent_messages[action_id] = {
-                  :name            => name,
-                  :headers         => headers,
-                  :action_id       => action_id,
-                  :future_resource => future_resource
-                }
-              end
+          def register_action_with_metadata(action)
+            @sent_messages_lock.synchronize do
+              @sent_messages[action.action_id] = action
             end
           end
           
@@ -353,17 +334,9 @@ module Adhearsion
             login @events_connection, true
           end
 
-          ##
-          # Abstracts the generation of new ActionIDs. This could be implemented virutally any way, provided each invocation
-          # returns something unique, so this will generate a GUID and return it.
-          #
-          def new_action_id
-            new_guid # Implemented in lib/adhearsion/foundation/pseudo_guid.rb
-          end
-        
           def login(connection, with_events)
             response = send_action_asynchronously_with_connection(connection, "Login",
-                "Username" => @username, "Secret" => @password, "Events" => with_events ? "On" : "Off").resource
+                "Username" => @username, "Secret" => @password, "Events" => with_events ? "On" : "Off").response
             
             if response.kind_of? AMIError
               raise AuthenticationFailedException, "Incorrect username and password! #{response.message}"
@@ -386,18 +359,21 @@ module Adhearsion
           
           class AuthenticationFailedException < Exception; end
           
+          class NotConnectedError < Exception; end
           
           ##
           # Each time ManagerInterface#send_action is invoked, a new ManagerInterfaceAction is invoked.
           #
           class ManagerInterfaceAction
             
-            def initialize(name, headers)
-              @name, @headers = name, headers
+            attr_reader :name, :headers, :future_resource, :action_id
+            def initialize(name, headers={})
+              @name, @headers = name.to_s.clone.freeze, headers.stringify_keys.clone.freeze
+              @action_id = new_action_id.freeze
               @future_resource = FutureResource.new
             end
             
-            def replies_with_action_id?(name, headers={})
+            def replies_with_action_id?
               ManagerInterface.replies_with_action_id?(@name, @headers)
             end
             
@@ -405,12 +381,38 @@ module Adhearsion
               ManagerInterface.has_causal_events?(@name, @headers)
             end
             
+            ##
+            # When sending an action with "causal events" (i.e. events which must be collected to form a proper
+            # response), AMI should send a particular event which instructs us that no more events will be sent.
+            # This event is called the "causal event terminator".
+            #
+            # @return [String] the lowercase()'d name of the event name for which to wait
+            #
+            def causal_event_terminator_name
+              case @name.downcase
+                when "queuestatus", 'parkedcalls'
+                  @name.downcase + "complete"
+              end
+            end
+            
+            ##
+            # Abstracts the generation of new ActionIDs. This could be implemented virutally any way, provided each invocation
+            # returns something unique, so this will generate a GUID and return it.
+            #
+            def new_action_id
+              new_guid # Implemented in lib/adhearsion/foundation/pseudo_guid.rb
+            end
+            
             def to_s
-              # TODO: cut out the logic from ManagerInterface
+              @textual_representation ||= (
+                  "Action: #{@name}\r\nActionID: #{@action_id}\r\n" +
+                  @headers.map { |(key,value)| "#{key}: #{value}" }.join("\r\n") +
+                  "\r\n\r\n"
+              )
             end
             
             def response
-              @future_resource.resource
+              future_resource.resource
             end
             
           end

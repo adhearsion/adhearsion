@@ -4,11 +4,7 @@ Story: Lexing AMI
 	I want to lex the AMI protocol
 	So that I can control Asterisk asynchronously
 	
-	TODO:
-	- Events MUST be given to a separate method, not message_received!
-	
 	UNCERTAINTIES:
-	- Check Asterisk source code: What is the delimiter between immediate responses?
 	- Are there any pairs with non-unique keys? Could Hash be blowing stuff away?
 	
 	WHEN DOING INTEGRATION TESTS:
