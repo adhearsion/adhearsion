@@ -153,6 +153,7 @@ module Adhearsion
                 corresponding_action.future_resource.resource = message
               else
                 ahn_log.ami.error "Received an AMI message with an unrecognized ActionID!! This may be an bug! #{message.inspect}"
+                ahn_log.ami.error message.message
               end
             end
           end
@@ -162,6 +163,7 @@ module Adhearsion
             
             sent_action_metadata = data_for_message_received_with_action_id action_id
             if sent_action_metadata
+              raise NotImplementedError
               name, headers, future_resource = sent_action_metadata.values_at :name, :headers, :future_resource
               future_resource.resource = ami_error
             else
@@ -173,12 +175,14 @@ module Adhearsion
           # Called only when this ManagerInterface is instantiated with events enabled.
           #
           def event_message_received(event)
+            return if event.kind_of?(NormalAmiResponse) && event["Message"] == "Authentication accepted"
             # TODO: convert the event name to a certain namespace.
             Events.trigger %w[asterisk events], event
           end
           
           def event_error_received(message)
             # Does this ever even occur?
+            ahn_log.ami.error "Hmmm, got an error on the AMI events-only socket! This must be a bug! #{message.inspect}"
           end
           
           ##
@@ -272,7 +276,7 @@ module Adhearsion
               return :stopped if next_action.equal? :STOP!
               register_action_with_metadata next_action
               
-              ahn_log.ami.debug "Sending AMI action: #{next_action}"
+              ahn_log.ami.debug "Sending AMI action: #{"\n>>> " + next_action.to_s.gsub(/(\r\n)+/, "\n>>> ")}"
               @actions_connection.send_data next_action.to_s
               # If it's "causal event" action, we must wait here until it's fully responded
               next_action.response if next_action.has_causal_events?
@@ -339,6 +343,7 @@ module Adhearsion
             if response.kind_of? AMIError
               raise AuthenticationFailedException, "Incorrect username and password! #{response.message}"
             else
+              ahn_log.ami "Successful AMI connection into #{@username}@#{@host}"
               response
             end
           end

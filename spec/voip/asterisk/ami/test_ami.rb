@@ -218,6 +218,8 @@ context "ManagerInterface" do
     write_queue_mock.actions.size.should.equal 1
   end
   
+  # TEST action_error_received()!! It's buggy!
+  
   # test 'a "will follow" AMI action' do
   
   # TODO: TEST THAT actions with causal events are combined.

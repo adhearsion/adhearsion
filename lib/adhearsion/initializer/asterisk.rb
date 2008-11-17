@@ -29,9 +29,7 @@ module Adhearsion
         def initialize_ami
           options = ami_options
           start_ami_after_initialized
-          VoIP::Asterisk::AMI.new options[:username], options[:password],
-                                              options[:host], :port => options[:port],
-                                              :events => options[:events]
+          VoIP::Asterisk::Manager::ManagerInterface.new options
         end
         
         def ami_options
