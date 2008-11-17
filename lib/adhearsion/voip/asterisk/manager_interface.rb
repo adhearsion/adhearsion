@@ -234,6 +234,7 @@ module Adhearsion
             if action.replies_with_action_id?
               raise NotImplementedError
             else
+              puts "ADDDING IT"
               @write_queue << action
               action
             end
