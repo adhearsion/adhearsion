@@ -268,19 +268,17 @@ module Adhearsion
           
           def write_loop
             loop do
-              next_action = @write_queue.pop
-              return if next_action.equal? :STOP!
+              next_action = @write_queue.shift
+              return :stopped if next_action.equal? :STOP!
               register_action_with_metadata next_action
               
-              ahn_log.ami.debug "Sending AMI action: #{action}"
-              
+              ahn_log.ami.debug "Sending AMI action: #{next_action}"
               @actions_connection.send_data next_action.to_s
-              
               # If it's "causal event" action, we must wait here until it's fully responded
               next_action.response if next_action.has_causal_events?
             end
-          rescue
-            #
+          rescue => e
+            p e
           end
           
           ##
@@ -294,6 +292,7 @@ module Adhearsion
           # @param [Hash] headers The other key/value pairs being sent with this message
           #
           def register_action_with_metadata(action)
+            raise ArgumentError, "Must supply an action!" if action.nil?
             @sent_messages_lock.synchronize do
               @sent_messages[action.action_id] = action
             end
@@ -337,7 +336,6 @@ module Adhearsion
           def login_actions
             action = send_action_asynchronously "Login", "Username" => @username, "Secret" => @password, "Events" => "Off"
             response = action.response
-            
             if response.kind_of? AMIError
               raise AuthenticationFailedException, "Incorrect username and password! #{response.message}"
             else

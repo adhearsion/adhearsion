@@ -13,6 +13,7 @@ context "ManagerInterface" do
   
   test "should receive data and not die" do
     flexmock(@Manager::ManagerInterface::ManagerInterfaceAction).new_instances.should_receive(:response).once.and_return new_blank_ami_response
+    
     mocked_queue
     
     manager = new_manager_without_events
@@ -229,6 +230,31 @@ context "ManagerInterface" do
   
 end
 
+context "ManagerInterface#write_loop" do
+  
+  include ManagerInterfaceTestHelper
+  
+  before :each do
+    @Manager = Adhearsion::VoIP::Asterisk::Manager
+  end
+  
+  test "should stop when the stop instruction is sent to the write queue and return :stopped" do
+    flexmock(TCPSocket).should_receive(:new).once.and_return StringIO.new
+    flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return new_blank_ami_response
+    
+    mock_queue = flexmock "a mock write-Queue"
+    
+    mock_queue.should_receive(:shift).once.and_return :STOP!
+    mock_queue.should_receive(:<<).once.and_return nil
+    
+    flexmock(Queue).should_receive(:new).once.and_return mock_queue
+    
+    manager = new_manager_without_events
+    manager.connect!
+  end
+  
+end
+
 context "ManagerInterfaceAction" do
   
   before :each do
@@ -373,17 +399,28 @@ BEGIN {
   class TestableQueueMock
     
     attr_accessor :manager
-    attr_reader :actions
     def initialize
-      @actions = []
+      @shifted    = []
+      @unshifted  = []
+    end
+    
+    def actions
+      @shifted + @unshifted
     end
     
     def <<(action)
-      @actions << action
+      @unshifted << action
+    end
+    
+    def shift
+      return :STOP! if actions.empty?
+      next_action = @unshifted.shift
+      @shifted << next_action
+      next_action
     end
     
     def received_action?(action)
-      @actions.include?(action)
+      actions.include?(action)
     end
     
   end

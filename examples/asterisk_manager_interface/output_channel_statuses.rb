@@ -23,6 +23,9 @@ end
 require 'adhearsion/voip/asterisk/manager_interface'
 include Adhearsion::VoIP::Asterisk::Manager
 
-
+puts "Connecting"
 interface = ManagerInterface.connect MANAGER_CONNECTION_INFORMATION
-p interface.send_action("Ping")
+puts "Sending action"
+response = interface.send_action("Ping")
+p response
+puts "Done"
