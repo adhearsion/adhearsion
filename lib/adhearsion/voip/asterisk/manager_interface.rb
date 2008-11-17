@@ -229,17 +229,7 @@ module Adhearsion
           def dynamic
             # TODO: Return an object which responds to method_missing
           end
-          
-          def send_action_asynchronously_with_connection(connection, action)
-            if action.replies_with_action_id?
-              raise NotImplementedError
-            else
-              puts "ADDDING IT"
-              @write_queue << action
-              action
-            end
-          end
-          
+                    
           ##
           # Used to directly send a new action to Asterisk. Note: NEVER supply an ActionID; these are handled internally.
           #
@@ -249,7 +239,12 @@ module Adhearsion
           #
           def send_action_asynchronously(action_name, headers={})
             action = ManagerInterfaceAction.new(action_name, headers)
-            send_action_asynchronously_with_connection(@actions_connection, action)
+            if action.replies_with_action_id?
+              raise NotImplementedError
+            else
+              @write_queue << action
+              action
+            end
           end
           
           ##
@@ -321,7 +316,7 @@ module Adhearsion
               handler.connected    { actions_connection_established  }
               handler.disconnected { actions_connection_disconnected }
             end
-            login @actions_connection, false
+            login_actions
           end
           
           ##
@@ -336,22 +331,28 @@ module Adhearsion
               handler.connected    { events_connection_established  }
               handler.disconnected { events_connection_disconnected }
             end
-            login @events_connection, true
+            login_events
           end
 
-          def login(connection, with_events)
-            response = send_action_asynchronously_with_connection(connection, "Login",
-                "Username" => @username, "Secret" => @password, "Events" => with_events ? "On" : "Off").response
+          def login_actions
+            action = send_action_asynchronously "Login", "Username" => @username, "Secret" => @password, "Events" => "Off"
+            response = action.response
             
             if response.kind_of? AMIError
               raise AuthenticationFailedException, "Incorrect username and password! #{response.message}"
             else
               response
             end
-          rescue => exception
-            # We must rescue all exceptions because EventMachine gives VERY cryptic error messages when an exception is
-            # raised in post_init (which is what calls this method, usually).
-            ahn_log.ami.error "Error logging in! #{exception.inspect}\n#{exception.backtrace.join("\n")}"
+          end
+          
+          ##
+          # Since this method is always called after the login_actions method, an AuthenticationFailedException would have already
+          # been raised if the username/password were off. Because this is the only action we ever need to send on this socket,
+          # it goes straight to the EventSocket connection (bypassing the @write_queue).
+          #
+          def login_events
+            login_action = ManagerInterfaceAction.new "Login", "Username" => @username, "Secret" => @password, "Events" => "On"
+            @events_connection.send_data login_action.to_s
           end
           
           def parse_options(options)
