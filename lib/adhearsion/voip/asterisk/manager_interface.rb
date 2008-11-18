@@ -153,7 +153,6 @@ module Adhearsion
                 corresponding_action.future_resource.resource = message
               else
                 ahn_log.ami.error "Received an AMI message with an unrecognized ActionID!! This may be an bug! #{message.inspect}"
-                ahn_log.ami.error message.message
               end
             end
           end
@@ -161,11 +160,10 @@ module Adhearsion
           def action_error_received(ami_error)
             action_id = ami_error["ActionID"]
             
-            sent_action_metadata = data_for_message_received_with_action_id action_id
-            if sent_action_metadata
-              raise NotImplementedError
-              name, headers, future_resource = sent_action_metadata.values_at :name, :headers, :future_resource
-              future_resource.resource = ami_error
+            corresponding_action = data_for_message_received_with_action_id action_id
+
+            if corresponding_action
+              corresponding_action.future_resource.resource = ami_error
             else
               ahn_log.ami.error "Received an AMI error with an unrecognized ActionID!! This may be an bug! #{ami_error.inspect}"
             end

@@ -218,6 +218,22 @@ context "ManagerInterface" do
     write_queue_mock.actions.size.should.equal 1
   end
   
+  test 'ManagerInterface#action_error_received' do
+    action_id = "foobar"
+    
+    error = @Manager::AMIError.new
+    error["ActionID"] = action_id
+    
+    action = @Manager::ManagerInterface::ManagerInterfaceAction.new "Blah"
+    flexmock(action).should_receive(:action_id).and_return action_id
+    flexmock(action.future_resource).should_receive(:resource=).once.with(error)
+    manager = new_manager_without_events
+    
+    flexmock(manager).should_receive(:data_for_message_received_with_action_id).once.with(action_id).and_return action
+    
+    manager.action_error_received error
+  end
+  
   # TEST action_error_received()!! It's buggy!
   
   # test 'a "will follow" AMI action' do
