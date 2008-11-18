@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), 'packets.rb')
+require File.join(File.dirname(__FILE__), 'ami_messages.rb')
 
 module Adhearsion
   module VoIP
@@ -104,7 +104,7 @@ module Adhearsion
           ##
           # Called after a response or event has been successfully parsed.
           #
-          # @param [NormalAmiResponse, ImmediateResponse, Event] message The message just received
+          # @param [ManagerInterfaceResponse, ImmediateResponse, Event] message The message just received
           #
           def message_received(message)
             raise NotImplementedError, "Must be implemented in subclass!"
@@ -131,15 +131,15 @@ module Adhearsion
           end
         
           def init_success
-            @current_message = NormalAmiResponse.new
+            @current_message = ManagerInterfaceResponse.new
           end
         
           def init_response_follows
-            @current_message = NormalAmiResponse.new(true)
+            @current_message = ManagerInterfaceResponse.new
           end
           
           def init_error
-            @current_message = AMIError.new()
+            @current_message = ManagerInterfaceError.new()
           end
           
           def version_starts
@@ -158,7 +158,7 @@ module Adhearsion
           def event_name_stops
             event_name = @data[@event_name_start...@current_pointer]
             @event_name_start = nil
-            @current_message = Event.new(event_name)
+            @current_message = ManagerInterfaceEvent.new(event_name)
           end
   
           def key_starts
@@ -193,7 +193,7 @@ module Adhearsion
   
           def follows_text_stops
             text = @data[@last_seen_value_end..(@current_pointer - "\r\n--END COMMAND--".size)]
-            @current_message.text = text
+            @current_message.text_body = text
             @follows_text_start = nil
           end
   

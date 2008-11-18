@@ -63,7 +63,7 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb
   lib/adhearsion/voip/asterisk/manager_interface/ami_protocol_parser_machine.rl
   lib/adhearsion/voip/asterisk/manager_interface/connections.rb
-  lib/adhearsion/voip/asterisk/manager_interface/packets.rb
+  lib/adhearsion/voip/asterisk/manager_interface/ami_messages.rb
   lib/adhearsion/voip/asterisk/special_dial_plan_managers.rb
   lib/adhearsion/voip/call.rb
   lib/adhearsion/voip/call_routing.rb

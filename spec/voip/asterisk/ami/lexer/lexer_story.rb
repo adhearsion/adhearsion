@@ -175,7 +175,7 @@ ActionID: 123123\r
     multi_line_response = follows_body_text method_name
     @lexer.received_messages.should_not be_empty
     @lexer.received_messages.select do |message|
-      message.text == multi_line_response
+      message.text_body == multi_line_response
     end.size.should eql(number.to_i)
   end
   
@@ -194,7 +194,7 @@ ActionID: 123123\r
   
   Then 'the $order AMI error should have the message "$message"' do |order, message|
     order = order[/^(\d+)\w+$/, 1].to_i - 1
-    @lexer.ami_errors[order].should be_kind_of(Adhearsion::VoIP::Asterisk::Manager::AMIError)
+    @lexer.ami_errors[order].should be_kind_of(Adhearsion::VoIP::Asterisk::Manager::ManagerInterfaceError)
     @lexer.ami_errors[order].message.should eql(message)
   end
   
@@ -207,20 +207,20 @@ ActionID: 123123\r
   Then 'the $order event should have the name "$name"' do |order, name|
     order = order[/^(\d+)\w+$/, 1].to_i - 1
     @lexer.received_messages.select do |response|
-      response.kind_of?(Adhearsion::VoIP::Asterisk::Manager::Event)
+      response.kind_of?(Adhearsion::VoIP::Asterisk::Manager::ManagerInterfaceEvent)
     end[order].name.should eql(name)
   end
   
   Then '$number event should have been received' do |number|
     @lexer.received_messages.select do |response|
-      response.kind_of?(Adhearsion::VoIP::Asterisk::Manager::Event)
+      response.kind_of?(Adhearsion::VoIP::Asterisk::Manager::ManagerInterfaceEvent)
     end.size.should equal(number.to_i)
   end
   
   Then 'the $order event should have key "$key" with value "$value"' do |order, key, value|
     order = order[/^(\d+)\w+$/, 1].to_i - 1
     @lexer.received_messages.select do |response|
-      response.kind_of?(Adhearsion::VoIP::Asterisk::Manager::Event)
+      response.kind_of?(Adhearsion::VoIP::Asterisk::Manager::ManagerInterfaceEvent)
     end[order][key].should eql(value)
   end
   

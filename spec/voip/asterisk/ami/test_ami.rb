@@ -23,7 +23,7 @@ context "ManagerInterface" do
     mock_em_connection.should_receive(:readpartial).once.and_return ami_packets.fresh_socket_connection
     mock_em_connection.should_receive(:readpartial).once.and_raise EOFError
     
-    flexmock(manager).should_receive(:action_message_received).once.with(@Manager::NormalAmiResponse)
+    flexmock(manager).should_receive(:action_message_received).once.with(@Manager::ManagerInterfaceResponse)
     manager.connect!
   end
   
@@ -67,7 +67,7 @@ context "ManagerInterface" do
     manager.connect!
     
     flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return :THREAD_WAITING_MOCKED_OUT
-    flexmock(FutureResource).new_instances.should_receive(:resource=).once.with(@Manager::NormalAmiResponse)
+    flexmock(FutureResource).new_instances.should_receive(:resource=).once.with(@Manager::ManagerInterfaceResponse)
     
     manager.send_action("ping").should.equal :THREAD_WAITING_MOCKED_OUT
     
@@ -81,7 +81,7 @@ context "ManagerInterface" do
   end
   
   test "a received event is received by Theatre" do
-    flexmock(Adhearsion::Events).should_receive(:trigger).once.with(%w[asterisk events], @Manager::Event)
+    flexmock(Adhearsion::Events).should_receive(:trigger).once.with(%w[asterisk events], @Manager::ManagerInterfaceEvent)
     
     manager = new_manager_with_events
     flexmock(manager).should_receive(:login_actions).once.and_return
@@ -97,9 +97,9 @@ context "ManagerInterface" do
         receive_data ami_packets.reload_event
   end
   
-  test "an AMIError should be raised when the action's FutureResource is set to an AMIError instance" do
+  test "an ManagerInterfaceError should be raised when the action's FutureResource is set to an ManagerInterfaceError instance" do
 
-    flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return @Manager::AMIError.new
+    flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return @Manager::ManagerInterfaceError.new
     
     manager            = new_manager_without_events
     actions_connection = mock_for_next_created_socket
@@ -109,12 +109,12 @@ context "ManagerInterface" do
     
     the_following_code {
       manager.send_action "Foobar"
-    }.should.raise @Manager::AMIError
+    }.should.raise @Manager::ManagerInterfaceError
     
   end
   
-  test "an AuthenticationFailedException should be raised when the action's FutureResource is set to an AMIError instance" do
-    flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return @Manager::AMIError.new
+  test "an AuthenticationFailedException should be raised when the action's FutureResource is set to an ManagerInterfaceError instance" do
+    flexmock(FutureResource).new_instances.should_receive(:resource).once.and_return @Manager::ManagerInterfaceError.new
     
     manager            = new_manager_without_events
     actions_connection = mock_for_next_created_socket
@@ -174,7 +174,7 @@ context "ManagerInterface" do
     # By saying this should happen only once, we're also asserting that the events thread never does a login.
     flexmock(EventSocket).should_receive(:connect).once.and_return mock_socket
     
-    login_error         = @Manager::AMIError.new
+    login_error         = @Manager::ManagerInterfaceError.new
     login_error.message = "Authentication failed"
     
     action = @Manager::ManagerInterface::ManagerInterfaceAction.new "Login", "Username" => "therestdoesntmatter"
@@ -197,7 +197,7 @@ context "ManagerInterface" do
   test "sending an Action on the ManagerInterface should be received by the EventSocket" do
     name, headers = "foobar", {"BLAH" => 1226534602.32764}
     
-    response = @Manager::NormalAmiResponse.new
+    response = @Manager::ManagerInterfaceResponse.new
     
     mock_connection = flexmock "EventSocket"
     flexmock(EventSocket).should_receive(:connect).once.and_return mock_connection
@@ -221,7 +221,7 @@ context "ManagerInterface" do
   test 'ManagerInterface#action_error_received' do
     action_id = "foobar"
     
-    error = @Manager::AMIError.new
+    error = @Manager::ManagerInterfaceError.new
     error["ActionID"] = action_id
     
     action = @Manager::ManagerInterface::ManagerInterfaceAction.new "Blah"
@@ -404,7 +404,7 @@ BEGIN {
     end
     
     def new_blank_ami_response
-      @Manager::NormalAmiResponse.new
+      @Manager::ManagerInterfaceResponse.new
     end
     
     def mock_for_next_created_socket

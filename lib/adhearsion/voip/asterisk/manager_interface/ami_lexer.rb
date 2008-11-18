@@ -1,5 +1,5 @@
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
-require File.join(File.dirname(__FILE__), 'packets.rb')
+require File.join(File.dirname(__FILE__), 'ami_messages.rb')
 
 module Adhearsion
   module VoIP
@@ -1198,7 +1198,7 @@ when 25 then
 		end
 # line 43 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 when 26 then
-# line 77 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 78 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 		begin
 	begin
 		    @current_state = 252
@@ -1207,9 +1207,9 @@ when 26 then
 		break
 	end
 		end
-# line 77 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 78 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 when 27 then
-# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 84 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 		begin
  message_received; 	begin
 		    @current_state = 252
@@ -1218,7 +1218,7 @@ when 27 then
 		break
 	end
  		end
-# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 84 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 when 31 then
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 		begin
@@ -1392,6 +1392,7 @@ when 48 then
 		begin
     @token_end =      @current_pointer+1
  begin 
+    # If NONE of the above patterns match, we consider this a syntax error. The irregularity machine can recover gracefully.
          @current_pointer =      @current_pointer - 1;
     	begin
 		 @ragel_stack[   @ragel_stack_top] =     @current_state
@@ -1410,6 +1411,7 @@ when 49 then
 		begin
     @token_end =      @current_pointer
      @current_pointer =      @current_pointer - 1; begin 
+    # If NONE of the above patterns match, we consider this a syntax error. The irregularity machine can recover gracefully.
          @current_pointer =      @current_pointer - 1;
     	begin
 		 @ragel_stack[   @ragel_stack_top] =     @current_state
@@ -1428,6 +1430,7 @@ when 50 then
 		begin
  begin      @current_pointer = ((    @token_end))-1; end
  begin 
+    # If NONE of the above patterns match, we consider this a syntax error. The irregularity machine can recover gracefully.
          @current_pointer =      @current_pointer - 1;
     	begin
 		 @ragel_stack[   @ragel_stack_top] =     @current_state
@@ -1442,39 +1445,39 @@ when 50 then
 		end
 # line 71 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 when 51 then
-# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 82 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 		begin
    @ragel_act = 13;		end
-# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 82 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 when 52 then
-# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 84 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 		begin
    @ragel_act = 15;		end
-# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 84 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 when 53 then
-# line 82 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 		begin
     @token_end =      @current_pointer+1
 		end
-# line 82 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 when 54 then
-# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 82 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 		begin
     @token_end =      @current_pointer
      @current_pointer =      @current_pointer - 1;		end
-# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 82 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 when 55 then
-# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 84 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 		begin
     @token_end =      @current_pointer
      @current_pointer =      @current_pointer - 1;		end
-# line 83 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 84 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 when 56 then
-# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 82 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 		begin
  begin      @current_pointer = ((    @token_end))-1; end
 		end
-# line 81 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 82 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 when 57 then
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 		begin
@@ -1493,7 +1496,7 @@ end
 end 
 			end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
-# line 1497 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
+# line 1500 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
 			end # action switch
 		end
 	end
@@ -1520,7 +1523,7 @@ when 29 then
    @ragel_act = 0
 		end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
-# line 1524 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
+# line 1527 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
 		end # to state action switch
 	end
 	if _trigger_goto
@@ -1569,7 +1572,7 @@ end
           ##
           # Called after a response or event has been successfully parsed.
           #
-          # @param [NormalAmiResponse, ImmediateResponse, Event] message The message just received
+          # @param [ManagerInterfaceResponse, ImmediateResponse, Event] message The message just received
           #
           def message_received(message)
             raise NotImplementedError, "Must be implemented in subclass!"
@@ -1596,15 +1599,15 @@ end
           end
         
           def init_success
-            @current_message = NormalAmiResponse.new
+            @current_message = ManagerInterfaceResponse.new
           end
         
           def init_response_follows
-            @current_message = NormalAmiResponse.new(true)
+            @current_message = ManagerInterfaceResponse.new
           end
           
           def init_error
-            @current_message = AMIError.new()
+            @current_message = ManagerInterfaceError.new()
           end
           
           def version_starts
@@ -1623,7 +1626,7 @@ end
           def event_name_stops
             event_name = @data[@event_name_start...@current_pointer]
             @event_name_start = nil
-            @current_message = Event.new(event_name)
+            @current_message = ManagerInterfaceEvent.new(event_name)
           end
   
           def key_starts
@@ -1658,7 +1661,7 @@ end
   
           def follows_text_stops
             text = @data[@last_seen_value_end..(@current_pointer - "\r\n--END COMMAND--".size)]
-            @current_message.text = text
+            @current_message.text_body = text
             @follows_text_start = nil
           end
   

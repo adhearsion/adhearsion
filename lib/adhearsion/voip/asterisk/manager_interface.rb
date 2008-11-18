@@ -142,7 +142,7 @@ module Adhearsion
           end
           
           def action_message_received(message)
-            if message.kind_of? Manager::Event
+            if message.kind_of? Manager::ManagerInterfaceEvent
               # Trigger the return value of the waiting action id...
             elsif message.kind_of? Manager::ImmediateResponse
               # No ActionID! Release the write lock and wake up the waiter
@@ -173,7 +173,7 @@ module Adhearsion
           # Called only when this ManagerInterface is instantiated with events enabled.
           #
           def event_message_received(event)
-            return if event.kind_of?(NormalAmiResponse) && event["Message"] == "Authentication accepted"
+            return if event.kind_of?(ManagerInterfaceResponse) && event["Message"] == "Authentication accepted"
             # TODO: convert the event name to a certain namespace.
             Events.trigger %w[asterisk events], event
           end
@@ -251,16 +251,16 @@ module Adhearsion
           
           ##
           # Sends an action over the AMI connection and blocks your Thread until the response comes in. If there was an error
-          # for some reason, the error will be raised as an AMIError.
+          # for some reason, the error will be raised as an ManagerInterfaceError.
           #
           # @param [String, Symbol] action_name The name of the action (e.g. Originate)
           # @param [Hash] headers Other key/value pairs to send in this action. Note: don't provide an ActionID
-          # @raise [AMIError] When Asterisk can't execute this action, it sends back an Error which is converted into an AMIError object and raised. Access AMIError#message for the reported message from Asterisk.
-          # @return [NormalAmiResponse, ImmediateResponse] Contains the response from Asterisk and all headers
+          # @raise [ManagerInterfaceError] When Asterisk can't execute this action, it sends back an Error which is converted into an ManagerInterfaceError object and raised. Access ManagerInterfaceError#message for the reported message from Asterisk.
+          # @return [ManagerInterfaceResponse, ImmediateResponse] Contains the response from Asterisk and all headers
           #
           def send_action_synchronously(*args)
             returning send_action_asynchronously(*args).response do |response|
-              raise response if response.kind_of?(AMIError)
+              raise response if response.kind_of?(ManagerInterfaceError)
             end
           end
           
@@ -338,7 +338,7 @@ module Adhearsion
           def login_actions
             action = send_action_asynchronously "Login", "Username" => @username, "Secret" => @password, "Events" => "Off"
             response = action.response
-            if response.kind_of? AMIError
+            if response.kind_of? ManagerInterfaceError
               raise AuthenticationFailedException, "Incorrect username and password! #{response.message}"
             else
               ahn_log.ami "Successful AMI connection into #{@username}@#{@host}"

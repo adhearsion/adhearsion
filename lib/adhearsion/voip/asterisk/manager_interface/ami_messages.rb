@@ -2,22 +2,22 @@ module Adhearsion
   module VoIP
     module Asterisk
       module Manager
-        class AbstractPacket
-        end
 
-        class NormalAmiResponse < AbstractPacket
+        class ManagerInterfaceResponse
         
           attr_accessor :action_id,
-                        :text       # For "Response: Follows" sections
-        
-          attr_reader :follows_packet
-          def initialize(follows_packet=false)
-            @follows_packet = follows_packet
+                        :text_body  # For "Response: Follows" sections
+          
+          def initialize
             @headers = {}
           end
-        
+          
+          def has_text_body?
+            !! @text_body
+          end
+          
           def headers
-            headers.clone
+            @headers.clone
           end
         
           def [](arg)
@@ -30,7 +30,7 @@ module Adhearsion
   
         end
       
-        class AMIError < Exception
+        class ManagerInterfaceError < Exception
           
           attr_accessor :message
           def initialize
@@ -47,20 +47,21 @@ module Adhearsion
           
         end
         
-        class ImmediateResponse < AbstractPacket
+        class ImmediateResponse
           attr_reader :message
           def initialize(message)
             @message = message
           end
         end
       
-        class Event < NormalAmiResponse
+        class ManagerInterfaceEvent < ManagerInterfaceResponse
   
           attr_reader :name
           def initialize(name)
             super()
             @name = name
           end
+          
         end
       end
     end
