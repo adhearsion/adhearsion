@@ -44,60 +44,6 @@ module Adhearsion
             
           end
         
-          module Abstractions
-                    
-            def originate(options={})
-              options = options.clone
-              options[:callerid] = options.delete :caller_id if options.has_key? :caller_id
-              execute_ami_command! :originate, options
-            end
-
-            def ping
-              execute_ami_command! :ping
-            end
-
-            # An introduction connects two endpoints together. The first argument is
-            # the first person the PBX will call. When she's picked up, Asterisk will
-            # play ringing while the second person is being dialed.
-            #
-            # The first argument is the person called first. Pass this as a canonical
-            # IAX2/server/user type argument. Destination takes the same format, but
-            # comma-separated Dial() arguments can be optionally passed after the
-            # technology.
-            #
-            # TODO: Provide an example when this works.
-            def introduce(caller, callee, opts={})
-              dial_args  = callee
-              dial_args += "|#{opts[:options]}" if opts[:options]
-              call_and_exec caller, "Dial", :args => dial_args, :caller_id => opts[:caller_id]
-            end
-
-            def hangup(channel)
-              execute_ami_command! "hangup", :channel => channel
-            end
-
-            def call_and_exec(channel, app, opts={})
-              args = { :channel => channel, :application => app }
-              args[:caller_id] = opts[:caller_id] if opts[:caller_id]
-              args[:data] = opts[:args] if opts[:args]
-              originate args
-            end
-
-            def call_into_context(channel, context, options={})
-              args = {:channel => channel, :context => context}
-              args[:priority] = options[:priority] || 1
-              args[:extension] = options[:extension] if options[:extension]
-              args[:caller_id] = options[:caller_id] if options[:caller_id]
-              if options[:variables] && options[:variables].kind_of?(Hash)
-                args[:variable] = options[:variables].map {|pair| pair.join('=')}.join('|')
-              end
-              originate args
-            end
-
-          end
-          
-          include Abstractions
-          
           DEFAULT_SETTINGS = {
             :host     => "localhost",
             :port     => 5038,
@@ -265,6 +211,82 @@ module Adhearsion
           end
           
           alias send_action send_action_synchronously
+        
+        
+          #######                                              #######
+          ###########                                      ###########
+          ################# SOON-DEPRECATED COMMANDS ################# 
+          ###########                                      ###########
+          #######                                              #######
+          
+          def ping
+            deprecation_warning
+            send_action "Ping"
+          end
+          
+          def deprecation_warning
+            ahn_log.ami.deprecation.warn "The implementation of the ping, originate, introduce, hangup, call_into_context " +
+                "and call_and_exec methods will soon be moved from this class to SuperManager. At the moment, the " +
+                "SuperManager abstractions are not completed. Don't worry. The migration to SuperManager will be very easy."+
+                " See http://docs.adhearsion.com/AMI for more information."
+          end
+          
+          def originate(options={})
+            deprecation_warning
+            options = options.clone
+            options[:callerid] = options.delete :caller_id if options.has_key? :caller_id
+            send_action "Originate", options
+          end
+
+          # An introduction connects two endpoints together. The first argument is
+          # the first person the PBX will call. When she's picked up, Asterisk will
+          # play ringing while the second person is being dialed.
+          #
+          # The first argument is the person called first. Pass this as a canonical
+          # IAX2/server/user type argument. Destination takes the same format, but
+          # comma-separated Dial() arguments can be optionally passed after the
+          # technology.
+          #
+          # TODO: Provide an example when this works.
+          #
+          def introduce(caller, callee, opts={})
+            deprecation_warning
+            dial_args  = callee
+            dial_args += "|#{opts[:options]}" if opts[:options]
+            call_and_exec caller, "Dial", :args => dial_args, :caller_id => opts[:caller_id]
+          end
+
+          def hangup(channel)
+            deprecation_warning
+            send_action "Hangup", :channel => channel
+          end
+
+          def call_and_exec(channel, app, opts={})
+            deprecation_warning
+            args = { :channel => channel, :application => app }
+            args[:caller_id] = opts[:caller_id] if opts[:caller_id]
+            args[:data] = opts[:args] if opts[:args]
+            originate args
+          end
+
+          def call_into_context(channel, context, options={})
+            deprecation_warning
+            args = {:channel => channel, :context => context}
+            args[:priority] = options[:priority] || 1
+            args[:extension] = options[:extension] if options[:extension]
+            args[:caller_id] = options[:caller_id] if options[:caller_id]
+            if options[:variables] && options[:variables].kind_of?(Hash)
+              args[:variable] = options[:variables].map {|pair| pair.join('=')}.join('|')
+            end
+            originate args
+          end
+          
+            #######                                                  #######
+            ###########                                          ###########
+            ################# END SOON-DEPRECATED COMMANDS ################# 
+            ###########                                          ###########
+            #######                                                  #######
+
         
           protected
           
