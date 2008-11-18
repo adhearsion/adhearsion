@@ -234,6 +234,16 @@ context "ManagerInterface" do
     manager.action_error_received error
   end
   
+  test "unsupported actions" do
+    @Manager::ManagerInterface::UnsupportedActionName::UNSUPPORTED_ACTION_NAMES.should.not.be.empty
+    @Manager::ManagerInterface::UnsupportedActionName::UNSUPPORTED_ACTION_NAMES.each do |action_name|
+      manager = new_manager_without_events
+      the_following_code {
+        manager.send_action action_name
+      }.should.raise @Manager::ManagerInterface::UnsupportedActionName
+    end
+  end
+  
   # TODO: Create the abstraction layer atop AMI with separate tests and test harness.
   
   # TOOD: Test that the abstraction layer properly combines causal events

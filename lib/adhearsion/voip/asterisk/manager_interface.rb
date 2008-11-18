@@ -186,6 +186,7 @@ module Adhearsion
           # @return [FutureResource] Call resource() on this object if you wish to access the response (optional). Note: if the response has not come in yet, your Thread will wait until it does.
           #
           def send_action_asynchronously(action_name, headers={})
+            check_action_name action_name
             action = ManagerInterfaceAction.new(action_name, headers)
             if action.replies_with_action_id?
               raise NotImplementedError
@@ -289,6 +290,25 @@ module Adhearsion
 
         
           protected
+          
+          ##
+          # This class will be removed once this AMI library fully supports all known protocol anomalies.
+          #
+          class UnsupportedActionName < ArgumentError
+            UNSUPPORTED_ACTION_NAMES = %w[
+              queues
+            ] unless defined? UNSUPPORTED_ACTION_NAMES
+            def initialize(name)
+              super "At the moment this AMI library doesn't support the #{name.inspect} action because it causes a protocol anomaly. Support for it will be coming shortly."
+            end
+            
+          end
+          
+          def check_action_name(name)
+            name = name.to_s.downcase
+            raise UnsupportedActionName.new(name) if UnsupportedActionName::UNSUPPORTED_ACTION_NAMES.include? name
+            true
+          end
           
           def write_loop
             loop do
