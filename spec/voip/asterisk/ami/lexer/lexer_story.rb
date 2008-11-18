@@ -199,9 +199,11 @@ ActionID: 123123\r
   end
   
   Then '$number message should be an immediate response with text "$text"' do |number, text|
-    @lexer.received_messages.select do |response|
-      response.kind_of?(Adhearsion::VoIP::Asterisk::Manager::ImmediateResponse) && response.message == text
-    end.size.should equal(number.to_i)
+    matching_immediate_responses = @lexer.received_messages.select do |response|
+      response.kind_of?(Adhearsion::VoIP::Asterisk::Manager::ManagerInterfaceResponse) && response.text_body == text
+    end
+    matching_immediate_responses.size.should equal(number.to_i)
+    matching_immediate_responses.first["ActionID"].should eql(nil)
   end
   
   Then 'the $order event should have the name "$name"' do |order, name|

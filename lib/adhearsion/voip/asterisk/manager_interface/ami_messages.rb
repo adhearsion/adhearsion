@@ -3,7 +3,21 @@ module Adhearsion
     module Asterisk
       module Manager
 
+
+        ##
+        # This is the object containing a response from Asterisk.
+        #
+        # Note: not all responses have an ActionID!
+        #
         class ManagerInterfaceResponse
+        
+          class << self
+            def from_immediate_response(text)
+              returning new do |instance|
+                instance.text_body = text
+              end
+            end
+          end
         
           attr_accessor :action_id,
                         :text_body  # For "Response: Follows" sections
@@ -34,7 +48,7 @@ module Adhearsion
           
           attr_accessor :message
           def initialize
-            @headers = {}
+            @headers = HashWithIndifferentAccess.new
           end
           
           def [](key)
@@ -47,13 +61,6 @@ module Adhearsion
           
         end
         
-        class ImmediateResponse
-          attr_reader :message
-          def initialize(message)
-            @message = message
-          end
-        end
-      
         class ManagerInterfaceEvent < ManagerInterfaceResponse
   
           attr_reader :name

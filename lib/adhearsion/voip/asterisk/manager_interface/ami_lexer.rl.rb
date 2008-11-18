@@ -104,7 +104,7 @@ module Adhearsion
           ##
           # Called after a response or event has been successfully parsed.
           #
-          # @param [ManagerInterfaceResponse, ImmediateResponse, Event] message The message just received
+          # @param [ManagerInterfaceResponse, ManagerInterfaceEvent] message The message just received
           #
           def message_received(message)
             raise NotImplementedError, "Must be implemented in subclass!"
@@ -112,8 +112,9 @@ module Adhearsion
 
           ##
           # Called when there is an Error: stanza on the socket. Could be caused by executing an unrecognized command, trying
-          # to originate into an invalid priority, etc. Note: many errors' responses are actually tightly coupled to an Event
-          # which comes directly after it. Often the message will say something like "Channel status will follow".
+          # to originate into an invalid priority, etc. Note: many errors' responses are actually tightly coupled to a
+          # ManagerInterfaceEvent which comes directly after it. Often the message will say something like "Channel status
+          # will follow".
           #
           # @param [String] reason The reason given in the Message: header for the error stanza.
           #
@@ -223,7 +224,7 @@ module Adhearsion
   
           def immediate_response_stops
             message = @data[@immediate_response_start...(@current_pointer -1)]
-            message_received ImmediateResponse.new(message)
+            message_received ManagerInterfaceResponse.from_immediate_response(message)
           end
   
           ##

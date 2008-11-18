@@ -144,7 +144,7 @@ module Adhearsion
           def action_message_received(message)
             if message.kind_of? Manager::ManagerInterfaceEvent
               # Trigger the return value of the waiting action id...
-            elsif message.kind_of? Manager::ImmediateResponse
+            elsif message["ActionID"].nil?
               # No ActionID! Release the write lock and wake up the waiter
             else
               action_id = message["ActionID"]
