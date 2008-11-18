@@ -23,7 +23,7 @@ module Adhearsion
                         :text_body  # For "Response: Follows" sections
           
           def initialize
-            @headers = {}
+            @headers = HashWithIndifferentAccess.new
           end
           
           def has_text_body?

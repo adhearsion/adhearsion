@@ -234,17 +234,11 @@ context "ManagerInterface" do
     manager.action_error_received error
   end
   
-  # TEST action_error_received()!! It's buggy!
+  # TODO: Create the abstraction layer atop AMI with separate tests and test harness.
   
-  # test 'a "will follow" AMI action' do
+  # TOOD: Test that the abstraction layer properly combines causal events
   
-  # TODO: TEST THAT actions with causal events are combined.
-  
-  # TODO: TEST THE WRITE LOCK FOR MESSAGES WHICH DO NOT REPLY WITH AN ACTION ID DO LOCK EVERYTHING..
-  
-  # QUESTION: Do AMI errors respond with action id?
-  
-  # YAGNI? test "a failed login on sets the state to :failed"
+  # TODO: Add tests which cause actions that don't reply with an action ID to raise an exception when sent
   
 end
 
