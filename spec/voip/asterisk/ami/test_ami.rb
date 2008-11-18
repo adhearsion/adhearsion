@@ -291,12 +291,17 @@ context "ManagerInterfaceAction" do
     @ManagerInterface::ManagerInterfaceAction.new(name, headers).has_causal_events?
   end
   
-  test "should properly convert itself into a String" do
+  test "should properly convert itself into a String when additional headers are given" do
     name, headers = "Hawtsawce", {"Monkey" => "Zoo"}
     string = @ManagerInterface::ManagerInterfaceAction.new(name, headers).to_s
     string.should =~ /^Action: Hawtsawce\r\n/
-    string.should =~ /\r\n\r\n$/
+    string.should =~ /[^\n]\r\n\r\n$/
     string.should =~ /^(\w+:\s*[\w-]+\r\n){3}\r\n$/
+  end
+  
+  test "should properly convert itself intoa String when no additional headers are given" do
+    string = @ManagerInterface::ManagerInterfaceAction.new("Ping").to_s
+    string.should =~ /^Action: Ping\r\nActionID: [\w-]+\r\n\r\n$/
   end
   
 end

@@ -375,7 +375,7 @@ module Adhearsion
             
             attr_reader :name, :headers, :future_resource, :action_id
             def initialize(name, headers={})
-              @name, @headers = name.to_s.clone.freeze, headers.stringify_keys.clone.freeze
+              @name, @headers = name.to_s.clone.freeze, headers.stringify_keys.freeze
               @action_id = new_action_id.freeze
               @future_resource = FutureResource.new
             end
@@ -414,7 +414,7 @@ module Adhearsion
               @textual_representation ||= (
                   "Action: #{@name}\r\nActionID: #{@action_id}\r\n" +
                   @headers.map { |(key,value)| "#{key}: #{value}" }.join("\r\n") +
-                  "\r\n\r\n"
+                  (@headers.any? ? "\r\n\r\n" : "\r\n")
               )
             end
             
