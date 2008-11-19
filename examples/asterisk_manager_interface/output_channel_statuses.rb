@@ -1,4 +1,9 @@
 # This is a file which shows you how to use the Asterisk Manager Interface library in a separate process from Adhearsion.
+require 'pp'
+
+def Math.logb(b, x)
+  Math.log(x) / Math.log(b)
+end 
 
 PATH_TO_ADHEARSION = File.join(File.dirname(__FILE__), "/../..")
 
@@ -24,5 +29,13 @@ require 'adhearsion/voip/asterisk/manager_interface'
 include Adhearsion::VoIP::Asterisk::Manager
 
 interface = ManagerInterface.connect MANAGER_CONNECTION_INFORMATION
-response = interface.send_action("Ping")
-p "Got this back: #{response.inspect}"
+
+threads = Array.new(100) do
+  Thread.new do
+    response = interface.send_action("SIPPeers")
+    abort "ZOMG" if response.size != 2
+    # sleep "0.#{rand(1000)}".to_f
+  end
+end
+
+threads.each { |t| t.join }

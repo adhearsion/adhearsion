@@ -18,9 +18,11 @@ module Adhearsion
               end
             end
           end
-        
-          attr_accessor :action_id,
+          
+          attr_accessor :action,
+                        :action_id,
                         :text_body  # For "Response: Follows" sections
+          attr_reader   :events
           
           def initialize
             @headers = HashWithIndifferentAccess.new
@@ -41,7 +43,7 @@ module Adhearsion
           def []=(key,value)
             @headers[key] = value
           end
-  
+          
         end
       
         class ManagerInterfaceError < Exception

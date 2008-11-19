@@ -142,8 +142,8 @@ context "ManagerInterface" do
     manager.send_action "Ping"
     
     write_queue_mock.actions.size.should.equal 2
-    write_queue_mock.actions.first.name.should.eql "Login"
-    write_queue_mock.actions.last.name.should.eql "Ping"
+    write_queue_mock.actions.first.name.should.eql "login"
+    write_queue_mock.actions.last.name.should.eql "ping"
   end
   
   test "after calling connect!() with events enabled, both connections perform a login" do
@@ -162,7 +162,7 @@ context "ManagerInterface" do
     manager.connect!
     
     write_queue_mock.actions.size.should.equal 1
-    write_queue_mock.actions.select { |action| action.name == "Login" }.size.should.equal 1
+    write_queue_mock.actions.select { |action| action.name == "login" }.size.should.equal 1
     write_queue_mock.actions.first.headers['Events'].should.eql "Off"
   end
   
@@ -244,9 +244,34 @@ context "ManagerInterface" do
     end
   end
   
-  # TODO: Create the abstraction layer atop AMI with separate tests and test harness.
+  test "normal use of Action:SIPPeers (which has causal events)" do
+    flexmock(@Manager::ManagerInterface::ManagerInterfaceAction).new_instances.should_receive(:response).once.and_return
+    
+    queue_mock = mocked_queue
+    
+    manager = new_manager_without_events
+    
+    queue_mock.on_push do |action|
+      
+    end
+    
+    queue_mock.on_push do |pushed_action|
+      manager.action_event_received(event)
+      manager.action_event_received(event)
+      manager.action_event_received(event)
+      manager.action_event_received(event)
+      manager.action_event_received(event)
+      
+    end
+    
+    manager.send_action "SIPPeers"
+  end
   
-  # TOOD: Test that the abstraction layer properly combines causal events
+  test "use of Action:SIPPeers (which has causal events) which causes an error" do
+    
+  end
+  
+  # TODO: Create the abstraction layer atop AMI with separate tests and test harness.
   
   # TODO: Add tests which cause actions that don't reply with an action ID to raise an exception when sent
   
@@ -277,6 +302,24 @@ context "ManagerInterface#write_loop" do
   
 end
 
+
+context "Class methods of ManagerInterface" do
+  
+  before:each do
+    @ManagerInterface = Adhearsion::VoIP::Asterisk::Manager::ManagerInterface
+  end
+  
+  test "the SIPPeers actions should be a causal event" do
+    @ManagerInterface.has_causal_events?("SIPPeers").should.equal true
+  end
+  
+  test "the ParkedCalls terminator event" do
+    @ManagerInterface.causal_event_terminator_name_for("ParkedCalls").should.eql "parkedcallscomplete"
+    @ManagerInterface.causal_event_terminator_name_for("parkedcalls").should.eql "parkedcallscomplete"
+  end
+  
+end
+
 context "ManagerInterfaceAction" do
   
   before :each do
@@ -291,21 +334,25 @@ context "ManagerInterfaceAction" do
   
   test "should simply proxy the has_causal_events?() method" do
     name, headers = "foobar", {"foo" => "bar"}
-    flexmock(@ManagerInterface).should_receive(:has_causal_events?).once.and_return
-    @ManagerInterface::ManagerInterfaceAction.new(name, headers).has_causal_events?
+    action = @ManagerInterface::ManagerInterfaceAction.new(name, headers)
+    flexmock(@ManagerInterface).should_receive(:has_causal_events?).once.with(name, headers).and_return :foo
+    action.has_causal_events?.should.equal :foo
   end
   
   test "should properly convert itself into a String when additional headers are given" do
     name, headers = "Hawtsawce", {"Monkey" => "Zoo"}
     string = @ManagerInterface::ManagerInterfaceAction.new(name, headers).to_s
-    string.should =~ /^Action: Hawtsawce\r\n/
+    string.should =~ /^Action: Hawtsawce\r\n/i
     string.should =~ /[^\n]\r\n\r\n$/
     string.should =~ /^(\w+:\s*[\w-]+\r\n){3}\r\n$/
   end
   
-  test "should properly convert itself intoa String when no additional headers are given" do
+  test "should properly convert itself into a String when no additional headers are given" do
     string = @ManagerInterface::ManagerInterfaceAction.new("Ping").to_s
-    string.should =~ /^Action: Ping\r\nActionID: [\w-]+\r\n\r\n$/
+    string.should =~ /^Action: Ping\r\nActionID: [\w-]+\r\n\r\n$/i
+    
+    string = @ManagerInterface::ManagerInterfaceAction.new("ParkedCalls").to_s
+    string.should =~ /^Action: ParkedCalls\r\nActionID: [\w-]+\r\n\r\n$/i
   end
   
 end
@@ -437,6 +484,12 @@ BEGIN {
     
     def <<(action)
       @unshifted << action
+      @on_push.call(action) if @on_push
+    end
+    
+    def on_push(&block)
+      @on_push = block
+      self
     end
     
     def shift
