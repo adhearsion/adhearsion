@@ -1,0 +1,25 @@
+Story: Building and sending high-level AMI actions with SuperManager
+
+	As an Adhearsion user
+	I want higher-level, intuitive abstractions of the AMI protocol
+	So that I can control Asterisk better
+	
+	TODO:
+		- Migrate to cucumber
+	
+	Scenario: Sending a Ping
+		
+		Given a new SuperManager
+		And a "Ping" action
+		
+		When the data it sent
+		And the server responds with 
+		
+		Then the data sent should be well-formed
+		And the 1st action should have the action name "Ping"
+		And the 1st action should have an ActionID
+		And the 1st action should have exactly 2 headers
+		
+	Scenario: An action with many 
+
+	Scenario: A Channel object

@@ -1,5 +1,7 @@
 Dir.chdir File.join(File.dirname(__FILE__), '..')
+
 require 'rubygems'
+
 def require_or_report_dependency(require_name, gem_name)
   begin
     require require_name
@@ -9,9 +11,9 @@ def require_or_report_dependency(require_name, gem_name)
 end
 
 def report_dependency!(name)
-  puts;puts 
+  2.times { puts }
   puts "You need #{name} to run these tests:  gem install #{name}"
-  puts;puts
+  2.times { puts }
   exit!
 end
 
@@ -29,14 +31,6 @@ $: << File.expand_path('lib')
 $: << File.dirname(__FILE__)
 
 require 'adhearsion'
-class Adhearsion::Initializer
-  def asterisk_enabled?
-    false
-  end
-end
-
-
-
 
 class Test::Unit::TestCase  
   
@@ -57,23 +51,39 @@ end
 
 module InitializerStubs
   
+  DEFAULT_AHNRC_DATA_STRUCTURE = YAML.load_file(
+    File.dirname(__FILE__) + "/../app_generators/ahn/templates/.ahnrc"
+  ) unless defined? DEFAULT_AHNRC_DATA_STRUCTURE
+  
   UNWANTED_BEHAVIOR = {
-    Adhearsion::Initializer                       => [:initialize_log_file, :switch_to_root_directory, :daemonize!],
-    Adhearsion::Hooks::AfterInitialized.metaclass => [:create_hook, :trigger_hooks]
+    Adhearsion::Initializer => [:initialize_log_file, :switch_to_root_directory, :daemonize!, :load],
+    Adhearsion::Initializer.metaclass => { :get_rules_from => DEFAULT_AHNRC_DATA_STRUCTURE },
   } unless defined? UNWANTED_BEHAVIOR
   
-  def with_new_initializer_with_no_path_changing_behavior
-    stub_unwanted_behavior
-    Adhearsion::Initializer.new('path does not matter')
-    yield if block_given?
-    unstub_directory_changing_behavior
+  def stub_behavior_for_initializer_with_no_path_changing_behavior
+      stub_unwanted_behavior
+      yield if block_given?
+    ensure
+      unstub_directory_changing_behavior
+  end
+  
+  def with_new_initializer_with_no_path_changing_behavior(&block)
+    stub_behavior_for_initializer_with_no_path_changing_behavior do
+      block.call Adhearsion::Initializer.start('path does not matter')
+    end
   end
   
   def stub_unwanted_behavior
     UNWANTED_BEHAVIOR.each do |stub_victim_class, undesired_methods|
-      undesired_methods.each do |undesired_method_name|
+      undesired_methods.each do |undesired_method_name_or_key_value_pair|
+        undesired_method_name, method_implementation = case undesired_method_name_or_key_value_pair
+          when Array
+            [undesired_method_name_or_key_value_pair.first, lambda { undesired_method_name_or_key_value_pair.last } ]
+          else
+            [undesired_method_name_or_key_value_pair, lambda{ |*args| }]
+        end
         stub_victim_class.send(:alias_method, "pre_stubbed_#{undesired_method_name}", undesired_method_name)
-        stub_victim_class.send(:define_method, undesired_method_name) { |*args| }
+        stub_victim_class.send(:define_method, undesired_method_name, &method_implementation)
       end
     end
   end
@@ -81,6 +91,7 @@ module InitializerStubs
   def unstub_directory_changing_behavior
     UNWANTED_BEHAVIOR.each do |stub_victim_class, undesired_methods|
       undesired_methods.each do |undesired_method_name|
+        undesired_method_name = undesired_method_name.first if undesired_method_name.kind_of? Array
         stub_victim_class.send(:alias_method, undesired_method_name, "pre_stubbed_#{undesired_method_name}")
       end
     end

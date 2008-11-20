@@ -14,14 +14,10 @@ module Adhearsion
           
           #TODO: separate into smaller pieces
           def self.get_contexts
-            unless Adhearsion::Paths.manager_for?("dialplans")
-              raise "No dialplan files found in .ahnrc!" 
-            end
-            
             envelope = ContextsEnvelope.new
             
-            dialplans = all_dialplans
-            warn "No dialplan files were found!" if dialplans.empty?
+            dialplans = AHN_CONFIG.files_from_setting "paths", "dialplan"
+            ahn_log.dialplan.warn "No dialplan files were found!" if dialplans.empty?
             
             returning({}) do |contexts|
               dialplans.each do |file|

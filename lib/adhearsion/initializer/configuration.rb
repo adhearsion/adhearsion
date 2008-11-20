@@ -24,8 +24,11 @@ module Adhearsion
     
     class << self
       def configure(&block)
-        Adhearsion.module_eval { remove_const(:AHN_CONFIG) } if Adhearsion.const_defined?(:AHN_CONFIG)
-        Adhearsion.const_set(:AHN_CONFIG, new(&block))
+        if Adhearsion.const_defined?(:AHN_CONFIG)
+          yield AHN_CONFIG if block_given?
+        else
+          Adhearsion.const_set(:AHN_CONFIG, new(&block))
+        end
       end
     end
     
@@ -33,15 +36,64 @@ module Adhearsion
     attr_accessor :end_call_on_hangup
     attr_accessor :end_call_on_error
     
-    def logging(options)
-      Adhearsion::Logging.logging_level = options[:level]
-    end
-    
     def initialize
       @automatically_answer_incoming_calls = true
       @end_call_on_hangup                  = true
       @end_call_on_error                   = true
       yield self if block_given?
+    end
+    
+    def ahnrc
+      @ahnrc
+    end
+    
+    ##
+    # Load the contents of an .ahnrc file into this Configuration.
+    #
+    # @param [String, Hash] ahnrc String of YAML .ahnrc data or a Hash of the pre-loaded YAML data structure
+    #
+    def ahnrc=(new_ahnrc)
+      case new_ahnrc
+        when Hash
+          @raw_ahnrc = new_ahnrc.to_yaml.freeze
+          @ahnrc = new_ahnrc.clone.freeze
+        when String
+          @raw_ahnrc = new_ahnrc.clone.freeze
+          @ahnrc = YAML.load(new_ahnrc).freeze
+      end
+    end
+    
+    def logging(options)
+      Adhearsion::Logging.logging_level = options[:level]
+    end
+    
+    ##
+    # Adhearsion's .ahnrc file is used to define paths to certain parts of the framework. For example, the name dialplan.rb
+    # is actually specified in .ahnrc. This file can actually be just a filename, a filename with a glob (.e.g "*.rb"), an
+    # Array of filenames or even an Array of globs.
+    #
+    # @param [String,Array] String segments which convey the nesting of Hash keys through .ahnrc
+    # @raise [RuntimeError] If ahnrc has not been set yet with #ahnrc=()
+    # @raise [NameError] If the path through the ahnrc is invalid
+    #
+    def files_from_setting(*path_through_config)
+      raise RuntimeError, "No ahnrc has been set yet!" unless @ahnrc
+      queried_nested_setting = path_through_config.flatten.inject(@ahnrc) do |hash,key_name|
+        if hash.kind_of?(Hash) && hash.has_key?(key_name)
+          hash[key_name]
+        else
+          raise NameError, "Paths #{path_through_config.inspect} not found in .ahnrc!"
+        end
+      end
+      raise NameError, "Paths #{path_through_config.inspect} not found in .ahnrc!" unless queried_nested_setting
+      queried_nested_setting = Array queried_nested_setting
+      queried_nested_setting.map { |filename| files_from_glob(filename) }.flatten.uniq
+    end
+    
+    private
+    
+    def files_from_glob(glob)
+      Dir.glob "#{AHN_ROOT}/#{glob}"
     end
     
     class AbstractConfiguration

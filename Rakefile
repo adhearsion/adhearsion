@@ -1,49 +1,99 @@
 # -*- ruby -*-
 ENV['RUBY_FLAGS'] = "-I#{%w(lib ext bin test).join(File::PATH_SEPARATOR)}"
 
+require 'rake/gempackagetask'
 require 'rubygems'
-require 'hoe'
+
 require 'lib/adhearsion/version'
 
+TestGlob    = ['spec/**/test_*.rb']
+GEMSPEC     = eval File.read("adhearsion.gemspec")
+RAGEL_FILES = %w[lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb]
 
 begin
   require 'rcov/rcovtask'
   Rcov::RcovTask.new do |t|
-    t.test_files = Dir['spec/**/test_*.rb']
+    t.test_files = Dir[*TestGlob]
     t.output_dir = 'coverage'
     t.verbose = true
     t.rcov_opts.concat %w[--sort coverage --sort-reverse -x gems -x /var --no-validator-links]
   end
 rescue LoadError
-  STDERR.puts "Could not load rcov tasks -- rcov does not appear to be installed."
+  STDERR.puts "Could not load rcov tasks -- rcov does not appear to be installed. Continuing anyway."
 end
 
-TestGlob = ['spec/**/test_*.rb']
+Rake::GemPackageTask.new(GEMSPEC).define
 
-task :test do
-  STDERR.puts "\nTry using \"rake spec\" for something less noisy.\n\n"
-  # The other :test task is created by Hoe below.
-end
+# YARD::Rake::YardocTask.new do |t|
+#   t.files   = ['lib/**/*.rb']   # optional
+#   # t.options = ['--any', '--extra', '--opts'] # optional
+# end
 
-# Need to migrate away from Hoe...
-Hoe.new('adhearsion', Adhearsion::VERSION::STRING) do |p|
-  p.rubyforge_name = 'adhearsion'
-  p.author = 'Jay Phillips'
-  p.email = 'Jay -at- Codemecca.com'
-  p.summary = 'Adhearsion, open-source telephony integrator.'
-  p.description = p.paragraphs_of('README.txt', 2..5).join("\n\n")
-  p.url = p.paragraphs_of('README.txt', 0).first.split(/\n/)[1..-1]
-  p.changes = p.paragraphs_of('History.txt', 0..1).join("\n\n")
-  p.test_globs = TestGlob
-  p.extra_deps = [['rubigen', '>=1.0.6'], ['log4r', '>=1.0.5']]
-end
-
+desc "Run the unit tests for Adhearsion"
 task :spec do
   Dir[*TestGlob].each do |file|
     load file
   end
 end
 
-task :ragel do
-  `ragel -n -R lib/adhearsion/voip/asterisk/ami/machine.rl | rlgen-ruby -o lib/adhearsion/voip/asterisk/ami/machine.rb`
+desc "Check Ragel version"
+task :check_ragel_version do
+  ragel_version_match = `ragel --version`.match(/(\d)\.(\d)+/)
+  abort "Could not get Ragel version! Is it installed? You must have at least version 6.3" unless ragel_version_match
+  big, small = ragel_version_match.captures.map { |n| n.to_i }
+  if big < 6 || (big == 6 && small < 3)
+    abort "Please upgrade Ragel! You're on version #{ragel_version_match[0]} and must be on 6.3 or later"
+  end
+end
+
+desc "Used to regenerate the AMI source code files. Note: requires Ragel 6.3 or later be installed on your system"
+task :ragel => :check_ragel_version do
+  RAGEL_FILES.each do |ragel_file|
+    ruby_file = ragel_file.sub(".rl.rb", ".rb")
+    puts `ragel -n -R #{ragel_file} -o #{ruby_file} 2>&1`
+    raise "Failed generating code from Ragel file #{ragel_file}" if $?.to_i.nonzero?
+  end
+end
+
+desc "Generates a GraphVis document showing the Ragel state machine"
+task :visualize_ragel => :check_ragel_version do
+  RAGEL_FILES.each do |ragel_file|
+    base_name = File.basename ragel_file, ".rl.rb"
+    puts "ragel -V #{ragel_file} -o #{base_name}.dot 2>&1"
+    puts `ragel -V #{ragel_file} -o #{base_name}.dot 2>&1`
+    raise "Failed generating code from Ragel file #{ragel_file}" if $?.to_i.nonzero?
+  end
+end
+
+desc "Compares Adhearsion's files with those listed in adhearsion.gemspec"
+task :check_gemspec_files do
+  
+  files_from_gemspec    = ADHEARSION_FILES
+  files_from_filesystem = Dir.glob(File.dirname(__FILE__) + "/**/*").map do |filename|
+    filename[0...Dir.pwd.length] == Dir.pwd ? filename[(Dir.pwd.length+1)..-1] : filename
+  end
+  files_from_filesystem.reject! { |f| File.directory? f }
+  
+  puts
+  puts 'Pipe this command to "grep -v \'spec/\' | grep -v test" to ignore test files'
+  puts
+  puts '##########################################'
+  puts '## Files on filesystem not in the gemspec:'
+  puts '##########################################'
+  puts((files_from_filesystem - files_from_gemspec).map { |f| "  " + f })
+  
+  
+  puts '##########################################'
+  puts '## Files in gemspec not in the filesystem:'
+  puts '##########################################'
+  puts((files_from_gemspec - files_from_filesystem).map { |f| "  " + f })
+end
+
+desc "Test that the .gemspec file executes"
+task :debug_gem do
+  require 'rubygems/specification'
+  gemspec = File.read('adhearsion.gemspec')
+  spec = nil
+  Thread.new { spec = eval("$SAFE = 3\n#{gemspec}") }.join
+  puts "SUCCESS: Gemspec runs at the $SAFE level 3."
 end

@@ -1,3 +1,4 @@
-If you depended on the method last_dial_status, the Symbols returned have been slighted changed. See the documentation for the new names.
-
-the :callerid option for dial has been renamed to caller_id
+Notes from before 0.8.0:
+ - Adding a deprecation warning about Fixnum#digit and Fixnum#digits
+ - Removed the AMI class and replaced it with the ManagerInterface class.
+ - The old AMI high-level instance methods are available in the new ManagerInterface class, but a deprecation warning will be logged each time they're used. When the SuperManager class is implemented, they'll be removed entirely.

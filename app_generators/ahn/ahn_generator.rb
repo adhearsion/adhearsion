@@ -31,11 +31,12 @@ class AhnGenerator < RubiGen::Base
       
       m.file  *["config/startup.rb"]*2
       m.file  *["dialplan.rb"]*2
+      m.file  *["events.rb"]*2
       m.file  *["README"]*2
       m.file  *["Rakefile"]*2
       
-      m.dependency "install_rubigen_scripts", [destination_root, 'ahn', 'adhearsion', 'test_spec'], 
-        :shebang => options[:shebang], :collision => :force
+      # m.dependency "install_rubigen_scripts", [destination_root, 'ahn', 'adhearsion', 'test_spec'], 
+      #   :shebang => options[:shebang], :collision => :force
     end
   end
 

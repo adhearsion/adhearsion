@@ -67,7 +67,7 @@ USAGE
         
           def start(path, daemon=false, pid_file=nil)
             raise PathInvalid, path unless File.exists? path + "/.ahnrc"
-            Adhearsion::Initializer.new path, :daemon => daemon, :pid_file => pid_file
+            Adhearsion::Initializer.start path, :daemon => daemon, :pid_file => pid_file
           end
         
           def version

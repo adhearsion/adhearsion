@@ -1,7 +1,6 @@
 require File.dirname(__FILE__) + "/../../test_helper"
 require 'adhearsion/voip/asterisk'
 
-
 context "The AGI server's serve() method" do
   
   include AgiServerTestHelper
@@ -10,6 +9,10 @@ context "The AGI server's serve() method" do
   before :each do
     @server_class = Adhearsion::VoIP::Asterisk::AGI::Server::RubyServer
     @server       = @server_class.new(:port,:host)
+  end
+  
+  before :each do
+    Adhearsion::Events.reinitialize_theatre!
   end
   
   test 'should instantiate a new Call with the IO object it receives' do
@@ -25,7 +28,7 @@ context "The AGI server's serve() method" do
   
   test 'should hand the call off to a new Manager if the request is agi://IP_ADDRESS_HERE' do
     stub_before_call_hooks!
-    call_mock = flexmock 'A new mock call that will be passed to the manager', :variables => {}
+    call_mock = flexmock 'A new mock call that will be passed to the manager', :variables => {}, :unique_identifier => "X"
     
     flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return call_mock
     manager_mock = flexmock 'a mock dialplan manager'
@@ -36,7 +39,7 @@ context "The AGI server's serve() method" do
   
   test 'should hand off a call to a ConfirmationManager if the request begins with confirm!' do
     confirm_options = Adhearsion::DialPlan::ConfirmationManager.encode_hash_for_dial_macro_argument :timeout => 20, :key => "#"
-    call_mock = flexmock "a call that has network_script as a variable", :variables => {:network_script => "confirm!#{confirm_options[/^M\(\^?(.+)\)$/,1]}"}
+    call_mock = flexmock "a call that has network_script as a variable", :variables => {:network_script => "confirm!#{confirm_options[/^M\(\^?(.+)\)$/,1]}"}, :unique_identifier => "X"
     manager_mock = flexmock 'a mock ConfirmationManager'
     
     the_following_code {
@@ -47,34 +50,47 @@ context "The AGI server's serve() method" do
     }.should.throw :handled_call!
   end
   
-  test 'calling the serve() method invokes any BeforeCall hooks' do
-    flexmock(Adhearsion::Hooks::BeforeCall).should_receive(:trigger_hooks).once.and_throw :before_call_hooks_executed
-    assert_throws :before_call_hooks_executed do
-      server.serve nil
-    end
+  test 'calling the serve() method invokes the before_call event' do
+    mock_io   = flexmock "mock IO object given to AGIServer#serve"
+    mock_call = flexmock "mock Call"
+    flexmock(Adhearsion).should_receive(:receive_call_from).once.with(mock_io).and_return mock_call
+    has_executed = false
+    Adhearsion::Events.register_callback([:asterisk, :before_call]) { |call| 10.times { puts "WEE" }; has_executed = true }
+    server.serve mock_call
+    has_executed.should.equal(true)
   end
   
-  test 'should execute the OnHungupCall hooks when a HungupExtensionCallException is raised' do
-    call_mock = flexmock 'a bogus call', :hungup_call? => true, :variables => {:extension => "h"}
+  test "the before_call event should receive the call object" do
+    mock_io   = flexmock "mock IO object given to AGIServer#serve"
+    mock_call = flexmock "mock Call"
+    flexmock(Adhearsion).should_receive(:receive_call_from).once.with(mock_io).and_return mock_call
+    has_executed = false
+    Adhearsion::Events.register_callback([:asterisk, :before_call]) { |call| mock_call.should.equal(call) }
+    server.serve mock_io
+    has_executed.should.equal true
+  end
+  
+  test 'should execute the call_hangup event when a HungupExtensionCallException is raised' do
+    call_mock = flexmock 'a bogus call', :hungup_call? => true, :variables => {:extension => "h"}, :unique_identifier => "X"
     mock_env  = flexmock "A mock execution environment which gets passed along in the HungupExtensionCallException"
     
     stub_confirmation_manager!
     flexstub(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
     flexmock(Adhearsion::DialPlan::Manager).should_receive(:handle).once.and_raise Adhearsion::HungupExtensionCallException.new(mock_env)
-    flexmock(Adhearsion::Hooks::OnHungupCall).should_receive(:trigger_hooks).once.with(mock_env).and_throw :hungup_call
+    flexmock(Adhearsion::Events).should_receive(:trigger).once.with([:asterisk, :call_hangup], mock_env).and_throw :hungup_call
     
     the_following_code { server.serve nil }.should.throw :hungup_call
   end
   
   test 'should execute the OnFailedCall hooks when a FailedExtensionCallException is raised' do
-    call_mock = flexmock 'a bogus call', :failed_call? => true, :variables => {:extension => "failed"}
+    call_mock = flexmock 'a bogus call', :failed_call? => true, :variables => {:extension => "failed"}, :unique_identifier => "X"
     mock_env  = flexmock "A mock execution environment which gets passed along in the HungupExtensionCallException", :failed_reason => "does not matter" 
     
     server = Adhearsion::VoIP::Asterisk::AGI::Server::RubyServer.new :port, :host
     
     flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
     flexmock(Adhearsion::DialPlan::Manager).should_receive(:handle).once.and_raise Adhearsion::FailedExtensionCallException.new(mock_env)
-    flexmock(Adhearsion::Hooks::OnFailedCall).should_receive(:trigger_hooks).once.with(mock_env).and_throw :failed_call
+    flexmock(Adhearsion::Events).should_receive(:trigger).once.with([:asterisk, :failed_call], mock_env).and_throw :failed_call
     the_following_code { server.serve nil }.should.throw :failed_call
   end
   
@@ -113,9 +129,21 @@ context "Active Calls" do
     Adhearsion.active_calls.size.should == 1
   end
   
+  test 'A hungup call removes itself from the active calls' do
+    mock_io = flexmock typical_call_variable_io
+    mock_io.should_receive(:close).once
+    
+    size_before = Adhearsion.active_calls.size
+    
+    call = Adhearsion.receive_call_from mock_io
+    Adhearsion.active_calls.size.should.be > size_before
+    call.hangup!
+    Adhearsion.active_calls.size.should == size_before
+  end
+  
   test 'Can find active call by unique ID' do
     Adhearsion.active_calls << typical_call
-    assert_not_nil Adhearsion.active_calls.find(typical_call_variables_hash[:uniqueid])
+    assert_not_nil Adhearsion.active_calls.find(typical_call_variables_hash[:channel])
   end
   
   test 'A call can store the IO associated with the PBX/switch connection' do
@@ -135,15 +163,89 @@ context "Active Calls" do
   end
   
   test 'Can create a call and add it via a top-level method on the Adhearsion module' do
-    assert !Adhearsion::active_calls.any?
-    call = Adhearsion::receive_call_from(typical_call_variable_io)
+    assert !Adhearsion.active_calls.any?
+    call = Adhearsion.receive_call_from(typical_call_variable_io)
     call.should.be.kind_of(Adhearsion::Call)
-    Adhearsion::active_calls.size.should == 1
+    Adhearsion.active_calls.size.should == 1
   end
   
   test 'A call can identify its originating voip platform' do
     call = Adhearsion::receive_call_from(typical_call_variable_io)
     call.originating_voip_platform.should.equal(:asterisk)
+  end
+  
+end
+
+context 'A new Call object' do
+  
+  include CallVariableTestHelper
+  
+  test "it should have an @inbox object that's a synchronized Queue" do
+    new_call = Adhearsion::Call.new(nil, {})
+    new_call.inbox.should.be.kind_of Queue
+    new_call.should.respond_to :<<
+  end
+  
+  test 'the unique_identifier() method should return the :channel variable for :asterisk calls' do
+    variables = typical_call_variables_hash
+    new_call = Adhearsion::Call.new(nil, typical_call_variables_hash)
+    flexmock(new_call).should_receive(:originating_voip_platform).and_return :asterisk
+    new_call.unique_identifier.should == variables[:channel]
+  end
+  
+  test "Call#define_singleton_accessor_with_pair should define a singleton method, not a class method" do
+    control    = Adhearsion::Call.new(nil, {})
+    experiment = Adhearsion::Call.new(nil, {})
+    
+    experiment.send(:define_singleton_accessor_with_pair, "ohai", 123)
+    experiment.should.respond_to "ohai"
+    control.should.not.respond_to "ohai"
+  end
+  
+end
+
+context 'the Calls collection' do
+  
+  include CallVariableTestHelper
+  
+  test 'the #<< method should add a Call to the Hash with its unique_id' do
+    id = rand
+    collection = Adhearsion::Calls.new
+    call = Adhearsion::Call.new(nil, {})
+    flexmock(call).should_receive(:unique_identifier).and_return id
+    collection << call
+    hash = collection.instance_variable_get("@calls")
+    hash.should.not.be.empty
+    hash[id].should.equal call
+  end
+  
+  test '#size should return the size of the Hash' do
+    collection = Adhearsion::Calls.new
+    collection.size.should.equal 0
+    collection << Adhearsion::Call.new(nil, {})
+    collection.size.should.equal 1
+  end
+  
+  test '#remove_inactive_call should delete the call in the Hash' do
+    collection = Adhearsion::Calls.new
+    
+    number_of_calls = 10
+    unique_ids = Array.new(number_of_calls) { rand }
+    calls = unique_ids.map { |id| Adhearsion::Call.new(nil, {:uniqueid => id}) }
+    calls.each { |call| collection << call }
+    
+    deleted_call = calls[number_of_calls / 2]
+    collection.remove_inactive_call deleted_call
+    collection.size.should.equal number_of_calls - 1
+  end
+  
+  test '#find_by_unique_id should pull the Call from the Hash using the unique_id' do
+    id = rand
+    call_database = flexmock "a mock Hash in which calls are stored"
+    call_database.should_receive(:[]).once.with(id)
+    collection = Adhearsion::Calls.new
+    flexmock(collection).should_receive(:calls).once.and_return(call_database)
+    collection.find(id)
   end
   
 end
@@ -179,7 +281,7 @@ context 'Call variable parsing with data that is treated specially' do
   end
   test "normalizes the context to be a valid Ruby method name"
   test "value of 'no' converts to false" do
-    merged_hash_with_call_variables(:foo => "no")[:foo].should.equal(false)
+    merged_hash_with_call_variables(:no_var => "no")[:no_var].should.equal(false)
   end
   test "value of 'yes' converts to true"
   test "value of 'unknown' converts to nil"
@@ -328,6 +430,8 @@ agi_accountcode:
 
       coerced_variable_map = uncoerced_variable_map
       coerced_variable_map[:query] = {"foo" => "bar", "qaz" => "qwerty"}
+      coerced_variable_map[:foo] = 'bar'
+      coerced_variable_map[:qaz] = 'qwerty'
       coerced_variable_map
     end
 
@@ -356,7 +460,7 @@ agi_accountcode:
   
   module AgiServerTestHelper
     def stub_before_call_hooks!
-      flexstub(Adhearsion::Hooks::BeforeCall).should_receive :trigger_hooks
+      flexstub(Adhearsion::Events).should_receive(:trigger).with([:asterisk, :before_call], Proc).and_return
     end
     
     def stub_confirmation_manager!
