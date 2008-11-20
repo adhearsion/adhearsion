@@ -61,7 +61,7 @@ module Adhearsion
             def has_causal_events?(name, headers={})
               name = name.to_s.downcase
               case name
-                when "queuestatus", "sippeers", "parkedcalls"
+                when "queuestatus", "sippeers", "parkedcalls", "status"
                   true
                 else
                   false
@@ -76,9 +76,10 @@ module Adhearsion
             # 
             def causal_event_terminator_name_for(action_name)
               return nil unless has_causal_events?(action_name)
-               case action_name.downcase
-                 when "queuestatus", 'parkedcalls'
-                   action_name.downcase + "complete"
+              action_name = action_name.to_s.downcase 
+               case action_name
+                 when "queuestatus", 'parkedcalls', "status"
+                   action_name + "complete"
                  when "sippeers"
                    "peerlistcomplete"
                end
@@ -140,7 +141,7 @@ module Adhearsion
                 # If this is the meta-event which signals no more events will follow and the response is complete.
                 if message.name.downcase == corresponding_action.causal_event_terminator_name
                   
-                  # Wake up any Threads waiting
+                  # Result found! Wake up any Threads waiting
                   corresponding_action.future_resource.resource = event_collection.freeze
                   
                   @current_action_with_causal_events   = nil
