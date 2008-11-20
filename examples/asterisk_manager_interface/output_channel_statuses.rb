@@ -1,10 +1,6 @@
 # This is a file which shows you how to use the Asterisk Manager Interface library in a separate process from Adhearsion.
 require 'pp'
 
-def Math.logb(b, x)
-  Math.log(x) / Math.log(b)
-end 
-
 PATH_TO_ADHEARSION = File.join(File.dirname(__FILE__), "/../..")
 
 MANAGER_CONNECTION_INFORMATION = {

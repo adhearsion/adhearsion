@@ -39,10 +39,10 @@ module Adhearsion
               name = name.to_s.downcase
               # TODO: Expand this case statement
               case name
-                when "queues"
-                  true
-                else
+                when "queues", "iaxpeers"
                   false
+                else
+                  true
               end                
             end
             
@@ -264,10 +264,10 @@ module Adhearsion
             check_action_name action_name
             action = ManagerInterfaceAction.new(action_name, headers)
             if action.replies_with_action_id?
-              raise NotImplementedError
-            else
               @write_queue << action
               action
+            else
+              raise NotImplementedError
             end
           end
           

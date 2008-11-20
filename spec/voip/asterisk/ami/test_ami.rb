@@ -302,7 +302,6 @@ context "ManagerInterface#write_loop" do
   
 end
 
-
 context "Class methods of ManagerInterface" do
   
   before:each do
@@ -311,6 +310,14 @@ context "Class methods of ManagerInterface" do
   
   test "the SIPPeers actions should be a causal event" do
     @ManagerInterface.has_causal_events?("SIPPeers").should.equal true
+  end
+  
+  test "the Queues action should not respond with an action id" do
+    @ManagerInterface.replies_with_action_id?("Queues").should.eql false
+  end
+  
+  test "the IAXPeers action should not respond with an action id" do
+    @ManagerInterface.replies_with_action_id?("IAXPeers").should.eql false
   end
   
   test "the ParkedCalls terminator event" do
