@@ -11,7 +11,7 @@
 ##
 # Asterisk Manager Interface example:
 #
-# events.asterisk.events.each do |event|
+# events.asterisk.manager_interface.each do |event|
 #   p event
 # end
 #
@@ -20,7 +20,7 @@
 ##
 # Here is a list of the events included by default:
 #
-# - events.asterisk.events
+# - events.asterisk.manager_interface
 # - events.after_initialized
 # - events.shutdown
 # - events.asterisk.before_call

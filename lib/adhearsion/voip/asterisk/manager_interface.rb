@@ -196,7 +196,7 @@ module Adhearsion
           def event_message_received(event)
             return if event.kind_of?(ManagerInterfaceResponse) && event["Message"] == "Authentication accepted"
             # TODO: convert the event name to a certain namespace.
-            Events.trigger %w[asterisk events], event
+            Events.trigger %w[asterisk manager_interface], event
           end
           
           def event_error_received(message)
