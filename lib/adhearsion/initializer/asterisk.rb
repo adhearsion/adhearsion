@@ -29,7 +29,18 @@ module Adhearsion
         def initialize_ami
           options = ami_options
           start_ami_after_initialized
-          VoIP::Asterisk::Manager::ManagerInterface.new options
+          returning VoIP::Asterisk::Manager::ManagerInterface.new(options) do
+            class << VoIP::Asterisk
+              if respond_to?(:manager_interface)
+                ahn_log.warn "Asterisk.manager_interface already initialized?"
+              else
+                def manager_interface
+                  # ahn_log.ami.warn "Warning! This Asterisk.manager_interface() notation is for Adhearsion version 0.8.0 only. Subsequent versions of Adhearsion will use a feature called SuperManager. Migrating to use SuperManager will be very simple. See http://docs.adhearsion.com/AMI for more information."
+                  Adhearsion::Initializer::AsteriskInitializer.ami_client
+                end
+              end
+            end
+          end
         end
         
         def ami_options
@@ -45,7 +56,15 @@ module Adhearsion
         end
         
         def start_ami_after_initialized
-          Events.register_callback(:after_initialized) { ami_client.connect! }
+          Events.register_callback(:after_initialized) do
+            begin
+              self.ami_client.connect!
+            rescue Errno::ECONNREFUSED
+              ahn_log.ami.error "Connection refused when connecting to AMI! Please check your configuration."
+            rescue => e
+              ahn_log.ami.error "Error connecting to AMI! #{e.inspect}"
+            end
+          end
         end
 
       end
