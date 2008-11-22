@@ -90,9 +90,8 @@ context "A simulated use of the 'ahn' command" do
   end
   
   test "if no path is provided, running Ahn command blows up" do
-    the_following_code {
-      Adhearsion::CLI::AhnCommand.parse_arguments(['start'])
-    }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::UnknownCommand
+    flexmock(Adhearsion::CLI::AhnCommand).should_receive(:fail_and_print_usage).once.and_return
+    Adhearsion::CLI::AhnCommand.parse_arguments(['start'])
   end
   
   test "printing the version" do
@@ -110,10 +109,9 @@ context "A simulated use of the 'ahn' command" do
   end
   
   test "reacting to unrecognized commands" do
-    the_following_code {
-      simulate_args "alpha", "beta"
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise(Adhearsion::CLI::AhnCommand::CommandHandler::UnknownCommand)
+    simulate_args "alpha", "beta"
+    flexmock(Adhearsion::CLI::AhnCommand).should_receive(:fail_and_print_usage).once.and_return
+    Adhearsion::CLI::AhnCommand.execute!
   end
   
   test "giving a path that doesn't contain a project raises an exception" do
