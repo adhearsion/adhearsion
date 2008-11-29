@@ -1608,7 +1608,7 @@ end
           end
           
           def init_error
-            @current_message = ManagerInterfaceError.new
+            @current_message = ManagerInterfaceError.new()
           end
           
           def version_starts
