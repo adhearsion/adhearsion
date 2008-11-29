@@ -1,14 +1,26 @@
 require File.dirname(__FILE__) + "/test_helper"
 
 context "Ruby-level requirements of components" do
+  
+  include ComponentManagerTestHelper
+  
   test "constants should be available in the main namespace" do
     constant_name = "FOO_#{rand(10000000000)}"
-    code = <<-RUBY
-      #{constant_name} = 123
-    RUBY
-    run_component_code code
-    Module.const_get(constant_name).should.equal 123
+    begin
+      code = <<-RUBY
+        #{constant_name} = 123
+      RUBY
+      run_component_code code
+      Module.const_get(constant_name).should.equal 123
+    ensure
+      Object.send(:remove_const, constant_name) rescue nil
+    end
   end
+  
+  test "should alias the initialization method to initialisation"
+  
+  test "defined constants should be available within the methods_for block"
+  
   test "defined methods should be recognized once defined" do
     code = <<-RUBY
       methods_for :something do
@@ -20,21 +32,60 @@ context "Ruby-level requirements of components" do
     container_object = Object.new
     Adhearsion::Components.extend_object_with(:something, container_object)
   end
-  test "root-level methods" 
+  
+  test "root-level methods"
+  
+  test "a method defined in one scope should not be available in another"
+  
+  test "methods defined in separate blocks should be available if they share a scope"
+  
   test "privately defined methods should remain private"
   test "should have access to the COMPONENTS constant"
   test "the delegate method should properly delegate arguments and a block to a specified object"
+  
+  test "an initialized component should not have an 'initialize' private method since it's confusing"
+  
 end
 
 context "The component loader" do
+  
+  include ComponentManagerTestHelper
+  
   test "should find components in a project properly"
   test "should run the initialization block" do
-    ComponentManager.load_from_code(code)
+    code = <<-RUBY
+      initialization do
+        throw :got_here!
+      end
+    RUBY
+    the_following_code {
+      Adhearsion::Components.load_component_code(code)
+    }.should.throw :got_here!
+
   end
+  
+  test "should properly expose any defined constants" do
+    container = run_component_code <<-RUBY
+      TEST_ONE   = 1
+      TEST_TWO   = 2
+      TEST_THREE = 3
+    RUBY
+    container.constants.sort.should.eql ["TEST_ONE", "TEST_THREE", "TEST_TWO"]
+    container.constants.map do |constant|
+      container.const_get(constant)
+    end.sort.should.eql [1,2,3]
+  end
+  
 end
 
 
-
+BEGIN {
+  module ComponentManagerTestHelper
+    def run_component_code(code)
+      Adhearsion::Components.load_component_code(code)
+    end
+  end
+}
 
 
 
