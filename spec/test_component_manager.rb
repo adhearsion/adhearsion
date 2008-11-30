@@ -4,31 +4,49 @@ context "Ruby-level requirements of components" do
   
   include ComponentManagerTestHelper
   
+  before :each do
+    reload_config!
+    @component_manager = Adhearsion::Components::ComponentManager.new "/filesystem/access/should/be/mocked/out"
+    Object.send :remove_const, :COMPONENTS if Object.const_defined?(:COMPONENTS)
+    Object.send :const_set, :COMPONENTS, @component_manager.lazy_config_loader
+  end
+  
   test "constants should be available in the main namespace" do
     constant_name = "FOO_#{rand(10000000000)}"
     begin
-      code = <<-RUBY
+      run_component_code <<-RUBY
         #{constant_name} = 123
       RUBY
-      run_component_code code
       Module.const_get(constant_name).should.equal 123
     ensure
       Object.send(:remove_const, constant_name) rescue nil
     end
   end
-  test "defined constants should be available within the methods_for block"
+
+  test "defined constants should be available within the methods_for block" do
+    constant_name = "I_HAVE_#{rand(100000000000000)}_GUMMY_BEARS"
+    code = <<-RUBY
+      #{constant_name} = :its_true!
+      methods_for :dialplan do
+        throw #{constant_name}
+      end
+    RUBY
+    the_following_code {
+      run_component_code code
+    }.should.throw :its_true!
+  end
+  
+  test "initialization block should be called after the methods_for() blocks"
   
   test "defined methods should be recognized once defined" do
-    code = <<-RUBY
+    run_component_code <<-RUBY
       methods_for :events do
         def foo
           :inside_foo!
         end
       end
     RUBY
-    run_component_code code
-    container_object = Object.new
-    Adhearsion::Components.extend_object_with(container_object, :events)
+    container_object = new_object_with_scope :events
     container_object.foo.should.equal :inside_foo!
   end
   
@@ -48,19 +66,101 @@ context "Ruby-level requirements of components" do
     
   end
   
-  test "methods defined in separate blocks should be available if they share a scope"
+  test "methods defined in separate blocks should be available if they share a scope" do
+    run_component_code <<-RUBY
+      methods_for :dialplan do
+        def get_symbol
+          :i_am_the_best_symbol_in_the_world
+        end
+      end
+      methods_for :dialplan do
+        def throw_best_symbol_in_the_world
+          throw get_symbol
+        end
+      end
+    RUBY
+    obj = new_object_with_scope :dialplan
+    the_following_code {
+      obj.throw_best_symbol_in_the_world
+    }.should.throw :i_am_the_best_symbol_in_the_world
+  end
   
-  test "privately defined methods should remain private"
-  test "should have access to the COMPONENTS constant"
-  test "the delegate method should properly delegate arguments and a block to a specified object"
+  test "privately defined methods should remain private" do
+    return_value = "hear! hear! i'm private, indeed!"
+    run_component_code <<-RUBY
+      methods_for :generators do
+        def i_am_public
+          i_am_private.reverse
+        end
+        
+        private
+
+        def i_am_private
+          "#{return_value}"
+        end
+      end
+    RUBY
+    object = new_object_with_scope(:generators)
+    object.i_am_public.should.eql return_value.reverse
+    the_following_code {
+      object.i_am_private
+    }.should.raise NoMethodError
+  end
+  
+  test "should have access to the COMPONENTS constant" do
+    component_name = "am_not_for_kokoa"
+    mock_component_config(component_name, <<-YAML)
+host: localhost
+port: 7007
+array:
+  - 1
+  - 2
+  - 3
+    YAML
+    run_component_code <<-RUBY
+    methods_for(:dialplan) do
+      def host
+        COMPONENTS.#{component_name}["host"]
+      end
+      def port
+        COMPONENTS.#{component_name}["port"]
+      end
+      def array
+        COMPONENTS.#{component_name}["array"]
+      end
+    end
+    RUBY
+    obj = new_object_with_scope :dialplan
+    obj.host.should.eql "localhost"
+    obj.port.should.eql 7007
+    obj.array.should.eql [1,2,3]
+  end
+  
+  test "the delegate method should properly delegate arguments and a block to a specified object" do
+    component_name = "writing_this_at_peets_coffee"
+    mock_component_config(component_name, "{jay: phillips}")
+    run_component_code <<-RUBY
+    
+    initialization do
+      obj = Object.new
+      def obj.foo
+        :foo
+      end
+      def obj.bar
+        :bar
+      end
+      COMPONENTS.#{component_name}[:foobar] = obj
+    end
+    
+    methods_for :dialplan do
+      delegate :#{component_name}, :to => :COMPONENTS
+    end
+    RUBY
+    obj = new_object_with_scope :dialplan
+    obj.send(component_name)[:foobar].foo.should.equal :foo
+  end
   
   test "an initialized component should not have an 'initialize' private method since it's confusing"
-  
-end
-
-context "The component loader" do
-  
-  include ComponentManagerTestHelper
   
   test "should find components in a project properly"
   test "should run the initialization block" do
@@ -70,7 +170,7 @@ context "The component loader" do
       end
     RUBY
     the_following_code {
-      Adhearsion::Components.load_component_code(code)
+      run_component_code code
     }.should.throw :got_here!
 
   end
@@ -82,7 +182,7 @@ context "The component loader" do
       end
     RUBY
     the_following_code {
-      Adhearsion::Components.load_component_code(code)
+      run_component_code code
     }.should.throw :BRITISH!
   end
   
@@ -103,8 +203,27 @@ end
 
 BEGIN {
   module ComponentManagerTestHelper
+    
+    def reload_config!
+      
+    end
+    
+    def mock_component_config(component_name, yaml)
+      yaml = YAML.load(yaml) if yaml.kind_of?(String)
+      flexmock(@component_manager.lazy_config_loader).should_receive(component_name).and_return yaml
+      reload_config!
+    end
+    
+    def reinitialize_manager!
+      
+    end
+    
     def run_component_code(code)
-      Adhearsion::Components.load_component_code(code)
+      @component_manager.load_code(code)
+    end
+    
+    def new_object_with_scope(scope)
+      @component_manager.extend_object_with(Object.new, scope)
     end
   end
 }

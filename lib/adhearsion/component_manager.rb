@@ -1,32 +1,33 @@
-require "singleton"
-
 module Adhearsion
   module Components
     
-    
-    class << self
-      
-      def extend_object_with(object, *scopes)
-        ComponentManager.instance.extend_object_with(object, *scopes)
-      end
-      
-      def load_component_code(code)
-        ComponentManager.instance.load_code code
-      end
-      
-    end
-    
     class ComponentManager
       
-      include Singleton
-      
       SCOPE_NAMES = [:dialplan, :events, :generators, :rpc]
+      DEFAULT_CONFIG_NAME = "config.yml"
       
-      attr_reader :scopes
-      def initialize
+      attr_reader :scopes, :lazy_config_loader
+      def initialize(path_to_container_directory)
+        @path_to_container_directory = path_to_container_directory
         @scopes = SCOPE_NAMES.inject({}) do |scopes, name|
           scopes[name] = []
           scopes
+        end
+        @lazy_config_loader = LazyConfigLoader.new(self)
+      end
+      
+      ##
+      # Loads the configuration file for a given component name.
+      #
+      # @return [Hash] The loaded YAML for the given component name. An empty Hash if no YAML file exists.
+      #
+      def configuration_for_component_named(component_name)
+        component_dir = File.join(@path_to_container_directory, component_name)
+        config_file = File.join component_dir, DEFAULT_CONFIG_NAME
+        if File.exists?(config_file)
+          YAML.load_file config_file
+        else
+          return {}
         end
       end
       
@@ -37,10 +38,11 @@ module Adhearsion
         raise ArgumentError, "Unrecognized scopes #{unrecognized_scopes.map(&:inspect).to_sentence}" if unrecognized_scopes.any?
         
         scopes.each do |scope|
-          Array(ComponentManager.instance.scopes[scope]).each do |methods|
+          Array(@scopes[scope]).each do |methods|
             object.extend methods
           end
         end
+        object
       end
     
       def load_code(code)
@@ -93,6 +95,22 @@ module Adhearsion
           end
         end
         
+        # def delegate(*method_names_to_delegate)
+        #   options = method_names_to_delegate.pop if method_names_to_delegate.last.kind_of?(Hash)
+        #   recipient = options[:to]
+        #   if recipient
+        #     method_names_to_delegate.each do |method_name|
+        #       metaclass.instance_eval(<<-RUBY, __FILE__, __LINE__)
+        #         def #{method_name}(*args, &block)
+        #           
+        #         end
+        #       RUBY
+        #     end
+        #   else
+        #     raise ArgumentError, "Delegation needs a target. Supply an options hash with a :to key as the last argument (e.g. delegate :hello, :world, :to => :greeter)."
+        #   end
+        # end
+        # 
         def initialization(&block)
           # Raise an exception if the initialization block has already been set
           metadata = metaclass.send(:instance_variable_get, :@metadata)
@@ -127,6 +145,16 @@ module Adhearsion
           super(&block)
         end
         
+      end
+    
+      class LazyConfigLoader
+        def initialize(component_manager)
+          @component_manager = component_manager
+        end
+        
+        def method_missing(component_name)
+          @component_manager.configuration_for_component_named(component_name.to_s)
+        end
       end
     
     end
