@@ -16,26 +16,37 @@ context "Ruby-level requirements of components" do
       Object.send(:remove_const, constant_name) rescue nil
     end
   end
-  
-  test "should alias the initialization method to initialisation"
-  
   test "defined constants should be available within the methods_for block"
   
   test "defined methods should be recognized once defined" do
     code = <<-RUBY
-      methods_for :something do
+      methods_for :events do
         def foo
-        
+          :inside_foo!
         end
       end
     RUBY
+    run_component_code code
     container_object = Object.new
-    Adhearsion::Components.extend_object_with(:something, container_object)
+    Adhearsion::Components.extend_object_with(container_object, :events)
+    container_object.foo.should.equal :inside_foo!
   end
   
-  test "root-level methods"
-  
-  test "a method defined in one scope should not be available in another"
+  test "a method defined in one scope should not be available in another" do
+    code = <<-RUBY
+      methods_for :events do
+        def in_events
+          in_dialplan
+        end
+      end
+      methods_for :dialplan do
+        def in_dialplan
+          in_events
+        end
+      end
+    RUBY
+    
+  end
   
   test "methods defined in separate blocks should be available if they share a scope"
   
@@ -64,6 +75,17 @@ context "The component loader" do
 
   end
   
+  test "should alias the initialization method to initialisation" do
+    code = <<-RUBY
+      initialisation do
+        throw :BRITISH!
+      end
+    RUBY
+    the_following_code {
+      Adhearsion::Components.load_component_code(code)
+    }.should.throw :BRITISH!
+  end
+  
   test "should properly expose any defined constants" do
     container = run_component_code <<-RUBY
       TEST_ONE   = 1
@@ -86,12 +108,6 @@ BEGIN {
     end
   end
 }
-
-
-
-
-
-
 
 # BEGIN {
 #   module CallContextComponentTestHelpers
