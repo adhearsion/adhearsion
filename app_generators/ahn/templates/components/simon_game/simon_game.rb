@@ -1,10 +1,13 @@
-class SimonGame
-  add_call_context :as => :call_context
+methods_for :dialplan do
+  def simon_game
+    SimonGame.new(self).start
+  end
+end
 
-  attr_accessor :number, :attempt
-  def initialize
-    initialize_number
-    initialize_attempt
+class SimonGame
+
+  def initialize(call)
+    @call = call
   end
   
   def start
@@ -20,38 +23,29 @@ class SimonGame
   end
 
   def update_number
-    initialize_attempt
     @number << random_number
   end
 
   def say_number
     update_number
-    call_context.say_digits number
+    @call.say_digits @number
   end
 
   def collect_attempt
-    @attempt = call_context.input(number.size)
+    @attempt = @call.input @number.length
   end
 
   def verify_attempt
     if attempt_correct? 
-      call_context.play 'good'
+      @call.play 'good'
     else
-      call_context.play %W(#{number.size - 1} times wrong-try-again-smarty)
+      @call.play %W[#{@number.length-1} times wrong-try-again-smarty]
       reset
     end
   end
 
   def attempt_correct?
-    attempt == number
-  end
-  
-  def initialize_attempt
-    @attempt ||= ''
-  end
-  
-  def initialize_number
-    @number ||= ''
+    @attempt == @number
   end
   
   def reset
