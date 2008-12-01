@@ -8,6 +8,7 @@ class SimonGame
 
   def initialize(call)
     @call = call
+    reset
   end
   
   def start

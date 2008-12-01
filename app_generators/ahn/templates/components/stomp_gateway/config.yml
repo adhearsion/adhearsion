@@ -1,0 +1,12 @@
+# Comment out any of these properties to use a default.
+
+user: stomp_user
+pass: secret_password
+host: localhost
+port: 61613
+
+### Add your list of subscriptions below that this gateway should proxy to events.rb
+
+# subscriptions:
+#   - start_call
+#   - hangup_call

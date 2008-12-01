@@ -3,7 +3,7 @@ module Adhearsion
     
     class ComponentManager
       
-      SCOPE_NAMES = [:dialplan, :events, :generators, :rpc]
+      SCOPE_NAMES = [:dialplan, :events, :generators, :rpc, :global]
       DEFAULT_CONFIG_NAME = "config.yml"
       
       attr_reader :scopes, :lazy_config_loader
@@ -14,6 +14,21 @@ module Adhearsion
           scopes
         end
         @lazy_config_loader = LazyConfigLoader.new(self)
+      end
+      
+      def load_components
+        components = Dir.glob(File.join(@path_to_container_directory + "/*")).select do |path|
+          File.directory?(path)
+        end
+        components.map! { |path| File.basename path }
+        components.each do |component|
+          component_file = File.join(@path_to_container_directory, component, component + ".rb")
+          if File.exists? component_file
+            load_file component_file
+          else
+            ahn_log.warn "Component directory does not contain a matching .rb file! Was expecting #{component_file.inspect}"
+          end
+        end
       end
       
       ##
@@ -46,7 +61,16 @@ module Adhearsion
       end
     
       def load_code(code)
-        container = ComponentDefinitionContainer.load_code code
+        load_container ComponentDefinitionContainer.load_code(code)
+      end
+
+      def load_file(filename)
+        load_container ComponentDefinitionContainer.load_file(filename)
+      end
+      
+      protected
+      
+      def load_container(container)
         container.constants.each do |constant_name|
           constant_value = container.const_get(constant_name)
           Object.const_set(constant_name, constant_value)
@@ -60,13 +84,19 @@ module Adhearsion
         end
         container
       end
-    
+
       class ComponentDefinitionContainer < Module
         
         class << self
           def load_code(code)
-            returning new do |container|
-              container.module_eval code
+            returning(new) do |instance|
+              instance.module_eval code
+            end
+          end
+          
+          def load_file(filename)
+            returning(new) do |instance|
+              instance.module_eval File.read(filename), filename
             end
           end
         end
@@ -88,10 +118,14 @@ module Adhearsion
         
         def methods_for(*scopes, &block)
           raise ArgumentError if scopes.empty?
-          raise ArgumentError if (scopes - SCOPE_NAMES).any?
+          raise ArgumentError, "Do not recognize scope: #{scopes.to_sentence}" if (scopes - SCOPE_NAMES).any?
           metadata = metaclass.send(:instance_variable_get, :@metadata)
           scopes.each do |scope|
-            metadata[:scopes][scope] << Module.new(&block)
+            anonymous_component_module = Module.new(&block)
+            metadata[:scopes][scope] << anonymous_component_module
+            if scope.equal? :global
+              Object.send(:include, anonymous_component_module)
+            end
           end
         end
         
@@ -153,7 +187,8 @@ module Adhearsion
         end
         
         def method_missing(component_name)
-          @component_manager.configuration_for_component_named(component_name.to_s)
+          config = @component_manager.configuration_for_component_named(component_name.to_s)
+          meta_def(component_name) { config }
         end
       end
     

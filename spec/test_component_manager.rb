@@ -5,7 +5,6 @@ context "Ruby-level requirements of components" do
   include ComponentManagerTestHelper
   
   before :each do
-    reload_config!
     @component_manager = Adhearsion::Components::ComponentManager.new "/filesystem/access/should/be/mocked/out"
     Object.send :remove_const, :COMPONENTS if Object.const_defined?(:COMPONENTS)
     Object.send :const_set, :COMPONENTS, @component_manager.lazy_config_loader
@@ -107,6 +106,37 @@ context "Ruby-level requirements of components" do
     }.should.raise NoMethodError
   end
   
+  test "load_components should load code with the proper filenames" do
+    components_dir_path = "/path/to/somewhere/components"
+    component_names = %w[fooo barr qazz]
+    component_paths = component_names.map { |name| "#{components_dir_path}/#{name}" }
+    
+    flexmock(Dir).should_receive(:glob).once.with(components_dir_path + "/*").
+        and_return(component_paths)
+    flexstub(File).should_receive(:exists?).and_return true
+    flexstub(File).should_receive(:directory?).and_return true
+    
+    manager = Adhearsion::Components::ComponentManager.new(components_dir_path)
+    component_paths.each do |path|
+      flexmock(manager).should_receive(:load_file).once.with "#{path}/#{File.basename(path)}.rb"
+    end
+    
+    manager.load_components
+  end
+  
+  test "load_file"
+  
+  test "the :global scope" do
+    run_component_code <<-RUBY
+      methods_for :global do
+        def i_should_be_globally_available
+          :found!
+        end
+      end
+    RUBY
+    i_should_be_globally_available.should.equal :found!
+  end
+  
   test "should have access to the COMPONENTS constant" do
     component_name = "am_not_for_kokoa"
     mock_component_config(component_name, <<-YAML)
@@ -204,18 +234,9 @@ end
 BEGIN {
   module ComponentManagerTestHelper
     
-    def reload_config!
-      
-    end
-    
     def mock_component_config(component_name, yaml)
       yaml = YAML.load(yaml) if yaml.kind_of?(String)
       flexmock(@component_manager.lazy_config_loader).should_receive(component_name).and_return yaml
-      reload_config!
-    end
-    
-    def reinitialize_manager!
-      
     end
     
     def run_component_code(code)

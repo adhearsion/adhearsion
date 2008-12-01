@@ -24,11 +24,12 @@ class AhnGenerator < RubiGen::Base
 
       m.file  *[".ahnrc"]*2
       
-      m.file  *["components/simon_game/configuration.rb"]*2
-      m.file  *["components/simon_game/lib/simon_game.rb"]*2
-      m.file  *["components/simon_game/test/test_helper.rb"]*2
-      m.file  *["components/simon_game/test/test_simon_game.rb"]*2
-      
+      m.file  *["components/simon_game/simon_game.rb"]*2
+
+      m.file  *["components/stomp_gateway/stomp_gateway.rb"]*2
+      m.file  *["components/stomp_gateway/config.yml"]*2
+      m.file  *["components/stomp_gateway/README.markdown"]*2
+
       m.file  *["config/startup.rb"]*2
       m.file  *["dialplan.rb"]*2
       m.file  *["events.rb"]*2
@@ -70,8 +71,8 @@ EOS
     # Installation skeleton.  Intermediate directories are automatically
     # created so don't sweat their absence here.
     BASEDIRS = %w(
-      components/simon_game/lib
-      components/simon_game/test
+      components/simon_game
+      components/stomp_gateway
       config
     )
 end

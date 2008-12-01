@@ -47,9 +47,13 @@ module Adhearsion
         # TODO: Extract number of threads to use from AHN_CONFIG
         @@framework_theatre = Theatre::Theatre.new
         DEFAULT_FRAMEWORK_EVENT_NAMESPACES.each do |namespace|
-          @@framework_theatre.register_namespace_name namespace
+          register_namespace_name namespace
         end
         return @@framework_theatre
+      end
+      
+      def register_namespace_name(name)
+        framework_theatre.register_namespace_name name
       end
       
       def stop!

@@ -110,9 +110,11 @@ module Adhearsion
       initialize_log_file
       load_all_init_files
       init_modules
-      init_events
+      init_events_subsystem
       create_pid_file if pid_file
       load_components
+      init_events_file
+      
       ahn_log "Adhearsion initialized!"
       
       trigger_after_initialized_hooks
@@ -248,12 +250,9 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       # FreeswitchInitializer.start if AHN_CONFIG.freeswitch_enabled?
     end
     
-    def init_events
+    def init_events_subsystem
       application_events_files = AHN_CONFIG.files_from_setting("paths", "events")
       if application_events_files.any?
-        application_events_files.each do |file|
-          Events.framework_theatre.load_events_file file
-        end
         Events.register_callback(:shutdown) do
           ahn_log.events "Performing a graceful stop of events subsystem"
           Events.framework_theatre.graceful_stop!
@@ -262,10 +261,13 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       else
         ahn_log.events.warn 'No entries in the "events" section of .ahnrc. Skipping its initialization.'
       end
-    rescue LoadError
-      ahn_log.events.fatal 'Cannot load dependent library "theatre"! See http://github.com/jicksta/theatre'
-    rescue NameError
-      ahn_log.events.warn 'No "events" section in .ahnrc. Skipping its initialization.'
+    end
+    
+    def init_events_file
+      application_events_files = AHN_CONFIG.files_from_setting("paths", "events")
+      application_events_files.each do |file|
+        Events.framework_theatre.load_events_file file
+      end
     end
     
     def should_daemonize?
@@ -303,8 +305,14 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
     
     def load_components
-      ComponentManager.load
-      ComponentManager.start
+      @components_directory = File.expand_path "components"
+      if File.directory? @components_directory
+        @component_manager = Adhearsion::Components::ComponentManager.new @components_directory
+        Kernel.send(:const_set, :COMPONENTS, @component_manager.lazy_config_loader)
+        @component_manager.load_components
+      else
+        ahn_log.warn "No components directory found. Not initializing any components."
+      end
     end
     
     def trigger_after_initialized_hooks
