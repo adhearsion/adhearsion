@@ -104,11 +104,13 @@ context "Adhearsion::Initializer" do
     require 'theatre'
     events_rb = Tempfile.new "events.rb"
     initializer = Adhearsion::Initializer.new("/does/not/matter")
-    flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "events").
+    flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).at_least.once.with("paths", "events").
         and_return([events_rb.path])
     flexmock(Theatre::Theatre).new_instances.should_receive(:load_events_file).once.with events_rb.path
     flexmock(Adhearsion::Events.framework_theatre).should_receive(:start!).once
-    initializer.send(:init_events)
+    
+    initializer.send :init_events_subsystem
+    initializer.send :init_events_file
   end
   
   private

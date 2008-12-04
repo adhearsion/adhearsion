@@ -21,15 +21,35 @@ module Adhearsion
     #
     class ExecutionEnvironment
       
+      class << self
+        def create(call, entry_point=nil)
+          p [:on_create, entry_point]
+          instance = new(call, entry_point)
+          p [:create2, instance.send(:entry_point)]
+          instance.stage!
+          instance
+        end
+      end
+      
       attr_reader :call
       def initialize(call, entry_point=nil)
+        p [:constr_arg, entry_point]
         @call, @entry_point = call, entry_point
+        p [:after_constructor, @entry_point]
+      end
+      
+      def stage!
+        p [:before_extend_with_voip_commands, @entry_point]
         extend_with_voip_commands!
+        p [:before_extend_with_call_variables, @entry_point]
         extend_with_call_variables!
+        p [:before_extend_with_dialplan_component_methods, @entry_point]
         extend_with_dialplan_component_methods!
+        p [:after_extend_with_dialplan_component_methods, @entry_point]
       end
       
       def run
+        p [:on_run, @entry_point]
         raise "Cannot run ExecutionEnvironment without an entry point!" unless entry_point
         current_context = entry_point
         answer if AHN_CONFIG.automatically_answer_incoming_calls
@@ -44,18 +64,17 @@ module Adhearsion
       private
 
       attr_reader :entry_point
-      
       def extend_with_voip_commands!
-        extend(Adhearsion::VoIP::Conveniences)
-        extend(Adhearsion::VoIP::Commands.for(call.originating_voip_platform))
+        extend Adhearsion::VoIP::Conveniences
+        extend Adhearsion::VoIP::Commands.for(call.originating_voip_platform)
       end
       
       def extend_with_call_variables!
         call.define_variable_accessors self
       end
       
-      def extend_with_dialplan_component_methods!
-        Components.component_manager.extend_object_with(self, :dialplan)
+      def extend_with_dialplan_component_methods!        
+        Components.component_manager.extend_object_with(self, :dialplan) if Components.component_manager
       end
       
     end
@@ -77,20 +96,20 @@ module Adhearsion
       
       def handle(call)
         if call.failed_call?
-          environment = ExecutionEnvironment.new(call)
-          call.extract_failed_reason_from(environment)
+          environment = ExecutionEnvironment.create(call)
+          call.extract_failed_reason_from environment
           raise FailedExtensionCallException.new(environment)
         end
         
         if call.hungup_call?
-          raise HungupExtensionCallException.new(ExecutionEnvironment.new(call))
+          raise HungupExtensionCallException.new(ExecutionEnvironment.create(call))
         end
         
         starting_entry_point = entry_point_for call
         raise NoContextError, "No dialplan entry point for call context '#{call.context}' -- Ignoring call!" unless starting_entry_point
-      
-        @context = ExecutionEnvironment.new(call, starting_entry_point)
-        inject_context_names_into_environment(@context)
+        p [:in_handle, starting_entry_point]
+        @context = ExecutionEnvironment.create(call, starting_entry_point)
+        inject_context_names_into_environment @context
         @context.run
       end
       
@@ -147,13 +166,6 @@ module Adhearsion
           end
         end
         
-        private
-          def inject_dial_plan_component_classes_into(dial_plan_as_string)
-            dial_plan_as_string[0, 0] = ComponentManager.components_with_call_context.keys.map do |component| 
-              "#{component} = ::Adhearsion::ComponentManager.components_with_call_context['#{component}'] unless defined? #{component}\n"
-            end.join
-          end
-          
       end
       
       self.default_dial_plan_file_name ||= 'dialplan.rb'

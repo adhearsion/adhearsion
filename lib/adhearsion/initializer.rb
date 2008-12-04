@@ -317,7 +317,9 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
     
     def load_components
-      Components.component_manager.load_components
+      if Components.component_manager
+        Components.component_manager.load_components
+      end
     end
     
     def trigger_after_initialized_hooks

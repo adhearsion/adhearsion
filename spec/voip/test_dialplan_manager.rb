@@ -7,9 +7,11 @@ context "Dialplan::Manager handling" do
   
   attr_accessor :manager, :call, :context_name, :mock_context
   
-  before do
+  before :each do
     @context_name = :some_context_name
     @mock_context = flexmock('a context')
+    
+    mock_out_components_entirely
     
     mock_dial_plan_lookup_for_context_name
     
@@ -45,7 +47,7 @@ context "Dialplan::Manager handling" do
     flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:answer).once.and_throw :answered_call!
     Adhearsion::Configuration.configure
     the_following_code {
-      manager.handle(call)
+      manager.handle call
     }.should.throw :answered_call!
   end
   
@@ -61,7 +63,7 @@ context "Dialplan::Manager handling" do
     flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:instance_eval).and_throw :doing_dialplan
     
     Adhearsion::Configuration.configure
-    manager.handle(call)
+    manager.handle call
   end
   
   private
@@ -251,6 +253,10 @@ context "The inbox-related dialplan methods" do
   
   include DialplanTestingHelper
   
+  before :each do
+    mock_out_components_entirely
+  end
+  
   test "with_next_message should execute its block with the message from the inbox" do
     mock_call = new_call_for_context :entrance
     [:one, :two, :three].each { |message| mock_call.inbox << message }
@@ -276,24 +282,27 @@ end
 
 
 context "ExecutionEnvironemnt" do
+  
   attr_accessor :call, :entry_point
   
   include DialplanTestingHelper
-
+  
   before do
     variables = { :context => "zomgzlols", :caller_id => "Ponce de Leon" }
+    mock_out_components_entirely
     @call = Adhearsion::Call.new(nil, variables)
     @entry_point = lambda {}
   end
   
   test "On initialization, ExecutionEnvironments extend themselves with behavior specific to the voip platform which originated the call" do
     Adhearsion::DialPlan::ExecutionEnvironment.included_modules.should.not.include(Adhearsion::VoIP::Asterisk::Commands)
-    execution_environent = Adhearsion::DialPlan::ExecutionEnvironment.new(call, entry_point)
+    execution_environent = Adhearsion::DialPlan::ExecutionEnvironment.create(call, entry_point)
     execution_environent.metaclass.included_modules.should.include(Adhearsion::VoIP::Asterisk::Commands)
   end
   
   test "An executed context should raise a NameError error when a missing constant is referenced" do
     the_following_code do
+      puts "\n\n<STARTING CRAP>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n"
       context = :context_with_missing_constant
       call = new_call_for_context context
       mock_dialplan_with "#{context} { ThisConstantDoesntExist }"
@@ -303,7 +312,7 @@ context "ExecutionEnvironemnt" do
   end
   
   test "should define variables accessors within itself" do
-    environment = Adhearsion::DialPlan::ExecutionEnvironment.new(@call, entry_point)
+    environment = Adhearsion::DialPlan::ExecutionEnvironment.create(@call, entry_point)
     call.variables.should.not.be.empty
     call.variables.each do |key, value|
       environment.send(key).should.equal value
@@ -328,6 +337,7 @@ context "ExecutionEnvironemnt" do
     %w(these_context_names_do_not_really_matter icanhascheezburger? am_not_for_kokoa!).each do |context_name|
       manager.context.respond_to?(context_name).should.equal true
     end
+    
   end
   
 end
@@ -335,6 +345,10 @@ end
 context "Dialplan control statements" do
   
   include DialplanTestingHelper
+  
+  before :each do
+    mock_out_components_entirely
+  end
   
   test "Manager should catch ControlPassingExceptions" do
     dialplan = %{
@@ -354,6 +368,7 @@ context "Dialplan control statements" do
     }
     executing_dialplan(:zuerst => dialplan).should.not.throw
   end
+  
   test "All dialplan contexts should be available at context execution time" do
     dialplan = %{
       context_defined_first {
@@ -363,6 +378,7 @@ context "Dialplan control statements" do
     }
     executing_dialplan(:context_defined_first => dialplan).should.throw :i_see_it
   end
+  
   test "Proc#+@ should execute the other context" do
     dialplan = %{
       eins {
@@ -425,6 +441,11 @@ module DialplanTestingHelper
     end
   end
   
+  def mock_out_components_entirely
+    flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.
+        should_receive(:extend_with_dialplan_component_methods!).once.and_return
+  end
+  
   def executing_dialplan(options)
     call         = options.delete(:call)
     context_name = options.keys.first
@@ -432,6 +453,7 @@ module DialplanTestingHelper
     call       ||= new_call_for_context context_name
     
     mock_dialplan_with dialplan
+    
     lambda do
       Adhearsion::DialPlan::Manager.new.handle call
     end
