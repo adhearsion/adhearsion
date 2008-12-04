@@ -22,34 +22,27 @@ module Adhearsion
     class ExecutionEnvironment
       
       class << self
-        def create(call, entry_point=nil)
-          p [:on_create, entry_point]
-          instance = new(call, entry_point)
-          p [:create2, instance.send(:entry_point)]
-          instance.stage!
-          instance
+        def create(*args)
+          returning(new(*args)) { |instance| instance.stage! }
         end
       end
       
       attr_reader :call
-      def initialize(call, entry_point=nil)
-        p [:constr_arg, entry_point]
+      def initialize(call, entry_point)
         @call, @entry_point = call, entry_point
-        p [:after_constructor, @entry_point]
       end
       
+      ##
+      # Adds the methods to this ExecutionEnvironment which make it useful. e.g. dialplan-related methods, call variables,
+      # and component methods.
+      #
       def stage!
-        p [:before_extend_with_voip_commands, @entry_point]
         extend_with_voip_commands!
-        p [:before_extend_with_call_variables, @entry_point]
         extend_with_call_variables!
-        p [:before_extend_with_dialplan_component_methods, @entry_point]
         extend_with_dialplan_component_methods!
-        p [:after_extend_with_dialplan_component_methods, @entry_point]
       end
       
       def run
-        p [:on_run, @entry_point]
         raise "Cannot run ExecutionEnvironment without an entry point!" unless entry_point
         current_context = entry_point
         answer if AHN_CONFIG.automatically_answer_incoming_calls
@@ -61,7 +54,7 @@ module Adhearsion
         end
       end
       
-      private
+      protected
 
       attr_reader :entry_point
       def extend_with_voip_commands!
@@ -96,18 +89,17 @@ module Adhearsion
       
       def handle(call)
         if call.failed_call?
-          environment = ExecutionEnvironment.create(call)
+          environment = ExecutionEnvironment.create(call, nil)
           call.extract_failed_reason_from environment
           raise FailedExtensionCallException.new(environment)
         end
         
         if call.hungup_call?
-          raise HungupExtensionCallException.new(ExecutionEnvironment.create(call))
+          raise HungupExtensionCallException.new(ExecutionEnvironment.new(call, nil))
         end
         
         starting_entry_point = entry_point_for call
         raise NoContextError, "No dialplan entry point for call context '#{call.context}' -- Ignoring call!" unless starting_entry_point
-        p [:in_handle, starting_entry_point]
         @context = ExecutionEnvironment.create(call, starting_entry_point)
         inject_context_names_into_environment @context
         @context.run

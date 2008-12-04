@@ -11,7 +11,7 @@ context "Dialplan::Manager handling" do
     @context_name = :some_context_name
     @mock_context = flexmock('a context')
     
-    mock_out_components_entirely
+    Adhearsion::Components.component_manager = mock_component_manager
     
     mock_dial_plan_lookup_for_context_name
     
@@ -52,15 +52,18 @@ context "Dialplan::Manager handling" do
   end
   
   test 'should not send :answer to the executuon environment if Adhearsion::AHN_CONFIG.automatically_answer_incoming_calls is NOT set' do
-    flexmock(Adhearsion::Configuration).new_instances.should_receive(:automatically_answer_incoming_calls).
-        once.and_return false
+    flexmock(Adhearsion::Configuration).new_instances.should_receive(:automatically_answer_incoming_calls).once.
+        and_return false
     
-    entry_point = Adhearsion::DialPlan::DialplanContextProc.new(:does_not_matter) {}
+    entry_point = Adhearsion::DialPlan::DialplanContextProc.new(:does_not_matter) { "Do nothing" }
     flexmock(manager).should_receive(:entry_point_for).once.with(call).and_return(entry_point)
     
-    flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:entry_point).and_return entry_point
-    flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:answer).never
-    flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:instance_eval).and_throw :doing_dialplan
+    
+    execution_env = Adhearsion::DialPlan::ExecutionEnvironment.create(call, nil)
+    flexmock(execution_env).should_receive(:entry_point).and_return entry_point
+    flexmock(execution_env).should_receive(:answer).never
+    
+    flexmock(Adhearsion::DialPlan::ExecutionEnvironment).should_receive(:new).once.and_return execution_env
     
     Adhearsion::Configuration.configure
     manager.handle call
@@ -254,7 +257,7 @@ context "The inbox-related dialplan methods" do
   include DialplanTestingHelper
   
   before :each do
-    mock_out_components_entirely
+    Adhearsion::Components.component_manager = mock_component_manager
   end
   
   test "with_next_message should execute its block with the message from the inbox" do
@@ -289,7 +292,7 @@ context "ExecutionEnvironemnt" do
   
   before do
     variables = { :context => "zomgzlols", :caller_id => "Ponce de Leon" }
-    mock_out_components_entirely
+    Adhearsion::Components.component_manager = mock_component_manager
     @call = Adhearsion::Call.new(nil, variables)
     @entry_point = lambda {}
   end
@@ -302,7 +305,6 @@ context "ExecutionEnvironemnt" do
   
   test "An executed context should raise a NameError error when a missing constant is referenced" do
     the_following_code do
-      puts "\n\n<STARTING CRAP>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n"
       context = :context_with_missing_constant
       call = new_call_for_context context
       mock_dialplan_with "#{context} { ThisConstantDoesntExist }"
@@ -347,7 +349,7 @@ context "Dialplan control statements" do
   include DialplanTestingHelper
   
   before :each do
-    mock_out_components_entirely
+    Adhearsion::Components.component_manager = mock_component_manager
   end
   
   test "Manager should catch ControlPassingExceptions" do
@@ -441,9 +443,13 @@ module DialplanTestingHelper
     end
   end
   
-  def mock_out_components_entirely
-    flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.
-        should_receive(:extend_with_dialplan_component_methods!).once.and_return
+  # def Adhearsion::Components.component_manager = mock_component_manager
+  #   flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.
+  #       should_receive(:extend_with_dialplan_component_methods!).once.and_return
+  # end
+  # 
+  def mock_component_manager
+    flexmock "mock ComponentManager", :extend_object_with => nil
   end
   
   def executing_dialplan(options)

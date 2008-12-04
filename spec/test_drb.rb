@@ -1,87 +1,34 @@
 require File.dirname(__FILE__) + "/test_helper"
 
-# The way I envisoned publishing this DRb:
-#
-# publish :globally do/end
-# publish :with => :drb do/end
-
-context "Publishing an interface" do  
-  test "should be allowed with a class method" do
-    Class.new.class_eval do
-      include Adhearsion::Publishable
-      publish :through => :interface do
-        def self.bar
-          [1, 2, 3]
-        end
-      end
-    end
-    Adhearsion::DrbDoor.instance.interface.bar.should.equal [1, 2, 3]
-  end
-
-  test "should be allowed with an alternate interface" do
-    Class.new.class_eval do
-      include Adhearsion::Publishable
-      publish :through => :api do
-        def self.bar
-          [2, 3, 4]
-        end
-      end
-    end
-    Adhearsion::DrbDoor.instance.api.bar.should.equal [2, 3, 4]
-  end
+context "Invoking an interface method via DRb" do
   
-  test "should be allowed with a metaclass block" do
-    Class.new.class_eval do
-      include Adhearsion::Publishable
-      publish :through => :interface do
-        class << self
-          def bar
-            [3, 2, 1]
-          end
-        end
-      end
-    end
-    Adhearsion::DrbDoor.instance.interface.bar.should.equal [3, 2, 1]
-  end
-  
-  test "should be allowed from within the metaclass block" do
-    # Class.new.class_eval do
-    #   include Publishable
-    #   class << self
-    #     publish :through => :interface do
-    #       def baz
-    #         [4, 5, 6]
-    #       end
-    #     end
-    #   end
-    # end
-    # Adhearsion::DrbDoor.instance.interface.baz.should.equal [4, 5, 6]
-  end
-end
+  include DRbTestHelper
 
-context "Invoking an interface" do
   test "should raise an exception if the method is not found" do
     the_following_code do
-      Adhearsion::DrbDoor.instance.interface.foobar.should.equal [1, 2, 3]
+      new_drb_rpc_object.this_method_doesnt_exist
     end.should.raise NoMethodError
   end
-
-  test "should raise an exception if the interface is not found" do
-    the_following_code do
-      Adhearsion::DrbDoor.instance.bad_interface.bar.should.equal [1, 2, 3]
-    end.should.raise NoMethodError
+  
+  before(:all) { require 'drb' }
+  
+  before :each do
+    @component_manager = Adhearsion::Components::ComponentManager.new("/path/doesnt/matter")
+    @door = DRb.start_service "druby://127.0.0.1:9050", new_drb_rpc_object
   end
-end
-
-context "Invoking an interface method via DRb" do
-  require 'drb'
-  before do
-    @door = DRb.start_service "druby://127.0.0.1:9050", Adhearsion::DrbDoor.instance
+  
+  after :each do
+    DRb.stop_service
   end
 
-  test "should return the proper result" do
+  test "should return normal Ruby data structures properly over DRb" do
+    add_rpc_methods <<-RUBY
+      def bar
+        [3,2,1]
+      end
+    RUBY
     client = DRbObject.new nil, DRb.uri
-    client.interface.bar.should.equal [3, 2, 1]
+    client.bar.should.equal [3, 2, 1]
   end
 
   test "should raise an exception for a non-existent interface" do
@@ -102,3 +49,20 @@ context "Invoking an interface method via DRb" do
     DRb.stop_service
   end
 end
+
+
+BEGIN {
+  module DRbTestHelper
+    
+    def new_drb_rpc_object
+      returning Object.new do |obj|
+        @component_manager.extend_object_with(obj, :rpc)
+      end
+    end
+    
+    def add_rpc_methods(code)
+      @component_manager.load_code "methods_for(:rpc) do; #{code}; end"
+    end
+    
+  end
+}

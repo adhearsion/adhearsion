@@ -81,7 +81,7 @@ context "ManagerInterface" do
   end
   
   test "a received event is received by Theatre" do
-    flexmock(Adhearsion::Events).should_receive(:trigger).once.with(%w[asterisk events], @Manager::ManagerInterfaceEvent)
+    flexmock(Adhearsion::Events).should_receive(:trigger).once.with(%w[asterisk manager_interface], @Manager::ManagerInterfaceEvent)
     
     manager = new_manager_with_events
     flexmock(manager).should_receive(:login_actions).once.and_return
