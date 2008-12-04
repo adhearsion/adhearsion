@@ -124,8 +124,6 @@ context "Ruby-level requirements of components" do
     manager.load_components
   end
   
-  test "load_file"
-  
   test "the :global scope" do
     run_component_code <<-RUBY
       methods_for :global do
@@ -134,7 +132,19 @@ context "Ruby-level requirements of components" do
         end
       end
     RUBY
+    @component_manager.globalize_global_scope!
     i_should_be_globally_available.should.equal :found!
+  end
+  
+  test "methods defined in outside of any scope should not be globally available" do
+    run_component_code <<-RUBY
+      def i_should_not_be_globally_available
+        :found!
+      end
+    RUBY
+    the_following_code {
+      i_should_not_be_globally_available
+    }.should.raise NameError
   end
   
   test "should have access to the COMPONENTS constant" do

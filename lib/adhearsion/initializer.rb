@@ -109,6 +109,7 @@ module Adhearsion
       daemonize! if should_daemonize?
       initialize_log_file
       load_all_init_files
+      init_components_subsystem
       init_modules
       init_events_subsystem
       create_pid_file if pid_file
@@ -304,15 +305,19 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       end
     end
     
-    def load_components
+    def init_components_subsystem
       @components_directory = File.expand_path "components"
       if File.directory? @components_directory
-        @component_manager = Adhearsion::Components::ComponentManager.new @components_directory
-        Kernel.send(:const_set, :COMPONENTS, @component_manager.lazy_config_loader)
-        @component_manager.load_components
+        Components.component_manager = Adhearsion::Components::ComponentManager.new @components_directory
+        Kernel.send(:const_set, :COMPONENTS, Components.component_manager.lazy_config_loader)
+        Components.component_manager.globalize_global_scope!
       else
         ahn_log.warn "No components directory found. Not initializing any components."
       end
+    end
+    
+    def load_components
+      Components.component_manager.load_components
     end
     
     def trigger_after_initialized_hooks

@@ -1,5 +1,4 @@
 # Hardcoding require for now since for some reason it's not being loaded
-require 'adhearsion/component_manager'
 require 'adhearsion/voip/dsl/dialplan/control_passing_exception'
 
 module Adhearsion
@@ -27,6 +26,7 @@ module Adhearsion
         @call, @entry_point = call, entry_point
         extend_with_voip_commands!
         extend_with_call_variables!
+        extend_with_dialplan_component_methods!
       end
       
       def run
@@ -42,17 +42,22 @@ module Adhearsion
       end
       
       private
-        attr_reader :entry_point
-        
-        def extend_with_voip_commands!
-          extend(Adhearsion::VoIP::Conveniences)
-          extend(Adhearsion::VoIP::Commands.for(call.originating_voip_platform))
-        end
-        
-        def extend_with_call_variables!
-          call.define_variable_accessors self
-        end
-        
+
+      attr_reader :entry_point
+      
+      def extend_with_voip_commands!
+        extend(Adhearsion::VoIP::Conveniences)
+        extend(Adhearsion::VoIP::Commands.for(call.originating_voip_platform))
+      end
+      
+      def extend_with_call_variables!
+        call.define_variable_accessors self
+      end
+      
+      def extend_with_dialplan_component_methods!
+        Components.component_manager.extend_object_with(self, :dialplan)
+      end
+      
     end
     
     class Manager
@@ -136,7 +141,6 @@ module Adhearsion
             end
           end
           returning new do |loader|
-            loader.load_components!
             files.each do |file|
               loader.load file
             end
@@ -166,13 +170,6 @@ module Adhearsion
         dialplan_code = dialplan_file.read
         @context_collector.instance_eval(dialplan_code, dialplan_file.path)
         nil
-      end
-      
-      def load_components!
-        component_code = ComponentManager.components_with_call_context.keys.map do |component| 
-          "#{component} = ::Adhearsion::ComponentManager.components_with_call_context['#{component}'] unless defined? #{component}\n"
-        end.join
-        @context_collector.instance_eval component_code
       end
       
       class ContextNameCollector# < ::BlankSlate

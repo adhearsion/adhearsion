@@ -28,7 +28,6 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/foundation/metaprogramming.rb
   lib/adhearsion/foundation/numeric.rb
   lib/adhearsion/foundation/pseudo_guid.rb
-  lib/adhearsion/foundation/publishable.rb
   lib/adhearsion/foundation/relationship_properties.rb
   lib/adhearsion/foundation/string.rb
   lib/adhearsion/foundation/synchronized_hash.rb

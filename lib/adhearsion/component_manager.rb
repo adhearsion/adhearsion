@@ -1,7 +1,19 @@
 module Adhearsion
   module Components
     
+    mattr_accessor :component_manager
+    
     class ComponentManager
+      
+      class << self
+        
+        def scopes_valid?(*scopes)
+          unrecognized_scopes = (scopes.flatten - SCOPE_NAMES).map(&:inspect)
+          raise ArgumentError, "Unrecognized scopes #{unrecognized_scopes.to_sentence}" if unrecognized_scopes.any?
+          true
+        end
+        
+      end
       
       SCOPE_NAMES = [:dialplan, :events, :generators, :rpc, :global]
       DEFAULT_CONFIG_NAME = "config.yml"
@@ -10,11 +22,19 @@ module Adhearsion
       def initialize(path_to_container_directory)
         @path_to_container_directory = path_to_container_directory
         @scopes = SCOPE_NAMES.inject({}) do |scopes, name|
-          scopes[name] = []
+          scopes[name] = Module.new
           scopes
         end
         @lazy_config_loader = LazyConfigLoader.new(self)
       end
+      
+      ##
+      # Includes the anonymous Module created for the :global scope in Object, making its methods globally accessible.
+      #
+      def globalize_global_scope!
+        Object.send :include, @scopes[:global]
+      end
+      
       
       def load_components
         components = Dir.glob(File.join(@path_to_container_directory + "/*")).select do |path|
@@ -29,6 +49,7 @@ module Adhearsion
             ahn_log.warn "Component directory does not contain a matching .rb file! Was expecting #{component_file.inspect}"
           end
         end
+        
       end
       
       ##
@@ -49,13 +70,11 @@ module Adhearsion
       def extend_object_with(object, *scopes)
         raise ArgumentError, "Must supply at least one scope!" if scopes.empty?
         
-        unrecognized_scopes = scopes - SCOPE_NAMES
-        raise ArgumentError, "Unrecognized scopes #{unrecognized_scopes.map(&:inspect).to_sentence}" if unrecognized_scopes.any?
+        self.class.scopes_valid? scopes
         
         scopes.each do |scope|
-          Array(@scopes[scope]).each do |methods|
-            object.extend methods
-          end
+          methods = @scopes[scope]
+          object.extend methods
         end
         object
       end
@@ -76,11 +95,14 @@ module Adhearsion
           Object.const_set(constant_name, constant_value)
         end
         metadata = container.metaclass.send(:instance_variable_get, :@metadata)
-        if metadata[:initialization_block]
-          metadata[:initialization_block].call
-        end
-        metadata[:scopes].each_pair do |scope, blocks|
-          @scopes[scope].concat blocks
+        metadata[:initialization_block].call if metadata[:initialization_block]
+        
+        self.class.scopes_valid? metadata[:scopes].keys
+        
+        metadata[:scopes].each_pair do |scope, method_definition_blocks|
+          method_definition_blocks.each do |method_definition_block|
+            @scopes[scope].module_eval(&method_definition_block)
+          end
         end
         container
       end
@@ -118,33 +140,13 @@ module Adhearsion
         
         def methods_for(*scopes, &block)
           raise ArgumentError if scopes.empty?
-          raise ArgumentError, "Do not recognize scope: #{scopes.to_sentence}" if (scopes - SCOPE_NAMES).any?
+          
+          ComponentManager.scopes_valid? scopes
+          
           metadata = metaclass.send(:instance_variable_get, :@metadata)
-          scopes.each do |scope|
-            anonymous_component_module = Module.new(&block)
-            metadata[:scopes][scope] << anonymous_component_module
-            if scope.equal? :global
-              Object.send(:include, anonymous_component_module)
-            end
-          end
+          scopes.each { |scope| metadata[:scopes][scope] << block }
         end
         
-        # def delegate(*method_names_to_delegate)
-        #   options = method_names_to_delegate.pop if method_names_to_delegate.last.kind_of?(Hash)
-        #   recipient = options[:to]
-        #   if recipient
-        #     method_names_to_delegate.each do |method_name|
-        #       metaclass.instance_eval(<<-RUBY, __FILE__, __LINE__)
-        #         def #{method_name}(*args, &block)
-        #           
-        #         end
-        #       RUBY
-        #     end
-        #   else
-        #     raise ArgumentError, "Delegation needs a target. Supply an options hash with a :to key as the last argument (e.g. delegate :hello, :world, :to => :greeter)."
-        #   end
-        # end
-        # 
         def initialization(&block)
           # Raise an exception if the initialization block has already been set
           metadata = metaclass.send(:instance_variable_get, :@metadata)
@@ -155,6 +157,8 @@ module Adhearsion
           end
         end
         alias initialisation initialization
+        
+        protected
         
         class << self
           def self.method_added(method_name)
