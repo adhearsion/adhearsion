@@ -31,7 +31,7 @@ Adhearsion::Configuration.configure do |config|
   # To change the host IP or port on which the AGI server listens, use this:
   # config.enable_asterisk :listening_port => 4574, :listening_host => "127.0.0.1"
   
-  # config.enable_drb 
+  # config.enable_drb
   
   # Streamlined Rails integration! The first argument should be a relative or absolute path to 
   # the Rails app folder with which you're integrating. The second argument must be one of the 

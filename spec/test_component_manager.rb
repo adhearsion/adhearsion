@@ -112,7 +112,7 @@ context "Ruby-level requirements of components" do
     component_paths = component_names.map { |name| "#{components_dir_path}/#{name}" }
     
     flexmock(Dir).should_receive(:glob).once.with(components_dir_path + "/*").
-        and_return(component_paths)
+        and_return(component_paths + ["disabled"])
     flexstub(File).should_receive(:exists?).and_return true
     flexstub(File).should_receive(:directory?).and_return true
     

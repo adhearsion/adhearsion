@@ -10,7 +10,7 @@ module Adhearsion
         def start
           self.config     = AHN_CONFIG.asterisk
           self.agi_server = initialize_agi
-          self.ami_client = initialize_ami if config.ami_enabled?
+          self.ami_client = VoIP::Asterisk.manager_interface = initialize_ami if config.ami_enabled?
           join_server_thread_after_initialized
         end
 
@@ -23,7 +23,7 @@ module Adhearsion
 
         def initialize_agi
           VoIP::Asterisk::AGI::Server.new :host => config.listening_host,
-                                                      :port => config.listening_port
+                                          :port => config.listening_port
         end
         
         def initialize_ami

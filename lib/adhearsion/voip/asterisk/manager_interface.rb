@@ -15,6 +15,8 @@ module Adhearsion
         end
       end
       
+      mattr_accessor :manager_interface
+      
       module Manager
         
         ##
