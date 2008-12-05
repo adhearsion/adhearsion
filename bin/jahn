@@ -29,4 +29,14 @@ require 'adhearsion/cli'
 # file from an app.
 # require 'adhearsion/jruby'
 
+abort(<<-MESSAGE) unless RUBY_PLATFORM =~ /java/
+You must use jahn with JRuby! Are you running this script after installing Adhearsion with non-JRuby RubyGems?
+
+If you don't want to install Adhearsion with the JRuby version of RubyGems, try running jahn directly with an absolute path:
+
+#{File.expand_path(__FILE__)} start your_app_name
+
+Note: You must have the jruby executable in your $PATH and $JRUBY_HOME set.
+MESSAGE
+
 Adhearsion::CLI::AhnCommand.execute!
