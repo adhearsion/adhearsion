@@ -40,7 +40,14 @@ module Adhearsion
         end
         
         def join_server_thread_after_initialized
-          Events.register_callback(:after_initialized) { agi_server.start }
+          Events.register_callback(:after_initialized) do
+            begin
+              agi_server.start
+            rescue => e
+              ahn_log.fatal "Failed to start AGI server! #{e.inspect}"
+              abort
+            end
+          end
           IMPORTANT_THREADS << agi_server
         end
         
