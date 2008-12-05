@@ -1,4 +1,3 @@
 adhearsion {
-  simon = new_simon_game
-  simon.start
+  simon_game
 }
