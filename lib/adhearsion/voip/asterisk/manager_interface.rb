@@ -446,6 +446,7 @@ module Adhearsion
           # @return [EventSocket]
           #
           def establish_events_connection
+            
             # Note: the @events_connection instance variable is set in login()
             @events_connection = EventSocket.connect(@host, @port) do |handler|
               handler.receive_data { |data| @events_lexer << data  }
@@ -453,6 +454,7 @@ module Adhearsion
               handler.disconnected { events_connection_disconnected }
             end
             login_events
+            ahn_log.ami "Successful AMI events-only connection into #{@username}@#{@host}"
           end
 
           def login_actions
@@ -461,7 +463,7 @@ module Adhearsion
             if response.kind_of? ManagerInterfaceError
               raise AuthenticationFailedException, "Incorrect username and password! #{response.message}"
             else
-              ahn_log.ami "Successful AMI connection into #{@username}@#{@host}"
+              ahn_log.ami "Successful AMI actions-only connection into #{@username}@#{@host}"
               response
             end
           end
