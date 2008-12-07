@@ -1,15 +1,13 @@
 begin
-  require 'theatre'
+  gem 'theatre'
 rescue LoadError
-  abort <<-ERROR
-Could not load the "theare" gem.
-
-As of Oct. 16th, 2008, Adhearsion depends on this gem (which Jay Phillips wrote) to handle
-the new events sub-system of Adhearsion. You can get it from two places:
-
-Rubyforge: sudo gem install theatre
-Github (latest): sudo gem install jicksta-theatre --source http://gems.github.com
-  ERROR
+  # Good. It should not be installed. Let's require it from the lib/ directory.
+  require 'theatre'
+else
+  abort <<-MESSAGE
+It seems you have the "theatre" gem installed. As of Dec. 7th, 2008 Theatre has been rolled into Adhearsion and will be
+distributed with it.
+  MESSAGE
 end
 
 module Adhearsion

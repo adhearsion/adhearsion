@@ -3,9 +3,11 @@ ADHEARSION_FILES = %w{
   app_generators/ahn/ahn_generator.rb
   app_generators/ahn/templates/.ahnrc
   app_generators/ahn/templates/components/simon_game/simon_game.rb
-  app_generators/ahn/templates/components/stomp_gateway/config.yml
-  app_generators/ahn/templates/components/stomp_gateway/README.markdown
-  app_generators/ahn/templates/components/stomp_gateway/stomp_gateway.rb
+  app_generators/ahn/templates/components/ami_remote/ami_remote.rb
+  app_generators/ahn/templates/components/disabled/HOW_TO_ENABLE
+  app_generators/ahn/templates/components/disabled/stomp_gateway/config.yml
+  app_generators/ahn/templates/components/disabled/stomp_gateway/README.markdown
+  app_generators/ahn/templates/components/disabled/stomp_gateway/stomp_gateway.rb
   app_generators/ahn/templates/config/startup.rb
   app_generators/ahn/templates/dialplan.rb
   app_generators/ahn/templates/events.rb
@@ -15,7 +17,15 @@ ADHEARSION_FILES = %w{
   bin/ahn
   bin/ahnctl
   bin/jahn
+  examples/asterisk_manager_interface/standalone.rb
   EVENTS
+  lib/theatre/dsl/callback_definition_loader.rb
+  lib/theatre/guid.rb
+  lib/theatre/invocation.rb
+  lib/theatre/namespace_manager.rb
+  lib/theatre/README.markdown
+  lib/theatre/version.rb
+  lib/theatre.rb
   lib/adhearsion.rb
   lib/adhearsion/cli.rb
   lib/adhearsion/component_manager.rb

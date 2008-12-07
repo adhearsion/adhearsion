@@ -1,4 +1,6 @@
 Notes from before 0.8.0:
+ - (NOTE: This is obviously not a comprehensive list of pre-0.8.0 work. 0.8.0 was a complete rewrite of the previous version)
  - Adding a deprecation warning about Fixnum#digit and Fixnum#digits
  - Removed the AMI class and replaced it with the ManagerInterface class.
  - The old AMI high-level instance methods are available in the new ManagerInterface class, but a deprecation warning will be logged each time they're used. When the SuperManager class is implemented, they'll be removed entirely.
+ - Moved Theatre into Adhearsion's lib folder.

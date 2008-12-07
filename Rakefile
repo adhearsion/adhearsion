@@ -1,19 +1,35 @@
 # -*- ruby -*-
 ENV['RUBY_FLAGS'] = "-I#{%w(lib ext bin test).join(File::PATH_SEPARATOR)}"
 
-require 'rake/gempackagetask'
 require 'rubygems'
+require 'rake/gempackagetask'
+
+begin
+  require 'spec/rake/spectask'
+rescue LoadError
+  abort "You must install RSpec: sudo gem install rspec"
+end
+
+begin
+  require 'yard'
+  YARD::Rake::YardocTask.new do |t|
+    t.files = ['lib/**/*.rb'] + %w[README.markdown TODO.markdown LICENSE]
+  end
+rescue LoadError
+  STDERR.puts "\nCould not require() YARD! Install with 'gem install yard' to get the 'yardoc' task\n\n"
+end
 
 require 'lib/adhearsion/version'
 
-TestGlob    = ['spec/**/test_*.rb']
-GEMSPEC     = eval File.read("adhearsion.gemspec")
-RAGEL_FILES = %w[lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb]
+AHN_TESTS     = ['spec/**/test_*.rb']
+GEMSPEC       = eval File.read("adhearsion.gemspec")
+RAGEL_FILES   = %w[lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb]
+THEATRE_TESTS = 'theatre-spec/**/*_spec.rb'
 
 begin
   require 'rcov/rcovtask'
   Rcov::RcovTask.new do |t|
-    t.test_files = Dir[*TestGlob]
+    t.test_files = Dir[*AHN_TESTS]
     t.output_dir = 'coverage'
     t.verbose = true
     t.rcov_opts.concat %w[--sort coverage --sort-reverse -x gems -x /var --no-validator-links]
@@ -31,7 +47,7 @@ Rake::GemPackageTask.new(GEMSPEC).define
 
 desc "Run the unit tests for Adhearsion"
 task :spec do
-  Dir[*TestGlob].each do |file|
+  Dir[*AHN_TESTS].each do |file|
     load file
   end
 end
@@ -63,6 +79,11 @@ task :visualize_ragel => :check_ragel_version do
     puts `ragel -V #{ragel_file} -o #{base_name}.dot 2>&1`
     raise "Failed generating code from Ragel file #{ragel_file}" if $?.to_i.nonzero?
   end
+end
+
+desc "Run all RSpecs for Theatre"
+Spec::Rake::SpecTask.new("theatre_specs") do |t|
+  t.spec_files = FileList[THEATRE_TESTS]
 end
 
 desc "Compares Adhearsion's files with those listed in adhearsion.gemspec"

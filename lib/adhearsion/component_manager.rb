@@ -75,7 +75,11 @@ module Adhearsion
         
         scopes.each do |scope|
           methods = @scopes[scope]
-          object.extend methods
+          if object.kind_of?(Module)
+            object.send :include, methods
+          else
+            object.extend methods
+          end
         end
         object
       end
