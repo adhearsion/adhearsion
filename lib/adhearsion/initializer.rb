@@ -13,6 +13,33 @@ module Adhearsion
     
   end
   class PathString < String
+    
+    class << self
+      
+      ##
+      # Will return a PathString for the application root folder to which the specified arbitrarily nested subfolder belongs.
+      # It works by traversing parent directories looking for the .ahnrc file. If no .ahnrc is found, nil is returned.
+      #
+      # @param [String] folder The path to the directory which should be a 
+      # @return [nil] if the subdirectory does not belong to a parent Adhearsion app directory
+      # @return [PathString] if a directory is found 
+      #
+      def from_application_subdirectory(folder)
+        folder = File.expand_path folder
+        ahn_rc = nil
+        
+        until ahn_rc || folder == "/"
+          possible_ahn_rc = File.join(folder, ".ahnrc")
+          if File.exists?(possible_ahn_rc)
+            ahn_rc = possible_ahn_rc
+          else
+            folder = File.expand_path(folder + "/..")
+          end
+        end
+        ahn_rc ? new(folder) : nil
+      end
+    end
+    
     attr_accessor :component_path, :dialplan_path, :log_path
     
     def initialize(path)
@@ -37,11 +64,6 @@ module Adhearsion
       block.call
     ensure
       self.base_path = original_path
-    end
-    
-    def dial_plan_named(name)
-      raise "DEPRECATED"
-      # File.join(dialplan_path, name)
     end
     
     private

@@ -9,9 +9,10 @@ Usage:
    ahn start [daemon] [directory]
    ahn version|-v|--v|-version|--version
    ahn help|-h|--h|--help|-help
-
-Under development:
-   ahn create:projectname /path/to/directory
+   
+   ahn  enable component COMPONENT_NAME
+   ahn disable component COMPONENT_NAME
+   ahn  create component COMPONENT_NAME
 USAGE
     
       def self.execute!
@@ -47,6 +48,14 @@ USAGE
             [:start, path, daemon, pid_file]
           when '-'
             [:start, Dir.pwd]
+          when "enable", "disable"
+            if args.size == 1
+              raise CommandHandler::UnknownCommand, "Must supply an argument for what you wish to #{action}"
+            elsif args.size == 2
+              [action, *args]
+            else
+              raise CommandHandler::UnknownCommand, "Too many arguments supplied!"
+            end
           else
             [action, *args]
         end
@@ -78,9 +87,63 @@ USAGE
             puts USAGE
           end
         
+          def enable(type, name)
+            case type
+              when "component"
+                app_path = PathString.from_application_subdirectory Dir.pwd
+                if app_path
+                  disabled_component_path = File.join app_path, "components", "disabled", name
+                  enabled_component_path  = File.join app_path, "components", name
+                  if File.directory? disabled_component_path
+                    FileUtils.mv disabled_component_path, enabled_component_path
+                    puts "Enabled component #{name}"
+                  else
+                    raise ComponentError.new("There is no components/disabled directory!")
+                  end
+                else
+                  raise PathInvalid.new(Dir.pwd)
+                end
+              else
+                raise UnknownCommand.new("enable #{type}")
+            end
+          end
+          
+          def disable(type, name)
+            case type
+              when "component"
+                app_path = PathString.from_application_subdirectory Dir.pwd
+                if app_path
+                  disabled_dir = File.join app_path, "components", "disabled"
+                  
+                  disabled_component_path = File.join disabled_dir, name
+                  enabled_component_path  = File.join app_path, "components", name
+                  
+                  Dir.mkdir disabled_dir unless File.directory?(disabled_dir)
+                  
+                  if File.directory? enabled_component_path
+                    if File.directory?(disabled_component_path)
+                      raise ComponentError.new("There is already a disabled component at #{disabled_component_path}")
+                    else
+                      FileUtils.mv enabled_component_path, disabled_component_path
+                      puts "Disabled component #{name}"
+                    end
+                  else
+                    raise ComponentError.new("Could not find component #{name} at #{enabled_component_path} !")
+                  end
+                else
+                  raise PathInvalid.new(Dir.pwd)
+                end
+              else
+                raise UnknownCommand.new("disable #{type}")
+            end
+          end
+          
           def method_missing(action, *args)
             raise UnknownCommand, [action, *args] * " "
           end
+          
+          private
+          
         end
         
         class UnknownCommand < Exception
@@ -88,6 +151,8 @@ USAGE
             super "Unknown command: #{cmd}\n#{USAGE}"
           end
         end
+        
+        class ComponentError < Exception; end
         
         class UnknownProject < Exception
           def initialize(project)
@@ -97,7 +162,7 @@ USAGE
         
         class PathInvalid < Exception
           def initialize(path)
-            super "Directory #{path} does not contain an Adhearsion project!"
+            super "Directory #{path} does not belong to an Adhearsion project!"
           end
         end
       end
