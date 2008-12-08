@@ -17,6 +17,10 @@ USAGE
     
       def self.execute!
         CommandHandler.send(*parse_arguments)
+      rescue CommandHandler::CLIException => error
+        puts error.message
+        puts
+        puts USAGE
       end
       
       def self.parse_arguments(args=ARGV.clone)
@@ -187,21 +191,23 @@ USAGE
           
         end
         
-        class UnknownCommand < Exception
+        class CLIException < Exception; end
+        
+        class UnknownCommand < CLIException
           def initialize(cmd)
-            super "Unknown command: #{cmd}\n#{USAGE}"
+            super "Unknown command: #{cmd}"
           end
         end
         
-        class ComponentError < Exception; end
+        class ComponentError < CLIException; end
         
-        class UnknownProject < Exception
+        class UnknownProject < CLIException
           def initialize(project)
             super "Application #{project} does not exist! Have you installed it?"
           end
         end
         
-        class PathInvalid < Exception
+        class PathInvalid < CLIException
           def initialize(path)
             super "Directory #{path} does not belong to an Adhearsion project!"
           end
