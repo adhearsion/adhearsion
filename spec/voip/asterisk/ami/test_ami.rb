@@ -245,26 +245,51 @@ context "ManagerInterface" do
   end
   
   test "normal use of Action:SIPPeers (which has causal events)" do
-    flexmock(@Manager::ManagerInterface::ManagerInterfaceAction).new_instances.should_receive(:response).once.and_return
+
+    raise "TODO"
     
-    queue_mock = mocked_queue
+    response = @Manager::ManagerInterfaceResponse.new
+    response["Message"] = "Peer status list will follow"
+    
+    first_peer_entry = @Manager::ManagerInterfaceEvent.new "PeerEntry"
+    { "Channeltype" => "SIP", "ObjectName" => "softphone", "ChanObjectType" => "peer", "IPaddress" => "-none-",
+        "IPport" => "0", "Dynamic" => "yes", "Natsupport" => "no", "VideoSupport" => "no", "ACL" => "no",
+        "Status" => "Unmonitored", "RealtimeDevice" => "no" }.each_pair do |key,value|
+      first_peer_entry[key] = value
+    end
+    
+    second_peer_entry = @Manager::ManagerInterfaceEvent.new "PeerEntry"
+    { "Channeltype" => "SIP", "ObjectName" => "teliax", "ChanObjectType" => "peer", "IPaddress" => "74.201.8.23",
+          "IPport" => "5060", "Dynamic" => "no", "Natsupport" => "yes", "VideoSupport" => "no", "ACL" => "no",
+          "Status" => "OK (24 ms)", "RealtimeDevice" => "no" }.each_pair do |key, value|
+      second_peer_entry[key] = value
+    end
+    
+    ender = @Manager::ManagerInterfaceEvent.new "PeerlistComplete"
+    ender["ListItems"] = "2"
+    
+    # flexmock(@Manager::ManagerInterface).new_instances.should_receive(:actions_connection_established).once.and_return
+    # flexmock(@Manager::ManagerInterface).new_instances.should_receive(:write_loop).once.and_return
     
     manager = new_manager_without_events
     
-    queue_mock.on_push do |action|
-      
+    class << manager
+      undef write_loop
     end
+    action = manager.send_action "SIPPeers"
     
-    queue_mock.on_push do |pushed_action|
-      manager.action_event_received(event)
-      manager.action_event_received(event)
-      manager.action_event_received(event)
-      manager.action_event_received(event)
-      manager.action_event_received(event)
-      
-    end
+    manager.send(:action_message_received, response)
+    manager.send(:action_message_received, first_peer_entry)
+    manager.send(:action_message_received, second_peer_entry)
+    manager.send(:action_message_received, ender)
     
-    manager.send_action "SIPPeers"
+    action.response.should.be.kind_of Array
+    action.response.size.should.equal 2
+    
+    first, second = response.response
+    
+    first["ObjectName"].should.eql "softphone"
+    last["ObjectName"].should.eql "teliax"
   end
   
   test "use of Action:SIPPeers (which has causal events) which causes an error" do

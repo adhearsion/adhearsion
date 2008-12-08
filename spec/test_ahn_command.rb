@@ -68,9 +68,8 @@ context "A simulated use of the 'ahn' command" do
   end
   
   test "if no path is provided, running Ahn command blows up" do
-    the_following_code {
-      Adhearsion::CLI::AhnCommand.parse_arguments(['start'])
-    }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::UnknownCommand
+    flexmock(Adhearsion::CLI::AhnCommand).should_receive(:fail_and_print_usage).once.and_return
+    Adhearsion::CLI::AhnCommand.parse_arguments(['start'])
   end
   
   test "printing the version" do
@@ -88,17 +87,14 @@ context "A simulated use of the 'ahn' command" do
   end
   
   test "reacting to unrecognized commands" do
-    the_following_code {
-      simulate_args "alpha", "beta"
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise(Adhearsion::CLI::AhnCommand::CommandHandler::UnknownCommand)
+    simulate_args "alpha", "beta"
+    flexmock(Adhearsion::CLI::AhnCommand).should_receive(:fail_and_print_usage).once.and_return
+    Adhearsion::CLI::AhnCommand.execute!
   end
   
   test "giving a path that doesn't contain a project raises an exception" do
-    the_following_code {
-      simulate_args "start", "/asjdfas/sndjfabsdfbqwb/qnjwejqbwh"
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise(Adhearsion::CLI::AhnCommand::CommandHandler::PathInvalid)
+    simulate_args "start", "/asjdfas/sndjfabsdfbqwb/qnjwejqbwh"
+    executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::PathInvalid
   end
   
 end
@@ -106,6 +102,7 @@ end
 context "Component-related commands" do
   
   include AhnCommandSpecHelper
+  
   
   test "should move a folder from the components/disabled/ folder of an app to the components/ directory if it exists" do
     sandbox      = create_component_sandbox
@@ -118,7 +115,7 @@ context "Component-related commands" do
     flexmock(Dir).should_receive(:pwd).once.and_return disabled_dir
     
     simulate_args "enable", "component", "foobar"
-    capture_stdout { Adhearsion::CLI::AhnCommand.execute! }
+    capture_stdout { execute_ahn_command }
     
     File.directory?(disabled_dir).should.not.equal true
     File.exists?(enabled_dir + "/foobar.rb").should.equal true
@@ -131,9 +128,7 @@ context "Component-related commands" do
     
     simulate_args "enable", "component", "foo"
     
-    the_following_code {
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::ComponentError
+    executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::ComponentError
   end
   
   test "should raise an exception if the disabled component exists and there's an enabled component of the same name" do
@@ -146,17 +141,13 @@ context "Component-related commands" do
     
     simulate_args "enable", "component", "foo"
     
-    the_following_code {
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::ComponentError
+    executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::ComponentError
   end
   
   test "should raise a PathInvalid error if the current directory does not belong to an Adhearsion app" do
     flexmock(Dir).should_receive("pwd").and_return "/"
     simulate_args "enable", "component", "foo"
-    the_following_code {
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::PathInvalid
+    executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::PathInvalid
   end 
   
   test "should properly create the disabled folder if it doesn't exist when disabling a component" do
@@ -166,23 +157,19 @@ context "Component-related commands" do
     FileUtils.mkdir_p sandbox + "/components/rickroller"
     
     simulate_args 'disable', 'component', 'rickroller'
-    capture_stdout { Adhearsion::CLI::AhnCommand.execute! }
+    capture_stdout { execute_ahn_command }
     File.directory?(sandbox + "/components/disabled/rickroller").should.equal true
     File.directory?(sandbox + "/components/rickroller").should.equal false
   end
   
   test "should raise an UnknownCommand error when trying to enable a kind of feature which doesn't exist" do
     simulate_args "enable", "bonobo"
-    the_following_code {
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::UnknownCommand
+    executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::UnknownCommand
   end
   
   test "should raise an UnknownCommand error when trying to disable a kind of feature which doesn't exist" do
     simulate_args "disable", "thanksgiving_dinner"
-    the_following_code {
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::UnknownCommand
+    executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::UnknownCommand
   end
   
   test "should raise a ComponentError when the component to disable doesn't exist" do
@@ -190,9 +177,7 @@ context "Component-related commands" do
     flexmock(Dir).should_receive(:pwd).once.and_return sandbox
     
     simulate_args "disable", "component", "monkeybars"
-    the_following_code {
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::ComponentError
+    executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::ComponentError
   end
   
   test "should raise an exception when disabling a component and the component's disabled directory already exists" do
@@ -204,10 +189,7 @@ context "Component-related commands" do
     FileUtils.mkdir_p sandbox + "/lolcats"
     
     simulate_args "disable", "component", "foo"
-    
-    the_following_code {
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::ComponentError
+    executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::ComponentError
   end
   
 end
@@ -222,32 +204,26 @@ context 'The "create" command' do
       simulate_args "create", tmp_path
       RubiGen::Base.default_options.merge! :quiet => true
       # capture_stdout { Adhearsion::CLI::AhnCommand.execute! }
-      Adhearsion::CLI::AhnCommand.execute!
+      execute_ahn_command
       File.exists?(File.join(tmp_path, ".ahnrc")).should.equal true
     }.should.not.raise
   end
   
   test "should raise a PathInvalid error if the given directory does not belong to an Adhearsion app" do
     simulate_args "create", "component", "foo"
-    the_following_code {
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::PathInvalid
+    executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::PathInvalid
   end
   
   test "should raise an UnknownCommand if running create with no arguments" do
     simulate_args "create"
-    the_following_code {
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::UnknownCommand
+    executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::UnknownCommand
   end
   
   test "should raise a ComponentError if the name of the component is not a valid Ruby symbol name" do
     bad_names = ["!))", "37signals", "foo bar", "*"]
     bad_names.each do |bad_name|
       simulate_args "create", "component", bad_name
-      the_following_code {
-        Adhearsion::CLI::AhnCommand.execute!
-      }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::ComponentError
+      executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::ComponentError
     end
   end
   
@@ -256,9 +232,8 @@ context 'The "create" command' do
     Dir.mkdir sandbox + "/components/blehhh"
     flexmock(Dir).should_receive(:pwd).once.and_return sandbox
     simulate_args "create", "component", "blehhh"
-    the_following_code {
-      Adhearsion::CLI::AhnCommand.execute!
-    }.should.raise Adhearsion::CLI::AhnCommand::CommandHandler::ComponentError
+    
+    executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::ComponentError
   end
   
   test "should create a folder with matching .rb file and a config.yml file when all guards pass" do
@@ -266,7 +241,7 @@ context 'The "create" command' do
     flexmock(Dir).should_receive(:pwd).once.and_return sandbox
     
     simulate_args "create", "component", "ohai"
-    Adhearsion::CLI::AhnCommand.execute!
+    capture_stdout { execute_ahn_command }
     
     File.exists?(sandbox + "/components/ohai/ohai.rb").should.equal true
     File.exists?(sandbox + "/components/ohai/config.yml").should.equal true
@@ -301,6 +276,15 @@ BEGIN {
         FileUtils.touch dir + "/.ahnrc"
         Dir.mkdir dir + "/components"
       end
+    end
+    
+    def execute_ahn_command
+      Adhearsion::CLI::AhnCommand.execute!
+    end
+    
+    def executing_ahn_command_should_fail_with(exception)
+      flexmock(Adhearsion::CLI::AhnCommand).should_receive(:fail_and_print_usage).with(exception).once
+      execute_ahn_command
     end
     
   end

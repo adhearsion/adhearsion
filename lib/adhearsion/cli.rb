@@ -6,7 +6,7 @@ module Adhearsion
       USAGE = <<USAGE
 Usage:
    ahn create /path/to/directory
-   ahn start [daemon] [directory]
+   ahn start [daemon] [/path/to/directory]
    ahn version|-v|--v|-version|--version
    ahn help|-h|--h|--help|-help
    
@@ -18,9 +18,14 @@ USAGE
       def self.execute!
         CommandHandler.send(*parse_arguments)
       rescue CommandHandler::CLIException => error
-        puts error.message
-        puts
-        puts USAGE
+        fail_and_print_usage error
+      end
+      
+      ##
+      # Provides a small abstraction of Kernel::abort().
+      #
+      def self.fail_and_print_usage(error)
+        Kernel.abort "#{error.message}\n\n#{USAGE}"
       end
       
       def self.parse_arguments(args=ARGV.clone)
@@ -33,9 +38,9 @@ USAGE
           when 'start'
             pid_file_regexp = /^--pid-file=(.+)$/
             if args.size > 3
-              raise CommandHandler::UnknownCommand, "Too many arguments supplied!" if args.size > 3
+              fail_and_print_usage "Too many arguments supplied!" if args.size > 3
             elsif args.size == 3
-              raise CommandHandler::UnknownCommand, "Unrecognized final argument #{args.last}" unless args.last =~ pid_file_regexp
+              fail_and_print_usage "Unrecognized final argument #{args.last}" unless args.last =~ pid_file_regexp
               pid_file = args.pop[pid_file_regexp, 1]
             else
               pid_file = nil
@@ -47,7 +52,7 @@ USAGE
             elsif args.size == 1
               path, daemon = args.first, false
             else
-              raise CommandHandler::UnknownCommand, "Invalid format for the start CLI command!"
+              fail_and_print_usage "Invalid format for the start CLI command!"
             end
             [:start, path, daemon, pid_file]
           when '-'
