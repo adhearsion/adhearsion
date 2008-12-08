@@ -58,7 +58,6 @@ context "Dialplan::Manager handling" do
     entry_point = Adhearsion::DialPlan::DialplanContextProc.new(:does_not_matter) { "Do nothing" }
     flexmock(manager).should_receive(:entry_point_for).once.with(call).and_return(entry_point)
     
-    
     execution_env = Adhearsion::DialPlan::ExecutionEnvironment.create(call, nil)
     flexmock(execution_env).should_receive(:entry_point).and_return entry_point
     flexmock(execution_env).should_receive(:answer).never
