@@ -54,20 +54,13 @@ context "The AGI server's serve() method" do
     mock_io   = flexmock "mock IO object given to AGIServer#serve"
     mock_call = flexmock "mock Call"
     flexmock(Adhearsion).should_receive(:receive_call_from).once.with(mock_io).and_return mock_call
-    has_executed = false
-    Adhearsion::Events.register_callback([:asterisk, :before_call]) { |call| 10.times { puts "WEE" }; has_executed = true }
-    server.serve mock_call
-    has_executed.should.equal(true)
-  end
-  
-  test "the before_call event should receive the call object" do
-    mock_io   = flexmock "mock IO object given to AGIServer#serve"
-    mock_call = flexmock "mock Call"
-    flexmock(Adhearsion).should_receive(:receive_call_from).once.with(mock_io).and_return mock_call
-    has_executed = false
-    Adhearsion::Events.register_callback([:asterisk, :before_call]) { |call| mock_call.should.equal(call) }
-    server.serve mock_io
-    has_executed.should.equal true
+    
+    flexmock(Adhearsion::Events).should_receive(:trigger_immediately).once.with([:asterisk, :before_call], mock_call).
+        and_throw :triggered
+        
+    the_following_code {
+      server.serve mock_io
+    }.should.throw :triggered
   end
   
   test 'should execute the call_hangup event when a HungupExtensionCallException is raised' do
