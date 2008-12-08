@@ -354,7 +354,7 @@ module Adhearsion
             returning variables do
               if variables[:request].query
                 variables[:query] = variables[:request].query.split('&').inject({}) do |query_string_parameters, key_value_pair|
-                  parameter_name, parameter_value = *key_value_pair.match(/(.+)=(.+)/).captures
+                  parameter_name, parameter_value = *key_value_pair.match(/(.+)=(.*)/).captures
                   query_string_parameters[parameter_name] = parameter_value
                   query_string_parameters
                 end
