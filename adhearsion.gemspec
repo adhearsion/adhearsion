@@ -19,7 +19,7 @@ ADHEARSION_FILES = %w{
   bin/jahn
   examples/asterisk_manager_interface/standalone.rb
   EVENTS
-  lib/theatre/dsl/callback_definition_loader.rb
+  lib/theatre/callback_definition_loader.rb
   lib/theatre/guid.rb
   lib/theatre/invocation.rb
   lib/theatre/namespace_manager.rb
