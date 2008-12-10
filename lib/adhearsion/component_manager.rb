@@ -35,7 +35,6 @@ module Adhearsion
         Object.send :include, @scopes[:global]
       end
       
-      
       def load_components
         components = Dir.glob(File.join(@path_to_container_directory + "/*")).select do |path|
           File.directory?(path)

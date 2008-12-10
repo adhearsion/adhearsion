@@ -1,4 +1,5 @@
 require File.dirname(__FILE__) + "/test_helper"
+require 'adhearsion/component_manager/component_tester'
 
 context "Adhearsion's component system" do
   
@@ -240,6 +241,32 @@ array:
   
 end
 
+context "ComponentTester" do
+  it "should allow the scope-resolution operator to access a component's constants" do
+    component_name = "my_awesomeness"
+    flexmock(File).should_receive(:read).once.with(/#{component_name}\.rb$/).and_return "AWESOME = :YES!"
+    tester = ComponentTester.new(component_name, "/path/shouldnt/matter")
+    tester::AWESOME.should.equal :YES!
+  end
+  
+  it "should return an executable helper method properly" do
+    component_name = "one_two_three"
+    flexmock(File).should_receive(:read).once.with(/#{component_name}\.rb$/).and_return "def hair() :long end"
+    tester = ComponentTester.new(component_name, "/path/shouldnt/matter")
+    tester.helper_method(:hair).call.should.equal :long
+  end
+  
+  it "should load the configuration for the given helper properly" do
+    component_name = "i_like_configurations"
+    config = {:german => {1 => :eins, 2 => :zwei, 3 => :drei}}
+    flexmock(File).should_receive(:read).once.with(/#{component_name}\.rb$/).and_return ""
+    component_manager = flexmock "ComponentManager"
+    component_manager.should_receive(:configuration_for_component_named).once.with(component_name).and_return config
+    flexmock(Adhearsion::Components::ComponentManager).should_receive(:new).once.and_return component_manager
+    ComponentTester.new(component_name, "/path/shouldnt/matter").config[:german][1].should.equal :eins
+  end
+  
+end
 
 BEGIN {
   module ComponentManagerTestHelper
@@ -257,4 +284,5 @@ BEGIN {
       @component_manager.extend_object_with(Object.new, scope)
     end
   end
+  
 }
