@@ -13,7 +13,7 @@ class FutureResource
   
   def resource
     @resource_lock.synchronize do
-      @resource_value_blocker.wait @resource_lock unless defined? @resource
+      @resource_value_blocker.wait unless defined? @resource
       @resource
     end
   end
