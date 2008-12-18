@@ -2,12 +2,16 @@ ADHEARSION_FILES = %w{
   adhearsion.gemspec
   app_generators/ahn/ahn_generator.rb
   app_generators/ahn/templates/.ahnrc
-  app_generators/ahn/templates/components/simon_game/simon_game.rb
   app_generators/ahn/templates/components/ami_remote/ami_remote.rb
   app_generators/ahn/templates/components/disabled/HOW_TO_ENABLE
   app_generators/ahn/templates/components/disabled/stomp_gateway/config.yml
   app_generators/ahn/templates/components/disabled/stomp_gateway/README.markdown
   app_generators/ahn/templates/components/disabled/stomp_gateway/stomp_gateway.rb
+  app_generators/ahn/templates/components/restful_rpc/config.yml
+  app_generators/ahn/templates/components/restful_rpc/example-client.rb
+  app_generators/ahn/templates/components/restful_rpc/README.markdown
+  app_generators/ahn/templates/components/restful_rpc/restful_rpc.rb
+  app_generators/ahn/templates/components/simon_game/simon_game.rb
   app_generators/ahn/templates/config/startup.rb
   app_generators/ahn/templates/dialplan.rb
   app_generators/ahn/templates/events.rb
@@ -17,22 +21,18 @@ ADHEARSION_FILES = %w{
   bin/ahn
   bin/ahnctl
   bin/jahn
-  examples/asterisk_manager_interface/standalone.rb
+  CHANGELOG
   EVENTS
-  lib/theatre/callback_definition_loader.rb
-  lib/theatre/guid.rb
-  lib/theatre/invocation.rb
-  lib/theatre/namespace_manager.rb
-  lib/theatre/README.markdown
-  lib/theatre/version.rb
-  lib/theatre.rb
+  examples/asterisk_manager_interface/standalone.rb
   lib/adhearsion.rb
   lib/adhearsion/cli.rb
   lib/adhearsion/component_manager.rb
+  lib/adhearsion/component_manager/spec_framework.rb
   lib/adhearsion/events_support.rb
   lib/adhearsion/foundation/all.rb
   lib/adhearsion/foundation/blank_slate.rb
   lib/adhearsion/foundation/custom_daemonizer.rb
+  lib/adhearsion/foundation/event_socket.rb
   lib/adhearsion/foundation/future_resource.rb
   lib/adhearsion/foundation/global.rb
   lib/adhearsion/foundation/metaprogramming.rb
@@ -43,7 +43,6 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/foundation/synchronized_hash.rb
   lib/adhearsion/foundation/thread_safety.rb
   lib/adhearsion/host_definitions.rb
-  lib/adhearsion/foundation/event_socket.rb
   lib/adhearsion/initializer.rb
   lib/adhearsion/initializer/asterisk.rb
   lib/adhearsion/initializer/configuration.rb
@@ -67,14 +66,13 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb
   lib/adhearsion/voip/asterisk/config_generators/voicemail.conf.rb
   lib/adhearsion/voip/asterisk/config_manager.rb
-  lib/adhearsion/voip/asterisk/super_manager.rb
-  lib/adhearsion/voip/asterisk/manager_interface.rb
   lib/adhearsion/voip/asterisk/manager_interface.rb
   lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb
   lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb
   lib/adhearsion/voip/asterisk/manager_interface/ami_messages.rb
   lib/adhearsion/voip/asterisk/manager_interface/ami_protocol_lexer_machine.rl
   lib/adhearsion/voip/asterisk/special_dial_plan_managers.rb
+  lib/adhearsion/voip/asterisk/super_manager.rb
   lib/adhearsion/voip/call.rb
   lib/adhearsion/voip/call_routing.rb
   lib/adhearsion/voip/commands.rb
@@ -97,10 +95,16 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/voip/menu_state_machine/matchers.rb
   lib/adhearsion/voip/menu_state_machine/menu_builder.rb
   lib/adhearsion/voip/menu_state_machine/menu_class.rb
+  lib/theatre.rb
+  lib/theatre/callback_definition_loader.rb
+  lib/theatre/guid.rb
+  lib/theatre/invocation.rb
+  lib/theatre/namespace_manager.rb
+  lib/theatre/README.markdown
+  lib/theatre/version.rb
   LICENSE
   Rakefile
   README.txt
-
 }
 
 Gem::Specification.new do |s|
