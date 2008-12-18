@@ -44,17 +44,19 @@ RESTFUL_API_HANDLER = lambda do |env|
   json = JSON.parse json
   
   nesting = COMPONENTS.restful_rpc["path_nesting"]
-  path = env["REQUEST_URI"]
+  path = env["PATH_INFO"]
   
   return [404, {}, "This resource does not respond to #{path.inspect}"] unless path[0...nesting.size] == nesting
   
   path = path[nesting.size..-1]
+  
   return [404, {"Content-Type" => "application/json"}, "You cannot nest method names!"] if path.include?("/")
   
   rpc_object = Adhearsion::Components.component_manager.extend_object_with(Object.new, :rpc)
   
   # TODO: set the content-type and other HTTP headers
-  [200, {}, rpc_object.send(path, *json).to_json]
+  response_object = Array rpc_object.send(path, *json)
+  [200, {"Content-Type" => "application/json"}, response_object.to_json]
   
 end
 
@@ -66,7 +68,7 @@ initialization do
   port            = config["port"] || 5000
   authentication  = config["authentication"]
   show_exceptions = config["show_exceptions"]
-  handler         = Rack::Handler.const_get config["handler"] || "Mongrel"
+  handler         = Rack::Handler.const_get(config["handler"] || "Mongrel")
   
   if authentication
     api = Rack::Auth::Basic.new(api) do |username, password|

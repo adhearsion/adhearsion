@@ -17,6 +17,38 @@ require 'adhearsion/component_manager/spec_framework'
 
 RESTFUL_RPC = ComponentTester.new("restful_rpc", File.dirname(__FILE__) + "/../..")
 
+##### This is here for a reference
+#{"CONTENT_LENGTH"       => "12",
+# "CONTENT_TYPE"         => "application/x-www-form-urlencoded",
+# "GATEWAY_INTERFACE"    => "CGI/1.1",
+# "HTTP_ACCEPT"          => "application/xml",
+# "HTTP_ACCEPT_ENCODING" => "gzip, deflate",
+# "HTTP_AUTHORIZATION"   => "Basic amlja3N0YTpyb2ZsY29wdGVyeg==",
+# "HTTP_HOST"            => "localhost:5000",
+# "HTTP_VERSION"         => "HTTP/1.1",
+# "PATH_INFO"            => "/rofl",
+# "QUERY_STRING"         => "",
+# "rack.errors"          => StringIO.new(""),
+# "rack.input"           => StringIO.new('["o","hai!"]'),
+# "rack.multiprocess"    => false,
+# "rack.multithread"     => true,
+# "rack.run_once"        => false,
+# "rack.url_scheme"      => "http",
+# "rack.version"         => [0, 1],
+# "REMOTE_ADDR"          => "::1",
+# "REMOTE_HOST"          => "localhost",
+# "REMOTE_USER"          => "jicksta",
+# "REQUEST_METHOD"       => "POST"
+# "REQUEST_PATH"         => "/",
+# "REQUEST_URI"          => "http://localhost:5000/rofl",
+# "SCRIPT_NAME"          => "",
+# "SERVER_NAME"          => "localhost",
+# "SERVER_PORT"          => "5000",
+# "SERVER_PROTOCOL"      => "HTTP/1.1",
+# "SERVER_SOFTWARE"      => "WEBrick/1.3.1 (Ruby/1.8.6/2008-03-03)"}
+
+
+
 describe "The VALID_IP_ADDRESS regular expression" do
   
   it "should match only valid IP addresses" do
@@ -71,7 +103,7 @@ end
 
 describe 'Private helper methods' do
 
-  describe "serve() method" do
+  describe "the RESTFUL_API_HANDLER lambda" do
     
     it "should return a 200 for requests which execute a method that has been defined in the methods_for(:rpc) context" do
       component_manager = Adhearsion::Components::ComponentManager.new('/path/shouldnt/matter')
@@ -89,7 +121,7 @@ describe 'Private helper methods' do
       
       mock_component_config_with :restful_rpc => {"path_nesting" => "/"}
       
-      env = {"REQUEST_URI" => "/testing_123456", "rack.input" => input}
+      env = {"PATH_INFO" => "/testing_123456", "rack.input" => input}
     
       response = RESTFUL_RPC::RESTFUL_API_HANDLER.call(env)
       response.should be_kind_of(Array)
@@ -103,14 +135,62 @@ describe 'Private helper methods' do
       RESTFUL_RPC::RESTFUL_API_HANDLER.call(env).first.should equal(400)
     end
     
+    it "should work with a high level test of a successful method invocation" do
+      
+      component_manager = Adhearsion::Components::ComponentManager.new('/path/shouldnt/matter')
+
+      mock(Adhearsion::Components).component_manager { component_manager }
+      
+      component_manager.load_code '
+        methods_for(:rpc) do
+          def rofl(one,two)
+            "Hai! #{one} #{two}"
+          end
+        end'
+      
+      env = {
+        "CONTENT_LENGTH"       => "12",
+        "CONTENT_TYPE"         => "application/x-www-form-urlencoded",
+        "GATEWAY_INTERFACE"    => "CGI/1.1",
+        "HTTP_ACCEPT"          => "application/xml",
+        "HTTP_ACCEPT_ENCODING" => "gzip, deflate",
+        "HTTP_AUTHORIZATION"   => "Basic amlja3N0YTpyb2ZsY29wdGVyeg==",
+        "HTTP_HOST"            => "localhost:5000",
+        "HTTP_VERSION"         => "HTTP/1.1",
+        "PATH_INFO"            => "/rofl",
+        "QUERY_STRING"         => "",
+        "rack.errors"          => StringIO.new(""),
+        "rack.input"           => StringIO.new('["o","hai!"]'),
+        "rack.multiprocess"    => false,
+        "rack.multithread"     => true,
+        "rack.run_once"        => false,
+        "rack.url_scheme"      => "http",
+        "rack.version"         => [0, 1],
+        "REMOTE_ADDR"          => "::1",
+        "REMOTE_HOST"          => "localhost",
+        "REMOTE_USER"          => "jicksta",
+        "REQUEST_METHOD"       => "POST",
+        "REQUEST_PATH"         => "/",
+        "REQUEST_URI"          => "http://localhost:5000/rofl",
+        "SCRIPT_NAME"          => "",
+        "SERVER_NAME"          => "localhost",
+        "SERVER_PORT"          => "5000",
+        "SERVER_PROTOCOL"      => "HTTP/1.1",
+        "SERVER_SOFTWARE"      => "WEBrick/1.3.1 (Ruby/1.8.6/2008-03-03)" }
+      
+      response = RESTFUL_RPC::RESTFUL_API_HANDLER.call(env)
+      JSON.parse(response.last).should == ["Hai! o hai!"]
+      
+    end
+    
     it "should contain backtrace information when show_errors is enabled and an exception occurs" do
       mock_component_config_with :restful_api => {"show_errors" => true}
-      
+      pending
     end
     
   end
   
-  describe 'ip_allowed?() method' do
+  describe 'the ip_allowed?() method' do
     
     before :each do
       @method = RESTFUL_RPC.helper_method :ip_allowed?
@@ -179,4 +259,5 @@ describe 'Private helper methods' do
     end
     
   end
+
 end

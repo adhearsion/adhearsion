@@ -198,7 +198,8 @@ module Adhearsion
         
         def method_missing(component_name)
           config = @component_manager.configuration_for_component_named(component_name.to_s)
-          meta_def(component_name) { config }
+          (class << self; self; end).send(:define_method, component_name) { config }
+          config
         end
       end
     
