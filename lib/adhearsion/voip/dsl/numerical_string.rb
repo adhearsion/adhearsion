@@ -52,10 +52,10 @@ module Adhearsion
 
         # Checks against a pattern identifying US local numbers (i.e numbers
         # without an area code seven digits long)
-        def local_number?() to_s =~ Adhearsion::VoIP::Constants::US_LOCAL_NUMBER end
+        def us_local_number?() to_s =~ Adhearsion::VoIP::Constants::US_LOCAL_NUMBER end
 
         # Checks against a pattern identifying US domestic numbers.
-        def national_number?() to_s =~ Adhearsion::VoIP::Constants::US_NATIONAL_NUMBER end
+        def us_national_number?() to_s =~ Adhearsion::VoIP::Constants::US_NATIONAL_NUMBER end
 
         # Checks against a pattern identifying an ISN number. See http://freenum.org
         # for more info.

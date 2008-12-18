@@ -12,25 +12,34 @@ require 'adhearsion/voip/dsl/numerical_string'
 #   when "123"
 # end
 
+def should_be_nil_or_false(arg)
+  [nil, false].include?(arg).should == true
+end
+
+def should_not_be_nil_or_false(arg)
+  [nil, false].include?(arg).should == false
+end
+
 describe "A PhoneNumber" do
   
   it "should have an ISN pattern-matching method" do
-    !! Adhearsion::VoIP::DSL::PhoneNumber.new("0115544332211").isn?.should == false
-    !! Adhearsion::VoIP::DSL::PhoneNumber.new("1*548").isn?.should == false
+    should_be_nil_or_false Adhearsion::VoIP::DSL::PhoneNumber.new("0115544332211").isn?
+    should_not_be_nil_or_false Adhearsion::VoIP::DSL::PhoneNumber.new("1*548").isn?
   end
   
   it "should have a US local number pattern-matching method" do
-    !! Adhearsion::VoIP::DSL::PhoneNumber.new("18887776665555").local_number?.should == false
-    !! Adhearsion::VoIP::DSL::PhoneNumber.new("18887776665555").national_number?.should == false
+    should_be_nil_or_false Adhearsion::VoIP::DSL::PhoneNumber.new("18887776665555").us_local_number?
+    should_be_nil_or_false Adhearsion::VoIP::DSL::PhoneNumber.new("18887776665555").us_national_number?
     
-    !! Adhearsion::VoIP::DSL::PhoneNumber.new("8887776665555").local_number?.should == false
-    !! Adhearsion::VoIP::DSL::PhoneNumber.new("8887776665555").national_number?.should == true
-     
-    !! Adhearsion::VoIP::DSL::PhoneNumber.new("4445555").local_number?.should == true
-    !! Adhearsion::VoIP::DSL::PhoneNumber.new("4445555").national_number?.should == false
+    should_be_nil_or_false Adhearsion::VoIP::DSL::PhoneNumber.new("8887776665555").us_local_number?
+    should_be_nil_or_false Adhearsion::VoIP::DSL::PhoneNumber.new("8887776665555").us_national_number?
+    
+    should_not_be_nil_or_false Adhearsion::VoIP::DSL::PhoneNumber.new("4445555").us_local_number?
+    should_be_nil_or_false Adhearsion::VoIP::DSL::PhoneNumber.new("4445555").us_national_number?
   end
   
   it "should convert from vanity numbers properly" do
     Adhearsion::VoIP::DSL::PhoneNumber.from_vanity("1-800-FUDGEME").should == "18003834363"
   end
+  
 end
