@@ -1,0 +1,34 @@
+# Use path_nesting to specify an arbitrarily nested. Could be used for additional security or in HTTP reverse proxy server.
+path_nesting: /
+
+port: 5000
+
+# The "handler" option here can be any valid Rack::Handler constant name.
+# Other options: WEBrick, EventedMongrel.
+# If you don't know the differences between these, "Mongrel" is definitely a good choice.
+handler: Mongrel
+
+# In a production system, you should make this "false" since
+show_exceptions: true
+
+# The "authentication" config option can either be "false" or key/value pairs representing allowed usernames and passwords.
+
+#authentication: false
+authentication:
+  jicksta: roflcopterz
+  foo: bar6213671682
+
+access: everyone   # When allowing "everyone" access, no IPs are blocked.
+#access: whitelist # When using a whitelist, the "whitelist" data below will be used.
+#access: blacklist # When using a blacklist, the "blacklist" data below will be used.
+
+# This is a list of IPs which are exclusively allowed to call this web service.
+# Note: whitelists are far more secure than blacklists.
+whitelist:
+  - 127.0.0.1
+  - 192.168.*.*
+
+# This is a list of the IPs which are explicitly NOT allowed to call this web service. This will only be used if "access" is
+# set to "blacklist" above.
+blacklist:
+  - 100.200.100.200

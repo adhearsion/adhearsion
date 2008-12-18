@@ -3,6 +3,8 @@ module Adhearsion
     
     mattr_accessor :component_manager
     
+    class ConfigurationError < Exception; end
+    
     class ComponentManager
       
       class << self
@@ -34,7 +36,6 @@ module Adhearsion
       def globalize_global_scope!
         Object.send :include, @scopes[:global]
       end
-      
       
       def load_components
         components = Dir.glob(File.join(@path_to_container_directory + "/*")).select do |path|
@@ -197,7 +198,8 @@ module Adhearsion
         
         def method_missing(component_name)
           config = @component_manager.configuration_for_component_named(component_name.to_s)
-          meta_def(component_name) { config }
+          (class << self; self; end).send(:define_method, component_name) { config }
+          config
         end
       end
     
