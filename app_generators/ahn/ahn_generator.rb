@@ -34,6 +34,7 @@ class AhnGenerator < RubiGen::Base
       m.file  *["components/restful_rpc/restful_rpc.rb"]*2
       m.file  *["components/restful_rpc/config.yml"]*2
       m.file  *["components/restful_rpc/README.markdown"]*2
+      m.file  *["components/restful_rpc/example-client.rb"]*2
       m.file  *["components/restful_rpc/spec/restful_rpc_spec.rb"]*2
       
       m.file  *["config/startup.rb"]*2
