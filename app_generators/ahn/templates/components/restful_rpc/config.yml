@@ -1,4 +1,4 @@
-
+# Use path_nesting to specify an arbitrarily nested. Could be used for additional security or in HTTP reverse proxy server.
 path_nesting: /
 
 port: 5000
@@ -16,7 +16,7 @@ show_exceptions: true
 #authentication: false
 authentication:
   jicksta: roflcopterz
-  foo: bar
+  foo: bar6213671682
 
 access: everyone   # When allowing "everyone" access, no IPs are blocked.
 #access: whitelist # When using a whitelist, the "whitelist" data below will be used.

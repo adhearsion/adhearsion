@@ -18,16 +18,16 @@ module ComponentTester
         
         extend ComponentTester
         
-        (class << self; self; end).send(:define_method, :component_manager)  { component_manager  }
-        (class << self; self; end).send(:define_method, :component_name)     { component_name     }
-        (class << self; self; end).send(:define_method, :component_module)   { component_module   }
-        (class << self; self; end).send(:define_method, :component_diretory) { component_diretory }
+        (class << self; self; end).send(:define_method, :component_manager)   { component_manager   }
+        (class << self; self; end).send(:define_method, :component_name)      { component_name      }
+        (class << self; self; end).send(:define_method, :component_module)    { component_module    }
+        (class << self; self; end).send(:define_method, :component_directory) { component_directory }
         
         
-        define_method(:component_manager)  { component_manager  }
-        define_method(:component_name)     { component_name     }
-        define_method(:component_module)   { component_module   }
-        define_method(:component_diretory) { component_diretory }
+        define_method(:component_manager)   { component_manager   }
+        define_method(:component_name)      { component_name      }
+        define_method(:component_module)    { component_module    }
+        define_method(:component_directory) { component_directory }
         
         def self.const_missing(name)
           component_module.const_get name
@@ -43,6 +43,13 @@ module ComponentTester
   
   def config
     component_manager.configuration_for_component_named component_name
+  end
+  
+  def initialize!
+    metadata = component_module.metaclass.send(:instance_variable_get, :@metadata)
+    if metadata && metadata[:initialization_block].kind_of?(Proc)
+      metadata[:initialization_block].call
+    end
   end
   
 end

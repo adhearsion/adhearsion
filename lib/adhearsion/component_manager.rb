@@ -3,6 +3,8 @@ module Adhearsion
     
     mattr_accessor :component_manager
     
+    class ConfigurationError < Exception; end
+    
     class ComponentManager
       
       class << self

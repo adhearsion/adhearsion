@@ -266,6 +266,13 @@ context "ComponentTester" do
     ComponentTester.new(component_name, "/path/shouldnt/matter").config[:german][1].should.equal :eins
   end
   
+  it "should execute the initialize block when calling ComponentTester#initialize!()" do
+    component_name = "morrissey"
+    flexmock(File).should_receive(:read).once.with(/#{component_name}\.rb$/).and_return "initialization { $YES_I_WAS_CALLED = TRUE }"
+    ComponentTester.new(component_name, "/path/shouldnt/matter").initialize!
+    assert $YES_I_WAS_CALLED
+  end
+  
 end
 
 BEGIN {
