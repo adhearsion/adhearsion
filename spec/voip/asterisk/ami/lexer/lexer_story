@@ -162,6 +162,7 @@ Story: Lexing AMI
 		And the custom stanza named "person" has key "Age" with value "21"
 		And the custom stanza named "person" has key "Location" with value "San Francisco, CA"
 		And the custom stanza named "person" has key "x-header" with value "<FooBAR>"
+		And the custom stanza named "person" has key "Channel" with value "IAX2/127.0.0.1/4569-9904"
 		And the custom stanza named "person" has key "I have spaces" with value "i have trailing padding   "
 		
 		When the custom stanza named "person" is added to the buffer
@@ -174,6 +175,7 @@ Story: Lexing AMI
 		And the first message received should have a key "Age" with value "21"
 		And the first message received should have a key "Location" with value "San Francisco, CA"
 		And the first message received should have a key "x-header" with value "<FooBAR>"
+		And the first message received should have a key "Channel" with value "IAX2/127.0.0.1/4569-9904"
 		And the first message received should have a key "I have spaces" with value "i have trailing padding   "
 		
 	Scenario: Executing a stanza that was partially received
@@ -217,7 +219,8 @@ Story: Lexing AMI
 		Given a new lexer
 		And a custom event with name "NewChannelEvent" identified by "this_event"
 		And a custom header for event identified by "this_event" whose key is "Foo" and value is "Bar"
-		
+		And a custom header for event identified by "this_event" whose key is "Channel" and value is "IAX2/127.0.0.1/4569-9904"
+
 		When the custom event identified by "this_event" is added to the buffer
 		And the buffer is lexed
 		
@@ -225,6 +228,7 @@ Story: Lexing AMI
 		And 1 event should have been received
 		And the 1st event should have the name "NewChannelEvent"
 		And the 1st event should have key "Foo" with value "Bar"
+		And the 1st event should have key "Channel" with value "IAX2/127.0.0.1/4569-9904"
 		
 	Scenario: Lexing an immediate packet with a colon in it (syntax error)
 	
