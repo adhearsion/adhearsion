@@ -12,7 +12,7 @@
 # Asterisk Manager Interface example:
 #
 # events.asterisk.manager_interface.each do |event|
-#   p event
+#   ahn_log.events event.inspect
 # end
 #
 # This assumes you gave :events => true to the config.asterisk.enable_ami method in config/startup.rb
