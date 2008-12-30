@@ -11,6 +11,7 @@ ADHEARSION_FILES = %w{
   app_generators/ahn/templates/components/restful_rpc/example-client.rb
   app_generators/ahn/templates/components/restful_rpc/README.markdown
   app_generators/ahn/templates/components/restful_rpc/restful_rpc.rb
+  app_generators/ahn/templates/components/restful_rpc/spec/restful_rpc_spec.rb
   app_generators/ahn/templates/components/simon_game/simon_game.rb
   app_generators/ahn/templates/config/startup.rb
   app_generators/ahn/templates/dialplan.rb
@@ -27,6 +28,7 @@ ADHEARSION_FILES = %w{
   lib/adhearsion.rb
   lib/adhearsion/cli.rb
   lib/adhearsion/component_manager.rb
+  lib/adhearsion/component_manager/component_tester.rb
   lib/adhearsion/component_manager/spec_framework.rb
   lib/adhearsion/events_support.rb
   lib/adhearsion/foundation/all.rb
@@ -109,7 +111,7 @@ ADHEARSION_FILES = %w{
 
 Gem::Specification.new do |s|
   s.name = "adhearsion"
-  s.version = "0.7.999"
+  s.version = "0.8.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jay Phillips"]
