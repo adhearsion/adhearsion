@@ -1,6 +1,5 @@
-0.8.1
-
-
+0.8.0 rev 2
+ - Added a few non-critical files to the .gemspec. They were ignored
 
 Notes from before 0.8.0:
  - (NOTE: This is obviously not a comprehensive list of pre-0.8.0 work. 0.8.0 was a complete rewrite of the previous version)
