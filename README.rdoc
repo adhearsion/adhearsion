@@ -1,6 +1,6 @@
 = Adhearsion
     by Jay Phillips, et. al
-    <http://adhearsion.com|http://adhearsion.com>
+    http://adhearsion.com
 
 === Overview
 
@@ -8,4 +8,4 @@ Adhearsion is an open-source framework written in Ruby designed to vastly improv
 
 === Documentation
 
-Available @ ((<Docs@Adhearsion|URL:http://docs.adhearsion.com>))
+Available @ http://docs.adhearsion.com
