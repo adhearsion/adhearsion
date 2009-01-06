@@ -37,6 +37,9 @@ class AhnGenerator < RubiGen::Base
       m.file  *["components/disabled/restful_rpc/example-client.rb"]*2
       m.file  *["components/disabled/restful_rpc/spec/restful_rpc_spec.rb"]*2
       
+      m.file  *["components/disabled/sandbox/config.yml"]*2
+      m.file  *["components/disabled/sandbox/sandbox.rb"]*2
+      
       m.file  *["config/startup.rb"]*2
       m.file  *["dialplan.rb"]*2
       m.file  *["events.rb"]*2
@@ -80,6 +83,7 @@ EOS
     BASEDIRS = %w(
       components/simon_game
       components/disabled/stomp_gateway
+      components/disabled/sandbox
       components/ami_remote
       components/disabled/restful_rpc/spec
       config
