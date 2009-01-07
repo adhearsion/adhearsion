@@ -59,6 +59,8 @@ initialization do
                       Adhearsion::Initializer::AsteriskInitializer.agi_server.server.serve(socket)
                     rescue => e
                       ahn_log.error "Error in the AGI server: #{e.inspect} \n" + e.backtrace.join("\n")
+                    ensure
+                      socket.close
                     end
                     ahn_log.sandbox "AGI server finished serving call. Reconnecting to sandbox."
                   else
