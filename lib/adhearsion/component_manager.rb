@@ -18,7 +18,6 @@ module Adhearsion
       end
       
       SCOPE_NAMES = [:dialplan, :events, :generators, :rpc, :global]
-      DEFAULT_CONFIG_NAME = "config.yml"
       
       attr_reader :scopes, :lazy_config_loader
       def initialize(path_to_container_directory)
@@ -61,7 +60,7 @@ module Adhearsion
       #
       def configuration_for_component_named(component_name)
         component_dir = File.join(@path_to_container_directory, component_name)
-        config_file = File.join component_dir, DEFAULT_CONFIG_NAME
+        config_file = File.join component_dir, "#{component_name}.yml"
         if File.exists?(config_file)
           YAML.load_file config_file
         else

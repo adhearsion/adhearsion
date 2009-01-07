@@ -35,7 +35,7 @@ Setting up a Ruby Stomp server
 
 Install the pure-Ruby Stomp server by doing "gem install stompserver". This will add the "stompserver" command to your system. When running it without any parameters, it starts without requiring authentication. If you're wanting to get a quick experiment running, I recommend simply doing that.
 
-Open the config.yml file in the stomp_gateway component folder. Comment out the four settings at the top of the file named "user", "pass", "host" and "port" by prepending a "#" to their line. This will cause the component to choose defaults for those properties. The component's defaults will match the expected credentials for the experimental stompserver you're already running on your computer.
+Open the `stomp_gateway.yml` file in the stomp_gateway component folder. Comment out the four settings at the top of the file named "user", "pass", "host" and "port" by prepending a "#" to their line. This will cause the component to choose defaults for those properties. The component's defaults will match the expected credentials for the experimental stompserver you're already running on your computer.
 
 You also need specify a subscription name in 
 
