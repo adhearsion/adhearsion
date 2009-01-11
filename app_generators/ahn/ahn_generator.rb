@@ -28,16 +28,16 @@ class AhnGenerator < RubiGen::Base
       m.file  *["components/ami_remote/ami_remote.rb"]*2
 
       m.file  *["components/disabled/stomp_gateway/stomp_gateway.rb"]*2
-      m.file  *["components/disabled/stomp_gateway/config.yml"]*2
+      m.file  *["components/disabled/stomp_gateway/stomp_gateway.yml"]*2
       m.file  *["components/disabled/stomp_gateway/README.markdown"]*2
       
       m.file  *["components/disabled/restful_rpc/restful_rpc.rb"]*2
-      m.file  *["components/disabled/restful_rpc/config.yml"]*2
+      m.file  *["components/disabled/restful_rpc/restful_rpc.yml"]*2
       m.file  *["components/disabled/restful_rpc/README.markdown"]*2
       m.file  *["components/disabled/restful_rpc/example-client.rb"]*2
       m.file  *["components/disabled/restful_rpc/spec/restful_rpc_spec.rb"]*2
       
-      m.file  *["components/disabled/sandbox/config.yml"]*2
+      m.file  *["components/disabled/sandbox/sandbox.yml"]*2
       m.file  *["components/disabled/sandbox/sandbox.rb"]*2
       
       m.file  *["config/startup.rb"]*2

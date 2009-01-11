@@ -236,7 +236,7 @@ context 'The "create" command' do
     executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::ComponentError
   end
   
-  test "should create a folder with matching .rb file and a config.yml file when all guards pass" do
+  test "should create a folder with matching .rb file and .yml file when all guards pass" do
     sandbox = create_component_sandbox
     flexmock(Dir).should_receive(:pwd).once.and_return sandbox
     
@@ -244,7 +244,7 @@ context 'The "create" command' do
     capture_stdout { execute_ahn_command }
     
     File.exists?(sandbox + "/components/ohai/ohai.rb").should.equal true
-    File.exists?(sandbox + "/components/ohai/config.yml").should.equal true
+    File.exists?(sandbox + "/components/ohai/ohai.yml").should.equal true
   end
   
 end

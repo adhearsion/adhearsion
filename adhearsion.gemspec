@@ -4,14 +4,16 @@ ADHEARSION_FILES = %w{
   app_generators/ahn/templates/.ahnrc
   app_generators/ahn/templates/components/ami_remote/ami_remote.rb
   app_generators/ahn/templates/components/disabled/HOW_TO_ENABLE
-  app_generators/ahn/templates/components/disabled/stomp_gateway/config.yml
+  app_generators/ahn/templates/components/disabled/stomp_gateway/stomp_gateway.yml
   app_generators/ahn/templates/components/disabled/stomp_gateway/README.markdown
   app_generators/ahn/templates/components/disabled/stomp_gateway/stomp_gateway.rb
-  app_generators/ahn/templates/components/restful_rpc/config.yml
-  app_generators/ahn/templates/components/restful_rpc/example-client.rb
-  app_generators/ahn/templates/components/restful_rpc/README.markdown
-  app_generators/ahn/templates/components/restful_rpc/restful_rpc.rb
-  app_generators/ahn/templates/components/restful_rpc/spec/restful_rpc_spec.rb
+  app_generators/ahn/templates/components/disabled/sandbox/sandbox.rb
+  app_generators/ahn/templates/components/disabled/sandbox/sandbox.yml
+  app_generators/ahn/templates/components/disabled/restful_rpc/restful_rpc.yml
+  app_generators/ahn/templates/components/disabled/restful_rpc/example-client.rb
+  app_generators/ahn/templates/components/disabled/restful_rpc/README.markdown
+  app_generators/ahn/templates/components/disabled/restful_rpc/restful_rpc.rb
+  app_generators/ahn/templates/components/disabled/restful_rpc/spec/restful_rpc_spec.rb
   app_generators/ahn/templates/components/simon_game/simon_game.rb
   app_generators/ahn/templates/config/startup.rb
   app_generators/ahn/templates/dialplan.rb

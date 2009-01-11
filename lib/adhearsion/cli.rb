@@ -115,7 +115,7 @@ USAGE
 # look at the examples in newly-created projects.
                 RUBY
               end
-              File.open(new_component_dir + "/config.yml","w") do |file|
+              File.open(new_component_dir + "/#{component_name}.yml","w") do |file|
                 file.puts '# You can use this file for component-specific configuration.'
               end
               puts "Created blank component '#{component_name}' at components/#{component_name}"
