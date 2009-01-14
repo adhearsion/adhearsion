@@ -108,7 +108,6 @@ ADHEARSION_FILES = %w{
   lib/theatre/version.rb
   LICENSE
   Rakefile
-  README.txt
 }
 
 Gem::Specification.new do |s|
