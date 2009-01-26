@@ -6,6 +6,6 @@
   - manager_interface
   - before_call
   - failed_call
-  - call_hangup
+  - hungup_call
 
 # Note: This file is valid YAML for programatic parsing.
