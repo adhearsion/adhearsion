@@ -25,7 +25,7 @@
 # - events.shutdown
 # - events.asterisk.before_call
 # - events.asterisk.failed_call
-# - events.asterisk.call_hangup
+# - events.asterisk.hungup_call
 #
 #
 # Note: events are mostly for components to register and expose to you.

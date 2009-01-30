@@ -63,14 +63,14 @@ context "The AGI server's serve() method" do
     }.should.throw :triggered
   end
   
-  test 'should execute the call_hangup event when a HungupExtensionCallException is raised' do
+  test 'should execute the hungup_call event when a HungupExtensionCallException is raised' do
     call_mock = flexmock 'a bogus call', :hungup_call? => true, :variables => {:extension => "h"}, :unique_identifier => "X"
     mock_env  = flexmock "A mock execution environment which gets passed along in the HungupExtensionCallException"
     
     stub_confirmation_manager!
     flexstub(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
     flexmock(Adhearsion::DialPlan::Manager).should_receive(:handle).once.and_raise Adhearsion::HungupExtensionCallException.new(mock_env)
-    flexmock(Adhearsion::Events).should_receive(:trigger).once.with([:asterisk, :call_hangup], mock_env).and_throw :hungup_call
+    flexmock(Adhearsion::Events).should_receive(:trigger).once.with([:asterisk, :hungup_call], mock_env).and_throw :hungup_call
     
     the_following_code { server.serve nil }.should.throw :hungup_call
   end

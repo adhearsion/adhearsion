@@ -9,4 +9,4 @@ port: 61613
 
 # subscriptions:
 #   - start_call
-#   - hangup_call
+#   - hungup_call

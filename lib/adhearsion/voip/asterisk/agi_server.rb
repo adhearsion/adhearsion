@@ -34,8 +34,8 @@ module Adhearsion
               end
             rescue HungupExtensionCallException => hungup_call
               begin
-                ahn_log.agi "Received \"h\" meta-call. Executing /asterisk/call_hangup event callbacks."
-                Events.trigger [:asterisk, :call_hangup], hungup_call.call
+                ahn_log.agi "Received \"h\" meta-call. Executing /asterisk/hungup_call event callbacks."
+                Events.trigger [:asterisk, :hungup_call], hungup_call.call
                 call.hangup!
               rescue => e
                 ahn_log.agi.error e
