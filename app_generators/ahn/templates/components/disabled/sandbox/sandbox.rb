@@ -55,8 +55,7 @@ initialization do
               socket.puts identifying_hash
               response = socket.gets
               unless response
-                ahn_log.sandbox "Communication with the sandbox ended before receiving any response. Trying again in 10 seconds."
-                sleep 10
+                ahn_log.sandbox "Communication with the sandbox ended before receiving any response. Reconnecting."
                 next
               end
               response.chomp!
