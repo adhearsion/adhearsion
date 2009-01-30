@@ -17,7 +17,8 @@ module Adhearsion
                 "It's not a directory!" unless File.directory?(rails_root)
           load_rails
           if defined? ActiveRecord
-            ActiveRecord::Base.allow_concurrency = true
+            # You may need to uncomment the following line for older versions of ActiveRecord
+            # ActiveRecord::Base.allow_concurrency = true
             Events.register_callback([:asterisk, :before_call]) do
               ActiveRecord::Base.verify_active_connections!
             end

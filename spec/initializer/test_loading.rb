@@ -29,13 +29,6 @@ context "The database initializer" do
     User.superclass.should.equal ActiveRecord::Base
   end
   
-  test 'should enable ActiveRecord concurrency' do
-    bogus_model = tempfile_with_contents sample_user_model
-    flexmock(Adhearsion::Configuration).new_instances.should_receive(:files_from_setting).once.with("paths", "models").and_return [bogus_model.path]
-    start_database_initializer
-    ActiveRecord::Base.send(:class_variable_get, :@@allow_concurrency).should.be true
-  end
-  
 end
 
 context "The Asterisk initializer" do
@@ -85,15 +78,6 @@ context "The Rails initializer" do
     stub_file_checking_methods!
     stub_before_call_hook!
     initialize_rails_with_options :rails_root => '/tmp', :environment => :development
-  end
-  
-  test 'should enable ActiveRecord concurrency' do
-    flexstub(Adhearsion::Initializer::RailsInitializer).should_receive :require
-    flexstub(Adhearsion::Initializer::RailsInitializer).should_receive :load_rails
-    stub_file_checking_methods!
-    stub_before_call_hook!
-    initialize_rails_with_options :rails_root => '/path/somewhere', :environment => :development
-    ActiveRecord::Base.send(:class_variable_get, :@@allow_concurrency).should.equal true
   end
   
   test 'should create a BeforeCall hook (presumably to verify the active connections)' do    

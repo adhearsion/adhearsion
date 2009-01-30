@@ -11,7 +11,8 @@ module Adhearsion
           require_dependencies
           require_models
           @@config = Adhearsion::AHN_CONFIG.database
-          ActiveRecord::Base.allow_concurrency = true
+          # You may need to uncomment the following line for older versions of ActiveRecord
+          # ActiveRecord::Base.allow_concurrency = true
           establish_connection
           create_call_hook_for_connection_cleanup
         end
