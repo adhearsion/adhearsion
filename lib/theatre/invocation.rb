@@ -32,7 +32,7 @@ module Theatre
       @returned_value_lock = Monitor.new
       
       # Used when wait() is called to notify all waiting threads by using a ConditionVariable
-      @returned_value_blocker = Monitor::ConditionVariable.new @returned_value_lock
+      @returned_value_blocker = @returned_value_lock.new_cond#Monitor::ConditionVariable.new @returned_value_lock
     end
     
     def queued

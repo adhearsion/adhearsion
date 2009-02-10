@@ -1,3 +1,11 @@
+0.8.2
+ - ManagerInterfaceResponse now include()s DRbUndumped, allowing send_action() to be called directly over DRb.
+ - Fixes an inconsequential bug when CTL-C'ing Adhearsion.
+
+0.8.1
+ - The sandbox component now comes 
+ - Minor bug fixes
+
 0.8.0 rev 2
  - Added a few non-critical files to the .gemspec. They were ignored
 
