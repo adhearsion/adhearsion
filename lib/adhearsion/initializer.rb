@@ -128,15 +128,15 @@ module Adhearsion
       switch_to_root_directory
       catch_termination_signal
       bootstrap_rc
-      daemonize! if should_daemonize?
       initialize_log_file
       load_all_init_files
       init_components_subsystem
       init_modules
       init_events_subsystem
-      create_pid_file if pid_file
       load_components
       init_events_file
+      daemonize! if should_daemonize?
+      create_pid_file if pid_file
       
       ahn_log "Adhearsion initialized!"
       
