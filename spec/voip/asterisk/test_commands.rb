@@ -1149,6 +1149,12 @@ context 'say_digits command' do
     pbx_was_asked_to_execute "saydigits", digits
   end
   
+  test 'Digits that include pound and star are considered valid' do
+    digits = "1#2*3#4*5"
+    mock_call.should_receive(:execute).once.with("saydigits", digits)
+    mock_call.say_digits digits
+  end
+
   test 'Cannot pass non-integers into say_digits.  Will raise an ArgumentError' do
     the_following_code {
       mock_call.say_digits 'abc'

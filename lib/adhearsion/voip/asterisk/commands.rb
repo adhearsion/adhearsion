@@ -891,7 +891,7 @@ module Adhearsion
           
           def validate_digits(digits)
             returning digits.to_s do |digits_as_string|
-              raise ArgumentError, "Can only be called with valid digits!" unless digits_as_string =~ /^\d+$/
+              raise ArgumentError, "Can only be called with valid digits!" unless digits_as_string =~ /^[0-9*#]+$/
             end
           end
           
