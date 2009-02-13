@@ -1149,8 +1149,8 @@ context 'say_digits command' do
     pbx_was_asked_to_execute "saydigits", digits
   end
   
-  test 'Digits that include pound and star are considered valid' do
-    digits = "1#2*3#4*5"
+  test 'Digits that include pound, star, and minus are considered valid' do
+    digits = "1#2*3-4"
     mock_call.should_receive(:execute).once.with("saydigits", digits)
     mock_call.say_digits digits
   end
