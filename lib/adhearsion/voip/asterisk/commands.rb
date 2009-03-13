@@ -438,6 +438,9 @@ module Adhearsion
           raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(context)
         end
       	
+      	# The queue method puts a call into a call queue to be answered by an agent registered with that queue.
+      	# A full description may be found here: http://www.voip-info.org/wiki-Asterisk+cmd+Queue
+      	# The queue method takes a queue_name as an argument to place the caller in the appropriate queue.
       	def queue(queue_name)
       	  queue_name = queue_name.to_s
       	  
@@ -558,6 +561,9 @@ module Adhearsion
     	    raw_response("SET VARIABLE %s %p" % [variable_name.to_s, value.to_s]) == "200 result=1"
   	    end
     	  
+    	  # The variable method allows you to either set or get a channel variable from Asterisk
+    	  # The method takes a hash key/value pair if you would like to set a variable
+    	  # Or a single string with the variable to get from Asterisk
     	  def variable(*args)
     	    if args.last.kind_of? Hash
       	    assignments = args.pop
@@ -574,6 +580,11 @@ module Adhearsion
     	    end
   	    end
     	  
+    	  # Use the voicemail method to send a caller to a voicemail box to leave a message. 
+    	  # A complete description is avilable at:
+    	  # http://www.voip-info.org/tiki-index.php?page=Asterisk+cmd+VoiceMail
+    	  # The method takes the mailbox_number of the user to leave a message for and a
+    	  # greeting_option that will determine which message gets played to the caller.
         def voicemail(*args)
           options_hash    = args.last.kind_of?(Hash) ? args.pop : {}
           mailbox_number  = args.shift
@@ -606,6 +617,9 @@ module Adhearsion
           end
         end
         
+        # The voicemail_main method puts a caller into the voicemail system to fetch their voicemail
+        # or set options for their voicemail box. A full description may be found here:
+        # http://www.voip-info.org/wiki-Asterisk+cmd+VoiceMailMain
         def voicemail_main(options={})
           mailbox, context, folder = options.values_at :mailbox, :context, :folder
           authenticate = options.has_key?(:authenticate) ? options[:authenticate] : true
