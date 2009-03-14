@@ -161,12 +161,13 @@ module Adhearsion
       		execute "SendDTMF", digits.to_s
       	end
       	
+      	# The with_next_message method...
       	def with_next_message(&block)
       	  raise LocalJumpError, "Must supply a block" unless block_given?
       	  block.call(next_message)
     	  end
 
-        # This command shouled be used to advance to the next message in the Asterisk Comedian Voicemail application
+        # This command should be used to advance to the next message in the Asterisk Comedian Voicemail application
         def next_message
           @call.inbox.pop
         end
@@ -744,6 +745,7 @@ module Adhearsion
 
         protected
         
+          # wait_for_digits waits for the input of digits based on the number of milliseconds
           def wait_for_digit(timeout=-1)
             timeout *= 1_000 if timeout != -1
             result = result_digit_from raw_response("WAIT FOR DIGIT #{timeout.to_i}")
@@ -758,12 +760,14 @@ module Adhearsion
             nil
           end
           
+          # set_callier_id_number method allows setting of the callerid number of the call
           def set_caller_id_number(caller_id)
             return unless caller_id
             raise ArgumentError, "Caller ID must be numerical" if caller_id.to_s !~ /^\d+$/
             raw_response %(SET CALLERID %p) % caller_id
           end
           
+          # set_caller_id_name method allows the setting of the callerid name of the call
           def set_caller_id_name(caller_id_name)
             return unless caller_id_name
             variable "CALLERID(name)" => caller_id_name
