@@ -16,6 +16,10 @@ module Adhearsion
     end
   end
   
+  class Hangup < Exception
+    # At the moment, we'll just use this to end a call-handling Thread.
+  end
+  
   ##
   # This manages the list of calls the Adhearsion service receives
   class Calls

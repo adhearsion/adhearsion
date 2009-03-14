@@ -48,6 +48,7 @@ module Adhearsion
         
         def read
           returning from_pbx.gets do |message|
+            raise Hangup if message.nil?
             ahn_log.agi.debug "<<< #{message}"
           end
         end
