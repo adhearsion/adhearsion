@@ -1,4 +1,7 @@
+0.8.3
+
 0.8.2
+ - When a call hangs up, Adhearsion will no longer show random exceptions (that were okay) and instead allows the user to rescue a Hangup exception.
  - ManagerInterfaceResponse now include()s DRbUndumped, allowing send_action() to be called directly over DRb.
  - Fixes an inconsequential bug when CTL-C'ing Adhearsion.
 
