@@ -24,7 +24,7 @@ rest_of_line = (any* -- crlf); # Match all characters until the next line sepera
 
 Prompt = "Asterisk Call Manager/" digit+ >version_starts "." digit+ %version_stops crlf;
 
-Key = ((alnum | print) -- (cr | lf))+;
+Key = ((alnum | print) -- (cr | lf | ":"))+;
 KeyValuePair = Key >key_starts %key_stops colon rest_of_line >value_starts %value_stops crlf;
 
 FollowsDelimiter = crlf "--END COMMAND--";
