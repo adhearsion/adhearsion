@@ -1,4 +1,6 @@
 0.8.3
+ - Renamed interruptable_play to interruptible_play and made interruptible_play() public instead of protected.
+ - Fixed an Asterisk Manager Interface parsing issue in which colons sometimes got stuck into the key name.
 
 0.8.2
  - When a call hangs up, Adhearsion will no longer show random exceptions (that were okay) and instead allows the user to rescue a Hangup exception.

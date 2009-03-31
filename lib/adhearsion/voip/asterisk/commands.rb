@@ -407,7 +407,7 @@ module Adhearsion
               buffer << key
               return buffer if number_of_digits && number_of_digits == buffer.length
             end
-            key = wait_for_digit timeout || -1
+            key = wait_for_digit(timeout || -1)
           end
       	end
       	
@@ -742,6 +742,18 @@ module Adhearsion
           yield
           Time.now - start_time
         end
+        
+        ##
+        # This will play a sequence of files, stopping the playback if a digit is pressed. If a digit is pressed, it will be
+        # returned as a String. If the files played with no keypad input, nil will be returned.
+        #
+        def interruptible_play(*files)
+          files.flatten.each do |file|
+            result = result_digit_from raw_response("EXEC BACKGROUND #{file}")
+            return result if result != 0.chr
+          end
+          nil
+        end
 
         protected
         
@@ -752,12 +764,12 @@ module Adhearsion
             (result == 0.chr) ? nil : result
           end
         
+          ##
+          # Deprecated name of interruptible_play(). This is a misspelling!
+          #
           def interruptable_play(*files)
-            files.flatten.each do |file|
-              result = result_digit_from raw_response("EXEC BACKGROUND #{file}")
-              return result if result != 0.chr
-            end
-            nil
+            ahn_log.deprecation.warn 'Please change your code to use interruptible_play() instead. "interruptable" is a misspelling! interruptable_play() will work for now but will be deprecated in the future!'
+            interruptible_play(*files)
           end
           
           # set_callier_id_number method allows setting of the callerid number of the call
