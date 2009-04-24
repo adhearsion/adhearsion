@@ -1,3 +1,6 @@
+0.8.3
+ - The "uniqueid" call channel variable available in dialplan.rb is now *always* a String
+
 0.8.2
  - ManagerInterfaceResponse now include()s DRbUndumped, allowing send_action() to be called directly over DRb.
  - Fixes an inconsequential bug when CTL-C'ing Adhearsion.

@@ -30,9 +30,9 @@ Story: Lexing AMI
 		
 		Then the protocol should have lexed without syntax errors
 		And 1 message should have been received
-	
+		
 	Scenario: Lexing the initial AMI header and then a Response:Follows section
-	
+		
 		Given a new lexer
 		And a version header for AMI 1.0
 		And a multi-line Response:Follows body of ragel_description
@@ -41,10 +41,9 @@ Story: Lexing AMI
 		
 		Then the protocol should have lexed without syntax errors
 		And the 'follows' body of 1 message received should equal ragel_description
-	
-	
+		
 	Scenario: Lexing a Response:Follows section which has a colon not on the first line
-
+		
 		Given a new lexer
 		And a multi-line Response:Follows body of with_colon_after_first_line
 
@@ -53,9 +52,9 @@ Story: Lexing AMI
 		Then the protocol should have lexed without syntax errors
 		And 1 message should have been received
 		And the 'follows' body of 1 message received should equal with_colon_after_first_line
-
+		
 	Scenario: Lexing an immediate response with a colon in it.
-	
+		
 		Given a new lexer
 		And an immediate response with text "markq        has 0 calls (max unlimited) in 'ringall' strategy (0s holdtime), W:0, C:0, A:0, SL:0.0% within 0s\r\n   No Members\r\n   No Callers\r\n\r\n\r\n\r\n"
 		
@@ -64,7 +63,7 @@ Story: Lexing AMI
 		Then the protocol should have lexed without syntax errors
 		And 1 message should have been received
 		And 1 message should be an immediate response with text "markq        has 0 calls (max unlimited) in 'ringall' strategy (0s holdtime), W:0, C:0, A:0, SL:0.0% within 0s\r\n   No Members\r\n   No Callers"
-
+		
 	Scenario: Lexing the initial AMI header and then an "Authentication Required" error.
 	
 		Given a new lexer
@@ -153,6 +152,18 @@ Story: Lexing AMI
 		
 		Then the first message received should have a key "ActionID" with value "1224469850.61673"
 	
+	Scenario: A response containing a floating point value
+		
+		Given a new lexer
+		And a custom stanza named "call"
+		And the custom stanza named "call" has key "ActionID" with value "1224469850.61673"
+		And the custom stanza named "call" has key "Uniqueid" with value "1173223225.10309"
+		
+		When the custom stanza named "call" is added to the buffer
+		And the buffer is lexed
+		
+		Then the 1st message received should have a key "Uniqueid" with value "1173223225.10309"
+	
 	Scenario: Receiving a message with custom key/value pairs
 	
 		Given a new lexer
@@ -177,7 +188,7 @@ Story: Lexing AMI
 		And the first message received should have a key "x-header" with value "<FooBAR>"
 		And the first message received should have a key "Channel" with value "IAX2/127.0.0.1/4569-9904"
 		And the first message received should have a key "I have spaces" with value "i have trailing padding   "
-		
+	
 	Scenario: Executing a stanza that was partially received
 	
 		Given a new lexer

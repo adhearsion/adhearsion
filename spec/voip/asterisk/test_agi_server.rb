@@ -282,6 +282,13 @@ context 'Call variable parsing with data that is treated specially' do
     key, value = Adhearsion::Call::Variables::Parser.separate_line_into_key_value_pair("foo: My Name")
     value.should == 'My Name'
   end
+  
+  test "Uniqueid remains a String, not a Float" do
+    uniqueid = "123456.12831"
+    variables = merged_hash_with_call_variables :uniqueid => uniqueid
+    variables[:uniqueid].should.eql uniqueid
+  end
+  
 end
 
 context 'Typical call variable line parsing with a typical line that is not treated specially' do
@@ -417,7 +424,7 @@ agi_accountcode:
       uncoerced_variable_map[:rdnis]        = nil
       uncoerced_variable_map[:priority]     = 1
       uncoerced_variable_map[:enhanced]     = 0.0
-      uncoerced_variable_map[:uniqueid]     = 1191245124.16
+      uncoerced_variable_map[:uniqueid]     = "1191245124.16"
       
       uncoerced_variable_map[:type_of_calling_number] = Adhearsion::VoIP::Constants::Q931_TYPE_OF_NUMBER[uncoerced_variable_map.delete(:callington).to_i]
 

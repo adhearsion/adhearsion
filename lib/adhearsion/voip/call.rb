@@ -318,7 +318,15 @@ module Adhearsion
                   if Adhearsion::VoIP::DSL::NumericalString.starts_with_leading_zero?(value)
                     Adhearsion::VoIP::DSL::NumericalString.new(value)
                   else
-                    is_float ? value.to_f : value.to_i
+                    if is_float
+                      if key == :uniqueid
+                        value
+                      else
+                        value.to_f
+                      end
+                    else
+                      value.to_i
+                    end
                   end
                 else
                   value

@@ -1,3 +1,4 @@
+
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 require File.join(File.dirname(__FILE__), 'ami_messages.rb')
 
@@ -9,7 +10,8 @@ module Adhearsion
 
           BUFFER_SIZE = 8.kilobytes unless defined? BUFFER_SIZE
 
-          # line 52 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+          
+# line 52 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 ##
 
           attr_accessor(:ami_version)
@@ -20,7 +22,7 @@ module Adhearsion
             @ragel_stack = []
             
             
-# line 24 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
+# line 26 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
 class << self
 	attr_accessor :_ami_protocol_parser_actions
 	private :_ami_protocol_parser_actions, :_ami_protocol_parser_actions=
@@ -912,7 +914,7 @@ end
 self.ami_protocol_parser_en_response_follows = 258;
 
 
-# line 916 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
+# line 918 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
 begin
 	     @current_pointer ||= 0
 	    @data_ending_pointer ||=   @data.length
@@ -922,6 +924,7 @@ begin
 	    @token_end = nil
 	   @ragel_act = 0
 end
+
 # line 79 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 ##
             
@@ -934,7 +937,7 @@ end
         
           def resume!
             
-# line 938 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
+# line 941 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
 begin
 	_klen, _trans, _keys, _acts, _nacts = nil
 	_goto_level = 0
@@ -969,7 +972,7 @@ begin
     @token_start =      @current_pointer
 		end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
-# line 973 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
+# line 976 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
 		end # from state action switch
 	end
 	if _trigger_goto
@@ -1496,7 +1499,7 @@ end
 end 
 			end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
-# line 1500 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
+# line 1503 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
 			end # action switch
 		end
 	end
@@ -1523,7 +1526,7 @@ when 29 then
    @ragel_act = 0
 		end
 # line 1 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
-# line 1527 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
+# line 1530 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
 		end # to state action switch
 	end
 	if _trigger_goto
@@ -1553,6 +1556,7 @@ end
 	end
 	end
 	end
+
 # line 89 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 ##
           end
