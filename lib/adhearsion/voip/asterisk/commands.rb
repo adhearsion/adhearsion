@@ -162,12 +162,13 @@ module Adhearsion
       		execute "SendDTMF", digits.to_s
       	end
       	
+      	# The with_next_message method...
       	def with_next_message(&block)
       	  raise LocalJumpError, "Must supply a block" unless block_given?
       	  block.call(next_message)
     	  end
 
-        # This command shouled be used to advance to the next message in the Asterisk Comedian Voicemail application
+        # This command should be used to advance to the next message in the Asterisk Comedian Voicemail application
         def next_message
           @call.inbox.pop
         end
@@ -407,7 +408,7 @@ module Adhearsion
               buffer << key
               return buffer if number_of_digits && number_of_digits == buffer.length
             end
-            key = wait_for_digit timeout || -1
+            key = wait_for_digit(timeout || -1)
           end
       	end
       	
@@ -439,6 +440,9 @@ module Adhearsion
           raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(context)
         end
       	
+      	# The queue method puts a call into a call queue to be answered by an agent registered with that queue.
+      	# A full description may be found here: http://www.voip-info.org/wiki-Asterisk+cmd+Queue
+      	# The queue method takes a queue_name as an argument to place the caller in the appropriate queue.
       	def queue(queue_name)
       	  queue_name = queue_name.to_s
       	  
@@ -559,6 +563,9 @@ module Adhearsion
     	    raw_response("SET VARIABLE %s %p" % [variable_name.to_s, value.to_s]) == "200 result=1"
   	    end
     	  
+    	  # The variable method allows you to either set or get a channel variable from Asterisk
+    	  # The method takes a hash key/value pair if you would like to set a variable
+    	  # Or a single string with the variable to get from Asterisk
     	  def variable(*args)
     	    if args.last.kind_of? Hash
       	    assignments = args.pop
@@ -575,6 +582,11 @@ module Adhearsion
     	    end
   	    end
     	  
+    	  # Use the voicemail method to send a caller to a voicemail box to leave a message. 
+    	  # A complete description is avilable at:
+    	  # http://www.voip-info.org/tiki-index.php?page=Asterisk+cmd+VoiceMail
+    	  # The method takes the mailbox_number of the user to leave a message for and a
+    	  # greeting_option that will determine which message gets played to the caller.
         def voicemail(*args)
           options_hash    = args.last.kind_of?(Hash) ? args.pop : {}
           mailbox_number  = args.shift
@@ -607,6 +619,9 @@ module Adhearsion
           end
         end
         
+        # The voicemail_main method puts a caller into the voicemail system to fetch their voicemail
+        # or set options for their voicemail box. A full description may be found here:
+        # http://www.voip-info.org/wiki-Asterisk+cmd+VoiceMailMain
         def voicemail_main(options={})
           mailbox, context, folder = options.values_at :mailbox, :context, :folder
           authenticate = options.has_key?(:authenticate) ? options[:authenticate] : true
@@ -728,29 +743,44 @@ module Adhearsion
           yield
           Time.now - start_time
         end
+        
+        ##
+        # This will play a sequence of files, stopping the playback if a digit is pressed. If a digit is pressed, it will be
+        # returned as a String. If the files played with no keypad input, nil will be returned.
+        #
+        def interruptible_play(*files)
+          files.flatten.each do |file|
+            result = result_digit_from raw_response("EXEC BACKGROUND #{file}")
+            return result if result != 0.chr
+          end
+          nil
+        end
 
         protected
         
+          # wait_for_digits waits for the input of digits based on the number of milliseconds
           def wait_for_digit(timeout=-1)
             timeout *= 1_000 if timeout != -1
             result = result_digit_from raw_response("WAIT FOR DIGIT #{timeout.to_i}")
             (result == 0.chr) ? nil : result
           end
         
+          ##
+          # Deprecated name of interruptible_play(). This is a misspelling!
+          #
           def interruptable_play(*files)
-            files.flatten.each do |file|
-              result = result_digit_from raw_response("EXEC BACKGROUND #{file}")
-              return result if result != 0.chr
-            end
-            nil
+            ahn_log.deprecation.warn 'Please change your code to use interruptible_play() instead. "interruptable" is a misspelling! interruptable_play() will work for now but will be deprecated in the future!'
+            interruptible_play(*files)
           end
           
+          # set_callier_id_number method allows setting of the callerid number of the call
           def set_caller_id_number(caller_id)
             return unless caller_id
             raise ArgumentError, "Caller ID must be numerical" if caller_id.to_s !~ /^\d+$/
             raw_response %(SET CALLERID %p) % caller_id
           end
           
+          # set_caller_id_name method allows the setting of the callerid name of the call
           def set_caller_id_name(caller_id_name)
             return unless caller_id_name
             variable "CALLERID(name)" => caller_id_name

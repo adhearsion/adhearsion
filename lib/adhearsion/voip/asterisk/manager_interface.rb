@@ -298,6 +298,8 @@ module Adhearsion
           ###########                                      ###########
           #######                                              #######
           
+          # ping sends an action to the Asterisk Manager Interface that returns a pong
+          # more details here: http://www.voip-info.org/wiki/index.php?page=Asterisk+Manager+API+Action+Ping
           def ping
             deprecation_warning
             send_action "Ping"
@@ -310,6 +312,29 @@ module Adhearsion
                 " See http://docs.adhearsion.com/AMI for more information."
           end
           
+          # The originate method launches a call to Asterisk, full details here:
+          # http://www.voip-info.org/tiki-index.php?page=Asterisk+Manager+API+Action+Originate
+          # Takes these arguments as a hash:
+          #
+          #   Channel: Channel on which to originate the call (The same as you specify in the Dial application command)
+          #   Context: Context to use on connect (must use Exten & Priority with it)
+          #   Exten: Extension to use on connect (must use Context & Priority with it)
+          #   Priority: Priority to use on connect (must use Context & Exten with it)
+          #   Timeout: Timeout (in milliseconds) for the originating connection to happen(defaults to 30000 milliseconds)
+          #   CallerID: CallerID to use for the call
+          #   Variable: Channels variables to set (max 32). Variables will be set for both channels (local and connected).
+          #   Account: Account code for the call
+          #   Application: Application to use on connect (use Data for parameters)
+          #   Data : Data if Application parameter is used
+          #   Async: For the origination to be asynchronous (allows multiple calls to be generated without waiting for a response)
+          #   ActionID: The request identifier. It allows you to identify the response to this request. 
+          #   You may use a number or a string. Useful when you make several simultaneous requests.
+          #
+          # For example:
+          # originate { :channel  => 'SIP/1000@sipnetworks.com',
+          #             :context  => 'my_context',
+          #             :exten    => 's',
+          #             :priority => '1' }
           def originate(options={})
             deprecation_warning
             options = options.clone
@@ -335,11 +360,15 @@ module Adhearsion
             call_and_exec caller, "Dial", :args => dial_args, :caller_id => opts[:caller_id]
           end
 
+          # hangup terminates a call accepts a channel as the argument
+          # full details here: http://www.voip-info.org/wiki/index.php?page=Asterisk+Manager+API+Action+Hangup
           def hangup(channel)
             deprecation_warning
             send_action "Hangup", :channel => channel
           end
 
+          # call_and_exec allows you to make a call to a channel and then execute an Astersik application
+          # on that call
           def call_and_exec(channel, app, opts={})
             deprecation_warning
             args = { :channel => channel, :application => app }
@@ -348,6 +377,10 @@ module Adhearsion
             originate args
           end
 
+          # call_into_context is syntactic sugar for the Asterisk originate command that allows you to 
+          # lanuch a call into a particular context. For example:
+          #
+          # call_into_context('SIP/1000@sipnetworks.com', 'my_context', { :variables => { :session_guid => new_guid }})
           def call_into_context(channel, context, options={})
             deprecation_warning
             args = {:channel => channel, :context => context}
