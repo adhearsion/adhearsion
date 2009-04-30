@@ -351,9 +351,10 @@ module Adhearsion
           end
           
           def coerce_request_into_uri_object(variables)
-            returning variables do
+            if variables[:request]
               variables[:request] = URI.parse(variables[:request]) unless variables[:request].kind_of? URI
             end
+            variables
           end
           
           def coerce_type_of_number_into_symbol(variables)
