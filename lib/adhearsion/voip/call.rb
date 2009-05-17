@@ -99,12 +99,39 @@ module Adhearsion
   class FailedExtensionCallException < MetaAgiCallException; end
   
   class HungupExtensionCallException < MetaAgiCallException; end
-  
+
   ##
   # Encapsulates call-related data and behavior.
   # For example, variables passed in on call initiation are
   # accessible here as attributes    
   class Call
+    
+    ##
+    # Wraps the Queue object (subclasses it) so we can handle runaway threads,
+    # namely those originating from using with_next_message in commands.rb - this
+    # overrides << to check for the :cancel symbol and trigger the automessaging_tainted 
+    # instance variable.
+    class CallMessageQueue < Queue
+      
+      class InboxClosedException < Exception
+        # this gets raised when the :cancel message is delivered to the queue and with_next_message (or similar auto-message-iteration)
+        # features are called.
+      end
+      
+      attr_reader :automessaging_tainted
+
+      def initialize
+        @automessaging_tainted = false
+        super
+      end
+
+      def <<(queue_obj)
+        @automessaging_tainted = true if queue_obj == :cancel
+        super(queue_obj)
+      end
+
+    end
+    
     
     # This is basically a translation of ast_channel_reason2str() from main/channel.c and
     # ast_control_frame_type in include/asterisk/frame.h in the Asterisk source code. When
@@ -190,9 +217,13 @@ module Adhearsion
       inbox << message
     end
     alias << deliver_message
+    
+    def can_use_automessaging?
+      return inbox.automessaging_tainted == false
+    end
 
     def inbox
-      @inbox ||= Queue.new
+      @inbox ||= CallMessageQueue.new
     end
 
     def hangup!

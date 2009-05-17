@@ -165,7 +165,15 @@ module Adhearsion
       	# The with_next_message method...
       	def with_next_message(&block)
       	  raise LocalJumpError, "Must supply a block" unless block_given?
-      	  block.call(next_message)
+      	  raise Adhearsion::Call::CallMessageQueue::InboxClosedException, "The message queue for this call has aleady been disabled." if !@call.can_use_automessaging?
+      	  
+      	  call_func = lambda do |msg| 
+            if @call.can_use_automessaging?
+      	      block.call(msg)
+    	      end
+    	    end
+    	    
+      	  call_func.call(next_message)
     	  end
 
         # This command should be used to advance to the next message in the Asterisk Comedian Voicemail application
