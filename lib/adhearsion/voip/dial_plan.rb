@@ -42,23 +42,8 @@ module Adhearsion
         extend_with_dialplan_component_methods!
       end
       
-      def start_hangup_monitor
-        Thread.new do
-          send_stopping_message = false
-          while(!send_stopping_message)
-            sleep 1
-            @call.io.print("NOOP")
-            send_stopping_message = true if @call.io.gets.nil?
-          end
-          @call.deliver_message :cancel
-        end
-      end
-      
       def run
         raise "Cannot run ExecutionEnvironment without an entry point!" unless entry_point
-
-        start_hangup_monitor
-
         current_context = entry_point
         answer if AHN_CONFIG.automatically_answer_incoming_calls
         begin

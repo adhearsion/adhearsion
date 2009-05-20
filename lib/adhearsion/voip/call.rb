@@ -118,17 +118,23 @@ module Adhearsion
         # features are called.
       end
       
-      attr_reader :automessaging_tainted
+      attr_reader :open
 
       def initialize
-        @automessaging_tainted = false
+        @open = true
         super
       end
 
       def <<(queue_obj)
-        @automessaging_tainted = true if queue_obj == :cancel
+        @open = false if queue_obj == :cancel
         super(queue_obj)
       end
+      
+      def pop
+        raise Adhearsion::Call::CallMessageQueue::InboxClosedException, "The message queue for this call has aleady been disabled." if !@open
+        super
+      end
+      
 
     end
     
@@ -218,8 +224,8 @@ module Adhearsion
     end
     alias << deliver_message
     
-    def can_use_automessaging?
-      return inbox.automessaging_tainted == false
+    def can_use_messaging?
+      return inbox.open == true
     end
 
     def inbox

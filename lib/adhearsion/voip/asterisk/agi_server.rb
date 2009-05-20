@@ -11,6 +11,11 @@ module Adhearsion
               super(port, host, (1.0/0.0)) # (1.0/0.0) == Infinity
             end
             
+            def disconnecting(port)
+              @call.deliver_message :cancel
+              super(port)
+            end
+            
             def serve(io)
               call = Adhearsion.receive_call_from(io)
               Events.trigger_immediately([:asterisk, :before_call], call)
@@ -66,6 +71,7 @@ module Adhearsion
           end
 
           def start
+            server.audit = true
             server.start
           end
 
