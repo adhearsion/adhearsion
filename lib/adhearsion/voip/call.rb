@@ -16,6 +16,10 @@ module Adhearsion
     end
   end
   
+  class Hangup < Exception
+    # At the moment, we'll just use this to end a call-handling Thread.
+  end
+  
   ##
   # This manages the list of calls the Adhearsion service receives
   class Calls
@@ -314,7 +318,15 @@ module Adhearsion
                   if Adhearsion::VoIP::DSL::NumericalString.starts_with_leading_zero?(value)
                     Adhearsion::VoIP::DSL::NumericalString.new(value)
                   else
-                    is_float ? value.to_f : value.to_i
+                    if is_float
+                      if key == :uniqueid
+                        value
+                      else
+                        value.to_f
+                      end
+                    else
+                      value.to_i
+                    end
                   end
                 else
                   value
@@ -339,9 +351,10 @@ module Adhearsion
           end
           
           def coerce_request_into_uri_object(variables)
-            returning variables do
+            if variables[:request]
               variables[:request] = URI.parse(variables[:request]) unless variables[:request].kind_of? URI
             end
+            variables
           end
           
           def coerce_type_of_number_into_symbol(variables)
@@ -352,7 +365,7 @@ module Adhearsion
 
           def decompose_uri_query_into_hash(variables)
             returning variables do
-              if variables[:request].query
+              if variables[:request] && variables[:request].query
                 variables[:query] = variables[:request].query.split('&').inject({}) do |query_string_parameters, key_value_pair|
                   parameter_name, parameter_value = *key_value_pair.match(/(.+)=(.*)/).captures
                   query_string_parameters[parameter_name] = parameter_value

@@ -71,6 +71,7 @@ context 'answer' do
   include DialplanCommandTestHelpers
   
   test 'should send ANSWER over the AGI socket' do
+    does_not_read_data_back
     mock_call.answer
     pbx_should_have_been_sent 'ANSWER'
   end
@@ -96,6 +97,14 @@ context 'execute' do
     mock_call.execute :foo, 'bar', 'baz', 'hi'
     pbx_should_have_been_sent 'EXEC foo bar|baz|hi'
   end
+  
+  test "should raise a Hangup exception when nil is returned when reading a command from Asterisk" do
+    flexmock(input).should_receive(:gets).once.and_return nil
+    the_following_code {
+      mock_call.execute :foo, "bar"
+    }.should.raise Adhearsion::Hangup
+  end
+  
 end
 
 context 'play command' do
@@ -174,6 +183,7 @@ context 'input command' do
   end
   
   test 'should raise an exception when unlimited digits are to be collected and :accept_key => false' do
+    flexstub(mock_call).should_receive(:read).and_return
     the_following_code {
       mock_call.input(:accept_key => false)  
     }.should.raise ArgumentError
@@ -294,6 +304,7 @@ context 'the voicemail command' do
   end
   
   test 'should combine mailbox numbers with the context name given when both are given' do
+    does_not_read_data_back
     context   = "lolcats"
     mailboxes = [1,2,3,4,5]
     mailboxes_with_context = mailboxes.map { |mailbox| "#{mailbox}@#{context}"}
@@ -480,6 +491,7 @@ context "The queue management abstractions" do
   end
   
   test 'should return a symbol representing the result of joining the queue' do
+    does_not_read_data_back
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "TIMEOUT"
     mock_call.queue('monkey').join!.should.equal :timeout
   end
@@ -621,6 +633,7 @@ context "The queue management abstractions" do
   end
   
   test 'when a queue agent is dynamically added and the queue does not exist, a QueueDoesNotExistError should be raised' do
+    does_not_read_data_back
     mock_call.should_receive(:get_variable).once.with('AQMSTATUS').and_return('NOSUCHQUEUE')
     the_following_code {
       mock_call.queue('this_should_not_exist').agents.new 'Agent/911'
@@ -672,6 +685,7 @@ context "The queue management abstractions" do
   end
   
   test 'should pause an agent properly from a certain queue' do
+    does_not_read_data_back
     mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(lolcats)").and_return "Agent/007,Agent/008"
     mock_call.should_receive(:get_variable).once.with("PQMSTATUS").and_return "PAUSED"
     
@@ -1381,6 +1395,7 @@ context "Dial command" do
   include DialplanCommandTestHelpers
   
   test "should set the caller id if the caller_id option is specified" do
+    does_not_read_data_back
     mock_call.should_receive(:set_caller_id_number).once
     mock_call.dial 123, :caller_id => "1234678901"
   end
@@ -1392,6 +1407,7 @@ context "Dial command" do
   end
   
   test 'should set the caller ID name when given the :name hash key argument' do
+    does_not_read_data_back
     name = "Jay Phillips"
     mock_call.should_receive(:set_caller_id_name).once.with(name)
     mock_call.dial "BlahBlahBlah", :name => name
@@ -1404,6 +1420,7 @@ context "Dial command" do
   end
   
   test 'should pass the value of the :confirm key to dial_macro_option_compiler()' do
+    does_not_read_data_back
     value_of_confirm_key = {:play => "ohai", :timeout => 30}
     mock_call.should_receive(:dial_macro_option_compiler).once.with value_of_confirm_key
     mock_call.dial 123, :confirm => value_of_confirm_key
@@ -1555,6 +1572,7 @@ context 'the dtmf command' do
   include DialplanCommandTestHelpers
   
   test 'should send the proper AGI command' do  
+    does_not_read_data_back
     digits = '8404#4*'
     mock_call.dtmf digits
     pbx_should_have_been_sent "EXEC SendDTMF #{digits}"
@@ -1920,6 +1938,7 @@ BEGIN {
       def pbx_should_respond_with_success(success_code = nil)
         pbx_should_respond_with pbx_success_response(success_code)
       end
+      alias does_not_read_data_back pbx_should_respond_with_success
 
       def pbx_should_respond_with_failure(failure_code = nil)
         pbx_should_respond_with(pbx_failure_response(failure_code))

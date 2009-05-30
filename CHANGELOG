@@ -1,4 +1,8 @@
+0.8.4
+ - AGI "request" variable coercer will not blow up if no request is given. (Helps in testing with netcat/telnet)
+
 0.8.3
+ - The "uniqueid" call channel variable available in dialplan.rb is now *always* a String
  - Renamed interruptable_play to interruptible_play and made interruptible_play() public instead of protected.
  - Fixed an Asterisk Manager Interface parsing issue in which colons sometimes got stuck into the key name.
 

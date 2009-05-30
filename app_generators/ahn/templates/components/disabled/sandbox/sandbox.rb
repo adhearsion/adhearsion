@@ -6,7 +6,6 @@ SANDBOX_VERSION = 1.0
 initialization do
   # We shouldn't start initializing until after the AGI server has initialized.
   Events.register_callback(:after_initialized) do
-    ahn_log.sandbox "Fetching sandbox connection information"
     
     config = if COMPONENTS.sandbox.has_key? "connect_to"
       {"connect_to" => COMPONENTS.sandbox["connect_to"]}
@@ -30,8 +29,6 @@ initialization do
       
         host, port = config.values_at "host", "port"
       
-        ahn_log.sandbox "Connecting to #{host}:#{port}"
-        
         username, password = COMPONENTS.sandbox["username"], COMPONENTS.sandbox["password"]
         
         if username.blank? || password.blank? || username == "user123"
@@ -55,7 +52,6 @@ initialization do
               socket.puts identifying_hash
               response = socket.gets
               unless response
-                ahn_log.sandbox "Communication with the sandbox ended before receiving any response. Reconnecting."
                 next
               end
               response.chomp!
@@ -74,7 +70,7 @@ initialization do
                     rescue => e
                       ahn_log.error "Non-fatal exception in the AGI server: #{e.inspect} \n" + e.backtrace.join("\n")
                     ensure
-                      socket.close
+                      socket.close rescue nil
                     end
                     ahn_log.sandbox "AGI server finished serving call. Reconnecting to sandbox."
                   else
