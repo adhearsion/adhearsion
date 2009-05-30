@@ -108,7 +108,8 @@ def follows_body_text(name)
       environment and back again."
     when "with_colon_after_first_line"
       "Host                            Username       Refresh State                Reg.Time                 \r\nlax.teliax.net:5060             jicksta            105 Registered           Tue, 11 Nov 2008 02:29:55"
-
+    when "show_channels_from_wayne"
+      "Channel              Location             State   Application(Data)\r\n0 active channels\r\n0 active calls"
   end
   
 end
