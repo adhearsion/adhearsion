@@ -100,11 +100,10 @@ module Adhearsion
           result
         end
         
-        # Hangs up the current channel.
-        # After this command is issued, your application will stop executing.
-        # This should be used in the same way you would call the ruby exit() method to exit an application.
-        # If it is necessary to do some additional cleanup tasks before returning control back to asterisk, then
-        # make sure you have setup a begin...ensure block in the context of your adhearsion application dialplan.
+        ##
+        # Hangs up the current channel. After this command is issued, you will not be able to send any more AGI
+        # commands but the dialplan Thread will still continue, allowing you to do any post-call work.
+        #
         def hangup
           raw_response 'HANGUP'
         end
