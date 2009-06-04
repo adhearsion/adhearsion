@@ -29,7 +29,7 @@ initialization do
       
         host, port = config.values_at "host", "port"
       
-        username, password = COMPONENTS.sandbox["username"], COMPONENTS.sandbox["password"]
+        username, password = COMPONENTS.sandbox["username"].to_s, COMPONENTS.sandbox["password"].to_s
         
         if username.blank? || password.blank? || username == "user123"
           ahn_log.sandbox.error "You must specify your username and password in this component's config file!"
