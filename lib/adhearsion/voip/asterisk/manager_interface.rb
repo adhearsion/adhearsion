@@ -339,6 +339,7 @@ module Adhearsion
             deprecation_warning
             options = options.clone
             options[:callerid] = options.delete :caller_id if options.has_key? :caller_id
+            options[:exten] = options.delete :extension if options.has_key? :extension
             send_action "Originate", options
           end
 
@@ -385,7 +386,7 @@ module Adhearsion
             deprecation_warning
             args = {:channel => channel, :context => context}
             args[:priority] = options[:priority] || 1
-            args[:extension] = options[:extension] if options[:extension]
+            args[:exten] = options[:extension] if options[:extension]
             args[:caller_id] = options[:caller_id] if options[:caller_id]
             if options[:variables] && options[:variables].kind_of?(Hash)
               args[:variable] = options[:variables].map {|pair| pair.join('=')}.join('|')
