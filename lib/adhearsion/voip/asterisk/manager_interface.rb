@@ -303,6 +303,7 @@ module Adhearsion
           def ping
             deprecation_warning
             send_action "Ping"
+            true
           end
           
           def deprecation_warning
