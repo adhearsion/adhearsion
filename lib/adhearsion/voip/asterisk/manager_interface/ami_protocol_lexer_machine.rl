@@ -27,7 +27,7 @@ Prompt = "Asterisk Call Manager/" digit+ >version_starts "." digit+ %version_sto
 Key = ((alnum | print) -- (cr | lf | ":"))+;
 KeyValuePair = Key >key_starts %key_stops colon rest_of_line >value_starts %value_stops crlf;
 
-FollowsDelimiter = crlf "--END COMMAND--";
+FollowsDelimiter = loose_newline "--END COMMAND--";
 
 Response = "Response"i colon;
 
@@ -81,7 +81,7 @@ success := KeyValuePair* crlf @message_received @{fgoto protocol;};
 response_follows := |*
     KeyValuePair+;
     FollowsBody;
-    crlf @{ message_received; fgoto protocol; };
+    crlf @{ message_received @current_message; fgoto protocol; };
 *|;
  
 }%%
