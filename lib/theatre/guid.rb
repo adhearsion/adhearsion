@@ -5,9 +5,9 @@ unless respond_to? :new_guid
   
   def random_character
     case random_digit = rand(62)
-      when  0...10 : random_digit.to_s
-      when 10...36 : (random_digit + 55).chr
-      when 36...62 : (random_digit + 61).chr
+      when  0...10 then random_digit.to_s
+      when 10...36 then (random_digit + 55).chr
+      when 36...62 then (random_digit + 61).chr
     end
   end
   

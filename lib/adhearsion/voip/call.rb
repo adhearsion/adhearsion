@@ -344,8 +344,8 @@ module Adhearsion
           def replace_yes_no_answers_with_booleans(variables)
             variables.each do |key,value|
               case value
-                when 'yes' : variables[key] = true
-                when 'no'  : variables[key] = false
+                when 'yes' then variables[key] = true
+                when 'no'  then variables[key] = false
               end
             end
           end
