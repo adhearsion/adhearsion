@@ -79,7 +79,15 @@ ActionID: 123123\r
 
     @lexer << multi_line_response
   end
-  
+
+  Given "a multi-line Response:Follows response simulating uptime" do |method_name|
+    uptime_response = "Response: Follows\r
+Privilege: Command\r
+System uptime: 46 minutes, 30 seconds\r
+--END COMMAND--\r\n\r\n"
+    @lexer << uptime_response
+  end
+
   Given "syntactically invalid $name" do |name|
     @lexer << send(:syntax_error_data, name)
   end
