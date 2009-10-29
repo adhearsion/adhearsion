@@ -29,6 +29,8 @@ module Adhearsion
         #
         class ManagerInterface
           
+          CAUSAL_EVENT_NAMES = ["queuestatus", "sippeers", "parkedcalls", "status", "dahdishowchannels"] unless defined? CAUSAL_EVENT_NAMES
+          
           class << self
             
             def connect(*args)
@@ -61,13 +63,7 @@ module Adhearsion
             # @return [String] the downcase()'d name of the event name for which to wait
             #
             def has_causal_events?(name, headers={})
-              name = name.to_s.downcase
-              case name
-                when "queuestatus", "sippeers", "parkedcalls", "status"
-                  true
-                else
-                  false
-              end
+              CAUSAL_EVENT_NAMES.include? name.to_s.downcase
             end
             
             ##
