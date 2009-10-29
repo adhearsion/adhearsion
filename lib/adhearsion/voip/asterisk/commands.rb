@@ -4,12 +4,12 @@ require 'adhearsion/voip/menu_state_machine/menu_class'
 module Adhearsion
   module VoIP
     module Asterisk
-      module Commands
+      module Commands 
         
         RESPONSE_PREFIX = "200 result=" unless defined? RESPONSE_PREFIX
         
         # These are the status messages that asterisk will issue after a dial command is executed.
-        # More information here: http://www.voip-info.org/wiki/index.php?page=Asterisk+variable+DIALSTATUS
+	#
         # Here is a current list of dial status messages which are not all necessarily supported by adhearsion:
         # 
         # ANSWER: Call is answered. A successful dial. The caller reached the callee.
@@ -22,8 +22,8 @@ module Adhearsion
         # TORTURE: Privacy mode, callee chose to send caller to torture menu
         # INVALIDARGS: Error parsing Dial command arguments (added for Asterisk 1.4.1, SVN r53135-53136)
         #
-        #
-        DIAL_STATUSES   = Hash.new(:unknown).merge(:answer      => :answered,
+        # @see http://www.voip-info.org/wiki/index.php?page=Asterisk+variable+DIALSTATUS Asterisk Variable DIALSTATUS
+        DIAL_STATUSES   = Hash.new(:unknown).merge(:answer      => :answered, #:doc:
                                                    :congestion  => :congested, 
                                                    :busy        => :busy,
                                                    :cancel      => :cancelled,
@@ -42,11 +42,13 @@ module Adhearsion
           end
         } unless defined? DYNAMIC_FEATURE_EXTENSIONS
         
-        def write(message)
+	# Utility method to write to pbx.
+        def write(message) 
           to_pbx.print(message)
         end
         
-        def read
+	# Utility method to read from pbx. Hangup if nil.
+        def read 
           returning from_pbx.gets do |message|
             raise Hangup if message.nil?
             ahn_log.agi.debug "<<< #{message}"
@@ -58,7 +60,7 @@ module Adhearsion
         # FAGI protocol.
         # It is not recommended that you call this method directly unless you plan to write a new command method
         # in which case use this method you to communicate directly with an Asterisk server via the FAGI protocol.
-        # For more information about FAGI visit: http://www.voip-info.org/wiki/view/Asterisk+FastAGI
+        # @see http://www.voip-info.org/wiki/view/Asterisk+FastAGI More information about FAGI
         def raw_response(message = nil)
           ahn_log.agi.debug ">>> #{message}"
           write message if message
@@ -79,8 +81,7 @@ module Adhearsion
         end
         
         # This asterisk dialplan command allows you to instruct Asterisk to start applications
-        # which are typically run from extensions.conf.  For a complete list of these commands
-        # please visit: http://www.voip-info.org/wiki/view/Asterisk+-+documentation+of+application+commands
+        # which are typically run from extensions.conf.
         #
         # The most common commands are already made available through the FAGI interface provided
         # by this code base.  For commands that do not fall into this category, then exec is what you
@@ -89,18 +90,16 @@ module Adhearsion
         # For example, if there are specific asterisk modules you have loaded that will not 
         # available through the standard commands provided through FAGI - then you can used EXEC.
         #
-        # Example:
-        # execute 'SIPAddHeader', '"Call-Info: answer-after=0"
+        # @example Using execute in this way will add a header to an existing SIP call.
+        #   execute 'SIPAddHeader', '"Call-Info: answer-after=0"
         # 
-        # Using execute in this way will add a header to an existing SIP call.
-        # 
+        # @see http://www.voip-info.org/wiki/view/Asterisk+-+documentation+of+application+commands Asterisk Dialplan Commands
         def execute(application, *arguments)
           result = raw_response("EXEC #{application} #{arguments * '|'}")
           return false if error?(result)
           result
         end
         
-        ##
         # Hangs up the current channel. After this command is issued, you will not be able to send any more AGI
         # commands but the dialplan Thread will still continue, allowing you to do any post-call work.
         #
@@ -117,11 +116,13 @@ module Adhearsion
         # file encoded using the current channel's codec, if one exists. If not, it will transcode from
         # the default codec (GSM). Asterisk stores its sound files in /var/lib/asterisk/sounds.
         #
-        # Usage:
-        #
+        # @example Play file hello-world.???
         #   play 'hello-world'
+	# @example Speak current time
         #   play Time.now
+	# @example Play sound file, speak number, play two more sound files
         #   play %w"a-connect-charge-of 22 cents-per-minute will-apply"
+	# @example Play two sound files
         #   play "you-sound-cute", "what-are-you-wearing"
         #
         def play(*arguments)
@@ -137,9 +138,11 @@ module Adhearsion
         #
         # Silence and maxduration is specified in seconds.
         #
-        # Usage:
-        #   record
+        # @example Asterisk generated filename
+        #   filename = record
+        # @example Specified filename
         #   record '/path/to/my-file.gsm'
+        # @example All options specified
         #   record 'my-file.gsm', :silence => 5, :maxduration => 120
         #
         def record(*args)
@@ -177,11 +180,9 @@ module Adhearsion
           not @call.inbox.empty?
         end
 
-        # = Menu Command
+        # Menu creates an interactive menu for the caller.
         #
-        # The following documentation was derived from this blog post on Jay Phillips' blog:
-        # 
-        # http://jicksta.com/articles/2008/02/11/menu-command
+        # The following documentation was derived from a post on Jay Phillips' blog (see below).
         # 
         # The menu() command solves the problem of building enormous input-fetching state machines in Ruby without first-class
         # message passing facilities or an external DSL.
@@ -244,18 +245,18 @@ module Adhearsion
         # hook after the other hook (e.g. +on_invalid+, then +on_failure+).
         # 
         # When the +menu()+ state machine runs through the defined rules, it must distinguish between exact and potential matches.
-        # It’s important to understand the differences between these and how they affect the overall outcome:
+        # It's important to understand the differences between these and how they affect the overall outcome:
         # 
-        # |---------------|-------------------|------------------------------------------------------|
-        # | exact matches |	potential matches	| result                                               |
-        # |---------------|-------------------|------------------------------------------------------|
-        # |  0	          |  0	              | Fail and start over                                  |
-        # |  1	          |  0	              | Match found!                                         |
-        # |  0	          | >0	              | Get another digit                                    |
-        # | >1	          |  0	              | Go with the first exact match                        |
-        # |  1	          | >0	              | Get another digit. If timeout, use exact match       |
-        # | >1	          | >0	              | Get another digit. If timeout, use first exact match |
-        # |---------------|-------------------|------------------------------------------------------|
+        #   |---------------|-------------------|------------------------------------------------------|
+        #   | exact matches |	potential matches	| result                                               |
+        #   |---------------|-------------------|------------------------------------------------------|
+        #   |  0	          |  0	               | Fail and start over                                  |
+        #   |  1	          |  0	               | Match found!                                         |
+        #   |  0	          | >0	               | Get another digit                                    |
+        #   | >1	          |  0	               | Go with the first exact match                        |
+        #   |  1	          | >0	               | Get another digit. If timeout, use exact match       |
+        #   | >1	          | >0	               | Get another digit. If timeout, use first exact match |
+        #   |---------------|-------------------|------------------------------------------------------|
         # 
         # == Database integration
         # 
@@ -290,6 +291,7 @@ module Adhearsion
         # that caused the jump. After all, the context doesn’t necessary need to be the endpoint from a menu; it can be its own entry
         # point, making menu() effectively a pipeline of re-creating the call.
         # 
+        # @see http://jicksta.com/articles/2008/02/11/menu-command Original Blog Post
         def menu(*args, &block)
           options = args.last.kind_of?(Hash) ? args.pop : {}
           sound_files = args.flatten
@@ -411,7 +413,7 @@ module Adhearsion
           end
       	end
       	
-        # An alternative to DialplanContextProc#+@. When jumping to a context, it will *not* resume executing
+        # Jumps to a context. An alternative to DialplanContextProc#+@. When jumping to a context, it will *not* resume executing
         # the former context when the jumped-to context has finished executing. Make sure you don't have any
         # +ensure+ closures which you expect to execute when the call has finished, as they will run when
         # this method is called.
@@ -440,8 +442,8 @@ module Adhearsion
         end
       	
       	# The queue method puts a call into a call queue to be answered by an agent registered with that queue.
-      	# A full description may be found here: http://www.voip-info.org/wiki-Asterisk+cmd+Queue
       	# The queue method takes a queue_name as an argument to place the caller in the appropriate queue.
+	# @see http://www.voip-info.org/wiki-Asterisk+cmd+Queue Full information on the Asterisk Queue
       	def queue(queue_name)
       	  queue_name = queue_name.to_s
       	  
@@ -526,7 +528,7 @@ module Adhearsion
         # Used to join a particular conference with the MeetMe application. To
         # use MeetMe, be sure you have a proper timing device configured on your
         # Asterisk box. MeetMe is Asterisk's built-in conferencing program.
-        # More info: http://www.voip-info.org/wiki-Asterisk+cmd+MeetMe
+        # @see http://www.voip-info.org/wiki-Asterisk+cmd+MeetMe Asterisk Meetme Application Information
         def join(conference_id, options={})
           conference_id = conference_id.to_s.scan(/\w/).join
           command_flags = options[:options].to_s # This is a passthrough string straight to Asterisk
@@ -539,9 +541,9 @@ module Adhearsion
         end
         
         # Issue this command to access a channel variable that exists in the asterisk dialplan (i.e. extensions.conf)
-        # A complete description is available here: http://www.voip-info.org/wiki/view/get+variable
         # Use get_variable to pass information from other modules or high level configurations from the asterisk dialplan
         # to the adhearsion dialplan.
+	# @see: http://www.voip-info.org/wiki/view/get+variable Asterisk Get Variable
       	def get_variable(variable_name)
       	  result = raw_response("GET VARIABLE #{variable_name}")
       	  case result
@@ -553,11 +555,11 @@ module Adhearsion
     	  end
     	  
     	  # Use set_variable to pass information back to the asterisk dial plan.
-    	  # A complete decription is available here: http://www.voip-info.org/wiki/view/set+variable
     	  # Keep in mind that the variables are not global variables.  These variables only exist for the channel
     	  # related to the call that is being serviced by the particular instance of your adhearsion application.
     	  # You will not be able to pass information back to the asterisk dialplan for other instances of your adhearsion
     	  # application to share.  Once the channel is "hungup" then the variables are cleared and their information is gone.
+    	  # @see http://www.voip-info.org/wiki/view/set+variable Asterisk Set Variable
     	  def set_variable(variable_name, value)
     	    raw_response("SET VARIABLE %s %p" % [variable_name.to_s, value.to_s]) == "200 result=1"
   	    end
@@ -582,8 +584,7 @@ module Adhearsion
   	    end
     	  
     	  # Use the voicemail method to send a caller to a voicemail box to leave a message. 
-    	  # A complete description is avilable at:
-    	  # http://www.voip-info.org/tiki-index.php?page=Asterisk+cmd+VoiceMail
+    	  # @see http://www.voip-info.org/tiki-index.php?page=Asterisk+cmd+VoiceMail Asterisk Voicemail
     	  # The method takes the mailbox_number of the user to leave a message for and a
     	  # greeting_option that will determine which message gets played to the caller.
         def voicemail(*args)
@@ -619,8 +620,8 @@ module Adhearsion
         end
         
         # The voicemail_main method puts a caller into the voicemail system to fetch their voicemail
-        # or set options for their voicemail box. A full description may be found here:
-        # http://www.voip-info.org/wiki-Asterisk+cmd+VoiceMailMain
+        # or set options for their voicemail box.
+        # @see http://www.voip-info.org/wiki-Asterisk+cmd+VoiceMailMain Asterisk VoiceMailMain Command
         def voicemail_main(options={})
           mailbox, context, folder = options.values_at :mailbox, :context, :folder
           authenticate = options.has_key?(:authenticate) ? options[:authenticate] : true
@@ -657,42 +658,43 @@ module Adhearsion
           voicemail_main
         end
         
-        # Use this command to dial an extension i.e. "phone number" in asterisk
-        # This command maps to the Asterisk DIAL command in the asterisk dialplan: http://www.voip-info.org/wiki-Asterisk+cmd+Dial
+        # Use this command to dial an extension or "phone number" in asterisk.
+        # This command maps to the Asterisk DIAL command in the asterisk dialplan. 
         #
         # The first parameter, number, must be a string that represents the extension or "number" that asterisk should dial.
         # Be careful to not just specify a number like 5001, 9095551001
         # You must specify a properly formatted string as Asterisk would expect to use in order to understand
         # whether the call should be dialed using SIP, IAX, or some other means.
-        # Examples:
-        #
-        # Make a call to the PSTN using my SIP provider for VoIP termination:
-        # dial("SIP/19095551001@my.sip.voip.terminator.us")
-        # 
-        # Make 3 Simulataneous calls to the SIP extensions separated by & symbols, try for 15 seconds and use the callerid
-        # for this call specified by the variable my_callerid
-        # dial "SIP/jay-desk-650&SIP/jay-desk-601&SIP/jay-desk-601-2", :for => 15.seconds, :caller_id => my_callerid
-        #
-        # Make a call using the IAX provider to the PSTN 
-        # dial("IAX2/my.id@voipjet/19095551234", :name=>"John Doe", :caller_id=>"9095551234")
         #
         # Options Parameter:
-        # :caller_id - the caller id number to be used when the call is placed.  It is advised you properly adhere to the
+        #
+        # +:caller_id+ - the caller id number to be used when the call is placed.  It is advised you properly adhere to the
         # policy of VoIP termination providers with respect to caller id values.
         #
-        # :name - this is the name which should be passed with the caller ID information 
+        # +:name+ - this is the name which should be passed with the caller ID information
         # if :name=>"John Doe" and :caller_id => "444-333-1000" then the compelete CID and name would be "John Doe" <4443331000>
         # support for caller id information varies from country to country and from one VoIP termination provider to another.
         #
-        # :for - this option can be thought of best as a timeout.  i.e. timeout after :for if no one answers the call
+        # +:for+ - this option can be thought of best as a timeout.  i.e. timeout after :for if no one answers the call
         # For example, dial("SIP/jay-desk-650&SIP/jay-desk-601&SIP/jay-desk-601-2", :for => 15.seconds, :caller_id => callerid)
-        # this call will timeout after 15 seconds if 1 of the 3 extensions being dialed do not pick prior to the 15 second time limit 
+        # this call will timeout after 15 seconds if 1 of the 3 extensions being dialed do not pick prior to the 15 second time limit
         #
-        # :options - This is a string of options like "Tr" which are supported by the asterisk DIAL application.
-        # for a complete list of these options and their usage please visit: http://www.voip-info.org/wiki-Asterisk+cmd+Dial
+        # +:options+ - This is a string of options like "Tr" which are supported by the asterisk DIAL application.
+        # for a complete list of these options and their usage please check the link below.
         #
-        # :confirm - ?
+        # +:confirm+ - ?
+	#
+        # @example Make a call to the PSTN using my SIP provider for VoIP termination
+        #   dial("SIP/19095551001@my.sip.voip.terminator.us")
         # 
+        # @example Make 3 Simulataneous calls to the SIP extensions separated by & symbols, try for 15 seconds and use the callerid
+        # for this call specified by the variable my_callerid
+        #   dial "SIP/jay-desk-650&SIP/jay-desk-601&SIP/jay-desk-601-2", :for => 15.seconds, :caller_id => my_callerid
+        #
+        # @example Make a call using the IAX provider to the PSTN 
+        #   dial("IAX2/my.id@voipjet/19095551234", :name=>"John Doe", :caller_id=>"9095551234")
+        #
+	# @see http://www.voip-info.org/wiki-Asterisk+cmd+Dial Asterisk Dial Command
         def dial(number, options={})
           *recognized_options = :caller_id, :name, :for, :options, :confirm
           
@@ -743,7 +745,7 @@ module Adhearsion
           Time.now - start_time
         end
         
-        ##
+        #
         # This will play a sequence of files, stopping the playback if a digit is pressed. If a digit is pressed, it will be
         # returned as a String. If the files played with no keypad input, nil will be returned.
         #
@@ -931,8 +933,8 @@ module Adhearsion
           
           # timeout with pressed digits:    200 result=<digits> (timeout)
           # timeout without pressed digits: 200 result= (timeout)
-          # (http://www.voip-info.org/wiki/view/get+data)
-          def input_timed_out?(result)
+          # @see http://www.voip-info.org/wiki/view/get+data AGI Get Data
+         def input_timed_out?(result)
             result.starts_with?(response_prefix) && result.ends_with?('(timeout)')
           end
           

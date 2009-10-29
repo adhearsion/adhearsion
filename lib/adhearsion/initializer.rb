@@ -5,7 +5,7 @@ module Adhearsion
     ##
     # Shuts down the framework.
     #
-    def self.shutdown!
+    def shutdown!
       ahn_log "Shutting down gracefully at #{Time.now}."
       Events.stop!
       exit

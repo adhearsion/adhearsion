@@ -193,7 +193,8 @@ module Adhearsion
           end
   
           def follows_text_stops
-            text = @data[@last_seen_value_end..(@current_pointer - "\r\n--END COMMAND--".size)]
+            text = @data[@last_seen_value_end..@current_pointer]
+            text.sub! /\r?\n--END COMMAND--/, ""
             @current_message.text_body = text
             @follows_text_start = nil
           end
