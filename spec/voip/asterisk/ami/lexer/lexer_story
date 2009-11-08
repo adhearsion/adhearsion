@@ -42,6 +42,17 @@ Story: Lexing AMI
 		Then the protocol should have lexed without syntax errors
 		And the 'follows' body of 1 message received should equal ragel_description
 
+	Scenario: Lexing a Response:Follows section with no body
+	
+		Given a new lexer
+		And a version header for AMI 1.0
+		And a multi-line Response:Follows body of empty_String
+	
+		When the buffer is lexed
+	
+		Then the protocol should have lexed without syntax errors
+		And the 'follows' body of 1 message received should equal empty_string	
+
 	Scenario: Lexing a multi-line Response:Follows simulating the "core show channels" command
 	
 		Given a new lexer
