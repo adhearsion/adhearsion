@@ -112,14 +112,14 @@ ADHEARSION_FILES = %w{
 
 Gem::Specification.new do |s|
   s.name = "adhearsion"
-  s.version = "0.8.3"
+  s.version = "0.8.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jay Phillips"]
 
   s.date = "2008-08-21"
   s.description = "Adhearsion is an open-source telephony development framework"
-  s.email = "Jay -at- Codemecca.com"
+  s.email = "Jay&Adhearsion.com"
   s.executables = ["ahn", "ahnctl", "jahn"]
   
   s.files = ADHEARSION_FILES
