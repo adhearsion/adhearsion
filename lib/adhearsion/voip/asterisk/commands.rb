@@ -751,7 +751,7 @@ module Adhearsion
         #
         def interruptible_play(*files)
           files.flatten.each do |file|
-            result = result_digit_from raw_response("EXEC BACKGROUND #{file}")
+            result = result_digit_from raw_response("STREAM FILE #{file} 1234567890*#")
             return result if result != 0.chr
           end
           nil
