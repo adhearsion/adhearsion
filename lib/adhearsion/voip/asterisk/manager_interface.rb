@@ -11,7 +11,7 @@ module Adhearsion
       #
       class AMI
         def initialize
-          raise "Sorry, this AMI class has been deprecated. Please see http://docs.adhearsion.com/Asterisk_Manager_Interface for documentation on the new way of handling AMI. This new version is much better and should not require an enormous migration on your part."
+          raise "Sorry, this AMI class has been deprecated. Please see http://docs.adhearsion.com/display/adhearsion/Asterisk+Manager+Interface for documentation on the new way of handling AMI. This new version is much better and should not require an enormous migration on your part."
         end
       end
       
