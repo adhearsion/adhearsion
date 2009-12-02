@@ -224,15 +224,11 @@ module Adhearsion
     
     class RailsConfiguration < AbstractConfiguration
       
-      SUPPORTED_RAILS_ENVIRONMENTS = [:development, :test, :production]
-      
       attr_accessor :rails_root, :environment
       def initialize(options)
         path_to_rails, environment = check_options options
         @rails_root = File.expand_path(path_to_rails)
         @environment = environment.to_sym
-        raise ArgumentError, "Unrecognized environment type #@environment. Supported: " +
-          SUPPORTED_RAILS_ENVIRONMENTS.to_sentence unless SUPPORTED_RAILS_ENVIRONMENTS.include?(@environment)
       end
     
       private
