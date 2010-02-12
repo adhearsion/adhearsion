@@ -62,9 +62,23 @@ module Adhearsion
         # in which case use this method you to communicate directly with an Asterisk server via the FAGI protocol.
         # @see http://www.voip-info.org/wiki/view/Asterisk+FastAGI More information about FAGI
         def raw_response(message = nil)
+          raise ArgumentError.new("illegal NUL in message #{message.inspect}") if message =~ /\0/
           ahn_log.agi.debug ">>> #{message}"
           write message if message
           read
+        end
+        
+        def response(command, *arguments)
+          # Arguments surrounded by quotes; quotes backslash-escaped.
+          # See parse_args in asterisk/res/res_agi.c (Asterisk 1.4.21.1)
+          quote_arg = lambda { |arg|
+            '"' + arg.gsub(/["\\]/) { |m| "\\#{m}" } + '"'
+          }
+          if arguments.empty?
+            raw_response("#{command}")
+          else
+            raw_response("#{command} " + arguments.map{ |arg| quote_arg.call(arg.to_s) }.join(' '))
+          end
         end
         
         # The answer command must be called first before any other commands can be issued.
@@ -76,7 +90,7 @@ module Adhearsion
         # an answer command has already been issued either explicitly by your code or implicitly
         # by the standard adhearsion configuration.
         def answer
-          raw_response "ANSWER"
+          response "ANSWER"
           true
         end
         
@@ -95,7 +109,7 @@ module Adhearsion
         # 
         # @see http://www.voip-info.org/wiki/view/Asterisk+-+documentation+of+application+commands Asterisk Dialplan Commands
         def execute(application, *arguments)
-          result = raw_response("EXEC #{application} #{arguments * '|'}")
+          result = response("EXEC", application, arguments * '|')
           return false if error?(result)
           result
         end
@@ -104,7 +118,7 @@ module Adhearsion
         # commands but the dialplan Thread will still continue, allowing you to do any post-call work.
         #
         def hangup
-          raw_response 'HANGUP'
+          response 'HANGUP'
         end
         
         # Plays the specified sound file names. This method will handle Time/DateTime objects (e.g. Time.now),
@@ -545,7 +559,7 @@ module Adhearsion
         # to the adhearsion dialplan.
 	# @see: http://www.voip-info.org/wiki/view/get+variable Asterisk Get Variable
       	def get_variable(variable_name)
-      	  result = raw_response("GET VARIABLE #{variable_name}")
+      	  result = response("GET VARIABLE", variable_name)
       	  case result
       	    when "200 result=0"
       	      return nil
@@ -561,7 +575,7 @@ module Adhearsion
     	  # application to share.  Once the channel is "hungup" then the variables are cleared and their information is gone.
     	  # @see http://www.voip-info.org/wiki/view/set+variable Asterisk Set Variable
     	  def set_variable(variable_name, value)
-    	    raw_response("SET VARIABLE %s %p" % [variable_name.to_s, value.to_s]) == "200 result=1"
+    	    response("SET VARIABLE", variable_name, value) == "200 result=1"
   	    end
     	  
     	  # The variable method allows you to either set or get a channel variable from Asterisk
@@ -751,7 +765,7 @@ module Adhearsion
         #
         def interruptible_play(*files)
           files.flatten.each do |file|
-            result = result_digit_from raw_response("STREAM FILE #{file} 1234567890*#")
+            result = result_digit_from response("STREAM FILE", file, "1234567890*#")
             return result if result != 0.chr
           end
           nil
@@ -762,7 +776,7 @@ module Adhearsion
           # wait_for_digits waits for the input of digits based on the number of milliseconds
           def wait_for_digit(timeout=-1)
             timeout *= 1_000 if timeout != -1
-            result = result_digit_from raw_response("WAIT FOR DIGIT #{timeout.to_i}")
+            result = result_digit_from response("WAIT FOR DIGIT", timeout.to_i)
             (result == 0.chr) ? nil : result
           end
         
@@ -778,7 +792,7 @@ module Adhearsion
           def set_caller_id_number(caller_id)
             return unless caller_id
             raise ArgumentError, "Caller ID must be numerical" if caller_id.to_s !~ /^\d+$/
-            raw_response %(SET CALLERID %p) % caller_id
+            response "SET CALLERID", caller_id
           end
           
           # set_caller_id_name method allows the setting of the callerid name of the call
