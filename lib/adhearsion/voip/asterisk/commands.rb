@@ -95,7 +95,7 @@ module Adhearsion
         # 
         # @see http://www.voip-info.org/wiki/view/Asterisk+-+documentation+of+application+commands Asterisk Dialplan Commands
         def execute(application, *arguments)
-          result = raw_response("EXEC #{application} \"#{arguments * '","'}")
+          result = raw_response("EXEC #{application} \"#{arguments * '","'}\"")
           return false if error?(result)
           result
         end
