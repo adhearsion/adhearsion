@@ -95,9 +95,21 @@ module Adhearsion
         # 
         # @see http://www.voip-info.org/wiki/view/Asterisk+-+documentation+of+application+commands Asterisk Dialplan Commands
         def execute(application, *arguments)
-          result = raw_response("EXEC #{application} #{arguments * '|'}")
+          result = raw_response("EXEC #{application} \"#{arguments * '","'}")
           return false if error?(result)
           result
+        end
+
+        # Sends a message to the console via the verbose message system.
+        # @example Use this command to inform someone watching the Asterisk console
+        # of actions happening within Adhearsion.
+        #   verbose 'Processing call with Adhearsion' 3
+        #
+        # @see http://www.voip-info.org/wiki/view/verbose
+        def verbose(message, level = nil)
+            result = raw_response("VERBOSE \"#{message}\" #{level}")
+            return false if error?(result)
+            result
         end
         
         # Hangs up the current channel. After this command is issued, you will not be able to send any more AGI
