@@ -407,7 +407,7 @@ module Adhearsion
           end
           
           buffer = ''
-          key = sound_files.any? ? interruptable_play(*sound_files) || '' : wait_for_digit(timeout || -1)
+          key = sound_files.any? ? interruptible_play(*sound_files) || '' : wait_for_digit(timeout || -1)
           loop do
             return buffer if key.nil?
             if terminating_key
@@ -893,7 +893,7 @@ module Adhearsion
           def play_sound_files_for_menu(menu_instance, sound_files)
             digit = nil
             if sound_files.any? && menu_instance.digit_buffer_empty?
-              digit = interruptable_play(*sound_files)
+              digit = interruptible_play(*sound_files)
             end
             digit || wait_for_digit(menu_instance.timeout)
           end

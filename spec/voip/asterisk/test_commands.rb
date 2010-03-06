@@ -22,7 +22,7 @@ context 'hangup command' do
   end
 end
 
-context 'interruptable_play command' do
+context 'interruptible_play command' do
   
   include DialplanCommandTestHelpers
   
@@ -30,12 +30,12 @@ context 'interruptable_play command' do
     digits = [?0, ?1, ?#, ?*, ?9]
     file = "file_doesnt_matter"
     digits.each { |digit| pbx_should_respond_with_success digit }
-    digits.map  { |digit| mock_call.send(:interruptable_play, file) }.should == digits.map(&:chr)
+    digits.map  { |digit| mock_call.send(:interruptible_play, file) }.should == digits.map(&:chr)
   end
   
   test "should return nil if no digit was pressed" do
     pbx_should_respond_with_success 0
-    mock_call.send(:interruptable_play, 'foobar').should.equal nil
+    mock_call.send(:interruptible_play, 'foobar').should.equal nil
   end
   
   test "should play a series of files, stopping the series when a digit is played" do
@@ -45,7 +45,7 @@ context 'interruptable_play command' do
     end
     
     files = (100..105).map(&:to_s)
-    mock_call.send(:interruptable_play, *files).should == '3'
+    mock_call.send(:interruptible_play, *files).should == '3'
   end
   
 end
@@ -165,14 +165,14 @@ context 'input command' do
   end
   
   test 'input() calls wait_for_digit the specified number of times (when no sound files are given)' do
-    # mock_call.should_receive(:interruptable_play).never
+    # mock_call.should_receive(:interruptible_play).never
     mock_call.should_receive(:wait_for_digit).times(4).and_return('1', '2', '3', '4')
     mock_call.input(4).should == '1234'
   end
   
-  test 'should execute wait_for_digit if no digit is pressed during interruptable_play' do
+  test 'should execute wait_for_digit if no digit is pressed during interruptible_play' do
     sound_files = %w[one two three]
-    mock_call.should_receive(:interruptable_play).once.with(*sound_files).and_return nil
+    mock_call.should_receive(:interruptible_play).once.with(*sound_files).and_return nil
     mock_call.should_receive(:wait_for_digit).once.and_throw :digit_request
     should_throw(:digit_request) { mock_call.input(10, :play => sound_files) }
   end
@@ -198,14 +198,14 @@ context 'input command' do
   end
   
   test 'passes wait_for_digit the :timeout option when one is given' do
-    mock_call.should_receive(:interruptable_play).never
+    mock_call.should_receive(:interruptible_play).never
     mock_call.should_receive(:wait_for_digit).twice.and_return '1', '2'
     mock_call.input(2, :timeout => 1.minute).should == '12'
   end
   
-  test 'executes interruptable_play() with all of the files given to :play' do
+  test 'executes interruptible_play() with all of the files given to :play' do
     sound_files = %w[foo bar qaz]
-    mock_call.should_receive(:interruptable_play).once.with(*sound_files).and_return '#'
+    mock_call.should_receive(:interruptible_play).once.with(*sound_files).and_return '#'
     mock_call.should_receive(:wait_for_digit).once.and_return '*'
     mock_call.input(2, :play => sound_files).should == '#*'
   end
@@ -216,7 +216,7 @@ context 'input command' do
   end
   
   test 'should execute wait_for_digit first if no sound files are given' do
-    mock_call.should_receive(:interruptable_play).never
+    mock_call.should_receive(:interruptible_play).never
     mock_call.should_receive(:wait_for_digit).once.and_throw :digit_request
     should_throw(:digit_request) { mock_call.input(1) }
   end
@@ -879,26 +879,26 @@ context 'the Menu class' do
     }.should.throw :inside_block
   end
   
-  test "should invoke wait_for_digit instead of interruptable_play when no sound files are given" do
+  test "should invoke wait_for_digit instead of interruptible_play when no sound files are given" do
     mock_call.should_receive(:wait_for_digit).once.with(5).and_return '#'
     mock_call.menu { |link| link.does_not_match 3 }
   end
   
-  test 'should invoke interruptable_play when sound files are given only for the first digit' do
+  test 'should invoke interruptible_play when sound files are given only for the first digit' do
     sound_files = %w[i like big butts and i cannot lie]
     timeout = 1337
     
-    mock_call.should_receive(:interruptable_play).once.with(*sound_files).and_return nil
+    mock_call.should_receive(:interruptible_play).once.with(*sound_files).and_return nil
     mock_call.should_receive(:wait_for_digit).once.with(timeout).and_return nil
     
     mock_call.menu(sound_files, :timeout => timeout) { |link| link.qwerty 12345 }
   end
    
-  test 'if the call to interruptable_play receives a timeout, it should execute wait_for_digit with the timeout given' do
+  test 'if the call to interruptible_play receives a timeout, it should execute wait_for_digit with the timeout given' do
       sound_files = %w[i like big butts and i cannot lie]
       timeout = 987
       
-      mock_call.should_receive(:interruptable_play).once.with(*sound_files).and_return nil
+      mock_call.should_receive(:interruptible_play).once.with(*sound_files).and_return nil
       mock_call.should_receive(:wait_for_digit).with(timeout).and_return
       
       mock_call.menu(sound_files, :timeout => timeout) { |link| link.foobar 911 }
@@ -1752,7 +1752,7 @@ context 'the DialPlan::ConfirmationManager' do
     decoded_sound_files.size.should.equal 2
   end
   
-  test 'a call to a party which is acknowledged with the proper key during the call to interruptable_play' do
+  test 'a call to a party which is acknowledged with the proper key during the call to interruptible_play' do
     variables         = {:timeout => 20, :play => ['foo-bar', 'qaz_qwerty.gsm'], :key => '#', :macro => 'confirmer'}
     encoded_variables = {:network_script => encode_hash(variables)}
     io_mock           = StringIO.new
@@ -1768,7 +1768,7 @@ context 'the DialPlan::ConfirmationManager' do
     flexstub(manager).should_receive(:raw_response).and_return nil
     
     flexmock(manager).should_receive(:answer).once
-    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '#'
+    flexmock(manager).should_receive(:interruptible_play).once.with(*sound_files).and_return '#'
     
     manager.handle
   end
@@ -1789,7 +1789,7 @@ context 'the DialPlan::ConfirmationManager' do
     flexstub(manager).should_receive(:raw_response).and_return nil
     
     flexmock(manager).should_receive(:answer).once
-    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return nil
+    flexmock(manager).should_receive(:interruptible_play).once.with(*sound_files).and_return nil
     flexmock(manager).should_receive(:wait_for_digit).once.with(20).and_return nil
     
     flexmock(manager).should_receive(:variable).once.with("MACRO_RESULT" => 'CONTINUE')
@@ -1813,7 +1813,7 @@ context 'the DialPlan::ConfirmationManager' do
     flexstub(manager).should_receive(:raw_response).and_return nil
     
     flexmock(manager).should_receive(:answer).once
-    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return nil
+    flexmock(manager).should_receive(:interruptible_play).once.with(*sound_files).and_return nil
     flexmock(manager).should_receive(:wait_for_digit).once.with(20).and_return '#'
     
     manager.handle
@@ -1835,10 +1835,10 @@ context 'the DialPlan::ConfirmationManager' do
     flexstub(manager).should_receive(:raw_response).and_return nil
     
     flexmock(manager).should_receive(:answer).once
-    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '3' # not :key
-    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '#' # not :key
-    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '1' # not :key
-    flexmock(manager).should_receive(:interruptable_play).once.with(*sound_files).and_return '2' # matches :key
+    flexmock(manager).should_receive(:interruptible_play).once.with(*sound_files).and_return '3' # not :key
+    flexmock(manager).should_receive(:interruptible_play).once.with(*sound_files).and_return '#' # not :key
+    flexmock(manager).should_receive(:interruptible_play).once.with(*sound_files).and_return '1' # not :key
+    flexmock(manager).should_receive(:interruptible_play).once.with(*sound_files).and_return '2' # matches :key
     
     flexmock(manager).should_receive(:wait_for_digit).never # We never let it get to the point where it may timeout
     flexmock(manager).should_receive(:variable).never # We succeed by not setting the MACRO_RESULT variable
@@ -2017,7 +2017,7 @@ module MenuTestHelper
   def pbx_should_send_digits(*digits)
     digits.each do |digit|
       digit = nil if digit == :timeout
-      mock_call.should_receive(:interruptable_play).once.and_return(digit)
+      mock_call.should_receive(:interruptible_play).once.and_return(digit)
     end
   end
 end

@@ -50,7 +50,7 @@ module Adhearsion
         
         answer
         loop do
-          response = interruptable_play(*variables[:play])
+          response = interruptible_play(*variables[:play])
           if response && response.to_s == variables[:key].to_s
             # Don't set a variable to pass through to dial()
             break
