@@ -130,8 +130,8 @@ module Adhearsion
       bootstrap_rc
       initialize_log_file
       load_all_init_files
-      init_components_subsystem
       init_modules
+      init_components_subsystem
       init_events_subsystem
       load_components
       init_events_file
