@@ -189,6 +189,14 @@ module Adhearsion
       end
     end
     add_configuration_for :Database
+
+    class LdapConfiguration < AbstractConfiguration
+      attr_accessor :connection_options
+      def initialize(options)
+        @connection_options = options
+      end
+    end
+    add_configuration_for :Ldap
     
     class DrbConfiguration < AbstractConfiguration
       attr_accessor :port

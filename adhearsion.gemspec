@@ -51,6 +51,7 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/initializer/asterisk.rb
   lib/adhearsion/initializer/configuration.rb
   lib/adhearsion/initializer/database.rb
+  lib/adhearsion/initializer/ldap.rb
   lib/adhearsion/initializer/drb.rb
   lib/adhearsion/initializer/freeswitch.rb
   lib/adhearsion/initializer/rails.rb
