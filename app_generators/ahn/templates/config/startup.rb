@@ -45,6 +45,18 @@ Adhearsion::Configuration.configure do |config|
   #                        :username => 'joe', 
   #                        :password => 'secret',
   #                        :host     => 'db.example.org'
+
+  # Configure an LDAP connection using ActiveLdap.  See ActiveLdap::Base.establish_connect
+  # for the appropriate settings here.
+  # config.enable_ldap :host => 'ldap.dataspill.org',
+  #                    :port => 389,
+  #                    :base => 'dc=dataspill,dc=org',
+  #                    :logger => ahn_log.ldap,
+  #                    :bind_dn => "uid=drewry,ou=People,dc=dataspill,dc=org",
+  #                    :password => 'password12345',
+  #                    :allow_anonymous => false,
+  #                    :try_sasl => false
+
 end
 
 Adhearsion::Initializer.start_from_init_file(__FILE__, File.dirname(__FILE__) + "/..")

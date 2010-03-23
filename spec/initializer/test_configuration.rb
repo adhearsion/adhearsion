@@ -31,6 +31,10 @@ context "Configuration defaults" do
   test "database access is NOT enabled by default" do
     assert !config.database_enabled?
   end
+
+  test "ldap access is NOT enabled by default" do
+    assert !config.ldap_enabled?
+  end
   
   test "freeswith is NOT enabled by default" do
     assert !config.freeswitch_enabled?
