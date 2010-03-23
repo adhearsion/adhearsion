@@ -63,7 +63,7 @@ context 'wait_for_digit command' do
   test "the timeout given must be converted to milliseconds" do
     pbx_should_respond_with_success 0
     mock_call.send(:wait_for_digit, 1)
-    output.messages.first.ends_with?('1000').should.equal true
+    output.messages.first.ends_with?('"1000"').should.equal true
   end
 end
 
@@ -84,7 +84,7 @@ context 'execute' do
   test 'execute writes exec and app name to the PBX' do
     pbx_should_respond_with_success
     assert_success mock_call.execute(:foo)
-    pbx_should_have_been_sent 'EXEC foo '
+    pbx_should_have_been_sent 'EXEC "foo" ""'
   end
   
   test 'execute returns false if the command was not executed successfully by the PBX' do
@@ -95,7 +95,7 @@ context 'execute' do
   test 'execute can accept arguments after the app name which get translated into pipe-delimited arguments to the PBX' do
     pbx_should_respond_with_success
     mock_call.execute :foo, 'bar', 'baz', 'hi'
-    pbx_should_have_been_sent 'EXEC foo bar|baz|hi'
+    pbx_should_have_been_sent 'EXEC "foo" "bar|baz|hi"'
   end
   
   test "should raise a Hangup exception when nil is returned when reading a command from Asterisk" do
@@ -103,6 +103,12 @@ context 'execute' do
     the_following_code {
       mock_call.execute :foo, "bar"
     }.should.raise Adhearsion::Hangup
+  end
+  
+  test "should raise a ArgumentError if given a null byte in the arguments" do
+    the_following_code {
+      mock_call.execute :foo, "bar\0"
+    }.should.raise ArgumentError
   end
   
 end
@@ -270,12 +276,12 @@ context "the set_variable method" do
   include DialplanCommandTestHelpers
   
   test "variables and values are properly quoted" do
-    mock_call.should_receive(:raw_response).once.with 'SET VARIABLE foo "i can \\" has ruby?"'
+    mock_call.should_receive(:raw_response).once.with 'SET VARIABLE "foo" "i can \\" has ruby?"'
     mock_call.set_variable 'foo', 'i can " has ruby?'
   end
   
   test "to_s() is effectively called on both the key and the value" do
-    mock_call.should_receive(:raw_response).once.with 'SET VARIABLE QAZ "QWERTY"'
+    mock_call.should_receive(:raw_response).once.with 'SET VARIABLE "QAZ" "QWERTY"'
     mock_call.set_variable :QAZ, :QWERTY
   end
   
@@ -1575,7 +1581,7 @@ context 'the dtmf command' do
     does_not_read_data_back
     digits = '8404#4*'
     mock_call.dtmf digits
-    pbx_should_have_been_sent "EXEC SendDTMF #{digits}"
+    pbx_should_have_been_sent "EXEC \"SendDTMF\" \"#{digits}\""
   end
 end
 
@@ -1649,7 +1655,7 @@ context 'set_caller_id_name command' do
   
   test "should wrap the name in quotes" do
     name = "Jay Phillips"
-    mock_call.should_receive(:raw_response).once.with(%(SET VARIABLE CALLERID(name) "#{name}")).and_return true
+    mock_call.should_receive(:raw_response).once.with(%(SET VARIABLE "CALLERID(name)" "#{name}")).and_return true
     mock_call.send(:set_caller_id_name, name)
   end
 end
@@ -1975,20 +1981,20 @@ BEGIN {
       module OutputStreamMatchers
         def pbx_was_asked_to_play(*audio_files)
           audio_files.each do |audio_file|
-            output_stream_matches(/playback #{audio_file}/)
+            output_stream_matches(/"playback" "#{audio_file}"/)
           end
         end
 
         def pbx_was_asked_to_play_number(number)
-          output_stream_matches(/saynumber #{number}/)
+          output_stream_matches(/"saynumber" "#{number}"/)
         end    
 
         def pbx_was_asked_to_play_time(number)
-          output_stream_matches(/sayunixtime #{number}/)
+          output_stream_matches(/"sayunixtime" "#{number}"/)
         end
 
         def pbx_was_asked_to_execute(application, *options)
-          output_stream_matches(/exec saydigits #{options.join('|')}/i)
+          output_stream_matches(/exec "saydigits" "#{options.join('|')}"/i)
         end
       end
       include OutputStreamMatchers
