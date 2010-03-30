@@ -196,7 +196,7 @@ module Adhearsion
 
           # If the user hangs up before the recording is entered, -1 is returned and RECORDED_FILE
           # will not contain the name of the file, even though it IS in fact recorded.
-          filename.index("%d") ? get_variable('RECORDED_FILE') : filename
+          filename.index("%d") ? get_variable('RECORDED_FILE') : filename + "." + format
         end
         
         # Simulates pressing the specified digits over the current channel. Can be used to
