@@ -181,6 +181,8 @@ module Adhearsion
               format = gsm
             end
             format.sub!(/^\./, "")
+          else
+            format = options.delete(:format)
           end
           silence     = options.delete(:silence) || 0
           maxduration = options.delete(:maxduration) || -1
