@@ -174,10 +174,23 @@ module Adhearsion
         def record(*args)
           options = args.last.kind_of?(Hash) ? args.pop : {}
           filename = args.shift || "/tmp/recording_%d.gsm"
+          if (!options.has_key?(:format))
+            format = filename.slice!(/\.[^\.]+$/)
+            if (format.nil?)
+              ahn_log.agi.warn "Format not specified and not detected.  Defaulting to \"gsm\""
+              format = gsm
+            end
+            format.sub!(/^\./, "")
+          end
           silence     = options.delete(:silence) || 0
-          maxduration = options.delete(:maxduration) || 0
+          maxduration = options.delete(:maxduration) || -1
+          escapedigits = options.delete(:escapedigits) || "#"
 
-          execute("Record", filename, silence, maxduration)
+          if (silence > 0)
+            response("RECORD FILE", filename, format, escapedigits, maxduration,0, "BEEP", "s=#{silence}")
+          else
+            response("RECORD FILE", filename, format, escapedigits, maxduration, 0, "BEEP")
+          end
 
           # If the user hangs up before the recording is entered, -1 is returned and RECORDED_FILE
           # will not contain the name of the file, even though it IS in fact recorded.
