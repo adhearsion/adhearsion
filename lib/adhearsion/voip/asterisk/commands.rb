@@ -575,8 +575,8 @@ module Adhearsion
       	  case result
       	    when "200 result=0"
       	      return nil
-    	      when /^200 result=1 \((.*)\)$/
-    	        return $LAST_PAREN_MATCH
+    	    when /^200 result=1 \((.*)\)$/
+    	      return $LAST_PAREN_MATCH
     	    end
     	  end
     	  
