@@ -109,8 +109,8 @@ module Adhearsion
       
       # Find the dialplan by the context name from the call or from the 
       # first path entry in the AGI URL
-      def entry_point_for(call)        
-        if (call.context.is_a? Symbol || !call.context.empty?) && entry_point = dial_plan.lookup(call.context.to_sym)
+      def entry_point_for(call)
+        if entry_point = dial_plan.lookup(call.context.to_sym)
           entry_point
         elsif call.respond_to?(:request) && m = call.request.path.match(%r{/([^/]+)})
           dial_plan.lookup(m[1].to_sym)
