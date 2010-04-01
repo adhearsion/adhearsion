@@ -116,8 +116,8 @@ module Adhearsion
           
           def >>(other)
             case other
-              when RouteRule: merge! other
-              when ProviderDefinition: providers << other
+              when RouteRule then merge! other
+              when ProviderDefinition then providers << other
               else raise RouteException, "Unrecognized object in route definition: #{other.inspect}"
             end
             self
@@ -125,7 +125,7 @@ module Adhearsion
 
           def |(other)
             case other
-              when RouteRule: merge! other
+              when RouteRule then merge! other
               when Regexp
                 patterns << other
                 self

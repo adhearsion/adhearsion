@@ -637,9 +637,9 @@ module Adhearsion
           skip_option     = options_hash.delete(:skip)
           raise ArgumentError, 'You supplied too many arguments!' if mailbox_number && options_hash.any?
           greeting_option = case greeting_option
-            when :busy: 'b'
-            when :unavailable: 'u'
-            when nil: nil
+            when :busy then 'b'
+            when :unavailable then 'u'
+            when nil then nil
             else raise ArgumentError, "Unrecognized greeting #{greeting_option}"
           end
           skip_option &&= 's'
@@ -656,8 +656,8 @@ module Adhearsion
           end
           execute('voicemail', number_with_context, options)
           case variable('VMSTATUS')
-            when 'SUCCESS': true
-            when 'USEREXIT': false
+            when 'SUCCESS' then true
+            when 'USEREXIT' then false
             else nil
           end
         end
@@ -1011,24 +1011,24 @@ module Adhearsion
                 raise ArgumentError, "Unrecognized args to join!: #{options.inspect}" if options.any?
 
                 ring_style = case ring_style
-                  when :ringing: 'r'
-                  when :music:   ''
+                  when :ringing then 'r'
+                  when :music then   ''
                   when nil
                   else bad_argument[:play => ring_style]
                 end.to_s
                 
                 allow_hangup = case allow_hangup
-                  when :caller:   'H'
-                  when :agent:    'h'
-                  when :everyone: 'Hh'
+                  when :caller then   'H'
+                  when :agent then    'h'
+                  when :everyone then 'Hh'
                   when nil
                   else bad_argument[:allow_hangup => allow_hangup]
                 end.to_s
                 
                 allow_transfer = case allow_transfer
-                  when :caller:   'T'
-                  when :agent:    't'
-                  when :everyone: 'Tt'
+                  when :caller then   'T'
+                  when :agent then    't'
+                  when :everyone then 'Tt'
                   when nil
                   else bad_argument[:allow_transfer => allow_transfer]
                 end.to_s
@@ -1146,9 +1146,9 @@ module Adhearsion
                 proxy.environment.execute("AddQueueMember", proxy.name, interface, penalty, '', name)
                 
                 case proxy.environment.variable("AQMSTATUS")
-                  when "ADDED"         : true
-                  when "MEMBERALREADY" : false
-                  when "NOSUCHQUEUE"   : raise QueueDoesNotExistError.new(proxy.name)
+                  when "ADDED"         then true
+                  when "MEMBERALREADY" then false
+                  when "NOSUCHQUEUE"   then raise QueueDoesNotExistError.new(proxy.name)
                   else
                     raise "UNRECOGNIZED AQMSTATUS VALUE!"
                 end
@@ -1175,8 +1175,8 @@ module Adhearsion
                 # TODO: DRY this up. Repeated in the AgentProxy...
                 proxy.environment.execute 'RemoveQueueMember', proxy.name
                 case proxy.environment.variable("RQMSTATUS")
-                  when "REMOVED"     : true
-                  when "NOTINQUEUE"  : false
+                  when "REMOVED"     then true
+                  when "NOTINQUEUE"  then false
                   when "NOSUCHQUEUE"
                     raise QueueDoesNotExistError.new(proxy.name)
                   else
@@ -1250,8 +1250,8 @@ module Adhearsion
               def remove!
                 proxy.environment.execute 'RemoveQueueMember', queue_name, interface
                 case proxy.environment.variable("RQMSTATUS")
-                  when "REMOVED"     : true
-                  when "NOTINQUEUE"  : false
+                  when "REMOVED"     then true
+                  when "NOTINQUEUE"  then false
                   when "NOSUCHQUEUE"
                     raise QueueDoesNotExistError.new(queue_name)
                   else
@@ -1267,8 +1267,8 @@ module Adhearsion
                 args = [(everywhere ? nil : queue_name), interface]
                 proxy.environment.execute('PauseQueueMember', *args)
                 case proxy.environment.variable("PQMSTATUS")
-                  when "PAUSED"   : true
-                  when "NOTFOUND" : false
+                  when "PAUSED"   then true
+                  when "NOTFOUND" then false
                   else
                     raise "Unrecognized PQMSTATUS value!"
                 end
@@ -1282,8 +1282,8 @@ module Adhearsion
                 args = [(everywhere ? nil : queue_name), interface]
                 proxy.environment.execute('UnpauseQueueMember', *args)
                 case proxy.environment.variable("UPQMSTATUS")
-                  when "UNPAUSED" : true
-                  when "NOTFOUND" : false
+                  when "UNPAUSED" then true
+                  when "NOTFOUND" then false
                   else
                     raise "Unrecognized UPQMSTATUS value!"
                 end
