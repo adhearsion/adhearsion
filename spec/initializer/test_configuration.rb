@@ -112,26 +112,6 @@ context "Rails configuration defaults" do
     flexmock(File).should_receive(:expand_path).once.with(rails_root)
     config = Adhearsion::Configuration::RailsConfiguration.new :path => rails_root, :env => :development
   end
-  
-  test "should ensure that the environment provided is one supported by Rails" do
-    the_following_code {
-      Adhearsion::Configuration::RailsConfiguration.new :path => "doesnt matter", :env => :this_is_not_a_rails_env
-    }.should.raise ArgumentError
-    
-    the_following_code {
-      Adhearsion::Configuration::RailsConfiguration.new :path => "doesnt matter", :env => :development
-      Adhearsion::Configuration::RailsConfiguration.new :path => "doesnt matter", :env => :production
-      Adhearsion::Configuration::RailsConfiguration.new :path => "doesnt matter", :env => :test
-    }.should.not.raise ArgumentError
-  end
-  
-  test "should convert the environment into a Symbol" do
-    Adhearsion::Configuration::RailsConfiguration::SUPPORTED_RAILS_ENVIRONMENTS.should.not.be.empty
-    Adhearsion::Configuration::RailsConfiguration::SUPPORTED_RAILS_ENVIRONMENTS.each do |env|
-      config = Adhearsion::Configuration::RailsConfiguration.new :path => "doesnt matter", :env => env.to_s
-      config.environment.should.equal env
-    end
-  end
 end
 
 context "Database configuration defaults" do
