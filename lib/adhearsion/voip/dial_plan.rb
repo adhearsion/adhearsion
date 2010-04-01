@@ -55,8 +55,10 @@ module Adhearsion
       end
       
       protected
-
+      
       attr_reader :entry_point
+      
+      
       def extend_with_voip_commands!
         extend Adhearsion::VoIP::Conveniences
         extend Adhearsion::VoIP::Commands.for(call.originating_voip_platform)

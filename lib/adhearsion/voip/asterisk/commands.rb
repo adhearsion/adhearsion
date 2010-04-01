@@ -210,8 +210,8 @@ module Adhearsion
       	# The with_next_message method...
       	def with_next_message(&block)
       	  raise LocalJumpError, "Must supply a block" unless block_given?
-      	  block.call(next_message)
-    	  end
+          block.call(next_message)
+    	end
 
         # This command should be used to advance to the next message in the Asterisk Comedian Voicemail application
         def next_message
