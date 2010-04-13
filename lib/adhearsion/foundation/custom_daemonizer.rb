@@ -38,7 +38,7 @@ module Adhearsion
 
       STDIN.reopen "/dev/null"
       STDOUT.reopen '/dev/null', "a"
-      STDERR.reopen log_file 
+      STDERR.reopen log_file, "a"
       return oldmode ? sess_id : 0
     end
   end
