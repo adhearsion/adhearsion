@@ -386,7 +386,7 @@ module Adhearsion
             args[:exten] = options[:extension] if options[:extension]
             args[:caller_id] = options[:caller_id] if options[:caller_id]
             if options[:variables] && options[:variables].kind_of?(Hash)
-              args[:variable] = options[:variables].map {|pair| pair.join('=')}.join('|')
+              args[:variable] = options[:variables].map {|pair| pair.join('=')}.join(',')
             end
             originate args
           end
