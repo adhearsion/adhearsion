@@ -51,7 +51,7 @@ module Adhearsion
         def read 
           returning from_pbx.gets do |message|
             raise Hangup if message.nil?
-            raise Hangup if message == "Hangup"
+            raise Hangup if message.match(/^HANGUP\n?$/i)
             raise Hangup if message.match(/^511 Command Not Permitted on a dead channel/i)
             ahn_log.agi.debug "<<< #{message}"
           end
