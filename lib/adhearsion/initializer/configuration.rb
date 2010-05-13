@@ -134,16 +134,26 @@ module Adhearsion
         super
       end
     end
-    
+
     class AsteriskConfiguration < TelephonyPlatformConfiguration
+      attr_accessor :speech_engine
+      attr_accessor :argument_delimiter
+
       class << self
-        attr_accessor :speech_engine
-        
         def default_listening_port
           4573
         end
+
+        def default_argument_delimiter
+          '|'
+        end
       end
-      
+
+      def initialize(overrides = {})
+        @argument_delimiter = self.class.default_argument_delimiter
+        super
+      end
+
       class AMIConfiguration < AbstractConfiguration
         attr_accessor :port, :username, :password, :events, :host
         
