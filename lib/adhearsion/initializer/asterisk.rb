@@ -14,7 +14,10 @@ module Adhearsion
           join_server_thread_after_initialized
 
           # Make sure we stop everything when we shutdown
-          Events.register_callback(:shutdown) { self.stop }
+          Events.register_callback(:shutdown) do
+            ahn_log.info "Shutting down with #{Adhearsion.active_calls.size} active calls"
+            self.stop
+          end
         end
 
         def stop
