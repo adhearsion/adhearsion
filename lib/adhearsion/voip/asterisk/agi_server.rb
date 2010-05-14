@@ -69,8 +69,8 @@ module Adhearsion
             server.start
           end
 
-          def shutdown
-            server.stop
+          def stop
+            server.shutdown
           end
           
           def join

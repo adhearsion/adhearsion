@@ -12,10 +12,14 @@ module Adhearsion
           self.agi_server = initialize_agi
           self.ami_client = VoIP::Asterisk.manager_interface = initialize_ami if config.ami_enabled?
           join_server_thread_after_initialized
+
+          # Make sure we stop everything when we shutdown
+          Events.register_callback(:shutdown) { self.stop }
         end
 
         def stop
           agi_server.stop
+          agi_server.join
           ami_client.disconnect! if ami_client
         end
 
