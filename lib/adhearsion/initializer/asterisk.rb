@@ -21,8 +21,7 @@ module Adhearsion
         end
 
         def stop
-          agi_server.stop
-          agi_server.join
+          agi_server.graceful_shutdown
           ami_client.disconnect! if ami_client
         end
 
