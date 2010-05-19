@@ -231,14 +231,18 @@ module Adhearsion
           
           def actions_connection_disconnected
             @actions_state = :disconnected
+            ahn_log.ami.error "AMI connection for ACTION disconnected !!!"
+            establish_actions_connection 
           end
           
           def events_connection_established
             @events_state = :connected
           end
           
-          def actions_connection_disconnected
+          def events_connection_disconnected
             @events_state = :disconnected
+            ahn_log.ami.error "AMI connection for EVENT disconnected !!!"
+            establish_events_connection 
           end
           
           def disconnect!
