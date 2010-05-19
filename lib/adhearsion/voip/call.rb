@@ -444,8 +444,6 @@ module Adhearsion
               break if line.empty?
               @lines << line
             end
-          rescue EOFError
-            # Behave as though we just didn't receive any lines
           end
         
       end
