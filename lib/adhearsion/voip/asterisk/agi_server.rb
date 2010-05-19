@@ -69,14 +69,32 @@ module Adhearsion
             server.start
           end
 
-          def stop
+          def graceful_shutdown
+            if @shutting_down
+              server.stop
+              return
+            end
+
+            @shutting_down = true
+
+            while server.connections > 0
+              sleep 0.2
+            end
+
+            server.stop
+          end
+
+          def shutdown
             server.shutdown
           end
-          
+
+          def stop
+            server.stop
+          end
+
           def join
             server.join
           end
-          
         end
       end
     end
