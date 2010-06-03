@@ -7,6 +7,8 @@ $: << File.expand_path(File.dirname(__FILE__))
 
 require 'rubygems'
 
+require 'active_support/core_ext'
+
 require 'adhearsion/version'
 require 'adhearsion/voip/call'
 require 'adhearsion/voip/dial_plan'
