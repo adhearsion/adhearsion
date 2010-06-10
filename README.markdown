@@ -14,14 +14,16 @@ Adhearsion has...
 * JRuby compatibility for running atop the Java Virtual Machine and using virtually any Java library.
 * Good regression test coverage
 
-Use the public Adhearsion sandbox!
-==================================
+bklang's fork
+=============
 
-Don't want to screw with setting up a telephony system? You can test your Adhearsion applications using our public sandbox!
+This fork of the official Adhearsion repository is intended to be a place where we, the Adhearsion community, can collect patches and fixes that have not yet been merged upstream.  Note that this fork in particular works with Asterisk version 1.6 and later, and is broken with all earlier versions (including Asterisk 1.4!).  The hope is that with additional testing from the community, Jay and Jason will merge some or all of these changes into the official repository at some date in the future.
 
-Visit [http://adhearsion.com/getting_started](http://adhearsion.com/getting_started) for more information!
+For discussion of these changes, please visit the irc channel:
+irc.freenode.net #adhearsion
 
-Yes, in minutes you can be controlling your cell phone for free!  :)
+or post on the Adhearsion mailing list:
+http://groups.google.com/group/adhearsion
 
 Documentation
 =============
