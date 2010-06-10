@@ -23,7 +23,7 @@ For discussion of these changes, please visit the irc channel:
 irc.freenode.net #adhearsion
 
 or post on the Adhearsion mailing list:
-http://groups.google.com/group/adhearsion
+[http://groups.google.com/group/adhearsion](http://groups.google.com/group/adhearsion)
 
 Documentation
 =============
