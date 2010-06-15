@@ -12,7 +12,7 @@ module Adhearsion
             @agent_section         = {}
             @agent_section_special = {} # Uses => separator
             @agent_definitions     = []
-            
+
             super
           end
 
@@ -26,7 +26,7 @@ module Adhearsion
             end
           end
           alias conf to_s # Allows "agents.conf" if agents.kind_of?(Agents)
-          
+
           def agent(id, properties)
             agent_definitions << {:id => id}.merge(properties)
           end
@@ -36,7 +36,7 @@ module Adhearsion
           def groups(*args)
             agent_section[:group] = args.join(",")
           end
-          
+
           # Define whether callbacklogins should be stored in astdb for
           # persistence. Persistent logins will be reloaded after
           # Asterisk restarts.
@@ -49,7 +49,7 @@ module Adhearsion
           def allow_multiple_logins_per_extension(yes_or_no)
             general_section[:multiplelogin] = boolean_to_yes_no yes_or_no
           end
-          
+
           # Define maxlogintries to allow agent to try max logins before
           # failed. Default to 3
           def max_login_tries(number_of_tries)
@@ -97,7 +97,7 @@ module Adhearsion
           end
 
           # TODO: I'm not exactly sure what this even does....
-          
+
           # Define the default good bye sound file for agents
           # default to vm-goodbye
           def play_on_agent_goodbye(sound_file_name)
@@ -119,16 +119,16 @@ module Adhearsion
           def record_agent_calls(yes_or_no)
             agent_section[:recordagentcalls] = boolean_to_yes_no yes_or_no
           end
-          
+
           def recording_format(symbol)
             raise ArgumentError, "Unrecognized format #{symbol}" unless [:wav, :wav49, :gsm].include? symbol
             agent_section[:recordformat] = symbol
           end
-          
+
           def recording_prefix(string)
             agent_section[:urlprefix] = string
           end
-          
+
           def save_recordings_in(path_to_directory)
             agent_section[:savecallsin] = path_to_directory
           end

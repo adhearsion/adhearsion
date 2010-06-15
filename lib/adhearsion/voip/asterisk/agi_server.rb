@@ -10,12 +10,12 @@ module Adhearsion
             def initialize(port, host)
               super(port, host, (1.0/0.0)) # (1.0/0.0) == Infinity
             end
-            
+
             def disconnecting(port)
               @call.deliver_message :cancel
               super(port)
             end
-            
+
             def serve(io)
               begin
                 call = Adhearsion.receive_call_from(io)
@@ -26,7 +26,7 @@ module Adhearsion
 
               Events.trigger_immediately([:asterisk, :before_call], call)
           	  ahn_log.agi.debug "Handling call with variables #{call.variables.inspect}"
-          	  
+
           	  return DialPlan::ConfirmationManager.handle(call) if DialPlan::ConfirmationManager.confirmation_call?(call)
 
       	      # This is what happens 99.9% of the time.

@@ -18,11 +18,11 @@ class Example
     @yaml = file_contents[/=begin YAML\n(.+?)\n=end/m, 1]
     @metadata = @yaml.nil? ? nil : YAML.load(@yaml)
   end
-  
+
   def file_contents
     File.read @file
   end
-  
+
   def register_namespaces_on(obj)
     obj = obj.namespace_manager if obj.kind_of? Theatre::Theatre
     namespaces = metadata["namespaces"]
@@ -33,5 +33,5 @@ class Example
     end
     obj
   end
-  
+
 end

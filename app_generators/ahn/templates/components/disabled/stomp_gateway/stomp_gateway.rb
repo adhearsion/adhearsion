@@ -7,22 +7,22 @@ initialization do
   pass = COMPONENTS.stomp_gateway[:pass] || ""
   host = COMPONENTS.stomp_gateway[:host] || "localhost"
   port = COMPONENTS.stomp_gateway[:port] || 61613
-  
+
   ::StompGatewayConnection = Stomp::Client.open(user, pass, host, port)
-  
+
   subscriptions = COMPONENTS.stomp_gateway["subscriptions"]
-  
+
   ahn_log.stomp_gateway "Connection established. Subscriptions: #{subscriptions.inspect}"
-  
+
   Events.register_namespace_name "/stomp"
-  
+
   subscriptions.each do |subscription|
     Events.register_namespace_name "/stomp/#{subscription}"
     ::StompGatewayConnection.subscribe subscription do |event|
       Adhearsion::Events.trigger ["stomp", subscription], event
     end
   end
-  
+
 end
 
 methods_for :global do

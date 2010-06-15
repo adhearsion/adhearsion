@@ -10,7 +10,7 @@ class SimonGame
     @call = call
     reset
   end
-  
+
   def start
     loop do
       say_number
@@ -37,7 +37,7 @@ class SimonGame
   end
 
   def verify_attempt
-    if attempt_correct? 
+    if attempt_correct?
       @call.play 'good'
     else
       @call.play %W[#{@number.length-1} times wrong-try-again-smarty]
@@ -48,9 +48,9 @@ class SimonGame
   def attempt_correct?
     @attempt == @number
   end
-  
+
   def reset
     @attempt, @number = '', ''
   end
-  
+
 end

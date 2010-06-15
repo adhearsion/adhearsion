@@ -1,12 +1,12 @@
 require 'adhearsion/voip/asterisk'
 module Adhearsion
   class Initializer
-    
+
     class AsteriskInitializer
-      
+
       cattr_accessor :config, :agi_server, :ami_client
       class << self
-        
+
         def start
           self.config     = AHN_CONFIG.asterisk
           self.agi_server = initialize_agi
@@ -31,7 +31,7 @@ module Adhearsion
           VoIP::Asterisk::AGI::Server.new :host => config.listening_host,
                                           :port => config.listening_port
         end
-        
+
         def initialize_ami
           options = ami_options
           start_ami_after_initialized
@@ -48,14 +48,14 @@ module Adhearsion
             end
           end
         end
-        
+
         def ami_options
           %w(host port username password events).inject({}) do |options, property|
             options[property.to_sym] = config.ami.send property
             options
           end
         end
-        
+
         def join_server_thread_after_initialized
           Events.register_callback(:after_initialized) do
             begin
@@ -67,7 +67,7 @@ module Adhearsion
           end
           IMPORTANT_THREADS << agi_server
         end
-        
+
         def start_ami_after_initialized
           Events.register_callback(:after_initialized) do
             begin
@@ -82,6 +82,6 @@ module Adhearsion
 
       end
     end
-    
+
   end
 end

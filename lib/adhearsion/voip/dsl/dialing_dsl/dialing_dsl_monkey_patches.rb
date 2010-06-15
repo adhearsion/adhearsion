@@ -4,7 +4,7 @@ module Adhearsion
       class DialingDSL
         module MonkeyPatches
           module RegexpMonkeyPatch
-            
+
             def |(other)
               case other
                 when RouteRule

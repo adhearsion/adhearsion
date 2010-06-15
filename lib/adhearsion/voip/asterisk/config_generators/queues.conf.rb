@@ -4,7 +4,7 @@ module Adhearsion
   module VoIP
     module Asterisk
       module ConfigFileGenerators
-        
+
         # This will generate a queues.conf file. If there is no documentation on what a method
         # actually does, take a look at the documentation for its original key/value pair in
         # an unedited queues.conf file. WARNING! Don't get too embedded with these method names.
@@ -22,7 +22,7 @@ module Adhearsion
             @queue_definitions = []
             super
           end
-          
+
           def queue(name)
             new_queue = QueueDefinition.new name
             yield new_queue if block_given?
@@ -36,17 +36,17 @@ module Adhearsion
             queue_definitions.map(&:to_s).join("\n\n")
           end
           alias conf to_s
-          
+
           def persistent_members(yes_no)
             boolean :persistentmembers => yes_no, :with => general_section
           end
-          
+
           def monitor_type(symbol)
             criteria = {:monitor => "Monitor", :mix_monitor => "MixMonitor"}
             one_of_and_translate criteria, 'monitor-type' => symbol, :with => general_section
           end
-          
-          
+
+
           class QueueDefinition < AsteriskConfigGenerator
 
             DEFAULT_QUEUE_PROPERTIES = {
@@ -57,7 +57,7 @@ module Adhearsion
             }
 
             SUPPORTED_RING_STRATEGIES = [:ringall, :roundrobin, :leastrecent, :fewestcalls, :random, :rrmemory]
-            
+
             DEFAULT_SOUND_FILES = {
               'queue-youarenext'   => 'queue-youarenext',
               'queue-thereare'     => 'queue-thereare',
@@ -91,7 +91,7 @@ module Adhearsion
               @properties  = DEFAULT_QUEUE_PROPERTIES.clone
               @sound_files = DEFAULT_SOUND_FILES.clone
             end
-            
+
             def to_s
               "[#{name}]\n" +
               properties.merge(@sound_files).map { |key, value| "#{key}=#{value}" }.sort.join("\n") + "\n\n" +
@@ -144,7 +144,7 @@ module Adhearsion
               int :wrapuptime => seconds
             end
 
-            
+
             def autopause(yes_no)
               boolean :autopause => yes_no
             end
@@ -159,7 +159,7 @@ module Adhearsion
 
             def periodically_announce(sound_file, options={})
               frequency = options.delete(:every) || 1.minute
-              
+
               string 'periodic-announce' => sound_file
               int 'periodic-announce-frequency' => frequency
             end
@@ -175,7 +175,7 @@ module Adhearsion
             def monitor_format(symbol)
               one_of [:wav, :gsm, :wav49], 'monitor-format' => symbol
             end
-            
+
             def monitor_type(symbol)
               criteria = {:monitor => "Monitor", :mix_monitor => "MixMonitor"}
               one_of_and_translate criteria, 'monitor-type' => symbol
@@ -186,7 +186,7 @@ module Adhearsion
             def join_empty(yes_no_or_strict)
               one_of [true, false, :strict], :joinempty => yes_no_or_strict
             end
-            
+
             def leave_when_empty(yes_no)
               boolean :leavewhenempty => yes_no
             end
@@ -194,7 +194,7 @@ module Adhearsion
             def report_hold_time(yes_no)
               boolean :reportholdtime => yes_no
             end
-            
+
             def ring_in_use(yes_no)
               boolean :ringinuse => yes_no
             end
@@ -204,11 +204,11 @@ module Adhearsion
             def delay_connection_by(seconds)
               int :memberdelay => seconds
             end
-            
+
             def timeout_restart(yes_no)
               boolean :timeoutrestart => yes_no
             end
-            
+
             # Give a Hash argument here to override the default sound files for this queue.
             #
             # Usage:
@@ -236,7 +236,7 @@ module Adhearsion
                 @sound_files[SOUND_FILE_SYMBOL_INTERPRETATIONS[key]] = value
               end
             end
-            
+
             def member(driver)
               members << (driver.kind_of?(String) && driver =~ %r'/' ? driver : "Agent/#{driver}")
             end

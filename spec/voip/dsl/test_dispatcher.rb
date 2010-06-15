@@ -3,23 +3,23 @@ require 'adhearsion/voip/dsl/dialplan/dispatcher'
 
 
 describe "A EventCommand" do
-  
+
   test "should allow a block that's set to response_block()" do
     block = lambda {}
     cmd = Adhearsion::VoIP::DSL::Dialplan::EventCommand.new "foo", &block
     cmd.response_block.should.equal(block)
   end
-  
+
   test "should return specified return type with returns()" do
     return_type = Numeric
     cmd = Adhearsion::VoIP::DSL::Dialplan::EventCommand.new "foo", :returns => return_type
     cmd.returns.should.equal(return_type)
   end
-  
+
 end
 
 describe "The abstract CommandDispatcher" do
-  
+
   test "should make an attribute reader for context()" do
     context = "foo"
     d = Adhearsion::VoIP::DSL::Dialplan::CommandDispatcher.new String, context
@@ -30,33 +30,33 @@ describe "The abstract CommandDispatcher" do
     d = Adhearsion::VoIP::DSL::Dialplan::CommandDispatcher.new Hash
     d.factory.should.be.kind_of(Hash)
   end
-  
+
   test "should pass the context to the factory when instantiating it" do
     context = "shazbot"
     klass = flexmock "a class that has one argument in its constructor"
     klass.should_receive(:new).with(context)
     d = Adhearsion::VoIP::DSL::Dialplan::CommandDispatcher.new klass, context
   end
-  
+
   test "should not allow calling dispatch!() directly" do
     dispatcher = Adhearsion::VoIP::DSL::Dialplan::CommandDispatcher.new MyFactory
     lambda do
       dispatcher.dispatch! nil
     end.should.raise(NotImplementedError)
   end
-  
+
   test "should pass a method and any args onto its CommandFactory" do
-    
+
     weird_args = [1, 2, ["foo", nil], Object.new, 12.3..13.4]
-    
+
     bogus_command = Adhearsion::VoIP::DSL::Dialplan::EventCommand.new "123"
-    
+
     dispatcher = NilDispatcher.new MyFactory
     flexmock(dispatcher.factory).should_receive(:monkey).with(*weird_args).and_return bogus_command
     dispatcher.monkey(*weird_args)
-    
+
   end
-  
+
   test "should continue executing response_blocks until nil is returned" do
     actual_executions, target_executions = 0, 5
     response = Adhearsion::VoIP::DSL::Dialplan::EventCommand.new "1" do |response|

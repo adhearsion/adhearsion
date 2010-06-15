@@ -1,7 +1,7 @@
 module Adhearsion
   module VoIP
     module Conveniences
-    
+
       # Compiles the provided Asterisk dialplan pattern into a Ruby regular
       # expression. For more usage of Asterisk's pattern syntax, see
       # http://www.voip-info.org/wiki/view/Asterisk+Dialplan+Patterns

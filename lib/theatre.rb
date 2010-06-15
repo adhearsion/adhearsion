@@ -9,11 +9,11 @@ require 'theatre/invocation'
 require 'theatre/callback_definition_loader'
 
 module Theatre
-  
+
   class Theatre
-    
+
     attr_reader :namespace_manager
-    
+
     ##
     # Creates a new stopped Theatre. You must call start!() after you instantiate this for it to begin processing events.
     #
@@ -27,7 +27,7 @@ module Theatre
       @master_queue      = Queue.new
       @loader_mixins     = []
     end
-    
+
     ##
     # Send a message to this Theatre for asynchronous processing.
     #
@@ -48,10 +48,10 @@ module Theatre
         invocation
       end
     end
-    
+
     ##
     # Send a message to this Theatre for synchronous processing. The execution of this will not go through this Theatre's
-    # Thread pool. If an error occurred in any of callbacks, the Exception object will be placed in the returned Array 
+    # Thread pool. If an error occurred in any of callbacks, the Exception object will be placed in the returned Array
     # instead for you to act upon.
     #
     # @param [String] namespace The namespace to which the payload should be sent
@@ -72,29 +72,29 @@ module Theatre
         end
       end
     end
-    
+
     def load_events_code(code, *args)
       loader = CallbackDefinitionLoader.new(self, *args)
       loader.load_events_code code
     end
-    
+
     def load_events_file(file, *args)
       loader = CallbackDefinitionLoader.new(self, *args)
       loader.load_events_file file
     end
-    
+
     def register_namespace_name(*args)
       @namespace_manager.register_namespace_name(*args)
     end
-    
+
     def register_callback_at_namespace(*args)
       @namespace_manager.register_callback_at_namespace(*args)
     end
-    
+
     def register_loader_mixin(mod)
       @loader_mixins << mod
     end
-    
+
     def join
       @thread_group.list.each do |thread|
         begin
@@ -104,7 +104,7 @@ module Theatre
         end
       end
     end
-    
+
     ##
     # Starts this Theatre.
     #
@@ -117,7 +117,7 @@ module Theatre
         @thread_group.add Thread.new(&method(:thread_loop))
       end
     end
-    
+
     ##
     # Notifies all Threads for this Theatre to stop by sending them special messages. Any messages which were queued and
     # untriggered when this method is received will still be processed. Note: you may start this Theatre again later once it
@@ -127,14 +127,14 @@ module Theatre
       @thread_count.times { @master_queue << :THEATRE_SHUTDOWN! }
       @started_time = nil
     end
-    
+
     protected
-    
+
     # This will use the Adhearsion logger eventually.
     def warn(exception)
       # STDERR.puts exception.message, *exception.backtrace
     end
-    
+
     def thread_loop
       loop do
         begin
@@ -146,6 +146,6 @@ module Theatre
         end
       end
     end
-    
+
   end
 end

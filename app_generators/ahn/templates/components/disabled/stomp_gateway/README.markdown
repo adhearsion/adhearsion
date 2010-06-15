@@ -37,7 +37,7 @@ Install the pure-Ruby Stomp server by doing "gem install stompserver". This will
 
 Open the `stomp_gateway.yml` file in the stomp_gateway component folder. Comment out the four settings at the top of the file named "user", "pass", "host" and "port" by prepending a "#" to their line. This will cause the component to choose defaults for those properties. The component's defaults will match the expected credentials for the experimental stompserver you're already running on your computer.
 
-You also need specify a subscription name in 
+You also need specify a subscription name in
 
     events.stomp.start_call.each do |event|
       # The "event" variable holds a Stomp::Message object.

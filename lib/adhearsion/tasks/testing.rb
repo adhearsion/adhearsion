@@ -7,14 +7,14 @@ namespace:test do
       setup_and_execute(component_name)
     end
   end
-  
-  private  
-  
+
+  private
+
     def setup_and_execute(component_path)
       task = create_test_task_for(component_path)
       Rake::Task[task.name].execute
     end
-    
+
     def create_test_task_for(component_path)
       Rake::TestTask.new(task_name_for(component_path)) do |t|
          t.libs = ["lib", "test"].map{|subdir| File.join(component_path, subdir)}
@@ -22,15 +22,15 @@ namespace:test do
          t.verbose = true
        end
     end
-    
+
     def task_name_for(component_path)
       "test_#{component_path.split(/\//).last}"
     end
-    
+
     def all_component_directories
       Dir['components/*']
     end
-  
+
     def full_path_for(component)
       component =~ /^components\// ? component : File.join("components", component)
     end

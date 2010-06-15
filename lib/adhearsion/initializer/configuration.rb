@@ -21,7 +21,7 @@ module Adhearsion
       end
     end
     extend ConfigurationEntryPoint
-    
+
     class << self
       def configure(&block)
         if Adhearsion.const_defined?(:AHN_CONFIG)
@@ -31,22 +31,22 @@ module Adhearsion
         end
       end
     end
-    
+
     attr_accessor :automatically_answer_incoming_calls
     attr_accessor :end_call_on_hangup
     attr_accessor :end_call_on_error
-    
+
     def initialize
       @automatically_answer_incoming_calls = true
       @end_call_on_hangup                  = true
       @end_call_on_error                   = true
       yield self if block_given?
     end
-    
+
     def ahnrc
       @ahnrc
     end
-    
+
     ##
     # Load the contents of an .ahnrc file into this Configuration.
     #
@@ -62,11 +62,11 @@ module Adhearsion
           @ahnrc = YAML.load(new_ahnrc).freeze
       end
     end
-    
+
     def logging(options)
       Adhearsion::Logging.logging_level = options[:level]
     end
-    
+
     ##
     # Adhearsion's .ahnrc file is used to define paths to certain parts of the framework. For example, the name dialplan.rb
     # is actually specified in .ahnrc. This file can actually be just a filename, a filename with a glob (.e.g "*.rb"), an
@@ -89,45 +89,45 @@ module Adhearsion
       queried_nested_setting = Array queried_nested_setting
       queried_nested_setting.map { |filename| files_from_glob(filename) }.flatten.uniq
     end
-    
+
     private
-    
+
     def files_from_glob(glob)
       Dir.glob "#{AHN_ROOT}/#{glob}"
     end
-    
+
     class AbstractConfiguration
       extend ConfigurationEntryPoint
-      
+
       class << self
         private
           def abstract_method!
             raise "Must be implemented in subclasses"
           end
       end
-      
+
       def initialize(overrides = {})
         overrides.each_pair do |attribute, value|
           send("#{attribute}=", value)
         end
       end
     end
-    
+
     # Abstract superclass for AsteriskConfiguration and FreeSwitchConfiguration.
     class TelephonyPlatformConfiguration < AbstractConfiguration
       attr_accessor :listening_port
       attr_accessor :listening_host
-      
+
       class << self
         def default_listening_port
           abstract_method!
         end
-        
+
         def default_listening_host
           '0.0.0.0'
         end
       end
-        
+
       def initialize(overrides = {})
         @listening_port = self.class.default_listening_port
         @listening_host = self.class.default_listening_host
@@ -156,7 +156,7 @@ module Adhearsion
 
       class AMIConfiguration < AbstractConfiguration
         attr_accessor :port, :username, :password, :events, :host
-        
+
         class << self
           def default_port
             5038
@@ -165,12 +165,12 @@ module Adhearsion
           def default_events
             false
           end
-          
+
           def default_host
             'localhost'
           end
         end
-        
+
         def initialize(overrides = {})
           self.host   = self.class.default_host
           self.port   = self.class.default_port
@@ -181,7 +181,7 @@ module Adhearsion
       add_configuration_for :AMI
     end
     add_configuration_for :Asterisk
-    
+
     class FreeswitchConfiguration < TelephonyPlatformConfiguration
       class << self
         def default_listening_port
@@ -190,7 +190,7 @@ module Adhearsion
       end
     end
     add_configuration_for :Freeswitch
-    
+
     class DatabaseConfiguration < AbstractConfiguration
       attr_accessor :connection_options, :orm
       def initialize(options)
@@ -207,7 +207,7 @@ module Adhearsion
       end
     end
     add_configuration_for :Ldap
-    
+
     class DrbConfiguration < AbstractConfiguration
       attr_accessor :port
       attr_accessor :host
@@ -219,17 +219,17 @@ module Adhearsion
         def default_port
           9050
         end
-        
+
         def default_host
           'localhost'
         end
       end
-      
+
       def initialize(overrides = {})
         self.port = overrides[:port] || self.class.default_port
         self.host = overrides[:host] || self.class.default_host
         self.acl  = overrides[:raw_acl]
-        
+
         unless acl
           self.acl = []
           overrides[ :deny].to_a.each { |ip| acl << 'deny' << ip }
@@ -239,18 +239,18 @@ module Adhearsion
       end
     end
     add_configuration_for :Drb
-    
+
     class RailsConfiguration < AbstractConfiguration
-      
+
       attr_accessor :rails_root, :environment
       def initialize(options)
         path_to_rails, environment = check_options options
         @rails_root = File.expand_path(path_to_rails)
         @environment = environment.to_sym
       end
-    
+
       private
-      
+
       def check_options(options)
         options = options.clone
         path    = options.delete :path
@@ -260,9 +260,9 @@ module Adhearsion
         raise ArgumentError, "Must supply an :path argument to the Rails initializer!" unless path
         [path, env]
       end
-    
+
     end
     add_configuration_for :Rails
-    
+
   end
 end

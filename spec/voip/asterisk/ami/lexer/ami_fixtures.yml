@@ -16,7 +16,7 @@
   :missing_action:
     Response: Error
     Message: Missing action in request
-    
+
 :pong:
   :with_action_id:
     ActionID: 1287381.1238

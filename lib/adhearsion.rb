@@ -30,10 +30,10 @@ module Adhearsion
   # Sets up the Gem require path.
   AHN_INSTALL_DIR = File.expand_path(File.dirname(__FILE__) + "/..")
   AHN_CONFIG = Configuration.new
-  
+
   ##
   # This Array holds all the Threads whose life matters. Adhearsion will not exit until all of these have died.
   #
   IMPORTANT_THREADS = []
-  
+
 end

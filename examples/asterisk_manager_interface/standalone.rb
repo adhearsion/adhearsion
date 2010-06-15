@@ -40,10 +40,10 @@ if sip_peers.any?
   sip_peers.each do |peer|
     # Uncomment the following line to view all the headers for each peer.
     # p peer.headers
-    
+
     peer_name   = peer.headers["ObjectName"]
     peer_status = peer.headers["Status"]
-    
+
     puts "#{peer_name}: #{peer_status}"
   end
 else

@@ -1,25 +1,25 @@
 #!/usr/bin/env ruby
-# 
+#
 #  ahnctl - Adhearsion daemon controller
 #
 # Adhearsion, open source collaboration framework
 # Copyright (C) 2006,2007,2008 Jay Phillips
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 2.1 of the License, or (at your option) any later version.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-USAGE = "Usage: ahnctl start|stop|restart /path/to/adhearsion/app [--pid-file=/path/to/pid_file.pid]" 
+USAGE = "Usage: ahnctl start|stop|restart /path/to/adhearsion/app [--pid-file=/path/to/pid_file.pid]"
 
 # Blow up if the CLI arguments are invalid
 abort USAGE unless (2..3).include?(ARGV.size) && %w[start stop restart].include?(ARGV.first)
@@ -51,14 +51,14 @@ puts "Stopping Adhearsion app at #{app_dir}" if %w[stop restart].include? ARGV.f
 if File.exists?(pid_file)
   # An Adhearsion process may still be running. Let's kill the other one as cleanly as possible
   pid = File.read(pid_file).to_i
-  
+
   # Time to spend waiting for Adhearsion to exit
   waiting_timeout = Time.now + 15
-  
+
   terminate pid
   sleep 0.25 until `ps -p #{pid} | sed -e '1d'`.strip.empty? || Time.now > waiting_timeout
   kill pid
-  
+
   `rm -f #{pid_file}`
 end
 

@@ -54,7 +54,7 @@ module Adhearsion
         calculated_matches << calculated_match
         actual_potential_matches.concat calculated_match.potential_matches
         actual_exact_matches.concat calculated_match.exact_matches
-  
+
         potential_matches << calculated_match if calculated_match.potential_match?
         exact_matches << calculated_match if calculated_match.exact_match?
       end

@@ -1,7 +1,7 @@
 methods_for :rpc do
-  
+
   # Simply create proxy methods for the high-level AMI methods
-  
+
   [:send_action, :introduce, :originate, :call_into_context, :call_and_exec, :ping].each do |method_name|
     define_method(method_name) do |*args|
       if VoIP::Asterisk.manager_interface
@@ -11,5 +11,5 @@ methods_for :rpc do
       end
     end
   end
-  
+
 end

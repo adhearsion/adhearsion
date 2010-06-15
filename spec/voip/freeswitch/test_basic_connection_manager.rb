@@ -9,12 +9,12 @@ context "FreeSwitch BasicConnectionManager" do
     @io      = StringIO.new
     @manager = BasicConnectionManager.new io
   end
-  
+
   test "<<() should add two newlines" do
     manager << "foobar"
     io.string.should == "foobar\n\n"
   end
-  
+
 end
 
 context "FreeSwitch BasicConnectionManager's header parser" do
@@ -23,16 +23,16 @@ context "FreeSwitch BasicConnectionManager's header parser" do
       "Foo-Bar"                  => "bar",
       "Qaz-Monkey-Charlie-Zebra" => "qwerty"
     }
-    
+
     string_header = header.inject("") do |string, (key, value)|
       string + "#{key}: #{value}\n"
     end
-    
+
     string_header << "\n"
-    
+
     manager = BasicConnectionManager.new StringIO.new(string_header)
     manager.get_raw_header.should == string_header.strip
-    
+
     manager = BasicConnectionManager.new StringIO.new(string_header)
     manager.get_header.should == header
   end

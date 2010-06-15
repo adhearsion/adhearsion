@@ -2,9 +2,9 @@
 
 module Adhearsion
   class Initializer
-    
+
     class LdapInitializer
-      
+
       class << self
 
         def start
@@ -39,13 +39,13 @@ module Adhearsion
             load model
           end
         end
-        
+
         def establish_connection
           ActiveLdap::Base.setup_connection @@config.connection_options
         end
 
       end
     end
-    
+
   end
 end

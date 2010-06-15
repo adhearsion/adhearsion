@@ -3,7 +3,7 @@ require 'adhearsion/voip/asterisk/manager_interface/ami_lexer'
 module Adhearsion
   module VoIP
     module Asterisk
-      
+
       ##
       # Sorry, this AMI class has been deprecated. Please see http://docs.adhearsion.com/Asterisk_Manager_Interface for
       # documentation on the new way of handling AMI. This new version is much better and should not require an enormous
@@ -14,11 +14,11 @@ module Adhearsion
           raise "Sorry, this AMI class has been deprecated. Please see http://docs.adhearsion.com/display/adhearsion/Asterisk+Manager+Interface for documentation on the new way of handling AMI. This new version is much better and should not require an enormous migration on your part."
         end
       end
-      
+
       mattr_accessor :manager_interface
-      
+
       module Manager
-        
+
         ##
         # This class abstracts a connection to the Asterisk Manager Interface. Its purpose is, first and foremost, to make
         # the protocol consistent. Though the classes employed to assist this class (ManagerInterfaceAction,
@@ -28,17 +28,17 @@ module Adhearsion
         # For a higher-level abstraction of the Asterisk Manager Interface, see the SuperManager class.
         #
         class ManagerInterface
-          
+
           CAUSAL_EVENT_NAMES = ["queuestatus", "sippeers", "parkedcalls", "status", "dahdishowchannels"] unless defined? CAUSAL_EVENT_NAMES
-          
+
           class << self
-            
+
             def connect(*args)
               returning new(*args) do |connection|
                 connection.connect!
               end
             end
-            
+
             def replies_with_action_id?(name, headers={})
               name = name.to_s.downcase
               # TODO: Expand this case statement
@@ -47,15 +47,15 @@ module Adhearsion
                   false
                 else
                   true
-              end                
+              end
             end
-            
+
             ##
             # When sending an action with "causal events" (i.e. events which must be collected to form a proper
             # response), AMI should send a particular event which instructs us that no more events will be sent.
             # This event is called the "causal event terminator".
             #
-            # Note: you must supply both the name of the event and any headers because it's possible that some uses of an 
+            # Note: you must supply both the name of the event and any headers because it's possible that some uses of an
             # action (i.e. same name, different headers) have causal events while other uses don't.
             #
             # @param [String] name the name of the event
@@ -65,16 +65,16 @@ module Adhearsion
             def has_causal_events?(name, headers={})
               CAUSAL_EVENT_NAMES.include? name.to_s.downcase
             end
-            
+
             ##
             # Used to determine the event name for an action which has causal events.
-            # 
+            #
             # @param [String] action_name
             # @return [String] The corresponding event name which signals the completion of the causal event sequence.
-            # 
+            #
             def causal_event_terminator_name_for(action_name)
               return nil unless has_causal_events?(action_name)
-              action_name = action_name.to_s.downcase 
+              action_name = action_name.to_s.downcase
                case action_name
                  when "queuestatus", 'parkedcalls', "status"
                    action_name + "complete"
@@ -82,9 +82,9 @@ module Adhearsion
                    "peerlistcomplete"
                end
             end
-            
+
           end
-        
+
           DEFAULT_SETTINGS = {
             :host     => "localhost",
             :port     => 5038,
@@ -92,9 +92,9 @@ module Adhearsion
             :password => "secret",
             :events   => true
           }.freeze unless defined? DEFAULT_SETTINGS
-          
+
           attr_reader *DEFAULT_SETTINGS.keys
-          
+
           ##
           # Creates a new Asterisk Manager Interface connection and exposes certain methods to control it. The constructor
           # takes named parameters as Symbols. Note: if the :events option is given, this library will establish a separate
@@ -105,46 +105,46 @@ module Adhearsion
           #
           def initialize(options={})
             options = parse_options options
-            
+
             @host = options[:host]
-            @username = options[:username] 
+            @username = options[:username]
             @password = options[:password]
             @port     = options[:port]
             @events   = options[:events]
-            
+
             @sent_messages = {}
             @sent_messages_lock = Mutex.new
-            
+
             @actions_lexer = DelegatingAsteriskManagerInterfaceLexer.new self, \
                 :message_received => :action_message_received,
                 :error_received   => :action_error_received
-            
+
             @write_queue = Queue.new
-            
+
             if @events
               @events_lexer = DelegatingAsteriskManagerInterfaceLexer.new self, \
                   :message_received => :event_message_received,
-                  :error_received   => :event_error_received 
+                  :error_received   => :event_error_received
             end
           end
-          
+
           def action_message_received(message)
             if message.kind_of? Manager::ManagerInterfaceEvent
               # Trigger the return value of the waiting action id...
               corresponding_action   = @current_action_with_causal_events
               event_collection       = @event_collection_for_current_action
-              
+
               if corresponding_action
-                
+
                 # If this is the meta-event which signals no more events will follow and the response is complete.
                 if message.name.downcase == corresponding_action.causal_event_terminator_name
-                  
+
                   # Result found! Wake up any Threads waiting
                   corresponding_action.future_resource.resource = event_collection.freeze
-                  
+
                   @current_action_with_causal_events   = nil
                   @event_collection_for_current_action = nil
-                  
+
                 else
                   event_collection << message
                   # We have more causal events coming.
@@ -152,7 +152,7 @@ module Adhearsion
               else
                 ahn_log.ami.error "Got an unexpected event on actions socket! This may be a bug! #{message.inspect}"
               end
-              
+
             elsif message["ActionID"].nil?
               # No ActionID! Release the write lock and wake up the waiter
             else
@@ -160,7 +160,7 @@ module Adhearsion
               corresponding_action = data_for_message_received_with_action_id action_id
               if corresponding_action
                 message.action = corresponding_action
-                
+
                 if corresponding_action.has_causal_events?
                   # By this point the write loop will already have started blocking by calling the response() method on the
                   # action. Because we must collect more events before we wake the write loop up again, let's create these
@@ -176,10 +176,10 @@ module Adhearsion
               end
             end
           end
-          
+
           def action_error_received(ami_error)
             action_id = ami_error["ActionID"]
-            
+
             corresponding_action = data_for_message_received_with_action_id action_id
 
             if corresponding_action
@@ -188,7 +188,7 @@ module Adhearsion
               ahn_log.ami.error "Received an AMI error with an unrecognized ActionID!! This may be an bug! #{ami_error.inspect}"
             end
           end
-          
+
           ##
           # Called only when this ManagerInterface is instantiated with events enabled.
           #
@@ -197,22 +197,22 @@ module Adhearsion
             # TODO: convert the event name to a certain namespace.
             Events.trigger %w[asterisk manager_interface], event
           end
-          
+
           def event_error_received(message)
             # Does this ever even occur?
             ahn_log.ami.error "Hmmm, got an error on the AMI events-only socket! This must be a bug! #{message.inspect}"
           end
-          
+
           ##
           # Called when our Ragel parser encounters some unexpected syntax from Asterisk. Anytime this is called, it should
           # be considered a bug in Adhearsion. Note: this same method is called regardless of whether the syntax error
           # happened on the actions socket or on the events socket.
           #
           def syntax_error_encountered(ignored_chunk)
-            ahn_log.ami.error "ADHEARSION'S AMI PARSER ENCOUNTERED A SYNTAX ERROR! " + 
+            ahn_log.ami.error "ADHEARSION'S AMI PARSER ENCOUNTERED A SYNTAX ERROR! " +
                 "PLEASE REPORT THIS ON http://bugs.adhearsion.com! OFFENDING TEXT:\n#{ignored_chunk.inspect}"
           end
-          
+
           ##
           # Must be called after instantiation. Also see ManagerInterface::connect().
           #
@@ -223,39 +223,39 @@ module Adhearsion
             establish_events_connection if @events
             self
           end
-          
+
           def actions_connection_established
             @actions_state = :connected
             @actions_writer_thread = Thread.new(&method(:write_loop))
           end
-          
+
           def actions_connection_disconnected
             @actions_state = :disconnected
             ahn_log.ami.error "AMI connection for ACTION disconnected !!!"
-            establish_actions_connection 
+            establish_actions_connection
           end
-          
+
           def events_connection_established
             @events_state = :connected
           end
-          
+
           def events_connection_disconnected
             @events_state = :disconnected
             ahn_log.ami.error "AMI connection for EVENT disconnected !!!"
-            establish_events_connection 
+            establish_events_connection
           end
-          
+
           def disconnect!
             # PSEUDO CODE
             # TODO: Go through all the waiting condition variables and raise an exception
             #@write_queue << :STOP!
             raise NotImplementedError
           end
-        
+
           def dynamic
             # TODO: Return an object which responds to method_missing
           end
-                    
+
           ##
           # Used to directly send a new action to Asterisk. Note: NEVER supply an ActionID; these are handled internally.
           #
@@ -273,7 +273,7 @@ module Adhearsion
               raise NotImplementedError
             end
           end
-          
+
           ##
           # Sends an action over the AMI connection and blocks your Thread until the response comes in. If there was an error
           # for some reason, the error will be raised as an ManagerInterfaceError.
@@ -288,16 +288,16 @@ module Adhearsion
               raise response if response.kind_of?(ManagerInterfaceError)
             end
           end
-          
+
           alias send_action send_action_synchronously
-        
-        
+
+
           #######                                              #######
           ###########                                      ###########
-          ################# SOON-DEPRECATED COMMANDS ################# 
+          ################# SOON-DEPRECATED COMMANDS #################
           ###########                                      ###########
           #######                                              #######
-          
+
           # ping sends an action to the Asterisk Manager Interface that returns a pong
           # more details here: http://www.voip-info.org/wiki/index.php?page=Asterisk+Manager+API+Action+Ping
           def ping
@@ -305,14 +305,14 @@ module Adhearsion
             send_action "Ping"
             true
           end
-          
+
           def deprecation_warning
             ahn_log.ami.deprecation.warn "The implementation of the ping, originate, introduce, hangup, call_into_context " +
                 "and call_and_exec methods will soon be moved from this class to SuperManager. At the moment, the " +
                 "SuperManager abstractions are not completed. Don't worry. The migration to SuperManager will be very easy."+
                 " See http://docs.adhearsion.com/AMI for more information."
           end
-          
+
           # The originate method launches a call to Asterisk, full details here:
           # http://www.voip-info.org/tiki-index.php?page=Asterisk+Manager+API+Action+Originate
           # Takes these arguments as a hash:
@@ -328,7 +328,7 @@ module Adhearsion
           #   Application: Application to use on connect (use Data for parameters)
           #   Data : Data if Application parameter is used
           #   Async: For the origination to be asynchronous (allows multiple calls to be generated without waiting for a response)
-          #   ActionID: The request identifier. It allows you to identify the response to this request. 
+          #   ActionID: The request identifier. It allows you to identify the response to this request.
           #   You may use a number or a string. Useful when you make several simultaneous requests.
           #
           # For example:
@@ -379,7 +379,7 @@ module Adhearsion
             originate args
           end
 
-          # call_into_context is syntactic sugar for the Asterisk originate command that allows you to 
+          # call_into_context is syntactic sugar for the Asterisk originate command that allows you to
           # lanuch a call into a particular context. For example:
           #
           # call_into_context('SIP/1000@sipnetworks.com', 'my_context', { :variables => { :session_guid => new_guid }})
@@ -394,16 +394,16 @@ module Adhearsion
             end
             originate args
           end
-          
+
           #######                                                  #######
           ###########                                          ###########
-          ################# END SOON-DEPRECATED COMMANDS ################# 
+          ################# END SOON-DEPRECATED COMMANDS #################
           ###########                                          ###########
           #######                                                  #######
 
-        
+
           protected
-          
+
           ##
           # This class will be removed once this AMI library fully supports all known protocol anomalies.
           #
@@ -415,21 +415,21 @@ module Adhearsion
             def initialize(name)
               super "At the moment this AMI library doesn't support the #{name.inspect} action because it causes a protocol anomaly. Support for it will be coming shortly."
             end
-            
+
           end
-          
+
           def check_action_name(name)
             name = name.to_s.downcase
             raise UnsupportedActionName.new(name) if UnsupportedActionName::UNSUPPORTED_ACTION_NAMES.include? name
             true
           end
-          
+
           def write_loop
             loop do
               next_action = @write_queue.shift
               return :stopped if next_action.equal? :STOP!
               register_action_with_metadata next_action
-              
+
               ahn_log.ami.debug "Sending AMI action: #{"\n>>> " + next_action.to_s.gsub(/(\r\n)+/, "\n>>> ")}"
               @actions_connection.send_data next_action.to_s
               # If it's "causal event" action, we must wait here until it's fully responded
@@ -438,7 +438,7 @@ module Adhearsion
           rescue => e
             p e
           end
-          
+
           ##
           # When we send out an AMI action, we need to track the ActionID and have the other Thread handling the socket IO
           # notify the sending Thread that a response has been received. This method instantiates a new FutureResource and
@@ -455,13 +455,13 @@ module Adhearsion
               @sent_messages[action.action_id] = action
             end
           end
-          
+
           def data_for_message_received_with_action_id(action_id)
             @sent_messages_lock.synchronize do
               @sent_messages.delete action_id
             end
           end
-          
+
           ##
           # Instantiates a new ManagerInterfaceActionsConnection and assigns it to @actions_connection.
           #
@@ -475,14 +475,14 @@ module Adhearsion
             end
             login_actions
           end
-          
+
           ##
           # Instantiates a new ManagerInterfaceEventsConnection and assigns it to @events_connection.
           #
           # @return [EventSocket]
           #
           def establish_events_connection
-            
+
             # Note: the @events_connection instance variable is set in login()
             @events_connection = EventSocket.connect(@host, @port) do |handler|
               handler.receive_data { |data| @events_lexer << data  }
@@ -503,7 +503,7 @@ module Adhearsion
               response
             end
           end
-          
+
           ##
           # Since this method is always called after the login_actions method, an AuthenticationFailedException would have already
           # been raised if the username/password were off. Because this is the only action we ever need to send on this socket,
@@ -513,7 +513,7 @@ module Adhearsion
             login_action = ManagerInterfaceAction.new "Login", "Username" => @username, "Secret" => @password, "Events" => "On"
             @events_connection.send_data login_action.to_s
           end
-          
+
           def parse_options(options)
             unrecognized_keys = options.keys.map { |key| key.to_sym } - DEFAULT_SETTINGS.keys
             if unrecognized_keys.any?
@@ -521,19 +521,19 @@ module Adhearsion
             end
             DEFAULT_SETTINGS.merge options
           end
-          
+
           ##
           # Raised when calling ManagerInterface#connect!() and the server responds with an error after logging in.
           #
           class AuthenticationFailedException < Exception; end
-          
+
           class NotConnectedError < Exception; end
-          
+
           ##
           # Each time ManagerInterface#send_action is invoked, a new ManagerInterfaceAction is instantiated.
           #
           class ManagerInterfaceAction
-            
+
             attr_reader :name, :headers, :future_resource, :action_id, :causal_event_terminator_name
             def initialize(name, headers={})
               @name      = name.to_s.downcase.freeze
@@ -542,7 +542,7 @@ module Adhearsion
               @future_resource = FutureResource.new
               @causal_event_terminator_name = ManagerInterface.causal_event_terminator_name_for name
             end
-            
+
             ##
             # Used internally by ManagerInterface for the actions in AMI which break the protocol's definition and do not
             # reply with an ActionID.
@@ -550,7 +550,7 @@ module Adhearsion
             def replies_with_action_id?
               ManagerInterface.replies_with_action_id?(@name, @headers)
             end
-            
+
             ##
             # Some AMI actions effectively respond with many events which collectively constitute the actual response. These
             # Must be handled specially by the protocol parser, so this method helps inform the parser.
@@ -558,7 +558,7 @@ module Adhearsion
             def has_causal_events?
               ManagerInterface.has_causal_events?(@name, @headers)
             end
-            
+
             ##
             # Abstracts the generation of new ActionIDs. This could be implemented virutally any way, provided each
             # invocation returns something unique, so this will generate a GUID and return it.
@@ -568,7 +568,7 @@ module Adhearsion
             def new_action_id
               new_guid # Implemented in lib/adhearsion/foundation/pseudo_guid.rb
             end
-            
+
             ##
             # Converts this action into a protocol-valid String, ready to be sent over a socket.
             #
@@ -579,7 +579,7 @@ module Adhearsion
                   (@headers.any? ? "\r\n\r\n" : "\r\n")
               )
             end
-            
+
             ##
             # If the response has simply not been received yet from Asterisk, the calling Thread will block until it comes
             # in. Once the response comes in, subsequent calls immediately return a reference to the ManagerInterfaceResponse
@@ -588,7 +588,7 @@ module Adhearsion
             def response
               future_resource.resource
             end
-                        
+
           end
         end
       end

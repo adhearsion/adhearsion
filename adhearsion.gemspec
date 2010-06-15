@@ -122,9 +122,9 @@ Gem::Specification.new do |s|
   s.description = "Adhearsion is an open-source telephony development framework"
   s.email = "Jay&Adhearsion.com"
   s.executables = ["ahn", "ahnctl", "jahn"]
-  
+
   s.files = ADHEARSION_FILES
-  
+
   s.has_rdoc = false
   s.homepage = "http://adhearsion.com"
   s.require_paths = ["lib"]

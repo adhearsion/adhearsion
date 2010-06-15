@@ -6,7 +6,7 @@ SANDBOX_VERSION = 1.0
 initialization do
   # We shouldn't start initializing until after the AGI server has initialized.
   Events.register_callback(:after_initialized) do
-    
+
     config = if COMPONENTS.sandbox.has_key? "connect_to"
       {"connect_to" => COMPONENTS.sandbox["connect_to"]}
     else
@@ -21,24 +21,24 @@ initialization do
         next
       end
     end
-    
+
     begin
       # The "connect_to" key is what this version supports
       if config.kind_of?(Hash) && config.has_key?("connect_to")
         config = config['connect_to']
-      
+
         host, port = config.values_at "host", "port"
-      
+
         username, password = COMPONENTS.sandbox["username"].to_s, COMPONENTS.sandbox["password"].to_s
-        
+
         if username.blank? || password.blank? || username == "user123"
           ahn_log.sandbox.error "You must specify your username and password in this component's config file!"
           next
         end
-        
+
         # Part of the AGI-superset protocol we use to log in.
         identifying_hash = MD5.md5(username + ":" + password).to_s
-        
+
         if host.nil? || port.nil?
           ahn_log.sandbox.error "Invalid YAML returned from server! Skipping sandbox initialization!"
           next
@@ -55,14 +55,14 @@ initialization do
                 next
               end
               response.chomp!
-              case 
-                when "authentication accepted" 
+              case
+                when "authentication accepted"
                   ahn_log.sandbox "Authentication accepted"
-                  
+
                   start_signal = socket.gets
                   next unless start_signal
                   start_signal.chomp!
-                  
+
                   if start_signal
                     ahn_log.sandbox "Incoming call from remote sandbox server!"
                     begin

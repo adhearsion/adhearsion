@@ -1,5 +1,5 @@
 # Below are a list of framework events:
-  
+
 - after_initialized
 - shutdown
 - asterisk:

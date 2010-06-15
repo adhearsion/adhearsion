@@ -11,7 +11,7 @@ module Adhearsion
       attr_reader :builder, :timeout, :tries_count, :max_number_of_tries
       def initialize(options={}, &block)
         @tries_count         = 0 # Counts the number of tries the menu's been executed
-        
+
         @timeout             = options[:timeout] || DEFAULT_TIMEOUT
         @max_number_of_tries = options[:tries]   || DEFAULT_MAX_NUMBER_OF_TRIES
 
@@ -24,15 +24,15 @@ module Adhearsion
       def <<(other)
         digit_buffer << other
       end
-      
+
       def digit_buffer
         @digit_buffer
       end
-      
+
       def digit_buffer_string
         digit_buffer.to_s
       end
-      
+
       def digit_buffer_empty?
         digit_buffer.empty?
       end
@@ -79,8 +79,8 @@ module Adhearsion
       end
 
       protected
-      
-      # If you're using a more complex class in subclasses, you may want to override this method in addition to the 
+
+      # If you're using a more complex class in subclasses, you may want to override this method in addition to the
       # digit_buffer, digit_buffer_empty, and digit_buffer_string methods
       def initialize_digit_buffer
         @digit_buffer = ClearableStringBuffer.new
@@ -131,17 +131,17 @@ module Adhearsion
       # Raised when the user's input matches no patterns
       class MenuResultInvalid < MenuResult; end
 
-      # For our default purposes, we need the digit_buffer to behave much like a normal String except that it should 
+      # For our default purposes, we need the digit_buffer to behave much like a normal String except that it should
       # handle its own resetting (clearing).
       class ClearableStringBuffer < String
         def clear!
           replace ""
         end
-        
+
         def <<(other)
           super other.to_s
         end
-        
+
       end
 
     end

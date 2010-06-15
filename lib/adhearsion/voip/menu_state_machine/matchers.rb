@@ -52,11 +52,11 @@ module Adhearsion
 
       def match(query)
         numerical_query = coerce_to_numeric query
-        if numerical_query      
+        if numerical_query
           exact_match = pattern.include?(numerical_query) ? query : nil
           potential_matches = numbers_in_range_like numerical_query
           potential_matches.reject! { |m| m.to_s == exact_match.to_s } if exact_match
-    
+
           new_calculated_match :query => query, :exact_matches => exact_match,
                                :potential_matches => potential_matches
         else

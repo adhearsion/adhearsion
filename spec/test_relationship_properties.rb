@@ -2,9 +2,9 @@ require File.dirname(__FILE__) + "/test_helper.rb"
 require 'adhearsion/foundation/relationship_properties'
 
 describe "Module#relationships" do
-  
+
   describe "Overriding relationships in subclasses" do
-  
+
     it "should be overridable in subclasses" do
       super_class = Class.new do
         relationships :storage_medium => Array
@@ -28,7 +28,7 @@ describe "Module#relationships" do
     end
 
   end
-  
+
   it "should be accessible within instance methods of that Class as another instance method" do
     klass = Class.new do
       relationships :struct => Struct
@@ -37,18 +37,18 @@ describe "Module#relationships" do
       end
     end
   end
-  
+
   it "should be accessible in subclasses" do
     super_class = Class.new do
       relationships :number_class => Bignum
     end
-    
+
     Class.new(super_class) do
       def number_class_name
         number_class.name
       end
     end.new.number_class_name.should == "Bignum"
-    
+
   end
-  
+
 end

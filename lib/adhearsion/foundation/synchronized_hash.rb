@@ -2,7 +2,7 @@
 # Implementation of a Thread-safe Hash. Works by delegating methods to a Hash behind-the-scenes after obtaining an exclusive # lock. Use exactly as you would a normal Hash.
 #
 class SynchronizedHash
-  
+
   def self.atomically_delegate(method_name)
     class_eval(<<-RUBY, __FILE__, __LINE__)
       def #{method_name}(*args, &block)
@@ -12,9 +12,9 @@ class SynchronizedHash
       end
     RUBY
   end
-  
+
   # Hash-related methods
-  
+
   atomically_delegate :[]
   atomically_delegate :[]=
   atomically_delegate :all?
@@ -71,18 +71,18 @@ class SynchronizedHash
   atomically_delegate :values
   atomically_delegate :values_at
   atomically_delegate :zip
-  
+
   # Object-related methods
-  
+
   atomically_delegate :inspect
   atomically_delegate :to_s
   atomically_delegate :marshal_dump
-  
+
   def initialize(*args, &block)
     @delegate = Hash.new(*args, &block)
     @lock     = Mutex.new
   end
-  
+
   ##
   # If you need to do many operations atomically (a la transaction), you can call this method and access the yielded Hash
   # which can be safely modified for the duration of your block.
@@ -92,5 +92,5 @@ class SynchronizedHash
   def with_lock(&block)
     @lock.synchronize { yield @delegate }
   end
-  
+
 end

@@ -1,12 +1,12 @@
 class AhnGenerator < RubiGen::Base
-  
+
   DEFAULT_SHEBANG = File.join(Config::CONFIG['bindir'],
                               Config::CONFIG['ruby_install_name'])
-  
+
   default_options :author => nil
-  
+
   attr_reader :name, :component
-  
+
   def initialize(runtime_args, runtime_options = {})
     super
     usage if args.empty?
@@ -23,30 +23,30 @@ class AhnGenerator < RubiGen::Base
       BASEDIRS.each { |path| m.directory path }
 
       m.file  *[".ahnrc"]*2
-      
+
       m.file  *["components/simon_game/simon_game.rb"]*2
       m.file  *["components/ami_remote/ami_remote.rb"]*2
 
       m.file  *["components/disabled/stomp_gateway/stomp_gateway.rb"]*2
       m.file  *["components/disabled/stomp_gateway/stomp_gateway.yml"]*2
       m.file  *["components/disabled/stomp_gateway/README.markdown"]*2
-      
+
       m.file  *["components/disabled/restful_rpc/restful_rpc.rb"]*2
       m.file  *["components/disabled/restful_rpc/restful_rpc.yml"]*2
       m.file  *["components/disabled/restful_rpc/README.markdown"]*2
       m.file  *["components/disabled/restful_rpc/example-client.rb"]*2
       m.file  *["components/disabled/restful_rpc/spec/restful_rpc_spec.rb"]*2
-      
+
       m.file  *["components/disabled/sandbox/sandbox.yml"]*2
       m.file  *["components/disabled/sandbox/sandbox.rb"]*2
-      
+
       m.file  *["config/startup.rb"]*2
       m.file  *["dialplan.rb"]*2
       m.file  *["events.rb"]*2
       m.file  *["README"]*2
       m.file  *["Rakefile"]*2
-      
-      # m.dependency "install_rubigen_scripts", [destination_root, 'ahn', 'adhearsion', 'test_spec'], 
+
+      # m.dependency "install_rubigen_scripts", [destination_root, 'ahn', 'adhearsion', 'test_spec'],
       #   :shebang => options[:shebang], :collision => :force
     end
   end
@@ -70,7 +70,7 @@ EOS
       #         "Default: none") { |options[:author]| }
       opts.on("-v", "--version", "Show the #{File.basename($0)} version number and quit.")
     end
-    
+
     def extract_options
       # for each option, extract it into a local variable (and create an "attr_reader :author" at the top)
       # Templates can access these value via the attr_reader-generated methods, but not the

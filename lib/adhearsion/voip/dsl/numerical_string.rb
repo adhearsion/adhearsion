@@ -3,13 +3,13 @@ module Adhearsion
     module DSL
       # In Ruby, a number with a leading zero such as 023.45 or 023 does not evaluate as expected.
       # In the case of the float 023.45, you get a syntax error. In the case of 023 the number is
-      # parsed as being in octal form and the number 19 is returned. 
+      # parsed as being in octal form and the number 19 is returned.
       #
       # In Adhearsion, various strings that are entirely numeric might start with zero and that zero
-      # should be preserved when converting that string of numbers into a number. The numerical string 
+      # should be preserved when converting that string of numbers into a number. The numerical string
       # retains the zero while still allowing it to be compared to other numbers.
       #
-      # [[I think this leading zero thing is only part of the reason that NumericalString exists. I'm 
+      # [[I think this leading zero thing is only part of the reason that NumericalString exists. I'm
       # currently writing tests for this leading zero stuff so I thought I'd dump some of my assumptions
       # about it here in the documentation.]]
       class NumericalString

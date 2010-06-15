@@ -3,16 +3,16 @@ require 'thread'
 require 'monitor'
 
 module Theatre
-  
+
   ##
   # An Invocation is an object which Theatre generates and returns from Theatre#trigger.
   #
   class Invocation
-    
+
     attr_reader :queued_time, :started_time, :finished_time, :unique_id, :callback, :namespace, :error, :returned_value
-    
+
     class InvalidStateError < Exception; end
-    
+
     ##
     # Create a new Invocation.
     #
@@ -27,14 +27,14 @@ module Theatre
       @callback      = callback
       @current_state = :new
       @state_lock    = Mutex.new
-      
+
       # Used just to protect access to the @returned_value instance variable
       @returned_value_lock = Monitor.new
-      
+
       # Used when wait() is called to notify all waiting threads by using a ConditionVariable
       @returned_value_blocker = @returned_value_lock.new_cond#Monitor::ConditionVariable.new @returned_value_lock
     end
-    
+
     def queued
       with_state_lock do
         raise InvalidStateError unless @current_state == :new
@@ -43,18 +43,18 @@ module Theatre
       end
       true
     end
-    
+
     def current_state
       with_state_lock { @current_state }
     end
-    
+
     def start
       with_state_lock do
         raise InvalidStateError unless @current_state == :queued
         @current_state = :running
       end
       @started_time = Time.now.freeze
-      
+
       begin
         self.returned_value = if @payload.equal? :theatre_no_payload
           @callback.call
@@ -68,20 +68,20 @@ module Theatre
         @finished_time = Time.now.freeze
       end
     end
-    
+
     def execution_duration
       return nil unless @finished_time
       @finished_time - @started_time
     end
-    
+
     def error?
       current_state.equal? :error
     end
-    
+
     def success?
       current_state.equal? :success
     end
-    
+
     ##
     # When this Invocation has been queued, started, and entered either the :success or :error state, this method will
     # finally return. Until then, it blocks the Thread.
@@ -94,9 +94,9 @@ module Theatre
       # Return the returned_value
       with_returned_value_lock { @returned_value }
     end
-    
+
     protected
-    
+
     ##
     # Protected setter which does some other housework when the returned value is found (such as notifying wait()ers)
     #
@@ -108,14 +108,14 @@ module Theatre
         @returned_value_blocker.broadcast
       end
     end
-    
+
     def with_returned_value_lock(&block)
       @returned_value_lock.synchronize(&block)
     end
-    
+
     def with_state_lock(&block)
       @state_lock.synchronize(&block)
     end
-    
+
   end
 end

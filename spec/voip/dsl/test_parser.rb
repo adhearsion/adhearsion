@@ -3,11 +3,11 @@ require File.dirname(__FILE__) + '/../../test_helper'
 require 'adhearsion/voip/dsl/dialplan/parser'
 
 describe "The Adhearsion VoIP dialplan parser" do
-  
+
   test "should return a list of dialplans properly from dialplan code" do
     file = "foobar.rb"
     flexstub(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return [file]
-      
+
     flexmock(File).should_receive(:exists?).with(file).and_return true
     flexmock(File).should_receive(:read).once.with(file).and_return <<-DIALPLAN
       internal {
@@ -28,42 +28,42 @@ describe "The Adhearsion VoIP dialplan parser" do
       end
     end
   end
-  
+
   test "should warn when no dialplan paths were in the .ahnrc file" do
     flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return []
     flexmock(ahn_log.dialplan).should_receive(:warn).once.with(String)
-    
+
     # Not loading it here is the same as it not existing in the "paths" sub-Hash
     Adhearsion::VoIP::DSL::Dialplan::DialplanParser.get_contexts
   end
-  
+
 end
 
 describe "The Adhearsion VoIP dialplan interpreter" do
-  
-  test "should make dialplan contexts available within the context's block" do    
+
+  test "should make dialplan contexts available within the context's block" do
     file = "contexts_from_code_helper_pseudo_dialplan.rb"
     flexstub(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return [file]
-        
+
     flexmock(File).should_receive(:exists?).with(file).and_return true
     flexmock(File).should_receive(:read).with(file).and_return "foo { cool_method }"
-    
+
     contexts = Adhearsion::VoIP::DSL::Dialplan::DialplanParser.get_contexts
-    
+
     contexts.each_pair do |name, struct|
       contexts.meta_def(name) { struct.code }
     end
-    
+
     # Simulate incoming request
     contexts = contexts.clone
-    
+
     call_variables = { "callerid" => "14445556666", "context"  => "foo" }
-    
+
     call_variables.each_pair do |key, value|
       contexts.meta_def(key) { value }
       contexts.instance_variable_set "@#{key}", value
     end
-    
+
   end
-  
+
 end

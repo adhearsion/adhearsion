@@ -8,40 +8,40 @@ context "A NumericalString" do
     assert 123 === numerical_string_for("123")
     assert 987 === numerical_string_for("0987")
   end
-  
+
   test "NumericalString should appear to behave like a String in a case statement" do
     assert "123"  === numerical_string_for("123")
     assert "0987" === numerical_string_for("0987")
   end
-  
+
   test "when compared against a Range that contains the numeric equivalent, the NumericalString is seen as a member" do
     assert((100..200) === numerical_string_for("150"))
     assert((100..200) === numerical_string_for("0150"))
     assert !((100..200) === numerical_string_for("1000000"))
   end
-  
+
   test "comparing against a regular expression works" do
     assert %r|^\d+$| === numerical_string_for("027316287")
   end
-  
+
   test "checking if a string representation of a number starts with a leading zero" do
     with_leading_zeros    = %w(01 01234 01.23 01.2)
     without_leading_zeros = %w(1 1.2 0 0.0)
-    
+
     with_leading_zeros.each do |number|
       assert numerical_string.starts_with_leading_zero?(number), number
     end
-    
+
     without_leading_zeros.each do |number|
       assert !numerical_string.starts_with_leading_zero?(number), number
     end
   end
-    
+
   private
     def numerical_string
       Adhearsion::VoIP::DSL::NumericalString
     end
-    
+
     def numerical_string_for(string)
       numerical_string.new(string)
     end

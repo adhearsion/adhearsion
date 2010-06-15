@@ -10,7 +10,7 @@ module Adhearsion
         # Note: not all responses have an ActionID!
         #
         class ManagerInterfaceResponse
-        
+
           class << self
             def from_immediate_response(text)
               returning new do |instance|
@@ -18,59 +18,59 @@ module Adhearsion
               end
             end
           end
-          
+
           attr_accessor :action,
                         :action_id,
                         :text_body  # For "Response: Follows" sections
           attr_reader   :events
-          
+
           def initialize
             @headers = HashWithIndifferentAccess.new
           end
-          
+
           def has_text_body?
             !! @text_body
           end
-          
+
           def headers
             @headers.clone
           end
-        
+
           def [](arg)
             @headers[arg]
           end
-  
+
           def []=(key,value)
             @headers[key] = value
           end
-          
+
         end
-      
+
         class ManagerInterfaceError < Exception
-          
+
           attr_accessor :message
           def initialize
             @headers = HashWithIndifferentAccess.new
           end
-          
+
           def [](key)
             @headers[key]
           end
-          
+
           def []=(key,value)
             @headers[key] = value
           end
-          
+
         end
-        
+
         class ManagerInterfaceEvent < ManagerInterfaceResponse
-  
+
           attr_reader :name
           def initialize(name)
             super()
             @name = name
           end
-          
+
         end
       end
     end

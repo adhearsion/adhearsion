@@ -6,7 +6,7 @@ require "adhearsion/voip/freeswitch/inbound_connection_manager"
 require "adhearsion/voip/dsl/dialplan/control_passing_exception"
 
 oes_enabled = Adhearsion::Configuration.core.voip.freeswitch.oes && Adhearsion::Configuration.core.voip.freeswitch.oes.port
-                
+
 
 if oes_enabled
 

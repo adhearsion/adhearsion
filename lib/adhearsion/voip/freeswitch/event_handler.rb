@@ -51,7 +51,7 @@ module Adhearsion
         def self.on(event, &block)
           event = event.underscore.to_sym if event.is_a? String
           (event.kind_of?(Hash) ? @@compound_events : @@events)[event] = block
-        end    
+        end
       end
     end
   end

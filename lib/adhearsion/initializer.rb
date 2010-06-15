@@ -1,7 +1,7 @@
 module Adhearsion
-  
+
   class << self
-    
+
     ##
     # Shuts down the framework.
     #
@@ -9,25 +9,25 @@ module Adhearsion
       ahn_log "Shutting down gracefully at #{Time.now}."
       Events.stop!
       exit
-    end    
-    
+    end
+
   end
   class PathString < String
-    
+
     class << self
-      
+
       ##
       # Will return a PathString for the application root folder to which the specified arbitrarily nested subfolder belongs.
       # It works by traversing parent directories looking for the .ahnrc file. If no .ahnrc is found, nil is returned.
       #
-      # @param [String] folder The path to the directory which should be a 
+      # @param [String] folder The path to the directory which should be a
       # @return [nil] if the subdirectory does not belong to a parent Adhearsion app directory
-      # @return [PathString] if a directory is found 
+      # @return [PathString] if a directory is found
       #
       def from_application_subdirectory(folder)
         folder = File.expand_path folder
         ahn_rc = nil
-        
+
         until ahn_rc || folder == "/"
           possible_ahn_rc = File.join(folder, ".ahnrc")
           if File.exists?(possible_ahn_rc)
@@ -39,14 +39,14 @@ module Adhearsion
         ahn_rc ? new(folder) : nil
       end
     end
-    
+
     attr_accessor :component_path, :dialplan_path, :log_path
-    
+
     def initialize(path)
       super
       defaults
     end
-    
+
     def defaults
       @component_path = build_path_for "components"
       @dialplan_path  = dup
@@ -57,7 +57,7 @@ module Adhearsion
       replace(value)
       defaults
     end
-    
+
     def using_base_path(temporary_base_path, &block)
       original_path = dup
       self.base_path = temporary_base_path
@@ -65,21 +65,21 @@ module Adhearsion
     ensure
       self.base_path = original_path
     end
-    
+
     private
       def build_path_for(path)
         File.join(to_s, path)
       end
   end
-  
+
   class Initializer
-    
+
     class << self
       def get_rules_from(location)
         location = File.join location, ".ahnrc" if File.directory? location
         File.exists?(location) ? YAML.load_file(location) : nil
       end
-      
+
       def ahn_root=(path)
         if Object.constants.include?("AHN_ROOT")
           Object.const_get(:AHN_ROOT).base_path = File.expand_path(path)
@@ -87,20 +87,20 @@ module Adhearsion
           Object.const_set(:AHN_ROOT, PathString.new(File.expand_path(path)))
         end
       end
-      
+
       def start(*args, &block)
         new(*args, &block).start
       end
-      
+
       def start_from_init_file(file, ahn_app_path)
         return if defined?(@@started) && @@started
         start ahn_app_path, :loaded_init_files => file
       end
-      
+
     end
-  
+
     attr_reader :path, :daemon, :pid_file, :log_file, :ahn_app_log_directory
-    
+
     # Creation of pid_files
     #
     #  - You may want to have Adhearsion create a process identification
@@ -119,10 +119,10 @@ module Adhearsion
       @pid_file = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
       @loaded_init_files  = options[:loaded_init_files]
     end
-    
+
     def start
       self.class.ahn_root = path
-      
+
       resolve_pid_file_path
       resolve_log_file_path
       switch_to_root_directory
@@ -138,19 +138,19 @@ module Adhearsion
       init_events_file
       daemonize! if should_daemonize?
       create_pid_file if pid_file
-      
+
       ahn_log "Adhearsion initialized!"
-      
+
       trigger_after_initialized_hooks
       join_important_threads
-      
+
       self
     end
-    
+
     def default_pid_path
       File.join AHN_ROOT, 'adhearsion.pid'
     end
-    
+
     def resolve_pid_file_path
       @pid_file = if pid_file.equal?(true) then default_pid_path
       elsif pid_file then pid_file
@@ -159,16 +159,16 @@ module Adhearsion
       else @pid_file = @daemon ? default_pid_path : nil
       end
     end
-    
-    def resolve_log_file_path      
+
+    def resolve_log_file_path
       @ahn_app_log_directory = AHN_ROOT + '/log'
       @log_file = File.expand_path(ahn_app_log_directory + "/adhearsion.log")
     end
-    
+
     def switch_to_root_directory
       Dir.chdir AHN_ROOT
     end
-    
+
     def catch_termination_signal
       %w'INT TERM'.each do |process_signal|
         trap process_signal do
@@ -178,16 +178,16 @@ module Adhearsion
         end
       end
     end
-    
+
     ##
     # This step in the initialization process loads the .ahnrc in the given app folder. With the information in .ahnrc, we
     # can continue the initialization knowing where certain files are specifically.
     #
     def bootstrap_rc
       rules = self.class.get_rules_from AHN_ROOT
-      
+
       AHN_CONFIG.ahnrc = rules
-      
+
       # DEPRECATION: Check if the old paths format is being used. If so, abort and notify.
       if rules.has_key?("paths") && rules["paths"].kind_of?(Hash)
         paths = rules["paths"].each_pair do |key,value|
@@ -196,7 +196,7 @@ module Adhearsion
               puts
               puts *caller
               puts
-                            
+
               abort <<-WARNING
 Deprecation Warning
 -------------------
@@ -204,8 +204,8 @@ The (hidden) .ahnrc file in this app is of an older format and needs to be fixed
 
 There is a rake task to automatically fix it or you can do it manually. Note: it's
 best if you do it manually so you can retain the YAML comments in your .ahnrc file.
-  
-The rake task is called "deprecations:fix_ahnrc_path_format". 
+
+The rake task is called "deprecations:fix_ahnrc_path_format".
 
 To do it manually, find all entries in the "paths" section of your ".ahnrc" file
 which look like the following:
@@ -233,7 +233,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
           end
         end
       end
-      
+
       gems = rules['gems']
       if gems.kind_of?(Hash) && gems.any? && respond_to?(:gem)
         gems.each_pair do |gem_name,properties_hash|
@@ -248,12 +248,12 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
                 properties_hash["require"].each { |lib| require lib }
               when String
                 require properties_hash["require"]
-            end 
+            end
           end
         end
       end
     end
-    
+
     def load_all_init_files
       init_files_from_rc = AHN_CONFIG.files_from_setting("paths", "init").map { |file| File.expand_path(file) }
       already_loaded_init_files = Array(@loaded_init_files).map { |file| File.expand_path(file) }
@@ -267,21 +267,21 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       DatabaseInitializer.start   if AHN_CONFIG.database_enabled?
       LdapInitializer.start       if AHN_CONFIG.ldap_enabled?
     end
-    
+
     def init_modules
-      
+
       require 'adhearsion/initializer/asterisk.rb'
       require 'adhearsion/initializer/drb.rb'
       require 'adhearsion/initializer/rails.rb'
       # require 'adhearsion/initializer/freeswitch.rb'
-      
+
       AsteriskInitializer.start   if AHN_CONFIG.asterisk_enabled?
       DrbInitializer.start        if AHN_CONFIG.drb_enabled?
       RailsInitializer.start      if AHN_CONFIG.rails_enabled?
       # FreeswitchInitializer.start if AHN_CONFIG.freeswitch_enabled?
 
     end
-    
+
     def init_events_subsystem
       application_events_files = AHN_CONFIG.files_from_setting("paths", "events")
       if application_events_files.any?
@@ -294,28 +294,28 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
         ahn_log.events.warn 'No entries in the "events" section of .ahnrc. Skipping its initialization.'
       end
     end
-    
+
     def init_events_file
       application_events_files = AHN_CONFIG.files_from_setting("paths", "events")
       application_events_files.each do |file|
         Events.framework_theatre.load_events_file file
       end
     end
-    
+
     def should_daemonize?
       @daemon || ENV['DAEMON']
     end
-    
+
     def daemonize!
       ahn_log "Daemonizing now! Creating #{pid_file}."
       extend Adhearsion::CustomDaemonizer
       daemonize log_file
     end
-    
+
     def initialize_log_file
       Dir.mkdir(ahn_app_log_directory) unless File.directory? ahn_app_log_directory
       file_logger = Log4r::FileOutputter.new("Main Adhearsion log file", :filename => log_file, :trunc => false)
-      
+
       if should_daemonize?
         Logging::AdhearsionLogger.outputters  = file_logger
       else
@@ -323,19 +323,19 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       end
       Logging::DefaultAdhearsionLogger.redefine_outputters
     end
-    
+
     def create_pid_file(file = pid_file)
       if file
         File.open pid_file, 'w' do |file|
           file.puts Process.pid
         end
-        
+
         Events.register_callback :shutdown do
           File.delete(pid_file) if File.exists?(pid_file)
         end
       end
     end
-    
+
     def init_components_subsystem
       @components_directory = File.expand_path "components"
       if File.directory? @components_directory
@@ -347,17 +347,17 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
         ahn_log.warn "No components directory found. Not initializing any components."
       end
     end
-    
+
     def load_components
       if Components.component_manager
         Components.component_manager.load_components
       end
     end
-    
+
     def trigger_after_initialized_hooks
       Events.trigger_immediately :after_initialized
     end
-    
+
     ##
     # This method will block Thread.main() until calling join() has returned for all Threads in IMPORTANT_THREADS.
     # Note: IMPORTANT_THREADS won't always contain Thread instances. It simply requires the objects respond to join().
@@ -376,7 +376,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
         end
       end
     end
-    
+
     class InitializationFailedError < Exception; end
   end
 end

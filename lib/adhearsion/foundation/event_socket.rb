@@ -1,9 +1,9 @@
 ##
 # EventSocket is a small abstraction of TCPSocket which causes it to behave much like an EventMachine Connection object for
-# the sake of better testability. The EventMachine Connection paradigm (as well as other networking libraries such as the 
-# Objective-C HTTP library) uses callbacks to signal different stages of a socket's lifecycle. 
+# the sake of better testability. The EventMachine Connection paradigm (as well as other networking libraries such as the
+# Objective-C HTTP library) uses callbacks to signal different stages of a socket's lifecycle.
 #
-# A handler can be registered in one of two ways: through registrations on an object yielded by the constructor or 
+# A handler can be registered in one of two ways: through registrations on an object yielded by the constructor or
 # pre-defined on the object given as a constructor parameter. Below is an example definition which uses the block way:
 #
 #   EventSocket.new do |handler|
@@ -35,7 +35,7 @@
 #   end
 #   EventSocket.new(MyCallbackHandler.new)
 #
-# If you wish to ask the EventSocket what state it is in, you can call the Thread-safe EventSocket#state method. The 
+# If you wish to ask the EventSocket what state it is in, you can call the Thread-safe EventSocket#state method. The
 # supported states are:
 #
 #  - :new
@@ -43,10 +43,10 @@
 #  - :stopped
 #  - :connection_dropped
 #
-# Note: the EventSocket's state will be changed before these callbacks are executed. For example, if your "connected" 
+# Note: the EventSocket's state will be changed before these callbacks are executed. For example, if your "connected"
 # callback queried its own EventSocket for its state, it will have already transitioned to the connected() state.
 #
-# Warning: If an exception occurs in your EventSocket callbacks, they will be "eaten" and never bubbled up the call stack. 
+# Warning: If an exception occurs in your EventSocket callbacks, they will be "eaten" and never bubbled up the call stack.
 # You should always wrap your callbacks in a begin/rescue clause and handle exceptions explicitly.
 #
 require "thread"
@@ -55,7 +55,7 @@ require "socket"
 class EventSocket
 
   class << self
-    
+
     ##
     # Creates and returns a connected EventSocket instance.
     #
@@ -67,23 +67,23 @@ class EventSocket
   end
 
   MAX_CHUNK_SIZE = 256 * 1024
-  
+
   def initialize(host, port, handler=nil, &block)
     raise ArgumentError, "Cannot supply both a handler object and a block" if handler && block_given?
     raise ArgumentError, "Must supply either a handler object or a block" if !handler && !block_given?
-    
+
     @state_lock = Mutex.new
     @host  = host
     @port  = port
-    
+
     @state = :new
     @handler = handler || new_handler_from_block(&block)
   end
-  
+
   def state
     @state_lock.synchronize { @state }
   end
-  
+
   def connect!
     @state_lock.synchronize do
       if @state.equal? :connected
@@ -100,7 +100,7 @@ class EventSocket
     @state = :failed
     raise error
   end
-  
+
   ##
   # Thread-safe implementation of write.
   #
@@ -121,7 +121,7 @@ class EventSocket
       @state = :stopped
     end
   end
-  
+
   ##
   # Joins the Thread which reads data off the socket.
   #
@@ -134,13 +134,13 @@ class EventSocket
       end
     end
   end
-  
+
   def receive_data(data)
     @handler.receive_data(data)
   end
-  
+
   protected
-  
+
   def connection_dropped!
     @state_lock.synchronize do
       unless @state.equal? :connection_dropped
@@ -149,11 +149,11 @@ class EventSocket
       end
     end
   end
-  
+
   def spawn_reader_thread
     Thread.new(&method(:reader_loop))
   end
-  
+
   def reader_loop
     until state.equal? :stopped
       data = @socket.readpartial(MAX_CHUNK_SIZE)
@@ -167,7 +167,7 @@ class EventSocket
     handler = Object.new
     handler.metaclass.send :attr_accessor, :set_callbacks
     handler.set_callbacks = {:receive_data => false, :disconnected => false, :connected => false }
-    
+
     def handler.receive_data(&block)
       self.metaclass.send(:remove_method, :receive_data)
       self.metaclass.send(:define_method, :receive_data) { |data| block.call data }
@@ -183,21 +183,21 @@ class EventSocket
       self.metaclass.send(:define_method, :disconnected) { block.call }
       set_callbacks[:disconnected] = true
     end
-    
+
     def handler.singleton_method_added(name)
       set_callbacks[name.to_sym] = true
     end
-    
+
     yield handler
-    
+
     handler.set_callbacks.each_pair do |callback_name,was_set|
       handler.send(callback_name) {} unless was_set
     end
-    
+
     handler
-    
+
   end
 
   class ConnectionError < Exception; end
-  
+
 end

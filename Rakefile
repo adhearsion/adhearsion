@@ -88,13 +88,13 @@ end
 
 desc "Compares Adhearsion's files with those listed in adhearsion.gemspec"
 task :check_gemspec_files do
-  
+
   files_from_gemspec    = ADHEARSION_FILES
   files_from_filesystem = Dir.glob(File.dirname(__FILE__) + "/**/*").map do |filename|
     filename[0...Dir.pwd.length] == Dir.pwd ? filename[(Dir.pwd.length+1)..-1] : filename
   end
   files_from_filesystem.reject! { |f| File.directory? f }
-  
+
   puts
   puts 'Pipe this command to "grep -v \'spec/\' | grep -v test" to ignore test files'
   puts
@@ -102,8 +102,8 @@ task :check_gemspec_files do
   puts '## Files on filesystem not in the gemspec:'
   puts '##########################################'
   puts((files_from_filesystem - files_from_gemspec).map { |f| "  " + f })
-  
-  
+
+
   puts '##########################################'
   puts '## Files in gemspec not in the filesystem:'
   puts '##########################################'

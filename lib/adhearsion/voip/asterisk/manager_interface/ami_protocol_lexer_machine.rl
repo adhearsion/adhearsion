@@ -83,5 +83,5 @@ response_follows := |*
     FollowsBody;
     crlf @{ message_received @current_message; fgoto protocol; };
 *|;
- 
+
 }%%

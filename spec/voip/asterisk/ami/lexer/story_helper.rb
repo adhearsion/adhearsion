@@ -13,7 +13,7 @@ def regenerate_ragel
   if big < 6 || (big == 6 && small < 3)
     abort "Please upgrade Ragel! You're on version #{ragel_version_match[0]} and must be on 6.3 or later"
   end
-  
+
   RAGEL_FILES.each do |ragel_file|
     ruby_file = ragel_file.sub(".rl.rb", ".rb")
     puts `ragel -n -R #{ragel_file} -o #{ruby_file} 2>&1`
@@ -33,7 +33,7 @@ def fixture(path, overrides={})
     raise ArgumentError, path + " not found!" unless hash
     hash[segment.to_sym]
   end
-  
+
   # Downcase all keys in the event and the overrides
   selected_event = selected_event.inject({}) do |downcased_hash,(key,value)|
     downcased_hash[key.to_s.downcase] = value
@@ -43,10 +43,10 @@ def fixture(path, overrides={})
     downcased_hash[key.to_s.downcase] = value
     downcased_hash
   end
-  
+
   # Replace variables in the selected_event with any overrides, ignoring case of the key
   keys_with_variables = selected_event.select { |(key, value)| value.kind_of?(Symbol) || value.kind_of?(Hash) }
-  
+
   keys_with_variables.each do |original_key, variable_type|
     # Does an override an exist in the supplied list?
     if overriden_pair = overrides.find { |(key, value)| key == original_key }
@@ -69,7 +69,7 @@ def fixture(path, overrides={})
           raise "Unrecognized fixture variable type #{variable_type}!"
       end
     end
-    
+
   end
   returning hash_to_stanza(selected_event) do |event|
     selected_event.each_pair do |key, value|
@@ -113,7 +113,7 @@ def follows_body_text(name)
     when "empty_string"
       ""
   end
-  
+
 end
 
 def syntax_error_data(name)

@@ -5,7 +5,7 @@ require 'rubygems'
 def require_or_report_dependency(require_name, gem_name)
   begin
     require require_name
-  rescue LoadError 
+  rescue LoadError
     report_dependency!(gem_name)
   end
 end
@@ -32,8 +32,8 @@ $: << File.dirname(__FILE__)
 
 require 'adhearsion'
 
-class Test::Unit::TestCase  
-  
+class Test::Unit::TestCase
+
   alias_method :the_following_code, :lambda
   def self.test(*args, &block)
     if block_given?
@@ -42,37 +42,37 @@ class Test::Unit::TestCase
       disabled_test(*args)
     end
   end
-  
+
   def self.disabled_test(*args, &block)
     xspecify(*args, &block)
   end
-  
+
 end
 
 module InitializerStubs
-  
+
   DEFAULT_AHNRC_DATA_STRUCTURE = YAML.load_file(
     File.dirname(__FILE__) + "/../app_generators/ahn/templates/.ahnrc"
   ) unless defined? DEFAULT_AHNRC_DATA_STRUCTURE
-  
+
   UNWANTED_BEHAVIOR = {
     Adhearsion::Initializer => [:initialize_log_file, :switch_to_root_directory, :daemonize!, :load],
     Adhearsion::Initializer.metaclass => { :get_rules_from => DEFAULT_AHNRC_DATA_STRUCTURE },
   } unless defined? UNWANTED_BEHAVIOR
-  
+
   def stub_behavior_for_initializer_with_no_path_changing_behavior
       stub_unwanted_behavior
       yield if block_given?
     ensure
       unstub_directory_changing_behavior
   end
-  
+
   def with_new_initializer_with_no_path_changing_behavior(&block)
     stub_behavior_for_initializer_with_no_path_changing_behavior do
       block.call Adhearsion::Initializer.start('path does not matter')
     end
   end
-  
+
   def stub_unwanted_behavior
     UNWANTED_BEHAVIOR.each do |stub_victim_class, undesired_methods|
       undesired_methods.each do |undesired_method_name_or_key_value_pair|
@@ -87,7 +87,7 @@ module InitializerStubs
       end
     end
   end
-  
+
   def unstub_directory_changing_behavior
     UNWANTED_BEHAVIOR.each do |stub_victim_class, undesired_methods|
       undesired_methods.each do |undesired_method_name|

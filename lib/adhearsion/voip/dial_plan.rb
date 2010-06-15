@@ -8,30 +8,30 @@ module Adhearsion
       @loader       = loader
       @entry_points = @loader.load_dialplans.contexts
     end
-    
+
     ##
     # Lookup and return an entry point by context name
     #
     def lookup(context_name)
       entry_points[context_name]
     end
-    
+
     ##
     # Executable environment for a dial plan in the scope of a call. This class has all the dialplan methods mixed into it.
     #
     class ExecutionEnvironment
-      
+
       class << self
         def create(*args)
           returning(new(*args)) { |instance| instance.stage! }
         end
       end
-      
+
       attr_reader :call
       def initialize(call, entry_point)
         @call, @entry_point = call, entry_point
       end
-      
+
       ##
       # Adds the methods to this ExecutionEnvironment which make it useful. e.g. dialplan-related methods, call variables,
       # and component methods.
@@ -41,7 +41,7 @@ module Adhearsion
         extend_with_call_variables!
         extend_with_dialplan_component_methods!
       end
-      
+
       def run
         raise "Cannot run ExecutionEnvironment without an entry point!" unless entry_point
         current_context = entry_point
@@ -53,61 +53,61 @@ module Adhearsion
           retry
         end
       end
-      
+
       protected
-      
+
       attr_reader :entry_point
-      
-      
+
+
       def extend_with_voip_commands!
         extend Adhearsion::VoIP::Conveniences
         extend Adhearsion::VoIP::Commands.for(call.originating_voip_platform)
       end
-      
+
       def extend_with_call_variables!
         call.define_variable_accessors self
       end
-      
-      def extend_with_dialplan_component_methods!        
+
+      def extend_with_dialplan_component_methods!
         Components.component_manager.extend_object_with(self, :dialplan) if Components.component_manager
       end
-      
+
     end
-    
+
     class Manager
-      
+
       class NoContextError < Exception; end
-      
+
       class << self
         def handle(call)
           new.handle(call)
         end
       end
-      
+
       attr_accessor :dial_plan, :context
       def initialize
         @dial_plan = DialPlan.new
       end
-      
+
       def handle(call)
         if call.failed_call?
           environment = ExecutionEnvironment.create(call, nil)
           call.extract_failed_reason_from environment
           raise FailedExtensionCallException.new(environment)
         end
-        
+
         if call.hungup_call?
           raise HungupExtensionCallException.new(ExecutionEnvironment.new(call, nil))
         end
-        
+
         starting_entry_point = entry_point_for call
         raise NoContextError, "No dialplan entry point for call context '#{call.context}' -- Ignoring call!" unless starting_entry_point
         @context = ExecutionEnvironment.create(call, starting_entry_point)
         inject_context_names_into_environment @context
         @context.run
       end
-      
-      # Find the dialplan by the context name from the call or from the 
+
+      # Find the dialplan by the context name from the call or from the
       # first path entry in the AGI URL
       def entry_point_for(call)
         if entry_point = dial_plan.lookup(call.context.to_sym)
@@ -116,22 +116,22 @@ module Adhearsion
           dial_plan.lookup(m[1].to_sym)
         end
       end
-      
+
       protected
-      
+
       def inject_context_names_into_environment(environment)
         return unless dial_plan.entry_points
         dial_plan.entry_points.each do |name, context|
           environment.meta_def(name) { context }
         end
       end
-      
+
     end
-    
+
     class Loader
       class << self
         attr_accessor :default_dial_plan_file_name
-        
+
         def load(dial_plan_as_string)
           string_io = StringIO.new dial_plan_as_string
           def string_io.path
@@ -139,7 +139,7 @@ module Adhearsion
           end
           load_dialplans string_io
         end
-        
+
         def load_dialplans(*files)
           files = Adhearsion::AHN_CONFIG.files_from_setting("paths", "dialplan") if files.empty?
           files = Array files
@@ -159,27 +159,27 @@ module Adhearsion
             end
           end
         end
-        
+
       end
-      
+
       self.default_dial_plan_file_name ||= 'dialplan.rb'
 
       def initialize
         @context_collector = ContextNameCollector.new
       end
-      
+
       def contexts
         @context_collector.contexts
       end
-      
+
       def load(dialplan_file)
         dialplan_code = dialplan_file.read
         @context_collector.instance_eval(dialplan_code, dialplan_file.path)
         nil
       end
-      
+
       class ContextNameCollector# < ::BlankSlate
-        
+
         class << self
 
           def const_missing(name)
@@ -187,34 +187,34 @@ module Adhearsion
           rescue ArgumentError
             raise NameError, %(undefined constant "#{name}")
           end
-          
+
         end
-        
+
         attr_reader :contexts
         def initialize
           @contexts = {}
         end
-        
+
         def method_missing(name, *args, &block)
           super if !block_given? || args.any?
           contexts[name] = DialplanContextProc.new(name, &block)
         end
-        
+
       end
     end
     class DialplanContextProc < Proc
-      
+
       attr_reader :name
-      
+
       def initialize(name, &block)
         super(&block)
         @name = name
       end
-      
+
       def +@
         raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(self)
       end
-      
+
     end
   end
 end

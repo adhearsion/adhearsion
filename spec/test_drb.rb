@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + "/test_helper"
 
 context "Invoking an interface method via DRb" do
-  
+
   include DRbTestHelper
 
   test "should raise an exception if the method is not found" do
@@ -9,14 +9,14 @@ context "Invoking an interface method via DRb" do
       new_drb_rpc_object.this_method_doesnt_exist
     end.should.raise NoMethodError
   end
-  
+
   before(:all) { require 'drb' }
-  
+
   before :each do
     @component_manager = Adhearsion::Components::ComponentManager.new("/path/doesnt/matter")
     @door = DRb.start_service "druby://127.0.0.1:9050", new_drb_rpc_object
   end
-  
+
   after :each do
     DRb.stop_service
   end
@@ -53,16 +53,16 @@ end
 
 BEGIN {
   module DRbTestHelper
-    
+
     def new_drb_rpc_object
       returning Object.new do |obj|
         @component_manager.extend_object_with(obj, :rpc)
       end
     end
-    
+
     def add_rpc_methods(code)
       @component_manager.load_code "methods_for(:rpc) do; #{code}; end"
     end
-    
+
   end
 }

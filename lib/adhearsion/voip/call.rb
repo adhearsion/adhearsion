@@ -5,21 +5,21 @@ module Adhearsion
     def active_calls
       @calls ||= Calls.new
     end
-  
+
     def receive_call_from(io, &block)
       active_calls << (call = Call.receive_from(io, &block))
       call
     end
-    
+
     def remove_inactive_call(call)
       active_calls.remove_inactive_call(call)
     end
   end
-  
+
   class Hangup < Exception
     # At the moment, we'll just use this to end a call-handling Thread.
   end
-  
+
   ##
   # This manages the list of calls the Adhearsion service receives
   class Calls
@@ -27,44 +27,44 @@ module Adhearsion
       @semaphore = Monitor.new
       @calls     = {}
     end
-    
+
     def <<(call)
       atomically do
         calls[call.unique_identifier] = call
       end
     end
-    
+
     def any?
       atomically do
         !calls.empty?
       end
     end
-    
+
     def size
       atomically do
         calls.size
       end
     end
-    
+
     def remove_inactive_call(call)
       atomically do
         calls.delete call.unique_identifier
       end
     end
-    
+
     # Searches all active calls by their unique_identifier. See Call#unique_identifier.
     def find(id)
       atomically do
         return calls[id]
       end
     end
-    
+
     def clear!
       atomically do
         calls.clear
       end
     end
-    
+
     def with_tag(tag)
       atomically do
         calls.inject(Array.new) do |calls_with_tag,(key,call)|
@@ -72,22 +72,22 @@ module Adhearsion
         end
       end
     end
-    
+
     def to_a
       calls.values
     end
-    
+
     private
       attr_reader :semaphore, :calls
-      
+
       def atomically(&block)
         semaphore.synchronize(&block)
       end
-      
+
   end
-  
+
   class UselessCallException < Exception; end
-  
+
   class MetaAgiCallException < Exception
     attr_reader :call
     def initialize(call)
@@ -95,29 +95,29 @@ module Adhearsion
       @call = call
     end
   end
-  
+
   class FailedExtensionCallException < MetaAgiCallException; end
-  
+
   class HungupExtensionCallException < MetaAgiCallException; end
 
   ##
   # Encapsulates call-related data and behavior.
   # For example, variables passed in on call initiation are
-  # accessible here as attributes    
+  # accessible here as attributes
   class Call
-    
+
     ##
     # Wraps the Queue object (subclasses it) so we can handle runaway threads,
     # namely those originating from using with_next_message in commands.rb - this
-    # overrides << to check for the :cancel symbol and trigger the automessaging_tainted 
+    # overrides << to check for the :cancel symbol and trigger the automessaging_tainted
     # instance variable.
     class CallMessageQueue < Queue
-      
+
       class InboxClosedException < Exception
         # this gets raised when the :cancel message is delivered to the queue and with_next_message (or similar auto-message-iteration)
         # features are called.
       end
-      
+
       attr_reader :open
 
       def initialize
@@ -129,16 +129,16 @@ module Adhearsion
         @open = false if queue_obj == :cancel
         super(queue_obj)
       end
-      
+
       def pop
         raise Adhearsion::Call::CallMessageQueue::InboxClosedException, "The message queue for this call has aleady been disabled." if !@open
         super
       end
-      
+
 
     end
-    
-    
+
+
     # This is basically a translation of ast_channel_reason2str() from main/channel.c and
     # ast_control_frame_type in include/asterisk/frame.h in the Asterisk source code. When
     # Asterisk jumps to the 'failed' extension, it sets a REASON channel variable to a number.
@@ -164,8 +164,8 @@ module Adhearsion
       :unhold,      # Indicate call is left from hold
       :vidupdate    # Indicate video frame update
     ]
-    
-    
+
+
     class << self
       ##
       # The primary public interface for creating a Call instance.
@@ -176,14 +176,14 @@ module Adhearsion
           block.call(call) if block
         end
       end
-    
+
       private
       def variable_parser_for(io)
         Variables::Parser.parse(io)
       end
-      
+
     end
-    
+
     attr_accessor :io, :type, :variables, :originating_voip_platform, :inbox
     def initialize(io, variables)
       @io, @variables = io, variables.symbolize_keys
@@ -206,13 +206,13 @@ module Adhearsion
         @tags << symbol
       end
     end
-    
+
     def remove_tag(symbol)
       @tag_mutex.synchronize do
         @tags.reject! { |tag| tag == symbol }
       end
     end
-    
+
     def tagged_with?(symbol)
       @tag_mutex.synchronize do
         @tags.include? symbol
@@ -223,7 +223,7 @@ module Adhearsion
       inbox << message
     end
     alias << deliver_message
-    
+
     def can_use_messaging?
       return inbox.open == true
     end
@@ -240,18 +240,18 @@ module Adhearsion
     def closed?
       io.closed?
     end
-    
+
     # Asterisk sometimes uses the "failed" extension to indicate a failed dial attempt.
     # Since it may be important to handle these, this flag helps the dialplan Manager
     # figure that out.
     def failed_call?
       @failed_call
     end
-    
+
     def hungup_call?
       @hungup_call
     end
-    
+
     # Adhearsion indexes calls by this identifier so they may later be found and manipulated. For calls from Asterisk, this
     # method uses the following properties for uniqueness, falling back to the next if one is for some reason unavailable:
     #
@@ -267,13 +267,13 @@ module Adhearsion
           raise NotImplementedError
       end
     end
-    
+
     def define_variable_accessors(recipient=self)
-      variables.each do |key, value| 
+      variables.each do |key, value|
         define_singleton_accessor_with_pair(key, value, recipient)
       end
     end
-    
+
     def extract_failed_reason_from(environment)
       if originating_voip_platform == :asterisk
         failed_reason = environment.variable 'REASON'
@@ -281,30 +281,30 @@ module Adhearsion
         define_singleton_accessor_with_pair(:failed_reason, failed_reason, environment)
       end
     end
-    
+
     private
-      
+
       def define_singleton_accessor_with_pair(key, value, recipient=self)
         recipient.metaclass.send :attr_accessor, key unless recipient.class.respond_to?("#{key}=")
         recipient.send "#{key}=", value
       end
-      
+
       def check_if_valid_call
         extension = variables[:extension]
         @failed_call = true if extension == 'failed'
         @hungup_call = true if extension == 'h'
         raise UselessCallException if extension == 't' # TODO: Move this whole method to Manager
       end
-    
+
       def set_originating_voip_platform!
         # TODO: we can make this determination programatically at some point,
         # but it will probably involve a bit more engineering than just a case statement (like
         # subclasses of Call for the various platforms), so we'll be totally cheap for now.
         self.originating_voip_platform = :asterisk
       end
-    
+
     module Variables
-      
+
       module Coercions
 
         COERCION_ORDER = %w{
@@ -322,7 +322,7 @@ module Adhearsion
         }
 
         class << self
-          
+
           def remove_agi_prefixes_from_keys_and_strip_whitespace(variables)
             variables.inject({}) do |new_variables,(key,value)|
               returning new_variables do
@@ -331,7 +331,7 @@ module Adhearsion
               end
             end
           end
-          
+
           def coerce_keys_into_symbols(variables)
             variables.inject({}) do |new_variables,(key,value)|
               returning new_variables do
@@ -339,13 +339,13 @@ module Adhearsion
               end
             end
           end
-          
+
           def coerce_extension_into_phone_number_object(variables)
             returning variables do
               variables[:extension] = Adhearsion::VoIP::DSL::PhoneNumber.new(variables[:extension])
             end
           end
-          
+
           def coerce_numerical_values_to_numerics(variables)
             variables.inject({}) do |vars,(key,value)|
               returning vars do
@@ -386,14 +386,14 @@ module Adhearsion
               end
             end
           end
-          
+
           def coerce_request_into_uri_object(variables)
             if variables[:request]
               variables[:request] = URI.parse(variables[:request]) unless variables[:request].kind_of? URI
             end
             variables
           end
-          
+
           def coerce_type_of_number_into_symbol(variables)
             returning variables do
               variables[:type_of_calling_number] = Adhearsion::VoIP::Constants::Q931_TYPE_OF_NUMBER[variables.delete(:callington).to_i]
@@ -413,7 +413,7 @@ module Adhearsion
               end
             end
           end
-          
+
           def override_variables_with_query_params(variables)
             returning variables do
               if variables[:query]
@@ -423,50 +423,50 @@ module Adhearsion
               end
             end
           end
-          
+
           def remove_dashes_from_context_name(variables)
             returning variables do
               variables[:context].gsub!('-', '_')
             end
           end
-          
+
         end
       end
 
       class Parser
-        
+
         class << self
           def parse(*args, &block)
             returning new(*args, &block) do |parser|
               parser.parse
             end
           end
-          
+
           def coerce_variables(variables)
             Coercions::COERCION_ORDER.inject(variables) do |tmp_variables, coercing_method_name|
               Coercions.send(coercing_method_name, tmp_variables)
             end
           end
-          
+
           def separate_line_into_key_value_pair(line)
             line.match(/^([^:]+):\s?(.+)/).captures
           end
         end
-      
+
         attr_reader :io, :variables, :lines
         def initialize(io)
           @io = io
           @lines = []
         end
-      
+
         def parse
           extract_variable_lines_from_io
           initialize_variables_as_hash_from_lines
           @variables = self.class.coerce_variables(variables)
         end
-        
+
         private
-          
+
           def initialize_variables_as_hash_from_lines
             @variables = lines.inject({}) do |new_variables,line|
               returning new_variables do
@@ -475,16 +475,16 @@ module Adhearsion
               end
             end
           end
-          
+
           def extract_variable_lines_from_io
             while line = io.readline.chomp
               break if line.empty?
               @lines << line
             end
           end
-        
+
       end
-    
+
     end
-  end  
+  end
 end

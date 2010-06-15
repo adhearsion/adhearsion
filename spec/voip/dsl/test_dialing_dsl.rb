@@ -5,44 +5,44 @@ require 'adhearsion/voip/dsl/dialing_dsl'
 # eigenclasses during a before(:all) block?
 
 describe "RouteRule Regexp assembling" do
-  
+
   test "should compile two Regexps" do
     first, last = /jay/, /phillips/
     r = first | last
     r.patterns.should == [first, last]
   end
-  
+
   test "should compile three or more Regexps" do
     first, second, third = /lorem/, /ipsum/, /dolar/
     r = first | second | third
     r.patterns.should == [first, second, third]
   end
-  
+
 end
 
 describe "RouteRule assembling with one provider definition" do
-  
+
   before :each do
     @provider = Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new(:icanhascheezburger?)
   end
-  
+
   test "should store one pattern properly" do
     pattern = /lorem/
     route = pattern >> @provider
     route.patterns.should == [pattern]
   end
-  
+
   test "should store three patterns properly" do
     first, second, third = /lorem/, /ipsum/, /dolar/
     route = first | second | third >> @provider
     route.patterns.should == [first, second, third]
     route.providers.should == [@provider]
   end
-  
+
 end
 
 describe "RouteRule assembling with multiple patterns and multiple provider definitions" do
-  
+
   before:each do
     1.upto 3 do |i|
       instance_variable_set "@prov_#{i}",
@@ -50,48 +50,48 @@ describe "RouteRule assembling with multiple patterns and multiple provider defi
       instance_variable_set "@pattern_#{i}", /^#{i * 100}$/
     end
   end
-  
+
   test "should store the patterns properly" do
     route_1 = @pattern_1 | @pattern_2 | @pattern_3 >> @prov_1 >> @prov_2 >> @prov_3
     route_1.patterns.should == [@pattern_1, @pattern_2, @pattern_3]
-    
+
     route_2 = @pattern_2 | @pattern_3 | @pattern_1 >> @prov_3 >> @prov_2 >> @prov_1
     route_2.patterns.should == [@pattern_2, @pattern_3, @pattern_1]
   end
-  
+
   test "should store the providers properly" do
     route_1 = @pattern_1 | @pattern_2 | @pattern_3 >> @prov_1 >> @prov_2 >> @prov_3
     route_1.providers.should == [@prov_1, @prov_2, @prov_3]
-    
+
     route_2 = @pattern_2 | @pattern_3 | @pattern_1 >> @prov_3 >> @prov_2 >> @prov_1
     route_2.patterns.should == [@pattern_2, @pattern_3, @pattern_1]
   end
 end
 
 describe "The DialingDSL class internals" do
-  
+
   test "should allow Asterisk-like patterns" do
     Adhearsion::VoIP::DSL::DialingDSL.class_eval do
       _('23XX')
     end.should.be.instance_of Regexp
   end
-  
+
   test "should define all of the VoIP constants" do
     lambda do
-      Adhearsion::VoIP::Constants.constants.each do |constant|      
+      Adhearsion::VoIP::Constants.constants.each do |constant|
         eval "Adhearsion::VoIP::DSL::DialingDSL::#{constant}"
       end
     end.should.not.raise NameError
   end
-  
+
   # test "should define a DUNDI constant"
-  
+
   test "should synchronize access to the trunking information for Thread safety"
-  
+
 end
 
 describe "The provider DSL's 'provider' macro" do
-  
+
   test "should make the providers available in the order they were received" do
     provider_holder = Class.new Adhearsion::VoIP::DSL::DialingDSL
     provider_holder.class_eval do
@@ -103,9 +103,9 @@ describe "The provider DSL's 'provider' macro" do
   test "should define a singleton method for the provider name given" do
     Class.new(Adhearsion::VoIP::DSL::DialingDSL).class_eval do
       class_variable_get(:@@providers).size.should == 0
-      
+
       provider(:icanhascheezburger?) {}
-      
+
       should.respond_to(:icanhascheezburger?)
       class_variable_get(:@@providers).size.should == 1
     end
@@ -220,7 +220,7 @@ describe "A ProviderDefinition" do
   test "should define a >>() method" do
     Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new(:arghh).should.respond_to(:>>)
   end
-  
+
   test "should format numbers properly" do
     definition = Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new(:arghh)
     definition.protocol = "SIP"
@@ -239,18 +239,18 @@ describe "Routing with the interpreted route definitions" do
       provider(:good) {}
       route /^111$/ | /^222$/ | /^333$/ >> good >> bad
     end
-    
+
     found = dsl.calculate_routes_for(333)
-    
+
     assert_equal 1, found.size
     found.first.size.should.equal 2
   end
-  
+
 end
 
 # @example = Class.new Adhearsion::VoIP::DSL::DialingDSL
 # @example.class_eval do
-#   
+#
 #   provider:kewlphone do |trunk|
 #     trunk.protocol :sip
 #     trunk.host     "voip.nufone.com"
@@ -258,11 +258,11 @@ end
 #     trunk.password "secret"
 #     trunk.enters   :internal
 #   end
-#   
+#
 #   route US_NUMBER | US_LOCAL_NUMBER >> voip_ms >> nufone
-#   
+#
 #   route INTL_NUMBER >> random(voip_ms, nufone)
-#   
+#
 #   # route _('NXX') >> DUNDI
-#   
+#
 # end

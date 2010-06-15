@@ -1,22 +1,22 @@
 module Adhearsion
   module VoIP
     module FreeSwitch
-  
+
       class BasicConnectionManager
 
         def initialize(io)
           @io = io
         end
-    
+
         # The send-command operator
         def <<(str)
           @io.write str + "\n\n"
         end
-    
+
         def get_header
           separate_pairs get_raw_header
         end
-    
+
         def get_raw_header
           (returning [] do |lines|
             until line = @io.gets and line.chomp.empty?
@@ -31,7 +31,7 @@ module Adhearsion
           # puts "Reading an event of #{length} bytes"
           separate_pairs @io.read(length)
         end
-    
+
         def separate_pairs(lines)
           lines.inject({}) do |h,line|
             returning h do |hash|
@@ -40,9 +40,9 @@ module Adhearsion
             end
           end
         end
-        
+
       end
-  
+
     end
   end
 end
