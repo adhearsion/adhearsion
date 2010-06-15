@@ -173,7 +173,7 @@ module Adhearsion
       %w'INT TERM'.each do |process_signal|
         trap process_signal do
           ahn_log "Shutting down gracefully at #{Time.now}."
-          Events.trigger :shutdown
+          Events.trigger_immediately :shutdown
           exit
         end
       end

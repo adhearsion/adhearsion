@@ -51,7 +51,7 @@ module Adhearsion
         def read 
           returning from_pbx.gets do |message|
             raise Hangup if message.nil?
-            raise Hangup if message == "Hangup"
+            raise Hangup if message.match(/^HANGUP\n?$/i)
             raise Hangup if message.match(/^511 Command Not Permitted on a dead channel/i)
             ahn_log.agi.debug "<<< #{message}"
           end
@@ -111,7 +111,8 @@ module Adhearsion
         # 
         # @see http://www.voip-info.org/wiki/view/Asterisk+-+documentation+of+application+commands Asterisk Dialplan Commands
         def execute(application, *arguments)
-          result = response("EXEC", application, arguments * ',')
+          result = raw_response(%{EXEC %s "%s"} % [ application,
+            arguments.join(%{"#{AHN_CONFIG.asterisk.argument_delimiter}"}) ])
           return false if error?(result)
           result
         end
@@ -146,11 +147,11 @@ module Adhearsion
         #
         # @example Play file hello-world.???
         #   play 'hello-world'
-	# @example Speak current time
+        # @example Speak current time
         #   play Time.now
-	# @example Play sound file, speak number, play two more sound files
+        # @example Play sound file, speak number, play two more sound files
         #   play %w"a-connect-charge-of 22 cents-per-minute will-apply"
-	# @example Play two sound files
+        # @example Play two sound files
         #   play "you-sound-cute", "what-are-you-wearing"
         #
         def play(*arguments)
@@ -486,7 +487,7 @@ module Adhearsion
       	
       	# The queue method puts a call into a call queue to be answered by an agent registered with that queue.
       	# The queue method takes a queue_name as an argument to place the caller in the appropriate queue.
-	# @see http://www.voip-info.org/wiki-Asterisk+cmd+Queue Full information on the Asterisk Queue
+        # @see http://www.voip-info.org/wiki-Asterisk+cmd+Queue Full information on the Asterisk Queue
       	def queue(queue_name)
       	  queue_name = queue_name.to_s
       	  
@@ -526,7 +527,7 @@ module Adhearsion
         
         # This feature is presently experimental! Do not use it!
         def speak(text, engine=:none)
-          engine = Adhearsion::Configuration::AsteriskConfiguration.speech_engine || engine
+          engine = AHN_CONFIG.asterisk.speech_engine || engine
           execute SpeechEngines.send(engine, text)
         end
         

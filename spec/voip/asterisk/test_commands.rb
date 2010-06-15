@@ -1860,6 +1860,8 @@ BEGIN {
       test_case.send(:attr_reader, :mock_call, :input, :output)
       
       test_case.before do
+        Adhearsion::Configuration.configure { |config| config.enable_asterisk() }
+
         @input      = MockSocket.new
         @output     = MockSocket.new
         @mock_call  = Object.new
