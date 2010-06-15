@@ -145,7 +145,7 @@ module Adhearsion
         end
 
         def default_argument_delimiter
-          '|'
+          ','
         end
       end
 

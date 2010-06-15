@@ -24,8 +24,11 @@ Adhearsion::Configuration.configure do |config|
   # Whether to end the call immediately if an unrescued exception is caught. Defaults to true.
   # config.end_call_on_error = false
   
-  # By default Asterisk is enabled with the default settings
-  config.enable_asterisk
+  # NOTE: Pay special attention to the argument_delimiter field below:
+  # For Asterisk <= 1.4, use "|"
+  # For Asterisk >= 1.6, use "," (default)
+  # This setting applies to AMI and AGI
+  config.enable_asterisk :argument_delimeter => ','
   # config.asterisk.enable_ami :host => "127.0.0.1", :username => "admin", :password => "password", :events => true
   
   # config.enable_drb
