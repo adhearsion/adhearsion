@@ -130,8 +130,9 @@ module Adhearsion
       bootstrap_rc
       initialize_log_file
       load_all_init_files
-      init_modules
+      init_datasources
       init_components_subsystem
+      init_modules
       init_events_subsystem
       load_components
       init_events_file
@@ -258,21 +259,27 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       already_loaded_init_files = Array(@loaded_init_files).map { |file| File.expand_path(file) }
       (init_files_from_rc - already_loaded_init_files).each { |init| load init }
     end
-    
-    def init_modules
+
+    def init_datasources
       require 'adhearsion/initializer/database.rb'
       require 'adhearsion/initializer/ldap.rb'
+
+      DatabaseInitializer.start   if AHN_CONFIG.database_enabled?
+      LdapInitializer.start       if AHN_CONFIG.ldap_enabled?
+    end
+    
+    def init_modules
+      
       require 'adhearsion/initializer/asterisk.rb'
       require 'adhearsion/initializer/drb.rb'
       require 'adhearsion/initializer/rails.rb'
       # require 'adhearsion/initializer/freeswitch.rb'
       
-      DatabaseInitializer.start if AHN_CONFIG.database_enabled?
-      LdapInitializer.start     if AHN_CONFIG.ldap_enabled?
-      AsteriskInitializer.start if AHN_CONFIG.asterisk_enabled?
-      DrbInitializer.start      if AHN_CONFIG.drb_enabled?
-      RailsInitializer.start    if AHN_CONFIG.rails_enabled?
+      AsteriskInitializer.start   if AHN_CONFIG.asterisk_enabled?
+      DrbInitializer.start        if AHN_CONFIG.drb_enabled?
+      RailsInitializer.start      if AHN_CONFIG.rails_enabled?
       # FreeswitchInitializer.start if AHN_CONFIG.freeswitch_enabled?
+
     end
     
     def init_events_subsystem
