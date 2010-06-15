@@ -7,8 +7,6 @@ $: << File.expand_path(File.dirname(__FILE__))
 
 require 'rubygems'
 
-require 'active_support/core_ext'
-
 require 'adhearsion/version'
 require 'adhearsion/voip/call'
 require 'adhearsion/voip/dial_plan'
@@ -25,6 +23,8 @@ require 'adhearsion/voip/commands'
 require 'adhearsion/voip/asterisk/commands'
 require 'adhearsion/voip/dsl/dialing_dsl'
 require 'adhearsion/voip/call_routing'
+
+require 'active_support/core_ext'
 
 module Adhearsion
   # Sets up the Gem require path.
