@@ -17,7 +17,7 @@ Adhearsion has...
 bklang's fork
 =============
 
-This fork of the official Adhearsion repository is intended to be a place where we, the Adhearsion community, can collect patches and fixes that have not yet been merged upstream.  Note that this fork in particular works with Asterisk version 1.6 and later, and is broken with all earlier versions (including Asterisk 1.4!).  The hope is that with additional testing from the community, Jay and Jason will merge some or all of these changes into the official repository at some date in the future.
+This fork of the official Adhearsion repository is intended to be a place where we, the Adhearsion community, can collect patches and fixes that have not yet been merged upstream.  The hope is that with additional testing from the community, Jay and Jason will merge some or all of these changes into the official repository at some date in the future.
 
 For discussion of these changes, please visit the irc channel:
 irc.freenode.net #adhearsion
