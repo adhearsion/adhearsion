@@ -14,20 +14,18 @@ Adhearsion has...
 * JRuby compatibility for running atop the Java Virtual Machine and using virtually any Java library.
 * Good regression test coverage
 
-bklang's fork
-=============
+Use the public Adhearsion sandbox!
+==================================
 
-This fork of the official Adhearsion repository is intended to be a place where we, the Adhearsion community, can collect patches and fixes that have not yet been merged upstream.  The hope is that with additional testing from the community, Jay and Jason will merge some or all of these changes into the official repository at some date in the future.
+Don't want to screw with setting up a telephony system? You can test your Adhearsion applications using our public sandbox!
 
-For discussion of these changes, please visit the irc channel:
-irc.freenode.net #adhearsion
+Visit [http://adhearsion.com/getting_started](http://adhearsion.com/getting_started) for more information!
 
-or post on the Adhearsion mailing list:
-[http://groups.google.com/group/adhearsion](http://groups.google.com/group/adhearsion)
+Yes, in minutes you can be controlling your cell phone for free!  :)
 
 Documentation
 =============
 
 Visit [Adhearsion's website](http://adhearsion.com) for more information about the framework or visit the [wiki](http://docs.adhearsion.com) for documentation on how to use it.
 
-If you're having trouble, you may want to try asking your question on the IRC channel, [mailing list](http://groups.google.com/group/adhearsion) or, if you've found a bug, report it on the [bug tracker](http://adhearsion.lighthouseapp.com/projects/5871-adhearsion/overview).
+If you're having trouble, you may want to try asking your question on the IRC channel (#adhearsion on irc.freenode.net), [mailing list](http://groups.google.com/group/adhearsion) or, if you've found a bug, report it on the [bug tracker](http://adhearsion.lighthouseapp.com/projects/5871-adhearsion/overview).
