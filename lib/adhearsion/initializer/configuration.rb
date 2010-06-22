@@ -145,7 +145,8 @@ module Adhearsion
         end
 
         def default_argument_delimiter
-          ','
+          # Keep Asterisk 1.4 (and prior) as the default to protect upgraders
+          '|'
         end
       end
 
