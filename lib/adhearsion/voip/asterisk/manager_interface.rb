@@ -249,7 +249,7 @@ module Adhearsion
             # PSEUDO CODE
             # TODO: Go through all the waiting condition variables and raise an exception
             #@write_queue << :STOP!
-            raise NotImplementedError
+            #raise NotImplementedError
           end
 
           def dynamic
