@@ -5,6 +5,7 @@
  - Add support for using ActiveLdap
  - Misc improvements to support Asterisk 1.6 changes
  - Escape commands sent to Asterisk via AGI
+ - Manager Events now work when daemonized
 
 0.8.3
  - The "uniqueid" call channel variable available in dialplan.rb is now *always* a String
