@@ -123,9 +123,9 @@ module Adhearsion
     def start
       self.class.ahn_root = path
 
-      daemonize! if should_daemonize?
       resolve_pid_file_path
       resolve_log_file_path
+      daemonize! if should_daemonize?
       switch_to_root_directory
       catch_termination_signal
       create_pid_file if pid_file
