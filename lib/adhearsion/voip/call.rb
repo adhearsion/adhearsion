@@ -1,4 +1,5 @@
 require 'uri'
+require 'thread'
 #TODO Some of this is asterisk-specific
 module Adhearsion
   class << self
