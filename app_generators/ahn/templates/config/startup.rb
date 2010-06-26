@@ -44,6 +44,8 @@ Adhearsion::Configuration.configure do |config|
 
   # Configure a database to use ActiveRecord-backed models. See ActiveRecord::Base.establish_connection
   # for the appropriate settings here.
+  # You can also override the default log destination by supplying an alternate
+  # logging object with :logger.  The default is ahn_log.db.
   # config.enable_database :adapter  => 'mysql',
   #                        :username => 'joe',
   #                        :password => 'secret',

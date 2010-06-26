@@ -14,6 +14,10 @@ module Adhearsion
           # You may need to uncomment the following line for older versions of ActiveRecord
           # ActiveRecord::Base.allow_concurrency = true
           establish_connection
+          ActiveRecord::Base.logger =
+            @@config.connection_options.has_key?(:logger) ?
+              @@config.connection_options[:logger] :
+              ahn_log.db
           create_call_hook_for_connection_cleanup
         end
 
