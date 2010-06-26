@@ -115,7 +115,7 @@ module Adhearsion
     def initialize(path=nil, options={})
       @@started = true
       @path     = path
-      @daemon   = options[:daemon]
+      @daemon   = options[:daemon] || ENV['DAEMON']
       @pid_file = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
       @loaded_init_files  = options[:loaded_init_files]
     end
@@ -303,7 +303,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
 
     def should_daemonize?
-      @daemon || ENV['DAEMON']
+      @daemon
     end
 
     def daemonize!
