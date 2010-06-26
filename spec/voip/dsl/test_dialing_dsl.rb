@@ -169,7 +169,7 @@ describe "The provider DSL's monkey patches to Regexp" do
 end
 
 describe "A RouteRule" do
-  test "should expose chained ProviderDefinitions properly" do
+  test "should expose chained ProviderDefinitions properly" do
     one, two, three = definitions = %w"foo bar qaz".map do |name|
       Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new name
     end
