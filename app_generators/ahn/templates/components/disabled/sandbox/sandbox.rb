@@ -55,7 +55,7 @@ initialization do
                 next
               end
               response.chomp!
-              case
+              case response
                 when "authentication accepted"
                   ahn_log.sandbox "Authentication accepted"
 
