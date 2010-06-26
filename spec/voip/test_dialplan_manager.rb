@@ -283,7 +283,7 @@ context "The inbox-related dialplan methods" do
 end
 
 
-context "ExecutionEnvironemnt" do
+context "ExecutionEnvironment" do
 
   attr_accessor :call, :entry_point
 

@@ -84,7 +84,7 @@ context 'execute' do
   test 'execute writes exec and app name to the PBX' do
     pbx_should_respond_with_success
     assert_success mock_call.execute(:foo)
-    pbx_should_have_been_sent 'EXEC "foo" ""'
+    pbx_should_have_been_sent 'EXEC foo ""'
   end
 
   test 'execute returns false if the command was not executed successfully by the PBX' do
@@ -95,7 +95,7 @@ context 'execute' do
   test 'execute can accept arguments after the app name which get translated into pipe-delimited arguments to the PBX' do
     pbx_should_respond_with_success
     mock_call.execute :foo, 'bar', 'baz', 'hi'
-    pbx_should_have_been_sent 'EXEC "foo" "bar|baz|hi"'
+    pbx_should_have_been_sent 'EXEC foo "bar"|"baz"|"hi"'
   end
 
   test "should raise a Hangup exception when nil is returned when reading a command from Asterisk" do
@@ -1581,7 +1581,7 @@ context 'the dtmf command' do
     does_not_read_data_back
     digits = '8404#4*'
     mock_call.dtmf digits
-    pbx_should_have_been_sent "EXEC \"SendDTMF\" \"#{digits}\""
+    pbx_should_have_been_sent "EXEC SendDTMF \"#{digits}\""
   end
 end
 
@@ -1983,20 +1983,20 @@ BEGIN {
       module OutputStreamMatchers
         def pbx_was_asked_to_play(*audio_files)
           audio_files.each do |audio_file|
-            output_stream_matches(/"playback" "#{audio_file}"/)
+            output_stream_matches(/playback "#{audio_file}"/)
           end
         end
 
         def pbx_was_asked_to_play_number(number)
-          output_stream_matches(/"saynumber" "#{number}"/)
+          output_stream_matches(/saynumber "#{number}"/)
         end
 
         def pbx_was_asked_to_play_time(number)
-          output_stream_matches(/"sayunixtime" "#{number}"/)
+          output_stream_matches(/sayunixtime "#{number}"/)
         end
 
         def pbx_was_asked_to_execute(application, *options)
-          output_stream_matches(/exec "saydigits" "#{options.join('|')}"/i)
+          output_stream_matches(/exec saydigits "#{options.join('|')}"/i)
         end
       end
       include OutputStreamMatchers
