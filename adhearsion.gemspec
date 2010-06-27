@@ -38,7 +38,6 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/foundation/custom_daemonizer.rb
   lib/adhearsion/foundation/event_socket.rb
   lib/adhearsion/foundation/future_resource.rb
-  lib/adhearsion/foundation/global.rb
   lib/adhearsion/foundation/metaprogramming.rb
   lib/adhearsion/foundation/numeric.rb
   lib/adhearsion/foundation/pseudo_guid.rb
