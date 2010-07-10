@@ -32,7 +32,11 @@ context "a new EventSocket" do
       handler.connected { throw :inside_connected }
     end
     handler = event_socket.send(:instance_variable_get, :@handler)
-    %w[receive_data disconnected connected].each do |callback|
+    the_following_code {
+      handler.send :receive_data, ''
+    }.should.throw :inside_receive_data
+
+    %w[disconnected connected].each do |callback|
       the_following_code {
         handler.send callback
       }.should.throw "inside_#{callback}".to_sym
