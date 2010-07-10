@@ -17,7 +17,10 @@ context "ManagerInterface" do
     mocked_queue
 
     manager = new_manager_without_events
-    flexmock(Thread).should_receive(:new).twice.and_yield
+
+    t = flexmock('Thread')
+    t.should_receive(:join)
+    flexmock(Thread).should_receive(:new).twice.and_yield.and_return(t)
     mock_em_connection = mock_for_next_created_socket
 
     mock_em_connection.should_receive(:readpartial).once.and_return ami_packets.fresh_socket_connection
