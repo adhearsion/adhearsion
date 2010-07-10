@@ -228,12 +228,13 @@ module Adhearsion
 
           def actions_connection_established
             @actions_state = :connected
-            @actions_writer_thread = Thread.new(&method(:write_loop))
+            start_actions_writer_loop
           end
 
           def actions_connection_disconnected
             @actions_state = :disconnected
             ahn_log.ami.error "AMI connection for ACTION disconnected !!!"
+            clear_actions_connection
             establish_actions_connection if @auto_reconnect
           end
 
@@ -244,14 +245,23 @@ module Adhearsion
           def events_connection_disconnected
             @events_state = :disconnected
             ahn_log.ami.error "AMI connection for EVENT disconnected !!!"
+            clear_events_connection
             establish_events_connection if @auto_reconnect
           end
 
+          def clear_actions_connection
+            stop_actions_writer_loop
+            clear_actions_connection_resources
+            disconnect_actions_connection
+          end
+
+          def clear_events_connection
+            disconnect_events_connection
+          end
+
           def disconnect!
-            # PSEUDO CODE
-            # TODO: Go through all the waiting condition variables and raise an exception
-            #@write_queue << :STOP!
-            #raise NotImplementedError
+            clear_actions_connection
+            clear_events_connection
           end
 
           def dynamic
@@ -426,19 +436,33 @@ module Adhearsion
             true
           end
 
-          def write_loop
-            loop do
-              next_action = @write_queue.shift
-              return :stopped if next_action.equal? :STOP!
-              register_action_with_metadata next_action
+          def start_actions_writer_loop
+            @actions_writer_thread = Thread.new(&method(:actions_writer_loop))
+          end
 
-              ahn_log.ami.debug "Sending AMI action: #{"\n>>> " + next_action.to_s.gsub(/(\r\n)+/, "\n>>> ")}"
-              @actions_connection.send_data next_action.to_s
-              # If it's "causal event" action, we must wait here until it's fully responded
-              next_action.response if next_action.has_causal_events?
+          def stop_actions_writer_loop
+            if @actions_writer_thread
+              @write_queue << :STOP!
+              @actions_writer_thread.join
+              @actions_writer_thread = nil
             end
-          rescue => e
-            p e
+          end
+
+          def actions_writer_loop
+            loop do
+              begin
+                next_action = @write_queue.shift
+                return :stopped if next_action.equal? :STOP!
+                register_action_with_metadata next_action
+
+                ahn_log.ami.debug "Sending AMI action: #{"\n>>> " + next_action.to_s.gsub(/(\r\n)+/, "\n>>> ")}"
+                @actions_connection.send_data next_action.to_s
+                # If it's "causal event" action, we must wait here until it's fully responded
+                next_action.response if next_action.has_causal_events?
+              rescue Object => e
+                ahn_log.ami.debug "Error in AMI writer loop: #{e.class}: #{e.message}\n\t#{e.backtrace.join("\n\t")}"
+              end
+            end
           end
 
           ##
@@ -464,6 +488,22 @@ module Adhearsion
             end
           end
 
+          # Give an error response to any outstanding messages -- they
+          # won't be completed now
+          def clear_actions_connection_resources
+            # Fail all outstanding messages and reset the message list
+            @sent_messages_lock.synchronize do
+              @sent_messages.each do |action_id, action|
+                error         = ManagerInterfaceError.new
+                error.message = "Connection terminated to AMI server"
+
+                action.future_resource.resource = error
+              end
+
+              @sent_messages = {}
+            end
+          end
+
           ##
           # Instantiates a new ManagerInterfaceActionsConnection and assigns it to @actions_connection.
           #
@@ -476,6 +516,15 @@ module Adhearsion
               handler.disconnected { actions_connection_disconnected }
             end
             login_actions
+          end
+
+          def disconnect_actions_connection
+            # Clean up the EventSocket we may have
+            if @actions_connection
+              @actions_connection.disconnect!
+              @actions_connection.join
+              @actions_connection = nil
+            end
           end
 
           ##
@@ -503,6 +552,15 @@ module Adhearsion
             else
               ahn_log.ami "Successful AMI actions-only connection into #{@username}@#{@host}"
               response
+            end
+          end
+
+          def disconnect_events_connection
+            # Clean up the EventSocket we may have
+            if @events_connection
+              @events_connection.disconnect!
+              @events_connection.join
+              @events_connection = nil
             end
           end
 
