@@ -86,11 +86,12 @@ module Adhearsion
           end
 
           DEFAULT_SETTINGS = {
-            :host     => "localhost",
-            :port     => 5038,
-            :username => "admin",
-            :password => "secret",
-            :events   => true
+            :host           => "localhost",
+            :port           => 5038,
+            :username       => "admin",
+            :password       => "secret",
+            :events         => true,
+            :auto_reconnect => true
           }.freeze unless defined? DEFAULT_SETTINGS
 
           attr_reader *DEFAULT_SETTINGS.keys
@@ -106,11 +107,12 @@ module Adhearsion
           def initialize(options={})
             options = parse_options options
 
-            @host = options[:host]
-            @username = options[:username]
-            @password = options[:password]
-            @port     = options[:port]
-            @events   = options[:events]
+            @host           = options[:host]
+            @username       = options[:username]
+            @password       = options[:password]
+            @port           = options[:port]
+            @events         = options[:events]
+            @auto_reconnect = options[:auto_reconnect]
 
             @sent_messages = {}
             @sent_messages_lock = Mutex.new
@@ -232,7 +234,7 @@ module Adhearsion
           def actions_connection_disconnected
             @actions_state = :disconnected
             ahn_log.ami.error "AMI connection for ACTION disconnected !!!"
-            establish_actions_connection
+            establish_actions_connection if @auto_reconnect
           end
 
           def events_connection_established
@@ -242,7 +244,7 @@ module Adhearsion
           def events_connection_disconnected
             @events_state = :disconnected
             ahn_log.ami.error "AMI connection for EVENT disconnected !!!"
-            establish_events_connection
+            establish_events_connection if @auto_reconnect
           end
 
           def disconnect!

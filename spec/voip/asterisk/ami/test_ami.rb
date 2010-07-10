@@ -479,11 +479,11 @@ BEGIN {
     end
 
     def new_manager_with_events
-      @Manager::ManagerInterface.new :host => @host, :port => @port, :events => true
+      @Manager::ManagerInterface.new :host => @host, :port => @port, :events => true, :auto_reconnect => false
     end
 
     def new_manager_without_events
-      @Manager::ManagerInterface.new :host => @host, :port => @port, :events => false
+      @Manager::ManagerInterface.new :host => @host, :port => @port, :events => false, :auto_reconnect => false
     end
 
     def new_blank_ami_response
