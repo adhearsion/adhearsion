@@ -3,6 +3,7 @@ ENV['RUBY_FLAGS'] = "-I#{%w(lib ext bin test).join(File::PATH_SEPARATOR)}"
 
 require 'rubygems'
 require 'rake/gempackagetask'
+require 'rake/testtask'
 
 begin
   require 'spec/rake/spectask'
@@ -45,12 +46,12 @@ Rake::GemPackageTask.new(GEMSPEC).define
 #   # t.options = ['--any', '--extra', '--opts'] # optional
 # end
 
-desc "Run the unit tests for Adhearsion"
-task :spec do
-  Dir[*AHN_TESTS].each do |file|
-    load file
-  end
+Rake::TestTask.new('spec') do |t|
+  t.verbose = true
+  t.pattern = AHN_TESTS
 end
+
+task :default => :spec
 
 desc "Check Ragel version"
 task :check_ragel_version do

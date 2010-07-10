@@ -2,6 +2,9 @@ Dir.chdir File.join(File.dirname(__FILE__), '..')
 
 require 'rubygems'
 
+# Use Turn if we have it
+begin; require 'turn'; rescue LoadError; end
+
 def require_or_report_dependency(require_name, gem_name)
   begin
     require require_name
