@@ -264,6 +264,39 @@ module Adhearsion
 
     end
     add_configuration_for :Rails
+    
+    class XMPPConfiguration < AbstractConfiguration
+
+      attr_accessor :jid, :password, :server, :port
+      def initialize(options)
+        jid, password, server, port = check_options options
+        @jid = jid
+        @password = password
+        @server = server
+        @port = port
+      end
+
+      private
+
+      def check_options(options)
+        options  = options.clone
+        jid      = options.delete :jid
+        password = options.delete :password
+        server   = options.delete :server
+        port     = options.delete :port
+        raise ArgumentError, "Unrecognied argument(s) #{options.keys.to_sentence} in XMPP initializer!" unless options.size.zero?
+        raise ArgumentError, "Must supply a :jid argument to the XMPP initializer!" unless jid
+        raise ArgumentError, "Must supply a :password argument to the XMPP initializer!" unless password
+        if server
+          port ||= 5222
+        else
+          raise ArgumentError, "Must supply a :server argument as well as :port to the XMPP initializer!" if port
+        end
+        [jid, password, server, port]
+      end
+
+    end
+    add_configuration_for :XMPP
 
   end
 end

@@ -14,6 +14,9 @@ ADHEARSION_FILES = %w{
   app_generators/ahn/templates/components/disabled/restful_rpc/README.markdown
   app_generators/ahn/templates/components/disabled/restful_rpc/restful_rpc.rb
   app_generators/ahn/templates/components/disabled/restful_rpc/spec/restful_rpc_spec.rb
+  app_generators/ahn/templates/components/disabled/xmpp_gateway/xmpp_gateway.rb
+  app_generators/ahn/templates/components/disabled/xmpp_gateway/xmpp_gateway.yml
+  app_generators/ahn/templates/components/disabled/xmpp_gateway/README.markdown
   app_generators/ahn/templates/components/simon_game/simon_game.rb
   app_generators/ahn/templates/config/startup.rb
   app_generators/ahn/templates/dialplan.rb
@@ -54,6 +57,7 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/initializer/drb.rb
   lib/adhearsion/initializer/freeswitch.rb
   lib/adhearsion/initializer/rails.rb
+  lib/adhearsion/initializer/xmpp.rb
   lib/adhearsion/logging.rb
   lib/adhearsion/tasks.rb
   lib/adhearsion/tasks/database.rb
@@ -99,6 +103,7 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/voip/menu_state_machine/matchers.rb
   lib/adhearsion/voip/menu_state_machine/menu_builder.rb
   lib/adhearsion/voip/menu_state_machine/menu_class.rb
+  lib/adhearsion/xmpp_bot.rb
   lib/theatre.rb
   lib/theatre/callback_definition_loader.rb
   lib/theatre/guid.rb

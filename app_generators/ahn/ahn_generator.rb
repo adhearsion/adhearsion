@@ -27,6 +27,10 @@ class AhnGenerator < RubiGen::Base
       m.file  *["components/simon_game/simon_game.rb"]*2
       m.file  *["components/ami_remote/ami_remote.rb"]*2
 
+      m.file  *["components/disabled/xmpp_gateway/xmpp_gateway.rb"]*2
+      m.file  *["components/disabled/xmpp_gateway/xmpp_gateway.yml"]*2
+      m.file  *["components/disabled/xmpp_gateway/README.yml"]*2
+
       m.file  *["components/disabled/stomp_gateway/stomp_gateway.rb"]*2
       m.file  *["components/disabled/stomp_gateway/stomp_gateway.yml"]*2
       m.file  *["components/disabled/stomp_gateway/README.markdown"]*2
@@ -83,6 +87,7 @@ EOS
     BASEDIRS = %w(
       components/simon_game
       components/disabled/stomp_gateway
+      components/disabled/xmpp_gateway
       components/disabled/sandbox
       components/ami_remote
       components/disabled/restful_rpc/spec

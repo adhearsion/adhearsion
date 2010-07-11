@@ -61,6 +61,12 @@ Adhearsion::Configuration.configure do |config|
   #                    :password => 'password12345',
   #                    :allow_anonymous => false,
   #                    :try_sasl => false
+  
+  # Configure XMPP call controller
+  # config.enable_xmpp :jid => 'active-calls.xmpp.example.com',
+  #                    :password => 'passwd',
+  #                    :server => 'xmpp.example.com',
+  #                    :port => 5347
 
 end
 
