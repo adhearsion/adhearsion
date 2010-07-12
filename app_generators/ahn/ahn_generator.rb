@@ -29,7 +29,7 @@ class AhnGenerator < RubiGen::Base
 
       m.file  *["components/disabled/xmpp_gateway/xmpp_gateway.rb"]*2
       m.file  *["components/disabled/xmpp_gateway/xmpp_gateway.yml"]*2
-      m.file  *["components/disabled/xmpp_gateway/README.yml"]*2
+      m.file  *["components/disabled/xmpp_gateway/README.markdown"]*2
 
       m.file  *["components/disabled/stomp_gateway/stomp_gateway.rb"]*2
       m.file  *["components/disabled/stomp_gateway/stomp_gateway.yml"]*2
