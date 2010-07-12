@@ -1,6 +1,3 @@
-require 'blather/client/client'
-require 'blather/client/dsl'
-
 module Adhearsion
   class XMPPBot
 
@@ -17,7 +14,7 @@ module Adhearsion
           connect
         end
       end
-      
+
       def stop
         shutdown
       end
@@ -27,20 +24,20 @@ module Adhearsion
       def setup_client_object(jid, password, server, port)
         self.client = Blather::Client.setup(jid, password, server, port)
       end
-      
+
       def connect
         EventMachine.run {client.connect}
       end
-      
+
       def register_event_namespaces
         Events.register_namespace_name "/xmpp"
       end
-      
+
       def register_default_client_handlers
         client.register_handler(:ready) do
           ahn_log.xmpp.info "Connected to XMPP server! Send messages to #{client.jid.stripped}."
         end
-        
+
         client.register_handler(:disconnected) do
           ahn_log.xmpp.error "Disconnected. Restart Adhearsion to connect again."
           # Events.trigger :shutdown
