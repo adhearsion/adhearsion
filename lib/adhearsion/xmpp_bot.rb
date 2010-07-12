@@ -39,8 +39,10 @@ module Adhearsion
         end
 
         client.register_handler(:disconnected) do
-          ahn_log.xmpp.error "Disconnected. Restart Adhearsion to connect again."
-          # Events.trigger :shutdown
+          if Adhearsion.status == :running
+            ahn_log.xmpp.warning "XMPP Disconnected. Reconnecting."
+            connect
+          end
           # TODO: fix this to reconnect XMPP Bot cleanly
         end
       end
