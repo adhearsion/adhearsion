@@ -34,7 +34,13 @@ module Adhearsion
         end
 
         def require_dependencies
-          require 'active_record'
+          begin
+            require 'active_record'
+          rescue LoadError
+            ahn_log.fatal "Database support requires the \"activerecord\" gem."
+            # Silence the abort so we don't get an ugly backtrace
+            abort ""
+          end
         end
 
         def require_models

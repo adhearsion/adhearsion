@@ -31,7 +31,13 @@ module Adhearsion
         #end
 
         def require_dependencies
-          require 'active_ldap'
+          begin
+            require 'active_ldap'
+          rescue LoadError
+            ahn_log.fatal "LDAP support requires the \"activeldap\" gem."
+            # Silence the abort so we don't get an ugly backtrace
+            abort ""
+          end
         end
 
         def require_models
