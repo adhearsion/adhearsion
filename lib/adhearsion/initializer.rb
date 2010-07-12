@@ -1,5 +1,7 @@
 module Adhearsion
 
+  mattr_accessor :status
+
   class << self
 
     ##
@@ -7,6 +9,8 @@ module Adhearsion
     #
     def shutdown!
       ahn_log "Shutting down gracefully at #{Time.now}."
+      self.status = :stopping
+      Events.trigger_immediately :shutdown
       Events.stop!
       exit
     end
@@ -123,6 +127,8 @@ module Adhearsion
     def start
       self.class.ahn_root = path
 
+      Adhearsion.status = :starting
+
       resolve_pid_file_path
       resolve_log_file_path
       daemonize! if should_daemonize?
@@ -140,6 +146,7 @@ module Adhearsion
       init_events_file
 
       ahn_log "Adhearsion initialized!"
+      Adhearsion.status = :running
 
       trigger_after_initialized_hooks
       join_important_threads
@@ -172,9 +179,7 @@ module Adhearsion
     def catch_termination_signal
       %w'INT TERM'.each do |process_signal|
         trap process_signal do
-          ahn_log "Shutting down gracefully at #{Time.now}."
-          Events.trigger_immediately :shutdown
-          exit
+          Adhearsion.shutdown!
         end
       end
     end
