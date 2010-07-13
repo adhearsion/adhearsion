@@ -10,7 +10,7 @@ module Adhearsion
     def shutdown!
       if self.status == :stopping
         # This is the second shutdown request we've received while attempting
-        # attempting to shut down gracefully.  At this point, let's pull the plug...
+        # to shut down gracefully.  At this point, let's pull the plug...
         ahn_log.warning "Shutting down immediately at #{Time.now}"
         exit
       end
@@ -290,7 +290,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       AsteriskInitializer.start   if AHN_CONFIG.asterisk_enabled?
       DrbInitializer.start        if AHN_CONFIG.drb_enabled?
       RailsInitializer.start      if AHN_CONFIG.rails_enabled?
-      XMPPInitializer.start      if AHN_CONFIG.xmpp_enabled?
+      XMPPInitializer.start       if AHN_CONFIG.xmpp_enabled?
       # FreeswitchInitializer.start if AHN_CONFIG.freeswitch_enabled?
 
     end
