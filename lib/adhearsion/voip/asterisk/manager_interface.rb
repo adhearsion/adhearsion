@@ -41,13 +41,7 @@ module Adhearsion
 
             def replies_with_action_id?(name, headers={})
               name = name.to_s.downcase
-              # TODO: Expand this case statement
-              case name
-                when "queues", "iaxpeers"
-                  false
-                else
-                  true
-              end
+			  !UnsupportedActionName::UNSUPPORTED_ACTION_NAMES.include? name
             end
 
             ##
