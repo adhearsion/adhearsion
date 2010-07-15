@@ -29,7 +29,7 @@ module Adhearsion
         #
         class ManagerInterface
 
-          CAUSAL_EVENT_NAMES = ["queuestatus", "sippeers", "parkedcalls", "status", "dahdishowchannels"] unless defined? CAUSAL_EVENT_NAMES
+          CAUSAL_EVENT_NAMES = ["queuestatus", "sippeers", "iaxpeers", "parkedcalls", "status", "dahdishowchannels"] unless defined? CAUSAL_EVENT_NAMES
 
           class << self
 
@@ -72,7 +72,7 @@ module Adhearsion
                case action_name
                  when "queuestatus", 'parkedcalls', "status"
                    action_name + "complete"
-                 when "sippeers"
+                 when "sippeers", "iaxpeers"
                    "peerlistcomplete"
                end
             end
@@ -421,8 +421,15 @@ module Adhearsion
           class UnsupportedActionName < ArgumentError
             UNSUPPORTED_ACTION_NAMES = %w[
               queues
-              iaxpeers
             ] unless defined? UNSUPPORTED_ACTION_NAMES
+
+            # Blacklist some actions depends on the AMI version
+            def self.preinitialize(version)
+              if version < 1.2
+            	UNSUPPORTED_ACTION_NAMES << 'iaxpeers'
+              end
+            end
+
             def initialize(name)
               super "At the moment this AMI library doesn't support the #{name.inspect} action because it causes a protocol anomaly. Support for it will be coming shortly."
             end
@@ -550,6 +557,7 @@ module Adhearsion
               raise AuthenticationFailedException, "Incorrect username and password! #{response.message}"
             else
               ahn_log.ami "Successful AMI actions-only connection into #{@username}@#{@host}"
+              UnsupportedActionName::preinitialize(@actions_lexer.ami_version)
               response
             end
           end
