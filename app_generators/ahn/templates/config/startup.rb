@@ -7,7 +7,8 @@ unless defined? Adhearsion
     require File.dirname(__FILE__) + "/../adhearsion/lib/adhearsion.rb"
   else
     require 'rubygems'
-    gem 'adhearsion', '>= 0.8.2'
+    require 'bundler/setup'
+    gem 'adhearsion', '>= 0.8.4'
     require 'adhearsion'
   end
 end
