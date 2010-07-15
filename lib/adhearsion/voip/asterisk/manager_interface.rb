@@ -395,8 +395,13 @@ module Adhearsion
             args[:priority] = options[:priority] || 1
             args[:exten] = options[:extension] if options[:extension]
             args[:caller_id] = options[:caller_id] if options[:caller_id]
+			if (@actions_lexer.ami_version < 1.1)
+				argument_delimiter = '|'
+			else
+			  argument_delimiter = ','
+			end
             if options[:variables] && options[:variables].kind_of?(Hash)
-              args[:variable] = options[:variables].map {|pair| pair.join('=')}.join(AHN_CONFIG.asterisk.argument_delimiter)
+              args[:variable] = options[:variables].map {|pair| pair.join('=')}.join(argument_delimiter)
             end
             originate args
           end
