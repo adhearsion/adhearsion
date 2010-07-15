@@ -22,6 +22,7 @@ ADHEARSION_FILES = %w{
   app_generators/ahn/templates/dialplan.rb
   app_generators/ahn/templates/events.rb
   app_generators/ahn/templates/Rakefile
+  app_generators/ahn/templates/Gemfile
   app_generators/ahn/templates/README
   app_generators/ahn/USAGE
   bin/ahn
@@ -114,6 +115,7 @@ ADHEARSION_FILES = %w{
   lib/theatre/version.rb
   LICENSE
   Rakefile
+  Gemfile
 }
 
 Gem::Specification.new do |s|
