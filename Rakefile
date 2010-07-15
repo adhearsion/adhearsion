@@ -2,7 +2,8 @@
 ENV['RUBY_FLAGS'] = "-I#{%w(lib ext bin test).join(File::PATH_SEPARATOR)}"
 
 require 'rubygems'
-require 'bundler/setup'
+require 'bundler'
+Bundler.setup
 require 'rake/gempackagetask'
 require 'rake/testtask'
 require 'date'

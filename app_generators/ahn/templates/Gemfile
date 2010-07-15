@@ -1,4 +1,5 @@
 source :rubygems
+gem "rake"
 gem "activesupport"
 gem "rubigen", ">= 1.0.6"
 gem "log4r", ">= 1.0.5"
