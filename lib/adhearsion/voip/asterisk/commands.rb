@@ -582,10 +582,10 @@ module Adhearsion
           raise ArgumentError, "A conference PIN number must be numerical!" if pin && pin.to_s !~ /^\d+$/
 
 		  # => if you don't want a dynamic conference, set :nodynamic => true
-          nodynamic = options.has_key?(:pin) ? options[:pin] : false
+          use_static_conf = options.has_key?(:use_static_conf) ? options[:use_static_conf] : false
 
           # The 'd' option of MeetMe creates conferences dynamically.
-          command_flags += 'd' unless (command_flags.include? 'd' or not nodynamic)
+          command_flags += 'd' unless (command_flags.include? 'd' or not use_static_conf)
 
           execute "MeetMe", conference_id, command_flags, options[:pin]
         end
