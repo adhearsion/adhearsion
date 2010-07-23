@@ -580,8 +580,12 @@ module Adhearsion
           command_flags = options[:options].to_s # This is a passthrough string straight to Asterisk
           pin = options[:pin]
           raise ArgumentError, "A conference PIN number must be numerical!" if pin && pin.to_s !~ /^\d+$/
+
+		  # => if you don't want a dynamic conference, set :nodynamic => true
+          nodynamic = options.has_key?(:pin) ? options[:pin] : false
+
           # The 'd' option of MeetMe creates conferences dynamically.
-          command_flags += 'd' unless command_flags.include? 'd'
+          command_flags += 'd' unless (command_flags.include? 'd' or not nodynamic)
 
           execute "MeetMe", conference_id, command_flags, options[:pin]
         end
