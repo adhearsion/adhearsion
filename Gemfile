@@ -15,4 +15,7 @@ end
 group :test do
   gem "rspec"
   gem "flexmock"
+  gem "test-spec"
+  gem "activerecord"
+  gem "turn"
 end
