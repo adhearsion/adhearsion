@@ -1,3 +1,5 @@
+require 'adhearsion/xmpp_bot.rb'
+
 module Adhearsion
   class Initializer
     class XMPPInitializer
@@ -7,6 +9,7 @@ module Adhearsion
 
         def start
           require_dependencies
+          XMPPBot.extend Blather::DSL
           ahn_config    = Adhearsion::AHN_CONFIG
           self.config   = ahn_config.xmpp
           self.jid      = config.jid
@@ -27,7 +30,6 @@ module Adhearsion
           begin
             require 'blather/client/client'
             require 'blather/client/dsl'
-            require 'adhearsion/xmpp_bot.rb'
           rescue LoadError
             ahn_log.fatal "XMPP support requires the \"blather\" gem."
             # Silence the abort so we don't get an ugly backtrace
