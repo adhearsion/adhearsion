@@ -1,5 +1,6 @@
 0.8.5
  - Added XMPP module and sample component. This allows you to easily write components which utilise a persistent XMPP connection maintained by Adhearsion
+ - Added :use_static_conf option for "meetme" to allow the use of disk-file-managed conferences
 
 0.8.4
  - Add configurable argument delimiter for talking to Asterisk.  This enables Adhearsion to support Asterisk versions 1.4 (and prior) as well as 1.6 (and later).
