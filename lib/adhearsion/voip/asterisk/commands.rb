@@ -729,7 +729,7 @@ module Adhearsion
         # for a complete list of these options and their usage please check the link below.
         #
         # +:confirm+ - ?
-	#
+        #
         # @example Make a call to the PSTN using my SIP provider for VoIP termination
         #   dial("SIP/19095551001@my.sip.voip.terminator.us")
         #
@@ -740,7 +740,7 @@ module Adhearsion
         # @example Make a call using the IAX provider to the PSTN
         #   dial("IAX2/my.id@voipjet/19095551234", :name=>"John Doe", :caller_id=>"9095551234")
         #
-	# @see http://www.voip-info.org/wiki-Asterisk+cmd+Dial Asterisk Dial Command
+        # @see http://www.voip-info.org/wiki-Asterisk+cmd+Dial Asterisk Dial Command
         def dial(number, options={})
           *recognized_options = :caller_id, :name, :for, :options, :confirm
 
