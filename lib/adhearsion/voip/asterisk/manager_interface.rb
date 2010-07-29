@@ -29,7 +29,7 @@ module Adhearsion
         #
         class ManagerInterface
 
-          CAUSAL_EVENT_NAMES = ["queuestatus", "sippeers", "parkedcalls", "status", "dahdishowchannels"] unless defined? CAUSAL_EVENT_NAMES
+          CAUSAL_EVENT_NAMES = ["queuestatus", "sippeers", "parkedcalls", "status", "dahdishowchannels", "coreshowchannels"] unless defined? CAUSAL_EVENT_NAMES
 
           class << self
 
@@ -70,7 +70,7 @@ module Adhearsion
               return nil unless has_causal_events?(action_name)
               action_name = action_name.to_s.downcase
                case action_name
-                 when "queuestatus", 'parkedcalls', "status"
+                 when "queuestatus", "parkedcalls", "status", "coreshowchannels"
                    action_name + "complete"
                  when "sippeers"
                    "peerlistcomplete"
