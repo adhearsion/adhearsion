@@ -102,9 +102,9 @@ module Adhearsion
         raise MenuGetAnotherDigitOrTimeout
       end
 
-      # The superclass from which all message-like exceptions decend. It should never
+      # The superclass from which all message-like exceptions descend. It should never
       # be instantiated directly.
-      class MenuResult < Exception; end
+      class MenuResult < StandardError; end
 
       # Raised when the user's input matches
       class MenuResultFound < MenuResult

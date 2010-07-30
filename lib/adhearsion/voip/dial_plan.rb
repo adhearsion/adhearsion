@@ -76,7 +76,7 @@ module Adhearsion
 
     class Manager
 
-      class NoContextError < Exception; end
+      class NoContextError < StandardError; end
 
       class << self
         def handle(call)

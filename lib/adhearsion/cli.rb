@@ -196,7 +196,7 @@ USAGE
 
         end
 
-        class CLIException < Exception; end
+        class CLIException < StandardError; end
 
         class UnknownCommand < CLIException
           def initialize(cmd)

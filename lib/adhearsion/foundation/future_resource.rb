@@ -27,7 +27,7 @@ class FutureResource
     end
   end
 
-  class ResourceAlreadySetException < Exception
+  class ResourceAlreadySetException < StandardError
     def initialize
       super "Cannot set this resource twice!"
     end

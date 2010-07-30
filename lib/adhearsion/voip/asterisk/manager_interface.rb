@@ -590,9 +590,9 @@ module Adhearsion
           ##
           # Raised when calling ManagerInterface#connect!() and the server responds with an error after logging in.
           #
-          class AuthenticationFailedException < Exception; end
+          class AuthenticationFailedException < StandardError; end
 
-          class NotConnectedError < Exception; end
+          class NotConnectedError < StandardError; end
 
           ##
           # Each time ManagerInterface#send_action is invoked, a new ManagerInterfaceAction is instantiated.

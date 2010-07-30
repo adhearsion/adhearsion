@@ -1315,7 +1315,7 @@ module Adhearsion
 
             end
 
-            class QueueDoesNotExistError < Exception
+            class QueueDoesNotExistError < StandardError
               def initialize(queue_name)
                 super "Queue #{queue_name} does not exist!"
               end
@@ -1331,7 +1331,7 @@ module Adhearsion
 
           module SpeechEngines
 
-            class InvalidSpeechEngine < Exception; end
+            class InvalidSpeechEngine < StandardError; end
 
             class << self
               def cepstral(text)

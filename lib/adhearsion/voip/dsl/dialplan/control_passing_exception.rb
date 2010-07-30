@@ -9,7 +9,7 @@ module Adhearsion
         # particular context. The serve() method in the servlet_container actually
         # rescues these exceptions specifically and then does +e.target to execute
         # that code.
-        class ControlPassingException < Exception
+        class ControlPassingException < StandardError
 
           attr_reader :target
 
@@ -20,7 +20,7 @@ module Adhearsion
 
         end
 
-        class ContextNotFoundException < Exception; end
+        class ContextNotFoundException < StandardError; end
       end
     end
   end

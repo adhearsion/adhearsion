@@ -198,6 +198,6 @@ class EventSocket
 
   end
 
-  class ConnectionError < Exception; end
+  class ConnectionError < StandardError; end
 
 end
