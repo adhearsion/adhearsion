@@ -88,7 +88,8 @@ module Adhearsion
             :username       => "admin",
             :password       => "secret",
             :events         => true,
-            :auto_reconnect => true
+            :auto_reconnect => true,
+            :event_callback => proc { |event| Events.trigger(%w[asterisk manager_interface], event) }
           }.freeze unless defined? DEFAULT_SETTINGS
 
           attr_reader *DEFAULT_SETTINGS.keys
@@ -110,6 +111,7 @@ module Adhearsion
             @port           = options[:port]
             @events         = options[:events]
             @auto_reconnect = options[:auto_reconnect]
+            @event_callback = options[:event_callback]
 
             @sent_messages = {}
             @sent_messages_lock = Mutex.new
@@ -202,7 +204,7 @@ module Adhearsion
           def event_message_received(event)
             return if event.kind_of?(ManagerInterfaceResponse) && event["Message"] == "Authentication accepted"
             # TODO: convert the event name to a certain namespace.
-            Events.trigger %w[asterisk manager_interface], event
+            @event_callback.call(event)
           end
 
           def event_error_received(message)
