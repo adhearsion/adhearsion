@@ -1705,6 +1705,12 @@ context 'The join command' do
     mock_call.join conference_id, :options => flags
   end
 
+  test "should NOT pass the 'd' flag when requiring static conferences" do
+    conference_id, options = "1000", {:use_static_conf => true}
+    mock_call.should_receive(:execute).once.with("MeetMe", conference_id, "", nil)
+    mock_call.join conference_id, options
+  end
+
   test "should raise an ArgumentError when the pin is not numerical" do
     the_following_code {
       mock_call.should_receive(:execute).never
