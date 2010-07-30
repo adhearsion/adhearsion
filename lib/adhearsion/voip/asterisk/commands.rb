@@ -581,11 +581,11 @@ module Adhearsion
           pin = options[:pin]
           raise ArgumentError, "A conference PIN number must be numerical!" if pin && pin.to_s !~ /^\d+$/
 
-		  # => if you don't want a dynamic conference, set :nodynamic => true
+          # To disable dynamic conference creation set :use_static_conf => true
           use_static_conf = options.has_key?(:use_static_conf) ? options[:use_static_conf] : false
 
           # The 'd' option of MeetMe creates conferences dynamically.
-          command_flags += 'd' unless (command_flags.include? 'd' or not use_static_conf)
+          command_flags += 'd' unless (command_flags.include?('d') or use_static_conf)
 
           execute "MeetMe", conference_id, command_flags, options[:pin]
         end
@@ -593,7 +593,7 @@ module Adhearsion
         # Issue this command to access a channel variable that exists in the asterisk dialplan (i.e. extensions.conf)
         # Use get_variable to pass information from other modules or high level configurations from the asterisk dialplan
         # to the adhearsion dialplan.
-	# @see: http://www.voip-info.org/wiki/view/get+variable Asterisk Get Variable
+        # @see: http://www.voip-info.org/wiki/view/get+variable Asterisk Get Variable
       	def get_variable(variable_name)
       	  result = response("GET VARIABLE", variable_name)
       	  case result
