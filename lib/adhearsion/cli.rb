@@ -153,7 +153,7 @@ USAGE
                   elsif !File.directory? disabled_components_path
                     raise ComponentError.new("There is no components/disabled directory!")
                   else
-                    raise ComponentError.new("This component is not present.")
+                    raise ComponentError.new("The requested component was not found.")
                   end
                 else
                   raise PathInvalid.new(Dir.pwd)
