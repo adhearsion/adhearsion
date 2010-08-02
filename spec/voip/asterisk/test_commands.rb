@@ -1983,7 +1983,7 @@ BEGIN {
       end
 
       def default_failure_code
-        '0'
+        '-1'
       end
 
       def output_stream_matches(pattern)
