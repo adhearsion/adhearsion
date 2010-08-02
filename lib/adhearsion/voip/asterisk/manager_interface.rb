@@ -29,7 +29,8 @@ module Adhearsion
         #
         class ManagerInterface
 
-          CAUSAL_EVENT_NAMES = ["queuestatus", "sippeers", "iaxpeers", "parkedcalls", "status", "dahdishowchannels"] unless defined? CAUSAL_EVENT_NAMES
+          CAUSAL_EVENT_NAMES = %w[queuestatus sippeers parkedcalls status
+                                  dahdishowchannels coreshowchannels dbget] unless defined? CAUSAL_EVENT_NAMES
 
           class << self
 
@@ -41,7 +42,7 @@ module Adhearsion
 
             def replies_with_action_id?(name, headers={})
               name = name.to_s.downcase
-			  !UnsupportedActionName::UNSUPPORTED_ACTION_NAMES.include? name
+              !UnsupportedActionName::UNSUPPORTED_ACTION_NAMES.include? name
             end
 
             ##
@@ -70,10 +71,12 @@ module Adhearsion
               return nil unless has_causal_events?(action_name)
               action_name = action_name.to_s.downcase
                case action_name
-                 when "queuestatus", 'parkedcalls', "status"
-                   action_name + "complete"
                  when "sippeers", "iaxpeers"
-                   "peerlistcomplete"
+                 "peerlistcomplete"
+               when "dbget"
+                 "dbgetresponse"
+               else
+                   action_name + "complete"
                end
             end
 
@@ -132,21 +135,29 @@ module Adhearsion
 
               if corresponding_action
 
+                # The "DBGet" command is causal, meaning it has an separate
+                # event that contains the data for command's response.  However,
+                # unlike other causal commands, AMI does not send a
+                # "DBGetComplete" action indicating the causal event is
+                # finished.  This is fixed starting in Asterisk 1.8.
+                if message.name.downcase == "dbgetresponse"
+                  event_collection << message
+                end
+
                 # If this is the meta-event which signals no more events will follow and the response is complete.
                 if message.name.downcase == corresponding_action.causal_event_terminator_name
-
-                  # Result found! Wake up any Threads waiting
+                  # Wake up the waiting Thread
                   corresponding_action.future_resource.resource = event_collection.freeze
 
+                  # Clear the stored action and event collection
                   @current_action_with_causal_events   = nil
                   @event_collection_for_current_action = nil
-
                 else
                   event_collection << message
                   # We have more causal events coming.
                 end
               else
-                ahn_log.ami.error "Got an unexpected event on actions socket! This may be a bug! #{message.inspect}"
+                ahn_log.ami.error "Got an unexpected event on actions socket! This AMI command may have a multi-message response. Try making Adhearsion treat it as CAUSAL_EVENT #{message.inspect}"
               end
 
             elsif message["ActionID"].nil?
@@ -395,7 +406,7 @@ module Adhearsion
             args[:priority] = options[:priority] || 1
             args[:exten] = options[:extension] if options[:extension]
             args[:caller_id] = options[:caller_id] if options[:caller_id]
-			if (@actions_lexer.ami_version < 1.1)
+			if (@actions_lexer.ami_version < 1.1) # Auto-detect AMI version
 				argument_delimiter = '|'
 			else
 			  argument_delimiter = ','
@@ -517,7 +528,7 @@ module Adhearsion
           #
           def establish_actions_connection
             @actions_connection = EventSocket.connect(@host, @port) do |handler|
-              handler.receive_data { |data| @actions_lexer << data  }
+              handler.receive_data { |data| @actions_lexer << data   }
               handler.connected    { actions_connection_established  }
               handler.disconnected { actions_connection_disconnected }
             end
@@ -542,7 +553,7 @@ module Adhearsion
 
             # Note: the @events_connection instance variable is set in login()
             @events_connection = EventSocket.connect(@host, @port) do |handler|
-              handler.receive_data { |data| @events_lexer << data  }
+              handler.receive_data { |data| @events_lexer << data   }
               handler.connected    { events_connection_established  }
               handler.disconnected { events_connection_disconnected }
             end
@@ -592,9 +603,9 @@ module Adhearsion
           ##
           # Raised when calling ManagerInterface#connect!() and the server responds with an error after logging in.
           #
-          class AuthenticationFailedException < Exception; end
+          class AuthenticationFailedException < StandardError; end
 
-          class NotConnectedError < Exception; end
+          class NotConnectedError < StandardError; end
 
           ##
           # Each time ManagerInterface#send_action is invoked, a new ManagerInterfaceAction is instantiated.

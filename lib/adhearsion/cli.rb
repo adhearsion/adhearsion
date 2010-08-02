@@ -143,12 +143,17 @@ USAGE
                 app_path = PathString.from_application_subdirectory Dir.pwd
                 if app_path
                   disabled_component_path = File.join app_path, "components", "disabled", name
+                  disabled_components_path = File.join app_path, "components", "disabled"
                   enabled_component_path  = File.join app_path, "components", name
                   if File.directory? disabled_component_path
                     FileUtils.mv disabled_component_path, enabled_component_path
                     puts "Enabled component #{name}"
-                  else
+                  elsif File.directory? enabled_component_path
+                    raise ComponentError.new("This component is already enabled.")
+                  elsif !File.directory? disabled_components_path
                     raise ComponentError.new("There is no components/disabled directory!")
+                  else
+                    raise ComponentError.new("The requested component was not found.")
                   end
                 else
                   raise PathInvalid.new(Dir.pwd)
@@ -196,7 +201,7 @@ USAGE
 
         end
 
-        class CLIException < Exception; end
+        class CLIException < StandardError; end
 
         class UnknownCommand < CLIException
           def initialize(cmd)

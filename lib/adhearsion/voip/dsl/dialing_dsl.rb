@@ -142,7 +142,7 @@ module Adhearsion
             patterns.unshift pattern
           end
 
-          class RouteException < Exception; end
+          class RouteException < StandardError; end
 
         end
       end

@@ -11,7 +11,7 @@ module Theatre
 
     attr_reader :queued_time, :started_time, :finished_time, :unique_id, :callback, :namespace, :error, :returned_value
 
-    class InvalidStateError < Exception; end
+    class InvalidStateError < StandardError; end
 
     ##
     # Create a new Invocation.

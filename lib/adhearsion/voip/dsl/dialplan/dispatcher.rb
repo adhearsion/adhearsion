@@ -3,7 +3,7 @@ module Adhearsion
     module DSL
       module Dialplan
 
-        class ReturnValue < Exception
+        class ReturnValue < StandardError
           attr_reader :obj
           def initialize(obj)
             @obj = obj
@@ -11,7 +11,7 @@ module Adhearsion
           end
         end
 
-        class Hangup < Exception; end
+        class Hangup < StandardError; end
 
         # Instantiated and returned in every dialplan command
         class EventCommand

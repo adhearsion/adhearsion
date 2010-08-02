@@ -3,7 +3,7 @@ Adhearsion
 
 Adhearsion is an open-source voice application development framework. Adhearsion users write applications atop the framework with Ruby and **call into their code**.
 
-Adhearsion rests above a lower-level telephony platform, namely [Asterisk](http://asterisk.org), though there are experimental bindings for both [FreeSWITCH](http://freeswitch.org) and [Yate](http://yate.null.ro/pmwiki).
+Adhearsion rests above a lower-level telephony platform, namely [Asterisk](http://asterisk.org), and provides a framework for integrating with various resources, such as SQL, LDAP and XMPP (Jabber).
 
 Adhearsion has...
 
@@ -12,6 +12,8 @@ Adhearsion has...
 * An events subsystem which maintains a Thread-pool for executing your namespaced callbacks. (supports AMI events too!)
 * A very useful component architecture with which you may write Adhearsion plugins and share them with the world.
 * JRuby compatibility for running atop the Java Virtual Machine and using virtually any Java library.
+* Ability to re-use existing Ruby on Rails database models with ActiveRecord/ActiveLDAP
+* Easy interactive communication via XMPP instant messages using the Blather library
 * Good regression test coverage
 
 Use the public Adhearsion sandbox!

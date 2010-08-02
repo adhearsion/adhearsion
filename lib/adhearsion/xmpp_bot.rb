@@ -1,9 +1,8 @@
 module Adhearsion
-  class XMPPBot
+  module XMPPBot
 
-    cattr_accessor :client
+    mattr_accessor :client
     class << self
-      include Blather::DSL
 
       def start(jid, password, server, port)
         Blather.logger = ahn_log.xmpp

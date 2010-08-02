@@ -390,6 +390,6 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       end
     end
 
-    class InitializationFailedError < Exception; end
+    class InitializationFailedError < StandardError; end
   end
 end

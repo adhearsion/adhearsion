@@ -34,6 +34,7 @@ module Adhearsion
       	      DialPlan::Manager.handle call
     	      rescue Hangup
     	        ahn_log.agi "HANGUP event for call with uniqueid #{call.variables[:uniqueid].inspect} and channel #{call.variables[:channel].inspect}"
+              Events.trigger_immediately([:asterisk, :after_call], call)
     	        call.hangup!
             rescue DialPlan::Manager::NoContextError => e
               ahn_log.agi e.message

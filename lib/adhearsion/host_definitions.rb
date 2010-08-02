@@ -57,7 +57,7 @@ module Adhearsion
       self.class.definitions << self
     end
 
-    class HostDefinitionException < Exception
+    class HostDefinitionException < StandardError
 
     end
 

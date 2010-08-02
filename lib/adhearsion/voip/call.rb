@@ -17,7 +17,7 @@ module Adhearsion
     end
   end
 
-  class Hangup < Exception
+  class Hangup < StandardError
     # At the moment, we'll just use this to end a call-handling Thread.
   end
 
@@ -87,9 +87,9 @@ module Adhearsion
 
   end
 
-  class UselessCallException < Exception; end
+  class UselessCallException < StandardError; end
 
-  class MetaAgiCallException < Exception
+  class MetaAgiCallException < StandardError
     attr_reader :call
     def initialize(call)
       super()
@@ -114,7 +114,7 @@ module Adhearsion
     # instance variable.
     class CallMessageQueue < Queue
 
-      class InboxClosedException < Exception
+      class InboxClosedException < StandardError
         # this gets raised when the :cancel message is delivered to the queue and with_next_message (or similar auto-message-iteration)
         # features are called.
       end

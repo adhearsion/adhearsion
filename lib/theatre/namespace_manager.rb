@@ -144,7 +144,7 @@ module Theatre
 
   end
 
-  class NamespaceNotFound < Exception
+  class NamespaceNotFound < StandardError
     def initialize(full_path)
       super "Could not find #{full_path.inspect} in the namespace registry. Did you register it yet?"
     end

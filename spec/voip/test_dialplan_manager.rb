@@ -42,18 +42,19 @@ context "Dialplan::Manager handling" do
   end
 
   test 'should send :answer to the execution environment if Adhearsion::AHN_CONFIG.automatically_answer_incoming_calls is set' do
-    flexmock(Adhearsion::Configuration).new_instances.
-        should_receive(:automatically_answer_incoming_calls).once.and_return true
     flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:answer).once.and_throw :answered_call!
-    Adhearsion::Configuration.configure
+    Adhearsion::Configuration.configure do |config|
+      config.automatically_answer_incoming_calls = true
+    end
     the_following_code {
       manager.handle call
     }.should.throw :answered_call!
   end
 
-  test 'should not send :answer to the executuon environment if Adhearsion::AHN_CONFIG.automatically_answer_incoming_calls is NOT set' do
-    flexmock(Adhearsion::Configuration).new_instances.should_receive(:automatically_answer_incoming_calls).once.
-        and_return false
+  test 'should NOT send :answer to the execution environment if Adhearsion::AHN_CONFIG.automatically_answer_incoming_calls is NOT set' do
+    Adhearsion::Configuration.configure do |config|
+      config.automatically_answer_incoming_calls = false
+    end
 
     entry_point = Adhearsion::DialPlan::DialplanContextProc.new(:does_not_matter) { "Do nothing" }
     flexmock(manager).should_receive(:entry_point_for).once.with(call).and_return(entry_point)
@@ -304,6 +305,7 @@ context "ExecutionEnvironment" do
 
   test "An executed context should raise a NameError error when a missing constant is referenced" do
     the_following_code do
+      flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_answer_incoming_calls).and_return false
       context = :context_with_missing_constant
       call = new_call_for_context context
       mock_dialplan_with "#{context} { ThisConstantDoesntExist }"
@@ -352,6 +354,7 @@ context "Dialplan control statements" do
   end
 
   test "Manager should catch ControlPassingExceptions" do
+    flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_answer_incoming_calls).and_return false
     dialplan = %{
       foo { raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(bar) }
       bar {}
@@ -394,6 +397,7 @@ context "Dialplan control statements" do
   end
 
   test "new constants should still be accessible within the dialplan" do
+    flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_answer_incoming_calls).and_return false
     ::Jicksta = :Jicksta
     dialplan = %{
       constant_test {

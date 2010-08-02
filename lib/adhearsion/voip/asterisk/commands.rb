@@ -44,7 +44,7 @@ module Adhearsion
 
         # Utility method to write to pbx.
         def write(message)
-          to_pbx.print(message)
+          to_pbx.puts(message)
         end
 
         # Utility method to read from pbx. Hangup if nil.
@@ -580,8 +580,12 @@ module Adhearsion
           command_flags = options[:options].to_s # This is a passthrough string straight to Asterisk
           pin = options[:pin]
           raise ArgumentError, "A conference PIN number must be numerical!" if pin && pin.to_s !~ /^\d+$/
+
+          # To disable dynamic conference creation set :use_static_conf => true
+          use_static_conf = options.has_key?(:use_static_conf) ? options[:use_static_conf] : false
+
           # The 'd' option of MeetMe creates conferences dynamically.
-          command_flags += 'd' unless command_flags.include? 'd'
+          command_flags += 'd' unless (command_flags.include?('d') or use_static_conf)
 
           execute "MeetMe", conference_id, command_flags, options[:pin]
         end
@@ -589,7 +593,7 @@ module Adhearsion
         # Issue this command to access a channel variable that exists in the asterisk dialplan (i.e. extensions.conf)
         # Use get_variable to pass information from other modules or high level configurations from the asterisk dialplan
         # to the adhearsion dialplan.
-	# @see: http://www.voip-info.org/wiki/view/get+variable Asterisk Get Variable
+        # @see: http://www.voip-info.org/wiki/view/get+variable Asterisk Get Variable
       	def get_variable(variable_name)
       	  result = response("GET VARIABLE", variable_name)
       	  case result
@@ -729,7 +733,7 @@ module Adhearsion
         # for a complete list of these options and their usage please check the link below.
         #
         # +:confirm+ - ?
-	#
+        #
         # @example Make a call to the PSTN using my SIP provider for VoIP termination
         #   dial("SIP/19095551001@my.sip.voip.terminator.us")
         #
@@ -740,7 +744,7 @@ module Adhearsion
         # @example Make a call using the IAX provider to the PSTN
         #   dial("IAX2/my.id@voipjet/19095551234", :name=>"John Doe", :caller_id=>"9095551234")
         #
-	# @see http://www.voip-info.org/wiki-Asterisk+cmd+Dial Asterisk Dial Command
+        # @see http://www.voip-info.org/wiki-Asterisk+cmd+Dial Asterisk Dial Command
         def dial(number, options={})
           *recognized_options = :caller_id, :name, :for, :options, :confirm
 
@@ -1311,7 +1315,7 @@ module Adhearsion
 
             end
 
-            class QueueDoesNotExistError < Exception
+            class QueueDoesNotExistError < StandardError
               def initialize(queue_name)
                 super "Queue #{queue_name} does not exist!"
               end
@@ -1327,7 +1331,7 @@ module Adhearsion
 
           module SpeechEngines
 
-            class InvalidSpeechEngine < Exception; end
+            class InvalidSpeechEngine < StandardError; end
 
             class << self
               def cepstral(text)

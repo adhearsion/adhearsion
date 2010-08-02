@@ -46,7 +46,7 @@ module Adhearsion
 
         end
 
-        class ManagerInterfaceError < Exception
+        class ManagerInterfaceError < StandardError
 
           attr_accessor :message
           def initialize

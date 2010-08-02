@@ -63,7 +63,7 @@ context 'wait_for_digit command' do
   test "the timeout given must be converted to milliseconds" do
     pbx_should_respond_with_success 0
     mock_call.send(:wait_for_digit, 1)
-    output.messages.first.ends_with?('"1000"').should.equal true
+    output.messages.chomp.first.ends_with?('"1000"').should.equal true
   end
 end
 
@@ -1705,6 +1705,12 @@ context 'The join command' do
     mock_call.join conference_id, :options => flags
   end
 
+  test "should NOT pass the 'd' flag when requiring static conferences" do
+    conference_id, options = "1000", {:use_static_conf => true}
+    mock_call.should_receive(:execute).once.with("MeetMe", conference_id, "", nil)
+    mock_call.join conference_id, options
+  end
+
   test "should raise an ArgumentError when the pin is not numerical" do
     the_following_code {
       mock_call.should_receive(:execute).never
@@ -1880,6 +1886,10 @@ BEGIN {
         messages << message
       end
 
+      def puts(message)
+        messages << message.chomp + "\n"
+      end
+
       def read
         messages.shift
       end
@@ -1920,7 +1930,7 @@ BEGIN {
       end
 
       def pbx_should_have_been_sent(message)
-        output.gets.should.equal message
+        output.gets.chomp.should.equal message
       end
 
       def pbx_should_respond_with(message)
