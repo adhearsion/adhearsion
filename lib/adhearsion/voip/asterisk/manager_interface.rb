@@ -29,7 +29,7 @@ module Adhearsion
         #
         class ManagerInterface
 
-          CAUSAL_EVENT_NAMES = %w[queuestatus sippeers parkedcalls status
+          CAUSAL_EVENT_NAMES = %w[queuestatus sippeers iaxpeers parkedcalls status
                                   dahdishowchannels coreshowchannels dbget] unless defined? CAUSAL_EVENT_NAMES
 
           class << self
@@ -406,7 +406,7 @@ module Adhearsion
             args[:priority] = options[:priority] || 1
             args[:exten] = options[:extension] if options[:extension]
             args[:caller_id] = options[:caller_id] if options[:caller_id]
-			if (@actions_lexer.ami_version < 1.1) # Auto-detect AMI version
+			if (@coreSettings["AMIversion"].to_f < 1.1) # Auto-detect AMI version
 				argument_delimiter = '|'
 			else
 			  argument_delimiter = ','
@@ -434,9 +434,9 @@ module Adhearsion
               queues
             ] unless defined? UNSUPPORTED_ACTION_NAMES
 
-            # Blacklist some actions depends on the AMI version
+            # Blacklist some actions depends on the Asterisk version
             def self.preinitialize(version)
-              if version < 1.2
+              if version.to_f < 1.8
             	UNSUPPORTED_ACTION_NAMES << 'iaxpeers'
               end
             end
@@ -568,7 +568,14 @@ module Adhearsion
               raise AuthenticationFailedException, "Incorrect username and password! #{response.message}"
             else
               ahn_log.ami "Successful AMI actions-only connection into #{@username}@#{@host}"
-              UnsupportedActionName::preinitialize(@actions_lexer.ami_version)
+              if @actions_lexer.ami_version < 1.1
+                @coreSettings = Hash.new
+                @coreSettings["AsteriskVersion"] = "1.4.0"
+                @coreSettings["AMIversion"] = "1.0"
+              else
+                @coreSettings = send_action_synchronously("CoreSettings").headers
+              end
+              UnsupportedActionName::preinitialize(@coreSettings["AsteriskVersion"])
               response
             end
           end
