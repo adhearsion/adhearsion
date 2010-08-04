@@ -44,7 +44,7 @@ module Adhearsion
 
         # Utility method to write to pbx.
         def write(message)
-          to_pbx.puts(message)
+          to_pbx.print(message + "\n")
         end
 
         # Utility method to read from pbx. Hangup if nil.
@@ -978,7 +978,7 @@ module Adhearsion
           end
 
           def error?(result)
-            result.to_s[/^#{response_prefix}(?:-\d+|0)/]
+            result.to_s[/^#{response_prefix}(?:-\d+)/]
           end
 
           # timeout with pressed digits:    200 result=<digits> (timeout)

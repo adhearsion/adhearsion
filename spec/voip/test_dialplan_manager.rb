@@ -25,7 +25,7 @@ context "Dialplan::Manager handling" do
     call.context.should.equal context_name
   end
 
-  test "Given a Call, the manager finds the call's desired entry point/context" do
+  test "Given a Call, the manager finds the call's desired entry point based on the originating context" do
     manager.entry_point_for(call).should.equal mock_context
   end
 
