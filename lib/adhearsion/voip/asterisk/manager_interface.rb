@@ -406,13 +406,8 @@ module Adhearsion
             args[:priority] = options[:priority] || 1
             args[:exten] = options[:extension] if options[:extension]
             args[:caller_id] = options[:caller_id] if options[:caller_id]
-			if (@coreSettings["AMIversion"].to_f < 1.1) # Auto-detect AMI version
-				argument_delimiter = '|'
-			else
-			  argument_delimiter = ','
-			end
             if options[:variables] && options[:variables].kind_of?(Hash)
-              args[:variable] = options[:variables].map {|pair| pair.join('=')}.join(argument_delimiter)
+              args[:variable] = options[:variables].map {|pair| pair.join('=')}.join(@coreSettings["ArgumentDelimiter"])
             end
             originate args
           end
@@ -436,7 +431,7 @@ module Adhearsion
 
             # Blacklist some actions depends on the Asterisk version
             def self.preinitialize(version)
-              if version.to_f < 1.8
+              if version < 1.8
             	UNSUPPORTED_ACTION_NAMES << 'iaxpeers'
               end
             end
@@ -572,10 +567,13 @@ module Adhearsion
                 @coreSettings = Hash.new
                 @coreSettings["AsteriskVersion"] = "1.4.0"
                 @coreSettings["AMIversion"] = "1.0"
+                @coreSettings["ArgumentDelimiter"] = "|"
               else
                 @coreSettings = send_action_synchronously("CoreSettings").headers
+                @coreSettings["ArgumentDelimiter"] = ","
               end
-              UnsupportedActionName::preinitialize(@coreSettings["AsteriskVersion"])
+              UnsupportedActionName::preinitialize(@coreSettings["AsteriskVersion"].to_f)
+              pp @coreSettings
               response
             end
           end
