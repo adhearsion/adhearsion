@@ -12,7 +12,7 @@ module Adhearsion
             end
 
             def disconnecting(port)
-              @call.deliver_message :cancel
+              @call.deliver_message :cancel if !@call.nil?
               super(port)
             end
 
