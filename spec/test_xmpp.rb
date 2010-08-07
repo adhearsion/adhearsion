@@ -4,20 +4,10 @@ context "Connecting to an XMPP Server" do
 
   include XMPPTestHelper
 
-  before(:all) { require '' }
-
-  before :each do
-
-  end
-
-  after :each do
-    XMPP.stop
-  end
-
-
-
-
-
+  before(:all) { }
+  
+  # TODO: Actually test something
+  
   after do
     XMPP.stop
   end
