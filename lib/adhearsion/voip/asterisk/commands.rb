@@ -199,20 +199,23 @@ module Adhearsion
           else
             format = options.delete(:format)
           end
-          silence     = options.delete(:silence) || 0
+
+          # maxduration must be in milliseconds when using RECORD FILE
           maxduration = options.delete(:maxduration) || -1
+          maxduration = maxduration * 1000 if maxduration > 0
+
           escapedigits = options.delete(:escapedigits) || "#"
-          maxduration_milliseconds = maxduration * 1000
+          silence     = options.delete(:silence) || 0
 
           if (silence > 0)
-            response("RECORD FILE", filename, format, escapedigits, maxduration_milliseconds, 0, "BEEP", "s=#{silence}")
+            response("RECORD FILE", filename, format, escapedigits, maxduration, 0, "BEEP", "s=#{silence}")
           else
-            response("RECORD FILE", filename, format, escapedigits, maxduration_milliseconds, 0, "BEEP")
+            response("RECORD FILE", filename, format, escapedigits, maxduration, 0, "BEEP")
           end
 
           # If the user hangs up before the recording is entered, -1 is returned and RECORDED_FILE
           # will not contain the name of the file, even though it IS in fact recorded.
-          filename.index("%d") ? get_variable('RECORDED_FILE') : filename + "." + format
+          filename + "." + format
         end
 
         # Simulates pressing the specified digits over the current channel. Can be used to
