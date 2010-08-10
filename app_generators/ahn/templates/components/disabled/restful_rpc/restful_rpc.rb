@@ -55,7 +55,7 @@ RESTFUL_API_HANDLER = lambda do |env|
   rpc_object = Adhearsion::Components.component_manager.extend_object_with(Object.new, :rpc)
 
   # TODO: set the content-type and other HTTP headers
-  response_object = Array rpc_object.send(path, *json)
+  response_object = rpc_object.send(path, *json)
   [200, {"Content-Type" => "application/json"}, response_object.to_json]
 
 end
