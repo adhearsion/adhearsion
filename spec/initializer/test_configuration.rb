@@ -163,9 +163,12 @@ context "XMPP configuration defaults" do
     config.port.should.equal Adhearsion::Configuration::XMPPConfiguration.default_port
   end
   
-  test "should raise exception when port is specified, but no server" do
-    config = Adhearsion::Configuration::XMPPConfiguration.new :jid => "test@example.com", :password => "somepassword", :port => "5223"
-    # Test for exception here
+  test "should raise when port is specified, but no server" do
+    begin
+      config = Adhearsion::Configuration::XMPPConfiguration.new :jid => "test@example.com", :password => "somepassword", :port => "5223"
+    rescue ArgumentError => e
+      e.message.should.equal "Must supply a :server argument as well as :port to the XMPP initializer!"
+    end
   end
 end
 
