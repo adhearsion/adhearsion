@@ -275,6 +275,12 @@ module Adhearsion
         @server = server
         @port = port
       end
+      
+      class << self
+        def default_port
+          5222
+        end
+      end
 
       private
 
@@ -288,7 +294,7 @@ module Adhearsion
         raise ArgumentError, "Must supply a :jid argument to the XMPP initializer!" unless jid
         raise ArgumentError, "Must supply a :password argument to the XMPP initializer!" unless password
         if server
-          port ||= 5222
+          port ||= self.class.default_port
         else
           raise ArgumentError, "Must supply a :server argument as well as :port to the XMPP initializer!" if port
         end

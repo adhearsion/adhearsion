@@ -47,6 +47,10 @@ context "Configuration defaults" do
   test "Drb is NOT enabled by default" do
     assert !config.drb_enabled?
   end
+  
+  test "XMPP is NOT enabled by default" do
+    assert !config.xmpp_enabled?
+  end
 end
 
 context "Asterisk AGI configuration defaults" do
@@ -148,6 +152,20 @@ context "Freeswitch configuration defaults" do
 
   test "freeswitch configuration sets default listening host" do
     config.listening_host.should.equal Adhearsion::Configuration::FreeswitchConfiguration.default_listening_host
+  end
+end
+
+context "XMPP configuration defaults" do
+  attr_reader :config
+  
+  test "xmpp configuration sets default port when server is set, but no port" do
+    config = Adhearsion::Configuration::XMPPConfiguration.new :jid => "test@example.com", :password => "somepassword", :server => "example.com"
+    config.port.should.equal Adhearsion::Configuration::XMPPConfiguration.default_port
+  end
+  
+  test "should raise exception when port is specified, but no server" do
+    config = Adhearsion::Configuration::XMPPConfiguration.new :jid => "test@example.com", :password => "somepassword", :port => "5223"
+    # Test for exception here
   end
 end
 

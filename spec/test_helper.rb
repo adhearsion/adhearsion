@@ -1,6 +1,7 @@
 Dir.chdir File.join(File.dirname(__FILE__), '..')
 
 require 'rubygems'
+require 'bundler/setup'
 
 # Use Turn if we have it
 begin; require 'turn'; rescue LoadError; end

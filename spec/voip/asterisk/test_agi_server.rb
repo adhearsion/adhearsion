@@ -397,7 +397,7 @@ agi_context: adhearsion
 agi_extension: 911
 agi_priority: 1
 agi_enhanced: 0.0
-agi_accountcode:
+agi_accountcode: 
 
       VARIABLES
     end

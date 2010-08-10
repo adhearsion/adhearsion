@@ -103,7 +103,7 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/voip/menu_state_machine/matchers.rb
   lib/adhearsion/voip/menu_state_machine/menu_builder.rb
   lib/adhearsion/voip/menu_state_machine/menu_class.rb
-  lib/adhearsion/xmpp_bot.rb
+  lib/adhearsion/xmpp/connection.rb
   lib/theatre.rb
   lib/theatre/callback_definition_loader.rb
   lib/theatre/guid.rb

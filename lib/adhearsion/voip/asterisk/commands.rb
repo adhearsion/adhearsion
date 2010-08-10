@@ -178,7 +178,17 @@ module Adhearsion
         #
         def record(*args)
           options = args.last.kind_of?(Hash) ? args.pop : {}
-          filename = args.shift || "/tmp/recording_%d.gsm"
+          filename = args.shift || "/tmp/recording_%d"
+
+          if filename.index("%d")
+            if @call.variables.has_key?(:recording_counter)
+              @call.variables[:recording_counter] += 1
+            else
+              @call.variables[:recording_counter]  = 0
+            end
+            filename = filename % @call.variables[:recording_counter]
+          end
+
           if (!options.has_key?(:format))
             format = filename.slice!(/\.[^\.]+$/)
             if (format.nil?)
@@ -189,32 +199,36 @@ module Adhearsion
           else
             format = options.delete(:format)
           end
-          silence     = options.delete(:silence) || 0
+
+          # maxduration must be in milliseconds when using RECORD FILE
           maxduration = options.delete(:maxduration) || -1
+          maxduration = maxduration * 1000 if maxduration > 0
+
           escapedigits = options.delete(:escapedigits) || "#"
+          silence     = options.delete(:silence) || 0
 
           if (silence > 0)
-            response("RECORD FILE", filename, format, escapedigits, maxduration,0, "BEEP", "s=#{silence}")
+            response("RECORD FILE", filename, format, escapedigits, maxduration, 0, "BEEP", "s=#{silence}")
           else
             response("RECORD FILE", filename, format, escapedigits, maxduration, 0, "BEEP")
           end
 
           # If the user hangs up before the recording is entered, -1 is returned and RECORDED_FILE
           # will not contain the name of the file, even though it IS in fact recorded.
-          filename.index("%d") ? get_variable('RECORDED_FILE') : filename + "." + format
+          filename + "." + format
         end
 
         # Simulates pressing the specified digits over the current channel. Can be used to
         # traverse a phone menu.
         def dtmf(digits)
-      		execute "SendDTMF", digits.to_s
-      	end
+          execute "SendDTMF", digits.to_s
+        end
 
-      	# The with_next_message method...
-      	def with_next_message(&block)
-      	  raise LocalJumpError, "Must supply a block" unless block_given?
+        # The with_next_message method...
+        def with_next_message(&block)
+          raise LocalJumpError, "Must supply a block" unless block_given?
           block.call(next_message)
-    	end
+        end
 
         # This command should be used to advance to the next message in the Asterisk Comedian Voicemail application
         def next_message

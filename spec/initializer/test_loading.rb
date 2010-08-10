@@ -2,6 +2,7 @@ require File.dirname(__FILE__) + "/../test_helper"
 require 'adhearsion/initializer/database'
 require 'adhearsion/initializer/asterisk'
 require 'adhearsion/initializer/rails'
+require 'adhearsion/initializer/xmpp'
 require 'active_record'
 
 context "The database initializer" do
@@ -90,6 +91,12 @@ context "The Rails initializer" do
 
 end
 
+context "The XMPP initializer" do
+  
+  include XMPPInitializerTestHelper
+  
+end
+
 BEGIN {
 module DatabaseInitializationTestHelper
 
@@ -146,6 +153,10 @@ module RailsInitializerTestHelper
     flexstub(Adhearsion::Events.framework_theatre).should_receive(:register_namespace_name).with([:asterisk, :before_call]).and_return
   end
 
+end
+
+module XMPPInitializerTestHelper
+  
 end
 
 }

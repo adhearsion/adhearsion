@@ -1,4 +1,4 @@
-require 'adhearsion/xmpp_bot.rb'
+require 'adhearsion/xmpp/connection.rb'
 
 module Adhearsion
   class Initializer
@@ -9,7 +9,7 @@ module Adhearsion
 
         def start
           require_dependencies
-          XMPPBot.extend Blather::DSL
+          XMPP::Connection.extend Blather::DSL
           ahn_config    = Adhearsion::AHN_CONFIG
           self.config   = ahn_config.xmpp
           self.jid      = config.jid
@@ -17,11 +17,11 @@ module Adhearsion
           self.server   = config.server
           self.port     = config.port
 
-          XMPPBot.start(jid, password, server, port)
+          XMPP::Connection.start(jid, password, server, port)
         end
 
         def stop
-          XMPPBot.stop
+          XMPP::Connection.stop
         end
 
         private

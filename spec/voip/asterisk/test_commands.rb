@@ -63,7 +63,7 @@ context 'wait_for_digit command' do
   test "the timeout given must be converted to milliseconds" do
     pbx_should_respond_with_success 0
     mock_call.send(:wait_for_digit, 1)
-    output.messages.chomp.first.ends_with?('"1000"').should.equal true
+    output.messages.first.chomp.ends_with?('"1000"').should.equal true
   end
 end
 
