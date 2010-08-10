@@ -192,11 +192,12 @@ module Adhearsion
           silence     = options.delete(:silence) || 0
           maxduration = options.delete(:maxduration) || -1
           escapedigits = options.delete(:escapedigits) || "#"
+          maxduration_milliseconds = maxduration * 1000
 
           if (silence > 0)
-            response("RECORD FILE", filename, format, escapedigits, maxduration,0, "BEEP", "s=#{silence}")
+            response("RECORD FILE", filename, format, escapedigits, maxduration_milliseconds, 0, "BEEP", "s=#{silence}")
           else
-            response("RECORD FILE", filename, format, escapedigits, maxduration, 0, "BEEP")
+            response("RECORD FILE", filename, format, escapedigits, maxduration_milliseconds, 0, "BEEP")
           end
 
           # If the user hangs up before the recording is entered, -1 is returned and RECORDED_FILE
@@ -207,14 +208,14 @@ module Adhearsion
         # Simulates pressing the specified digits over the current channel. Can be used to
         # traverse a phone menu.
         def dtmf(digits)
-      		execute "SendDTMF", digits.to_s
-      	end
+          execute "SendDTMF", digits.to_s
+        end
 
-      	# The with_next_message method...
-      	def with_next_message(&block)
-      	  raise LocalJumpError, "Must supply a block" unless block_given?
+        # The with_next_message method...
+        def with_next_message(&block)
+          raise LocalJumpError, "Must supply a block" unless block_given?
           block.call(next_message)
-    	end
+        end
 
         # This command should be used to advance to the next message in the Asterisk Comedian Voicemail application
         def next_message
