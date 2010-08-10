@@ -178,7 +178,17 @@ module Adhearsion
         #
         def record(*args)
           options = args.last.kind_of?(Hash) ? args.pop : {}
-          filename = args.shift || "/tmp/recording_%d.gsm"
+          filename = args.shift || "/tmp/recording_%d"
+
+          if filename.index("%d")
+            if @call.variables.has_key?(:recording_counter)
+              @call.variables[:recording_counter] += 1
+            else
+              @call.variables[:recording_counter]  = 0
+            end
+            filename = filename % @call.variables[:recording_counter]
+          end
+
           if (!options.has_key?(:format))
             format = filename.slice!(/\.[^\.]+$/)
             if (format.nil?)
