@@ -573,7 +573,6 @@ module Adhearsion
                 @coreSettings["ArgumentDelimiter"] = ","
               end
               UnsupportedActionName::preinitialize(@coreSettings["AsteriskVersion"].to_f)
-              pp @coreSettings
               response
             end
           end
