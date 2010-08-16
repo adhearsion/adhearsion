@@ -337,8 +337,8 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       Logging::DefaultAdhearsionLogger.redefine_outputters
     end
 
-    def create_pid_file(file = pid_file)
-      if file
+    def create_pid_file
+      if pid_file
         File.open pid_file, 'w' do |file|
           file.puts Process.pid
         end
