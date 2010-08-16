@@ -437,7 +437,17 @@ module Adhearsion
             # Blacklist some actions depends on the Asterisk version
             def self.preinitialize(version)
               if version < 1.8
-            	UNSUPPORTED_ACTION_NAMES << 'iaxpeers'
+                %w[iaxpeers muteaudio mixmonitormute aocmessage].each do |action|
+                  UNSUPPORTED_ACTION_NAMES << action
+                end
+              end
+
+              if version < 1.6
+                %w[skinnydevices skinnyshowdevice skinnylines skinnyshowline coreshowchannels
+                   sipshowregistry getconfigjson bridge listallvoicemailusers dbdel dbdeltree
+                   insert jitterbufstats atxfer iaxregistry queuereload queuereset].each do |action|
+                  UNSUPPORTED_ACTION_NAMES << action
+                end
               end
             end
 
