@@ -30,7 +30,8 @@ module Adhearsion
         class ManagerInterface
 
           CAUSAL_EVENT_NAMES = %w[queuestatus sippeers parkedcalls status
-                                  dahdishowchannels coreshowchannels dbget] unless defined? CAUSAL_EVENT_NAMES
+                                  dahdishowchannels coreshowchannels dbget
+                                  konferencelist] unless defined? CAUSAL_EVENT_NAMES
 
           class << self
 
@@ -75,6 +76,8 @@ module Adhearsion
                  "peerlistcomplete"
                when "dbget"
                  "dbgetresponse"
+               when "konferencelist"
+                 "conferencelistcomplete"
                else
                    action_name + "complete"
                end
