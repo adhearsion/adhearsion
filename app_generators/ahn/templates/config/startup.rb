@@ -27,7 +27,8 @@ Adhearsion::Configuration.configure do |config|
   # NOTE: Pay special attention to the argument_delimiter field below:
   # For Asterisk <= 1.4, use "|" (default)
   # For Asterisk >= 1.6, use ","
-  # This setting applies to AMI and AGI
+  # The delimiter can also be specified in Asterisk's asterisk.conf.
+  # This setting applies only to AGI.  The AMI delimiter is auto-detected.
   config.enable_asterisk :argument_delimiter => '|'
   # config.asterisk.enable_ami :host => "127.0.0.1", :username => "admin", :password => "password", :events => true
 
