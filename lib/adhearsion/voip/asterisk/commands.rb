@@ -52,11 +52,21 @@ module Adhearsion
         def read
           returning from_pbx.gets do |message|
             ahn_log.agi.debug "<<< #{message}"
+
             # AGI has many conditions that might indicate a hangup
             raise Hangup if message.nil?
+
+            # If the message starts with HANGUP it's a silly 1.6 OOB message
+            raise Hangup if message.match(/^HANGUP/)
+
+            code, rest = *message.split(' ', 2)
+
+            if code == '511' # Command Not Permitted on a dead channel
+              raise Hangup
+            end
+
             raise Hangup if message.match(/^HANGUP\n?$/i)
             raise Hangup if message.match(/^HANGUP\s?\d{3}/i)
-            raise Hangup if message.match(/^511 Command Not Permitted on a dead channel/i)
           end
         end
 
