@@ -144,8 +144,10 @@ module Adhearsion
           4573
         end
 
+        # Keep Asterisk 1.4 (and prior) as the default to protect upgraders
+        # This setting only applies to AGI.  AMI delimiters are always
+        # auto-detected.
         def default_argument_delimiter
-          # Keep Asterisk 1.4 (and prior) as the default to protect upgraders
           '|'
         end
       end
@@ -264,7 +266,7 @@ module Adhearsion
 
     end
     add_configuration_for :Rails
-    
+
     class XMPPConfiguration < AbstractConfiguration
 
       attr_accessor :jid, :password, :server, :port
@@ -275,7 +277,7 @@ module Adhearsion
         @server = server
         @port = port
       end
-      
+
       class << self
         def default_port
           5222
