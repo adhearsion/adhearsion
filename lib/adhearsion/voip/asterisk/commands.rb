@@ -43,6 +43,7 @@ module Adhearsion
         } unless defined? DYNAMIC_FEATURE_EXTENSIONS
 
         # Utility method to write to pbx.
+        # @param [String] message raw message
         def write(message)
           to_pbx.print(message + "\n")
         end
@@ -59,11 +60,15 @@ module Adhearsion
           end
         end
 
-        # This method is the underlying method executed by nearly all the command methods in this module.
-        # It is used to send the plaintext commands in the proper AGI format over TCP/IP back to an Asterisk server via the
+        # The underlying method executed by nearly all the command methods in this module.
+        # Used to send the plaintext commands in the proper AGI format over TCP/IP back to an Asterisk server via the
         # FAGI protocol.
+        #
         # It is not recommended that you call this method directly unless you plan to write a new command method
-        # in which case use this method you to communicate directly with an Asterisk server via the FAGI protocol.
+        # in which case use this to communicate directly with an Asterisk server via the FAGI protocol.
+        #
+        # @param [String] message
+        #
         # @see http://www.voip-info.org/wiki/view/Asterisk+FastAGI More information about FAGI
         def raw_response(message = nil)
           raise ArgumentError.new("illegal NUL in message #{message.inspect}") if message =~ /\0/
@@ -85,14 +90,13 @@ module Adhearsion
           end
         end
 
-        # The answer command must be called first before any other commands can be issued.
-        # In typical adhearsion applications the answer command is called by default as soon
-        # as a call is transfered to a valid context in dialplan.rb.
-        # If you do not want your adhearsion application to automatically issue an answer command,
+        # This must be called first before any other commands can be issued.
+        # In typical Adhearsion applications this is called by default as soon as a call is
+        # transfered to a valid context in dialplan.rb.
+        # If you do not want your Adhearsion application to automatically issue an answer command,
         # then you must edit your startup.rb file and configure this setting.
-        # Keep in mind that you should not need to issue another answer command after
-        # an answer command has already been issued either explicitly by your code or implicitly
-        # by the standard adhearsion configuration.
+        # Keep in mind that you should not need to issue another answer command after one has already
+        # been issued either explicitly by your code or implicitly by the standard adhearsion configuration.
         def answer
           response "ANSWER"
           true
@@ -102,10 +106,10 @@ module Adhearsion
         # which are typically run from extensions.conf.
         #
         # The most common commands are already made available through the FAGI interface provided
-        # by this code base.  For commands that do not fall into this category, then exec is what you
+        # by this code base. For commands that do not fall into this category, then exec is what you
         # should use.
         #
-        # For example, if there are specific asterisk modules you have loaded that will not
+        # For example, if there are specific asterisk modules you have loaded that will not be
         # available through the standard commands provided through FAGI - then you can used EXEC.
         #
         # @example Using execute in this way will add a header to an existing SIP call.
@@ -120,6 +124,12 @@ module Adhearsion
         end
 
         # Sends a message to the console via the verbose message system.
+        #
+        # @param [String] message
+        # @param [Integer] level
+        #
+        # @return the result of the command
+        #
         # @example Use this command to inform someone watching the Asterisk console
         # of actions happening within Adhearsion.
         #   verbose 'Processing call with Adhearsion' 3
@@ -240,7 +250,7 @@ module Adhearsion
           not @call.inbox.empty?
         end
 
-        # Menu creates an interactive menu for the caller.
+        # Creates an interactive menu for the caller.
         #
         # The following documentation was derived from a post on Jay Phillips' blog (see below).
         #
@@ -405,7 +415,7 @@ module Adhearsion
           end
         end
 
-        # This method is used to receive keypad input from the user. Digits are collected
+        # Used to receive keypad input from the user. Digits are collected
         # via DTMF (keypad) input until one of three things happens:
         #
         #  1. The number of digits you specify as the first argument is collected
@@ -501,9 +511,13 @@ module Adhearsion
           raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(context)
         end
 
-      	# The queue method puts a call into a call queue to be answered by an agent registered with that queue.
-      	# The queue method takes a queue_name as an argument to place the caller in the appropriate queue.
+      	# Place a call in a queue to be answered by a registered agent. You must then call join!()
+      	#
+      	# @param [String] queue_name the queue name to place the caller in
+      	# @return [Adhearsion::VoIP::Asterisk::Commands::QueueProxy] a queue proxy object
+        #
         # @see http://www.voip-info.org/wiki-Asterisk+cmd+Queue Full information on the Asterisk Queue
+        # @see Adhearsion::VoIP::Asterisk::Commands::QueueProxy#join! join!() for further details
       	def queue(queue_name)
       	  queue_name = queue_name.to_s
 
@@ -519,19 +533,17 @@ module Adhearsion
       	  end
     	  end
 
-      	# Returns the status of the last dial(). Possible dial
-        # statuses include :answer, :busy, :no_answer, :cancelled,
-        # :congested, and :channel_unavailable. If :cancel is
-      	# returned, the caller hung up before the callee picked
-      	# up. If :congestion is returned, the dialed extension
-      	# probably doesn't exist. If :channel_unavailable, the callee
-      	# phone may not be registered.
+      	# Get the status of the last dial(). Possible dial statuses include :answer,
+        # :busy, :no_answer, :cancelled, :congested, and :channel_unavailable.
+        # If :cancel is returned, the caller hung up before the callee picked up.
+        # If :congestion is returned, the dialed extension probably doesn't exist.
+        # If :channel_unavailable, the callee phone may not be registered.
       	def last_dial_status
       	  DIAL_STATUSES[get_dial_status]
       	end
 
-        # Returns true if your last call to dial() finished with the ANSWER state, as reported
-        # by Asterisk. Returns false otherwise
+        # @return [Boolean] true if your last call to dial() finished with the ANSWER state,
+        # as reported by Asterisk. false otherwise
         def last_dial_successful?
           last_dial_status == :answered
         end
@@ -547,7 +559,7 @@ module Adhearsion
           execute SpeechEngines.send(engine, text)
         end
 
-        # This method is a high-level way of enabling features you create/uncomment from features.conf.
+        # A high-level way of enabling features you create/uncomment from features.conf.
         #
         # Certain Symbol features you enable (as defined in DYNAMIC_FEATURE_EXTENSIONS) have optional
         # arguments that you can also specify here. The usage examples show how to do this.
@@ -576,6 +588,8 @@ module Adhearsion
 
         # Disables a feature name specified in features.conf. If you're disabling it, it was probably
         # set by enable_feature().
+        #
+        # @param [String] feature_name
         def disable_feature(feature_name)
           enabled_features_variable = variable 'DYNAMIC_FEATURES'
           enabled_features = enabled_features_variable.split('#')
@@ -585,9 +599,13 @@ module Adhearsion
           end
         end
 
-        # Used to join a particular conference with the MeetMe application. To
-        # use MeetMe, be sure you have a proper timing device configured on your
-        # Asterisk box. MeetMe is Asterisk's built-in conferencing program.
+        # Used to join a particular conference with the MeetMe application. To use MeetMe, be sure you
+        # have a proper timing device configured on your Asterisk box. MeetMe is Asterisk's built-in
+        # conferencing program.
+        #
+        # @param [String] conference_id
+        # @param [Hash] options
+        #
         # @see http://www.voip-info.org/wiki-Asterisk+cmd+MeetMe Asterisk Meetme Application Information
         def join(conference_id, options={})
           conference_id = conference_id.to_s.scan(/\w/).join
@@ -607,6 +625,9 @@ module Adhearsion
         # Issue this command to access a channel variable that exists in the asterisk dialplan (i.e. extensions.conf)
         # Use get_variable to pass information from other modules or high level configurations from the asterisk dialplan
         # to the adhearsion dialplan.
+        #
+        # @param [String] variable_name
+        #
         # @see: http://www.voip-info.org/wiki/view/get+variable Asterisk Get Variable
       	def get_variable(variable_name)
       	  result = response("GET VARIABLE", variable_name)
@@ -618,17 +639,22 @@ module Adhearsion
     	    end
     	  end
 
-    	  # Use set_variable to pass information back to the asterisk dial plan.
-    	  # Keep in mind that the variables are not global variables.  These variables only exist for the channel
+    	  # Pass information back to the asterisk dial plan.
+    	  #
+    	  # Keep in mind that the variables are not global variables. These variables only exist for the channel
     	  # related to the call that is being serviced by the particular instance of your adhearsion application.
     	  # You will not be able to pass information back to the asterisk dialplan for other instances of your adhearsion
-    	  # application to share.  Once the channel is "hungup" then the variables are cleared and their information is gone.
+    	  # application to share. Once the channel is "hungup" then the variables are cleared and their information is gone.
+    	  #
+    	  # @param [String] variable_name
+    	  # @param [String] value
+    	  #
     	  # @see http://www.voip-info.org/wiki/view/set+variable Asterisk Set Variable
     	  def set_variable(variable_name, value)
     	    response("SET VARIABLE", variable_name, value) == "200 result=1"
   	    end
 
-    	  # The variable method allows you to either set or get a channel variable from Asterisk
+    	  # Allows you to either set or get a channel variable from Asterisk.
     	  # The method takes a hash key/value pair if you would like to set a variable
     	  # Or a single string with the variable to get from Asterisk
     	  def variable(*args)
@@ -647,10 +673,12 @@ module Adhearsion
     	    end
   	    end
 
-    	  # Use the voicemail method to send a caller to a voicemail box to leave a message.
-    	  # @see http://www.voip-info.org/tiki-index.php?page=Asterisk+cmd+VoiceMail Asterisk Voicemail
+    	  # Send a caller to a voicemail box to leave a message.
+    	  #
     	  # The method takes the mailbox_number of the user to leave a message for and a
     	  # greeting_option that will determine which message gets played to the caller.
+    	  #
+    	  # @see http://www.voip-info.org/tiki-index.php?page=Asterisk+cmd+VoiceMail Asterisk Voicemail
         def voicemail(*args)
           options_hash    = args.last.kind_of?(Hash) ? args.pop : {}
           mailbox_number  = args.shift
@@ -685,6 +713,9 @@ module Adhearsion
 
         # The voicemail_main method puts a caller into the voicemail system to fetch their voicemail
         # or set options for their voicemail box.
+        #
+        # @param [Hash] options
+        #
         # @see http://www.voip-info.org/wiki-Asterisk+cmd+VoiceMailMain Asterisk VoiceMailMain Command
         def voicemail_main(options={})
           mailbox, context, folder = options.values_at :mailbox, :context, :folder
@@ -722,15 +753,15 @@ module Adhearsion
           voicemail_main
         end
 
-        # Use this command to dial an extension or "phone number" in asterisk.
-        # This command maps to the Asterisk DIAL command in the asterisk dialplan.
+        # Dial an extension or "phone number" in asterisk.
+        # Maps to the Asterisk DIAL command in the asterisk dialplan.
         #
-        # The first parameter, number, must be a string that represents the extension or "number" that asterisk should dial.
+        # @param [String] number represents the extension or "number" that asterisk should dial.
         # Be careful to not just specify a number like 5001, 9095551001
         # You must specify a properly formatted string as Asterisk would expect to use in order to understand
         # whether the call should be dialed using SIP, IAX, or some other means.
         #
-        # Options Parameter:
+        # @param [Hash] options
         #
         # +:caller_id+ - the caller id number to be used when the call is placed.  It is advised you properly adhere to the
         # policy of VoIP termination providers with respect to caller id values.
@@ -794,15 +825,19 @@ module Adhearsion
 
 
       	# Speaks the digits given as an argument. For example, "123" is spoken as "one two three".
+      	#
+      	# @param [String] digits
       	def say_digits(digits)
       	  execute "saydigits", validate_digits(digits)
       	end
 
-      	# Returns the number of seconds the given block takes to execute as a Float. This
+      	# Get the number of seconds the given block takes to execute. This
       	# is particularly useful in dialplans for tracking billable time. Note that
       	# if the call is hung up during the block, you will need to rescue the
       	# exception if you have some mission-critical logic after it with which
       	# you're recording this return-value.
+      	#
+      	# @return [Float] number of seconds taken for block to execute
         def duration_of
           start_time = Time.now
           yield
@@ -810,8 +845,9 @@ module Adhearsion
         end
 
         #
-        # This will play a sequence of files, stopping the playback if a digit is pressed. If a digit is pressed, it will be
-        # returned as a String. If the files played with no keypad input, nil will be returned.
+        # Play a sequence of files, stopping the playback if a digit is pressed.
+        #
+        # @return [String, nil] digit pressed, or nil if none
         #
         def interruptible_play(*files)
           files.flatten.each do |file|
@@ -838,14 +874,14 @@ module Adhearsion
             interruptible_play(*files)
           end
 
-          # set_callier_id_number method allows setting of the callerid number of the call
+          # allows setting of the callerid number of the call
           def set_caller_id_number(caller_id)
             return unless caller_id
             raise ArgumentError, "Caller ID must be numerical" if caller_id.to_s !~ /^\d+$/
             response "SET CALLERID", caller_id
           end
 
-          # set_caller_id_name method allows the setting of the callerid name of the call
+          # allows the setting of the callerid name of the call
           def set_caller_id_name(caller_id_name)
             return unless caller_id_name
             variable "CALLERID(name)" => caller_id_name
@@ -1066,8 +1102,9 @@ module Adhearsion
               @name, @environment = name, environment
             end
 
-            # Makes the current channel join the queue. Below are explanations of the recognized Hash-key
-            # arguments supported by this method.
+            # Makes the current channel join the queue.
+            #
+            # @param [Hash] options
             #
             #   :timeout        - The number of seconds to wait for an agent to answer
             #   :play           - Can be :ringing or :music.
@@ -1075,24 +1112,37 @@ module Adhearsion
             #   :allow_transfer - Can be :caller, :agent, or :everyone. Allow someone to transfer the call.
             #   :allow_hangup   - Can be :caller, :agent, or :everyone. Allow someone to hangup with the * key.
             #
-            # Usage examples:
-            #
-            #  - queue('sales').join!
-            #  - queue('sales').join! :timeout => 1.minute
-            #  - queue('sales').join! :play => :music
-            #  - queue('sales').join! :play => :ringing
-            #  - queue('sales').join! :announce => "custom/special-queue-announcement"
-            #  - queue('sales').join! :allow_transfer => :caller
-            #  - queue('sales').join! :allow_transfer => :agent
-            #  - queue('sales').join! :allow_hangup   => :caller
-            #  - queue('sales').join! :allow_hangup   => :agent
-            #  - queue('sales').join! :allow_hangup   => :everyone
-            #  - queue('sales').join! :allow_transfer => :agent, :timeout => 30.seconds,
+            #  @example
+            #    queue('sales').join!
+            #  @example
+            #    queue('sales').join! :timeout => 1.minute
+            #  @example
+            #    queue('sales').join! :play => :music
+            #  @example
+            #    queue('sales').join! :play => :ringing
+            #  @example
+            #    queue('sales').join! :announce => "custom/special-queue-announcement"
+            #  @example
+            #    queue('sales').join! :allow_transfer => :caller
+            #  @example
+            #    queue('sales').join! :allow_transfer => :agent
+            #  @example
+            #    queue('sales').join! :allow_hangup   => :caller
+            #  @example
+            #    queue('sales').join! :allow_hangup   => :agent
+            #  @example
+            #    queue('sales').join! :allow_hangup   => :everyone
+            #  @example
+            #    queue('sales').join! :allow_transfer => :agent, :timeout => 30.seconds,
             def join!(options={})
               environment.execute("queue", name, *self.class.format_join_hash_key_arguments(options))
           	  normalize_queue_status_variable environment.variable("QUEUESTATUS")
             end
 
+            # Get the agents associated with a queue
+            #
+            # @param [Hash] options
+            # @return [QueueAgentsListProxy]
             def agents(options={})
               cached = options.has_key?(:cache) ? options.delete(:cache) : true
               raise ArgumentError, "Unrecognized arguments to agents(): #{options.inspect}" if options.keys.any?
@@ -1149,9 +1199,9 @@ module Adhearsion
               alias size count
               alias length count
 
-              # Supported Hash-key arguments are :penalty and :name. The :name value will be viewable in
-              # the queue_log. The :penalty is the penalty assigned to this agent for answering calls on
-              # this queue
+              # @param [Hash] args
+              # :name value will be viewable in the queue_log
+              # :penalty is the penalty assigned to this agent for answering calls on this queue
               def new(*args)
 
                 options   = args.last.kind_of?(Hash) ? args.pop : {}

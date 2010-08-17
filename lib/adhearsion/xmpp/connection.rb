@@ -5,6 +5,12 @@ module Adhearsion
       mattr_accessor :client
       class << self
 
+        # Open the XMPP connection
+        #
+        # @param [String] jid the client/component JID to connect to
+        # @param [String] password
+        # @param [String] server
+        # @param [Integer] port
         def start(jid, password, server, port)
           Blather.logger = ahn_log.xmpp
           setup_client_object(jid, password, server, port)
@@ -15,6 +21,7 @@ module Adhearsion
           end
         end
 
+        # Close the XMPP connection
         def stop
           shutdown
         end
