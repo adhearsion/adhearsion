@@ -1158,19 +1158,28 @@ module Adhearsion
               end
             end
 
+            # Check how many channels are waiting in the queue
+            # @return [Integer]
+            # @raise QueueDoesNotExistError
             def waiting_count
               raise QueueDoesNotExistError.new(name) unless exists?
               environment.variable("QUEUE_WAITING_COUNT(#{name})").to_i
             end
 
+            # Check whether the waiting count is zero
+            # @return [Boolean]
             def empty?
               waiting_count == 0
             end
 
+            # Check whether any calls are waiting in the queue
+            # @return [Boolean]
             def any?
               waiting_count > 0
             end
 
+            # Check whether a queue exists/is defined in Asterisk
+            # @return [Boolean]
             def exists?
               environment.execute('RemoveQueueMember', name, 'SIP/AdhearsionQueueExistenceCheck')
               environment.variable("RQMSTATUS") != 'NOSUCHQUEUE'
@@ -1178,7 +1187,24 @@ module Adhearsion
 
             private
 
+            # Ensure the queue exists by interpreting the QUEUESTATUS variable
+            #
+            # According to http://www.voip-info.org/wiki/view/Asterisk+cmd+Queue
+            # possible values are:
+            # TIMEOUT (:timeout
+            # FULL (:full)
+            # JOINEMPTY (:joinempty)
+            # LEAVEEMPTY (:leaveempty)
+            # JOINUNAVAIL (:joinunavail)
+            # LEAVEUNAVAIL (:leaveunavail)
+            #
+            # If Adhearsion cannot determine the status then :unknown will be returned.
+            #
+            # @param [String] QUEUESTATUS variable from Asterisk
+            # @return [Symbol] Symbolized version of QUEUESTATUS
+            # @raise QueueDoesNotExistError
             def normalize_queue_status_variable(variable)
+              variable = "UNKNOWN" if variable.nil?
               returning variable.downcase.to_sym do |queue_status|
                 raise QueueDoesNotExistError.new(name) if queue_status == :unknown
               end
