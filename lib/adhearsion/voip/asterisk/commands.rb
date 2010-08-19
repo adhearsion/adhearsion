@@ -153,7 +153,7 @@ module Adhearsion
         # numbers, Adhearsion assumes you're saying the number, not the digits. For example, play("100")
         # is pronounced as "one hundred" instead of "one zero zero".
         #
-        # Note: it's not necessary to supply a sound file extension; Asterisk will try to find a sound
+        # Note: it is not necessary to supply a sound file extension; Asterisk will try to find a sound
         # file encoded using the current channel's codec, if one exists. If not, it will transcode from
         # the default codec (GSM). Asterisk stores its sound files in /var/lib/asterisk/sounds.
         #
@@ -442,8 +442,8 @@ module Adhearsion
       	# causes the timer to reset. This is a much more user-friendly approach than an
         # absolute timeout.
       	#
-      	# Note that when you don't specify a digit limit, the :accept_key becomes "#"
-      	# because there'd be no other way to end the collection of digits. You can
+        # Note that when the digit limit is not specified the :accept_key becomes "#".
+        # Otherwise there would be no way to end the collection of digits. You can
       	# obviously override this by passing in a new key with :accept_key.
         def input(*args)
           options = args.last.kind_of?(Hash) ? args.pop : {}
@@ -495,7 +495,12 @@ module Adhearsion
         # you should assign the important ones to an instance variable first before calling this method.
         def jump_to(context, overrides={})
           context = lookup_context_with_name(context) if context.kind_of?(Symbol) || (context.kind_of?(String) && context =~ /^[\w_]+$/)
-          raise Adhearsion::VoIP::DSL::Dialplan::ContextNotFoundException unless context.kind_of?(Adhearsion::DialPlan::DialplanContextProc)
+
+          # JRuby has a bug that prevents us from correctly determining the class name.
+          # See: http://jira.codehaus.org/browse/JRUBY-5026
+          if !(context.kind_of?(Adhearsion::DialPlan::DialplanContextProc) || context.kind_of?(Proc))
+            raise Adhearsion::VoIP::DSL::Dialplan::ContextNotFoundException
+          end
 
           if overrides.any?
             overrides = overrides.symbolize_keys
