@@ -2,13 +2,13 @@
  - Added XMPP module and sample component. This allows you to easily write components which utilise a persistent XMPP connection maintained by Adhearsion
  - Prefer finding the dialplan.rb entry point by the AGI request URI instead of the calling context
  - Added :use_static_conf option for "meetme" to allow the use of disk-file-managed conferences
- - Logging object now shared with ActiveRecord and Blater
+ - Logging object now shared with ActiveRecord and Blather
  - Fixed a longstanding bug where newlines were not sent after each AGI command
  - Fixed parsing of DBGet AMI command/response
  - Better shutdown handling/cleanup
  - Attempt to allow the AMI socket to reconnect if connection is lost
  - Improved support for Ruby 1.9
- - Numerous smaller bugs fixed
+ - Numerous smaller bugs fixed. See: https://adhearsion.lighthouseapp.com/projects/5871-adhearsion/milestones/76510-085
 
 0.8.4
  - Add configurable argument delimiter for talking to Asterisk.  This enables Adhearsion to support Asterisk versions 1.4 (and prior) as well as 1.6 (and later).
