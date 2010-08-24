@@ -122,9 +122,9 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jay Phillips", "Jason Goecke", "Ben Klang"]
 
-  s.date = "2008-08-21"
+  s.date = "2010-08-24"
   s.description = "Adhearsion is an open-source telephony development framework"
-  s.email = "Jason&Adhearsion.com"
+  s.email = "dev&Adhearsion.com"
   s.executables = ["ahn", "ahnctl", "jahn"]
 
   s.files = ADHEARSION_FILES
