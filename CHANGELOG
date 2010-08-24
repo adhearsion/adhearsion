@@ -1,3 +1,5 @@
+0.8.6
+
 0.8.5
  - Added XMPP module and sample component. This allows you to easily write components which utilise a persistent XMPP connection maintained by Adhearsion
  - Prefer finding the dialplan.rb entry point by the AGI request URI instead of the calling context
