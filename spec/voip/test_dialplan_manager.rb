@@ -141,8 +141,8 @@ context "Call tagging" do
     call.tagged_with?(:authorized).should.equal true
   end
 
-  test 'tagging a call with a non-Symbol object' do
-    bad_objects = ["moderator", 123, Object.new, 888.88, nil, true, false, StringIO.new]
+  test 'tagging a call with a non-Symbol, non-String object' do
+    bad_objects = [123, Object.new, 888.88, nil, true, false, StringIO.new]
     bad_objects.each do |bad_object|
       the_following_code {
         new_call_for_context("roflcopter").tag bad_object
