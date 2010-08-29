@@ -262,11 +262,11 @@ module Adhearsion
           def clear_actions_connection
             stop_actions_writer_loop
             clear_actions_connection_resources
-            disconnect_actions_connection
+            disconnect_actions_connection if @actions_state.equal? :connected
           end
 
           def clear_events_connection
-            disconnect_events_connection
+            disconnect_events_connection if @events_state.equal? :connected
           end
 
           def disconnect!

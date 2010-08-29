@@ -144,6 +144,7 @@ class EventSocket
   def connection_dropped!
     @state_lock.synchronize do
       unless @state.equal? :connection_dropped
+        @socket.close rescue nil
         @state = :connection_dropped
         @handler.disconnected
       end
