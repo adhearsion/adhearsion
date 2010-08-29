@@ -33,6 +33,8 @@ module Adhearsion
                                   dahdishowchannels coreshowchannels dbget
                                   status konferencelist] unless defined? CAUSAL_EVENT_NAMES
 
+          RETRY_SLEEP = 5
+
           class << self
 
             def connect(*args)
@@ -543,6 +545,10 @@ module Adhearsion
               handler.disconnected { actions_connection_disconnected }
             end
             login_actions
+          rescue Errno::ECONNREFUSED => e
+            ahn_log.ami.warn "ACTIONS thread connection refused!   Retrying in #{RETRY_SLEEP} seconds..."
+            sleep RETRY_SLEEP
+            retry
           end
 
           def disconnect_actions_connection
@@ -569,6 +575,10 @@ module Adhearsion
             end
             login_events
             ahn_log.ami "Successful AMI events-only connection into #{@username}@#{@host}"
+          rescue Errno::ECONNREFUSED => e
+            ahn_log.ami.warn "EVENTS thread connection refused!  Retrying in #{RETRY_SLEEP} seconds..."
+            sleep RETRY_SECONDS
+            retry
           end
 
           def login_actions
