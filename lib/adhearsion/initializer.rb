@@ -151,7 +151,7 @@ module Adhearsion
       load_components
       init_events_file
 
-      ahn_log "Adhearsion initialized!"
+      ahn_log "Adhearsion v#{Adhearsion::VERSION::STRING} initialized!"
       Adhearsion.status = :running
 
       trigger_after_initialized_hooks
