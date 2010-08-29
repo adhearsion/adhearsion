@@ -1,4 +1,5 @@
 0.8.6
+ - Improve AMI reconnecting logic; add "connection refused" retry timer
 
 0.8.5
  - Added XMPP module and sample component. This allows you to easily write components which utilise a persistent XMPP connection maintained by Adhearsion
