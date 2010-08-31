@@ -129,8 +129,8 @@ module Adhearsion
       end
 
       def initialize(overrides = {})
-        @listening_port = overrides.has_key?(:port) ? overrides[:port] : self.class.default_listening_port
-        @listening_host = overrides.has_key?(:host) ? overrides[:host] : self.class.default_listening_host
+        @listening_port = overrides.has_key?(:port) ? overrides.delete(:port) : self.class.default_listening_port
+        @listening_host = overrides.has_key?(:host) ? overrides.delete(:host) : self.class.default_listening_host
         super
       end
     end
