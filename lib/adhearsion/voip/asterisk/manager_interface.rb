@@ -577,7 +577,7 @@ module Adhearsion
             ahn_log.ami "Successful AMI events-only connection into #{@username}@#{@host}"
           rescue Errno::ECONNREFUSED => e
             ahn_log.ami.warn "EVENTS thread connection refused!  Retrying in #{RETRY_SLEEP} seconds..."
-            sleep RETRY_SECONDS
+            sleep RETRY_SLEEP
             retry
           end
 
