@@ -54,19 +54,28 @@ module Adhearsion
             # AGI has many conditions that might indicate a hangup
             raise Hangup if message.nil?
 
+            ahn_log.agi.debug "<<< #{message}"
+
             code, rest = *message.split(' ', 2)
-
-            ahn_log.agi.debug "<<< #{code.inspect}: #{rest.inspect}"
-
-            if code == '511' # Command Not Permitted on a dead channel
-              ahn_log.agi.debug "Raising hangup"
+    
+            if code == "511"
+              # '511' Command Not Permitted on a dead channel
+              ahn_log.agi.debug "AGI 500 error. Raising hangup"
               raise Hangup
+            end
+
+            if (500..599) === code.to_i
+              # 500 AGI protocol error.  Catches (at least):
+              # 520 Invalid command syntax.
+              # 510 Invalid or unknown command
+              # If we have hit this then something bad has happened.
+              ahn_log.agi.warn "AGI 500 error encountered.  This may be a bug in Adhearsion.  Please report it at http://adhearsion.lighthouseapp.com"
             end
 
             # If the message starts with HANGUP it's a silly 1.6 OOB message
             case message
             when /^HANGUP/, /^HANGUP\n?$/i, /^HANGUP\s?\d{3}/i
-              ahn_log.agi.debug "Raising hangup"
+              ahn_log.agi.debug "AGI HANGUP. Raising hangup"
               raise Hangup
             end
           end
