@@ -224,7 +224,7 @@ module Adhearsion
             format = filename.slice!(/\.[^\.]+$/)
             if (format.nil?)
               ahn_log.agi.warn "Format not specified and not detected.  Defaulting to \"gsm\""
-              format = gsm
+              format = "gsm"
             end
             format.sub!(/^\./, "")
           else
