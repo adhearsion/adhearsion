@@ -1,4 +1,5 @@
 0.8.7
+ - Fall back to using Asterisk's context if the AGI URI context is not found
 
 0.8.6
  - Fix packaging problem so all files are publicly readable
@@ -6,6 +7,22 @@
  - AGI protocol improvements: parse the status code and response text
 
 0.8.5
+  NOTE: If you are upgrading an Adhearsion application to 0.8.5, note the change
+  to how request URIs are handled.  With 0.8.4, the context name in Asterisk was
+  required to match the Adhearsion context in dialplan.rb.  Starting in 0.8.5 if
+  an application path is passed in on the AGI URI, it will be preferred over the
+  context name.  For example:
+  
+  [stuff]
+  exten => _X.,1,AGI(agi://localhost/myapp)
+  
+  AHN 0.8.4- will execute the "stuff" context in dialplan.rb
+  AHN 0.8.5+ will execute the "myapp" context in dialplan.rb
+  
+  If you followed the documentation and did not specify an application path in
+  the URI (eg. agi://localhost) you will not be impacted by this change.
+
+  Other changes:
  - Added XMPP module and sample component. This allows you to easily write components which utilise a persistent XMPP connection maintained by Adhearsion
  - Prefer finding the dialplan.rb entry point by the AGI request URI instead of the calling context
  - Added :use_static_conf option for "meetme" to allow the use of disk-file-managed conferences
