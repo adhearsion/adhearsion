@@ -108,8 +108,9 @@ module Adhearsion
           # @param [Hash] options Available options are :host, :port, :username, :password, and :events
           #
           def initialize(options={})
+puts options.inspect
             options = parse_options options
-
+puts options.inspect
             @host           = options[:host]
             @username       = options[:username]
             @password       = options[:password]

@@ -129,8 +129,8 @@ module Adhearsion
       end
 
       def initialize(overrides = {})
-        @listening_port = overrides.has_key?(:port) ? overrides.delete(:port) : self.class.default_listening_port
         @listening_host = overrides.has_key?(:host) ? overrides.delete(:host) : self.class.default_listening_host
+        @listening_port = overrides.has_key?(:port) ? overrides.delete(:port) : self.class.default_listening_port
         super
       end
     end
@@ -158,7 +158,7 @@ module Adhearsion
       end
 
       class AMIConfiguration < AbstractConfiguration
-        attr_accessor :port, :username, :password, :events, :host
+        attr_accessor :port, :username, :password, :events, :host, :auto_reconnect
 
         class << self
           def default_port
@@ -172,12 +172,17 @@ module Adhearsion
           def default_host
             'localhost'
           end
+
+          def default_auto_reconnect
+            true
+          end
         end
 
         def initialize(overrides = {})
-          self.host   = self.class.default_host
-          self.port   = self.class.default_port
-          self.events = self.class.default_events
+          self.host           = self.class.default_host
+          self.port           = self.class.default_port
+          self.events         = self.class.default_events
+          self.auto_reconnect = self.class.default_auto_reconnect
           super
         end
       end
