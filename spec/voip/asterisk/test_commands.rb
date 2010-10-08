@@ -287,6 +287,29 @@ context "the set_variable method" do
 
 end
 
+context "the sip_add_header method" do
+  include DialplanCommandTestHelpers
+  
+  test "values are properly quoted" do
+    mock_call.should_receive(:raw_response).once.with 'EXEC SIPAddHeader "x-ahn-header: rubyrox"'
+    mock_call.sip_add_header "x-ahn-header", "rubyrox"
+  end 
+end
+
+context "the sip_get_header method" do
+  include DialplanCommandTestHelpers
+  
+  test "values are properly quoted" do
+    mock_call.should_receive(:raw_response).once.with 'GET VARIABLE "SIP_HEADER(x-ahn-header)"'
+    mock_call.sip_get_header "x-ahn-header"
+  end 
+  
+  test "values are properly quoted with aliased method" do
+    mock_call.should_receive(:raw_response).once.with 'GET VARIABLE "SIP_HEADER(x-ahn-header)"'
+    mock_call.sip_header "x-ahn-header"
+  end
+end
+
 context 'the voicemail command' do
 
   include DialplanCommandTestHelpers
