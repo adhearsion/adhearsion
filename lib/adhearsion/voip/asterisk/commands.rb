@@ -694,8 +694,7 @@ module Adhearsion
         end
         
         # Issue the command to fetch a SIP header from the current call channel
-        # example use: sip_get_header("foobar", "x-ahn-test")
-        #              foobar = get_variable "foobar"
+        # example use: sip_get_header("x-ahn-test")
         #
         # @param[String] the name of the SIP header to get
         # 
