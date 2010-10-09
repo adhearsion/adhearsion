@@ -1,5 +1,9 @@
-require 'rack'
-require 'json'
+begin
+  require 'rack'
+  require 'json'
+rescue LoadError
+  abort "ERROR: restful_rpc requires the 'rack' and 'json' gems"
+end
 
 # Don't you love regular expressions? Matches only 0-255 octets. Recognizes "*" as an octet wildcard.
 VALID_IP_ADDRESS = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|\*)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|\*)$/
