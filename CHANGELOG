@@ -1,5 +1,6 @@
 0.8.7
  - Fall back to using Asterisk's context if the AGI URI context is not found
+ - Replace all uses of Object#returning with Object#tap
 
 0.8.6
  - Fix packaging problem so all files are publicly readable
