@@ -84,7 +84,7 @@ module Adhearsion
             end
 
             rec_cmd = cmd "record", file, :on_keypress => dtmf_breaker
-            returning [] do |cmds|
+            [].tap do |cmds|
               cmds << play('beep') if hash[:beep]
               cmds << rec_cmd
               if hash[:timeout]
@@ -112,7 +112,7 @@ module Adhearsion
             digits << digit
             return! digits.to_s if number && digits.size >= number
           end
-          returning DSL::Dialplan::NoOpEventCommand.new do |command|
+          DSL::Dialplan::NoOpEventCommand.new.tap do |command|
             command.on_keypress &dtmf_hook
           end
         end

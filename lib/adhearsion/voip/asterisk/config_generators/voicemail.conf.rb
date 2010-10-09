@@ -32,7 +32,7 @@ module Adhearsion
             raise ArgumentError, "Name cannot be 'general'!" if name.to_s.downcase == 'general'
             raise ArgumentError, "A name can only be characters, numbers, and underscores!" if name.to_s !~ /^[\w_]+$/
 
-            returning ContextDefinition.new(name) do |context_definition|
+            ContextDefinition.new(name).tap do |context_definition|
               yield context_definition
               context_definitions << context_definition
             end
@@ -96,7 +96,7 @@ module Adhearsion
             private
 
             def mailbox_entry(options)
-              returning MailboxDefinition.new do |mailbox|
+              MailboxDefinition.new.tap do |mailbox|
                 yield mailbox if block_given?
                 mailboxes << definition
               end

@@ -116,13 +116,13 @@ module Adhearsion
 
         class << self
           def load_code(code)
-            returning(new) do |instance|
+            new.tap do |instance|
               instance.module_eval code
             end
           end
 
           def load_file(filename)
-            returning(new) do |instance|
+            new.tap do |instance|
               instance.module_eval File.read(filename), filename
             end
           end

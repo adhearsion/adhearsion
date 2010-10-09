@@ -174,7 +174,7 @@ module Adhearsion
       # Given an IO (probably a socket accepted from an Asterisk service),
       # creates a Call instance which encapsulates everything we know about that call.
       def receive_from(io, &block)
-        returning new(io, variable_parser_for(io).variables) do |call|
+        new(io, variable_parser_for(io).variables).tap do |call|
           block.call(call) if block
         end
       end
@@ -332,7 +332,7 @@ module Adhearsion
 
           def remove_agi_prefixes_from_keys_and_strip_whitespace(variables)
             variables.inject({}) do |new_variables,(key,value)|
-              returning new_variables do
+              new_variables.tap do
                 stripped_name = key.kind_of?(String) ? key[/^(agi_)?(.+)$/,2] : key
                 new_variables[stripped_name] = value.kind_of?(String) ? value.strip : value
               end
@@ -341,21 +341,21 @@ module Adhearsion
 
           def coerce_keys_into_symbols(variables)
             variables.inject({}) do |new_variables,(key,value)|
-              returning new_variables do
+              new_variables.tap do
                 new_variables[key.to_sym] = value
               end
             end
           end
 
           def coerce_extension_into_phone_number_object(variables)
-            returning variables do
+            variables.tap do
               variables[:extension] = Adhearsion::VoIP::DSL::PhoneNumber.new(variables[:extension])
             end
           end
 
           def coerce_numerical_values_to_numerics(variables)
             variables.inject({}) do |vars,(key,value)|
-              returning vars do
+              vars.tap do
                 is_numeric = value =~ /^-?\d+(?:(\.)\d+)?$/
                 is_float   = $1
                 vars[key] = if is_numeric
@@ -402,13 +402,13 @@ module Adhearsion
           end
 
           def coerce_type_of_number_into_symbol(variables)
-            returning variables do
+            variables.tap do
               variables[:type_of_calling_number] = Adhearsion::VoIP::Constants::Q931_TYPE_OF_NUMBER[variables.delete(:callington).to_i]
             end
           end
 
           def decompose_uri_query_into_hash(variables)
-            returning variables do
+            variables.tap do
               if variables[:request] && variables[:request].query
                 variables[:query] = variables[:request].query.split('&').inject({}) do |query_string_parameters, key_value_pair|
                   parameter_name, parameter_value = *key_value_pair.match(/(.+)=(.*)/).captures
@@ -422,7 +422,7 @@ module Adhearsion
           end
 
           def override_variables_with_query_params(variables)
-            returning variables do
+            variables.tap do
               if variables[:query]
                 variables[:query].each do |key, value|
                   variables[key.to_sym] = value
@@ -432,7 +432,7 @@ module Adhearsion
           end
 
           def remove_dashes_from_context_name(variables)
-            returning variables do
+            variables.tap do
               variables[:context].gsub!('-', '_')
             end
           end
@@ -444,7 +444,7 @@ module Adhearsion
 
         class << self
           def parse(*args, &block)
-            returning new(*args, &block) do |parser|
+            new(*args, &block).tap do |parser|
               parser.parse
             end
           end
@@ -476,7 +476,7 @@ module Adhearsion
 
           def initialize_variables_as_hash_from_lines
             @variables = lines.inject({}) do |new_variables,line|
-              returning new_variables do
+              new_variables.tap do
                 key, value = self.class.separate_line_into_key_value_pair line
                 new_variables[key] = value
               end

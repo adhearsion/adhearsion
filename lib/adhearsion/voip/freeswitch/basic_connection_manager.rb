@@ -18,7 +18,7 @@ module Adhearsion
         end
 
         def get_raw_header
-          (returning [] do |lines|
+          ([].tap do |lines|
             until line = @io.gets and line.chomp.empty?
               lines << line.chomp
             end
@@ -34,7 +34,7 @@ module Adhearsion
 
         def separate_pairs(lines)
           lines.inject({}) do |h,line|
-            returning h do |hash|
+            h.tap do |hash|
               k,v = line.split(/\s*:\s*/)
               hash[k] = URI.unescape(v).strip if k && v
             end

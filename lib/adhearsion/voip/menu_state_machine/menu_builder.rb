@@ -46,7 +46,7 @@ module Adhearsion
       end
 
       def calculate_matches_for(result)
-        returning CalculatedMatchCollection.new do |collection|
+        CalculatedMatchCollection.new.tap do |collection|
           weighted_match_calculators.each do |pattern|
             collection << pattern.match(result)
           end

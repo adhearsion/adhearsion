@@ -103,7 +103,7 @@ module ConfigurationManagerTestHelper
   end
 
   def mock_config_manager_for(config_string)
-    returning new_config_manager_with("bogus filename") do |manager|
+    new_config_manager_with("bogus filename").tap do |manager|
       flexmock(manager).should_receive(:execute).and_return(config_string)
     end
   end

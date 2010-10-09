@@ -38,7 +38,7 @@ module Adhearsion
           class << self
 
             def connect(*args)
-              returning new(*args) do |connection|
+              new(*args).tap do |connection|
                 connection.connect!
               end
             end
@@ -307,7 +307,7 @@ module Adhearsion
           # @return [ManagerInterfaceResponse, ImmediateResponse] Contains the response from Asterisk and all headers
           #
           def send_action_synchronously(*args)
-            returning send_action_asynchronously(*args).response do |response|
+            send_action_asynchronously(*args).response.tap do |response|
               raise response if response.kind_of?(ManagerInterfaceError)
             end
           end

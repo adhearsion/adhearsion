@@ -50,7 +50,7 @@ module Adhearsion
 
         # Utility method to read from pbx. Hangup if nil.
         def read
-          returning from_pbx.gets do |message|
+          from_pbx.gets.tap do |message|
             # AGI has many conditions that might indicate a hangup
             raise Hangup if message.nil?
 
@@ -1048,7 +1048,7 @@ module Adhearsion
           end
 
           def validate_digits(digits)
-            returning digits.to_s do |digits_as_string|
+            digits.to_s.tap do |digits_as_string|
               raise ArgumentError, "Can only be called with valid digits!" unless digits_as_string =~ /^[0-9*#-]+$/
             end
           end
@@ -1226,7 +1226,7 @@ module Adhearsion
             # @raise QueueDoesNotExistError
             def normalize_queue_status_variable(variable)
               variable = "UNKNOWN" if variable.nil?
-              returning variable.downcase.to_sym do |queue_status|
+              variable.downcase.to_sym.tap do |queue_status|
                 raise QueueDoesNotExistError.new(name) if queue_status == :unknown
               end
             end

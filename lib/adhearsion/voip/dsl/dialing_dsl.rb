@@ -76,7 +76,7 @@ module Adhearsion
           end
 
           def defined_properties_without_name
-            returning @table.clone do |copy|
+            @table.clone.tap do |copy|
               copy.delete :name
             end
           end

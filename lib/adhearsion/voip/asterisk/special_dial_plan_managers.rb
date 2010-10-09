@@ -9,7 +9,7 @@ module Adhearsion
           macro_name = options.delete :macro
           options[:play] &&= options[:play].kind_of?(Array) ? options[:play].join('++') : options[:play]
           encoded_options = URI.escape options.map { |key,value| "#{key}:#{value}" }.join('!')
-          returning "M(#{macro_name}^#{encoded_options})" do |str|
+          "M(#{macro_name}^#{encoded_options})".tap do |str|
             if str.rindex('^') != str.index('^')
               raise ArgumentError, "You seem to have supplied a :confirm option with a caret (^) in it!" +
                                    " Please remove it. This will blow Asterisk up."
@@ -31,7 +31,7 @@ module Adhearsion
           unencoded = URI.unescape(encoded_hash).split('!')
           unencoded.shift unless unencoded.first.include?(':')
           unencoded = unencoded.map { |pair| key, value = pair.split(':'); [key.to_sym ,value] }.flatten
-          returning Hash[*unencoded] do |hash|
+          Hash[*unencoded].tap do |hash|
             hash[:timeout]    &&= hash[:timeout].to_i
             hash[:play]       &&= hash[:play].split('++')
           end

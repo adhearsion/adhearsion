@@ -110,7 +110,7 @@ module DatabaseInitializationTestHelper
   end
 
   def tempfile_with_contents(contents)
-    returning Tempfile.new("bogus_model") do |file|
+    Tempfile.new("bogus_model").tap do |file|
       file.puts contents
       file.flush
     end

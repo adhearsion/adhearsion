@@ -19,7 +19,7 @@ module Adhearsion
             dialplans = AHN_CONFIG.files_from_setting "paths", "dialplan"
             ahn_log.dialplan.warn "No dialplan files were found!" if dialplans.empty?
 
-            returning({}) do |contexts|
+            {}.tap do |contexts|
               dialplans.each do |file|
                 raise "Dialplan file #{file} does not exist!" unless File.exists? file
                 envelope.instance_eval do
@@ -31,7 +31,7 @@ module Adhearsion
                     warn %'Dialplan context "#{name}" exists in both #{contexts[name].file} and #{file}.' +
                          %' Using the "#{name}" context from #{contexts[name].file}.'
                   else
-                    contexts[name] = returning OpenStruct.new do |metadata|
+                    contexts[name] = OpenStruct.new.tap do |metadata|
                       metadata.file  = file
                       metadata.name  = name
                       metadata.block = block

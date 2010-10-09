@@ -108,7 +108,7 @@ module Adhearsion
           end
 
           def clone
-            returning super do |nemesis|
+            super.tap do |nemesis|
               instance_variables.each do |iv|
                 value = instance_variable_get(iv)
                 nemesis.instance_variable_set iv, value.clone if value

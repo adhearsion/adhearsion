@@ -35,7 +35,7 @@ module Adhearsion
         def initialize_ami
           options = ami_options
           start_ami_after_initialized
-          returning VoIP::Asterisk::Manager::ManagerInterface.new(options) do
+          VoIP::Asterisk::Manager::ManagerInterface.new(options).tap do
             class << VoIP::Asterisk
               if respond_to?(:manager_interface)
                 ahn_log.warn "Asterisk.manager_interface already initialized?"

@@ -194,7 +194,7 @@ BEGIN {
 module AmiCommandTestHelper
   def new_ami_instance
     # TODO. mock everything out here
-    returning Adhearsion::VoIP::Asterisk::AMI.new("user","pass") do |ami|
+    Adhearsion::VoIP::Asterisk::AMI.new("user","pass").tap do |ami|
       flexmock(ami).should_receive(:connect!).and_return(true)
     end
   end

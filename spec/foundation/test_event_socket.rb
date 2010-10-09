@@ -158,7 +158,7 @@ end
 BEGIN {
   module EventSocketTestHelper
     def mock_handler_object
-      returning flexmock do |handler|
+      flexmock.tap do |handler|
         flexstub(handler).should_receive(:connected)
         flexstub(handler).should_receive(:receive_data)
         flexstub(handler).should_receive(:disconnected)

@@ -79,7 +79,7 @@ module Adhearsion
       def numbers_in_range_like(num)
         return (pattern === 0 ? [0] : nil) if num == 0
         raise ArgumentError unless num.kind_of?(Numeric)
-        returning Array.new do |matches|
+        Array.new.tap do |matches|
           first, last = pattern.first, pattern.last
           power = 0
           while num < last

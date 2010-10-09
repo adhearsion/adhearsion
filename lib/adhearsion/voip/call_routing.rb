@@ -31,7 +31,7 @@ module Adhearsion
           attr_accessor :rules
 
           def define(&block)
-            returning new do |router|
+            new.tap do |router|
               router.define(&block)
               rules.concat router.rules
             end

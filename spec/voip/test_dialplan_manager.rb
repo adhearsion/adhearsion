@@ -441,7 +441,7 @@ module DialplanTestingHelper
   end
 
   def new_manager_with_entry_points_loaded_from_dialplan_contexts
-    returning Adhearsion::DialPlan::Manager.new do |manager|
+    Adhearsion::DialPlan::Manager.new.tap do |manager|
       manager.dial_plan.entry_points = manager.dial_plan.loader.load_dialplans.contexts
     end
   end

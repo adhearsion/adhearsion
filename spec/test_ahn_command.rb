@@ -271,7 +271,7 @@ BEGIN {
     end
 
     def create_component_sandbox
-      returning new_tmp_dir do |dir|
+      new_tmp_dir.tap do |dir|
         Dir.mkdir dir
         FileUtils.touch dir + "/.ahnrc"
         Dir.mkdir dir + "/components"

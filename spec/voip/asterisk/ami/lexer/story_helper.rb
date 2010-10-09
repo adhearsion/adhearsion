@@ -71,7 +71,7 @@ def fixture(path, overrides={})
     end
 
   end
-  returning hash_to_stanza(selected_event) do |event|
+  hash_to_stanza(selected_event).tap do |event|
     selected_event.each_pair do |key, value|
       event.meta_def(key) { value }
     end

@@ -466,7 +466,7 @@ BEGIN {
     end
 
     def ami_packets
-      returning OpenStruct.new do |struct|
+      OpenStruct.new.tap do |struct|
         struct.fresh_socket_connection = "Asterisk Call Manager/1.0\r\nResponse: Success\r\n"+
             "Message: Authentication accepted\r\n\r\n"
 
@@ -494,7 +494,7 @@ BEGIN {
     end
 
     def mock_for_next_created_socket
-      returning flexmock("TCPSocket") do |mock|
+      flexmock("TCPSocket").tap do |mock|
         flexmock(TCPSocket).should_receive(:new).once.and_return mock
       end
     end

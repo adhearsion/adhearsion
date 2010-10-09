@@ -95,7 +95,7 @@ module Adhearsion
         end
 
         def rubyize_keys_for(hash)
-          returning({}) do |pretty|
+          {}.tap do |pretty|
             hash.each { |k,v| pretty[k.to_s.underscore] = v }
           end
         end

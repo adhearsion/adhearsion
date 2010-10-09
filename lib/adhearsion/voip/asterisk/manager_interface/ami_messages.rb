@@ -13,7 +13,7 @@ module Adhearsion
 
           class << self
             def from_immediate_response(text)
-              returning new do |instance|
+              new.tap do |instance|
                 instance.text_body = text
               end
             end

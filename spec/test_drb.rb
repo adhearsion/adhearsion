@@ -55,7 +55,7 @@ BEGIN {
   module DRbTestHelper
 
     def new_drb_rpc_object
-      returning Object.new do |obj|
+      Object.new.tap do |obj|
         @component_manager.extend_object_with(obj, :rpc)
       end
     end

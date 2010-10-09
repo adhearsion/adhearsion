@@ -1048,7 +1048,7 @@ context 'the MenuBuilder' do
   end
 
   test "should convert each pattern given to it into a MatchCalculator instance" do
-    returning builder do |link|
+    builder.tap do |link|
       link.foo 1,2,3
       link.bar "4", "5", 6
     end
@@ -1060,7 +1060,7 @@ context 'the MenuBuilder' do
   end
 
   test "conflicting ranges" do
-    returning builder do |link|
+    builder.tap do |link|
       link.hundreds     100...200
       link.thousands    1_000...2_000
       link.tenthousands 10_000...20_000
@@ -1077,7 +1077,7 @@ context 'the MenuBuilder' do
   end
 
   test 'a String query ran against multiple Numeric patterns and a range' do
-    returning builder do |link|
+    builder.tap do |link|
       link.sales        1
       link.tech_support 2
       link.finance      3
@@ -1092,17 +1092,17 @@ context 'the MenuBuilder' do
   end
 
   test "multiple patterns given at once" do
-    returning builder do |link|
+    builder.tap do |link|
       link.multiple_patterns 1,2,3,4,5,6,7,8,9
       link.multiple_patterns 100..199, 200..299, 300..399, 400..499, 500..599,
                              600..699, 700..799, 800..899, 900..999
     end
     1.upto 9 do |num|
-      returning builder.calculate_matches_for(num) do |matches_of_num|
+      builder.calculate_matches_for(num).tap do |matches_of_num|
         matches_of_num.potential_match_count.should.equal 100
         matches_of_num.exact_match_count.should.equal 1
       end
-      returning builder.calculate_matches_for((num * 100) + 5) do |matches_of_num|
+      builder.calculate_matches_for((num * 100) + 5).tap do |matches_of_num|
         matches_of_num.potential_match_count.should.equal 0
         matches_of_num.exact_match_count.should.equal 1
       end
@@ -1110,7 +1110,7 @@ context 'the MenuBuilder' do
   end
 
   test "numeric literals that don't match but ultimately would" do
-    returning builder do |link|
+    builder.tap do |link|
       link.nineninenine 999
       link.shouldnt_match 4444
     end
@@ -1118,7 +1118,7 @@ context 'the MenuBuilder' do
   end
 
   test "three fixnums that obviously don't conflict" do
-    returning builder do |link|
+    builder.tap do |link|
       link.one   1
       link.two   2
       link.three 3
@@ -1130,7 +1130,7 @@ context 'the MenuBuilder' do
   end
 
   test "numerical digits mixed with special digits" do
-    returning builder do |link|
+    builder.tap do |link|
       link.one   '5*11#3'
       link.two   '5***'
       link.three '###'
@@ -1150,7 +1150,7 @@ context 'the MenuBuilder' do
   end
 
   test 'a Fixnum exact match conflicting with a Range that would ultimately match' do
-    returning builder do |link|
+    builder.tap do |link|
       link.single_digit 1
       link.range 100..200
     end

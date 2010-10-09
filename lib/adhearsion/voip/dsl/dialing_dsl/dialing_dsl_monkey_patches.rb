@@ -22,7 +22,7 @@ module Adhearsion
                 when ProviderDefinition
                   RouteRule.new :patterns => self, :providers => other
                 when RouteRule
-                  returning other do |route|
+                  other.tap do |route|
                     route.unshift_pattern self
                   end
                 else raise ArgumentError, "Unsupported route definition #{other.inspect}"

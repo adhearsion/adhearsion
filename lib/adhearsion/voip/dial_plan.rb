@@ -40,7 +40,7 @@ module Adhearsion
 
       class << self
         def create(*args)
-          returning(new(*args)) { |instance| instance.stage! }
+          new(*args).tap { |instance| instance.stage! }
         end
       end
 
@@ -179,7 +179,7 @@ module Adhearsion
                 raise ArgumentError, "Unrecognized type of file #{file.inspect}"
             end
           end
-          returning new do |loader|
+          new.tap do |loader|
             files.each do |file|
               loader.load file
             end
