@@ -681,7 +681,33 @@ module Adhearsion
     	  def set_variable(variable_name, value)
     	    response("SET VARIABLE", variable_name, value) == "200 result=1"
   	    end
-
+        
+        # Issue the command to add a custom SIP header to the current call channel
+        # example use: sip_add_header("x-ahn-test", "rubyrox")
+        #
+        # @param[String] the name of the SIP header
+        # @param[String] the value of the SIP header
+        # 
+        # @return [String] the Asterisk response
+        #
+        # @see http://www.voip-info.org/wiki/index.php?page=Asterisk+cmd+SIPAddHeader Asterisk SIPAddHeader
+        def sip_add_header(header, value)
+          execute("SIPAddHeader", "#{header}: #{value}") == "200 result=1"
+        end
+        
+        # Issue the command to fetch a SIP header from the current call channel
+        # example use: sip_get_header("x-ahn-test")
+        #
+        # @param[String] the name of the SIP header to get
+        # 
+        # @return [String] the Asterisk response
+        #
+        # @see http://www.voip-info.org/wiki/index.php?page=Asterisk+cmd+SIPGetHeader Asterisk SIPGetHeader
+        def sip_get_header(header)
+          get_variable("SIP_HEADER(#{header})")
+        end
+        alias :sip_header :sip_get_header
+        
     	  # Allows you to either set or get a channel variable from Asterisk.
     	  # The method takes a hash key/value pair if you would like to set a variable
     	  # Or a single string with the variable to get from Asterisk
