@@ -364,6 +364,9 @@ module Adhearsion
             options = options.clone
             options[:callerid] = options.delete :caller_id if options.has_key? :caller_id
             options[:exten] = options.delete :extension if options.has_key? :extension
+            if options[:variables] && options[:variables].kind_of?(Hash)
+              options[:variable] = options[:variables].map {|pair| pair.join('=')}.join(@coreSettings["ArgumentDelimiter"])
+            end
             send_action "Originate", options
           end
 
@@ -399,11 +402,12 @@ module Adhearsion
             args = { :channel => channel, :application => app }
             args[:caller_id] = opts[:caller_id] if opts[:caller_id]
             args[:data] = opts[:args] if opts[:args]
+            args[:variables] = opts[:variables] if opts[:variables]
             originate args
           end
 
           # call_into_context is syntactic sugar for the Asterisk originate command that allows you to
-          # lanuch a call into a particular context. For example:
+          # launch a call into a particular context. For example:
           #
           # call_into_context('SIP/1000@sipnetworks.com', 'my_context', { :variables => { :session_guid => new_guid }})
           def call_into_context(channel, context, options={})
@@ -412,9 +416,7 @@ module Adhearsion
             args[:priority] = options[:priority] || 1
             args[:exten] = options[:extension] if options[:extension]
             args[:caller_id] = options[:caller_id] if options[:caller_id]
-            if options[:variables] && options[:variables].kind_of?(Hash)
-              args[:variable] = options[:variables].map {|pair| pair.join('=')}.join(@coreSettings["ArgumentDelimiter"])
-            end
+            args[:variables] = options[:variables] if options[:variables]
             originate args
           end
 
