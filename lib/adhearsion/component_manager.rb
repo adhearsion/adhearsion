@@ -126,6 +126,19 @@ module Adhearsion
               instance.module_eval File.read(filename), filename
             end
           end
+
+          def require(filename)
+            # Try loading the exact filename first
+            load_file(filename)
+          rescue LoadError
+            begin
+              spec = Gem.searcher.find(filename)
+              filename = File.join spec.full_path, spec.require_path, filename
+              load_file(filename)
+            rescue NameError
+              # In case rubygems is not available.
+            end
+          end
         end
 
         def initialize(&block)
