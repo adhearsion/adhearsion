@@ -4,11 +4,13 @@ ENV['RUBY_FLAGS'] = "-I#{%w(lib ext bin test).join(File::PATH_SEPARATOR)}"
 require 'rubygems'
 require 'rake/gempackagetask'
 require 'rake/testtask'
+require 'date'
 
 begin
+  gem 'rspec', '<2.0.0'
   require 'spec/rake/spectask'
 rescue LoadError
-  abort "You must install RSpec: sudo gem install rspec"
+  abort "You must install RSpec 1.3: sudo gem install rspec -v'<2.0.0'"
 end
 
 begin
