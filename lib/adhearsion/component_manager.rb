@@ -51,6 +51,11 @@ module Adhearsion
           end
         end
 
+        # Load configured system- or gem-provided components
+        AHN_CONFIG.components_to_load.each do |component|
+          require component
+        end
+
       end
 
       ##
@@ -92,6 +97,10 @@ module Adhearsion
         load_container ComponentDefinitionContainer.load_file(filename)
       end
 
+      def require(filename)
+        load_container ComponentDefinitionContainer.require(filename)
+      end
+
       protected
 
       def load_container(container)
@@ -128,17 +137,25 @@ module Adhearsion
           end
 
           def require(filename)
-            # Try loading the exact filename first
-            load_file(filename)
-          rescue LoadError
+            filename = filename + ".rb" if !(filename =~ /\.rb$/)
             begin
-              spec = Gem.searcher.find(filename)
-              filename = File.join spec.full_path, spec.require_path, filename
+              # Try loading the exact filename first
               load_file(filename)
-            rescue NameError
-              # In case rubygems is not available.
+            rescue LoadError, Errno::ENOENT
             end
+
+            # Next try Rubygems
+            filepath = get_gem_path_for(filename)
+            return load_file(filepath) if !filepath.nil?
+
+            # Finally try the system search path
+            filepath = get_system_path_for(filename)
+            return load_file(filepath) if !filepath.nil?
+
+            # Raise a LoadError exception if the file is still not found
+            raise LoadError "File not found: #{filename}"
           end
+
         end
 
         def initialize(&block)
@@ -182,6 +199,26 @@ module Adhearsion
           def self.method_added(method_name)
             @methods ||= []
             @methods << method_name
+          end
+
+          def get_gem_path_for(filename)
+            # Look for component files provided by rubygems
+            spec = Gem.searcher.find(filename)
+            return nil if spec.nil?
+            File.join(spec.full_gem_path, spec.require_path, filename)
+          rescue NameError
+            # In case Rubygems are not available
+            nil
+          end
+
+          def get_system_path_for(filename)
+            $:.each do |path|
+              filepath = File.join(path, filename)
+              return filepath if File.exists?(filepath)
+            end
+
+            # Not found? Return nil
+            return nil
           end
         end
 
