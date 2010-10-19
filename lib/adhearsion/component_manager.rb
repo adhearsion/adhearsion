@@ -43,6 +43,13 @@ module Adhearsion
         components.map! { |path| File.basename path }
         components.each do |component|
           next if component == "disabled"
+          component_file = File.join(@path_to_container_directory, component, 'lib', component + ".rb")
+          if File.exists? component_file
+            load_file component_file
+            next
+          end
+
+          # Try the old-style components/<component>/<component>.rb
           component_file = File.join(@path_to_container_directory, component, component + ".rb")
           if File.exists? component_file
             load_file component_file
