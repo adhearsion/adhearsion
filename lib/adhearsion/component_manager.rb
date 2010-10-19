@@ -64,11 +64,19 @@ module Adhearsion
       # @return [Hash] The loaded YAML for the given component name. An empty Hash if no YAML file exists.
       #
       def configuration_for_component_named(component_name)
+        # Look for configuration in #{AHN_ROOT}/config/components first
+        if File.exists?("#{AHN_ROOT}/config/components/#{component_name}.yml")
+          return YAML.load_file "#{AHN_ROOT}/config/components/#{component_name}.yml"
+        end
+
+        # Next try the local app component directory
         component_dir = File.join(@path_to_container_directory, component_name)
         config_file = File.join component_dir, "#{component_name}.yml"
         if File.exists?(config_file)
           YAML.load_file config_file
         else
+          # Nothing found? Return an empty hash
+          ahn_log.warn "No configuration found for requested component #{component_name}"
           return {}
         end
       end
