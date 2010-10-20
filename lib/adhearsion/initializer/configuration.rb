@@ -35,11 +35,13 @@ module Adhearsion
     attr_accessor :automatically_answer_incoming_calls
     attr_accessor :end_call_on_hangup
     attr_accessor :end_call_on_error
+    attr_accessor :components_to_load
 
     def initialize
       @automatically_answer_incoming_calls = true
       @end_call_on_hangup                  = true
       @end_call_on_error                   = true
+      @components_to_load                  = []
       yield self if block_given?
     end
 
@@ -65,6 +67,10 @@ module Adhearsion
 
     def logging(options)
       Adhearsion::Logging.logging_level = options[:level]
+    end
+
+    def add_component(*list)
+      AHN_CONFIG.components_to_load |= list
     end
 
     ##

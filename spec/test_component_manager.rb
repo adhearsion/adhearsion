@@ -119,7 +119,7 @@ context "Adhearsion's component system" do
 
     manager = Adhearsion::Components::ComponentManager.new(components_dir_path)
     component_paths.each do |path|
-      flexmock(manager).should_receive(:load_file).once.with "#{path}/#{File.basename(path)}.rb"
+      flexmock(manager).should_receive(:load_file).once.with "#{path}/lib/#{File.basename(path)}.rb"
     end
 
     manager.load_components

@@ -43,12 +43,24 @@ module Adhearsion
         components.map! { |path| File.basename path }
         components.each do |component|
           next if component == "disabled"
+          component_file = File.join(@path_to_container_directory, component, 'lib', component + ".rb")
+          if File.exists? component_file
+            load_file component_file
+            next
+          end
+
+          # Try the old-style components/<component>/<component>.rb
           component_file = File.join(@path_to_container_directory, component, component + ".rb")
           if File.exists? component_file
             load_file component_file
           else
             ahn_log.warn "Component directory does not contain a matching .rb file! Was expecting #{component_file.inspect}"
           end
+        end
+
+        # Load configured system- or gem-provided components
+        AHN_CONFIG.components_to_load.each do |component|
+          require component
         end
 
       end
@@ -59,11 +71,19 @@ module Adhearsion
       # @return [Hash] The loaded YAML for the given component name. An empty Hash if no YAML file exists.
       #
       def configuration_for_component_named(component_name)
+        # Look for configuration in #{AHN_ROOT}/config/components first
+        if File.exists?("#{AHN_ROOT}/config/components/#{component_name}.yml")
+          return YAML.load_file "#{AHN_ROOT}/config/components/#{component_name}.yml"
+        end
+
+        # Next try the local app component directory
         component_dir = File.join(@path_to_container_directory, component_name)
         config_file = File.join component_dir, "#{component_name}.yml"
         if File.exists?(config_file)
           YAML.load_file config_file
         else
+          # Nothing found? Return an empty hash
+          ahn_log.warn "No configuration found for requested component #{component_name}"
           return {}
         end
       end
@@ -90,6 +110,10 @@ module Adhearsion
 
       def load_file(filename)
         load_container ComponentDefinitionContainer.load_file(filename)
+      end
+
+      def require(filename)
+        load_container ComponentDefinitionContainer.require(filename)
       end
 
       protected
@@ -126,6 +150,27 @@ module Adhearsion
               instance.module_eval File.read(filename), filename
             end
           end
+
+          def require(filename)
+            filename = filename + ".rb" if !(filename =~ /\.rb$/)
+            begin
+              # Try loading the exact filename first
+              load_file(filename)
+            rescue LoadError, Errno::ENOENT
+            end
+
+            # Next try Rubygems
+            filepath = get_gem_path_for(filename)
+            return load_file(filepath) if !filepath.nil?
+
+            # Finally try the system search path
+            filepath = get_system_path_for(filename)
+            return load_file(filepath) if !filepath.nil?
+
+            # Raise a LoadError exception if the file is still not found
+            raise LoadError "File not found: #{filename}"
+          end
+
         end
 
         def initialize(&block)
@@ -169,6 +214,26 @@ module Adhearsion
           def self.method_added(method_name)
             @methods ||= []
             @methods << method_name
+          end
+
+          def get_gem_path_for(filename)
+            # Look for component files provided by rubygems
+            spec = Gem.searcher.find(filename)
+            return nil if spec.nil?
+            File.join(spec.full_gem_path, spec.require_path, filename)
+          rescue NameError
+            # In case Rubygems are not available
+            nil
+          end
+
+          def get_system_path_for(filename)
+            $:.each do |path|
+              filepath = File.join(path, filename)
+              return filepath if File.exists?(filepath)
+            end
+
+            # Not found? Return nil
+            return nil
           end
         end
 
