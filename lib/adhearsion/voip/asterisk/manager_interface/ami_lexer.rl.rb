@@ -8,12 +8,32 @@ module Adhearsion
 
           BUFFER_SIZE = 128.kilobytes unless defined? BUFFER_SIZE
 
+          ##
+          # IMPORTANT! See method documentation for adjust_pointers!
+          #
+          # @see  adjust_pointers
+          #
+          POINTERS = [
+            :@current_pointer,
+            :@token_start,
+            :@token_end,
+            :@version_start,
+            :@event_name_start,
+            :@current_key_position,
+            :@current_value_position,
+            :@last_seen_value_end,
+            :@error_reason_start,
+            :@follows_text_start,
+            :@current_syntax_error_start,
+            :@immediate_response_start
+            ]
+
           %%{
           	machine ami_protocol_parser;
 
             # All required Ragel actions are implemented as Ruby methods.
 
-            # Executed after a "Respone: Success" or "Response: Pong"
+            # Executed after a "Response: Success" or "Response: Pong"
             action init_success { init_success }
 
             action init_response_follows { init_response_follows }
@@ -89,30 +109,50 @@ module Adhearsion
           end
 
           def extend_buffer_with(new_data)
-            if new_data.size > BUFFER_SIZE
+            length = new_data.size
+
+            if length > BUFFER_SIZE
               raise Exception, "ERROR: Buffer overrun! Input size (#{new_data.size}) larger than buffer (#{BUFFER_SIZE})"
             end
 
-            if new_data.size + @data.size > BUFFER_SIZE
-              offset = @data.size
+            if length + @data.size > BUFFER_SIZE
               if @data.size != @current_pointer
-                if @current_pointer < new_data.size
+                if @current_pointer < length
                   # We are about to shift more bytes off the array than we have
                   # parsed.  This will cause the parser to lose state so
                   # integrity cannot be guaranteed.
                   raise Exception, "ERROR: Buffer overrun! AMI parser cannot guarantee sanity. New data size: #{new_data.size}; Current pointer at #{@current_pointer}; Data size: #{@data.size}"
-                else
-                  offset = @current_pointer - new_data.size
                 end
               end
-              @data.slice! 0...new_data.size
-              @current_pointer = offset
+              @data.slice! 0...length
+              adjust_pointers -length
             end
             @data << new_data
             @data_ending_pointer = @data.size
           end
 
           protected
+
+          ##
+          # This method will adjust all pointers into the buffer according
+          # to the supplied offset.  This is necessary any time the buffer
+          # changes, for example when the sliding window is incremented forward
+          # after new data is received.
+          #
+          # It is VERY IMPORTANT that when any additional pointers are defined
+          # that they are added to this method.  Unpredictable results may
+          # otherwise occur!
+          #
+          # @see https://adhearsion.lighthouseapp.com/projects/5871-adhearsion/tickets/72-ami-lexer-buffer-offset#ticket-72-26
+          #
+          # @param offset Adjust pointers by offset.  May be negative.
+          #
+          def adjust_pointers(offset)
+            POINTERS.each do |ptr|
+              value = instance_variable_get(ptr)
+              instance_variable_set(ptr, value + offset) if !value.nil?
+            end
+          end
 
           ##
           # Called after a response or event has been successfully parsed.
@@ -157,12 +197,12 @@ module Adhearsion
           end
 
           def version_starts
-            @start_of_version = @current_pointer
+            @version_start = @current_pointer
           end
 
           def version_stops
-            self.ami_version = @data[@start_of_version...@current_pointer].to_f
-            @start_of_version = nil
+            self.ami_version = @data[@version_start...@current_pointer].to_f
+            @version_start = nil
           end
 
           def event_name_starts
