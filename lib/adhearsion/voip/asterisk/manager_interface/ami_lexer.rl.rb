@@ -6,7 +6,7 @@ module Adhearsion
       module Manager
         class AbstractAsteriskManagerInterfaceStreamLexer
 
-          BUFFER_SIZE = 8.kilobytes unless defined? BUFFER_SIZE
+          BUFFER_SIZE = 128.kilobytes unless defined? BUFFER_SIZE
 
           %%{
           	machine ami_protocol_parser;
@@ -68,7 +68,6 @@ module Adhearsion
         			variable cs    @current_state;
         			variable ts    @token_start;
         			variable te    @token_end;
-        			variable stack @stack;
         			variable act   @ragel_act;
         			variable eof   @eof;
 			        variable stack @ragel_stack;
@@ -90,10 +89,24 @@ module Adhearsion
           end
 
           def extend_buffer_with(new_data)
+            if new_data.size > BUFFER_SIZE
+              raise Exception, "ERROR: Buffer overrun! Input size (#{new_data.size}) larger than buffer (#{BUFFER_SIZE})"
+            end
+
             if new_data.size + @data.size > BUFFER_SIZE
+              offset = @data.size
+              if @data.size != @current_pointer
+                if @current_pointer < new_data.size
+                  # We are about to shift more bytes off the array than we have
+                  # parsed.  This will cause the parser to lose state so
+                  # integrity cannot be guaranteed.
+                  raise Exception, "ERROR: Buffer overrun! AMI parser cannot guarantee sanity. New data size: #{new_data.size}; Current pointer at #{@current_pointer}; Data size: #{@data.size}"
+                else
+                  offset = @current_pointer - new_data.size
+                end
+              end
               @data.slice! 0...new_data.size
-              # TODO: What if the current_pointer wasn't at the end of the data for some reason?
-              @current_pointer = @data.size
+              @current_pointer = offset
             end
             @data << new_data
             @data_ending_pointer = @data.size
