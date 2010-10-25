@@ -1,5 +1,3 @@
 class BlankSlate
-  instance_methods.each do |method|
-    undef_method method unless method =~ /^__/ || method == 'instance_eval'
-  end
+  (instance_methods - %w{instance_eval object_id}).each { |m| undef_method m unless m =~ /^__/ }
 end

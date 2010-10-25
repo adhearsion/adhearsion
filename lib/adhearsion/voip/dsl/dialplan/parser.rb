@@ -45,10 +45,8 @@ module Adhearsion
 
         class ContextsEnvelope
 
-          keep = %w"__send__ __id__ define_method instance_eval meta_def meta_eval metaclass"
-          (instance_methods - keep).each do |m|
-            undef_method m
-          end
+          keep = %w"define_method instance_eval meta_def meta_eval metaclass"
+          (instance_methods - keep).each { |m| undef_method m unless m =~ /^__/ }
 
           def initialize
             @parsed_contexts = {}

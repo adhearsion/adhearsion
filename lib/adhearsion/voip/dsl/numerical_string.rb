@@ -19,9 +19,7 @@ module Adhearsion
           end
         end
 
-        (instance_methods - %w"__id__ __send__ __real_num __real_string").each do |m|
-          undef_method m
-        end
+        (instance_methods - %w{instance_eval object_id}).each { |m| undef_method m unless m =~ /^__/ }
 
         attr_reader :__real_num, :__real_string
 
