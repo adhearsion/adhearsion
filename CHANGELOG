@@ -3,6 +3,7 @@
  - Enable configuration of :auto_reconnect parameter for AMI
  - Replace all uses of Object#returning with Object#tap
  - Add support for loading Adhearsion components from Rubygems
+ - Fix long-running AMI session parser failure bug (#72)
 
 0.8.6
  - Fix packaging problem so all files are publicly readable
