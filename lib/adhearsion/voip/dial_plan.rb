@@ -9,7 +9,7 @@ begin
   minver = Adhearsion::PkgVersion.new("1.6.0")
   if curver < minver
     puts "****************************************************************************"
-    puts "Versions of JRuby prior to 1.6.0 contain a bug that limits the prevents"
+    puts "Versions of JRuby prior to 1.6.0 contain a bug that impacts"
     puts "using the \"+\" operator to jump from one context to another."
     puts "Adhearsion has detected JRuby version #{JRUBY_VERSION}. For more information see:"
     puts "https://adhearsion.lighthouseapp.com/projects/5871/tickets/92-menu-method-under-jruby-does-not-appear-to-work"
