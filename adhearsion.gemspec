@@ -141,9 +141,16 @@ Gem::Specification.new do |s|
     s.specification_version = 2
 
     if current_version >= 3 then
+      # Runtime dependencies
       s.add_runtime_dependency("rubigen", [">= 1.0.6"])
       s.add_runtime_dependency("log4r", [">= 1.0.5"])
-      s.add_runtime_dependency("activesupport", [">= 2.1.0"])
+      s.add_runtime_dependency("activesupport", [">= 2.1.0", "< 3.0.0"])
+
+      # Development dependencies
+      s.add_development_dependency('rspec', ["< 2.0.0"])
+      s.add_development_dependency('test-unit')
+      s.add_development_dependency('flexmock')
+      s.add_development_dependency('active_record', ["< 3.0.0"])
     else
       s.add_dependency("rubigen", [">= 1.0.6"])
       s.add_dependency("log4r", [">= 1.0.5"])
