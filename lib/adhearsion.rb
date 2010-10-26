@@ -24,7 +24,13 @@ require 'adhearsion/voip/asterisk/commands'
 require 'adhearsion/voip/dsl/dialing_dsl'
 require 'adhearsion/voip/call_routing'
 
-require 'active_support/core_ext'
+begin
+  # Try ActiveSupport >= 2.3.0
+  require 'active_support/all'
+rescue LoadError
+  # Assume ActiveSupport < 2.3.0
+  require 'active_support'
+end
 
 module Adhearsion
   # Sets up the Gem require path.
