@@ -135,6 +135,17 @@ Gem::Specification.new do |s|
   s.rubyforge_project = "adhearsion"
   s.rubygems_version = "1.2.0"
   s.summary = "Adhearsion, open-source telephony development framework"
+  s.post_install_message =<<-EOM
+    *******************************************************************
+    * NOTE: You must manually install the "rubigen" gem to create     *
+    * new Adhearsion applications.                                    *
+    *                                                                 *
+    * The Rubigen package is no longer automatically installed due to *
+    * dependency conflicts with ActiveSupport 3.0.                    *
+    * Users of existing Adhearsion applications can safely ignore     *
+    * this message.                                                   *
+    *******************************************************************
+  EOM
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
@@ -142,22 +153,20 @@ Gem::Specification.new do |s|
 
     if current_version >= 3 then
       # Runtime dependencies
-      s.add_runtime_dependency("rubigen", [">= 1.0.6"])
       s.add_runtime_dependency("log4r", [">= 1.0.5"])
-      s.add_runtime_dependency("activesupport", [">= 2.1.0", "< 3.0.0"])
+      s.add_runtime_dependency("activesupport", [">= 2.1.0"])
 
       # Development dependencies
+      s.add_development_dependency('rubigen', [">= 1.0.6"])
       s.add_development_dependency('rspec', ["< 2.0.0"])
       s.add_development_dependency('test-unit')
       s.add_development_dependency('flexmock')
-      s.add_development_dependency('active_record', ["< 3.0.0"])
+      s.add_development_dependency('active_record')
     else
-      s.add_dependency("rubigen", [">= 1.0.6"])
       s.add_dependency("log4r", [">= 1.0.5"])
       s.add_dependency("activesupport", [">= 2.1.0"])
     end
   else
-    s.add_dependency("rubigen", [">= 1.0.6"])
     s.add_dependency("log4r", [">= 1.0.5"])
     s.add_dependency("activesupport", [">= 2.1.0"])
   end
