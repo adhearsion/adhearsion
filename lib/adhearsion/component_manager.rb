@@ -168,7 +168,7 @@ module Adhearsion
             return load_file(filepath) if !filepath.nil?
 
             # Raise a LoadError exception if the file is still not found
-            raise LoadError "File not found: #{filename}"
+            raise LoadError, "File not found: #{filename}"
           end
 
         end

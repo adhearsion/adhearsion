@@ -1,5 +1,6 @@
 require 'rake/testtask'
 require 'adhearsion'
+require 'adhearsion/tasks/components'
 require 'adhearsion/tasks/database'
 require 'adhearsion/tasks/testing'
 require 'adhearsion/tasks/generating'

@@ -128,11 +128,10 @@ module Adhearsion
       @daemon   = options[:daemon] || ENV['DAEMON']
       @pid_file = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
       @loaded_init_files  = options[:loaded_init_files]
+      self.class.ahn_root = path
     end
 
     def start
-      self.class.ahn_root = path
-
       Adhearsion.status = :starting
 
       resolve_pid_file_path

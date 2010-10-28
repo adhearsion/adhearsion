@@ -60,6 +60,7 @@ ADHEARSION_FILES = %w{
   lib/adhearsion/initializer/xmpp.rb
   lib/adhearsion/logging.rb
   lib/adhearsion/tasks.rb
+  lib/adhearsion/tasks/components.rb
   lib/adhearsion/tasks/database.rb
   lib/adhearsion/tasks/deprecations.rb
   lib/adhearsion/tasks/generating.rb
