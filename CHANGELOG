@@ -2,8 +2,9 @@
  - Fall back to using Asterisk's context if the AGI URI context is not found
  - Enable configuration of :auto_reconnect parameter for AMI
  - Replace all uses of Object#returning with Object#tap
- - Add support for loading Adhearsion components from Rubygems
+ - Add support for loading Adhearsion components from RubyGems
  - Fix long-running AMI session parser failure bug (#72)
+ - Support for Rails 3 (and ActiveSupport 3.0)
 
 0.8.6
  - Fix packaging problem so all files are publicly readable
