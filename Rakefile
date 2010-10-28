@@ -7,7 +7,7 @@ require 'rake/testtask'
 require 'date'
 
 begin
-  gem 'rspec', '<2.0.0'
+  gem 'rspec', '~> 1.3.0'
   require 'spec/rake/spectask'
 rescue LoadError
   abort "You must install RSpec 1.3: sudo gem install rspec -v'<2.0.0'"
