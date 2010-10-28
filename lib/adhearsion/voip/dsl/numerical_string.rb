@@ -19,7 +19,7 @@ module Adhearsion
           end
         end
 
-        (instance_methods - %w{instance_eval object_id}).each { |m| undef_method m unless m =~ /^__/ }
+        (instance_methods - [:instance_eval, :object_id]).each { |m| undef_method m unless m.to_s =~ /^__/ }
 
         attr_reader :__real_num, :__real_string
 
