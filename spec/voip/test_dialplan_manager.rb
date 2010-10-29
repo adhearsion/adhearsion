@@ -11,8 +11,6 @@ context "Dialplan::Manager handling" do
     @context_name = :some_context_name
     @mock_context = flexmock('a context')
 
-    Adhearsion::Components.component_manager = mock_component_manager
-
     mock_dial_plan_lookup_for_context_name
 
     flexmock(Adhearsion::DialPlan::Loader).should_receive(:load_dialplans).and_return {
@@ -256,10 +254,6 @@ context "The inbox-related dialplan methods" do
 
   include DialplanTestingHelper
 
-  before :each do
-    Adhearsion::Components.component_manager = mock_component_manager
-  end
-
   test "with_next_message should execute its block with the message from the inbox" do
     mock_call = new_call_for_context :entrance
     [:one, :two, :three].each { |message| mock_call.inbox << message }
@@ -292,7 +286,6 @@ context "ExecutionEnvironment" do
 
   before do
     variables = { :context => "zomgzlols", :caller_id => "Ponce de Leon" }
-    Adhearsion::Components.component_manager = mock_component_manager
     @call = Adhearsion::Call.new(nil, variables)
     @entry_point = lambda {}
   end
@@ -348,10 +341,6 @@ end
 context "Dialplan control statements" do
 
   include DialplanTestingHelper
-
-  before :each do
-    Adhearsion::Components.component_manager = mock_component_manager
-  end
 
   test "Manager should catch ControlPassingExceptions" do
     flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_answer_incoming_calls).and_return false
@@ -444,15 +433,6 @@ module DialplanTestingHelper
     Adhearsion::DialPlan::Manager.new.tap do |manager|
       manager.dial_plan.entry_points = manager.dial_plan.loader.load_dialplans.contexts
     end
-  end
-
-  # def Adhearsion::Components.component_manager = mock_component_manager
-  #   flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.
-  #       should_receive(:extend_with_dialplan_component_methods!).once.and_return
-  # end
-  #
-  def mock_component_manager
-    flexmock "mock ComponentManager", :extend_object_with => nil
   end
 
   def executing_dialplan(options)
