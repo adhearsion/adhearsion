@@ -1668,7 +1668,7 @@ context "set_caller_id_number command" do
 
   test "should encapsulate the number with quotes" do
     caller_id = "14445556666"
-    mock_call.should_receive(:raw_response).once.with(%(SET CALLERID "#{caller_id}")).and_return true
+    mock_call.should_receive(:raw_response).once.with(%(SET VARIABLE "CALLERID(num)" "#{caller_id}")).and_return true
     mock_call.send(:set_caller_id_number, caller_id)
   end
 end
