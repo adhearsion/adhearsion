@@ -351,17 +351,6 @@ context "Dialplan control statements" do
     executing_dialplan(:foo => dialplan).should.not.raise
   end
 
-  test "Proc#+@ should not return to its originating context" do
-    dialplan = %{
-      andere {}
-      zuerst {
-        +andere
-        throw :after_control_statement
-      }
-    }
-    executing_dialplan(:zuerst => dialplan).should.not.throw
-  end
-
   test "All dialplan contexts should be available at context execution time" do
     dialplan = %{
       context_defined_first {
@@ -372,18 +361,44 @@ context "Dialplan control statements" do
     executing_dialplan(:context_defined_first => dialplan).should.throw :i_see_it
   end
 
-  test "Proc#+@ should execute the other context" do
-    dialplan = %{
-      eins {
-        +zwei
-        throw :eins
+  test_dialplan_inclusions = true
+  if Object.const_defined?("JRUBY_VERSION")
+    require 'adhearsion/version'
+    curver = Adhearsion::PkgVersion.new(JRUBY_VERSION)
+    minver = Adhearsion::PkgVersion.new("1.6.0")
+    if curver < minver
+      # JRuby contains a bug that breaks some of the menu functionality
+      # See: https://adhearsion.lighthouseapp.com/projects/5871/tickets/92-menu-method-under-jruby-does-not-appear-to-work
+      test_dialplan_inclusions = false
+    end
+  end
+
+  if test_dialplan_inclusions
+    test "Proc#+@ should execute the other context" do
+      dialplan = %{
+        eins {
+          +zwei
+          throw :eins
+        }
+        zwei {
+          throw :zwei
+        }
       }
-      zwei {
-        throw :zwei
+      executing_dialplan(:eins => dialplan).should.throw :zwei
+    end
+
+    test "Proc#+@ should not return to its originating context" do
+    dialplan = %{
+      andere {}
+      zuerst {
+        +andere
+        throw :after_control_statement
       }
     }
-    executing_dialplan(:eins => dialplan).should.throw :zwei
+    executing_dialplan(:zuerst => dialplan).should.not.throw
   end
+  end
+
 
   test "new constants should still be accessible within the dialplan" do
     flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_answer_incoming_calls).and_return false
