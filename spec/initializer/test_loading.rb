@@ -74,11 +74,11 @@ context "The Rails initializer" do
   end
 
   test "should set the RAILS_ENV to be the argument passed in" do
-    flexmock(ENV).should_receive(:[]=).once.with("RAILS_ENV", "development")
     flexmock(Adhearsion::Initializer::RailsInitializer).should_receive(:require).once.and_return
     stub_file_checking_methods!
     stub_before_call_hook!
     initialize_rails_with_options :rails_root => '/tmp', :environment => :development
+    raise Test::Unit::AssertionFailed, 'ENV["RAILS_ENV"] should have been set but was not.' unless ENV['RAILS_ENV'] == "development"
   end
 
   test 'should create a BeforeCall hook (presumably to verify the active connections)' do
