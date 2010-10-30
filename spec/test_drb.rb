@@ -1,7 +1,6 @@
 require File.dirname(__FILE__) + "/test_helper"
 
 context "Invoking an interface method via DRb" do
-
   include DRbTestHelper
 
   test "should raise an exception if the method is not found" do
@@ -14,11 +13,12 @@ context "Invoking an interface method via DRb" do
 
   before :each do
     @component_manager = Adhearsion::Components::ComponentManager.new("/path/doesnt/matter")
-    @door = DRb.start_service "druby://127.0.0.1:9050", new_drb_rpc_object
+    @door = DRb.start_service "druby://127.0.0.1:#{37832 + rand(1500)}", new_drb_rpc_object
   end
 
   after :each do
-    DRb.stop_service
+    @door.stop_service
+    @door.thread.kill
   end
 
   test "should return normal Ruby data structures properly over DRb" do
