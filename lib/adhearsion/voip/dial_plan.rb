@@ -201,6 +201,7 @@ module Adhearsion
       def load(dialplan_file)
         dialplan_code = dialplan_file.read
         @context_collector.instance_eval(dialplan_code, dialplan_file.path)
+        dialplan_file.close
         nil
       end
 
