@@ -7,10 +7,10 @@ require 'rake/testtask'
 require 'date'
 
 begin
-  gem 'rspec', '~> 1.3.0'
-  require 'spec/rake/spectask'
+  gem 'rspec', '>= 2.2.0'
+  require 'rspec/core/rake_task'
 rescue LoadError
-  abort "You must install RSpec 1.3: sudo gem install rspec -v'<2.0.0'"
+  abort "You must install RSpec: sudo gem install rspec"
 end
 
 begin
@@ -85,8 +85,8 @@ task :visualize_ragel => :check_ragel_version do
 end
 
 desc "Run all RSpecs for Theatre"
-Spec::Rake::SpecTask.new("theatre_specs") do |t|
-  t.spec_files = FileList[THEATRE_TESTS]
+RSpec::Core::RakeTask.new("theatre_specs") do |t|
+  t.pattern = FileList[THEATRE_TESTS]
 end
 
 desc "Compares Adhearsion's files with those listed in adhearsion.gemspec"
