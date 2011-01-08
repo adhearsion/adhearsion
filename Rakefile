@@ -22,7 +22,7 @@ rescue LoadError
   STDERR.puts "\nCould not require() YARD! Install with 'gem install yard' to get the 'yardoc' task\n\n"
 end
 
-require 'lib/adhearsion/version'
+require 'adhearsion/version'
 
 AHN_TESTS     = ['spec/**/test_*.rb']
 GEMSPEC       = eval File.read("adhearsion.gemspec")
