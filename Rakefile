@@ -7,7 +7,7 @@ require 'rake/testtask'
 require 'date'
 
 begin
-  gem 'rspec', '>= 2.2.0'
+  gem 'rspec', '>= 2.4.0'
   require 'rspec/core/rake_task'
 rescue LoadError
   abort "You must install RSpec: sudo gem install rspec"
@@ -25,6 +25,7 @@ end
 require 'adhearsion/version'
 
 AHN_TESTS     = ['spec/**/test_*.rb']
+#AHN_TESTS     = ['spec/test_ahn_command.rb']
 GEMSPEC       = eval File.read("adhearsion.gemspec")
 RAGEL_FILES   = %w[lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb]
 THEATRE_TESTS = 'theatre-spec/**/*_spec.rb'
@@ -48,8 +49,13 @@ Rake::GemPackageTask.new(GEMSPEC).define
 #   # t.options = ['--any', '--extra', '--opts'] # optional
 # end
 
-Rake::TestTask.new('spec') do |t|
-  t.verbose = true
+#Rake::TestTask.new('spec') do |t|
+#  t.libs << File.dirname(__FILE__)
+#  t.verbose = true
+#  t.pattern = AHN_TESTS
+#end
+
+RSpec::Core::RakeTask.new(:spec) do |t|
   t.pattern = AHN_TESTS
 end
 
@@ -85,7 +91,7 @@ task :visualize_ragel => :check_ragel_version do
 end
 
 desc "Run all RSpecs for Theatre"
-RSpec::Core::RakeTask.new("theatre_specs") do |t|
+RSpec::Core::RakeTask.new(:theatre_specs) do |t|
   t.pattern = FileList[THEATRE_TESTS]
 end
 

@@ -2,9 +2,6 @@ Dir.chdir File.join(File.dirname(__FILE__), '..')
 
 require 'rubygems'
 
-# Use Turn if we have it
-begin; require 'turn'; rescue LoadError; end
-
 def require_or_report_dependency(require_name, gem_name)
   begin
     require require_name
@@ -20,11 +17,20 @@ def report_dependency!(name)
   exit!
 end
 
-require_or_report_dependency('test/spec', 'test-spec')
+class Object
+  alias :the_following_code :lambda
+end
+
 require_or_report_dependency('flexmock/test_unit', 'flexmock')
 require_or_report_dependency('active_support', 'activesupport')
 # require_or_report_dependency('ruby-debug', 'ruby-debug')
 require_or_report_dependency('rubigen', 'rubigen')
+
+RSpec.configure do |config|
+  config.mock_framework = :flexmock
+  config.filter_run_excluding :ignore => true
+  config.color_enabled = true
+end
 
 require 'pp'
 require 'stringio'
@@ -34,23 +40,6 @@ $: << File.expand_path('lib')
 $: << File.dirname(__FILE__)
 
 require 'adhearsion'
-
-class Test::Unit::TestCase
-
-  alias_method :the_following_code, :lambda
-  def self.test(*args, &block)
-    if block_given?
-      specify(args, &block)
-    else
-      disabled_test(*args)
-    end
-  end
-
-  def self.disabled_test(*args, &block)
-    xspecify(*args, &block)
-  end
-
-end
 
 module InitializerStubs
 
