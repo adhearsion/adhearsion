@@ -12,8 +12,8 @@ describe "Module#relationships" do
       sub_class = Class.new(super_class) do
         relationships :storage_medium => Hash
       end
-      super_class.new.send(:storage_medium).should.equal Array
-      sub_class.new.send(:storage_medium).should.equal Hash
+      super_class.new.send(:storage_medium).should be Array
+      sub_class.new.send(:storage_medium).should be Hash
     end
 
     it "should not affect other defined relationships" do
@@ -23,8 +23,8 @@ describe "Module#relationships" do
       sub_class = Class.new(super_class) do
         relationships :error_class => RuntimeError
       end
-      super_class.new.send(:io_class).should.equal TCPSocket
-      sub_class.new.send(:io_class).should.equal TCPSocket
+      super_class.new.send(:io_class).should be TCPSocket
+      sub_class.new.send(:io_class).should be TCPSocket
     end
 
   end

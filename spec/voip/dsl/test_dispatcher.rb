@@ -4,48 +4,48 @@ require 'adhearsion/voip/dsl/dialplan/dispatcher'
 
 describe "A EventCommand" do
 
-  test "should allow a block that's set to response_block()" do
+  it "should allow a block that's set to response_block()" do
     block = lambda {}
     cmd = Adhearsion::VoIP::DSL::Dialplan::EventCommand.new "foo", &block
-    cmd.response_block.should.equal(block)
+    cmd.response_block.should be(block)
   end
 
-  test "should return specified return type with returns()" do
+  it "should return specified return type with returns()" do
     return_type = Numeric
     cmd = Adhearsion::VoIP::DSL::Dialplan::EventCommand.new "foo", :returns => return_type
-    cmd.returns.should.equal(return_type)
+    cmd.returns.should be(return_type)
   end
 
 end
 
 describe "The abstract CommandDispatcher" do
 
-  test "should make an attribute reader for context()" do
+  it "should make an attribute reader for context()" do
     context = "foo"
     d = Adhearsion::VoIP::DSL::Dialplan::CommandDispatcher.new String, context
-    d.context.should.equal(context)
+    d.context.should be(context)
   end
 
-  test "should instantiate a new instance of the specified factory" do
+  it "should instantiate a new instance of the specified factory" do
     d = Adhearsion::VoIP::DSL::Dialplan::CommandDispatcher.new Hash
-    d.factory.should.be.kind_of(Hash)
+    d.factory.should be_a_kind_of(Hash)
   end
 
-  test "should pass the context to the factory when instantiating it" do
+  it "should pass the context to the factory when instantiating it" do
     context = "shazbot"
     klass = flexmock "a class that has one argument in its constructor"
     klass.should_receive(:new).with(context)
     d = Adhearsion::VoIP::DSL::Dialplan::CommandDispatcher.new klass, context
   end
 
-  test "should not allow calling dispatch!() directly" do
+  it "should not allow calling dispatch!() directly" do
     dispatcher = Adhearsion::VoIP::DSL::Dialplan::CommandDispatcher.new MyFactory
     lambda do
       dispatcher.dispatch! nil
-    end.should.raise(NotImplementedError)
+    end.should raise_error(NotImplementedError)
   end
 
-  test "should pass a method and any args onto its CommandFactory" do
+  it "should pass a method and any args onto its CommandFactory" do
 
     weird_args = [1, 2, ["foo", nil], Object.new, 12.3..13.4]
 
@@ -57,7 +57,7 @@ describe "The abstract CommandDispatcher" do
 
   end
 
-  test "should continue executing response_blocks until nil is returned" do
+  it "should continue executing response_blocks until nil is returned" do
     actual_executions, target_executions = 0, 5
     response = Adhearsion::VoIP::DSL::Dialplan::EventCommand.new "1" do |response|
       if response > target_executions
@@ -77,6 +77,6 @@ describe "The abstract CommandDispatcher" do
     dispatcher = EvalDispatcher.new(mock_factory_class)
     flexmock(dispatcher.factory).should_receive(:testplz).and_return(response)
     dispatcher.testplz
-    actual_executions.should.equal(target_executions)
+    actual_executions.should be(target_executions)
   end
 end
