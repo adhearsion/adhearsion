@@ -158,9 +158,8 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency("activesupport", [">= 2.1.0"])
 
       # Development dependencies
-      s.add_development_dependency('rubigen', [">= 1.0.6"])
-      s.add_development_dependency('rspec', ["< 2.0.0"])
-      s.add_development_dependency('test-unit')
+      s.add_development_dependency('rubigen', [">= 1.5.6"])
+      s.add_development_dependency('rspec', [">= 2.4.0"])
       s.add_development_dependency('flexmock')
       s.add_development_dependency('active_record')
     else
