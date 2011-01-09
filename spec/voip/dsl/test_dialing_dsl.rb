@@ -119,7 +119,7 @@ describe "The provider DSL's 'provider' macro" do
     Adhearsion::VoIP::DSL::DialingDSL.class_eval do
       class_variable_defined?(:@@providers).should == false
     end
-    dsl_class.should_not respond_to(:icanhascheezburger?)
+    Adhearsion::VoIP::DSL::DialingDSL.should_not respond_to(:icanhascheezburger?)
   end
   it "should yield a ProviderDefinition object" do
     possible_provider_definition = nil

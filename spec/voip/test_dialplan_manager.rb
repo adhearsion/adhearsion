@@ -405,7 +405,7 @@ describe "Dialplan control statements" do
     ::Jicksta = :Jicksta
     dialplan = %{
       constant_test {
-        Jicksta.should be:Jicksta
+        Jicksta.should == :Jicksta
       }
     }
     executing_dialplan(:constant_test => dialplan).should_not raise_error

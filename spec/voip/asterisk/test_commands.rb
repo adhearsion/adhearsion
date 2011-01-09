@@ -1231,7 +1231,7 @@ describe 'the enable_feature command' do
     feature_name = :attended_transfer
 
     assertion = lambda do |arg|
-      arg.should be :this_is_the_right_arg
+      arg.should == :this_is_the_right_arg
       throw :inside_assertion!
     end
 
