@@ -1,4 +1,4 @@
-0.8.7
+1.0.0
  - Fall back to using Asterisk's context if the AGI URI context is not found
  - Enable configuration of :auto_reconnect parameter for AMI
  - Replace all uses of Object#returning with Object#tap

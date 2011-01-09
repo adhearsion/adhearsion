@@ -3,28 +3,28 @@ require File.dirname(__FILE__) + "/../test_helper"
 require 'adhearsion/voip/dsl/numerical_string'
 require 'adhearsion/voip/constants'
 
-context "A NumericalString" do
-  test "NumericalString should appear to be behave like a Fixnum in a case statement" do
+describe "A NumericalString" do
+  it "NumericalString should appear to be behave like a Fixnum in a case statement" do
     assert 123 === numerical_string_for("123")
     assert 987 === numerical_string_for("0987")
   end
 
-  test "NumericalString should appear to behave like a String in a case statement" do
+  it "NumericalString should appear to behave like a String in a case statement" do
     assert "123"  === numerical_string_for("123")
     assert "0987" === numerical_string_for("0987")
   end
 
-  test "when compared against a Range that contains the numeric equivalent, the NumericalString is seen as a member" do
+  it "when compared against a Range that contains the numeric equivalent, the NumericalString is seen as a member" do
     assert((100..200) === numerical_string_for("150"))
     assert((100..200) === numerical_string_for("0150"))
     assert !((100..200) === numerical_string_for("1000000"))
   end
 
-  test "comparing against a regular expression works" do
+  it "comparing against a regular expression works" do
     assert %r|^\d+$| === numerical_string_for("027316287")
   end
 
-  test "checking if a string representation of a number starts with a leading zero" do
+  it "checking if a string representation of a number starts with a leading zero" do
     with_leading_zeros    = %w(01 01234 01.23 01.2)
     without_leading_zeros = %w(1 1.2 0 0.0)
 

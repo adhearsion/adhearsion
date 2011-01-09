@@ -1,31 +1,31 @@
 require File.dirname(__FILE__) + "/../test_helper"
 
-context "a new EventSocket" do
+describe "a new EventSocket" do
 
   include EventSocketTestHelper
 
-  test "instantiating a new EventSocket should not instantiate a TCPSocket yet" do
+  it "instantiating a new EventSocket should not instantiate a TCPSocket yet" do
     flexmock(TCPSocket).should_receive(:new).never
     EventSocket.new("localhost", 1234, mock_handler_object)
   end
 
-  test "instantiating a new EventSocket with both a block and a handler object" do
+  it "instantiating a new EventSocket with both a block and a handler object" do
     the_following_code {
       EventSocket.new("localhost", 1234, mock_handler_object) {}
-    }.should.raise ArgumentError
+    }.should raise_error ArgumentError
   end
 
-  test "instantiating a new EventSocket with neither a block nor handler object" do
+  it "instantiating a new EventSocket with neither a block nor handler object" do
     the_following_code {
       EventSocket.new("localhost", 1234)
-    }.should.raise ArgumentError
+    }.should raise_error ArgumentError
   end
 
-  test "should have an initial state of :new" do
-    EventSocket.new("localhost", 1234, mock_handler_object).state.should.equal :new
+  it "should have an initial state of :new" do
+    EventSocket.new("localhost", 1234, mock_handler_object).state.should be :new
   end
 
-  test "the handler created when instantiating the EventSocket with a block" do
+  it "the handler created when instantiating the EventSocket with a block" do
     event_socket = EventSocket.new("foo", 123) do |handler|
       handler.receive_data { throw :inside_receive_data }
       handler.disconnected { throw :inside_disconnected}
@@ -43,7 +43,7 @@ context "a new EventSocket" do
     end
   end
 
-  test 'the handler created when instantiating the EventSocket with a block in which "def" is used to define callbacks' do
+  it 'the handler created when instantiating the EventSocket with a block in which "def" is used to define callbacks' do
     event_socket = EventSocket.new("foo", 123) do |handler|
       def handler.receive_data
         throw :inside_receive_data
@@ -65,7 +65,7 @@ context "a new EventSocket" do
 
 end
 
-context "connecting an EventSocket" do
+describe "connecting an EventSocket" do
 
   include EventSocketTestHelper
 
@@ -73,35 +73,35 @@ context "connecting an EventSocket" do
     flexmock(Mutex).new_instances.should_receive(:synchronize).zero_or_more_times.and_yield
   end
 
-  test "should instantiate a new TCPSocket with the correct host and port" do
+  it "should instantiate a new TCPSocket with the correct host and port" do
     host, port = "google.com", 80
     mock_socket = flexmock "TCPSocket"
     flexmock(TCPSocket).should_receive(:new).once.with(host, port)
     EventSocket.new(host, port, mock_handler_object).connect!
   end
 
-  test "should have a state of :connected if TCPSocket instantiates without error" do
+  it "should have a state of :connected if TCPSocket instantiates without error" do
     host, port = "google.com", 80
     mock_socket = flexmock "TCPSocket"
     flexmock(TCPSocket).should_receive(:new).once.with(host, port)
     event_socket = EventSocket.new(host, port, mock_handler_object)
     event_socket.connect!
-    event_socket.state.should.equal :connected
+    event_socket.state.should be :connected
   end
 
-  test "should have a state of :failed after ECONNREFUSED is raised" do
+  it "should have a state of :failed after ECONNREFUSED is raised" do
     host, port = "google.com", 80
     flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_raise(Errno::ECONNREFUSED)
     event_socket = EventSocket.new(host, port, mock_handler_object)
 
     the_following_code {
       event_socket.connect!
-    }.should.raise Errno::ECONNREFUSED
+    }.should raise_error Errno::ECONNREFUSED
 
-    event_socket.state.should.equal :failed
+    event_socket.state.should be :failed
   end
 
-  test "should instantiate a new Thread which calls EventSocket#reader_loop" do
+  it "should instantiate a new Thread which calls EventSocket#reader_loop" do
     flexmock(TCPSocket).should_receive(:new).once
     flexmock(Thread).should_receive(:new).and_yield
     the_following_code {
@@ -113,11 +113,11 @@ context "connecting an EventSocket" do
 
 end
 
-context "the reader_loop method" do
+describe "the reader_loop method" do
 
   include EventSocketTestHelper
 
-  test "should call readpartial() on the TCPSocket and pass that to the receive_data method of handler" do
+  it "should call readpartial() on the TCPSocket and pass that to the receive_data method of handler" do
     mock_handler = flexmock "mock handler object"
     mock_socket  = flexmock "TCPSocket"
     data         = "Jay Phillips " * 25
@@ -136,7 +136,7 @@ context "the reader_loop method" do
     }.should.throw :done_testing
   end
 
-  test "should set the state to :connection_dropped when an EOFError is raised by readpartial" do
+  it "should set the state to :connection_dropped when an EOFError is raised by readpartial" do
     mock_socket  = flexmock "TCPSocket"
     mock_socket.should_receive(:readpartial).once.and_raise EOFError
     flexmock(TCPSocket).should_receive(:new).once.and_return mock_socket
@@ -146,12 +146,12 @@ context "the reader_loop method" do
     event_socket = EventSocket.new("foo", 123, mock_handler_object)
 
     event_socket.connect!
-    event_socket.state.should.equal :connection_dropped
+    event_socket.state.should be :connection_dropped
   end
 
 end
 
-context "the writer_loop method" do
+describe "the writer_loop method" do
 
 end
 

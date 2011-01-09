@@ -6,13 +6,13 @@ require 'adhearsion/voip/dsl/dialing_dsl'
 
 describe "RouteRule Regexp assembling" do
 
-  test "should compile two Regexps" do
+  it "should compile two Regexps" do
     first, last = /jay/, /phillips/
     r = first | last
     r.patterns.should == [first, last]
   end
 
-  test "should compile three or more Regexps" do
+  it "should compile three or more Regexps" do
     first, second, third = /lorem/, /ipsum/, /dolar/
     r = first | second | third
     r.patterns.should == [first, second, third]
@@ -26,13 +26,13 @@ describe "RouteRule assembling with one provider definition" do
     @provider = Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new(:icanhascheezburger?)
   end
 
-  test "should store one pattern properly" do
+  it "should store one pattern properly" do
     pattern = /lorem/
     route = pattern >> @provider
     route.patterns.should == [pattern]
   end
 
-  test "should store three patterns properly" do
+  it "should store three patterns properly" do
     first, second, third = /lorem/, /ipsum/, /dolar/
     route = first | second | third >> @provider
     route.patterns.should == [first, second, third]
@@ -51,7 +51,7 @@ describe "RouteRule assembling with multiple patterns and multiple provider defi
     end
   end
 
-  test "should store the patterns properly" do
+  it "should store the patterns properly" do
     route_1 = @pattern_1 | @pattern_2 | @pattern_3 >> @prov_1 >> @prov_2 >> @prov_3
     route_1.patterns.should == [@pattern_1, @pattern_2, @pattern_3]
 
@@ -59,7 +59,7 @@ describe "RouteRule assembling with multiple patterns and multiple provider defi
     route_2.patterns.should == [@pattern_2, @pattern_3, @pattern_1]
   end
 
-  test "should store the providers properly" do
+  it "should store the providers properly" do
     route_1 = @pattern_1 | @pattern_2 | @pattern_3 >> @prov_1 >> @prov_2 >> @prov_3
     route_1.providers.should == [@prov_1, @prov_2, @prov_3]
 
@@ -70,29 +70,29 @@ end
 
 describe "The DialingDSL class internals" do
 
-  test "should allow Asterisk-like patterns" do
+  it "should allow Asterisk-like patterns" do
     Adhearsion::VoIP::DSL::DialingDSL.class_eval do
       _('23XX')
     end.should.be.instance_of Regexp
   end
 
-  test "should define all of the VoIP constants" do
+  it "should define all of the VoIP constants" do
     lambda do
       Adhearsion::VoIP::Constants.constants.each do |constant|
         eval "Adhearsion::VoIP::DSL::DialingDSL::#{constant}"
       end
-    end.should.not.raise NameError
+    end.should_not raise_error NameError
   end
 
-  # test "should define a DUNDI constant"
+  # it "should define a DUNDI constant"
 
-  test "should synchronize access to the trunking information for Thread safety"
+  it "should synchronize access to the trunking information for Thread safety"
 
 end
 
 describe "The provider DSL's 'provider' macro" do
 
-  test "should make the providers available in the order they were received" do
+  it "should make the providers available in the order they were received" do
     provider_holder = Class.new Adhearsion::VoIP::DSL::DialingDSL
     provider_holder.class_eval do
       provider(:tweedledee) {}
@@ -100,106 +100,106 @@ describe "The provider DSL's 'provider' macro" do
     end
     provider_holder.providers.map { |x| x.name }.should == [:tweedledee, :tweedledum]
   end
-  test "should define a singleton method for the provider name given" do
+  it "should define a singleton method for the provider name given" do
     Class.new(Adhearsion::VoIP::DSL::DialingDSL).class_eval do
       class_variable_get(:@@providers).size.should == 0
 
       provider(:icanhascheezburger?) {}
 
-      should.respond_to(:icanhascheezburger?)
+      should respond_to(:icanhascheezburger?)
       class_variable_get(:@@providers).size.should == 1
     end
   end
-  test "should not define a class-wide method for the provider name given" do
+  it "should not define a class-wide method for the provider name given" do
     Class.new(Adhearsion::VoIP::DSL::DialingDSL).class_eval do
       provider(:icanhascheezburger?) {}
     end
     Adhearsion::VoIP::DSL::DialingDSL.class_eval do
       class_variable_defined?(:@@providers).should == false
-      should.not.respond_to(:icanhascheezburger?)
+      should_not respond_to(:icanhascheezburger?)
     end
   end
-  test "should yield a ProviderDefinition object" do
+  it "should yield a ProviderDefinition object" do
     possible_provider_definition = nil
     Class.new(Adhearsion::VoIP::DSL::DialingDSL).class_eval do
       provider(:blah) { |pd| possible_provider_definition = pd }
     end
-    possible_provider_definition.should.be.a.kind_of(Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition)
+    possible_provider_definition.should be_a_kind_of(Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition)
   end
-  test "should raise an error when no block is given" do
+  it "should raise an error when no block is given" do
     the_following_code do
       Class.new(Adhearsion::VoIP::DSL::DialingDSL).class_eval do
         provider :explode
       end
-    end.should.raise ArgumentError
+    end.should raise_error ArgumentError
   end
 end
 
 describe "The provider DSL's monkey patches to Regexp" do
-  test "should return a RouteRule when using Regexp#| with another Regexp" do
-    (// | //).should.be.a.kind_of(Adhearsion::VoIP::DSL::DialingDSL::RouteRule)
+  it "should return a RouteRule when using Regexp#| with another Regexp" do
+    (// | //).should be_a_kind_of(Adhearsion::VoIP::DSL::DialingDSL::RouteRule)
   end
-  test "should return a RouteRule when chaining three Regexp's with the | operator" do
-    (// | // | //).should.be.a.kind_of(Adhearsion::VoIP::DSL::DialingDSL::RouteRule)
+  it "should return a RouteRule when chaining three Regexp's with the | operator" do
+    (// | // | //).should be_a_kind_of(Adhearsion::VoIP::DSL::DialingDSL::RouteRule)
   end
-  test "should return a RouteRule when Regexp#| is given a RouteRule" do
+  it "should return a RouteRule when Regexp#| is given a RouteRule" do
     route_rule = Adhearsion::VoIP::DSL::DialingDSL::RouteRule.new :patterns => //
-    (// | route_rule).should.be.a.kind_of(Adhearsion::VoIP::DSL::DialingDSL::RouteRule)
+    (// | route_rule).should be_a_kind_of(Adhearsion::VoIP::DSL::DialingDSL::RouteRule)
   end
-  test "should return a RouteRule when Regexp#>> is given a ProviderDefinition" do
+  it "should return a RouteRule when Regexp#>> is given a ProviderDefinition" do
     (/1/ >> Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new(:foo)).
-      should.be.a.kind_of(Adhearsion::VoIP::DSL::DialingDSL::RouteRule)
+      should be_a_kind_of(Adhearsion::VoIP::DSL::DialingDSL::RouteRule)
   end
-  test "should return a RouteRule when Regexp#>>() receives a ProviderDefinition" do
+  it "should return a RouteRule when Regexp#>>() receives a ProviderDefinition" do
     definition = Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new(:london)
-    (/foo/ >> definition).should.be.a.kind_of(Adhearsion::VoIP::DSL::DialingDSL::RouteRule)
+    (/foo/ >> definition).should be_a_kind_of(Adhearsion::VoIP::DSL::DialingDSL::RouteRule)
   end
-  test "should raise an exception when Regexp#| receives something other than a RouteRule" do
+  it "should raise an exception when Regexp#| receives something other than a RouteRule" do
     bad_args = [ 0..100, 20, 45.55, {}, [] ]
     bad_args.each do |arg|
-      the_following_code { /foo/ | arg }.should.raise ArgumentError
+      the_following_code { /foo/ | arg }.should raise_error ArgumentError
     end
   end
-  test "should raise an exception when Regexp#>>() receives anything other than a ProviderDefintion or RouteRule" do
+  it "should raise an exception when Regexp#>>() receives anything other than a ProviderDefintion or RouteRule" do
     bad_args = [ 0..100, 20, 45.55, {}, [] ]
     bad_args.each do |arg|
-      the_following_code { /foo/ >> arg }.should.raise ArgumentError
+      the_following_code { /foo/ >> arg }.should raise_error ArgumentError
     end
   end
 end
 
 describe "A RouteRule" do
-  test "should expose chained ProviderDefinitions properly" do
+  it "should expose chained ProviderDefinitions properly" do
     one, two, three = definitions = %w"foo bar qaz".map do |name|
       Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new name
     end
     route = /^911$/ >> one >> two >> three
-    route.should.be.kind_of(Adhearsion::VoIP::DSL::DialingDSL::RouteRule)
+    route.should be_a_kind_of(Adhearsion::VoIP::DSL::DialingDSL::RouteRule)
     route.providers.should == definitions
   end
-  test "should define attr_readers for providers and patterns" do
+  it "should define attr_readers for providers and patterns" do
     route = Adhearsion::VoIP::DSL::DialingDSL::RouteRule.new
-    route.should.respond_to(:patterns)
-    route.should.respond_to(:providers)
+    route.should respond_to(:patterns)
+    route.should respond_to(:providers)
   end
 end
 
 describe "The provider order modifiers" do
-  disabled_test "should support randomizing trunks" do
+   it "should support randomizing trunks", :ignore => true do
     dsl = Class.new Adhearsion::VoIP::DSL::DialingDSL
     dsl.class_eval do
       provider(:l33thost) {}
       provider(:h4xxhost) {}
       route /\d+\*548/ >> random(l33thost, h4xxhost)
     end
-    dsl.routes.first.provider_definitions.first.should.be.a.kind_of(
+    dsl.routes.first.provider_definitions.first.should be_a_kind_of(
       Adhearsion::VoIP::DSL::DialingDSL::RandomRouteRule
     )
   end
 end
 
 describe "The provider DSL's 'route' builder" do
-  test "should register routes in the order received" do
+  it "should register routes in the order received" do
     dsl = Class.new Adhearsion::VoIP::DSL::DialingDSL
     dsl.class_eval do
       provider(:kewlphone) {}
@@ -212,16 +212,16 @@ describe "The provider DSL's 'route' builder" do
 end
 
 describe "A ProviderDefinition" do
-  test "should store any arbitrary property" do
+  it "should store any arbitrary property" do
     definition = Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new :foo
     definition.qaz = :something
     definition.qaz.should == :something
   end
-  test "should define a >>() method" do
-    Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new(:arghh).should.respond_to(:>>)
+  it "should define a >>() method" do
+    Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new(:arghh).should respond_to(:>>)
   end
 
-  test "should format numbers properly" do
+  it "should format numbers properly" do
     definition = Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new(:arghh)
     definition.protocol = "SIP"
     definition.format_number_for_platform("14445556666", :asterisk).should == "SIP/arghh/14445556666"
@@ -232,7 +232,7 @@ describe "A ProviderDefinition" do
 end
 
 describe "Routing with the interpreted route definitions" do
-  test "should use the first matching regular expression" do
+  it "should use the first matching regular expression" do
     dsl = Class.new Adhearsion::VoIP::DSL::DialingDSL
     dsl.class_eval do
       provider(:bad)  {}
@@ -242,8 +242,8 @@ describe "Routing with the interpreted route definitions" do
 
     found = dsl.calculate_routes_for(333)
 
-    assert_equal 1, found.size
-    found.first.size.should.equal 2
+    1.should be found.size
+    found.first.size.should be 2
   end
 
 end

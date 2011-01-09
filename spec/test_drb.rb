@@ -1,48 +1,48 @@
 require File.dirname(__FILE__) + "/test_helper"
 
-context "Invoking an interface method via DRb" do
-
+describe "Invoking an interface method via DRb" do
   include DRbTestHelper
 
-  test "should raise an exception if the method is not found" do
+  it "should raise an exception if the method is not found" do
     the_following_code do
       new_drb_rpc_object.this_method_doesnt_exist
-    end.should.raise NoMethodError
+    end.should raise_error NoMethodError
   end
 
   before(:all) { require 'drb' }
 
   before :each do
     @component_manager = Adhearsion::Components::ComponentManager.new("/path/doesnt/matter")
-    @door = DRb.start_service "druby://127.0.0.1:9050", new_drb_rpc_object
+    @door = DRb.start_service "druby://127.0.0.1:#{37832 + rand(1500)}", new_drb_rpc_object
   end
 
   after :each do
-    DRb.stop_service
+    @door.stop_service
+    @door.thread.kill
   end
 
-  test "should return normal Ruby data structures properly over DRb" do
+  it "should return normal Ruby data structures properly over DRb" do
     add_rpc_methods <<-RUBY
       def bar
         [3,2,1]
       end
     RUBY
     client = DRbObject.new nil, DRb.uri
-    client.bar.should.equal [3, 2, 1]
+    client.bar.should be [3, 2, 1]
   end
 
-  test "should raise an exception for a non-existent interface" do
+  it "should raise an exception for a non-existent interface" do
     client = DRbObject.new nil, DRb.uri
     the_following_code do
-      client.interface.bad_interface.should.equal [3, 2, 1]
-    end.should.raise NoMethodError
+      client.interface.bad_interface.should be [3, 2, 1]
+    end.should raise_error NoMethodError
   end
 
-  test "should raise an exception for a non-existent method" do
+  it "should raise an exception for a non-existent method" do
     client = DRbObject.new nil, DRb.uri
     the_following_code do
       client.interface.interface.foobar.equal [3, 2, 1]
-    end.should.raise NoMethodError
+    end.should raise_error NoMethodError
   end
 
   after do

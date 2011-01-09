@@ -40,6 +40,7 @@ module Adhearsion
             @data = ""
             @current_pointer = 0
             @ragel_stack = []
+            @ami_version = 0.0
 
 
 # line 46 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"

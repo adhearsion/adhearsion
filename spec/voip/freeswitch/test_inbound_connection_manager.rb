@@ -2,14 +2,14 @@ require File.dirname(__FILE__) + "/../../test_helper"
 require 'adhearsion/voip/freeswitch/inbound_connection_manager'
 include Adhearsion::VoIP::FreeSwitch
 
-context "A FreeSwitch InboundConnectionManager" do
+describe "A FreeSwitch InboundConnectionManager" do
 
-  test "authenticatating with the given password" do
+  it "authenticatating with the given password" do
     manager = InboundConnectionManager.new io_mock
     manager.login password
   end
 
-  test "a hash is accepted when creating a new InboundConnectionManager" do
+  it "a hash is accepted when creating a new InboundConnectionManager" do
     host, port = "myhost.mydomain", 31337
 
     flexmock(TCPSocket).should_receive(:new).once.with(host, port).and_return io_mock
@@ -17,7 +17,7 @@ context "A FreeSwitch InboundConnectionManager" do
     InboundConnectionManager.new :host => host, :port => port, :pass => password
   end
 
-  test "an IO is accepted when creating a new InboundConnectionManager"
+  it "an IO is accepted when creating a new InboundConnectionManager"
 
   private
     def io_mock
