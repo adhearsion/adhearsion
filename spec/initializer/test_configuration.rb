@@ -9,47 +9,47 @@ describe "Configuration defaults" do
   end
 
   it "incoming calls are answered by default" do
-    assert config.automatically_answer_incoming_calls
+    config.automatically_answer_incoming_calls.should be true
   end
 
   it "calls are ended when hung up" do
-    assert config.end_call_on_hangup
+    config.end_call_on_hangup.should be true
   end
 
   it "if an error occurs, a call is hungup" do
-    assert config.end_call_on_error
+    config.end_call_on_error.should be true
   end
 
   it "asterisk is enabled by default" do
-    assert config.asterisk_enabled?
+    config.asterisk_enabled?.should be true
   end
 
   it "default asterisk configuration is available" do
-    assert_kind_of Adhearsion::Configuration::AsteriskConfiguration, config.asterisk
+    config.asterisk.kind_of?(Adhearsion::Configuration::AsteriskConfiguration).should be true
   end
 
   it "database access is NOT enabled by default" do
-    assert !config.database_enabled?
+    config.database_enabled?.should be false
   end
 
   it "ldap access is NOT enabled by default" do
-    assert !config.ldap_enabled?
+    config.ldap_enabled?.should be false
   end
 
   it "freeswith is NOT enabled by default" do
-    assert !config.freeswitch_enabled?
+    config.freeswitch_enabled?.should be false
   end
 
   it "AMI is NOT enabled by default" do
-    assert !config.asterisk.ami_enabled?
+    config.asterisk.ami_enabled?.should be false
   end
 
   it "Drb is NOT enabled by default" do
-    assert !config.drb_enabled?
+    config.drb_enabled?.should be false
   end
   
   it "XMPP is NOT enabled by default" do
-    assert !config.xmpp_enabled?
+    config.xmpp_enabled?.should be false
   end
 end
 
@@ -65,7 +65,7 @@ describe "Asterisk AGI configuration defaults" do
   end
 
   it "asterisk configuration sets default listening host" do
-    config.listening_host.should be Adhearsion::Configuration::AsteriskConfiguration.default_listening_host
+    config.listening_host.should == Adhearsion::Configuration::AsteriskConfiguration.default_listening_host
   end
 end
 
@@ -108,7 +108,7 @@ end
 describe "Rails configuration defaults" do
   it "should require the path to the Rails app in the constructor" do
     config = Adhearsion::Configuration::RailsConfiguration.new :path => "path here doesn't matter right now", :env => :development
-    config.rails_root.should_not.be.nil
+    config.rails_root.should_not be nil
   end
 
   it "should expand_path() the first constructor parameter" do
@@ -135,7 +135,7 @@ describe "Database configuration defaults" do
                        :user => "a", :pass => "b", :database => "ahn" }
     config = Adhearsion::Configuration::DatabaseConfiguration.new(sample_options.clone)
     config.orm.should be sample_options.delete(:orm)
-    config.connection_options.should be sample_options
+    config.connection_options.should == sample_options
   end
 end
 
@@ -151,7 +151,7 @@ describe "Freeswitch configuration defaults" do
   end
 
   it "freeswitch configuration sets default listening host" do
-    config.listening_host.should be Adhearsion::Configuration::FreeswitchConfiguration.default_listening_host
+    config.listening_host.should == Adhearsion::Configuration::FreeswitchConfiguration.default_listening_host
   end
 end
 
@@ -167,7 +167,7 @@ describe "XMPP configuration defaults" do
     begin
       config = Adhearsion::Configuration::XMPPConfiguration.new :jid => "test@example.com", :password => "somepassword", :port => "5223"
     rescue ArgumentError => e
-      e.message.should be "Must supply a :server argument as well as :port to the XMPP initializer!"
+      e.message.should == "Must supply a :server argument as well as :port to the XMPP initializer!"
     end
   end
 end
@@ -178,7 +178,7 @@ describe "Configuration scenarios" do
   it "enabling AMI using all its defaults" do
     config = enable_ami
 
-    assert config.asterisk.ami_enabled?
+    config.asterisk.ami_enabled?.should be true
     config.asterisk.ami.should be_a_kind_of Adhearsion::Configuration::AsteriskConfiguration::AMIConfiguration
   end
 
@@ -190,7 +190,7 @@ describe "Configuration scenarios" do
 
   it "enabling Drb without any configuration" do
     config = enable_drb
-    assert config.drb
+    config.drb.should_not be nil
     config.drb.should be_a_kind_of Adhearsion::Configuration::DrbConfiguration
   end
 
@@ -220,12 +220,12 @@ describe "AHN_CONFIG" do
   end
 
   it "Running configure sets configuration to Adhearsion::AHN_CONFIG" do
-    assert !Adhearsion.const_defined?(:AHN_CONFIG)
+    Adhearsion.const_defined?(:AHN_CONFIG).should be false
     Adhearsion::Configuration.configure do |config|
       # Nothing needs to happen here
     end
 
-    assert Adhearsion.const_defined?(:AHN_CONFIG)
+    Adhearsion.const_defined?(:AHN_CONFIG).should be true
     Adhearsion::AHN_CONFIG.should be_a_kind_of(Adhearsion::Configuration)
   end
 end

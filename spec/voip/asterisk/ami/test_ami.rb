@@ -239,7 +239,7 @@ describe "ManagerInterface" do
   end
 
   it "unsupported actions" do
-    @Manager::ManagerInterface::UnsupportedActionName::UNSUPPORTED_ACTION_NAMES.should_not.be.empty
+    @Manager::ManagerInterface::UnsupportedActionName::UNSUPPORTED_ACTION_NAMES.empty?.should_not be true
     @Manager::ManagerInterface::UnsupportedActionName::UNSUPPORTED_ACTION_NAMES.each do |action_name|
       manager = new_manager_without_events
       the_following_code {

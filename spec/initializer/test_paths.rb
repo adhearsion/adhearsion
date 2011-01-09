@@ -33,7 +33,7 @@ paths:
     flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_glob).once.with("thomas.rb").and_return "thomas.rb"
     flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_glob).once.with("phillips.rb").and_return "phillips.rb"
 
-    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should.eql(files)
+    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should == files
   end
 
   it "should work when one glob filename is present" do
@@ -44,7 +44,7 @@ paths:
       init: *.rb
     YML
     Adhearsion::AHN_CONFIG.ahnrc = yaml
-    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should.eql(%w[foo.rb bar.rb qaz.rb])
+    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should == %w[foo.rb bar.rb qaz.rb]
   end
 
   it "should work when an Array of globs are present" do
@@ -61,7 +61,7 @@ paths:
     files.each do |file|
       flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_glob).once.with(file).and_return file
     end
-    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should.eql(files)
+    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should == files
   end
 
 end

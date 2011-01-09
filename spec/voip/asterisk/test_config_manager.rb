@@ -20,9 +20,9 @@ asdf=fdsa
 ;[data]
 ;ignored=asdf
     CONFIG
-    manager.sections.map(&:first).should be [context_names.first]
+    manager.sections.map(&:first).should == [context_names.first]
     manager[context_names.first].size.should be 2
-    manager[context_names.first][tested_key_name].should be tested_key_value_before_comment
+    manager[context_names.first][tested_key_name].should == tested_key_value_before_comment
   end
 
   it "should match context names with dashes and underscores" do
@@ -36,7 +36,7 @@ crappyconfig=yes
 [#{context_names.last}]
 callerid="Jay Phillips" <133>
     CONFIG
-    mock_config_manager_for(definition_string).sections.map(&:first).should be context_names
+    mock_config_manager_for(definition_string).sections.map(&:first).should == context_names
   end
 
   it "should strip whitespace around keys and values" do
@@ -50,7 +50,7 @@ callerid="Jay Phillips" <133>
     #{tested_key_name}   = \t\t\t #{tested_key_value_before_comment}
 
     CONFIG
-    config_manager[section_name][tested_key_name].should be tested_key_value_before_comment
+    config_manager[section_name][tested_key_name].should == tested_key_value_before_comment
   end
 
   it "should return a Hash of properties when searching for an existing section" do
@@ -77,7 +77,7 @@ describe "The configuration file writer" do
 
   it "should remove an old section when replacing it" do
     config_manager.delete_section "picard"
-    config_manager.sections.map(&:first).should be ["jicksta"]
+    config_manager.sections.map(&:first).should == ["jicksta"]
   end
 
   it "should add a new section to the end" do

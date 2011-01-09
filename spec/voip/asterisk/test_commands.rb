@@ -18,7 +18,7 @@ describe 'hangup command' do
     pbx_should_respond_with_success
     response = mock_call.hangup
     pbx_should_have_been_sent 'HANGUP'
-    response.should be pbx_success_response
+    response.should == pbx_success_response
   end
 end
 
@@ -1373,7 +1373,7 @@ describe "get variable command" do
 
   it "Getting a variable that isn't set returns nothing" do
     pbx_should_respond_with "200 result=0"
-    mock_call.get_variable('OMGURFACE').should be false
+    mock_call.get_variable('OMGURFACE').should be nil
   end
 
   it 'An empty variable should return an empty String' do
@@ -2035,7 +2035,7 @@ BEGIN {
       include OutputStreamMatchers
 
       def assert_success(response)
-        response.should be pbx_success_response
+        response.should == pbx_success_response
       end
 
   end

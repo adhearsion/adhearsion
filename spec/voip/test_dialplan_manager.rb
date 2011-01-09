@@ -189,13 +189,13 @@ describe "DialPlan" do
   end
 
   it "When a dial plan is instantiated, the dialplans are loaded and stored for lookup" do
-    dial_plan.instance_variable_get("@entry_points").should_not.be.nil
+    dial_plan.instance_variable_get("@entry_points").should_not be nil
   end
 
   it "Can look up an entry point from a dial plan" do
     context_name = 'this_context_is_better_than_your_context'
     loader_instance.contexts[context_name] = lambda { puts "o hai" }
-    dial_plan.lookup(context_name).should_not.be.nil
+    dial_plan.lookup(context_name).should_not be nil
   end
 end
 
@@ -309,7 +309,7 @@ describe "ExecutionEnvironment" do
 
   it "should define variables accessors within itself" do
     environment = Adhearsion::DialPlan::ExecutionEnvironment.create(@call, entry_point)
-    call.variables.should_not.be.empty
+    call.variables.empty?.should be false
     call.variables.each do |key, value|
       environment.send(key).should be value
     end
@@ -326,7 +326,7 @@ describe "ExecutionEnvironment" do
     mock_dialplan_with bogus_dialplan
 
     manager = Adhearsion::DialPlan::Manager.new
-    manager.dial_plan.entry_points.should_not.be.empty
+    manager.dial_plan.entry_points.empty?.should_not be true
 
     manager.handle call
 

@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + "/test_helper"
 describe 'The ahn_log command' do
 
   it 'should add the ahn_log method to the global namespace' do
-    ahn_log.should.be Adhearsion::Logging::DefaultAdhearsionLogger
+    ahn_log.should be Adhearsion::Logging::DefaultAdhearsionLogger
   end
 
   it "should log to the standard Adhearsion logger when given arguments" do
@@ -14,7 +14,7 @@ describe 'The ahn_log command' do
 
   it 'should create a new logger when given method_missing' do
     ahn_log.micromenus 'danger will robinson!'
-    Log4r::Logger['micromenus'].should_not.be nil
+    Log4r::Logger['micromenus'].should_not be nil
   end
 
   it 'should define a singleton method on itself of any name found by method_missing' do

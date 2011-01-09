@@ -113,11 +113,11 @@ describe "Active Calls" do
   end
 
   it 'Attributes passed into initialization of call object are accessible in the variables() Hash' do
-    Adhearsion::Call.new(@mock_io, typical_call_variables_hash).variables.should be typical_call_variables_hash
+    Adhearsion::Call.new(@mock_io, typical_call_variables_hash).variables.should == typical_call_variables_hash
   end
 
   it 'Can add a call to the active calls list' do
-    Adhearsion.active_calls.should_not.be.any
+    Adhearsion.active_calls.any?.should be false
     Adhearsion.active_calls << typical_call
     Adhearsion.active_calls.size.should == 1
   end
@@ -129,14 +129,14 @@ describe "Active Calls" do
     size_before = Adhearsion.active_calls.size
 
     call = Adhearsion.receive_call_from mock_io
-    Adhearsion.active_calls.size.should.be > size_before
+    Adhearsion.active_calls.size.should > size_before
     call.hangup!
     Adhearsion.active_calls.size.should == size_before
   end
 
   it 'Can find active call by unique ID' do
     Adhearsion.active_calls << typical_call
-    assert_not_nil Adhearsion.active_calls.find(typical_call_variables_hash[:channel])
+    Adhearsion.active_calls.find(typical_call_variables_hash[:channel]).should_not be nil
   end
 
   it 'A call can store the IO associated with the PBX/switch connection' do
@@ -156,7 +156,7 @@ describe "Active Calls" do
   end
 
   it 'Can create a call and add it via a top-level method on the Adhearsion module' do
-    assert !Adhearsion.active_calls.any?
+    Adhearsion.active_calls.any?.should be false
     call = Adhearsion.receive_call_from(typical_call_variable_io)
     call.should be_a_kind_of(Adhearsion::Call)
     Adhearsion.active_calls.size.should == 1
@@ -208,7 +208,7 @@ describe 'the Calls collection' do
     flexmock(call).should_receive(:unique_identifier).and_return id
     collection << call
     hash = collection.instance_variable_get("@calls")
-    hash.should_not.be.empty
+    hash.empty?.should_not be true
     hash[id].should be call
   end
 
@@ -257,7 +257,7 @@ describe 'Typical call variable parsing with typical data that has no special tr
   # end
 
   it "extracts call variables into a Hash" do
-    assert variables.kind_of?(Hash)
+    variables.kind_of?(Hash).should be true
   end
 
   it "extracting and converting variables and their values to a hash" do

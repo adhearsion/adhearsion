@@ -39,7 +39,7 @@ describe "a new EventSocket" do
     %w[disconnected connected].each do |callback|
       the_following_code {
         handler.send callback
-      }.should raise_error "inside_#{callback}".to_sym
+      }.should throw_symbol "inside_#{callback}".to_sym
     end
   end
 
@@ -59,7 +59,7 @@ describe "a new EventSocket" do
     %w[receive_data disconnected connected].each do |callback|
       the_following_code {
         handler.send callback
-      }.should raise_error "inside_#{callback}".to_sym
+      }.should throw_symbol "inside_#{callback}".to_sym
     end
   end
 

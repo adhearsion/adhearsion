@@ -270,7 +270,7 @@ describe "ComponentTester" do
     component_name = "morrissey"
     flexmock(File).should_receive(:read).once.with(/#{component_name}\.rb$/).and_return "initialization { $YES_I_WAS_CALLED = TRUE }"
     ComponentTester.new(component_name, "/path/shouldnt/matter").initialize!
-    assert $YES_I_WAS_CALLED
+    $YES_I_WAS_CALLED.should == true
   end
 
 end

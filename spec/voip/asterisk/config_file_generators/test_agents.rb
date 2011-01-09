@@ -11,7 +11,7 @@ describe "The agents.conf config file agents" do
   end
   it "The agent() method should enqueue a Hash into Agents#agent_definitions" do
     agents.agent 1337, :password => 9876, :name => "Jay Phillips"
-    agents.agent_definitions.size.should.be 1
+    agents.agent_definitions.size.should be 1
     agents.agent_definitions.first.should == {:id => 1337, :password => 9876, :name => "Jay Phillips"}
   end
 
@@ -35,12 +35,12 @@ describe "The agents.conf config file agents" do
 
   it "The persistent_agents() method should generate a persistentagents yes/no pair" do
     agents.persistent_agents true
-    generated_config_has_pair(:persistentagents => "yes").should.be true
+    generated_config_has_pair(:persistentagents => "yes").should be true
 
     reset_agents!
 
     agents.persistent_agents false
-    generated_config_has_pair(:persistentagents => "no").should.be true
+    generated_config_has_pair(:persistentagents => "no").should be true
   end
 
   it "The persistent_agents() method should be in the [general] section" do
@@ -51,7 +51,7 @@ describe "The agents.conf config file agents" do
 
   it "max_login_tries() should generate a 'maxlogintries' numerical pair" do
     agents.max_login_tries 50
-    generated_config_has_pair(:maxlogintries => "50").should.be true
+    generated_config_has_pair(:maxlogintries => "50").should be true
   end
 
   it "max_login_tries() should be in the agents section" do
@@ -61,7 +61,7 @@ describe "The agents.conf config file agents" do
 
   it "log_off_after_duration should generate autologoff" do
     agents.log_off_after_duration 15.seconds
-    generated_config_has_pair(:autologoff => "15").should.be true
+    generated_config_has_pair(:autologoff => "15").should be true
   end
 
   it "log_off_if_unavailable should add autologoffunavail to the agents section" do
@@ -226,11 +226,11 @@ describe "AgentsConfigFileGeneratorTestHelper" do
 
   it "generated_config_has_pair() works properly" do
     @agents = flexmock "A fake agents with just one pair", :conf => "foo=bar"
-    generated_config_has_pair(:foo => "bar").should.be true
+    generated_config_has_pair(:foo => "bar").should be true
 
     @agents = flexmock "A fake agents with just one pair", :conf => "[general]\n\nqaz=qwerty\nagent => 1,2,3"
-    generated_config_has_pair(:qaz => "qwerty").should.be true
-    generated_config_has_pair(:foo => "bar").should.be false
+    generated_config_has_pair(:qaz => "qwerty").should be true
+    generated_config_has_pair(:foo => "bar").should be false
   end
 end
 

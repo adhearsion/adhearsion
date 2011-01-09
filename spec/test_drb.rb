@@ -28,7 +28,7 @@ describe "Invoking an interface method via DRb" do
       end
     RUBY
     client = DRbObject.new nil, DRb.uri
-    client.bar.should be [3, 2, 1]
+    client.bar.should == [3, 2, 1]
   end
 
   it "should raise an exception for a non-existent interface" do

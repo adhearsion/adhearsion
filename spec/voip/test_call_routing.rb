@@ -14,22 +14,22 @@ describe "Call routing rule generation" do
   it "specifying a single pattern routed to a single provider properly stores that pattern and its provider in the generated route rule" do
     pattern = %r(does not matter)
     rule    = route(pattern, :to => provider_one)
-    rule.patterns.should be [pattern]
-    rule.providers.should be [provider_one]
+    rule.patterns.should == [pattern]
+    rule.providers.should == [provider_one]
   end
 
   it "specifying multiple patterns routed to a single provider stores all of them in the generated route rule" do
     first, second, third = patterns
     rule                 = route(first, second,  third, :to => provider_one)
-    rule.patterns.should be [*patterns]
-    rule.providers.should be [provider_one]
+    rule.patterns.should == [*patterns]
+    rule.providers.should == [provider_one]
   end
 
   it "specifying multiple patterns routed to multiple providers stores all of them in the generated route rule, listing providers in the ordered specified" do
     first, second, third = patterns
     rule = route(first, second, third, :to => [provider_one, provider_two])
-    rule.patterns.should be [*patterns]
-    rule.providers.should be [provider_one, provider_two]
+    rule.patterns.should == [*patterns]
+    rule.providers.should == [provider_one, provider_two]
   end
 end
 
@@ -51,8 +51,8 @@ describe "Route calculation" do
     end
     rules.size.should be 1
     rule = rules.first
-    rule.providers.should be [provider]
-    rule.patterns.should be [pattern]
+    rule.providers.should == [provider]
+    rule.patterns.should == [pattern]
   end
 
   it "Definiting multiple rules adds them to the router rules" do
@@ -69,12 +69,12 @@ describe "Route calculation" do
     rules.size.should be 2
 
     rule_1 = rules.first
-    rule_1.providers.should be [provider_for_rule_1]
-    rule_1.patterns.should be [pattern_for_rule_1]
+    rule_1.providers.should == [provider_for_rule_1]
+    rule_1.patterns.should == [pattern_for_rule_1]
 
     rule_2 = rules.last
-    rule_2.providers.should be [provider_for_rule_2]
-    rule_2.patterns.should be [pattern_for_rule_2]
+    rule_2.providers.should == [provider_for_rule_2]
+    rule_2.patterns.should == [pattern_for_rule_2]
   end
 
   it "Provider is found in the simplest case of having only one pattern and one provider" do
@@ -82,7 +82,7 @@ describe "Route calculation" do
     define_rules do
       route /123/, :to => target_provider
     end
-    calculate_route_for(1234).should be [target_provider]
+    calculate_route_for(1234).should == [target_provider]
   end
 
   it "Provider is found when the specified pattern matches a rule that is not the first rule" do
@@ -97,7 +97,7 @@ describe "Route calculation" do
     end
 
     target_provider = provider_for_rule_2
-    calculate_route_for(9876).should be [target_provider]
+    calculate_route_for(9876).should == [target_provider]
   end
 end
 
