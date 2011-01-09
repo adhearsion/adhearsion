@@ -100,8 +100,8 @@ describe "AMI configuration defaults" do
   end
 
   it "ami allows you to configure a username and a password, both of which default to nil" do
-    config.username.should.be.nil
-    config.password.should.be.nil
+    config.username.should be nil
+    config.password.should be nil
   end
 end
 
@@ -197,7 +197,7 @@ describe "Configuration scenarios" do
   it "enabling Drb with a port specified sets the port" do
     target_port = 911
     config = enable_drb :port => target_port
-    config.drb.port.should.be.equal target_port
+    config.drb.port.should == target_port
   end
 
   private

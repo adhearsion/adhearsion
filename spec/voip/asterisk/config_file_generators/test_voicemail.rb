@@ -31,7 +31,7 @@ describe 'Defining recording-related settings of the Voicemail config file' do
   end
 
   it 'the recordings setting setter' do
-    Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail.new.recordings.should be_a_kind_of? recordings.class
+    Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail.new.recordings.should be_a_kind_of recordings.class
   end
 
   it 'recordings format should only allow a few options' do
@@ -112,7 +112,7 @@ describe 'A mailbox definition' do
 
   it 'the mailbox number should be available in the mailbox_number getter' do
     Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail::ContextDefinition::MailboxDefinition.new '123'
-    mailbox.mailbox_number.should be '123'
+    mailbox.mailbox_number.should == '123'
   end
 
   it 'an ArgumentError should be raised if the mailbox_number is not numeric' do

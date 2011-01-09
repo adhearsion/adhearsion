@@ -37,7 +37,7 @@ describe 'CalculatedMatch' do
     failure = Adhearsion::VoIP::CalculatedMatch.failed_match! 10..20, 30, :match_payload_does_not_matter
     failure.exact_match?.should_not be true
     failure.potential_match?.should_not be true
-    failure.type_of_match.should.be nil
+    failure.type_of_match.should be nil
 
     failure.match_payload.should be :match_payload_does_not_matter
     failure.pattern.should == (10..20)

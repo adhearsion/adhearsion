@@ -637,7 +637,7 @@ describe "The queue management abstractions" do
 
     agent = Adhearsion::VoIP::Asterisk::Commands::QueueProxy::AgentProxy.new('Agent/123', mock_queue)
     flexmock(agent).should_receive(:agent_metadata).once.with('status').and_return 'LOGGEDIN'
-    agent.should.be.logged_in
+    agent.logged_in? should be true
 
     flexmock(agent).should_receive(:agent_metadata).once.with('status').and_return 'LOGGEDOUT'
     agent.should_not.be.logged_in
@@ -648,7 +648,7 @@ describe "The queue management abstractions" do
     id = '123'
 
     agent = Adhearsion::VoIP::Asterisk::Commands::QueueProxy::AgentProxy.new("Agent/#{id}", mock_queue)
-    agent.id.should be id
+    agent.id.should == id
 
     agent = Adhearsion::VoIP::Asterisk::Commands::QueueProxy::AgentProxy.new(id, mock_queue)
     agent.id.should == id
@@ -772,11 +772,11 @@ describe "The queue management abstractions" do
   it 'empty? should call waiting_count' do
     queue = mock_call.queue 'testing_empty'
     flexmock(queue).should_receive(:waiting_count).once.and_return 0
-    queue.should.be.empty
+    queue.empty?.should be true
 
     queue = mock_call.queue 'testing_empty'
     flexmock(queue).should_receive(:waiting_count).once.and_return 99
-    queue.should_not.be.empty
+    queue.empty?.should_not be true
   end
 
   it 'any? should call waiting_count' do
@@ -905,7 +905,7 @@ describe 'the Menu class' do
         block_argument.should be_a_kind_of Adhearsion::VoIP::MenuBuilder
         throw :inside_block
       end
-    }.should raise_error :inside_block
+    }.should throw_symbol :inside_block
   end
 
   it "should invoke wait_for_digit instead of interruptible_play when no sound files are given" do
@@ -1109,8 +1109,8 @@ describe 'the MenuBuilder' do
     match = builder.calculate_matches_for "995"
     require 'pp'
     # pp match
-    match.should_not.be.potential_match
-    match.should.be.exact_match
+    match.potential_match?.should_not be true
+    match.exact_match?.should be true
     match.actual_exact_matches.should == ["995"]
   end
 
@@ -1373,7 +1373,7 @@ describe "get variable command" do
 
   it "Getting a variable that isn't set returns nothing" do
     pbx_should_respond_with "200 result=0"
-    assert !mock_call.get_variable('OMGURFACE')
+    mock_call.get_variable('OMGURFACE').should be false
   end
 
   it 'An empty variable should return an empty String' do
@@ -1385,7 +1385,7 @@ describe "get variable command" do
     unique_id = "1192470850.1"
     pbx_should_respond_with_value unique_id
     variable_value_returned = mock_call.get_variable('UNIQUEID')
-    variable_value_returned.should be unique_id
+    variable_value_returned.should == unique_id
   end
 end
 
@@ -1403,7 +1403,7 @@ describe "duration_of command" do
       mock_call.duration_of {
         throw :inside_duration_of
       }
-    }.should raise_error :inside_duration_of
+    }.should throw_symbol :inside_duration_of
   end
 
   it "Duration of block is returned" do
@@ -1416,7 +1416,7 @@ describe "duration_of command" do
       # This doesn't matter
     }
 
-    duration.should be expected_duration
+    duration.should == expected_duration
   end
 end
 
@@ -1935,17 +1935,17 @@ BEGIN {
           yield
         rescue Adhearsion::VoIP::DSL::Dialplan::ControlPassingException => cpe
           did_the_rescue_block_get_executed = true
-          cpe.target.should raise_error symbol
+          cpe.target.should throw_symbol symbol
         rescue => e
           did_the_rescue_block_get_executed = true
           raise e
         ensure
-          did_the_rescue_block_get_executed.should.be true
+          did_the_rescue_block_get_executed.should be true
         end
       end
 
       def should_throw(sym=nil,&block)
-        block.should raise_error(*[sym].compact)
+        block.should throw_symbol(*[sym].compact)
       end
 
       def mock_route_calculation_with(*definitions)
@@ -1953,7 +1953,7 @@ BEGIN {
       end
 
       def pbx_should_have_been_sent(message)
-        output.gets.chomp.should be message
+        output.gets.chomp.should == message
       end
 
       def pbx_should_respond_with(message)
@@ -2010,7 +2010,7 @@ BEGIN {
       end
 
       def output_stream_matches(pattern)
-        assert_match(pattern, output.gets)
+        output.gets.should match pattern
       end
 
       module OutputStreamMatchers
@@ -2047,7 +2047,7 @@ module MenuBuilderTestHelper
       hash.each_pair do |method_name,intended_quantity|
         message = "There were supposed to be #{intended_quantity} #{method_name.to_s.humanize} calculated."
         builder.calculate_matches_for(check).send(method_name).
-          should.messaging(message).equal(intended_quantity)
+          messaging(message).should == intended_quantity
       end
     end
   end

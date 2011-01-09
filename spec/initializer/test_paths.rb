@@ -12,7 +12,7 @@ describe "Files from config" do
   it "should work when only one filename is present" do
     mock_ahnrc_with "paths:\n    init: foobar.rb"
     flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_glob).once.with("foobar.rb").and_return "foobar.rb"
-    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should.eql ["foobar.rb"]
+    Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should ==["foobar.rb"]
   end
 
   it "should only expand a glob if the filename contains *"

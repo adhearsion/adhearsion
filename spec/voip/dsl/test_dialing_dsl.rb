@@ -100,24 +100,26 @@ describe "The provider DSL's 'provider' macro" do
     end
     provider_holder.providers.map { |x| x.name }.should == [:tweedledee, :tweedledum]
   end
-  it "should define a singleton method for the provider name given" do
-    Class.new(Adhearsion::VoIP::DSL::DialingDSL).class_eval do
+  it "should define a singleton method for the provider name given", :focus => true do
+    dsl_class = Class.new(Adhearsion::VoIP::DSL::DialingDSL)
+    dsl_class.class_eval do
       class_variable_get(:@@providers).size.should == 0
 
       provider(:icanhascheezburger?) {}
 
-      should respond_to(:icanhascheezburger?)
       class_variable_get(:@@providers).size.should == 1
     end
+    dsl_class.should respond_to(:icanhascheezburger?)
   end
   it "should not define a class-wide method for the provider name given" do
-    Class.new(Adhearsion::VoIP::DSL::DialingDSL).class_eval do
+    dsl_class = Class.new(Adhearsion::VoIP::DSL::DialingDSL)
+    dsl_class.class_eval do
       provider(:icanhascheezburger?) {}
     end
     Adhearsion::VoIP::DSL::DialingDSL.class_eval do
       class_variable_defined?(:@@providers).should == false
-      should_not respond_to(:icanhascheezburger?)
     end
+    dsl_class.should_not respond_to(:icanhascheezburger?)
   end
   it "should yield a ProviderDefinition object" do
     possible_provider_definition = nil

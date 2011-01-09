@@ -14,7 +14,7 @@ describe 'The Ahn Command helper' do
   it "STDOUT should be captured" do
     capture_stdout do
       puts "wee"
-    end.should be "wee\n"
+    end.should == "wee\n"
   end
 
 end
@@ -24,7 +24,7 @@ describe "A simulated use of the 'ahn' command" do
   include AhnCommandSpecHelper
 
   it "USAGE is defined" do
-    assert Adhearsion::CLI::AhnCommand.const_defined?('USAGE')
+    Adhearsion::CLI::AhnCommand.const_defined?('USAGE').should be true
   end
 
   it "arguments to 'create' are executed properly" do

@@ -7,7 +7,7 @@ describe "The configuration file parser behavior" do
 
   it "should expose a sections array" do
     manager = mock_config_manager
-    manager.sections.map(&:first).should be(["jicksta", "picard"])
+    manager.sections.map(&:first).should == ["jicksta", "picard"]
   end
 
   it "should ignore comments" do
@@ -60,7 +60,7 @@ callerid="Jay Phillips" <133>
   end
 
   it "should return nil when searching for a non-existant section" do
-    mock_config_manager["i-so-dont-exist-dude"].should.be.nil
+    mock_config_manager["i-so-dont-exist-dude"].should be nil
   end
 
 end

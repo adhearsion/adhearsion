@@ -73,13 +73,13 @@ describe "StringMatchCalculator" do
       calculator = Adhearsion::VoIP::StringMatchCalculator.new(str, match_payload)
 
       match_case = calculator.match str[0,2]
-      match_case.exact_match.should_not be true
+      match_case.exact_match?.should_not be true
       match_case.potential_match?.should be true
       match_case.potential_matches.should == [str]
 
       match_case = calculator.match str
-      match_case.exact_match.should be true
-      match_case.potential_match.should_not be true
+      match_case.exact_match?.should be true
+      match_case.potential_match?.should_not be true
       match_case.exact_matches.should == [str]
     end
   end

@@ -294,11 +294,11 @@ describe "ConfigFileGeneratorTestHelper" do
 
   it "generated_config_has_pair() works properly" do
     @queues = flexmock "A fake queues with just one pair", :to_s => "foo=bar"
-    generated_config_has_pair(:foo => "bar").should.be true
+    generated_config_has_pair(:foo => "bar").should be true
 
     @queues = flexmock "A fake queues with just one pair", :to_s => "[general]\n\nqaz=qwerty\nagent => 1,2,3"
-    generated_config_has_pair(:qaz => "qwerty").should.be true
-    generated_config_has_pair(:foo => "bar").should.be false
+    generated_config_has_pair(:qaz => "qwerty").should be true
+    generated_config_has_pair(:foo => "bar").should be false
   end
 
 end

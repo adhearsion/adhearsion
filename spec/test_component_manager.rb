@@ -33,7 +33,7 @@ describe "Adhearsion's component system" do
     RUBY
     the_following_code {
       run_component_code code
-    }.should raise_error :its_true!
+    }.should throw_symbol :its_true!
   end
 
   it "initialization block should be called after the methods_for() blocks"
@@ -82,7 +82,7 @@ describe "Adhearsion's component system" do
     obj = new_object_with_scope :dialplan
     the_following_code {
       obj.throw_best_symbol_in_the_world
-    }.should raise_error :i_am_the_best_symbol_in_the_world
+    }.should throw_symbol :i_am_the_best_symbol_in_the_world
   end
 
   it "privately defined methods should remain private" do
@@ -101,7 +101,7 @@ describe "Adhearsion's component system" do
       end
     RUBY
     object = new_object_with_scope(:generators)
-    object.i_am_public.should.eql return_value.reverse
+    object.i_am_public.should == return_value.reverse
     the_following_code {
       object.i_am_private
     }.should raise_error NoMethodError
@@ -172,9 +172,9 @@ array:
     end
     RUBY
     obj = new_object_with_scope :dialplan
-    obj.host.should.eql "localhost"
-    obj.port.should.eql 7007
-    obj.array.should.eql [1,2,3]
+    obj.host.should =="localhost"
+    obj.port.should ==7007
+    obj.array.should ==[1,2,3]
   end
 
   it "the delegate method should properly delegate arguments and a block to a specified object" do
@@ -212,7 +212,7 @@ array:
     RUBY
     the_following_code {
       run_component_code code
-    }.should raise_error :got_here!
+    }.should throw_symbol :got_here!
 
   end
 
@@ -224,7 +224,7 @@ array:
     RUBY
     the_following_code {
       run_component_code code
-    }.should raise_error :BRITISH!
+    }.should throw_symbol :BRITISH!
   end
 
   it "should properly expose any defined constants" do
@@ -233,10 +233,10 @@ array:
       TEST_TWO   = 2
       TEST_THREE = 3
     RUBY
-    container.constants.sort.should.eql ["TEST_ONE", "TEST_THREE", "TEST_TWO"]
+    container.constants.sort.should ==["TEST_ONE", "TEST_THREE", "TEST_TWO"]
     container.constants.map do |constant|
       container.const_get(constant)
-    end.sort.should.eql [1,2,3]
+    end.sort.should ==[1,2,3]
   end
 
 end

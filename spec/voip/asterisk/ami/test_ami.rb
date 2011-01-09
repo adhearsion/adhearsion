@@ -33,7 +33,7 @@ describe "ManagerInterface" do
   it "should use the defaults specified in DEFAULT_SETTINGS when no overrides are given" do
     manager = @Manager::ManagerInterface.new
     %w[host port username password events].each do |property|
-      manager.send(property).should.eql @Manager::ManagerInterface::DEFAULT_SETTINGS[property.to_sym]
+      manager.send(property).should ==@Manager::ManagerInterface::DEFAULT_SETTINGS[property.to_sym]
     end
   end
 
@@ -47,7 +47,7 @@ describe "ManagerInterface" do
     }
     manager = @Manager::ManagerInterface.new overrides
     %w[host port username password events].each do |property|
-      manager.send(property).should.eql overrides[property.to_sym]
+      manager.send(property).should ==overrides[property.to_sym]
     end
   end
 
@@ -146,8 +146,8 @@ describe "ManagerInterface" do
 #    manager.send_action "Ping"
 #
 #    write_queue_mock.actions.size.should be 2
-#    write_queue_mock.actions.first.name.should.eql "login"
-#    write_queue_mock.actions.last.name.should.eql "ping"
+#    write_queue_mock.actions.first.name.should =="login"
+#    write_queue_mock.actions.last.name.should =="ping"
 #  end
 
   it "after calling connect!() with events enabled, both connections perform a login" do
@@ -167,7 +167,7 @@ describe "ManagerInterface" do
 
     write_queue_mock.actions.size.should be 1
     write_queue_mock.actions.select { |action| action.name == "login" }.size.should be 1
-    write_queue_mock.actions.first.headers['Events'].should.eql "Off"
+    write_queue_mock.actions.first.headers['Events'].should =="Off"
   end
 
   it "a failed login on the actions socket raises an AuthenticationFailedException" do
@@ -292,8 +292,8 @@ describe "ManagerInterface" do
 #
 #    first, second = response.response
 #
-#    first["ObjectName"].should.eql "softphone"
-#    last["ObjectName"].should.eql "teliax"
+#    first["ObjectName"].should =="softphone"
+#    last["ObjectName"].should =="teliax"
 #  end
 #
 # FIXME: Fix this it or nuke it.
@@ -343,16 +343,16 @@ describe "Class methods of ManagerInterface" do
   end
 
   it "the Queues action should not respond with an action id" do
-    @ManagerInterface.replies_with_action_id?("Queues").should.eql false
+    @ManagerInterface.replies_with_action_id?("Queues").should ==false
   end
 
   it "the IAXPeers action should not respond with an action id" do
-    @ManagerInterface.replies_with_action_id?("IAXPeers").should.eql false
+    @ManagerInterface.replies_with_action_id?("IAXPeers").should ==false
   end
 
   it "the ParkedCalls terminator event" do
-    @ManagerInterface.causal_event_terminator_name_for("ParkedCalls").should.eql "parkedcallscomplete"
-    @ManagerInterface.causal_event_terminator_name_for("parkedcalls").should.eql "parkedcallscomplete"
+    @ManagerInterface.causal_event_terminator_name_for("ParkedCalls").should =="parkedcallscomplete"
+    @ManagerInterface.causal_event_terminator_name_for("parkedcalls").should =="parkedcallscomplete"
   end
 
 end

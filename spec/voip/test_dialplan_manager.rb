@@ -46,7 +46,7 @@ describe "Dialplan::Manager handling" do
     end
     the_following_code {
       manager.handle call
-    }.should raise_error :answered_call!
+    }.should throw_symbol :answered_call!
   end
 
   it 'should NOT send :answer to the execution environment if Adhearsion::AHN_CONFIG.automatically_answer_incoming_calls is NOT set' do
@@ -82,7 +82,7 @@ describe "DialPlan::Manager's handling a failed call" do
   it 'should check if the call has failed and then instruct it to extract the reason from the environment' do
     flexmock(Adhearsion::DialPlan::ExecutionEnvironment).new_instances.should_receive(:variable).with("REASON").once.and_return '3'
     call = Adhearsion::Call.new(nil, {'extension' => "failed"})
-    call.should.be.failed_call
+    call.failed_call?.should be true
     flexmock(Adhearsion::DialPlan).should_receive(:new).once.and_return flexmock("bogus DialPlan which should never be used")
     begin
       Adhearsion::DialPlan::Manager.handle(call)
@@ -168,7 +168,7 @@ describe "DialPlan::Manager's handling a hungup call" do
 
   it 'should check if the call was a hangup meta-AGI call and then raise a HangupExtensionCallException' do
     call = Adhearsion::Call.new(nil, {'extension' => "h"})
-    call.should.be.hungup_call
+    call.hungup_call?.should be true
     flexmock(Adhearsion::DialPlan).should_receive(:new).once.and_return flexmock("bogus DialPlan which should never be used")
     the_following_code {
       Adhearsion::DialPlan::Manager.handle(call)
@@ -259,20 +259,20 @@ describe "The inbox-related dialplan methods" do
     [:one, :two, :three].each { |message| mock_call.inbox << message }
 
     dialplan = %{ entrance {  with_next_message { |message| throw message } } }
-    executing_dialplan(:entrance => dialplan, :call => mock_call).should raise_error :one
+    executing_dialplan(:entrance => dialplan, :call => mock_call).should throw_symbol :one
   end
 
   it "messages_waiting? should return false if the inbox is empty" do
     mock_call = new_call_for_context :entrance
     dialplan = %{ entrance { throw messages_waiting? ? :yes : :no } }
-    executing_dialplan(:entrance => dialplan, :call => mock_call).should raise_error :no
+    executing_dialplan(:entrance => dialplan, :call => mock_call).should throw_symbol :no
   end
 
   it "messages_waiting? should return false if the inbox is not empty" do
     mock_call = new_call_for_context :entrance
     mock_call.inbox << Object.new
     dialplan = %{ entrance { throw messages_waiting? ? :yes : :no } }
-    executing_dialplan(:entrance => dialplan, :call => mock_call).should raise_error :yes
+    executing_dialplan(:entrance => dialplan, :call => mock_call).should throw_symbol :yes
   end
 
 end
@@ -358,7 +358,7 @@ describe "Dialplan control statements" do
       }
       context_defined_second {}
     }
-    executing_dialplan(:context_defined_first => dialplan).should raise_error :i_see_it
+    executing_dialplan(:context_defined_first => dialplan).should throw_symbol :i_see_it
   end
 
   test_dialplan_inclusions = true
@@ -384,7 +384,7 @@ describe "Dialplan control statements" do
           throw :zwei
         }
       }
-      executing_dialplan(:eins => dialplan).should raise_error :zwei
+      executing_dialplan(:eins => dialplan).should throw_symbol :zwei
     end
 
     it "Proc#+@ should not return to its originating context" do
