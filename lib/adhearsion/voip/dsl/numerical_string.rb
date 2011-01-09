@@ -19,7 +19,7 @@ module Adhearsion
           end
         end
 
-        (instance_methods - [:instance_eval, :object_id]).each { |m| undef_method m unless m.to_s =~ /^__/ }
+        (instance_methods.map{|m| m.to_sym} - [:instance_eval, :object_id]).each { |m| undef_method m unless m.to_s =~ /^__/ }
 
         attr_reader :__real_num, :__real_string
 
@@ -74,7 +74,7 @@ end
 # These monkey patches are necessary for the NumericalString to work, unfortunately.
 class Class
   def alias_method_once(new_name, old_name)
-    unless instance_methods.include?(new_name.to_s)
+    unless instance_methods.map{|m| m.to_sym}.include?(new_name.to_sym)
       alias_method(new_name, old_name)
     end
   end

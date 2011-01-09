@@ -61,7 +61,7 @@ module Theatre
 
     class BlankSlateMessageRecorder
 
-      (instance_methods - [:instance_eval, :object_id]).each { |method| undef_method method unless method.to_s =~ /^__/ }
+      (instance_methods.map{|m| m.to_sym} - [:instance_eval, :object_id]).each { |method| undef_method method unless method.to_s =~ /^__/ }
 
       def initialize(&notify_on_completion)
         @notify_on_completion = notify_on_completion
