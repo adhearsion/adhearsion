@@ -33,7 +33,7 @@ describe "Adhearsion's component system" do
     RUBY
     the_following_code {
       run_component_code code
-    }.should.throw :its_true!
+    }.should raise_error :its_true!
   end
 
   it "initialization block should be called after the methods_for() blocks"
@@ -82,7 +82,7 @@ describe "Adhearsion's component system" do
     obj = new_object_with_scope :dialplan
     the_following_code {
       obj.throw_best_symbol_in_the_world
-    }.should.throw :i_am_the_best_symbol_in_the_world
+    }.should raise_error :i_am_the_best_symbol_in_the_world
   end
 
   it "privately defined methods should remain private" do
@@ -212,7 +212,7 @@ array:
     RUBY
     the_following_code {
       run_component_code code
-    }.should.throw :got_here!
+    }.should raise_error :got_here!
 
   end
 
@@ -224,7 +224,7 @@ array:
     RUBY
     the_following_code {
       run_component_code code
-    }.should.throw :BRITISH!
+    }.should raise_error :BRITISH!
   end
 
   it "should properly expose any defined constants" do

@@ -46,7 +46,7 @@ describe "Dialplan::Manager handling" do
     end
     the_following_code {
       manager.handle call
-    }.should.throw :answered_call!
+    }.should raise_error :answered_call!
   end
 
   it 'should NOT send :answer to the execution environment if Adhearsion::AHN_CONFIG.automatically_answer_incoming_calls is NOT set' do
@@ -226,7 +226,7 @@ describe "DialPlan loader" do
     DIAL_PLAN
 
     loader.contexts.keys.size.should be 2
-    loader.contexts.keys.map(&:to_s).sort.should be %w(one two)
+    loader.contexts.keys.map(&:to_s).sort.should == %w(one two)
   end
 
   it 'loading a dialplan with a syntax error' do
@@ -259,20 +259,20 @@ describe "The inbox-related dialplan methods" do
     [:one, :two, :three].each { |message| mock_call.inbox << message }
 
     dialplan = %{ entrance {  with_next_message { |message| throw message } } }
-    executing_dialplan(:entrance => dialplan, :call => mock_call).should.throw :one
+    executing_dialplan(:entrance => dialplan, :call => mock_call).should raise_error :one
   end
 
   it "messages_waiting? should return false if the inbox is empty" do
     mock_call = new_call_for_context :entrance
     dialplan = %{ entrance { throw messages_waiting? ? :yes : :no } }
-    executing_dialplan(:entrance => dialplan, :call => mock_call).should.throw :no
+    executing_dialplan(:entrance => dialplan, :call => mock_call).should raise_error :no
   end
 
   it "messages_waiting? should return false if the inbox is not empty" do
     mock_call = new_call_for_context :entrance
     mock_call.inbox << Object.new
     dialplan = %{ entrance { throw messages_waiting? ? :yes : :no } }
-    executing_dialplan(:entrance => dialplan, :call => mock_call).should.throw :yes
+    executing_dialplan(:entrance => dialplan, :call => mock_call).should raise_error :yes
   end
 
 end
@@ -358,7 +358,7 @@ describe "Dialplan control statements" do
       }
       context_defined_second {}
     }
-    executing_dialplan(:context_defined_first => dialplan).should.throw :i_see_it
+    executing_dialplan(:context_defined_first => dialplan).should raise_error :i_see_it
   end
 
   test_dialplan_inclusions = true
@@ -384,7 +384,7 @@ describe "Dialplan control statements" do
           throw :zwei
         }
       }
-      executing_dialplan(:eins => dialplan).should.throw :zwei
+      executing_dialplan(:eins => dialplan).should raise_error :zwei
     end
 
     it "Proc#+@ should not return to its originating context" do
@@ -395,7 +395,7 @@ describe "Dialplan control statements" do
         throw :after_control_statement
       }
     }
-    executing_dialplan(:zuerst => dialplan).should_not.throw
+    executing_dialplan(:zuerst => dialplan).should_not raise_error
   end
   end
 

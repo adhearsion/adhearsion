@@ -334,7 +334,7 @@ end
 
 describe "Class methods of ManagerInterface" do
 
-  before:each do
+  before(:each) do
     @ManagerInterface = Adhearsion::VoIP::Asterisk::Manager::ManagerInterface
   end
 

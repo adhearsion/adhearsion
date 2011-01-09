@@ -43,7 +43,7 @@ end
 
 describe "RouteRule assembling with multiple patterns and multiple provider definitions" do
 
-  before:each do
+  before(:each) do
     1.upto 3 do |i|
       instance_variable_set "@prov_#{i}",
         Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new("prov_#{i}")
@@ -73,7 +73,7 @@ describe "The DialingDSL class internals" do
   it "should allow Asterisk-like patterns" do
     Adhearsion::VoIP::DSL::DialingDSL.class_eval do
       _('23XX')
-    end.should.be.instance_of Regexp
+    end.should be_an_instance_of Regexp
   end
 
   it "should define all of the VoIP constants" do

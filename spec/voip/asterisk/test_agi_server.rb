@@ -23,7 +23,7 @@ describe "The AGI server's serve() method" do
     the_following_code {
       flexmock(Adhearsion).should_receive(:receive_call_from).once.with(io_mock).and_throw :created_call!
       server.serve(io_mock)
-    }.should.throw :created_call!
+    }.should raise_error :created_call!
   end
 
   it 'should hand the call off to a new Manager if the request is agi://IP_ADDRESS_HERE' do
@@ -47,7 +47,7 @@ describe "The AGI server's serve() method" do
       flexmock(Adhearsion::DialPlan::ConfirmationManager).should_receive(:confirmation_call?).once.with(call_mock).and_return true
       flexmock(Adhearsion::DialPlan::ConfirmationManager).should_receive(:handle).once.with(call_mock).and_throw :handled_call!
       server.serve(nil)
-    }.should.throw :handled_call!
+    }.should raise_error :handled_call!
   end
 
   it 'calling the serve() method invokes the before_call event' do
@@ -60,7 +60,7 @@ describe "The AGI server's serve() method" do
 
     the_following_code {
       server.serve mock_io
-    }.should.throw :triggered
+    }.should raise_error :triggered
   end
 
   it 'should execute the hungup_call event when a HungupExtensionCallException is raised' do
@@ -72,7 +72,7 @@ describe "The AGI server's serve() method" do
     flexmock(Adhearsion::DialPlan::Manager).should_receive(:handle).once.and_raise Adhearsion::HungupExtensionCallException.new(mock_env)
     flexmock(Adhearsion::Events).should_receive(:trigger).once.with([:asterisk, :hungup_call], mock_env).and_throw :hungup_call
 
-    the_following_code { server.serve nil }.should.throw :hungup_call
+    the_following_code { server.serve nil }.should raise_error :hungup_call
   end
 
   it 'should execute the OnFailedCall hooks when a FailedExtensionCallException is raised' do
@@ -84,7 +84,7 @@ describe "The AGI server's serve() method" do
     flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return(call_mock)
     flexmock(Adhearsion::DialPlan::Manager).should_receive(:handle).once.and_raise Adhearsion::FailedExtensionCallException.new(mock_env)
     flexmock(Adhearsion::Events).should_receive(:trigger).once.with([:asterisk, :failed_call], mock_env).and_throw :failed_call
-    the_following_code { server.serve nil }.should.throw :failed_call
+    the_following_code { server.serve nil }.should raise_error :failed_call
   end
 
 end

@@ -6,7 +6,7 @@ describe "The agents.conf config file agents" do
   include AgentsConfigFileGeneratorTestHelper
 
   attr_reader :agents
-  before:each do
+  before(:each) do
     reset_agents!
   end
   it "The agent() method should enqueue a Hash into Agents#agent_definitions" do
@@ -160,7 +160,7 @@ describe "The default agents.conf config file converted to this syntax" do
   include AgentsConfigFileGeneratorTestHelper
 
   attr_reader :default_config, :agents
-  before:each do
+  before(:each) do
     reset_agents!
     @default_config = <<-CONFIG
 [general]

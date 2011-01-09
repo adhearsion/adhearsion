@@ -6,7 +6,7 @@ describe "The queues.conf config file generator" do
   include QueuesConfigFileGeneratorTestHelper
 
   attr_reader :queues
-  before:each do
+  before(:each) do
     reset_queues!
   end
 
@@ -35,7 +35,7 @@ describe "The queues.conf config file queues's QueueDefinition" do
   include QueuesConfigFileGeneratorTestHelper
 
   attr_reader :queues
-  before:each do
+  before(:each) do
     reset_queues!
   end
 
@@ -109,7 +109,7 @@ describe "The private, helper methods in QueueDefinition" do
   include QueuesConfigFileGeneratorTestHelper
 
   attr_reader :queue
-  before:each do
+  before(:each) do
     reset_queues!
     @queue = @queues.queue "doesn't matter"
   end
@@ -178,7 +178,7 @@ describe 'The queues.conf config file generator when ran against a really big ex
   include QueuesConfigFileGeneratorTestHelper
 
   attr_reader :queues, :default_config
-  before:each do
+  before(:each) do
     reset_queues!
     @default_config = default_config = <<-CONFIG
 [general]

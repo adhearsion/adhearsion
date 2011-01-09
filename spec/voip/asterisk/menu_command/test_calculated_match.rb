@@ -18,11 +18,11 @@ describe 'CalculatedMatch' do
     Adhearsion::VoIP::CalculatedMatch.new.type_of_match.should be nil
   end
   it '#exact_match? should return true if the match was exact' do
-    Adhearsion::VoIP::CalculatedMatch.new(:exact_matches => [0,3,5]).should.be.exact_match
+    Adhearsion::VoIP::CalculatedMatch.new(:exact_matches => [0,3,5]).exact_match?.should be true
   end
 
   it '#potential_match? should return true if the match was exact' do
-    Adhearsion::VoIP::CalculatedMatch.new(:potential_matches => [88,99,77]).should.be.potential_match
+    Adhearsion::VoIP::CalculatedMatch.new(:potential_matches => [88,99,77]).potential_match?.should be true
   end
 
   it '#exact_matches should return an array of exact matches' do
@@ -35,8 +35,8 @@ describe 'CalculatedMatch' do
 
   it '::failed_match! should return a match that *really* failed' do
     failure = Adhearsion::VoIP::CalculatedMatch.failed_match! 10..20, 30, :match_payload_does_not_matter
-    failure.should_not.be.exact_match
-    failure.should_not.be.potential_match
+    failure.exact_match?.should_not be true
+    failure.potential_match?.should_not be true
     failure.type_of_match.should.be nil
 
     failure.match_payload.should be :match_payload_does_not_matter
@@ -51,7 +51,7 @@ describe 'CalculatedMatchCollection' do
   include CalculatedMatchCollectionTestHelper
 
   attr_reader :collection
-  before:each do
+  before(:each) do
     @collection = Adhearsion::VoIP::CalculatedMatchCollection.new
   end
 
@@ -83,12 +83,12 @@ describe 'CalculatedMatchCollection' do
 
   it "if any exact matches exist, the exact_match?() method should return true" do
     collection << mock_with_exact_matches([1,2,3])
-    collection.should.be.exact_match
+    collection.exact_match?.should be true
   end
 
   it "if any potential matches exist, the potential_match?() method should return true" do
     collection << mock_with_potential_matches([1,2,3])
-    collection.should.be.potential_match
+    collection.potential_match?.should be true
   end
 end
 

@@ -29,6 +29,7 @@ require_or_report_dependency('rubigen', 'rubigen')
 RSpec.configure do |config|
   config.mock_framework = :flexmock
   config.filter_run_excluding :ignore => true
+  #config.filter_run :focus => true
   config.color_enabled = true
 end
 

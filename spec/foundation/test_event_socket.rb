@@ -34,12 +34,12 @@ describe "a new EventSocket" do
     handler = event_socket.send(:instance_variable_get, :@handler)
     the_following_code {
       handler.send :receive_data, ''
-    }.should.throw :inside_receive_data
+    }.should raise_error :inside_receive_data
 
     %w[disconnected connected].each do |callback|
       the_following_code {
         handler.send callback
-      }.should.throw "inside_#{callback}".to_sym
+      }.should raise_error "inside_#{callback}".to_sym
     end
   end
 
@@ -59,7 +59,7 @@ describe "a new EventSocket" do
     %w[receive_data disconnected connected].each do |callback|
       the_following_code {
         handler.send callback
-      }.should.throw "inside_#{callback}".to_sym
+      }.should raise_error "inside_#{callback}".to_sym
     end
   end
 
@@ -108,7 +108,7 @@ describe "connecting an EventSocket" do
       event_socket = EventSocket.new("foo", 123, mock_handler_object)
       flexmock(event_socket).should_receive(:reader_loop).once.and_throw :in_thread_loop
       event_socket.connect!
-    }.should.throw :in_thread_loop
+    }.should raise_error :in_thread_loop
   end
 
 end
@@ -133,7 +133,7 @@ describe "the reader_loop method" do
 
     the_following_code {
       EventSocket.new("foo", 123, mock_handler).connect!
-    }.should.throw :done_testing
+    }.should raise_error :done_testing
   end
 
   it "should set the state to :connection_dropped when an EOFError is raised by readpartial" do

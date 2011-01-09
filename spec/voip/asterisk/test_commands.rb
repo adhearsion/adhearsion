@@ -89,7 +89,7 @@ describe 'execute' do
 
   it 'execute returns false if the command was not executed successfully by the PBX' do
     pbx_should_respond_with_failure
-    assert !mock_call.execute(:foo), "execute should have failed"
+    !mock_call.execute(:foo).should be true
   end
 
   it 'execute can accept arguments after the app name which get translated into pipe-delimited arguments to the PBX' do
@@ -905,7 +905,7 @@ describe 'the Menu class' do
         block_argument.should be_a_kind_of Adhearsion::VoIP::MenuBuilder
         throw :inside_block
       end
-    }.should.throw :inside_block
+    }.should raise_error :inside_block
   end
 
   it "should invoke wait_for_digit instead of interruptible_play when no sound files are given" do
@@ -1066,7 +1066,7 @@ describe 'the MenuBuilder' do
   include MenuBuilderTestHelper
 
   attr_reader :builder
-  before:each do
+  before(:each) do
     @builder = Adhearsion::VoIP::MenuBuilder.new
   end
 
@@ -1403,7 +1403,7 @@ describe "duration_of command" do
       mock_call.duration_of {
         throw :inside_duration_of
       }
-    }.should.throw :inside_duration_of
+    }.should raise_error :inside_duration_of
   end
 
   it "Duration of block is returned" do
@@ -1935,7 +1935,7 @@ BEGIN {
           yield
         rescue Adhearsion::VoIP::DSL::Dialplan::ControlPassingException => cpe
           did_the_rescue_block_get_executed = true
-          cpe.target.should.throw symbol
+          cpe.target.should raise_error symbol
         rescue => e
           did_the_rescue_block_get_executed = true
           raise e
@@ -1945,7 +1945,7 @@ BEGIN {
       end
 
       def should_throw(sym=nil,&block)
-        block.should.throw(*[sym].compact)
+        block.should raise_error(*[sym].compact)
       end
 
       def mock_route_calculation_with(*definitions)

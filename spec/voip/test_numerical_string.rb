@@ -29,11 +29,11 @@ describe "A NumericalString" do
     without_leading_zeros = %w(1 1.2 0 0.0)
 
     with_leading_zeros.each do |number|
-      assert numerical_string.starts_with_leading_zero?(number), number
+      numerical_string.starts_with_leading_zero?(number).should be true
     end
 
     without_leading_zeros.each do |number|
-      assert !numerical_string.starts_with_leading_zero?(number), number
+      !numerical_string.starts_with_leading_zero?(number).should be true
     end
   end
 

@@ -4,7 +4,7 @@ require 'adhearsion/voip/menu_state_machine/matchers'
 
 describe "MatchCalculator" do
   it "the build_with_pattern() method should return an appropriate subclass instance based on the pattern's class" do
-    Adhearsion::VoIP::MatchCalculator.build_with_pattern(1..2, :main).should.be.instance_of Adhearsion::VoIP::RangeMatchCalculator
+    Adhearsion::VoIP::MatchCalculator.build_with_pattern(1..2, :main).should be_an_instance_of Adhearsion::VoIP::RangeMatchCalculator
   end
 
 end
@@ -22,34 +22,34 @@ describe "The RangeMatchCalculator" do
 
   it 'return values of #match should be an instance of CalculatedMatch' do
     calculator = Adhearsion::VoIP::RangeMatchCalculator.new 1..9, :match_payload_doesnt_matter
-    calculator.match(0).should.be.instance_of Adhearsion::VoIP::CalculatedMatch
-    calculator.match(1000).should.be.instance_of Adhearsion::VoIP::CalculatedMatch
+    calculator.match(0).should be_an_instance_of Adhearsion::VoIP::CalculatedMatch
+    calculator.match(1000).should be_an_instance_of Adhearsion::VoIP::CalculatedMatch
   end
 
 end
 
 describe "FixnumMatchCalculator" do
   attr_reader :match_payload
-  before:each do
+  before(:each) do
     @match_payload = :main
   end
 
   it "a potential match scenario" do
     calculator = Adhearsion::VoIP::FixnumMatchCalculator.new(444, match_payload)
     match = calculator.match 4
-    match.should.be.potential_match
-    match.should_not.be.exact_match
+    match.potential_match?.should be true
+    match.exact_match?.should_not be true
     match.potential_matches.should == [444]
   end
 
   it 'a multi-digit exact match scenario' do
     calculator = Adhearsion::VoIP::FixnumMatchCalculator.new(5555, match_payload)
-    calculator.match(5555).should.be.exact_match
+    calculator.match(5555).exact_match?.should be true
   end
 
   it 'a single-digit exact match scenario' do
     calculator = Adhearsion::VoIP::FixnumMatchCalculator.new(1, match_payload)
-    calculator.match(1).should.be.exact_match
+    calculator.match(1).exact_match?.should be true
   end
 
   it 'the context name given to the calculator should be passed on to the CalculatedMatch' do
@@ -63,7 +63,7 @@ end
 describe "StringMatchCalculator" do
 
   attr_reader :match_payload
-  before:each do
+  before(:each) do
     @match_payload = :doesnt_matter
   end
 
@@ -73,14 +73,13 @@ describe "StringMatchCalculator" do
       calculator = Adhearsion::VoIP::StringMatchCalculator.new(str, match_payload)
 
       match_case = calculator.match str[0,2]
-
-      match_case.should_not.be.exact_match
-      match_case.should.be.potential_match
+      match_case.exact_match.should_not be true
+      match_case.potential_match?.should be true
       match_case.potential_matches.should == [str]
 
       match_case = calculator.match str
-      match_case.should.be.exact_match
-      match_case.should_not.be.potential_match
+      match_case.exact_match.should be true
+      match_case.potential_match.should_not be true
       match_case.exact_matches.should == [str]
     end
   end
@@ -89,8 +88,8 @@ describe "StringMatchCalculator" do
     %w[* #].each do |special_digit|
       calculator = Adhearsion::VoIP::StringMatchCalculator.new(special_digit, match_payload)
       match_case = calculator.match special_digit
-      match_case.should_not.be.potential_match
-      match_case.should.be.exact_match
+      match_case.potential_match?.should_not be true
+      match_case.exact_match?.should be true
       match_case.exact_matches.first.should == special_digit
     end
   end
