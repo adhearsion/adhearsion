@@ -74,6 +74,8 @@ describe "ManagerInterface" do
 
     manager.send_action("ping").should be :THREAD_WAITING_MOCKED_OUT
 
+    # Avoid race where message may not yet be in the sent_messages queue
+    sleep(0.1)
     manager.send(:instance_variable_get, :@sent_messages).has_key?(action_id).should be true
 
     manager.send(:instance_variable_get, :@actions_connection).

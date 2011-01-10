@@ -86,6 +86,8 @@ describe "connecting an EventSocket" do
     flexmock(TCPSocket).should_receive(:new).once.with(host, port)
     event_socket = EventSocket.new(host, port, mock_handler_object)
     event_socket.connect!
+    # Avoid race condition in JRuby where state may return nil
+    sleep(0.1)
     event_socket.state.should be :connected
   end
 
