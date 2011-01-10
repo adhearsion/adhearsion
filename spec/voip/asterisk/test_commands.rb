@@ -89,7 +89,7 @@ describe 'execute' do
 
   it 'execute returns false if the command was not executed successfully by the PBX' do
     pbx_should_respond_with_failure
-    !mock_call.execute(:foo).should be true
+    mock_call.execute(:foo).should_not be true
   end
 
   it 'execute can accept arguments after the app name which get translated into pipe-delimited arguments to the PBX' do
@@ -637,10 +637,10 @@ describe "The queue management abstractions" do
 
     agent = Adhearsion::VoIP::Asterisk::Commands::QueueProxy::AgentProxy.new('Agent/123', mock_queue)
     flexmock(agent).should_receive(:agent_metadata).once.with('status').and_return 'LOGGEDIN'
-    agent.logged_in? should be true
+    agent.logged_in?.should be true
 
     flexmock(agent).should_receive(:agent_metadata).once.with('status').and_return 'LOGGEDOUT'
-    agent.should_not.be.logged_in
+    agent.logged_in?.should_not be true
   end
 
   it 'the AgentProxy should populate its own "id" property to the numerical ID of the "interface" with which it was constructed' do
