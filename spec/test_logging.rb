@@ -70,11 +70,17 @@ describe 'Logger level changing' do
   it '#silence!() should change the level to be FATAL' do
     flexmock(Adhearsion::Logging::DefaultAdhearsionLogger).should_receive(:level=).once.with(Log4r::FATAL)
     Adhearsion::Logging.silence!
+    # Verify and close manually here because the after-test hook breaks the expectation
+    flexmock_verify
+    flexmock_close
   end
 
   it '#unsilence!() should change the level to be INFO' do
     flexmock(Adhearsion::Logging::DefaultAdhearsionLogger).should_receive(:level=).once.with(Log4r::INFO)
     Adhearsion::Logging.unsilence!
+    # Verify and close manually here because the after-test hook breaks the expectation
+    flexmock_verify
+    flexmock_close
   end
 
 end

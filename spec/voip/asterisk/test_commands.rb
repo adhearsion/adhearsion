@@ -2045,9 +2045,7 @@ module MenuBuilderTestHelper
   def builder_should_match_with_these_quantities_of_calculated_matches(checks)
     checks.each do |check,hash|
       hash.each_pair do |method_name,intended_quantity|
-        message = "There were supposed to be #{intended_quantity} #{method_name.to_s.humanize} calculated."
-        builder.calculate_matches_for(check).send(method_name).
-          messaging(message).should == intended_quantity
+        builder.calculate_matches_for(check).send(method_name).should == intended_quantity
       end
     end
   end

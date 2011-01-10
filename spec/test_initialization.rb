@@ -106,7 +106,7 @@ describe "Adhearsion::Initializer" do
     initializer = Adhearsion::Initializer.new("/does/not/matter")
     flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).at_least.once.with("paths", "events").
         and_return([events_rb.path])
-    flexmock(Theatre::Theatre).new_instances.should_receive(:load_events_file).once.with events_rb.path
+    flexmock(Adhearsion::Events.framework_theatre).should_receive(:load_events_file).once.with events_rb.path
     flexmock(Adhearsion::Events.framework_theatre).should_receive(:start!).once
 
     initializer.send :init_events_subsystem
@@ -142,7 +142,7 @@ describe "AHN_ROOT" do
     path.using_base_path temporary_base do
       path.should == temporary_base
     end
-    path.should be original_base_path
+    path.should == original_base_path
   end
 
   it "creating the AHN_ROOT will set defaults" do
