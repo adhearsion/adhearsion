@@ -15,7 +15,11 @@ begin
     puts "https://adhearsion.lighthouseapp.com/projects/5871/tickets/92-menu-method-under-jruby-does-not-appear-to-work"
     puts "****************************************************************************"
   end
-rescue NameError # In case JRUBY_VERSION is not defined.
+rescue NameError
+  # In case JRUBY_VERSION is not defined.
+rescue ArgumentError
+  # Needed to handle ActiveSupport's handling of missing constants
+  # with anonymous modules under Ruby 1.9
 end
 
 module Adhearsion
