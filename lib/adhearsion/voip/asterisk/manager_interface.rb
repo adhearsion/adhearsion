@@ -364,8 +364,8 @@ module Adhearsion
             options = options.clone
             options[:callerid] = options.delete :caller_id if options.has_key? :caller_id
             options[:exten] = options.delete :extension if options.has_key? :extension
-            if options[:variables] && options[:variables].kind_of?(Hash)
-              options[:variable] = options[:variables].map {|pair| pair.join('=')}.join(@coreSettings["ArgumentDelimiter"])
+            if options.has_hey?(:variables) && options[:variables].kind_of?(Hash)
+              options[:variable] = options.delete(:variables).map {|pair| pair.join('=')}.join(@coreSettings["ArgumentDelimiter"])
             end
             send_action "Originate", options
           end
