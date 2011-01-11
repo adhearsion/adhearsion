@@ -456,7 +456,7 @@ module Adhearsion
           end
 
           def separate_line_into_key_value_pair(line)
-            line.match(/^([^:]+):\s?(.+)/).captures
+            line.match(/^([^:]+):(?:\s?(.+)|$)/).captures
           end
         end
 
