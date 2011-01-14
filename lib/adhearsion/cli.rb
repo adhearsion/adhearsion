@@ -102,14 +102,13 @@ USAGE
 
               app_path = PathString.from_application_subdirectory Dir.pwd
 
-              if !app_path.nil?
-                puts "Adhearsion application detected. Creating new component at components/#{component_name}"
-                new_component_dir = File.join(app_path, "components", component_name)
+              if app_path.nil?
+                new_component_dir = File.join Dir.pwd, component_name
               else
-                new_component_dir = File.join(Dir.pwd, component_name)
+                puts "Adhearsion application detected. Creating new component at components/#{component_name}"
+                new_component_dir = File.join app_path, "components", component_name
               end
 
-              
               raise ComponentError.new("Component #{component_name} already exists!") if File.exists?(new_component_dir)
 
               # Everything's good. Let's create the component
