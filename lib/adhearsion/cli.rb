@@ -102,23 +102,73 @@ USAGE
 
               app_path = PathString.from_application_subdirectory Dir.pwd
 
-              raise PathInvalid.new(Dir.pwd) if app_path.nil?
+              if !app_path.nil?
+                puts "Adhearsion application detected. Creating new component at components/#{component_name}"
+                new_component_dir = File.join(app_path, "components", component_name)
+              else
+                new_component_dir = File.join(Dir.pwd, component_name)
+              end
 
-              new_component_dir = app_path + "/components/#{component_name}"
+              
               raise ComponentError.new("Component #{component_name} already exists!") if File.exists?(new_component_dir)
 
               # Everything's good. Let's create the component
               Dir.mkdir new_component_dir
-              File.open(new_component_dir + "/#{component_name}.rb","w") do |file|
+
+              # Initial component code file
+              Dir.mkdir File.join(new_component_dir, "lib")
+              fn = File.join("lib", "#{component_name}.rb")
+              puts "- #{fn}: Initial component code file"
+              File.open(File.join(new_component_dir, fn),"w") do |file|
                 file.puts <<-RUBY
 # See http://docs.adhearsion.com for more information on how to write components or
 # look at the examples in newly-created projects.
                 RUBY
               end
-              File.open(new_component_dir + "/#{component_name}.yml","w") do |file|
+
+              # Component configuration
+              Dir.mkdir File.join(new_component_dir, "config")
+              fn = File.join("config", "#{component_name}.yml")
+              puts "- #{fn}: Example component configuration YAML"
+              File.open(File.join(new_component_dir, fn),"w") do |file|
                 file.puts '# You can use this file for component-specific configuration.'
               end
-              puts "Created blank component '#{component_name}' at components/#{component_name}"
+
+              # Component example gemspec
+              fn = File.join("#{component_name}.gemspec")
+              puts "- #{fn}: Example component gemspec"
+              File.open(File.join(new_component_dir, fn), "w") do |file|
+                file.puts <<-RUBY
+GEM_FILES = %w{
+  #{component_name}.gemspec
+  lib/#{component_name}.rb
+  config/#{component_name}.yml
+}
+
+Gem::Specification.new do |s|
+  s.name = "#{component_name}"
+  s.version = "0.0.1"
+
+  s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
+  s.authors = ["Your Name Here!"]
+
+  s.date = Date.today.to_s
+  s.description = "This Adhearsion component gem has not yet been described."
+  s.email = "noreply@example.com"
+
+  s.files = GEM_FILES
+
+  s.has_rdoc = false
+  s.homepage = "http://adhearsion.com"
+  s.require_paths = ["lib"]
+  s.rubygems_version = "1.2.0"
+  s.summary = "This Adhearsion component gem has no summary."
+
+  s.specification_version = 2
+end
+                RUBY
+              end
+              puts "Created blank component '#{component_name}' at #{new_component_dir}"
             else
               raise CommandHandler::UnknownCommand.new("Provided too many arguments to 'create'")
             end
