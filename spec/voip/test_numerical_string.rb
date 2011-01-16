@@ -4,24 +4,31 @@ require 'adhearsion/voip/dsl/numerical_string'
 require 'adhearsion/voip/constants'
 
 describe "A NumericalString" do
-  it "NumericalString should appear to be behave like a Fixnum in a case statement" do
-    (123 === numerical_string_for("123")).should be true
-    (987 === numerical_string_for("0987")).should be true
+  it "should appear to be behave like a Fixnum in a case statement" do
+    case numerical_string_for("123")
+      when 123 then true
+      else false
+    end.should be true
+
+    case numerical_string_for("0987")
+      when 987 then true
+      else false
+    end.should be true
   end
 
-  it "NumericalString should appear to behave like a String in a case statement" do
-    ("123"  === numerical_string_for("123")).should be true
-    ("0987" === numerical_string_for("0987")).should be true
+  it "should appear to behave like a String in a case statement" do
+    numerical_string_for("123").should === "123"
+    numerical_string_for("0987").should === "0987"
   end
 
   it "when compared against a Range that contains the numeric equivalent, the NumericalString is seen as a member" do
-    ((100..200) === numerical_string_for("150")).should be true
-    ((100..200) === numerical_string_for("0150")).should be true
-    ((100..200) === numerical_string_for("1000000")).should be false
+    (100..200).should === numerical_string_for("150")
+    (100..200).should === numerical_string_for("0150")
+    (100..200).should_not === numerical_string_for("1000000")
   end
 
   it "comparing against a regular expression works" do
-    (%r|^\d+$| === numerical_string_for("027316287")).should be true
+    %r|^\d+$|.should === numerical_string_for("027316287")
   end
 
   it "checking if a string representation of a number starts with a leading zero" do
