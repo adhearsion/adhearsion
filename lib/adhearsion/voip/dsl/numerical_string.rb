@@ -19,7 +19,7 @@ module Adhearsion
           end
         end
 
-        (instance_methods.map{|m| m.to_sym} - [:instance_eval, :object_id]).each { |m| undef_method m unless m.to_s =~ /^__/ }
+        (instance_methods.map{|m| m.to_sym} - [:instance_eval, :object_id, :class]).each { |m| undef_method m unless m.to_s =~ /^__/ }
 
         attr_reader :__real_num, :__real_string
 
@@ -35,6 +35,19 @@ module Adhearsion
         def respond_to?(m)
           @__real_string.respond_to?(m) || m == :__real_num || m == :__real_string
         end
+
+        def ==(x)
+          return x.is_a?(Fixnum) ? x == @__real_num : x == @__real_string
+        end
+        alias :=== :==
+
+        def is_a?(obj)
+          case obj.to_s
+          when "Fixnum" then true
+          when "String" then true
+          end
+        end
+        alias :kind_of? :is_a?
 
       end
 
