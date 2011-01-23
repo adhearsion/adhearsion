@@ -243,8 +243,8 @@ describe 'The "create" command' do
     simulate_args "create", "component", "ohai"
     capture_stdout { execute_ahn_command }
 
-    File.exists?(sandbox + "/components/ohai/ohai.rb").should be true
-    File.exists?(sandbox + "/components/ohai/ohai.yml").should be true
+    File.exists?(sandbox + "/components/ohai/lib/ohai.rb").should be true
+    File.exists?(sandbox + "/components/ohai/config/ohai.yml").should be true
   end
 
 end
