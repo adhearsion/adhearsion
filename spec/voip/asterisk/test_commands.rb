@@ -705,26 +705,26 @@ context "The queue management abstractions" do
 
   test 'should execute AddQueueMember with the penalty properly' do
     queue_name = 'name_does_not_matter'
-    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, '', 10, '', '','')
+    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, 'Agent/007', 10, '', '','')
     mock_call.should_receive(:get_variable).once.with('AQMSTATUS').and_return('ADDED')
     mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(#{queue_name})").and_return "Agent/007,SIP/2302,Local/2510@from-internal"
-    mock_call.queue(queue_name).agents.new :penalty => 10
+    mock_call.queue(queue_name).agents.new 'Agent/007', :penalty => 10
   end
 
   test 'should execute AddQueueMember with the state_interface properly' do
     queue_name = 'name_does_not_matter'
-    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, '', '', '', '','SIP/2302')
+    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, 'Agent/007', '', '', '','SIP/2302')
     mock_call.should_receive(:get_variable).once.with('AQMSTATUS').and_return('ADDED')
     mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(#{queue_name})").and_return "Agent/007,SIP/2302,Local/2510@from-internal"
-    mock_call.queue(queue_name).agents.new :state_interface => 'SIP/2302'
+    mock_call.queue(queue_name).agents.new 'Agent/007', :state_interface => 'SIP/2302'
   end
 
   test 'should execute AddQueueMember properly when the name is given' do
     queue_name, agent_name = 'name_does_not_matter', 'Jay Phillips'
-    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, '', '', '', agent_name,'')
+    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, 'Agents/007', '', '', agent_name,'')
     mock_call.should_receive(:get_variable).once.with('AQMSTATUS').and_return('ADDED')
     mock_call.should_receive(:get_variable).once.with("QUEUE_MEMBER_LIST(#{queue_name})").and_return "Agent/007,SIP/2302,Local/2510@from-internal"
-    mock_call.queue(queue_name).agents.new :name => agent_name
+    mock_call.queue(queue_name).agents.new 'Agents/007', :name => agent_name
   end
 
   test 'should execute AddQueueMember properly when the name, penalty, and interface is given' do

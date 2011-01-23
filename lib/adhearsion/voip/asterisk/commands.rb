@@ -1290,8 +1290,9 @@ module Adhearsion
               def new(*args)
 
                 options   = args.last.kind_of?(Hash) ? args.pop : {}
-                interface = args.shift || ''
+                interface = args.shift
 
+                raise ArgumentError, "You must specify an interface to add." if interface.nil?
                 raise ArgumentError, "You may only supply an interface and a Hash argument!" if args.any?
 
                 penalty             = options.delete(:penalty)            || ''
