@@ -27,7 +27,7 @@ describe 'interruptible_play command' do
   include DialplanCommandTestHelpers
 
   it 'should return a string for the digit that was pressed' do
-    digits = [?0, ?1, ?#, ?*, ?9]
+    digits = %w{0 1 # * 9}.map{|c| c.ord}
     file = "file_doesnt_matter"
     digits.each { |digit| pbx_should_respond_with_success digit }
     digits.map  { |digit| mock_call.send(:interruptible_play, file) }.should == digits.map(&:chr)
@@ -39,7 +39,7 @@ describe 'interruptible_play command' do
   end
 
   it "should play a series of files, stopping the series when a digit is played" do
-    stubbed_keypad_input = [0, 0, ?3]
+    stubbed_keypad_input = [0, 0, ?3.ord]
     stubbed_keypad_input.each do |digit|
       pbx_should_respond_with_success digit
     end
@@ -55,7 +55,7 @@ describe 'wait_for_digit command' do
   include DialplanCommandTestHelpers
 
   it 'should return a string for the digit that was pressed' do
-    digits = [?0, ?1, ?#, ?*, ?9]
+    digits = %w{0 1 # * 9}.map{|c| c.ord}
     digits.each { |digit| pbx_should_respond_with_success digit }
     digits.map  { |digit| mock_call.send(:wait_for_digit) }.should == digits.map(&:chr)
   end
@@ -863,8 +863,8 @@ describe 'the menu() method' do
   end
 
   it "should jump to a context when a timeout is encountered and there is at least one exact match" do
-    pbx_should_respond_with_successful_background_response ?5
-    pbx_should_respond_with_successful_background_response ?4
+    pbx_should_respond_with_successful_background_response ?5.ord
+    pbx_should_respond_with_successful_background_response ?4.ord
     pbx_should_respond_with_a_wait_for_digit_timeout
 
     context_named_main  = Adhearsion::DialPlan::DialplanContextProc.new(:main)  { throw :inside_main!  }
@@ -881,7 +881,7 @@ describe 'the menu() method' do
   end
 
   it "when the 'extension' variable is changed, it should be an instance of PhoneNumber" do
-    pbx_should_respond_with_successful_background_response ?5
+    pbx_should_respond_with_successful_background_response ?5.ord
     foobar_context = Adhearsion::DialPlan::DialplanContextProc.new(:foobar) { throw :foobar! }
     mock_call.should_receive(:foobar).once.and_return foobar_context
     should_pass_control_to_a_context_that_throws :foobar! do
@@ -947,7 +947,7 @@ describe 'the Menu class' do
   end
 
   it "should default the timeout to five seconds" do
-    pbx_should_respond_with_successful_background_response ?2
+    pbx_should_respond_with_successful_background_response ?2.ord
     pbx_should_respond_with_a_wait_for_digit_timeout
 
     mock_call.should_receive(:wait_for_digit).once.with(5).and_return nil
@@ -958,8 +958,8 @@ describe 'the Menu class' do
     tries, times_timed_out = 10, 0
 
     tries.times do
-      pbx_should_respond_with_successful_background_response ?4
-      pbx_should_respond_with_successful_background_response ?0
+      pbx_should_respond_with_successful_background_response ?4.ord
+      pbx_should_respond_with_successful_background_response ?0.ord
       pbx_should_respond_with_a_wait_for_digit_timeout
     end
 
@@ -979,7 +979,7 @@ describe 'the Menu class' do
     times_invalid = 0
 
     tries.times do
-      pbx_should_respond_with_successful_background_response ?0
+      pbx_should_respond_with_successful_background_response ?0.ord
     end
 
     should_throw :inside_failure_callback do
@@ -994,9 +994,9 @@ describe 'the Menu class' do
   end
 
   it "invoke on_invalid callback when an invalid extension was entered" do
-    pbx_should_respond_with_successful_background_response ?5
-    pbx_should_respond_with_successful_background_response ?5
-    pbx_should_respond_with_successful_background_response ?5
+    pbx_should_respond_with_successful_background_response ?5.ord
+    pbx_should_respond_with_successful_background_response ?5.ord
+    pbx_should_respond_with_successful_background_response ?5.ord
     should_throw :inside_invalid_callback do
       mock_call.menu do |link|
         link.onetwothree 123
@@ -1006,7 +1006,7 @@ describe 'the Menu class' do
   end
 
   it "invoke on_premature_timeout when a timeout is encountered" do
-    pbx_should_respond_with_successful_background_response ?9
+    pbx_should_respond_with_successful_background_response ?9.ord
     pbx_should_respond_with_a_wait_for_digit_timeout
 
     should_throw :inside_timeout do
@@ -1024,9 +1024,9 @@ describe "the Menu class's high-level judgment" do
   include DialplanCommandTestHelpers
 
   it "should match things in ambiguous ranges properly" do
-    pbx_should_respond_with_successful_background_response ?1
-    pbx_should_respond_with_successful_background_response ?1
-    pbx_should_respond_with_successful_background_response ?1
+    pbx_should_respond_with_successful_background_response ?1.ord
+    pbx_should_respond_with_successful_background_response ?1.ord
+    pbx_should_respond_with_successful_background_response ?1.ord
     pbx_should_respond_with_a_wait_for_digit_timeout
 
     main_context = Adhearsion::DialPlan::DialplanContextProc.new(:main) { throw :got_here! }
@@ -1042,9 +1042,9 @@ describe "the Menu class's high-level judgment" do
   end
 
   it 'should match things in a range when there are many other non-matching patterns' do
-    pbx_should_respond_with_successful_background_response ?9
-    pbx_should_respond_with_successful_background_response ?9
-    pbx_should_respond_with_successful_background_response ?5
+    pbx_should_respond_with_successful_background_response ?9.ord
+    pbx_should_respond_with_successful_background_response ?9.ord
+    pbx_should_respond_with_successful_background_response ?5.ord
 
     conferences_context = Adhearsion::DialPlan::DialplanContextProc.new(:conferences) { throw :got_here! }
     mock_call.should_receive(:conferences).and_return conferences_context
@@ -1799,7 +1799,7 @@ describe 'the DialPlan::ConfirmationManager' do
 
     manager = Adhearsion::DialPlan::ConfirmationManager.new(mock_call)
 
-    flexstub(manager).should_receive(:result_digit_from).and_return ?0
+    flexstub(manager).should_receive(:result_digit_from).and_return ?0.ord
     flexstub(manager).should_receive(:raw_response).and_return nil
 
     flexmock(manager).should_receive(:answer).once
@@ -1820,7 +1820,7 @@ describe 'the DialPlan::ConfirmationManager' do
 
     manager = Adhearsion::DialPlan::ConfirmationManager.new(mock_call)
 
-    flexstub(manager).should_receive(:result_digit_from).and_return ?0
+    flexstub(manager).should_receive(:result_digit_from).and_return ?0.ord
     flexstub(manager).should_receive(:raw_response).and_return nil
 
     flexmock(manager).should_receive(:answer).once
@@ -1844,7 +1844,7 @@ describe 'the DialPlan::ConfirmationManager' do
 
     manager = Adhearsion::DialPlan::ConfirmationManager.new(mock_call)
 
-    flexstub(manager).should_receive(:result_digit_from).and_return ?0
+    flexstub(manager).should_receive(:result_digit_from).and_return ?0.ord
     flexstub(manager).should_receive(:raw_response).and_return nil
 
     flexmock(manager).should_receive(:answer).once
@@ -1866,7 +1866,7 @@ describe 'the DialPlan::ConfirmationManager' do
 
     manager = Adhearsion::DialPlan::ConfirmationManager.new(mock_call)
 
-    flexstub(manager).should_receive(:result_digit_from).and_return ?0
+    flexstub(manager).should_receive(:result_digit_from).and_return ?0.ord
     flexstub(manager).should_receive(:raw_response).and_return nil
 
     flexmock(manager).should_receive(:answer).once
