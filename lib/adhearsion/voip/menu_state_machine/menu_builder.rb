@@ -10,7 +10,6 @@ module Adhearsion
       end
 
       def method_missing(match_payload, *patterns, &block)
-        name_string = match_payload.to_s
         if patterns.any?
           patterns.each do |pattern|
             @patterns << MatchCalculator.build_with_pattern(pattern, match_payload)
