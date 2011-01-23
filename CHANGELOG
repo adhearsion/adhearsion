@@ -1,3 +1,9 @@
+1.0.1
+ - Add support for AGI script parameter to Queue#join!
+ - Migrate unit tests to RSpec 2
+ - New components now include RubyGems skeleton files
+ - Fix support for setting Caller ID name on AGI dial() command
+
 1.0.0
  - Fall back to using Asterisk's context if the AGI URI context is not found
  - Enable configuration of :auto_reconnect parameter for AMI
