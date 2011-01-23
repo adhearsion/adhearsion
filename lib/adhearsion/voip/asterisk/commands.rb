@@ -1294,12 +1294,13 @@ module Adhearsion
 
                 raise ArgumentError, "You may only supply an interface and a Hash argument!" if args.any?
 
-                penalty = options.delete(:penalty) || ''
-                name    = options.delete(:name)    || ''
+                penalty             = options.delete(:penalty)            || ''
+                name                = options.delete(:name)               || ''
+                state_interface     = options.delete(:state_interface)    || ''
 
                 raise ArgumentError, "Unrecognized argument(s): #{options.inspect}" if options.any?
 
-                proxy.environment.execute("AddQueueMember", proxy.name, interface, penalty, '', name)
+                proxy.environment.execute("AddQueueMember", proxy.name, interface, penalty, '', name, state_interface)
 
                 case proxy.environment.variable("AQMSTATUS")
                   when "ADDED"         then true

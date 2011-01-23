@@ -669,7 +669,7 @@ context "The queue management abstractions" do
   test 'QueueAgentsListProxy#<<() should new the channel driver given as the argument to the system' do
     queue_name, agent_channel = "metasyntacticvariablesftw", "Agent/123"
     pbx_should_respond_with_value "ADDED"
-    mock_call.should_receive('execute').once.with("AddQueueMember", queue_name, agent_channel, "", "", "")
+    mock_call.should_receive('execute').once.with("AddQueueMember", queue_name, agent_channel, "", "", "", "")
     mock_call.queue(queue_name).agents.new agent_channel
   end
 
@@ -683,7 +683,7 @@ context "The queue management abstractions" do
 
   test 'when a queue agent is dynamiaclly added and the adding was successful, true should be returned' do
     mock_call.should_receive(:get_variable).once.with("AQMSTATUS").and_return("ADDED")
-    mock_call.should_receive(:execute).once.with("AddQueueMember", "lalala", "Agent/007", "", "", "")
+    mock_call.should_receive(:execute).once.with("AddQueueMember", "lalala", "Agent/007", "", "", "", "")
     return_value = mock_call.queue('lalala').agents.new "Agent/007"
     return_value.should.equal true
   end
@@ -696,23 +696,37 @@ context "The queue management abstractions" do
 
   test 'should execute AddQueueMember with the penalty properly' do
     queue_name = 'name_does_not_matter'
-    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, '', 10, '', '')
+    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, '', 10, '', '','')
     mock_call.should_receive(:get_variable).once.with('AQMSTATUS').and_return('ADDED')
     mock_call.queue(queue_name).agents.new :penalty => 10
   end
 
+  test 'should execute AddQueueMember with the state_interface properly' do
+    queue_name = 'name_does_not_matter'
+    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, '', '', '', '','SIP/2302')
+    mock_call.should_receive(:get_variable).once.with('AQMSTATUS').and_return('ADDED')
+    mock_call.queue(queue_name).agents.new :state_interface => 'SIP/2302'
+  end
+
   test 'should execute AddQueueMember properly when the name is given' do
     queue_name, agent_name = 'name_does_not_matter', 'Jay Phillips'
-    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, '', '', '', agent_name)
+    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, '', '', '', agent_name,'')
     mock_call.should_receive(:get_variable).once.with('AQMSTATUS').and_return('ADDED')
     mock_call.queue(queue_name).agents.new :name => agent_name
   end
 
   test 'should execute AddQueueMember properly when the name, penalty, and interface is given' do
     queue_name, agent_name, interface, penalty = 'name_does_not_matter', 'Jay Phillips', 'Agent/007', 4
-    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, interface, penalty, '', agent_name)
+    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, interface, penalty, '', agent_name,'')
     mock_call.should_receive(:get_variable).once.with('AQMSTATUS').and_return('ADDED')
     mock_call.queue(queue_name).agents.new interface, :name => agent_name, :penalty => penalty
+  end
+
+  test 'should execute AddQueueMember properly when the name, penalty, interface, and state_interface is given' do
+    queue_name, agent_name, interface, penalty, state_interface = 'name_does_not_matter', 'Jay Phillips', 'Agent/007', 4, 'SIP/2302'
+    mock_call.should_receive(:execute).once.with('AddQueueMember', queue_name, interface, penalty, '', agent_name, state_interface)
+    mock_call.should_receive(:get_variable).once.with('AQMSTATUS').and_return('ADDED')
+    mock_call.queue(queue_name).agents.new interface, :name => agent_name, :penalty => penalty, :state_interface => state_interface
   end
 
   test 'should return a correct boolean for exists?()' do
