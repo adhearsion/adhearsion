@@ -532,9 +532,9 @@ context "The queue management abstractions" do
   end
 
   test 'should join a queue with an announcement file properly' do
-    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "", '', '', '5')
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "", '', 'custom_announcement_file_here', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
-    mock_call.queue("roflcopter").join! :timeout => 5
+    mock_call.queue("roflcopter").join! :announce => 'custom_announcement_file_here'
   end
 
   test 'should join a queue with allow_transfer properly' do
