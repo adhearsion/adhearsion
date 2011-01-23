@@ -1118,6 +1118,7 @@ module Adhearsion
                 ring_style     = options.delete :play
                 allow_hangup   = options.delete :allow_hangup
                 allow_transfer = options.delete :allow_transfer
+                agi            = options.delete :agi
 
                 raise ArgumentError, "Unrecognized args to join!: #{options.inspect}" if options.any?
 
@@ -1146,7 +1147,7 @@ module Adhearsion
 
                 terse_character_options = ring_style + allow_transfer + allow_hangup
 
-                [terse_character_options, '', announcement, timeout].map(&:to_s)
+                [terse_character_options, '', announcement, timeout, agi].map(&:to_s)
               end
 
             end
@@ -1165,6 +1166,7 @@ module Adhearsion
             #   :announce       - A sound file to play instead of the normal queue announcement.
             #   :allow_transfer - Can be :caller, :agent, or :everyone. Allow someone to transfer the call.
             #   :allow_hangup   - Can be :caller, :agent, or :everyone. Allow someone to hangup with the * key.
+            #   :agi            - An AGI script to be called on the calling parties channel just before being connected.
             #
             #  @example
             #    queue('sales').join!
@@ -1186,6 +1188,8 @@ module Adhearsion
             #    queue('sales').join! :allow_hangup   => :agent
             #  @example
             #    queue('sales').join! :allow_hangup   => :everyone
+            #  @example
+            #    queue('sales').join! :agi            => 'agi://localhost/sales_queue_callback'
             #  @example
             #    queue('sales').join! :allow_transfer => :agent, :timeout => 30.seconds,
             def join!(options={})

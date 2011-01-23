@@ -537,6 +537,12 @@ context "The queue management abstractions" do
     mock_call.queue("roflcopter").join! :announce => 'custom_announcement_file_here'
   end
 
+  test 'should join a queue with an agi script properly' do
+    mock_call.should_receive(:execute).once.with("queue", 'support', '', '', '', '','agi://localhost/queue_agi_test')
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINUNAVAIL"
+    mock_call.queue("support").join! :agi => 'agi://localhost/queue_agi_test'
+  end
+
   test 'should join a queue with allow_transfer properly' do
     mock_call.should_receive(:execute).once.with("queue", "roflcopter", "Tt", '', '', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
