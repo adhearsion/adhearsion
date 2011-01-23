@@ -1302,15 +1302,22 @@ module Adhearsion
 
                 proxy.environment.execute("AddQueueMember", proxy.name, interface, penalty, '', name, state_interface)
 
-                case proxy.environment.variable("AQMSTATUS")
-                  when "ADDED"         then true
-                  when "MEMBERALREADY" then false
-                  when "NOSUCHQUEUE"   then raise QueueDoesNotExistError.new(proxy.name)
-                  else
-                    raise "UNRECOGNIZED AQMSTATUS VALUE!"
-                end
+                added = case proxy.environment.variable("AQMSTATUS")
+                        when "ADDED"         then true
+                        when "MEMBERALREADY" then false
+                        when "NOSUCHQUEUE"   then raise QueueDoesNotExistError.new(proxy.name)
+                        else
+                          raise "UNRECOGNIZED AQMSTATUS VALUE!"
+                        end
 
-                # TODO: THIS SHOULD RETURN AN AGENT INSTANCE
+                if added
+                  check_agent_cache!
+                  AgentProxy.new(interface, proxy).tap do |agent_proxy|
+                    @agents << agent_proxy
+                  end
+                else
+                  false
+                end
               end
 
               # Logs a pre-defined agent into this queue and waits for calls. Pass in :silent => true to stop
