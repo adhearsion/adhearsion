@@ -525,6 +525,12 @@ context "The queue management abstractions" do
     mock_call.queue('monkey').join!.should.equal :timeout
   end
 
+  test 'should return :completed after joining the queue and being connected' do
+    does_not_read_data_back
+    mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return nil
+    mock_call.queue('monkey').join!.should.equal :completed
+  end
+
   test 'should join a queue with a timeout properly' do
     mock_call.should_receive(:execute).once.with("queue", "foobaz", "", '', '', '60', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"

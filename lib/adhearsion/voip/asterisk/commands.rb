@@ -1244,23 +1244,24 @@ module Adhearsion
             #
             # According to http://www.voip-info.org/wiki/view/Asterisk+cmd+Queue
             # possible values are:
-            # TIMEOUT (:timeout
-            # FULL (:full)
-            # JOINEMPTY (:joinempty)
-            # LEAVEEMPTY (:leaveempty)
-            # JOINUNAVAIL (:joinunavail)
-            # LEAVEUNAVAIL (:leaveunavail)
             #
-            # If Adhearsion cannot determine the status then :unknown will be returned.
+            # TIMEOUT      => :timeout
+            # FULL         => :full
+            # JOINEMPTY    => :joinempty
+            # LEAVEEMPTY   => :leaveempty
+            # JOINUNAVAIL  => :joinunavail
+            # LEAVEUNAVAIL => :leaveunavail
+            # CONTINUE     => :continue
+            #
+            # If the QUEUESTATUS variable is not set the call was successfully connected, 
+            # and Adhearsion will return :completed.
             #
             # @param [String] QUEUESTATUS variable from Asterisk
             # @return [Symbol] Symbolized version of QUEUESTATUS
             # @raise QueueDoesNotExistError
             def normalize_queue_status_variable(variable)
-              variable = "UNKNOWN" if variable.nil?
-              variable.downcase.to_sym.tap do |queue_status|
-                raise QueueDoesNotExistError.new(name) if queue_status == :unknown
-              end
+              variable = "COMPLETED" if variable.nil?
+              variable.downcase.to_sym
             end
 
             class QueueAgentsListProxy
