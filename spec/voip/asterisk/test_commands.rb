@@ -514,7 +514,7 @@ context "The queue management abstractions" do
   end
 
   test 'join! should properly join a queue' do
-    mock_call.should_receive(:execute).once.with("queue", "foobaz", "", '', '', '')
+    mock_call.should_receive(:execute).once.with("queue", "foobaz", "", '', '', '', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "FULL"
     mock_call.queue("foobaz").join!
   end
@@ -526,13 +526,13 @@ context "The queue management abstractions" do
   end
 
   test 'should join a queue with a timeout properly' do
-    mock_call.should_receive(:execute).once.with("queue", "foobaz", "", '', '', '60')
+    mock_call.should_receive(:execute).once.with("queue", "foobaz", "", '', '', '60', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
     mock_call.queue("foobaz").join! :timeout => 1.minute
   end
 
   test 'should join a queue with an announcement file properly' do
-    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "", '', 'custom_announcement_file_here', '')
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "", '', 'custom_announcement_file_here', '', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
     mock_call.queue("roflcopter").join! :announce => 'custom_announcement_file_here'
   end
@@ -544,45 +544,45 @@ context "The queue management abstractions" do
   end
 
   test 'should join a queue with allow_transfer properly' do
-    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "Tt", '', '', '')
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "Tt", '', '', '', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
     mock_call.queue("roflcopter").join! :allow_transfer => :everyone
 
-    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "T", '', '', '')
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "T", '', '', '', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
     mock_call.queue("roflcopter").join! :allow_transfer => :caller
 
-    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "t", '', '', '')
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "t", '', '', '', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
     mock_call.queue("roflcopter").join! :allow_transfer => :agent
   end
 
   test 'should join a queue with allow_hangup properly' do
-    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "Hh", '', '', '')
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "Hh", '', '', '', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
     mock_call.queue("roflcopter").join! :allow_hangup => :everyone
 
-    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "H", '', '', '')
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "H", '', '', '', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
     mock_call.queue("roflcopter").join! :allow_hangup => :caller
 
-    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "h", '', '', '')
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "h", '', '', '', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
     mock_call.queue("roflcopter").join! :allow_hangup => :agent
   end
 
   test 'should join a queue properly with the :play argument' do
-    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "r", '', '', '')
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "r", '', '', '', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
     mock_call.queue("roflcopter").join! :play => :ringing
 
-    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "", '', '', '')
+    mock_call.should_receive(:execute).once.with("queue", "roflcopter", "", '', '', '', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
     mock_call.queue("roflcopter").join! :play => :music
   end
 
   test 'joining a queue with many options specified' do
-    mock_call.should_receive(:execute).once.with("queue", "q", "rtHh", '', '', '120')
+    mock_call.should_receive(:execute).once.with("queue", "q", "rtHh", '', '', '120', '')
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "JOINEMPTY"
     mock_call.queue('q').join! :allow_transfer => :agent, :timeout => 2.minutes,
                                :play => :ringing, :allow_hangup => :everyone
