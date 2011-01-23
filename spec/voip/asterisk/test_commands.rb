@@ -1620,7 +1620,7 @@ describe "the last_dial_status command and family" do
     mock_call.last_dial_status.should be :congested
 
     mock_call.should_receive(:variable).once.with("DIALSTATUS").and_return("BUSY")
-    mock_call.last_dial_status.should be:busy
+    mock_call.last_dial_status.should be :busy
 
     mock_call.should_receive(:variable).once.with("DIALSTATUS").and_return("CANCEL")
     mock_call.last_dial_status.should be :cancelled
