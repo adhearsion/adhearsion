@@ -24,7 +24,7 @@ describe "Files from config" do
 paths:
   init:
 #{
-    files.map { |f| "    - #{f}\n" }
+    files.map { |f| "    - #{f}" }.join("\n")
 }
     YML
     Adhearsion::AHN_CONFIG.ahnrc = yaml
