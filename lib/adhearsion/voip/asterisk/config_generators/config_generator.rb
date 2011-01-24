@@ -13,7 +13,7 @@ module Adhearsion
               almost_sanitized = Hash[*config_file_content.
                 split("\n").          # Split the lines into an Array
                 grep(/^\s*[^;\s]/).   # Grep lines that aren't commented out
-                join.                 # Convert them into one String again
+                join("\n").           # Convert them into one String again
                 split(SECTION_TITLE). # Separate them into sections
                 map(&:strip).         # Remove all whitespace
                 reject(&:empty?).     # Get rid of indices that were only whitespace
