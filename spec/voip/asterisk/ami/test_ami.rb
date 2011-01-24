@@ -349,6 +349,11 @@ describe "Class methods of ManagerInterface" do
   end
 
   it "the IAXPeers action should not respond with an action id" do
+    # FIXME: This test relies on the side effect that earlier tests have run
+    # and initialized the UnsupportedActionName::UNSUPPORTED_ACTION_NAMES
+    # constant for an "unknown" version of Asterisk.  This should be fixed
+    # to be more specific about which version of Asterisk is under test.
+    # IAXPeers is supported (with Action IDs!) since Asterisk 1.8
     @ManagerInterface.replies_with_action_id?("IAXPeers").should == false
   end
 
