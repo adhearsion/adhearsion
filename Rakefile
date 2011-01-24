@@ -69,6 +69,12 @@ task :check_ragel_version do
   if big < 6 || (big == 6 && small < 3)
     abort "Please upgrade Ragel! You're on version #{ragel_version_match[0]} and must be on 6.3 or later"
   end
+  if (big == 6 && small < 7)
+    puts "WARNING: A change to Ruby since 1.9 affects the Ragel generated code."
+    puts "WARNING: You MUST be using Ragel version 6.7 or have patched it using"
+    puts "WARNING: the patch found at:"
+    puts "WARNING: http://www.mail-archive.com/ragel-users@complang.org/msg00440.html"
+  end
 end
 
 desc "Used to regenerate the AMI source code files. Note: requires Ragel 6.3 or later be installed on your system"
