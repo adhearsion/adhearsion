@@ -151,6 +151,26 @@ context 'play command' do
     pbx_was_asked_to_play_time(time.to_i)
   end
 
+  test 'If a Date is passed to play(), the SayUnixTime application will be executed with the date passed in' do
+    date = Date.parse('2011-01-23')
+    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",'BdY').and_return('200')
+    mock_call.play date
+  end
+
+  test 'If an array containing a Date/DateTime/Time object and a hash is passed to play(), the SayUnixTime application will be executed with the object passed in with the specified format and timezone' do
+    date, format = Date.parse('2011-01-23'), 'ABdY'
+    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return('200')
+    mock_call.play [date, {:format => format}]
+
+    time, timezone = Time.at(1295843084), 'US/Eastern'
+    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,'').and_return('200')
+    mock_call.play [time, {:timezone => timezone}]
+
+    time, timezone, format = Time.at(1295843084), 'US/Eastern', 'ABdY \'digits/at\' IMp'
+    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,format).and_return('200')
+    mock_call.play [time, {:timezone => timezone, :format => format}]
+  end
+
   disabled_test 'If a string matching dollars and (optionally) cents is passed to play(), a series of command will be executed to read the dollar amount' do
     #TODO: I think we should not have this be part of play().  Too much functionality in one method. Too much overloading.  When we want to support multiple
     # currencies, it'll be completely unwieldy.  I'd suggest play_currency as a separate method. - Chad
