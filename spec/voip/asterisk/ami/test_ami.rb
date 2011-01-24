@@ -345,11 +345,11 @@ describe "Class methods of ManagerInterface" do
   end
 
   it "the Queues action should not respond with an action id" do
-    @ManagerInterface.replies_with_action_id?("Queues").should ==false
+    @ManagerInterface.replies_with_action_id?("Queues").should == false
   end
 
   it "the IAXPeers action should not respond with an action id" do
-    @ManagerInterface.replies_with_action_id?("IAXPeers").should ==false
+    @ManagerInterface.replies_with_action_id?("IAXPeers").should == false
   end
 
   it "the ParkedCalls terminator event" do
