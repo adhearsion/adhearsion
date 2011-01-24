@@ -917,6 +917,38 @@ module Adhearsion
           nil
         end
 
+        ##
+        # Plays the given Date, Time, or Integer (seconds since epoch)
+        # using the given timezone and format.
+        #
+        # @param [Date|Time|DateTime] Time to be said.
+        # @param [Hash] Additional options to specify how exactly to say time specified.
+        #
+        # +:timezone+ - Sends a timezone to asterisk. See /usr/share/zoneinfo for a list. Defaults to the machine timezone.
+        # +:format+   - This is the format the time is to be said in.  Defaults to "ABdY 'digits/at' IMp"
+        #
+        # @see http://www.voip-info.org/wiki/view/Asterisk+cmd+SayUnixTime
+        def play_time(*args)
+          argument, options = args.flatten
+          options ||= {}
+
+          timezone = options.delete(:timezone) || ''
+          format   = options.delete(:format)   || ''
+          epoch    = case argument.class.to_s
+                     when 'Time'      then argument.to_i
+                     when 'DateTime'  then argument.to_i
+                     when 'Date'
+                       format = 'BdY' unless format.present?
+                       argument.to_time.to_i
+                     else
+                       nil
+                     end
+
+          return false if epoch.nil?
+
+          execute(:sayunixtime, epoch, timezone, format)
+        end
+
         protected
 
           # wait_for_digits waits for the input of digits based on the number of milliseconds
@@ -1022,40 +1054,6 @@ module Adhearsion
             dial_status ? dial_status.downcase.to_sym : :cancelled
           end
 
-          ##
-          # Plays the given Date, Time, or Integer (seconds since epoch)
-          # using the given timezone and format.
-          #
-          # @param argument
-          # @param [Hash] options
-          #
-          # +:timezone+ - Sends a timezone to asterisk. See /usr/share/zoneinfo for a list. Defaults to the machine timezone.
-          # +:format+   - This is the format the time is to be said in.  Defaults to "ABdY 'digits/at' IMp"
-          #
-          # @see http://www.voip-info.org/wiki/view/Asterisk+cmd+SayUnixTime
-          def play_time(argument)
-            if argument.kind_of? Array
-              argument, options = argument
-            else
-              options = {}
-            end
-
-            timezone = options.delete(:timezone) || ''
-            format   = options.delete(:format)   || ''
-            epoch    = case argument.class.to_s
-                       when 'Time'      then argument.to_i
-                       when 'DateTime'  then argument.to_i
-                       when 'Date'
-                         format = 'BdY' unless format.present?
-                         argument.to_time.to_i
-                       else
-                         nil
-                       end
-
-            return false if epoch.nil?
-
-            execute(:sayunixtime, epoch, timezone, format)
-          end
 
           def play_numeric(argument)
             if argument.kind_of?(Numeric) || argument =~ /^\d+$/

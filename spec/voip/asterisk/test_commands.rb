@@ -157,6 +157,12 @@ context 'play command' do
     mock_call.play date
   end
 
+  test 'If a Date is passed to play_time(), the SayUnixTime application will be executed with the date and format passed in' do
+    date, format = Date.parse('2011-01-23'), 'ABdY'
+    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return('200')
+    mock_call.play_time date, :format => format
+  end
+
   test 'If an array containing a Date/DateTime/Time object and a hash is passed to play(), the SayUnixTime application will be executed with the object passed in with the specified format and timezone' do
     date, format = Date.parse('2011-01-23'), 'ABdY'
     mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return('200')
