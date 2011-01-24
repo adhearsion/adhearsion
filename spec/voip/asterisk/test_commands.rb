@@ -173,6 +173,11 @@ context 'play command' do
     mock_call.play_time time
   end
 
+  test 'If an object other than Time, DateTime, or Date is passed to play_time false will be returned' do
+    non_time = 'blah'
+    mock_call.play_time(non_time).should.equal false
+  end
+
   test 'If an array containing a Date/DateTime/Time object and a hash is passed to play(), the SayUnixTime application will be executed with the object passed in with the specified format and timezone' do
     date, format = Date.parse('2011-01-23'), 'ABdY'
     mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return('200')
