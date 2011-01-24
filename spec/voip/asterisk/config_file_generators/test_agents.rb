@@ -27,7 +27,7 @@ describe "The agents.conf config file agents" do
     agents.agent 123, :name => "Otto Normalverbraucher", :password => "007"
     agents.agent 889, :name => "John Doe", :password => "998"
 
-    agents.conf.grep(/^agent =>/).map(&:strip).should == [
+    agents.conf.split("\n").grep(/^agent =>/).map(&:strip).should == [
       "agent => 123,007,Otto Normalverbraucher",
       "agent => 889,998,John Doe"
     ]
@@ -242,7 +242,7 @@ module AgentsConfigFileGeneratorTestHelper
   end
 
   def generated_config_has_pair(pair)
-    agents.conf.grep(/=[^>]/).each do |line|
+    agents.conf.split("\n").grep(/=[^>]/).each do |line|
       key, value = line.strip.split('=')
       return true if pair == {key.to_sym => value}
     end

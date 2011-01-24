@@ -300,7 +300,7 @@ european=Europe/Copenhagen|'vm-received' a d b 'digits/at' HM
 4 => 1337,Rudie Can't Fail,foo@qaz.org
 5 => 1337,Spanish Bombs,foo@qaz.org
     CONFIG
-    vm.to_s.grep(/^$|^[^;]/).join.strip.should == target_config.strip
+    vm.to_s.split("\n").grep(/^$|^[^;]/).join("\n").strip.should == target_config.strip
 
   end
 end

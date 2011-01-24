@@ -315,7 +315,7 @@ module QueuesConfigFileGeneratorTestHelper
   end
 
   def generated_config_has_pair(pair)
-    queues.to_s.grep(/=[^>]/).each do |line|
+    queues.to_s.split("\n").grep(/=[^>]/).each do |line|
       key, value = line.strip.split('=')
       return true if pair == {key.to_sym => value}
     end
