@@ -233,7 +233,7 @@ array:
       TEST_TWO   = 2
       TEST_THREE = 3
     RUBY
-    container.constants.sort.should ==["TEST_ONE", "TEST_THREE", "TEST_TWO"]
+    container.constants.sort.map{|s| s.to_sym}.should == [:TEST_ONE, :TEST_THREE, :TEST_TWO]
     container.constants.map do |constant|
       container.const_get(constant)
     end.sort.should ==[1,2,3]
