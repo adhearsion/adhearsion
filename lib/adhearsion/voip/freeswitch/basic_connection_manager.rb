@@ -33,7 +33,7 @@ module Adhearsion
         end
 
         def separate_pairs(lines)
-          lines.inject({}) do |h,line|
+          lines.split("\n").inject({}) do |h,line|
             h.tap do |hash|
               k,v = line.split(/\s*:\s*/)
               hash[k] = URI.unescape(v).strip if k && v

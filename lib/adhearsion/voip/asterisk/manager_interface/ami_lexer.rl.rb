@@ -77,6 +77,7 @@ module Adhearsion
             @data = ""
             @current_pointer = 0
             @ragel_stack = []
+            @ami_version = 0.0
 
             %%{
               # All other variables become local, letting Ruby garbage collect them. This

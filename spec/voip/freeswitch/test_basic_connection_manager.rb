@@ -3,22 +3,22 @@ require 'adhearsion/voip/freeswitch/basic_connection_manager'
 
 include Adhearsion::VoIP::FreeSwitch
 
-context "FreeSwitch BasicConnectionManager" do
+describe "FreeSwitch BasicConnectionManager" do
   attr_reader :manager, :io
-  setup do
+  before(:each) do
     @io      = StringIO.new
     @manager = BasicConnectionManager.new io
   end
 
-  test "<<() should add two newlines" do
+  it "<<() should add two newlines" do
     manager << "foobar"
     io.string.should == "foobar\n\n"
   end
 
 end
 
-context "FreeSwitch BasicConnectionManager's header parser" do
-  test "YAML-like headers are read properly" do
+describe "FreeSwitch BasicConnectionManager's header parser" do
+  it "YAML-like headers are read properly" do
     header = {
       "Foo-Bar"                  => "bar",
       "Qaz-Monkey-Charlie-Zebra" => "qwerty"

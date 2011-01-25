@@ -167,6 +167,7 @@ class EventSocket
   def new_handler_from_block(&handler_block)
     handler = Object.new
     handler.metaclass.send :attr_accessor, :set_callbacks
+    handler.metaclass.send :public, :set_callbacks, :set_callbacks=
     handler.set_callbacks = {:receive_data => false, :disconnected => false, :connected => false }
 
     def handler.receive_data(&block)

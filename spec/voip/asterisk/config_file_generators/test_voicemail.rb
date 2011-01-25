@@ -1,61 +1,61 @@
 require File.join(File.dirname(__FILE__), *%w[.. .. .. test_helper])
 require 'adhearsion/voip/asterisk/config_generators/voicemail.conf'
 
-context 'Basic requirements of the Voicemail config generator' do
+describe 'Basic requirements of the Voicemail config generator' do
   attr_reader :config
   before :each do
     @config = Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail.new
   end
 
-  test 'should have a [general] context' do
-    config.to_sanitary_hash.has_key?('[general]').should.equal true
+  it 'should have a [general] context' do
+    config.to_sanitary_hash.has_key?('[general]').should be true
   end
 
-  test 'should set the format to "wav" by default in the general section' do
-    config.to_sanitary_hash['[general]'].should.include 'format=wav'
+  it 'should set the format to "wav" by default in the general section' do
+    config.to_sanitary_hash['[general]'].should include 'format=wav'
   end
 
-  test 'an exception should be raised if the context name is "general"' do
+  it 'an exception should be raised if the context name is "general"' do
     the_following_code {
       config.context(:general) {|_|}
-    }.should.raise ArgumentError
+    }.should raise_error ArgumentError
   end
 
 end
 
-context 'Defining recording-related settings of the Voicemail config file' do
+describe 'Defining recording-related settings of the Voicemail config file' do
 
   attr_reader :recordings
   before :each do
     @recordings = Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail::RecordingDefinition.new
   end
 
-  test 'the recordings setting setter' do
-    Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail.new.recordings.should.be.kind_of? recordings.class
+  it 'the recordings setting setter' do
+    Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail.new.recordings.should be_a_kind_of recordings.class
   end
 
-  test 'recordings format should only allow a few options' do
+  it 'recordings format should only allow a few options' do
     the_following_code {
       recordings.format :wav
       recordings.format :wav49
       recordings.format :gsm
-    }.should.not.raise
+    }.should_not raise_error
 
     the_following_code {
       recordings.format :lolcats
-    }.should.raise ArgumentError
+    }.should raise_error ArgumentError
   end
 
 end
 
-context 'Defining email-related Voicemail settings' do
+describe 'Defining email-related Voicemail settings' do
 
   attr_reader :email
   before :each do
     @email = Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail::EmailDefinition.new
   end
 
-  test 'the [] operator is overloaded to return conveniences for the body() and subject() methods' do
+  it 'the [] operator is overloaded to return conveniences for the body() and subject() methods' do
     variables = %{#{email[:name]} #{email[:mailbox]} #{email[:date]} #{email[:duration]} } +
                 %{#{email[:message_number]} #{email[:caller_id]} #{email[:caller_id_number]} } +
                 %{#{email[:caller_id_name]}}
@@ -66,27 +66,27 @@ context 'Defining email-related Voicemail settings' do
     email.properties[:emailsubject].should == formatted
   end
 
-  test 'when defining a body, newlines should be escaped and carriage returns removed' do
+  it 'when defining a body, newlines should be escaped and carriage returns removed' do
     unescaped, escaped = "one\ntwo\n\r\r\nthree\n\n\n", 'one\ntwo\n\nthree\n\n\n'
     email.body unescaped
     email.properties[:emailbody].should == escaped
   end
 
-  test 'the body must not be allowed to exceed 512 characters' do
+  it 'the body must not be allowed to exceed 512 characters' do
     the_following_code {
       email.body "X" * 512
-    }.should.not.raise ArgumentError
+    }.should_not raise_error ArgumentError
 
     the_following_code {
       email.body "X" * 513
-    }.should.raise ArgumentError
+    }.should raise_error ArgumentError
 
     the_following_code {
       email.body "X" * 1000
-    }.should.raise ArgumentError
+    }.should raise_error ArgumentError
   end
 
-  test 'should store away the email command properly' do
+  it 'should store away the email command properly' do
     mail_command = "/usr/sbin/sendmail -f alice@wonderland.com -t"
     email.command mail_command
     email.properties[:mailcmd].should == mail_command
@@ -94,40 +94,40 @@ context 'Defining email-related Voicemail settings' do
 
 end
 
-context 'A mailbox definition' do
+describe 'A mailbox definition' do
   attr_reader :mailbox
   before :each do
     @mailbox = Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail::ContextDefinition::MailboxDefinition.new("123")
   end
 
-  test 'setting the name should be reflected in the to_hash form of the definition' do
+  it 'setting the name should be reflected in the to_hash form of the definition' do
     mailbox.name "Foobar"
     mailbox.to_hash[:name].should == "Foobar"
   end
 
-  test 'setting the pin_number should be reflected in the to_hash form of the definition' do
+  it 'setting the pin_number should be reflected in the to_hash form of the definition' do
     mailbox.pin_number 555
-    mailbox.to_hash[:pin_number].should.equal 555
+    mailbox.to_hash[:pin_number].should be 555
   end
 
-  test 'the mailbox number should be available in the mailbox_number getter' do
+  it 'the mailbox number should be available in the mailbox_number getter' do
     Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail::ContextDefinition::MailboxDefinition.new '123'
-    mailbox.mailbox_number.should.equal '123'
+    mailbox.mailbox_number.should == '123'
   end
 
-  test 'an ArgumentError should be raised if the mailbox_number is not numeric' do
+  it 'an ArgumentError should be raised if the mailbox_number is not numeric' do
     the_following_code {
       Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail::ContextDefinition::MailboxDefinition.new("this is not numeric")
-    }.should.raise ArgumentError
+    }.should raise_error ArgumentError
   end
 
-  test 'an ArgumentError should be raised if the pin_number is not numeric' do
+  it 'an ArgumentError should be raised if the pin_number is not numeric' do
     the_following_code {
       mailbox.pin_number "this is not numeric"
-    }.should.raise ArgumentError
+    }.should raise_error ArgumentError
   end
 
-  test "the string representation should be valid" do
+  it "the string representation should be valid" do
     expected = "123 => 1337,Jay Phillips,ahn@adhearsion.com"
     mailbox.pin_number 1337
     mailbox.name "Jay Phillips"
@@ -135,52 +135,52 @@ context 'A mailbox definition' do
     mailbox.to_s.should == expected
   end
 
-  test 'should not add a trailing comma when the email is left out' do
+  it 'should not add a trailing comma when the email is left out' do
     mailbox.pin_number 1337
     mailbox.name "Jay Phillips"
-    mailbox.to_s.ends_with?(',').should.equal false
+    mailbox.to_s.ends_with?(',').should be false
   end
 
-  test 'should not add a trailing comma when the email and name is left out' do
+  it 'should not add a trailing comma when the email and name is left out' do
     mailbox.pin_number 1337
-    mailbox.to_s.ends_with?(',').should.equal false
+    mailbox.to_s.ends_with?(',').should be false
   end
 
 end
 
-context "A Voicemail context definition" do
+describe "A Voicemail context definition" do
 
-  test "should ultimately add a [] context definition to the string output" do
+  it "should ultimately add a [] context definition to the string output" do
     voicemail = Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail.new
     voicemail.context "monkeys" do |config|
-      config.should.be.kind_of voicemail.class::ContextDefinition
+      config.should be_a_kind_of voicemail.class::ContextDefinition
       config.mailbox 1234 do |mailbox|
         mailbox.pin_number 3333
         mailbox.email "alice@wonderland.com"
         mailbox.name "Alice Little"
       end
     end
-    voicemail.to_sanitary_hash.has_key?('[monkeys]').should.equal true
+    voicemail.to_sanitary_hash.has_key?('[monkeys]').should be true
   end
 
-  test 'should raise a LocalJumpError if no block is given' do
+  it 'should raise a LocalJumpError if no block is given' do
     the_following_code {
       Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail.new.context('lols')
-    }.should.raise LocalJumpError
+    }.should raise_error LocalJumpError
   end
 
-  test 'its string representation should begin with a context declaration' do
+  it 'its string representation should begin with a context declaration' do
     vm = Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail.new
-    vm.context("jay") {|_|}.to_s.starts_with?("[jay]").should.equal true
+    vm.context("jay") {|_|}.to_s.starts_with?("[jay]").should be true
   end
 
 end
 
-context 'Defining Voicemail contexts with mailbox definitions' do
+describe 'Defining Voicemail contexts with mailbox definitions' do
 
 end
 
-context 'An expansive example of the Voicemail config generator' do
+describe 'An expansive example of the Voicemail config generator' do
 
   before :each do
     @employees = [
@@ -199,7 +199,7 @@ context 'An expansive example of the Voicemail config generator' do
     ].map { |hash| OpenStruct.new(hash) }
   end
 
-  test 'a huge, brittle integration test' do
+  it 'a huge, brittle integration test' do
     vm = Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Voicemail.new do |voicemail|
       voicemail.context :default do |context|
         context.mailbox 123 do |mailbox|
@@ -265,7 +265,7 @@ context 'An expansive example of the Voicemail config generator' do
       end
     end
     internalized = vm.to_sanitary_hash
-    internalized.size.should.equal 5 # general, zonemessages, default, employees, groups
+    internalized.size.should be 5 # general, zonemessages, default, employees, groups
 
     target_config = <<-CONFIG
 [general]
@@ -300,7 +300,7 @@ european=Europe/Copenhagen|'vm-received' a d b 'digits/at' HM
 4 => 1337,Rudie Can't Fail,foo@qaz.org
 5 => 1337,Spanish Bombs,foo@qaz.org
     CONFIG
-    vm.to_s.grep(/^$|^[^;]/).join.strip.should == target_config.strip
+    vm.to_s.split("\n").grep(/^$|^[^;]/).join("\n").strip.should == target_config.strip
 
   end
 end

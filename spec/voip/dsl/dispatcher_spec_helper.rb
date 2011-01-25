@@ -4,7 +4,7 @@ require 'adhearsion/voip/dsl/dialplan/dispatcher'
 
 module StandardDispatcherBehavior
   def xtest_standard_dispatcher_behavior
-    #"This test looks bogus.  Not finished?  Let's not check in failing specs ever if we can help it."
+    #"This it looks bogus.  Not finished?  Let's not check in failing specs ever if we can help it."
     returned_event_command = Adhearsion::VoIP::DSL::Dialplan::EventCommand.new "ilikesexypants"
     linking_event_command = Adhearsion::VoIP::DSL::Dialplan::EventCommand.new "ihavesexypants" do
       returned_event_command

@@ -1,166 +1,166 @@
 require File.join(File.dirname(__FILE__), *%w[.. .. .. test_helper])
 require 'adhearsion/voip/asterisk/config_generators/agents.conf'
 
-context "The agents.conf config file agents" do
+describe "The agents.conf config file agents" do
 
   include AgentsConfigFileGeneratorTestHelper
 
   attr_reader :agents
-  before:each do
+  before(:each) do
     reset_agents!
   end
-  test "The agent() method should enqueue a Hash into Agents#agent_definitions" do
+  it "The agent() method should enqueue a Hash into Agents#agent_definitions" do
     agents.agent 1337, :password => 9876, :name => "Jay Phillips"
-    agents.agent_definitions.size.should.be 1
+    agents.agent_definitions.size.should be 1
     agents.agent_definitions.first.should == {:id => 1337, :password => 9876, :name => "Jay Phillips"}
   end
 
-  test 'should add the warning message to the to_s output' do
+  it 'should add the warning message to the to_s output' do
     agents.conf.should =~ /^\s*;.{10}/
   end
 
-  test "The conf() method should always create a general section" do
+  it "The conf() method should always create a general section" do
     agents.conf.should =~ /^\[general\]/
   end
 
-  test "The agent() method should generate a proper String" do
+  it "The agent() method should generate a proper String" do
     agents.agent 123, :name => "Otto Normalverbraucher", :password => "007"
     agents.agent 889, :name => "John Doe", :password => "998"
 
-    agents.conf.grep(/^agent =>/).map(&:strip).should == [
+    agents.conf.split("\n").grep(/^agent =>/).map(&:strip).should == [
       "agent => 123,007,Otto Normalverbraucher",
       "agent => 889,998,John Doe"
     ]
   end
 
-  test "The persistent_agents() method should generate a persistentagents yes/no pair" do
+  it "The persistent_agents() method should generate a persistentagents yes/no pair" do
     agents.persistent_agents true
-    generated_config_has_pair(:persistentagents => "yes").should.be true
+    generated_config_has_pair(:persistentagents => "yes").should be true
 
     reset_agents!
 
     agents.persistent_agents false
-    generated_config_has_pair(:persistentagents => "no").should.be true
+    generated_config_has_pair(:persistentagents => "no").should be true
   end
 
-  test "The persistent_agents() method should be in the [general] section" do
+  it "The persistent_agents() method should be in the [general] section" do
     agents.persistent_agents true
     agents.general_section.should == {:persistentagents => "yes"}
 
   end
 
-  test "max_login_tries() should generate a 'maxlogintries' numerical pair" do
+  it "max_login_tries() should generate a 'maxlogintries' numerical pair" do
     agents.max_login_tries 50
-    generated_config_has_pair(:maxlogintries => "50").should.be true
+    generated_config_has_pair(:maxlogintries => "50").should be true
   end
 
-  test "max_login_tries() should be in the agents section" do
+  it "max_login_tries() should be in the agents section" do
     agents.max_login_tries 0
     agents.agent_section.should == {:maxlogintries => 0}
   end
 
-  test "log_off_after_duration should generate autologoff" do
+  it "log_off_after_duration should generate autologoff" do
     agents.log_off_after_duration 15.seconds
-    generated_config_has_pair(:autologoff => "15").should.be true
+    generated_config_has_pair(:autologoff => "15").should be true
   end
 
-  test "log_off_if_unavailable should add autologoffunavail to the agents section" do
+  it "log_off_if_unavailable should add autologoffunavail to the agents section" do
     agents.log_off_if_unavailable false
     agents.agent_section.should == {:autologoffunavail => "no"}
   end
 
-  test "require_hash_to_acknowledge() should generate a 'ackcall' yes/no pair" do
+  it "require_hash_to_acknowledge() should generate a 'ackcall' yes/no pair" do
     agents.require_hash_to_acknowledge false
     agents.agent_section.should == {:ackcall => "no"}
   end
 
-  test "allow_star_to_hangup should generate a 'endcall' yes/no pair" do
+  it "allow_star_to_hangup should generate a 'endcall' yes/no pair" do
     agents.allow_star_to_hangup false
     agents.agent_section.should == {:endcall => "no"}
   end
 
-  test "time_between_calls should convert its argument to milliseconds" do
+  it "time_between_calls should convert its argument to milliseconds" do
     agents.time_between_calls 1.hour
     agents.agent_section.should == {:wrapuptime => 1.hour * 1_000}
   end
 
-  test "hold_music_class should convert its argument to a String" do
+  it "hold_music_class should convert its argument to a String" do
     agents.hold_music_class :podcast
     agents.agent_section_special.should == {:musiconhold => "podcast"}
   end
 
-  test "play_on_agent_goodbye should generate 'agentgoodbye'" do
+  it "play_on_agent_goodbye should generate 'agentgoodbye'" do
     agents.play_on_agent_goodbye "tt-monkeys"
     agents.agent_section_special.should == {:agentgoodbye => "tt-monkeys"}
   end
 
-  test "change_cdr_source should generate updatecdr" do
+  it "change_cdr_source should generate updatecdr" do
     agents.change_cdr_source false
     agents.agent_section.should == {:updatecdr => "no"}
   end
 
-  test "play_for_waiting_keep_alive" do
+  it "play_for_waiting_keep_alive" do
     agents.play_for_waiting_keep_alive "tt-weasels"
     agents.agent_section.should == {:custom_beep => "tt-weasels"}
   end
 
-  test "save_recordings_in should generate 'savecallsin'" do
+  it "save_recordings_in should generate 'savecallsin'" do
     agents.save_recordings_in "/second/star/on/the/right"
     agents.agent_section.should == {:savecallsin => "/second/star/on/the/right"}
   end
 
-  test "recording_prefix should generate 'urlprefix'" do
+  it "recording_prefix should generate 'urlprefix'" do
     agents.recording_prefix "ohai"
     agents.agent_section.should == {:urlprefix => "ohai"}
   end
 
-  test "recording_format should only allow a few symbols as an argument" do
+  it "recording_format should only allow a few symbols as an argument" do
     the_following_code {
       agents.recording_format :wav
       agents.agent_section.should == {:recordformat => :wav}
-    }.should.not.raise
+    }.should_not raise_error
 
     reset_agents!
 
     the_following_code {
       agents.recording_format :wav49
       agents.agent_section.should == {:recordformat => :wav49}
-    }.should.not.raise
+    }.should_not raise_error
 
     reset_agents!
 
     the_following_code {
       agents.recording_format :gsm
       agents.agent_section.should == {:recordformat => :gsm}
-    }.should.not.raise
+    }.should_not raise_error
 
     reset_agents!
 
     the_following_code {
       agents.recording_format :mp3
       agents.agent_section.should == {:recordformat => :mp3}
-    }.should.raise ArgumentError
+    }.should raise_error ArgumentError
 
   end
 
-  test "record_agent_calls should generate a 'recordagentcalls' yes/no pair" do
+  it "record_agent_calls should generate a 'recordagentcalls' yes/no pair" do
     agents.record_agent_calls false
     agents.agent_section.should == {:recordagentcalls => 'no'}
   end
 
-  test "allow_multiple_logins_per_extension should generate 'multiplelogin' in [general]" do
+  it "allow_multiple_logins_per_extension should generate 'multiplelogin' in [general]" do
     agents.allow_multiple_logins_per_extension true
     agents.general_section.should == {:multiplelogin => 'yes'}
   end
 
 end
 
-context "The default agents.conf config file converted to this syntax" do
+describe "The default agents.conf config file converted to this syntax" do
 
   include AgentsConfigFileGeneratorTestHelper
 
   attr_reader :default_config, :agents
-  before:each do
+  before(:each) do
     reset_agents!
     @default_config = <<-CONFIG
 [general]
@@ -187,7 +187,7 @@ agent => 1002,4321,Will Meadows
     CONFIG
   end
 
-  test "they're basically the same" do
+  it "they're basically the same" do
     agents.persistent_agents true
     agents.max_login_tries 5
     agents.log_off_after_duration 15
@@ -218,19 +218,19 @@ agent => 1002,4321,Will Meadows
 end
 
 
-context "AgentsConfigFileGeneratorTestHelper" do
+describe "AgentsConfigFileGeneratorTestHelper" do
 
   include AgentsConfigFileGeneratorTestHelper
 
   attr_reader :agents
 
-  test "generated_config_has_pair() works properly" do
+  it "generated_config_has_pair() works properly" do
     @agents = flexmock "A fake agents with just one pair", :conf => "foo=bar"
-    generated_config_has_pair(:foo => "bar").should.be true
+    generated_config_has_pair(:foo => "bar").should be true
 
     @agents = flexmock "A fake agents with just one pair", :conf => "[general]\n\nqaz=qwerty\nagent => 1,2,3"
-    generated_config_has_pair(:qaz => "qwerty").should.be true
-    generated_config_has_pair(:foo => "bar").should.be false
+    generated_config_has_pair(:qaz => "qwerty").should be true
+    generated_config_has_pair(:foo => "bar").should be false
   end
 end
 
@@ -242,7 +242,7 @@ module AgentsConfigFileGeneratorTestHelper
   end
 
   def generated_config_has_pair(pair)
-    agents.conf.grep(/=[^>]/).each do |line|
+    agents.conf.split("\n").grep(/=[^>]/).each do |line|
       key, value = line.strip.split('=')
       return true if pair == {key.to_sym => value}
     end

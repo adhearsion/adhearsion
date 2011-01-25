@@ -7,7 +7,7 @@ require 'rake/testtask'
 require 'date'
 
 begin
-  gem 'rspec', '>= 2.2.0'
+  gem 'rspec', '>= 2.4.0'
   require 'rspec/core/rake_task'
 rescue LoadError
   abort "You must install RSpec: sudo gem install rspec"
@@ -22,9 +22,10 @@ rescue LoadError
   STDERR.puts "\nCould not require() YARD! Install with 'gem install yard' to get the 'yardoc' task\n\n"
 end
 
-require 'lib/adhearsion/version'
+require 'adhearsion/version'
 
 AHN_TESTS     = ['spec/**/test_*.rb']
+#AHN_TESTS     = ['spec/test_ahn_command.rb']
 GEMSPEC       = eval File.read("adhearsion.gemspec")
 RAGEL_FILES   = %w[lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb]
 THEATRE_TESTS = 'theatre-spec/**/*_spec.rb'
@@ -48,8 +49,13 @@ Rake::GemPackageTask.new(GEMSPEC).define
 #   # t.options = ['--any', '--extra', '--opts'] # optional
 # end
 
-Rake::TestTask.new('spec') do |t|
-  t.verbose = true
+#Rake::TestTask.new('spec') do |t|
+#  t.libs << File.dirname(__FILE__)
+#  t.verbose = true
+#  t.pattern = AHN_TESTS
+#end
+
+RSpec::Core::RakeTask.new(:spec) do |t|
   t.pattern = AHN_TESTS
 end
 
@@ -62,6 +68,12 @@ task :check_ragel_version do
   big, small = ragel_version_match.captures.map { |n| n.to_i }
   if big < 6 || (big == 6 && small < 3)
     abort "Please upgrade Ragel! You're on version #{ragel_version_match[0]} and must be on 6.3 or later"
+  end
+  if (big == 6 && small < 7)
+    puts "WARNING: A change to Ruby since 1.9 affects the Ragel generated code."
+    puts "WARNING: You MUST be using Ragel version 6.7 or have patched it using"
+    puts "WARNING: the patch found at:"
+    puts "WARNING: http://www.mail-archive.com/ragel-users@complang.org/msg00440.html"
   end
 end
 
@@ -85,7 +97,7 @@ task :visualize_ragel => :check_ragel_version do
 end
 
 desc "Run all RSpecs for Theatre"
-RSpec::Core::RakeTask.new("theatre_specs") do |t|
+RSpec::Core::RakeTask.new(:theatre_specs) do |t|
   t.pattern = FileList[THEATRE_TESTS]
 end
 

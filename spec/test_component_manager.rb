@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + "/test_helper"
 require 'adhearsion/component_manager/component_tester'
 
-context "Adhearsion's component system" do
+describe "Adhearsion's component system" do
 
   include ComponentManagerTestHelper
 
@@ -11,19 +11,19 @@ context "Adhearsion's component system" do
     Object.send :const_set, :COMPONENTS, @component_manager.lazy_config_loader
   end
 
-  test "constants should be available in the main namespace" do
+  it "constants should be available in the main namespace" do
     constant_name = "FOO_#{rand(10000000000)}"
     begin
       run_component_code <<-RUBY
         #{constant_name} = 123
       RUBY
-      Module.const_get(constant_name).should.equal 123
+      Module.const_get(constant_name).should be 123
     ensure
       Object.send(:remove_const, constant_name) rescue nil
     end
   end
 
-  test "defined constants should be available within the methods_for block" do
+  it "defined constants should be available within the methods_for block" do
     constant_name = "I_HAVE_#{rand(100000000000000)}_GUMMY_BEARS"
     code = <<-RUBY
       #{constant_name} = :its_true!
@@ -33,12 +33,12 @@ context "Adhearsion's component system" do
     RUBY
     the_following_code {
       run_component_code code
-    }.should.throw :its_true!
+    }.should throw_symbol :its_true!
   end
 
-  test "initialization block should be called after the methods_for() blocks"
+  it "initialization block should be called after the methods_for() blocks"
 
-  test "defined methods should be recognized once defined" do
+  it "defined methods should be recognized once defined" do
     run_component_code <<-RUBY
       methods_for :events do
         def foo
@@ -47,10 +47,10 @@ context "Adhearsion's component system" do
       end
     RUBY
     container_object = new_object_with_scope :events
-    container_object.foo.should.equal :inside_foo!
+    container_object.foo.should be :inside_foo!
   end
 
-  test "a method defined in one scope should not be available in another" do
+  it "a method defined in one scope should not be available in another" do
     code = <<-RUBY
       methods_for :events do
         def in_events
@@ -66,7 +66,7 @@ context "Adhearsion's component system" do
 
   end
 
-  test "methods defined in separate blocks should be available if they share a scope" do
+  it "methods defined in separate blocks should be available if they share a scope" do
     run_component_code <<-RUBY
       methods_for :dialplan do
         def get_symbol
@@ -82,10 +82,10 @@ context "Adhearsion's component system" do
     obj = new_object_with_scope :dialplan
     the_following_code {
       obj.throw_best_symbol_in_the_world
-    }.should.throw :i_am_the_best_symbol_in_the_world
+    }.should throw_symbol :i_am_the_best_symbol_in_the_world
   end
 
-  test "privately defined methods should remain private" do
+  it "privately defined methods should remain private" do
     return_value = "hear! hear! i'm private, indeed!"
     run_component_code <<-RUBY
       methods_for :generators do
@@ -101,13 +101,13 @@ context "Adhearsion's component system" do
       end
     RUBY
     object = new_object_with_scope(:generators)
-    object.i_am_public.should.eql return_value.reverse
+    object.i_am_public.should == return_value.reverse
     the_following_code {
       object.i_am_private
-    }.should.raise NoMethodError
+    }.should raise_error NoMethodError
   end
 
-  test "load_components should load code with the proper filenames" do
+  it "load_components should load code with the proper filenames" do
     components_dir_path = "/path/to/somewhere/components"
     component_names = %w[fooo barr qazz]
     component_paths = component_names.map { |name| "#{components_dir_path}/#{name}" }
@@ -125,7 +125,7 @@ context "Adhearsion's component system" do
     manager.load_components
   end
 
-  test "the :global scope" do
+  it "the :global scope" do
     run_component_code <<-RUBY
       methods_for :global do
         def i_should_be_globally_available
@@ -134,10 +134,10 @@ context "Adhearsion's component system" do
       end
     RUBY
     @component_manager.globalize_global_scope!
-    i_should_be_globally_available.should.equal :found!
+    i_should_be_globally_available.should be :found!
   end
 
-  test "methods defined in outside of any scope should not be globally available" do
+  it "methods defined in outside of any scope should not be globally available" do
     run_component_code <<-RUBY
       def i_should_not_be_globally_available
         :found!
@@ -145,10 +145,10 @@ context "Adhearsion's component system" do
     RUBY
     the_following_code {
       i_should_not_be_globally_available
-    }.should.raise NameError
+    }.should raise_error NameError
   end
 
-  test "should have access to the COMPONENTS constant" do
+  it "should have access to the COMPONENTS constant" do
     component_name = "am_not_for_kokoa"
     mock_component_config(component_name, <<-YAML)
 host: localhost
@@ -172,12 +172,12 @@ array:
     end
     RUBY
     obj = new_object_with_scope :dialplan
-    obj.host.should.eql "localhost"
-    obj.port.should.eql 7007
-    obj.array.should.eql [1,2,3]
+    obj.host.should =="localhost"
+    obj.port.should ==7007
+    obj.array.should ==[1,2,3]
   end
 
-  test "the delegate method should properly delegate arguments and a block to a specified object" do
+  it "the delegate method should properly delegate arguments and a block to a specified object" do
     component_name = "writing_this_at_peets_coffee"
     mock_component_config(component_name, "{jay: phillips}")
     run_component_code <<-RUBY
@@ -198,13 +198,13 @@ array:
     end
     RUBY
     obj = new_object_with_scope :dialplan
-    obj.send(component_name)[:foobar].foo.should.equal :foo
+    obj.send(component_name)[:foobar].foo.should be :foo
   end
 
-  test "an initialized component should not have an 'initialize' private method since it's confusing"
+  it "an initialized component should not have an 'initialize' private method since it's confusing"
 
-  test "should find components in a project properly"
-  test "should run the initialization block" do
+  it "should find components in a project properly"
+  it "should run the initialization block" do
     code = <<-RUBY
       initialization do
         throw :got_here!
@@ -212,11 +212,11 @@ array:
     RUBY
     the_following_code {
       run_component_code code
-    }.should.throw :got_here!
+    }.should throw_symbol :got_here!
 
   end
 
-  test "should alias the initialization method to initialisation" do
+  it "should alias the initialization method to initialisation" do
     code = <<-RUBY
       initialisation do
         throw :BRITISH!
@@ -224,36 +224,36 @@ array:
     RUBY
     the_following_code {
       run_component_code code
-    }.should.throw :BRITISH!
+    }.should throw_symbol :BRITISH!
   end
 
-  test "should properly expose any defined constants" do
+  it "should properly expose any defined constants" do
     container = run_component_code <<-RUBY
       TEST_ONE   = 1
       TEST_TWO   = 2
       TEST_THREE = 3
     RUBY
-    container.constants.sort.should.eql ["TEST_ONE", "TEST_THREE", "TEST_TWO"]
+    container.constants.sort.map{|s| s.to_sym}.should == [:TEST_ONE, :TEST_THREE, :TEST_TWO]
     container.constants.map do |constant|
       container.const_get(constant)
-    end.sort.should.eql [1,2,3]
+    end.sort.should ==[1,2,3]
   end
 
 end
 
-context "ComponentTester" do
+describe "ComponentTester" do
   it "should allow the scope-resolution operator to access a component's constants" do
     component_name = "my_awesomeness"
     flexmock(File).should_receive(:read).once.with(/#{component_name}\.rb$/).and_return "AWESOME = :YES!"
     tester = ComponentTester.new(component_name, "/path/shouldnt/matter")
-    tester::AWESOME.should.equal :YES!
+    tester::AWESOME.should be :YES!
   end
 
   it "should return an executable helper method properly" do
     component_name = "one_two_three"
     flexmock(File).should_receive(:read).once.with(/#{component_name}\.rb$/).and_return "def hair() :long end"
     tester = ComponentTester.new(component_name, "/path/shouldnt/matter")
-    tester.helper_method(:hair).call.should.equal :long
+    tester.helper_method(:hair).call.should be :long
   end
 
   it "should load the configuration for the given helper properly" do
@@ -263,14 +263,14 @@ context "ComponentTester" do
     component_manager = flexmock "ComponentManager"
     component_manager.should_receive(:configuration_for_component_named).once.with(component_name).and_return config
     flexmock(Adhearsion::Components::ComponentManager).should_receive(:new).once.and_return component_manager
-    ComponentTester.new(component_name, "/path/shouldnt/matter").config[:german][1].should.equal :eins
+    ComponentTester.new(component_name, "/path/shouldnt/matter").config[:german][1].should be :eins
   end
 
   it "should execute the initialize block when calling ComponentTester#initialize!()" do
     component_name = "morrissey"
     flexmock(File).should_receive(:read).once.with(/#{component_name}\.rb$/).and_return "initialization { $YES_I_WAS_CALLED = TRUE }"
     ComponentTester.new(component_name, "/path/shouldnt/matter").initialize!
-    assert $YES_I_WAS_CALLED
+    $YES_I_WAS_CALLED.should == true
   end
 
 end

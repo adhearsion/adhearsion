@@ -2,7 +2,7 @@ module Adhearsion #:nodoc:
   module VERSION #:nodoc:
     MAJOR = 1 unless defined? MAJOR
     MINOR = 0 unless defined? MINOR
-    TINY  = 0 unless defined? TINY
+    TINY  = 1 unless defined? TINY
 
     STRING = [MAJOR, MINOR, TINY].join('.') unless defined? STRING
   end

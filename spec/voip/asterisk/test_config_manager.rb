@@ -1,16 +1,16 @@
 require File.dirname(__FILE__) + "/../../test_helper"
 require 'adhearsion/voip/asterisk/config_manager'
 
-context "The configuration file parser behavior" do
+describe "The configuration file parser behavior" do
 
   include ConfigurationManagerTestHelper
 
-  test "should expose a sections array" do
+  it "should expose a sections array" do
     manager = mock_config_manager
-    manager.sections.map(&:first).should.equal(["jicksta", "picard"])
+    manager.sections.map(&:first).should == ["jicksta", "picard"]
   end
 
-  test "should ignore comments" do
+  it "should ignore comments" do
     context_names = %w(monkey data)
     tested_key_name, tested_key_value_before_comment = "bar", "baz"
     manager = mock_config_manager_for <<-CONFIG
@@ -20,12 +20,12 @@ asdf=fdsa
 ;[data]
 ;ignored=asdf
     CONFIG
-    manager.sections.map(&:first).should.equal [context_names.first]
-    manager[context_names.first].size.should.equal 2
-    manager[context_names.first][tested_key_name].should.equal tested_key_value_before_comment
+    manager.sections.map(&:first).should == [context_names.first]
+    manager[context_names.first].size.should be 2
+    manager[context_names.first][tested_key_name].should == tested_key_value_before_comment
   end
 
-  test "should match context names with dashes and underscores" do
+  it "should match context names with dashes and underscores" do
     context_names = %w"foo-bar qaz_b-a-z"
     definition_string = <<-CONFIG
 [#{context_names.first}]
@@ -36,10 +36,10 @@ crappyconfig=yes
 [#{context_names.last}]
 callerid="Jay Phillips" <133>
     CONFIG
-    mock_config_manager_for(definition_string).sections.map(&:first).should.equal context_names
+    mock_config_manager_for(definition_string).sections.map(&:first).should == context_names
   end
 
-  test "should strip whitespace around keys and values" do
+  it "should strip whitespace around keys and values" do
     section_name = "hey-there-hot-momma"
     tested_key_name, tested_key_value_before_comment = "bar", "i heart white space. SIKE!"
     config_manager = mock_config_manager_for <<-CONFIG
@@ -50,49 +50,49 @@ callerid="Jay Phillips" <133>
     #{tested_key_name}   = \t\t\t #{tested_key_value_before_comment}
 
     CONFIG
-    config_manager[section_name][tested_key_name].should.equal tested_key_value_before_comment
+    config_manager[section_name][tested_key_name].should == tested_key_value_before_comment
   end
 
-  test "should return a Hash of properties when searching for an existing section" do
+  it "should return a Hash of properties when searching for an existing section" do
     result = mock_config_manager["jicksta"]
-    result.should.be.kind_of Hash
-    result.size.should.equal 3
+    result.should be_a_kind_of Hash
+    result.size.should be 3
   end
 
-  test "should return nil when searching for a non-existant section" do
-    mock_config_manager["i-so-dont-exist-dude"].should.be.nil
+  it "should return nil when searching for a non-existant section" do
+    mock_config_manager["i-so-dont-exist-dude"].should be nil
   end
 
 end
 
-context "The configuration file writer" do
+describe "The configuration file writer" do
 
   include ConfigurationManagerTestHelper
 
   attr_reader :config_manager
 
-  setup do
+  before(:each) do
     @config_manager = mock_config_manager
   end
 
-  test "should remove an old section when replacing it" do
+  it "should remove an old section when replacing it" do
     config_manager.delete_section "picard"
-    config_manager.sections.map(&:first).should.equal ["jicksta"]
+    config_manager.sections.map(&:first).should == ["jicksta"]
   end
 
-  test "should add a new section to the end" do
+  it "should add a new section to the end" do
     section_name = "wittynamehere"
     config_manager.new_section(section_name, :type => "friend",
                                              :witty => "yes",
                                              :shaken => "yes",
                                              :stirred => "no")
     new_section = config_manager.sections.last
-    new_section.first.should.equal section_name
-    new_section.last.size.should.equal 4
+    new_section.first.should be section_name
+    new_section.last.size.should be 4
   end
 end
 
-context "The configuration file generator" do
+describe "The configuration file generator" do
 end
 
 BEGIN {

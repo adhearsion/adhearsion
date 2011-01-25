@@ -1,6 +1,6 @@
 =begin
-context "Connecting via AMI" do
-  test "should raise an exception if the password was invalid" do
+describe "Connecting via AMI" do
+  it "should raise an exception if the password was invalid" do
     host, port = "localhost", 5038
     ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "bad_password", "localhost", :port => port
 
@@ -10,13 +10,13 @@ context "Connecting via AMI" do
 
     the_following_code do
       ami.connect!
-    end.should.raise Adhearsion::VoIP::Asterisk::AMI::AuthenticationFailedException
+    end.should raise_error Adhearsion::VoIP::Asterisk::AMI::AuthenticationFailedException
     ami.disconnect!
   end
 
-  test "should discover its own permissions and make them available as connection attributes"
+  it "should discover its own permissions and make them available as connection attributes"
 
-  test "should find the Asterisk version when connecting" do
+  it "should find the Asterisk version when connecting" do
     host, port = "localhost", 5038
     ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "password", "localhost", :port => port
 
@@ -30,7 +30,7 @@ context "Connecting via AMI" do
   end
 end
 
-context "The AMI command interface" do
+describe "The AMI command interface" do
 
   before do
     host, port = "localhost", 5038
@@ -47,64 +47,64 @@ context "The AMI command interface" do
     @ami.disconnect!
   end
 
-  test "should respond to an immediate command" do
+  it "should respond to an immediate command" do
     resp = @ami.queues
-    resp[0][:raw].should.be.a.kind_of String
+    resp[0][:raw].should be_a_kind_of String
   end
 
-  test "should respond to a follows command" do
+  it "should respond to a follows command" do
     resp = @ami.command :Command => "show channels"
-    resp[0][:raw].should.be.a.kind_of String
+    resp[0][:raw].should be_a_kind_of String
   end
 
-  test "should respond to a DBGet for a non-existent key with an exception" do
+  it "should respond to a DBGet for a non-existent key with an exception" do
     the_following_code do
       resp = @ami.dbget :Family => "none", :Key => "somekey"
-    end.should.raise Adhearsion::VoIP::Asterisk::AMI::ActionError
+    end.should raise_error Adhearsion::VoIP::Asterisk::AMI::ActionError
   end
 
-  test "should respond to a DBGet for a key with an event" do
+  it "should respond to a DBGet for a key with an event" do
     resp = @ami.dbput :Family => "none", :Key => "somekey", :Val => 5
     resp = @ami.dbget :Family => "none", :Key => "somekey"
     resp[0]['Val'].should == "5"
   end
 
-  test "should respond to a command that generates follows event(s)" do
+  it "should respond to a command that generates follows event(s)" do
     resp = @ami.queuestatus
     resp[0]['Queue'].should == "default"
   end
 
-  test "should show usage for an improper follows command" do
+  it "should show usage for an improper follows command" do
     resp = @ami.command :Command => "meetme list"
-    resp[0][:raw].should.be.a.kind_of String
+    resp[0][:raw].should be_a_kind_of String
   end
 
-  test "should respond to a synchronous originate"
-  test "should respond to an asynchronous originate"
+  it "should respond to a synchronous originate"
+  it "should respond to an asynchronous originate"
 
-  test "should define events() as a private method to prevent turning events on or off" do
-    @ami.private_methods.include?("events").should.equal true
+  it "should define events() as a private method to prevent turning events on or off" do
+    @ami.private_methods.include?("events").should be true
   end
 
-  test "should raise an exception when Asterisk doesn't recognize a command" do
+  it "should raise an exception when Asterisk doesn't recognize a command" do
     the_following_code {
       @ami.this_command_does_not_exist_kthx
-    }.should.raise Adhearsion::VoIP::Asterisk::AMI::ActionError
+    }.should raise_error Adhearsion::VoIP::Asterisk::AMI::ActionError
 
   end
 
 end
 
-context 'AMI#originate' do
+describe 'AMI#originate' do
   include AmiCommandTestHelper
-  test "should pass the arguments to execute_ami_command! with the options given" do
+  it "should pass the arguments to execute_ami_command! with the options given" do
     ami     = new_ami_instance
     options = { :channel => "ohai_lolz", :application => "Echo" }
     flexmock(ami).should_receive(:execute_ami_command!).with(:originate, options).once
     ami.originate options
   end
 
-  test "should rename the :caller_id Hash key to :callerid" do
+  it "should rename the :caller_id Hash key to :callerid" do
     ami, caller_id = new_ami_instance, "Jay"
     options = { :channel => "ohai_lolz", :application => "Echo"}
     flexmock(ami).should_receive(:execute_ami_command!).with(:originate, options.merge(:callerid => caller_id)).once
@@ -113,9 +113,9 @@ context 'AMI#originate' do
 
 end
 
-context 'AMI#call_and_exec' do
+describe 'AMI#call_and_exec' do
   include AmiCommandTestHelper
-  test "should execute originate properly with the minimum arguments" do
+  it "should execute originate properly with the minimum arguments" do
     number, app = "12224446666", "Echo"
 
     ami = flexmock new_ami_instance
@@ -125,11 +125,11 @@ context 'AMI#call_and_exec' do
 
 end
 
-context 'AMI#introduce' do
+describe 'AMI#introduce' do
 
   include AmiCommandTestHelper
 
-  test "should execute origiante properly (when :caller_id and :options aren't specified)" do
+  it "should execute origiante properly (when :caller_id and :options aren't specified)" do
     caller, callee, caller_id = "SIP/12224446666@trunk", "SIP/12224447777@trunk", "Jay Phillips"
 
     correct_args = {:application => "Dial", :channel => caller, :data => callee, :caller_id => "Jay"}
@@ -140,7 +140,7 @@ context 'AMI#introduce' do
 
 end
 
-context "The manager proxy" do
+describe "The manager proxy" do
   before do
     host, port = "localhost", 5038
     @ami = Adhearsion::VoIP::Asterisk::AMI.new "admin", "password", "localhost", :port => port, :events => false
@@ -153,7 +153,7 @@ context "The manager proxy" do
     @door = DRb.start_service "druby://127.0.0.1:9050", Adhearsion::DrbDoor.instance
   end
 
-  test "should accept a command" do
+  it "should accept a command" do
     client = DRbObject.new nil, DRb.uri
     client.proxy.ping
   end
@@ -164,28 +164,28 @@ context "The manager proxy" do
   end
 end
 
-context "The command-sending interface" do
-  test "should raise an exception if permission was denied"
-  test "should allow variables to be specified as a Hash"
+describe "The command-sending interface" do
+  it "should raise an exception if permission was denied"
+  it "should allow variables to be specified as a Hash"
 end
 
-context "Sent arbitrary AMI commands" do
+describe "Sent arbitrary AMI commands" do
 
-  test "should allow a convenient way of parsing by event name"
-  test "should return Hash arguments"
+  it "should allow a convenient way of parsing by event name"
+  it "should return Hash arguments"
 
-  test "should recognize its subclasses"
-  test "should send events to all of its subclasses"
-  test "should catch action names with method_missing() and format them properly"
+  it "should recognize its subclasses"
+  it "should send events to all of its subclasses"
+  it "should catch action names with method_missing() and format them properly"
 
-  test "should raise an exception if permission was denied"
+  it "should raise an exception if permission was denied"
 end
 
-context "AMI Packets" do
-  test "A Packet should not be an error" do
+describe "AMI Packets" do
+  it "A Packet should not be an error" do
     Adhearsion::VoIP::Asterisk::AMI::Packet.new.error?.should.be false
   end
-  test "An ErrorPacket should be an error" do
+  it "An ErrorPacket should be an error" do
     Adhearsion::VoIP::Asterisk::AMI::ErrorPacket.new.error?.should.be true
   end
 end

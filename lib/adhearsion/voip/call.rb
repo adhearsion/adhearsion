@@ -293,6 +293,7 @@ module Adhearsion
 
       def define_singleton_accessor_with_pair(key, value, recipient=self)
         recipient.metaclass.send :attr_accessor, key unless recipient.class.respond_to?("#{key}=")
+        recipient.metaclass.send :public, key, "#{key}=".to_sym
         recipient.send "#{key}=", value
       end
 

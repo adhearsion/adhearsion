@@ -43,7 +43,7 @@ module Adhearsion
             @ami_version = 0.0
 
 
-# line 46 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
+# line 47 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
 class << self
 	attr_accessor :_ami_protocol_parser_actions
 	private :_ami_protocol_parser_actions, :_ami_protocol_parser_actions=
@@ -860,7 +860,7 @@ end
 self.ami_protocol_parser_en_response_follows = 268;
 
 
-# line 863 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
+# line 864 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
 begin
 	     @current_pointer ||= 0
 	    @data_ending_pointer ||=   @data.length
@@ -871,7 +871,7 @@ begin
 	   @ragel_act = 0
 end
 
-# line 98 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 99 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 ##
 
           end
@@ -883,7 +883,7 @@ end
 
           def resume!
 
-# line 886 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
+# line 887 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
 begin
 	_klen, _trans, _keys, _acts, _nacts = nil
 	_goto_level = 0
@@ -917,7 +917,7 @@ begin
 		begin
     @token_start =      @current_pointer
 		end
-# line 920 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
+# line 921 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
 		end # from state action switch
 	end
 	if _trigger_goto
@@ -937,9 +937,9 @@ begin
 	        break if _upper < _lower
 	        _mid = _lower + ( (_upper - _lower) >> 1 )
 
-	        if   @data[     @current_pointer] < _ami_protocol_parser_trans_keys[_mid]
+	        if   @data[     @current_pointer].ord < _ami_protocol_parser_trans_keys[_mid]
 	           _upper = _mid - 1
-	        elsif   @data[     @current_pointer] > _ami_protocol_parser_trans_keys[_mid]
+	        elsif   @data[     @current_pointer].ord > _ami_protocol_parser_trans_keys[_mid]
 	           _lower = _mid + 1
 	        else
 	           _trans += (_mid - _keys)
@@ -958,9 +958,9 @@ begin
 	     loop do
 	        break if _upper < _lower
 	        _mid = _lower + (((_upper-_lower) >> 1) & ~1)
-	        if   @data[     @current_pointer] < _ami_protocol_parser_trans_keys[_mid]
+	        if   @data[     @current_pointer].ord < _ami_protocol_parser_trans_keys[_mid]
 	          _upper = _mid - 2
-	        elsif   @data[     @current_pointer] > _ami_protocol_parser_trans_keys[_mid+1]
+	        elsif   @data[     @current_pointer].ord > _ami_protocol_parser_trans_keys[_mid+1]
 	          _lower = _mid + 2
 	        else
 	          _trans += ((_mid - _keys) >> 1)
@@ -1389,7 +1389,7 @@ end
 end
 end
 			end
-# line 1392 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
+# line 1393 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
 			end # action switch
 		end
 	end
@@ -1414,7 +1414,7 @@ when 29 then
 		begin
    @ragel_act = 0
 		end
-# line 1417 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
+# line 1418 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb"
 		end # to state action switch
 	end
 	if _trigger_goto
@@ -1445,7 +1445,7 @@ end
 	end
 	end
 
-# line 108 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
+# line 109 "lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb"
 ##
           end
 

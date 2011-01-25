@@ -11,8 +11,9 @@ module Adhearsion
             # Converts a config file into a Hash of contexts mapping to two dimensional array of pairs
             def create_sanitary_hash_from(config_file_content)
               almost_sanitized = Hash[*config_file_content.
+                split("\n").          # Split the lines into an Array
                 grep(/^\s*[^;\s]/).   # Grep lines that aren't commented out
-                join.                 # Convert them into one String again
+                join("\n").           # Convert them into one String again
                 split(SECTION_TITLE). # Separate them into sections
                 map(&:strip).         # Remove all whitespace
                 reject(&:empty?).     # Get rid of indices that were only whitespace
