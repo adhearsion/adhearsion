@@ -209,11 +209,6 @@ describe 'The "create" command' do
     }.should_not raise_error
   end
 
-  it "should raise a PathInvalid error if the given directory does not belong to an Adhearsion app" do
-    simulate_args "create", "component", "foo"
-    executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::PathInvalid
-  end
-
   it "should raise an UnknownCommand if running create with no arguments" do
     simulate_args "create"
     executing_ahn_command_should_fail_with Adhearsion::CLI::AhnCommand::CommandHandler::UnknownCommand
@@ -243,8 +238,8 @@ describe 'The "create" command' do
     simulate_args "create", "component", "ohai"
     capture_stdout { execute_ahn_command }
 
-    File.exists?(sandbox + "/components/ohai/ohai.rb").should be true
-    File.exists?(sandbox + "/components/ohai/ohai.yml").should be true
+    File.exists?(sandbox + "/components/ohai/lib/ohai.rb").should be true
+    File.exists?(sandbox + "/components/ohai/config/ohai.yml").should be true
   end
 
 end
