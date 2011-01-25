@@ -930,15 +930,15 @@ module Adhearsion
 
         ##
         # Executes the SayAlpha command. This command will read the text passed in
-        # out load.
+        # out loud, character-by-character.
         #
         # @param [String] Passed in as the text to read aloud
         #
         # @example Say "one a two dot pound"
-        #   say_alpha "1a2.#"
+        #   say_chars "1a2.#"
         #
         # @see http://www.voip-info.org/wiki/view/Asterisk+cmd+SayAlpha Asterisk SayPhonetic Command
-        def say_alpha(text)
+        def say_chars(text)
           execute "sayalpha", text
         end
 
