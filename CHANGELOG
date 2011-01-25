@@ -1,5 +1,5 @@
 1.0.1
- - Add say_alpha command.
+ - Add say_chars command.
  - Add say_phonetic command.
  - Update play_time to accept format and timezone paramenters. This allows you to read back any particular section of the Time object.  (i.e. Using format => 'IMp' would result in "eleven twenty-three" being said.)
  - Update play_time to allow using Date objects.
