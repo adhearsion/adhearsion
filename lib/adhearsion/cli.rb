@@ -14,23 +14,24 @@ Usage:
    ahn disable component COMPONENT_NAME
    ahn  create component COMPONENT_NAME
 USAGE
+      class << self
 
-      def self.execute!
-        CommandHandler.send(*parse_arguments)
-      rescue CommandHandler::CLIException => error
-        fail_and_print_usage error
-      end
+        def execute!
+          CommandHandler.send(*parse_arguments)
+        rescue CommandHandler::CLIException => error
+          fail_and_print_usage error
+        end
 
-      ##
-      # Provides a small abstraction of Kernel::abort().
-      #
-      def self.fail_and_print_usage(error)
-        Kernel.abort "#{error.message}\n\n#{USAGE}"
-      end
+        ##
+        # Provides a small abstraction of Kernel::abort().
+        #
+        def fail_and_print_usage(error)
+          Kernel.abort "#{error.message}\n\n#{USAGE}"
+        end
 
-      def self.parse_arguments(args=ARGV.clone)
-        action = args.shift
-        case action
+        def parse_arguments(args=ARGV.clone)
+          action = args.shift
+          case action
           when /^-?-?h(elp)?$/, nil   then [:help]
           when /^-?-?v(ersion)?$/     then [:version]
           when "create"
@@ -67,6 +68,7 @@ USAGE
             end
           else
             [action, *args]
+          end
         end
       end
 
