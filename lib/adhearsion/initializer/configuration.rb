@@ -246,8 +246,8 @@ module Adhearsion
 
         unless acl
           self.acl = []
-          overrides[ :deny].to_a.each { |ip| acl << 'deny' << ip }
-          overrides[:allow].to_a.each { |ip| acl << 'allow' << ip }
+          [*overrides[ :deny]].compact.each { |ip| acl << 'deny' << ip }
+          [*overrides[:allow]].compact.each { |ip| acl << 'allow' << ip }
           acl.concat %w[allow 127.0.0.1] if acl.empty?
         end
       end
