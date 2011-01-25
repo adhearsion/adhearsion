@@ -72,7 +72,7 @@ module InitializerStubs
       undesired_methods.each do |undesired_method_name_or_key_value_pair|
         undesired_method_name, method_implementation = case undesired_method_name_or_key_value_pair
           when Array
-            [undesired_method_name_or_key_value_pair.first, lambda { undesired_method_name_or_key_value_pair.last } ]
+            [undesired_method_name_or_key_value_pair.first, lambda { |*args| undesired_method_name_or_key_value_pair.last } ]
           else
             [undesired_method_name_or_key_value_pair, lambda{ |*args| }]
         end
