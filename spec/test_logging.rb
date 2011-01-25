@@ -19,7 +19,7 @@ describe 'The ahn_log command' do
 
   it 'should define a singleton method on itself of any name found by method_missing' do
     ahn_log.agi "SOMETHING IMPORTANT HAPPENED"
-    Adhearsion::Logging::AdhearsionLogger.instance_methods.should include 'agi'
+    Adhearsion::Logging::AdhearsionLogger.instance_methods.map{|m| m.to_sym}.should include :agi
   end
 
   it "dynamically generated loggers should support logging with blocks" do
