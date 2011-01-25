@@ -1333,26 +1333,35 @@ module Adhearsion
               def new(*args)
 
                 options   = args.last.kind_of?(Hash) ? args.pop : {}
-                interface = args.shift || ''
+                interface = args.shift
 
+                raise ArgumentError, "You must specify an interface to add." if interface.nil?
                 raise ArgumentError, "You may only supply an interface and a Hash argument!" if args.any?
 
-                penalty = options.delete(:penalty) || ''
-                name    = options.delete(:name)    || ''
+                penalty             = options.delete(:penalty)            || ''
+                name                = options.delete(:name)               || ''
+                state_interface     = options.delete(:state_interface)    || ''
 
                 raise ArgumentError, "Unrecognized argument(s): #{options.inspect}" if options.any?
 
-                proxy.environment.execute("AddQueueMember", proxy.name, interface, penalty, '', name)
+                proxy.environment.execute("AddQueueMember", proxy.name, interface, penalty, '', name, state_interface)
 
-                case proxy.environment.variable("AQMSTATUS")
-                  when "ADDED"         then true
-                  when "MEMBERALREADY" then false
-                  when "NOSUCHQUEUE"   then raise QueueDoesNotExistError.new(proxy.name)
-                  else
-                    raise "UNRECOGNIZED AQMSTATUS VALUE!"
+                added = case proxy.environment.variable("AQMSTATUS")
+                        when "ADDED"         then true
+                        when "MEMBERALREADY" then false
+                        when "NOSUCHQUEUE"   then raise QueueDoesNotExistError.new(proxy.name)
+                        else
+                          raise "UNRECOGNIZED AQMSTATUS VALUE!"
+                        end
+
+                if added
+                  check_agent_cache!
+                  AgentProxy.new(interface, proxy).tap do |agent_proxy|
+                    @agents << agent_proxy
+                  end
+                else
+                  false
                 end
-
-                # TODO: THIS SHOULD RETURN AN AGENT INSTANCE
               end
 
               # Logs a pre-defined agent into this queue and waits for calls. Pass in :silent => true to stop
