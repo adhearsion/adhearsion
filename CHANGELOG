@@ -1,4 +1,11 @@
 1.0.1
+ - Add say_alpha command.
+ - Add say_phonetic command.
+ - Update play_time to accept format and timezone paramenters. This allows you to read back any particular section of the Time object.  (i.e. Using format => 'IMp' would result in "eleven twenty-three" being said.)
+ - Update play_time to allow using Date objects.
+ - QueueAgentsListProxy#new now returns an AgentProxy instance if the agent was added successfully.
+ - Add state_interface parameter to QueueAgentsListProxy#new.  This allows you to specify a separate interface to watch for state changes on.  (i.e. Your agents log in with Local channel extensions, but you want to check their direct SIP exten for state.)
+ - Fixed issue with Queue#join! that would raise a QueueDoesNotExist error if the call was completed successfully.
  - Add support for AGI script parameter to Queue#join!
  - Migrate unit tests to RSpec 2
  - New components now include RubyGems skeleton files
