@@ -923,9 +923,23 @@ module Adhearsion
         #
         # @param [String] Passed in as the text to read aloud
         #
-        # @see http://www.voip-info.org/wiki/view/Asterisk+cmd+SayAlpha Asterisk SayPhonetic Command
+        # @see http://www.voip-info.org/wiki/view/Asterisk+cmd+SayPhonetic Asterisk SayPhonetic Command
         def say_phonetic(text)
           execute "sayphonetic", text
+        end
+
+        ##
+        # Executes the SayAlpha command. This command will read the text passed in
+        # out load.
+        #
+        # @param [String] Passed in as the text to read aloud
+        #
+        # @example Say "one a two dot pound"
+        #   say_alpha "1a2.#"
+        #
+        # @see http://www.voip-info.org/wiki/view/Asterisk+cmd+SayAlpha Asterisk SayPhonetic Command
+        def say_alpha(text)
+          execute "sayalpha", text
         end
 
         # Plays the given Date, Time, or Integer (seconds since epoch)

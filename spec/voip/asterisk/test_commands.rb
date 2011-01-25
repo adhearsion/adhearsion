@@ -1979,6 +1979,20 @@ context 'say_phonetic command' do
   end
 end
 
+context 'say_alpha command' do
+  include DialplanCommandTestHelpers
+  test 'Can execute the sayalpha application using say_alpha' do
+    text = 'ha124d9'
+    mock_call.should_receive(:execute).once.with("sayalpha", text)
+    mock_call.say_alpha text
+  end
+
+  test 'Can use special characters with say_alpha' do
+    text = "1a2.#"
+    mock_call.should_receive(:execute).once.with("sayalpha", text)
+    mock_call.say_alpha text
+  end
+end
 
 BEGIN {
   module DialplanCommandTestHelpers
