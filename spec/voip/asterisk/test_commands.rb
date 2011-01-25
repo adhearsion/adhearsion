@@ -1895,6 +1895,22 @@ context 'the DialPlan::ConfirmationManager' do
 
 end
 
+context 'say_phonetic command' do
+  include DialplanCommandTestHelpers
+  test 'Can execute the sayphonetic application using say_phonetic' do
+    text = 'Say This'
+    mock_call.should_receive(:execute).once.with("sayphonetic", text)
+    mock_call.say_phonetic text
+  end
+
+  test 'Can use special characters with say_phonetic' do
+    text = '*Say This!*'
+    mock_call.should_receive(:execute).once.with("sayphonetic", text)
+    mock_call.say_phonetic text
+  end
+end
+
+
 BEGIN {
   module DialplanCommandTestHelpers
     def self.included(test_case)

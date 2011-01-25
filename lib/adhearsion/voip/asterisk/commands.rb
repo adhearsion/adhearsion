@@ -911,6 +911,17 @@ module Adhearsion
           nil
         end
 
+        ##
+        # Executes the SayPhonetic command. This command will read the text passed in 
+        # out load using the NATO phonetic alphabet.
+        #
+        # @param [String] Passed in as the text to read aloud
+        #
+        # @see http://www.voip-info.org/wiki/view/Asterisk+cmd+SayAlpha Asterisk SayPhonetic Command
+        def say_phonetic(text)
+          execute "sayphonetic", text
+        end
+
         protected
 
           # wait_for_digits waits for the input of digits based on the number of milliseconds
