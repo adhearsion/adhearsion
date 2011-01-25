@@ -174,7 +174,9 @@ module Adhearsion
         # Plays the specified sound file names. This method will handle Time/DateTime objects (e.g. Time.now),
         # Fixnums (e.g. 1000), Strings which are valid Fixnums (e.g "123"), and direct sound files. When playing
         # numbers, Adhearsion assumes you're saying the number, not the digits. For example, play("100")
-        # is pronounced as "one hundred" instead of "one zero zero".
+        # is pronounced as "one hundred" instead of "one zero zero". To specify how the Date/Time objects are said
+        # pass in as an array with the first parameter as the Date/Time/DateTime object along with a hash with the 
+        # additional options.  See play_time for more information.
         #
         # Note: it is not necessary to supply a sound file extension; Asterisk will try to find a sound
         # file encoded using the current channel's codec, if one exists. If not, it will transcode from
@@ -184,13 +186,17 @@ module Adhearsion
         #   play 'hello-world'
         # @example Speak current time
         #   play Time.now
+        # @example Speak today's date
+        #   play Date.today
+        # @example Speak today's date in a specific format
+        #   play [Date.today, {:format => 'BdY'}]
         # @example Play sound file, speak number, play two more sound files
         #   play %w"a-connect-charge-of 22 cents-per-minute will-apply"
         # @example Play two sound files
         #   play "you-sound-cute", "what-are-you-wearing"
         #
         def play(*arguments)
-          arguments.flatten.each do |argument|
+          arguments.each do |argument|
             play_time(argument) || play_numeric(argument) || play_string(argument)
           end
         end
@@ -922,6 +928,37 @@ module Adhearsion
           execute "sayphonetic", text
         end
 
+        # Plays the given Date, Time, or Integer (seconds since epoch)
+        # using the given timezone and format.
+        #
+        # @param [Date|Time|DateTime] Time to be said.
+        # @param [Hash] Additional options to specify how exactly to say time specified.
+        #
+        # +:timezone+ - Sends a timezone to asterisk. See /usr/share/zoneinfo for a list. Defaults to the machine timezone.
+        # +:format+   - This is the format the time is to be said in.  Defaults to "ABdY 'digits/at' IMp"
+        #
+        # @see http://www.voip-info.org/wiki/view/Asterisk+cmd+SayUnixTime
+        def play_time(*args)
+          argument, options = args.flatten
+          options ||= {}
+
+          timezone = options.delete(:timezone) || ''
+          format   = options.delete(:format)   || ''
+          epoch    = case argument.class.to_s
+                     when 'Time'      then argument.to_i
+                     when 'DateTime'  then argument.to_i
+                     when 'Date'
+                       format = 'BdY' unless format.present?
+                       argument.to_time.to_i
+                     else
+                       nil
+                     end
+
+          return false if epoch.nil?
+
+          execute(:sayunixtime, epoch, timezone, format)
+        end
+
         protected
 
           # wait_for_digits waits for the input of digits based on the number of milliseconds
@@ -1027,11 +1064,6 @@ module Adhearsion
             dial_status ? dial_status.downcase.to_sym : :cancelled
           end
 
-          def play_time(argument)
-            if argument.kind_of? Time
-              execute(:sayunixtime, argument.to_i)
-            end
-          end
 
           def play_numeric(argument)
             if argument.kind_of?(Numeric) || argument =~ /^\d+$/
