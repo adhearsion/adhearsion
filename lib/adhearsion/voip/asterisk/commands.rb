@@ -36,7 +36,7 @@ module Adhearsion
             variable "TRANSFER_CONTEXT" => options[:context] if options && options.has_key?(:context)
             extend_dynamic_features_with "atxfer"
           end,
-          :blind_transfer => lambda do
+          :blind_transfer => lambda do |options|
             variable "TRANSFER_CONTEXT" => options[:context] if options && options.has_key?(:context)
             extend_dynamic_features_with 'blindxfer'
           end
