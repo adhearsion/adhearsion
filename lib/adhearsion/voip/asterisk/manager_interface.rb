@@ -31,7 +31,7 @@ module Adhearsion
 
           CAUSAL_EVENT_NAMES = %w[queuestatus sippeers iaxpeers parkedcalls
                                   dahdishowchannels coreshowchannels dbget
-                                  status konferencelist] unless defined? CAUSAL_EVENT_NAMES
+                                  status agents konferencelist] unless defined? CAUSAL_EVENT_NAMES
 
           RETRY_SLEEP = 5
 
