@@ -41,7 +41,8 @@ paths:
     flexmock(Dir).should_receive(:glob).once.with(/\*.rb$/).and_return files
     yaml = <<-YML
     paths:
-      init: *.rb
+      init:
+        -*.rb
     YML
     Adhearsion::AHN_CONFIG.ahnrc = yaml
     Adhearsion::AHN_CONFIG.files_from_setting("paths", "init").should == %w[foo.rb bar.rb qaz.rb]
