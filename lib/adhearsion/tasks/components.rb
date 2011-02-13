@@ -11,7 +11,7 @@ namespace:components do
       end
 
       yml = File.join(spec.full_gem_path, 'config', "#{component}.yml")
-      target = File.join(AHN_ROOT, 'config', 'components', "#{component}.yml")
+      target = File.join(Adhearsion::ROOT_PATH, 'config', 'components', "#{component}.yml")
       Dir.mkdir(File.dirname(target)) if !File.exists?(File.dirname(target))
       if File.exists?(target)
         puts "Skipping existing configuration for component #{component}"

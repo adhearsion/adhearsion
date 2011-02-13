@@ -99,7 +99,7 @@ module Adhearsion
     private
 
     def files_from_glob(glob)
-      Dir.glob "#{AHN_ROOT}/#{glob}"
+      Dir.glob "#{Adhearsion::ROOT_PATH}/#{glob}"
     end
 
     class AbstractConfiguration

@@ -91,11 +91,12 @@ module Adhearsion
       end
 
       def ahn_root=(path)
-        if Object.constants.include?("AHN_ROOT")
-          Object.const_get(:AHN_ROOT).base_path = File.expand_path(path)
-        else
-          Object.const_set(:AHN_ROOT, PathString.new(File.expand_path(path)))
+	if Adhearsion.constants.include?(:ROOT_PATH)
+	  Adhearsion.const_get(:ROOT_PATH).base_path = File.expand_path(path)
+	else
+          Adhearsion.const_set(:ROOT_PATH, PathString.new(File.expand_path(path)))
         end
+
       end
 
       def start(*args, &block)
@@ -160,7 +161,7 @@ module Adhearsion
     end
 
     def default_pid_path
-      File.join AHN_ROOT, 'adhearsion.pid'
+      File.join Adhearsion::ROOT_PATH, 'adhearsion.pid'
     end
 
     def resolve_pid_file_path
@@ -173,12 +174,12 @@ module Adhearsion
     end
 
     def resolve_log_file_path
-      @ahn_app_log_directory = AHN_ROOT + '/log'
+      @ahn_app_log_directory = Adhearsion::ROOT_PATH + '/log'
       @log_file = File.expand_path(ahn_app_log_directory + "/adhearsion.log")
     end
 
     def switch_to_root_directory
-      Dir.chdir AHN_ROOT
+      Dir.chdir Adhearsion::ROOT_PATH 
     end
 
     def catch_termination_signal
@@ -194,7 +195,7 @@ module Adhearsion
     # can continue the initialization knowing where certain files are specifically.
     #
     def bootstrap_rc
-      rules = self.class.get_rules_from AHN_ROOT
+      rules = self.class.get_rules_from Adhearsion::ROOT_PATH 
 
       AHN_CONFIG.ahnrc = rules
 

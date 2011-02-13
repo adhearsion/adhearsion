@@ -119,16 +119,16 @@ describe "Adhearsion::Initializer" do
     end
 end
 
-describe "AHN_ROOT" do
+describe "Adhearsion::ROOT_PATH" do
   include InitializerStubs
   before(:each) do
-    Object.send(:remove_const, :AHN_ROOT) if defined? AHN_ROOT
+    Adhearsion.send(:remove_const, :ROOT_PATH) if Adhearsion.constants.include? :ROOT_PATH
   end
 
-  it "initializing will create the AHN_ROOT" do
+  it "initializing will create the Adhearsion::ROOT_PATH" do
     stub_behavior_for_initializer_with_no_path_changing_behavior do
       ahn = Adhearsion::Initializer.start path
-      Object.constants.include?("AHN_ROOT").should be true
+      Adhearsion.constants.include?(:ROOT_PATH).should be true
     end
   end
 
@@ -145,15 +145,15 @@ describe "AHN_ROOT" do
     path.should == original_base_path
   end
 
-  it "creating the AHN_ROOT will set defaults" do
+  it "creating the Adhearsion::ROOT_PATH will set defaults" do
     stub_behavior_for_initializer_with_no_path_changing_behavior do
       flexstub(Adhearsion::Initializer).new_instances.should_receive(:load).and_return
       ahn = Adhearsion::Initializer.start path
       full_path = File.expand_path(path)
-      AHN_ROOT.to_s.should == full_path
-      AHN_ROOT.component_path.should == File.join(full_path, "components")
-      AHN_ROOT.log_path.should == File.join(full_path, "logs")
-      AHN_ROOT.dialplan_path.should == full_path
+      Adhearsion::ROOT_PATH.to_s.should == full_path
+      Adhearsion::ROOT_PATH.component_path.should == File.join(full_path, "components")
+      Adhearsion::ROOT_PATH.log_path.should == File.join(full_path, "logs")
+      Adhearsion::ROOT_PATH.dialplan_path.should == full_path
     end
   end
   private

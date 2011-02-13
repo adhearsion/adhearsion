@@ -239,7 +239,7 @@ describe "DialPlan loader" do
     loader = nil
     Adhearsion::AHN_CONFIG.ahnrc = {"paths" => {"dialplan" => "dialplan.rb"}}
     the_following_code {
-      AHN_ROOT.using_base_path(File.expand_path(File.dirname(__FILE__) + '/../fixtures')) do
+      Adhearsion::ROOT_PATH.using_base_path(File.expand_path(File.dirname(__FILE__) + '/../fixtures')) do
         loader = Adhearsion::DialPlan::Loader.load_dialplans
       end
     }.should_not raise_error
