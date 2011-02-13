@@ -1,9 +1,0 @@
-.DS_Store
-pkg
-*~
-.*.sw?
-.yardoc
-nbproject
-.git*
-.rvmrc
-Gemfile.lock
