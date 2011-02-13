@@ -4,3 +4,6 @@ pkg
 .*.sw?
 .yardoc
 nbproject
+.git*
+.rvmrc
+Gemfile.lock
