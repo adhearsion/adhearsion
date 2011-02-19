@@ -7,9 +7,8 @@ unless defined? Adhearsion
     require File.dirname(__FILE__) + "/../adhearsion/lib/adhearsion.rb"
   else
     require 'rubygems'
-    require 'bundler/setup'
-    gem 'adhearsion', '>= 0.8.4'
-    require 'adhearsion'
+    require 'bundler'
+    Bundler.setup
   end
 end
 
@@ -72,7 +71,7 @@ Adhearsion::Configuration.configure do |config|
   #                    :password => 'password12345',
   #                    :allow_anonymous => false,
   #                    :try_sasl => false
-  
+
   # Configure XMPP call controller
   # config.enable_xmpp :jid => 'active-calls.xmpp.example.com',
   #                    :password => 'passwd',
