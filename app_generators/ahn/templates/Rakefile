@@ -2,7 +2,8 @@
 # a new Rake task here. See http://rake.rubyforge.org for more info.
 require 'rubygems'
 require 'bundler'
-Bundler::GemHelper.install_tasks
+Bundler.setup
+Bundler.require
 
 begin
   require 'adhearsion/tasks'
