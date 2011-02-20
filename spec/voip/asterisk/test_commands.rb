@@ -1444,7 +1444,7 @@ describe 'jump_to command' do
     rescue Adhearsion::VoIP::DSL::Dialplan::ControlPassingException
       # Eating this exception
     end
-    mock_call.caller_id.should be 1_444_555_6666
+    mock_call.caller_id.should == 1_444_555_6666
   end
 
 end

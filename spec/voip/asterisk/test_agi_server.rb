@@ -113,7 +113,10 @@ describe "Active Calls" do
   end
 
   it 'Attributes passed into initialization of call object are accessible in the variables() Hash' do
-    Adhearsion::Call.new(@mock_io, typical_call_variables_hash).variables.should == typical_call_variables_hash
+    variables = Adhearsion::Call.new(@mock_io, typical_call_variables_hash).variables
+    typical_call_variables_hash.each{|key, value|
+        value.should == variables[key]
+    }
   end
 
   it 'Can add a call to the active calls list' do
@@ -261,7 +264,9 @@ describe 'Typical call variable parsing with typical data that has no special tr
   end
 
   it "extracting and converting variables and their values to a hash" do
-    variables.should == typical_call_variables_hash
+    typical_call_variables_hash.each{|key, value|
+      value.should == variables[key]
+    }
   end
 end
 
