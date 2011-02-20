@@ -128,7 +128,7 @@ describe "AHN_ROOT" do
   it "initializing will create the AHN_ROOT" do
     stub_behavior_for_initializer_with_no_path_changing_behavior do
       ahn = Adhearsion::Initializer.start path
-      Object.constants.include?("AHN_ROOT").should be true
+      Object.constants.map(&:to_s).include?("AHN_ROOT").should be true
     end
   end
 
