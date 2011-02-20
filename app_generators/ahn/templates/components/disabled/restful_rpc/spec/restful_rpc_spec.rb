@@ -1,17 +1,7 @@
-unless defined? Adhearsion
-  if File.exists? File.dirname(__FILE__) + "/../../../adhearsion/lib/adhearsion.rb"
-    # If you wish to freeze a copy of Adhearsion to this app, simply place a copy of Adhearsion
-    # into a folder named "adhearsion" within this app's main directory.
-    require File.dirname(__FILE__) + "/../../../adhearsion/lib/adhearsion.rb"
-  elsif File.exists? File.dirname(__FILE__) + "/../../../../../../lib/adhearsion.rb"
-    # This file may be ran from the within the Adhearsion framework code (before a project has been generated)
-    require File.dirname(__FILE__) + "/../../../../../../lib/adhearsion.rb"
-  else
-    require 'rubygems'
-    gem 'adhearsion', '>= 0.7.999'
-    require 'adhearsion'
-  end
-end
+require 'rubygems'
+require 'bundler'
+Bundler.setup
+Bundler.require
 
 require 'adhearsion/component_manager/spec_framework'
 
@@ -46,8 +36,6 @@ RESTFUL_RPC = ComponentTester.new("restful_rpc", File.dirname(__FILE__) + "/../.
 # "SERVER_PORT"          => "5000",
 # "SERVER_PROTOCOL"      => "HTTP/1.1",
 # "SERVER_SOFTWARE"      => "WEBrick/1.3.1 (Ruby/1.8.6/2008-03-03)"}
-
-
 
 describe "The VALID_IP_ADDRESS regular expression" do
 
