@@ -3,8 +3,7 @@ ENV['RUBY_FLAGS'] = "-I#{%w(lib ext bin test).join(File::PATH_SEPARATOR)}"
 
 require 'rubygems'
 require 'bundler'
-Bundler.setup
-require 'rake/gempackagetask'
+Bundler::GemHelper.install_tasks
 require 'rake/testtask'
 require 'date'
 
@@ -43,8 +42,6 @@ begin
 rescue LoadError
   STDERR.puts "Could not load rcov tasks -- rcov does not appear to be installed. Continuing anyway."
 end
-
-Rake::GemPackageTask.new(GEMSPEC).define
 
 # YARD::Rake::YardocTask.new do |t|
 #   t.files   = ['lib/**/*.rb']   # optional
@@ -105,7 +102,6 @@ end
 
 desc "Compares Adhearsion's files with those listed in adhearsion.gemspec"
 task :check_gemspec_files do
-
   files_from_gemspec    = ADHEARSION_FILES
   files_from_filesystem = Dir.glob(File.dirname(__FILE__) + "/**/*").map do |filename|
     filename[0...Dir.pwd.length] == Dir.pwd ? filename[(Dir.pwd.length+1)..-1] : filename
@@ -120,7 +116,6 @@ task :check_gemspec_files do
   puts '##########################################'
   puts((files_from_filesystem - files_from_gemspec).map { |f| "  " + f })
 
-
   puts '##########################################'
   puts '## Files in gemspec not in the filesystem:'
   puts '##########################################'
@@ -134,11 +129,4 @@ task :debug_gem do
   spec = nil
   Thread.new { spec = eval("$SAFE = 3\n#{gemspec}") }.join
   puts "SUCCESS: Gemspec runs at the $SAFE level 3."
-end
-
-desc 'Install the package as a gem.'
-task :install_gem => [:clobber_package, :package] do
-  windows = /djgpp|(cyg|ms|bcc)win|mingw/ =~ RUBY_PLATFORM
-  gem = Dir['pkg/*.gem'].first
-  sh "#{'sudo ' unless windows}gem install --local #{gem}"
 end
