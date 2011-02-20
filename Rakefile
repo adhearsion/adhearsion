@@ -7,7 +7,7 @@ require 'rake/testtask'
 require 'date'
 
 begin
-  gem 'rspec', '>= 2.4.0'
+  gem 'rspec', '>= 2.3.0'
   require 'rspec/core/rake_task'
 rescue LoadError
   abort "You must install RSpec: sudo gem install rspec"
