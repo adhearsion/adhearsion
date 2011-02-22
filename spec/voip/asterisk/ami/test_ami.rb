@@ -157,6 +157,7 @@ describe "ManagerInterface" do
 
     flexstub(@Manager::ManagerInterface::ManagerInterfaceAction).new_instances.should_receive(:response).and_return response
 
+    # FIXME: It would be better if actions_socket blocked like the real thing...
     actions_socket = StringIO.new
     events_socket  = StringIO.new
 
@@ -168,7 +169,7 @@ describe "ManagerInterface" do
     manager.connect!
 
     write_queue_mock.actions.first.name.should == "login"
-    write_queue_mock.actions.first.headers['Events'].should =="Off"
+    write_queue_mock.actions.first.headers['Events'].should == "Off"
   end
 
   it "a failed login on the actions socket raises an AuthenticationFailedException" do
@@ -323,12 +324,13 @@ describe "ManagerInterface#write_loop" do
     mock_queue = flexmock "a mock write-Queue"
 
     mock_queue.should_receive(:shift).once.and_return :STOP!
-    mock_queue.should_receive(:<<).once.and_return nil
+    mock_queue.should_receive(:<<).and_return nil
 
     flexmock(Queue).should_receive(:new).once.and_return mock_queue
 
     manager = new_manager_without_events
     manager.connect!
+    manager.disconnect!
   end
 
 end
