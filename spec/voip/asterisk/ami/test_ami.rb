@@ -167,8 +167,7 @@ describe "ManagerInterface" do
     manager = new_manager_with_events
     manager.connect!
 
-    write_queue_mock.actions.size.should be 1
-    write_queue_mock.actions.select { |action| action.name == "login" }.size.should be 1
+    write_queue_mock.actions.first.name.should == "login"
     write_queue_mock.actions.first.headers['Events'].should =="Off"
   end
 
