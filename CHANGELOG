@@ -10,6 +10,7 @@
  - Migrate unit tests to RSpec 2
  - New components now include RubyGems skeleton files
  - Fix support for setting Caller ID name on AGI dial() command
+ - Update component testing framework to RSpec 2.x and mock with rspec
 
 1.0.0
  - Fall back to using Asterisk's context if the AGI URI context is not found
@@ -30,13 +31,13 @@
   required to match the Adhearsion context in dialplan.rb.  Starting in 0.8.5 if
   an application path is passed in on the AGI URI, it will be preferred over the
   context name.  For example:
-  
+
   [stuff]
   exten => _X.,1,AGI(agi://localhost/myapp)
-  
+
   AHN 0.8.4- will execute the "stuff" context in dialplan.rb
   AHN 0.8.5+ will execute the "myapp" context in dialplan.rb
-  
+
   If you followed the documentation and did not specify an application path in
   the URI (eg. agi://localhost) you will not be impacted by this change.
 
