@@ -2,6 +2,7 @@ Dir.chdir File.join(File.dirname(__FILE__), '..')
 $:.push('.')
 
 require 'rubygems'
+require 'bundler/setup'
 
 def require_or_report_dependency(require_name, gem_name)
   begin

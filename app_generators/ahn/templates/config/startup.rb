@@ -1,16 +1,7 @@
-unless defined? Adhearsion
-  if File.exists? File.dirname(__FILE__) + "/../adhearsion/lib/adhearsion.rb"
-    # For development purposes try to load a local copy of Adhearsion here.
-    # This will not work if started using "ahn" or "jahn".  You must execute
-    # config/startup.rb directly and have a local checkout of Adhearsion in your
-    # application directory.
-    require File.dirname(__FILE__) + "/../adhearsion/lib/adhearsion.rb"
-  else
-    require 'rubygems'
-    gem 'adhearsion', '>= 0.8.2'
-    require 'adhearsion'
-  end
-end
+require 'rubygems'
+require 'bundler'
+Bundler.setup
+Bundler.require
 
 Adhearsion::Configuration.configure do |config|
 
@@ -71,7 +62,7 @@ Adhearsion::Configuration.configure do |config|
   #                    :password => 'password12345',
   #                    :allow_anonymous => false,
   #                    :try_sasl => false
-  
+
   # Configure XMPP call controller
   # config.enable_xmpp :jid => 'active-calls.xmpp.example.com',
   #                    :password => 'passwd',

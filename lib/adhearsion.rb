@@ -6,6 +6,7 @@ Please upgrade to at least Ruby v1.8.5." if RUBY_VERSION < "1.8.5"
 $: << File.expand_path(File.dirname(__FILE__))
 
 require 'rubygems'
+require 'bundler/setup'
 
 require 'adhearsion/version'
 require 'adhearsion/voip/call'

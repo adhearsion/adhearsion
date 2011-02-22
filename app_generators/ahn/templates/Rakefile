@@ -1,9 +1,11 @@
 # This file is for the "rake" tool which automates project-related tasks. If you need to automate things, you can create
 # a new Rake task here. See http://rake.rubyforge.org for more info.
 require 'rubygems'
+require 'bundler'
+Bundler.setup
+Bundler.require
 
 begin
-  require 'adhearsion'
   require 'adhearsion/tasks'
 rescue LoadError
   STDERR.puts "\nCannot load Adhearsion! Not all Rake tasks will be loaded!\n\n"
