@@ -4,17 +4,23 @@ require 'adhearsion/voip/dsl/numerical_string'
 require 'adhearsion/voip/constants'
 
 describe "A NumericalString" do
-  it "should appear to be behave like a Fixnum in a case statement" do
-    case numerical_string_for("123")
-      when 123 then true
-      else false
-    end.should be true
-
-    case numerical_string_for("0987")
-      when 987 then true
-      else false
-    end.should be true
-  end
+  # FIXME: This test is fundamentally broken in Ruby 1.9.
+  # See https://adhearsion.lighthouseapp.com/projects/5871/tickets/127-ruby-19-and-numericalstring-comparisons-in-case-statements
+  # The suggested workaround is to cast the object to a string:
+  # case numerical_string_object.to_s
+  # when "0987" then ...
+  # end
+#  it "should appear to be behave like a Fixnum in a case statement" do
+#    case numerical_string_for("123")
+#      when 123 then true
+#      else false
+#    end.should be true
+#
+#    case numerical_string_for("0987")
+#      when 987 then true
+#      else false
+#    end.should be true
+#  end
 
   it "should appear to behave like a String in a case statement" do
     numerical_string_for("123").should === "123"

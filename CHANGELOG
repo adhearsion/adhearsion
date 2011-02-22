@@ -1,4 +1,22 @@
 1.0.1
+ NOTE for Ruby 1.9 users: The behavior of Ruby 1.9 and case statements has changed
+      in a way that renders NumericalString objects incompatible with
+      case statements.  The suggested workaround is to cast the NumericalString
+      to a string and then compare.  Example:
+
+      obj = NumericalString.new("0987")
+      case obj.to_s
+      when "0987" then true
+      else false
+      end
+
+      Or, if you need to ignore the leading zero:
+      case obj.to_i
+      when 987 then true
+      else false
+      end
+
+      See https://adhearsion.lighthouseapp.com/projects/5871/tickets/127-ruby-19-and-numericalstring-comparisons-in-case-statements
  - Add say_chars command.
  - Add say_phonetic command.
  - Update play_time to accept format and timezone paramenters. This allows you to read back any particular section of the Time object.  (i.e. Using format => 'IMp' would result in "eleven twenty-three" being said.)
