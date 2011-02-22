@@ -169,6 +169,23 @@ Gem::Specification.new do |s|
 end
                 RUBY
               end
+
+              # Component example spec
+              Dir.mkdir File.join(new_component_dir, "spec")
+              fn = File.join("spec", "#{component_name}_spec.rb")
+              puts "- #{fn}: Example component spec"
+              File.open(File.join(new_component_dir, fn), "w") do |file|
+                file.puts <<-RUBY
+require 'rubygems'
+require 'bundler'
+Bundler.setup
+Bundler.require
+
+require 'adhearsion/component_manager/spec_framework'
+
+component_name.upcase = ComponentTester.new("#{component_name}", File.dirname(__FILE__) + "/../..")
+                RUBY
+              end
               puts "Created blank component '#{component_name}' at #{new_component_dir}"
             else
               raise CommandHandler::UnknownCommand.new("Provided too many arguments to 'create'")

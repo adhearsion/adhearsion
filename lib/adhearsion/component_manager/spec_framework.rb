@@ -1,14 +1,8 @@
 require 'adhearsion/component_manager/component_tester'
 begin
-  require 'spec'
+  require 'rspec'
 rescue LoadError
-  abort 'You do not have the "rspec" gem installed! You must install it to continue.\n\nsudo gem install rspec\n\n'
-end
-
-begin
-  require 'rr'
-rescue LoadError
-  abort 'You do not have the "rr" gem installed! You must install it to continue.\n\nsudo gem install rr\n\n'
+  abort "You do not have the 'rspec' gem installed! You must install it to continue.\n\nsudo gem install rspec\n\n"
 end
 
 module ComponentConfigurationSpecHelper
@@ -18,7 +12,7 @@ module ComponentConfigurationSpecHelper
   end
 end
 
-Spec::Runner.configure do |config|
-  config.mock_with :rr
+RSpec.configure do |config|
+  config.mock_with :rspec
   config.include ComponentConfigurationSpecHelper
 end
