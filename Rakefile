@@ -43,6 +43,8 @@ rescue LoadError
   STDERR.puts "Could not load rcov tasks -- rcov does not appear to be installed. Continuing anyway."
 end
 
+task :gem => :build
+
 # YARD::Rake::YardocTask.new do |t|
 #   t.files   = ['lib/**/*.rb']   # optional
 #   # t.options = ['--any', '--extra', '--opts'] # optional
