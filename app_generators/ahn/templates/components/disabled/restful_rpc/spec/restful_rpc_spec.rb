@@ -1,6 +1,5 @@
 require 'rubygems'
-require 'bundler'
-Bundler.setup
+require 'bundler/setup'
 Bundler.require
 
 require 'adhearsion/component_manager/spec_framework'

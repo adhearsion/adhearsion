@@ -177,8 +177,7 @@ end
               File.open(File.join(new_component_dir, fn), "w") do |file|
                 file.puts <<-RUBY
 require 'rubygems'
-require 'bundler'
-Bundler.setup
+require 'bundler/setup'
 Bundler.require
 
 require 'adhearsion/component_manager/spec_framework'

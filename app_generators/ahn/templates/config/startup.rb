@@ -1,6 +1,5 @@
 require 'rubygems'
-require 'bundler'
-Bundler.setup
+require 'bundler/setup'
 Bundler.require
 
 Adhearsion::Configuration.configure do |config|
