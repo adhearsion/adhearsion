@@ -4,3 +4,4 @@ pkg
 .*.sw?
 .yardoc
 nbproject
+Gemfile.lock
