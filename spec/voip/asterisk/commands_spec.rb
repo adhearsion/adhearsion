@@ -311,8 +311,8 @@ describe 'play command' do
       pbx_should_respond_with_success
     end
     audio_files = ["cents-per-minute", 'o-hai']
-    mock_call.play(*audio_files)
-    pbx_was_asked_to_play(*audio_files)
+    mock_call.play audio_files
+    pbx_was_asked_to_play audio_files
   end
 
   it 'If a number is passed to play(), the saynumber application is executed with the number as an argument' do
