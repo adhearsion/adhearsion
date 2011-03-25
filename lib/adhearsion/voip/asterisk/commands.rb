@@ -962,19 +962,17 @@ module Adhearsion
 
           timezone = options.delete(:timezone) || ''
           format   = options.delete(:format)   || ''
-          epoch    = case argument.class.to_s
-                     when 'Time'      then argument.to_i
-                     when 'DateTime'  then argument.to_i
-                     when 'Date'
+          epoch    = case argument
+                     when Time || DateTime
+                       argument.to_i
+                     when Date
                        format = 'BdY' unless format.present?
                        argument.to_time.to_i
-                     else
-                       nil
                      end
 
           return false if epoch.nil?
 
-          execute(:sayunixtime, epoch, timezone, format)
+          execute :sayunixtime, epoch, timezone, format
         end
 
         protected
