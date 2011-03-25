@@ -196,8 +196,10 @@ module Adhearsion
         #   play "you-sound-cute", "what-are-you-wearing"
         #
         def play(*arguments)
-          arguments.each do |argument|
-            play_time(argument) || play_numeric(argument) || play_string(argument)
+          unless play_time(arguments)
+            arguments.flatten.each do |argument|
+              play_numeric(argument) || play_string(argument)
+            end
           end
         end
 
@@ -955,6 +957,8 @@ module Adhearsion
         def play_time(*args)
           argument, options = args.flatten
           options ||= {}
+
+          return false unless options.is_a? Hash
 
           timezone = options.delete(:timezone) || ''
           format   = options.delete(:format)   || ''

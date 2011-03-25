@@ -133,7 +133,7 @@ module DialplanCommandTestHelpers
 
     module OutputStreamMatchers
       def pbx_was_asked_to_play(*audio_files)
-        audio_files.each do |audio_file|
+        audio_files.flatten.each do |audio_file|
           output_stream_matches(/playback "#{audio_file}"/)
         end
       end
