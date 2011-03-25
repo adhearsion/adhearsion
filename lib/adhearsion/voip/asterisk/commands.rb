@@ -175,7 +175,7 @@ module Adhearsion
         # Fixnums (e.g. 1000), Strings which are valid Fixnums (e.g "123"), and direct sound files. When playing
         # numbers, Adhearsion assumes you're saying the number, not the digits. For example, play("100")
         # is pronounced as "one hundred" instead of "one zero zero". To specify how the Date/Time objects are said
-        # pass in as an array with the first parameter as the Date/Time/DateTime object along with a hash with the 
+        # pass in as an array with the first parameter as the Date/Time/DateTime object along with a hash with the
         # additional options.  See play_time for more information.
         #
         # Note: it is not necessary to supply a sound file extension; Asterisk will try to find a sound
@@ -349,14 +349,14 @@ module Adhearsion
         # It's important to understand the differences between these and how they affect the overall outcome:
         #
         #   |---------------|-------------------|------------------------------------------------------|
-        #   | exact matches |	potential matches	| result                                               |
+        #   | exact matches | potential matches | result                                               |
         #   |---------------|-------------------|------------------------------------------------------|
-        #   |  0	          |  0	               | Fail and start over                                  |
-        #   |  1	          |  0	               | Match found!                                         |
-        #   |  0	          | >0	               | Get another digit                                    |
-        #   | >1	          |  0	               | Go with the first exact match                        |
-        #   |  1	          | >0	               | Get another digit. If timeout, use exact match       |
-        #   | >1	          | >0	               | Get another digit. If timeout, use first exact match |
+        #   |  0            |  0                 | Fail and start over                                  |
+        #   |  1            |  0                 | Match found!                                         |
+        #   |  0            | >0                 | Get another digit                                    |
+        #   | >1            |  0                 | Go with the first exact match                        |
+        #   |  1            | >0                 | Get another digit. If timeout, use exact match       |
+        #   | >1            | >0                 | Get another digit. If timeout, use first exact match |
         #   |---------------|-------------------|------------------------------------------------------|
         #
         # == Database integration
@@ -452,30 +452,30 @@ module Adhearsion
         #  1. The number of digits you specify as the first argument is collected
         #  2. The timeout you specify with the :timeout option elapses.
         #  3. The "#" key (or the key you specify with :accept_key) is pressed
-      	#
-      	# Usage examples
-      	#
-      	#   input   # Receives digits until the caller presses the "#" key
-      	#   input 3 # Receives three digits. Can be 0-9, * or #
-      	#   input 5, :accept_key => "*"   # Receive at most 5 digits, stopping if '*' is pressed
-      	#   input 1, :timeout => 1.minute # Receive a single digit, returning an empty
-      	#                                   string if the timeout is encountered
-      	#   input 9, :timeout => 7, :accept_key => "0" # Receives nine digits, returning
-      	#                                              # when the timeout is encountered
-      	#                                              # or when the "0" key is pressed.
-      	#   input 3, :play => "you-sound-cute"
-      	#   input :play => ["if-this-is-correct-press", 1, "otherwise-press", 2]
-      	#
-      	# When specifying files to play, the playback of the sequence of files will stop
-      	# immediately when the user presses the first digit.
-      	#
-      	# The :timeout option works like a digit timeout, therefore each digit pressed
-      	# causes the timer to reset. This is a much more user-friendly approach than an
+        #
+        # Usage examples
+        #
+        #   input   # Receives digits until the caller presses the "#" key
+        #   input 3 # Receives three digits. Can be 0-9, * or #
+        #   input 5, :accept_key => "*"   # Receive at most 5 digits, stopping if '*' is pressed
+        #   input 1, :timeout => 1.minute # Receive a single digit, returning an empty
+        #                                   string if the timeout is encountered
+        #   input 9, :timeout => 7, :accept_key => "0" # Receives nine digits, returning
+        #                                              # when the timeout is encountered
+        #                                              # or when the "0" key is pressed.
+        #   input 3, :play => "you-sound-cute"
+        #   input :play => ["if-this-is-correct-press", 1, "otherwise-press", 2]
+        #
+        # When specifying files to play, the playback of the sequence of files will stop
+        # immediately when the user presses the first digit.
+        #
+        # The :timeout option works like a digit timeout, therefore each digit pressed
+        # causes the timer to reset. This is a much more user-friendly approach than an
         # absolute timeout.
-      	#
+        #
         # Note that when the digit limit is not specified the :accept_key becomes "#".
         # Otherwise there would be no way to end the collection of digits. You can
-      	# obviously override this by passing in a new key with :accept_key.
+        # obviously override this by passing in a new key with :accept_key.
         def input(*args)
           options = args.last.kind_of?(Hash) ? args.pop : {}
           number_of_digits = args.shift
@@ -512,7 +512,7 @@ module Adhearsion
             end
             key = wait_for_digit(timeout || -1)
           end
-      	end
+        end
 
         # Jumps to a context. An alternative to DialplanContextProc#+@. When jumping to a context, it will *not* resume executing
         # the former context when the jumped-to context has finished executing. Make sure you don't have any
@@ -547,36 +547,36 @@ module Adhearsion
           raise Adhearsion::VoIP::DSL::Dialplan::ControlPassingException.new(context)
         end
 
-      	# Place a call in a queue to be answered by a registered agent. You must then call join!()
-      	#
-      	# @param [String] queue_name the queue name to place the caller in
-      	# @return [Adhearsion::VoIP::Asterisk::Commands::QueueProxy] a queue proxy object
+        # Place a call in a queue to be answered by a registered agent. You must then call join!()
+        #
+        # @param [String] queue_name the queue name to place the caller in
+        # @return [Adhearsion::VoIP::Asterisk::Commands::QueueProxy] a queue proxy object
         #
         # @see http://www.voip-info.org/wiki-Asterisk+cmd+Queue Full information on the Asterisk Queue
         # @see Adhearsion::VoIP::Asterisk::Commands::QueueProxy#join! join!() for further details
-      	def queue(queue_name)
-      	  queue_name = queue_name.to_s
+        def queue(queue_name)
+          queue_name = queue_name.to_s
 
-      	  @queue_proxy_hash_lock = Mutex.new unless defined? @queue_proxy_hash_lock
-      	  @queue_proxy_hash_lock.synchronize do
-      	    @queue_proxy_hash ||= {}
-      	    if @queue_proxy_hash.has_key? queue_name
-        	    return @queue_proxy_hash[queue_name]
-      	    else
-      	      proxy = @queue_proxy_hash[queue_name] = QueueProxy.new(queue_name, self)
-      	      return proxy
-    	      end
-      	  end
-    	  end
+          @queue_proxy_hash_lock = Mutex.new unless defined? @queue_proxy_hash_lock
+          @queue_proxy_hash_lock.synchronize do
+            @queue_proxy_hash ||= {}
+            if @queue_proxy_hash.has_key? queue_name
+              return @queue_proxy_hash[queue_name]
+            else
+              proxy = @queue_proxy_hash[queue_name] = QueueProxy.new(queue_name, self)
+              return proxy
+            end
+          end
+        end
 
-      	# Get the status of the last dial(). Possible dial statuses include :answer,
+        # Get the status of the last dial(). Possible dial statuses include :answer,
         # :busy, :no_answer, :cancelled, :congested, and :channel_unavailable.
         # If :cancel is returned, the caller hung up before the callee picked up.
         # If :congestion is returned, the dialed extension probably doesn't exist.
         # If :channel_unavailable, the callee phone may not be registered.
-      	def last_dial_status
-      	  DIAL_STATUSES[get_dial_status]
-      	end
+        def last_dial_status
+          DIAL_STATUSES[get_dial_status]
+        end
 
         # @return [Boolean] true if your last call to dial() finished with the ANSWER state,
         # as reported by Asterisk. false otherwise
@@ -665,49 +665,49 @@ module Adhearsion
         # @param [String] variable_name
         #
         # @see: http://www.voip-info.org/wiki/view/get+variable Asterisk Get Variable
-      	def get_variable(variable_name)
-      	  result = response("GET VARIABLE", variable_name)
-      	  case result
-      	    when "200 result=0"
-      	      return nil
-    	    when /^200 result=1 \((.*)\)$/
-    	      return $LAST_PAREN_MATCH
-    	    end
-    	  end
+        def get_variable(variable_name)
+          result = response("GET VARIABLE", variable_name)
+          case result
+            when "200 result=0"
+              return nil
+          when /^200 result=1 \((.*)\)$/
+            return $LAST_PAREN_MATCH
+          end
+        end
 
-    	  # Pass information back to the asterisk dial plan.
-    	  #
-    	  # Keep in mind that the variables are not global variables. These variables only exist for the channel
-    	  # related to the call that is being serviced by the particular instance of your adhearsion application.
-    	  # You will not be able to pass information back to the asterisk dialplan for other instances of your adhearsion
-    	  # application to share. Once the channel is "hungup" then the variables are cleared and their information is gone.
-    	  #
-    	  # @param [String] variable_name
-    	  # @param [String] value
-    	  #
-    	  # @see http://www.voip-info.org/wiki/view/set+variable Asterisk Set Variable
-    	  def set_variable(variable_name, value)
-    	    response("SET VARIABLE", variable_name, value) == "200 result=1"
-  	    end
-        
+        # Pass information back to the asterisk dial plan.
+        #
+        # Keep in mind that the variables are not global variables. These variables only exist for the channel
+        # related to the call that is being serviced by the particular instance of your adhearsion application.
+        # You will not be able to pass information back to the asterisk dialplan for other instances of your adhearsion
+        # application to share. Once the channel is "hungup" then the variables are cleared and their information is gone.
+        #
+        # @param [String] variable_name
+        # @param [String] value
+        #
+        # @see http://www.voip-info.org/wiki/view/set+variable Asterisk Set Variable
+        def set_variable(variable_name, value)
+          response("SET VARIABLE", variable_name, value) == "200 result=1"
+        end
+
         # Issue the command to add a custom SIP header to the current call channel
         # example use: sip_add_header("x-ahn-test", "rubyrox")
         #
         # @param[String] the name of the SIP header
         # @param[String] the value of the SIP header
-        # 
+        #
         # @return [String] the Asterisk response
         #
         # @see http://www.voip-info.org/wiki/index.php?page=Asterisk+cmd+SIPAddHeader Asterisk SIPAddHeader
         def sip_add_header(header, value)
           execute("SIPAddHeader", "#{header}: #{value}") == "200 result=1"
         end
-        
+
         # Issue the command to fetch a SIP header from the current call channel
         # example use: sip_get_header("x-ahn-test")
         #
         # @param[String] the name of the SIP header to get
-        # 
+        #
         # @return [String] the Asterisk response
         #
         # @see http://www.voip-info.org/wiki/index.php?page=Asterisk+cmd+SIPGetHeader Asterisk SIPGetHeader
@@ -715,32 +715,32 @@ module Adhearsion
           get_variable("SIP_HEADER(#{header})")
         end
         alias :sip_header :sip_get_header
-        
-    	  # Allows you to either set or get a channel variable from Asterisk.
-    	  # The method takes a hash key/value pair if you would like to set a variable
-    	  # Or a single string with the variable to get from Asterisk
-    	  def variable(*args)
-    	    if args.last.kind_of? Hash
-      	    assignments = args.pop
-      	    raise ArgumentError, "Can't mix variable setting and fetching!" if args.any?
-      	    assignments.each_pair do |key, value|
-      	      set_variable(key, value)
-    	      end
-    	    else
-    	      if args.size == 1
-    	        get_variable args.first
-  	        else
-      	      args.map { |var| get_variable(var) }
-    	      end
-    	    end
-  	    end
 
-    	  # Send a caller to a voicemail box to leave a message.
-    	  #
-    	  # The method takes the mailbox_number of the user to leave a message for and a
-    	  # greeting_option that will determine which message gets played to the caller.
-    	  #
-    	  # @see http://www.voip-info.org/tiki-index.php?page=Asterisk+cmd+VoiceMail Asterisk Voicemail
+        # Allows you to either set or get a channel variable from Asterisk.
+        # The method takes a hash key/value pair if you would like to set a variable
+        # Or a single string with the variable to get from Asterisk
+        def variable(*args)
+          if args.last.kind_of? Hash
+            assignments = args.pop
+            raise ArgumentError, "Can't mix variable setting and fetching!" if args.any?
+            assignments.each_pair do |key, value|
+              set_variable(key, value)
+            end
+          else
+            if args.size == 1
+              get_variable args.first
+            else
+              args.map { |var| get_variable(var) }
+            end
+          end
+        end
+
+        # Send a caller to a voicemail box to leave a message.
+        #
+        # The method takes the mailbox_number of the user to leave a message for and a
+        # greeting_option that will determine which message gets played to the caller.
+        #
+        # @see http://www.voip-info.org/tiki-index.php?page=Asterisk+cmd+VoiceMail Asterisk Voicemail
         def voicemail(*args)
           options_hash    = args.last.kind_of?(Hash) ? args.pop : {}
           mailbox_number  = args.shift
@@ -886,20 +886,20 @@ module Adhearsion
         # end
 
 
-      	# Speaks the digits given as an argument. For example, "123" is spoken as "one two three".
-      	#
-      	# @param [String] digits
-      	def say_digits(digits)
-      	  execute "saydigits", validate_digits(digits)
-      	end
+        # Speaks the digits given as an argument. For example, "123" is spoken as "one two three".
+        #
+        # @param [String] digits
+        def say_digits(digits)
+          execute "saydigits", validate_digits(digits)
+        end
 
-      	# Get the number of seconds the given block takes to execute. This
-      	# is particularly useful in dialplans for tracking billable time. Note that
-      	# if the call is hung up during the block, you will need to rescue the
-      	# exception if you have some mission-critical logic after it with which
-      	# you're recording this return-value.
-      	#
-      	# @return [Float] number of seconds taken for block to execute
+        # Get the number of seconds the given block takes to execute. This
+        # is particularly useful in dialplans for tracking billable time. Note that
+        # if the call is hung up during the block, you will need to rescue the
+        # exception if you have some mission-critical logic after it with which
+        # you're recording this return-value.
+        #
+        # @return [Float] number of seconds taken for block to execute
         def duration_of
           start_time = Time.now
           yield
@@ -920,7 +920,7 @@ module Adhearsion
         end
 
         ##
-        # Executes the SayPhonetic command. This command will read the text passed in 
+        # Executes the SayPhonetic command. This command will read the text passed in
         # out load using the NATO phonetic alphabet.
         #
         # @param [String] Passed in as the text to read aloud
@@ -1253,7 +1253,7 @@ module Adhearsion
             #    queue('sales').join! :allow_transfer => :agent, :timeout => 30.seconds,
             def join!(options={})
               environment.execute("queue", name, *self.class.format_join_hash_key_arguments(options))
-          	  normalize_queue_status_variable environment.variable("QUEUESTATUS")
+              normalize_queue_status_variable environment.variable("QUEUESTATUS")
             end
 
             # Get the agents associated with a queue
@@ -1312,7 +1312,7 @@ module Adhearsion
             # LEAVEUNAVAIL => :leaveunavail
             # CONTINUE     => :continue
             #
-            # If the QUEUESTATUS variable is not set the call was successfully connected, 
+            # If the QUEUESTATUS variable is not set the call was successfully connected,
             # and Adhearsion will return :completed.
             #
             # @param [String] QUEUESTATUS variable from Asterisk
