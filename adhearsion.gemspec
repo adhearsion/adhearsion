@@ -161,6 +161,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency('rspec', [">= 2.4.0"])
       s.add_development_dependency('flexmock')
       s.add_development_dependency('activerecord')
+      s.add_development_dependency('rake')
     else
       s.add_dependency("bundler", [">= 1.0.10"])
       s.add_dependency("log4r", [">= 1.0.5"])
