@@ -1,5 +1,28 @@
 require File.dirname(__FILE__) + '/../test_helper'
 
+module CallRoutingTestHelper
+  private
+    def route(*args, &block)
+      Adhearsion::VoIP::CallRouting::Rule.new(*args, &block)
+    end
+
+    def provider_named(name)
+      Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new(name)
+    end
+
+    def define_rules(&block)
+      Adhearsion::VoIP::CallRouting::Router.define(&block)
+    end
+
+    def calculate_route_for(end_point)
+      Adhearsion::VoIP::CallRouting::Router.calculate_route_for(end_point)
+    end
+
+    def rules
+      Adhearsion::VoIP::CallRouting::Router.rules
+    end
+end
+
 describe "Call routing rule generation" do
   include CallRoutingTestHelper
 
@@ -100,28 +123,3 @@ describe "Route calculation" do
     calculate_route_for(9876).should == [target_provider]
   end
 end
-
-BEGIN {
-  module CallRoutingTestHelper
-    private
-      def route(*args, &block)
-        Adhearsion::VoIP::CallRouting::Rule.new(*args, &block)
-      end
-
-      def provider_named(name)
-        Adhearsion::VoIP::DSL::DialingDSL::ProviderDefinition.new(name)
-      end
-
-      def define_rules(&block)
-        Adhearsion::VoIP::CallRouting::Router.define(&block)
-      end
-
-      def calculate_route_for(end_point)
-        Adhearsion::VoIP::CallRouting::Router.calculate_route_for(end_point)
-      end
-
-      def rules
-        Adhearsion::VoIP::CallRouting::Router.rules
-      end
-  end
-}

@@ -5,6 +5,63 @@ require 'adhearsion/initializer/rails'
 require 'adhearsion/initializer/xmpp'
 require 'active_record'
 
+module DatabaseInitializationTestHelper
+
+  def start_database_initializer
+    start_database_initializer_with_options :adapter => "sqlite3", :dbfile => "foobar.sqlite3"
+  end
+
+  def start_database_initializer_with_options(options)
+    Adhearsion::Configuration.configure { |config| config.enable_database(options) }
+    Adhearsion::Initializer::DatabaseInitializer.start
+  end
+
+  def tempfile_with_contents(contents)
+    Tempfile.new("bogus_model").tap do |file|
+      file.puts contents
+      file.flush
+    end
+  end
+
+  def sample_user_model
+    <<-CODE
+      class User < ActiveRecord::Base
+        validates_uniqueness_of :name
+      end
+    CODE
+  end
+end
+
+module AsteriskInitializerTestHelper
+  def initialize_asterisk_with_defaults
+    initialize_asterisk_with_options Hash.new
+  end
+  def initialize_asterisk_with_options(options)
+    flexmock(Adhearsion::Initializer::AsteriskInitializer).should_receive(:join_server_thread_after_initialized)
+    Adhearsion::Configuration.configure { |config| config.enable_asterisk(options) }
+    Adhearsion::Initializer::AsteriskInitializer.start
+  end
+end
+
+module RailsInitializerTestHelper
+
+  def initialize_rails_with_options(options)
+    rails_options = flexmock "Rails options mock", options
+    flexstub(Adhearsion::AHN_CONFIG).should_receive(:rails).once.and_return(rails_options)
+    Adhearsion::Initializer::RailsInitializer.start
+  end
+
+  def stub_file_checking_methods!
+    flexstub(File).should_receive(:directory?).and_return true
+    flexstub(File).should_receive(:exists?).and_return true
+  end
+
+  def stub_before_call_hook!
+    flexstub(Adhearsion::Events.framework_theatre).should_receive(:register_namespace_name).with([:asterisk, :before_call]).and_return
+  end
+
+end
+
 describe "The database initializer" do
 
   include DatabaseInitializationTestHelper
@@ -90,73 +147,3 @@ describe "The Rails initializer" do
   end
 
 end
-
-describe "The XMPP initializer" do
-  
-  include XMPPInitializerTestHelper
-  
-end
-
-BEGIN {
-module DatabaseInitializationTestHelper
-
-  def start_database_initializer
-    start_database_initializer_with_options :adapter => "sqlite3", :dbfile => "foobar.sqlite3"
-  end
-
-  def start_database_initializer_with_options(options)
-    Adhearsion::Configuration.configure { |config| config.enable_database(options) }
-    Adhearsion::Initializer::DatabaseInitializer.start
-  end
-
-  def tempfile_with_contents(contents)
-    Tempfile.new("bogus_model").tap do |file|
-      file.puts contents
-      file.flush
-    end
-  end
-
-  def sample_user_model
-    <<-CODE
-      class User < ActiveRecord::Base
-        validates_uniqueness_of :name
-      end
-    CODE
-  end
-end
-
-module AsteriskInitializerTestHelper
-  def initialize_asterisk_with_defaults
-    initialize_asterisk_with_options Hash.new
-  end
-  def initialize_asterisk_with_options(options)
-    flexmock(Adhearsion::Initializer::AsteriskInitializer).should_receive(:join_server_thread_after_initialized)
-    Adhearsion::Configuration.configure { |config| config.enable_asterisk(options) }
-    Adhearsion::Initializer::AsteriskInitializer.start
-  end
-end
-
-module RailsInitializerTestHelper
-
-  def initialize_rails_with_options(options)
-    rails_options = flexmock "Rails options mock", options
-    flexstub(Adhearsion::AHN_CONFIG).should_receive(:rails).once.and_return(rails_options)
-    Adhearsion::Initializer::RailsInitializer.start
-  end
-
-  def stub_file_checking_methods!
-    flexstub(File).should_receive(:directory?).and_return true
-    flexstub(File).should_receive(:exists?).and_return true
-  end
-
-  def stub_before_call_hook!
-    flexstub(Adhearsion::Events.framework_theatre).should_receive(:register_namespace_name).with([:asterisk, :before_call]).and_return
-  end
-
-end
-
-module XMPPInitializerTestHelper
-  
-end
-
-}

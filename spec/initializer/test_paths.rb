@@ -1,5 +1,11 @@
 require File.dirname(__FILE__) + "/../test_helper"
 
+module PathsTestHelper
+  def mock_ahnrc_with(raw_yaml)
+    Adhearsion::AHN_CONFIG.ahnrc = raw_yaml
+  end
+end
+
 describe "Files from config" do
 
   include PathsTestHelper
@@ -66,11 +72,3 @@ paths:
   end
 
 end
-
-BEGIN {
-  module PathsTestHelper
-    def mock_ahnrc_with(raw_yaml)
-      Adhearsion::AHN_CONFIG.ahnrc = raw_yaml
-    end
-  end
-}

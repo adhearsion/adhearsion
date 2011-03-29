@@ -1,6 +1,37 @@
 require File.dirname(__FILE__) + "/../../test_helper"
 require 'adhearsion/voip/asterisk/config_manager'
 
+module ConfigurationManagerTestHelper
+
+  def mock_config_manager
+    mock_config_manager_for sample_standard_config
+  end
+
+  def mock_config_manager_for(config_string)
+    new_config_manager_with("bogus filename").tap do |manager|
+      flexmock(manager).should_receive(:execute).and_return(config_string)
+    end
+  end
+
+  def new_config_manager_with(filename)
+    Adhearsion::VoIP::Asterisk::ConfigurationManager.new(filename)
+  end
+
+  def sample_standard_config
+    <<-CONFIG
+[jicksta]
+foo=bar
+qaz=qwerty
+baz=zxcvb
+[picard]
+type=friend
+insecure=very
+host=dynamic
+secret=blargh
+    CONFIG
+  end
+end
+
 describe "The configuration file parser behavior" do
 
   include ConfigurationManagerTestHelper
@@ -94,36 +125,3 @@ end
 
 describe "The configuration file generator" do
 end
-
-BEGIN {
-module ConfigurationManagerTestHelper
-
-  def mock_config_manager
-    mock_config_manager_for sample_standard_config
-  end
-
-  def mock_config_manager_for(config_string)
-    new_config_manager_with("bogus filename").tap do |manager|
-      flexmock(manager).should_receive(:execute).and_return(config_string)
-    end
-  end
-
-  def new_config_manager_with(filename)
-    Adhearsion::VoIP::Asterisk::ConfigurationManager.new(filename)
-  end
-
-  def sample_standard_config
-    <<-CONFIG
-[jicksta]
-foo=bar
-qaz=qwerty
-baz=zxcvb
-[picard]
-type=friend
-insecure=very
-host=dynamic
-secret=blargh
-    CONFIG
-  end
-end
-}

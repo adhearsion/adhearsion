@@ -1,6 +1,120 @@
 require File.dirname(__FILE__) + "/../../test_helper"
 require 'adhearsion/voip/asterisk'
 
+module CallVariableTestHelper
+  def parsed_call_variables_from(io)
+    Adhearsion::Call::Variables::Parser.parse(io).variables
+  end
+
+  def coerce_call_variables(variables)
+    Adhearsion::Call::Variables::Parser.coerce_variables(variables)
+  end
+
+  def merged_hash_with_call_variables(new_hash)
+    call_variables_with_new_query = typical_call_variables_hash.merge new_hash
+    coerce_call_variables call_variables_with_new_query
+  end
+
+  def parsed_call_variables_with_query(query_string)
+    request_string = "agi://10.0.0.0/#{query_string}"
+    merged_hash_with_call_variables({:request => request_string})[:query]
+  end
+
+  def typical_call_variable_io
+    StringIO.new(typical_call_variable_section)
+  end
+
+  def typical_call_variable_section
+    <<-VARIABLES
+agi_network: yes
+agi_request: agi://10.0.0.152/monkey?foo=bar&qaz=qwerty
+agi_channel: SIP/marcel-b58046e0
+agi_language: en
+agi_type: SIP
+agi_uniqueid: 1191245124.16
+agi_callerid: 011441234567899
+agi_calleridname: unknown
+agi_callingpres: 0
+agi_callingani2: 0
+agi_callington: 0
+agi_callingtns: 0
+agi_dnid: 911
+agi_rdnis: unknown
+agi_context: adhearsion
+agi_extension: 911
+agi_priority: 1
+agi_enhanced: 0.0
+agi_accountcode:
+
+    VARIABLES
+  end
+
+  # TODO:
+  #  - "unknown" should be converted to nil
+  #  - "yes" or "no" should be converted to true or false
+  #  - numbers beginning with a 0 MUST be converted to a NumericalString
+  #  - Look up why there are so many zeroes. They're likely reprentative of some PRI definition.
+
+  def typical_call_variables_hash
+    uncoerced_variable_map                = expected_uncoerced_variable_map
+
+    uncoerced_variable_map[:request]      = URI.parse(uncoerced_variable_map[:request])
+    uncoerced_variable_map[:extension]    = 911 # Adhearsion::VoIP::DSL::PhoneNumber.new(uncoerced_variable_map[:extension]) #
+    uncoerced_variable_map[:callerid]     = Adhearsion::VoIP::DSL::NumericalString.new(uncoerced_variable_map[:callerid])
+
+    uncoerced_variable_map[:network]      = true
+    uncoerced_variable_map[:calleridname] = nil
+    uncoerced_variable_map[:callingpres]  = 0
+    uncoerced_variable_map[:callingani2]  = 0
+    uncoerced_variable_map[:callingtns]   = 0
+    uncoerced_variable_map[:dnid]         = 911
+    uncoerced_variable_map[:rdnis]        = nil
+    uncoerced_variable_map[:priority]     = 1
+    uncoerced_variable_map[:enhanced]     = 0.0
+    uncoerced_variable_map[:uniqueid]     = "1191245124.16"
+
+    uncoerced_variable_map[:type_of_calling_number] = Adhearsion::VoIP::Constants::Q931_TYPE_OF_NUMBER[uncoerced_variable_map.delete(:callington).to_i]
+
+    coerced_variable_map = uncoerced_variable_map
+    coerced_variable_map[:query] = {"foo" => "bar", "qaz" => "qwerty"}
+    coerced_variable_map[:foo] = 'bar'
+    coerced_variable_map[:qaz] = 'qwerty'
+    coerced_variable_map
+  end
+
+  def expected_uncoerced_variable_map
+    {:network      => 'yes',
+     :request      => 'agi://10.0.0.152/monkey?foo=bar&qaz=qwerty',
+     :channel      => 'SIP/marcel-b58046e0',
+     :language     => 'en',
+     :type         => 'SIP',
+     :uniqueid     => '1191245124.16',
+     :callerid     => '011441234567899',
+     :calleridname => 'unknown',
+     :callingpres  => '0',
+     :callingani2  => '0',
+     :callington   => '0',
+     :callingtns   => '0',
+     :dnid         => '911',
+     :rdnis        => 'unknown',
+     :context      => 'adhearsion',
+     :extension    => '911',
+     :priority     => '1',
+     :enhanced     => '0.0',
+     :accountcode  => ''}
+  end
+end
+
+module AgiServerTestHelper
+  def stub_before_call_hooks!
+    flexstub(Adhearsion::Events).should_receive(:trigger).with([:asterisk, :before_call], Proc).and_return
+  end
+
+  def stub_confirmation_manager!
+    flexstub(Adhearsion::DialPlan::ConfirmationManager).should_receive(:confirmation_call?).and_return false
+  end
+end
+
 describe "The AGI server's serve() method" do
 
   include AgiServerTestHelper
@@ -357,119 +471,3 @@ describe "Extracting the query from the request URI" do
   end
 
 end
-
-BEGIN {
-  module CallVariableTestHelper
-    def parsed_call_variables_from(io)
-      Adhearsion::Call::Variables::Parser.parse(io).variables
-    end
-
-    def coerce_call_variables(variables)
-      Adhearsion::Call::Variables::Parser.coerce_variables(variables)
-    end
-
-    def merged_hash_with_call_variables(new_hash)
-      call_variables_with_new_query = typical_call_variables_hash.merge new_hash
-      coerce_call_variables call_variables_with_new_query
-    end
-
-    def parsed_call_variables_with_query(query_string)
-      request_string = "agi://10.0.0.0/#{query_string}"
-      merged_hash_with_call_variables({:request => request_string})[:query]
-    end
-
-    def typical_call_variable_io
-      StringIO.new(typical_call_variable_section)
-    end
-
-    def typical_call_variable_section
-      <<-VARIABLES
-agi_network: yes
-agi_request: agi://10.0.0.152/monkey?foo=bar&qaz=qwerty
-agi_channel: SIP/marcel-b58046e0
-agi_language: en
-agi_type: SIP
-agi_uniqueid: 1191245124.16
-agi_callerid: 011441234567899
-agi_calleridname: unknown
-agi_callingpres: 0
-agi_callingani2: 0
-agi_callington: 0
-agi_callingtns: 0
-agi_dnid: 911
-agi_rdnis: unknown
-agi_context: adhearsion
-agi_extension: 911
-agi_priority: 1
-agi_enhanced: 0.0
-agi_accountcode: 
-
-      VARIABLES
-    end
-
-    # TODO:
-    #  - "unknown" should be converted to nil
-    #  - "yes" or "no" should be converted to true or false
-    #  - numbers beginning with a 0 MUST be converted to a NumericalString
-    #  - Look up why there are so many zeroes. They're likely reprentative of some PRI definition.
-
-    def typical_call_variables_hash
-      uncoerced_variable_map                = expected_uncoerced_variable_map
-
-      uncoerced_variable_map[:request]      = URI.parse(uncoerced_variable_map[:request])
-      uncoerced_variable_map[:extension]    = 911 # Adhearsion::VoIP::DSL::PhoneNumber.new(uncoerced_variable_map[:extension]) #
-      uncoerced_variable_map[:callerid]     = Adhearsion::VoIP::DSL::NumericalString.new(uncoerced_variable_map[:callerid])
-
-      uncoerced_variable_map[:network]      = true
-      uncoerced_variable_map[:calleridname] = nil
-      uncoerced_variable_map[:callingpres]  = 0
-      uncoerced_variable_map[:callingani2]  = 0
-      uncoerced_variable_map[:callingtns]   = 0
-      uncoerced_variable_map[:dnid]         = 911
-      uncoerced_variable_map[:rdnis]        = nil
-      uncoerced_variable_map[:priority]     = 1
-      uncoerced_variable_map[:enhanced]     = 0.0
-      uncoerced_variable_map[:uniqueid]     = "1191245124.16"
-
-      uncoerced_variable_map[:type_of_calling_number] = Adhearsion::VoIP::Constants::Q931_TYPE_OF_NUMBER[uncoerced_variable_map.delete(:callington).to_i]
-
-      coerced_variable_map = uncoerced_variable_map
-      coerced_variable_map[:query] = {"foo" => "bar", "qaz" => "qwerty"}
-      coerced_variable_map[:foo] = 'bar'
-      coerced_variable_map[:qaz] = 'qwerty'
-      coerced_variable_map
-    end
-
-    def expected_uncoerced_variable_map
-      {:network      => 'yes',
-       :request      => 'agi://10.0.0.152/monkey?foo=bar&qaz=qwerty',
-       :channel      => 'SIP/marcel-b58046e0',
-       :language     => 'en',
-       :type         => 'SIP',
-       :uniqueid     => '1191245124.16',
-       :callerid     => '011441234567899',
-       :calleridname => 'unknown',
-       :callingpres  => '0',
-       :callingani2  => '0',
-       :callington   => '0',
-       :callingtns   => '0',
-       :dnid         => '911',
-       :rdnis        => 'unknown',
-       :context      => 'adhearsion',
-       :extension    => '911',
-       :priority     => '1',
-       :enhanced     => '0.0',
-       :accountcode  => ''}
-    end
-  end
-
-  module AgiServerTestHelper
-    def stub_before_call_hooks!
-      flexstub(Adhearsion::Events).should_receive(:trigger).with([:asterisk, :before_call], Proc).and_return
-    end
-
-    def stub_confirmation_manager!
-      flexstub(Adhearsion::DialPlan::ConfirmationManager).should_receive(:confirmation_call?).and_return false
-    end
-  end
-}

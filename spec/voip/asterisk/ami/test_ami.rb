@@ -2,6 +2,92 @@ require File.dirname(__FILE__) + "/../../../test_helper"
 require 'adhearsion'
 require 'adhearsion/voip/asterisk/manager_interface'
 
+module ManagerInterfaceTestHelper
+
+  def mocked_queue
+    # This mock queue receives a ManagerInterfaceAction with <<(). Within the semantics of the OO design, this should be
+    # immediately picked up by the writer queue. The writer queue calls to_s on each object and passes that string to the
+    # event socket, blocking if it's an event with causal events.
+    write_queue_mock = TestableQueueMock.new
+    flexmock(Queue).should_receive(:new).once.and_return write_queue_mock
+    write_queue_mock
+  end
+
+  def ami_packets
+    OpenStruct.new.tap do |struct|
+      struct.fresh_socket_connection = "Asterisk Call Manager/1.0\r\nResponse: Success\r\n"+
+          "Message: Authentication accepted\r\n\r\n"
+
+      struct.reload_event = %{Event: ChannelReload\r\nPrivilege: system,all\r\nChannel: SIP\r\n} +
+          %{ReloadReason: RELOAD (Channel module reload)\r\nRegistry_Count: 1\r\nPeer_Count: 2\r\nUser_Count: 1\r\n\r\n}
+
+      struct.authentication_failed = %{Asterisk Call Manager/1.0\r\nResponse: Error\r\nMessage: Authentication failed\r\nActionID: %s\r\n\r\n}
+
+      struct.unknown_command_error = "Response: Error\r\nActionID: 2123123\r\nMessage: Invalid/unknown command\r\n\r\n"
+
+      struct.pong = "Response: Pong\r\nActionID: %s\r\n\r\n"
+    end
+  end
+
+  def new_manager_with_events
+    @Manager::ManagerInterface.new :host => @host, :port => @port, :events => true, :auto_reconnect => false
+  end
+
+  def new_manager_without_events
+    @Manager::ManagerInterface.new :host => @host, :port => @port, :events => false, :auto_reconnect => false
+  end
+
+  def new_blank_ami_response
+    @Manager::ManagerInterfaceResponse.new
+  end
+
+  def mock_for_next_created_socket
+    flexmock("TCPSocket").tap do |mock|
+      flexmock(TCPSocket).should_receive(:new).once.and_return mock
+    end
+  end
+
+end
+
+
+##
+# Had to implement this class to make the Thread-based testing simpler.
+#
+class TestableQueueMock
+
+  attr_accessor :manager
+  def initialize
+    @shifted    = []
+    @unshifted  = []
+  end
+
+  def actions
+    @shifted + @unshifted
+  end
+
+  def <<(action)
+    @unshifted << action
+    @on_push.call(action) if @on_push
+  end
+
+  def on_push(&block)
+    @on_push = block
+    self
+  end
+
+  def shift
+    return :STOP! if actions.empty?
+    next_action = @unshifted.shift
+    @shifted << next_action
+    next_action
+  end
+
+  def received_action?(action)
+    actions.include?(action)
+  end
+
+end
+
 describe "ManagerInterface" do
 
   include ManagerInterfaceTestHelper
@@ -461,92 +547,3 @@ describe "EventManagerInterfaceConnection" do
   it "should stop gracefully by allowing the Queue to finish writing to the Theatre"
   it "should stop forcefully by not allowing the Queue to finish writing to the Theatre"
 end
-
-BEGIN {
-
-  module ManagerInterfaceTestHelper
-
-    def mocked_queue
-      # This mock queue receives a ManagerInterfaceAction with <<(). Within the semantics of the OO design, this should be
-      # immediately picked up by the writer queue. The writer queue calls to_s on each object and passes that string to the
-      # event socket, blocking if it's an event with causal events.
-      write_queue_mock = TestableQueueMock.new
-      flexmock(Queue).should_receive(:new).once.and_return write_queue_mock
-      write_queue_mock
-    end
-
-    def ami_packets
-      OpenStruct.new.tap do |struct|
-        struct.fresh_socket_connection = "Asterisk Call Manager/1.0\r\nResponse: Success\r\n"+
-            "Message: Authentication accepted\r\n\r\n"
-
-        struct.reload_event = %{Event: ChannelReload\r\nPrivilege: system,all\r\nChannel: SIP\r\n} +
-            %{ReloadReason: RELOAD (Channel module reload)\r\nRegistry_Count: 1\r\nPeer_Count: 2\r\nUser_Count: 1\r\n\r\n}
-
-        struct.authentication_failed = %{Asterisk Call Manager/1.0\r\nResponse: Error\r\nMessage: Authentication failed\r\nActionID: %s\r\n\r\n}
-
-        struct.unknown_command_error = "Response: Error\r\nActionID: 2123123\r\nMessage: Invalid/unknown command\r\n\r\n"
-
-        struct.pong = "Response: Pong\r\nActionID: %s\r\n\r\n"
-      end
-    end
-
-    def new_manager_with_events
-      @Manager::ManagerInterface.new :host => @host, :port => @port, :events => true, :auto_reconnect => false
-    end
-
-    def new_manager_without_events
-      @Manager::ManagerInterface.new :host => @host, :port => @port, :events => false, :auto_reconnect => false
-    end
-
-    def new_blank_ami_response
-      @Manager::ManagerInterfaceResponse.new
-    end
-
-    def mock_for_next_created_socket
-      flexmock("TCPSocket").tap do |mock|
-        flexmock(TCPSocket).should_receive(:new).once.and_return mock
-      end
-    end
-
-  end
-
-
-  ##
-  # Had to implement this class to make the Thread-based testing simpler.
-  #
-  class TestableQueueMock
-
-    attr_accessor :manager
-    def initialize
-      @shifted    = []
-      @unshifted  = []
-    end
-
-    def actions
-      @shifted + @unshifted
-    end
-
-    def <<(action)
-      @unshifted << action
-      @on_push.call(action) if @on_push
-    end
-
-    def on_push(&block)
-      @on_push = block
-      self
-    end
-
-    def shift
-      return :STOP! if actions.empty?
-      next_action = @unshifted.shift
-      @shifted << next_action
-      next_action
-    end
-
-    def received_action?(action)
-      actions.include?(action)
-    end
-
-  end
-}

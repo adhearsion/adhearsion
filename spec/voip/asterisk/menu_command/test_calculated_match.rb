@@ -1,6 +1,22 @@
 require File.join(File.dirname(__FILE__), *%w[.. .. .. test_helper])
 require 'adhearsion/voip/menu_state_machine/calculated_match'
 
+module CalculatedMatchCollectionTestHelper
+  def mock_with_potential_matches(potential_matches)
+    Adhearsion::VoIP::CalculatedMatch.new :potential_matches => potential_matches
+  end
+
+  def mock_with_exact_matches(exact_matches)
+    Adhearsion::VoIP::CalculatedMatch.new :exact_matches => exact_matches
+  end
+
+  def mock_with_potential_and_exact_matches(potential_matches, exact_matches)
+    Adhearsion::VoIP::CalculatedMatch.new :potential_matches => potential_matches,
+                        :exact_matches => exact_matches
+  end
+
+end
+
 describe 'CalculatedMatch' do
   it "should make accessible the context name" do
     Adhearsion::VoIP::CalculatedMatch.new(:match_payload => :foobar).match_payload.should be :foobar
@@ -91,21 +107,3 @@ describe 'CalculatedMatchCollection' do
     collection.potential_match?.should be true
   end
 end
-
-BEGIN {
-module CalculatedMatchCollectionTestHelper
-  def mock_with_potential_matches(potential_matches)
-    Adhearsion::VoIP::CalculatedMatch.new :potential_matches => potential_matches
-  end
-
-  def mock_with_exact_matches(exact_matches)
-    Adhearsion::VoIP::CalculatedMatch.new :exact_matches => exact_matches
-  end
-
-  def mock_with_potential_and_exact_matches(potential_matches, exact_matches)
-    Adhearsion::VoIP::CalculatedMatch.new :potential_matches => potential_matches,
-                        :exact_matches => exact_matches
-  end
-
-end
-}

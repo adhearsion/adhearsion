@@ -1,6 +1,22 @@
 require File.join(File.dirname(__FILE__), *%w[.. .. .. test_helper])
 require 'adhearsion/voip/asterisk/config_generators/agents.conf'
 
+module AgentsConfigFileGeneratorTestHelper
+
+  def reset_agents!
+    @agents = Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Agents.new
+  end
+
+  def generated_config_has_pair(pair)
+    agents.conf.split("\n").grep(/=[^>]/).each do |line|
+      key, value = line.strip.split('=')
+      return true if pair == {key.to_sym => value}
+    end
+    false
+  end
+
+end
+
 describe "The agents.conf config file agents" do
 
   include AgentsConfigFileGeneratorTestHelper
@@ -233,21 +249,3 @@ describe "AgentsConfigFileGeneratorTestHelper" do
     generated_config_has_pair(:foo => "bar").should be false
   end
 end
-
-BEGIN {
-module AgentsConfigFileGeneratorTestHelper
-
-  def reset_agents!
-    @agents = Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Agents.new
-  end
-
-  def generated_config_has_pair(pair)
-    agents.conf.split("\n").grep(/=[^>]/).each do |line|
-      key, value = line.strip.split('=')
-      return true if pair == {key.to_sym => value}
-    end
-    false
-  end
-
-end
-}

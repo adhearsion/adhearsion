@@ -1,5 +1,14 @@
 require File.dirname(__FILE__) + "/../test_helper"
 
+module ConfigurationTestHelper
+  def default_config(&block)
+    Adhearsion::Configuration.new do |config|
+      config.enable_asterisk
+      yield config if block_given?
+    end
+  end
+end
+
 describe "Configuration defaults" do
   include ConfigurationTestHelper
   attr_reader :config
@@ -47,7 +56,7 @@ describe "Configuration defaults" do
   it "Drb is NOT enabled by default" do
     config.drb_enabled?.should be false
   end
-  
+
   it "XMPP is NOT enabled by default" do
     config.xmpp_enabled?.should be false
   end
@@ -157,12 +166,12 @@ end
 
 describe "XMPP configuration defaults" do
   attr_reader :config
-  
+
   it "xmpp configuration sets default port when server is set, but no port" do
     config = Adhearsion::Configuration::XMPPConfiguration.new :jid => "test@example.com", :password => "somepassword", :server => "example.com"
     config.port.should be Adhearsion::Configuration::XMPPConfiguration.default_port
   end
-  
+
   it "should raise when port is specified, but no server" do
     begin
       config = Adhearsion::Configuration::XMPPConfiguration.new :jid => "test@example.com", :password => "somepassword", :port => "5223"
@@ -259,14 +268,3 @@ describe "DRb configuration" do
   end
 
 end
-
-BEGIN {
-  module ConfigurationTestHelper
-    def default_config(&block)
-      Adhearsion::Configuration.new do |config|
-        config.enable_asterisk
-        yield config if block_given?
-      end
-    end
-  end
-}

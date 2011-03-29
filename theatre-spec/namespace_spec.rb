@@ -1,5 +1,29 @@
 require File.dirname(__FILE__) + "/spec_helper"
 
+module NamespaceHelper
+  class BeValidNamespace
+
+    def matches?(target)
+      @target = target
+      Theatre::ActorNamespaceManager.valid_namespace_path? target
+    end
+
+    def failure_message
+      "expected #{@target.inspect} to be a valid namespace"
+    end
+
+    def negative_failure_message
+      "expected #{@target.inspect} not to be a valid namespace"
+    end
+
+  end
+
+  def be_valid_actor_event_namespace
+    BeValidNamespace.new
+  end
+
+end
+
 describe "ActorNamespaceManager" do
 
   it "should make a registered namespace findable once registered" do
@@ -35,7 +59,6 @@ describe "ActorNamespaceManager" do
       Theatre::ActorNamespaceManager.normalize_path_to_array(["/jay/thomas/phillips"]).should == [:jay,:thomas,:phillips]
     end
   end
-
 
 end
 
@@ -100,29 +123,3 @@ describe "Valid namespace segments" do
 
   end
 end
-
-BEGIN {
-module NamespaceHelper
-  class BeValidNamespace
-
-    def matches?(target)
-      @target = target
-      Theatre::ActorNamespaceManager.valid_namespace_path? target
-    end
-
-    def failure_message
-      "expected #{@target.inspect} to be a valid namespace"
-    end
-
-    def negative_failure_message
-      "expected #{@target.inspect} not to be a valid namespace"
-    end
-
-  end
-
-  def be_valid_actor_event_namespace
-    BeValidNamespace.new
-  end
-
-end
-}

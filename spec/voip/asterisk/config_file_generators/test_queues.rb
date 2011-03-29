@@ -1,6 +1,25 @@
 require File.join(File.dirname(__FILE__), *%w[.. .. .. test_helper])
 require 'adhearsion/voip/asterisk/config_generators/queues.conf'
 
+module QueuesConfigFileGeneratorTestHelper
+
+  def reset_queues!
+    @queues = Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Queues.new
+  end
+
+  def generated_config_should_have_pair(pair)
+    generated_config_has_pair(pair).should be true
+  end
+
+  def generated_config_has_pair(pair)
+    queues.to_s.split("\n").grep(/=[^>]/).each do |line|
+      key, value = line.strip.split('=')
+      return true if pair == {key.to_sym => value}
+    end
+    false
+  end
+end
+
 describe "The queues.conf config file generator" do
 
   include QueuesConfigFileGeneratorTestHelper
@@ -302,24 +321,3 @@ describe "ConfigFileGeneratorTestHelper" do
   end
 
 end
-
-BEGIN {
-module QueuesConfigFileGeneratorTestHelper
-
-  def reset_queues!
-    @queues = Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Queues.new
-  end
-
-  def generated_config_should_have_pair(pair)
-    generated_config_has_pair(pair).should be true
-  end
-
-  def generated_config_has_pair(pair)
-    queues.to_s.split("\n").grep(/=[^>]/).each do |line|
-      key, value = line.strip.split('=')
-      return true if pair == {key.to_sym => value}
-    end
-    false
-  end
-end
-}

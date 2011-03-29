@@ -1,6 +1,22 @@
 require File.dirname(__FILE__) + "/test_helper"
 require 'adhearsion/component_manager/component_tester'
 
+module ComponentManagerTestHelper
+
+  def mock_component_config(component_name, yaml)
+    yaml = YAML.load(yaml) if yaml.kind_of?(String)
+    flexmock(@component_manager.lazy_config_loader).should_receive(component_name).and_return yaml
+  end
+
+  def run_component_code(code)
+    @component_manager.load_code(code)
+  end
+
+  def new_object_with_scope(scope)
+    @component_manager.extend_object_with(Object.new, scope)
+  end
+end
+
 describe "Adhearsion's component system" do
 
   include ComponentManagerTestHelper
@@ -274,22 +290,3 @@ describe "ComponentTester" do
   end
 
 end
-
-BEGIN {
-  module ComponentManagerTestHelper
-
-    def mock_component_config(component_name, yaml)
-      yaml = YAML.load(yaml) if yaml.kind_of?(String)
-      flexmock(@component_manager.lazy_config_loader).should_receive(component_name).and_return yaml
-    end
-
-    def run_component_code(code)
-      @component_manager.load_code(code)
-    end
-
-    def new_object_with_scope(scope)
-      @component_manager.extend_object_with(Object.new, scope)
-    end
-  end
-
-}

@@ -1,5 +1,19 @@
 require File.dirname(__FILE__) + "/test_helper"
 
+module DRbTestHelper
+
+  def new_drb_rpc_object
+    Object.new.tap do |obj|
+      @component_manager.extend_object_with(obj, :rpc)
+    end
+  end
+
+  def add_rpc_methods(code)
+    @component_manager.load_code "methods_for(:rpc) do; #{code}; end"
+  end
+
+end
+
 describe "Invoking an interface method via DRb" do
   include DRbTestHelper
 
@@ -49,20 +63,3 @@ describe "Invoking an interface method via DRb" do
     DRb.stop_service
   end
 end
-
-
-BEGIN {
-  module DRbTestHelper
-
-    def new_drb_rpc_object
-      Object.new.tap do |obj|
-        @component_manager.extend_object_with(obj, :rpc)
-      end
-    end
-
-    def add_rpc_methods(code)
-      @component_manager.load_code "methods_for(:rpc) do; #{code}; end"
-    end
-
-  end
-}

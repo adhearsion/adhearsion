@@ -1,5 +1,15 @@
 require File.dirname(__FILE__) + "/../test_helper"
 
+module EventSocketTestHelper
+  def mock_handler_object
+    flexmock.tap do |handler|
+      flexstub(handler).should_receive(:connected)
+      flexstub(handler).should_receive(:receive_data)
+      flexstub(handler).should_receive(:disconnected)
+    end
+  end
+end
+
 describe "a new EventSocket" do
 
   include EventSocketTestHelper
@@ -156,15 +166,3 @@ end
 describe "the writer_loop method" do
 
 end
-
-BEGIN {
-  module EventSocketTestHelper
-    def mock_handler_object
-      flexmock.tap do |handler|
-        flexstub(handler).should_receive(:connected)
-        flexstub(handler).should_receive(:receive_data)
-        flexstub(handler).should_receive(:disconnected)
-      end
-    end
-  end
-}

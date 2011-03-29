@@ -1,6 +1,45 @@
 require File.dirname(__FILE__) + "/test_helper"
 require 'adhearsion/cli'
 
+module AhnCommandSpecHelper
+
+  def simulate_args(*args)
+    ARGV.clear
+    ARGV.concat args
+  end
+
+  def capture_stdout(&block)
+    old = $stdout
+    $stdout = io = StringIO.new
+    yield
+  ensure
+    $stdout = old
+    return io.string
+  end
+
+  def new_tmp_dir(filename=new_guid)
+    File.join Dir.tmpdir, filename
+  end
+
+  def create_component_sandbox
+    new_tmp_dir.tap do |dir|
+      Dir.mkdir dir
+      FileUtils.touch dir + "/.ahnrc"
+      Dir.mkdir dir + "/components"
+    end
+  end
+
+  def execute_ahn_command
+    Adhearsion::CLI::AhnCommand.execute!
+  end
+
+  def executing_ahn_command_should_fail_with(exception)
+    flexmock(Adhearsion::CLI::AhnCommand).should_receive(:fail_and_print_usage).with(exception).once
+    execute_ahn_command
+  end
+
+end
+
 describe 'The Ahn Command helper' do
 
   include AhnCommandSpecHelper
@@ -243,44 +282,3 @@ describe 'The "create" command' do
   end
 
 end
-
-BEGIN {
-  module AhnCommandSpecHelper
-
-    def simulate_args(*args)
-      ARGV.clear
-      ARGV.concat args
-    end
-
-    def capture_stdout(&block)
-      old = $stdout
-      $stdout = io = StringIO.new
-      yield
-    ensure
-      $stdout = old
-      return io.string
-    end
-
-    def new_tmp_dir(filename=new_guid)
-      File.join Dir.tmpdir, filename
-    end
-
-    def create_component_sandbox
-      new_tmp_dir.tap do |dir|
-        Dir.mkdir dir
-        FileUtils.touch dir + "/.ahnrc"
-        Dir.mkdir dir + "/components"
-      end
-    end
-
-    def execute_ahn_command
-      Adhearsion::CLI::AhnCommand.execute!
-    end
-
-    def executing_ahn_command_should_fail_with(exception)
-      flexmock(Adhearsion::CLI::AhnCommand).should_receive(:fail_and_print_usage).with(exception).once
-      execute_ahn_command
-    end
-
-  end
-}
