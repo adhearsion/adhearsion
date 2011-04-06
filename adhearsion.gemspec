@@ -150,6 +150,7 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency("bundler", [">= 1.0.10"])
       s.add_runtime_dependency("log4r", [">= 1.0.5"])
       s.add_runtime_dependency("activesupport", [">= 2.1.0"])
+      s.add_runtime_dependency("rake")
       # i18n is only strictly a dependency for ActiveSupport >= 3.0.0
       # Since it doesn't conflict with <3.0.0 we'll require it to be
       # on the safe side.
@@ -165,10 +166,12 @@ Gem::Specification.new do |s|
       s.add_dependency("bundler", [">= 1.0.10"])
       s.add_dependency("log4r", [">= 1.0.5"])
       s.add_dependency("activesupport", [">= 2.1.0"])
+      s.add_dependency("rake")
     end
   else
     s.add_dependency("bundler", [">= 1.0.10"])
     s.add_dependency("log4r", [">= 1.0.5"])
     s.add_dependency("activesupport", [">= 2.1.0"])
+    s.add_dependency("rake")
   end
 end
