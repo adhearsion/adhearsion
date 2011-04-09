@@ -1,3 +1,5 @@
+1.0.2
+
 1.0.1
  NOTE for Ruby 1.9 users: The behavior of Ruby 1.9 and case statements has changed
       in a way that renders NumericalString objects incompatible with
@@ -29,6 +31,7 @@
  - New components now include RubyGems skeleton files
  - Fix support for setting Caller ID name on AGI dial() command
  - Generate new apps with Bundler support, including auto-requiring of all gems
+ - Update component testing framework to RSpec 2.x and mock with rspec
 
 1.0.0
  - Fall back to using Asterisk's context if the AGI URI context is not found

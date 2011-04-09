@@ -47,9 +47,7 @@ module ComponentTester
 
   def initialize!
     metadata = component_module.metaclass.send(:instance_variable_get, :@metadata)
-    if metadata && metadata[:initialization_block].kind_of?(Proc)
-      metadata[:initialization_block].call
-    end
+    metadata[:initialization_block].call if metadata && metadata[:initialization_block].kind_of?(Proc)
   end
 
 end

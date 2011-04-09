@@ -1,6 +1,12 @@
-require File.dirname(__FILE__) + "/spec_helper"
+require 'spec_helper'
 
 GUID_REGEXP = /^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$/i
+
+module InvocationTestHelper
+  def new_invocation(payload=@payload)
+    Theatre::Invocation.new(@namespace, @block, @payload)
+  end
+end
 
 describe "The lifecycle of an Invocation" do
 
@@ -159,11 +165,3 @@ describe "Using Invocations that've been ran through the Theatre" do
   end
 
 end
-
-BEGIN {
-  module InvocationTestHelper
-    def new_invocation(payload=@payload)
-      Theatre::Invocation.new(@namespace, @block, @payload)
-    end
-  end
-}
