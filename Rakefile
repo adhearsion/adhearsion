@@ -1,5 +1,5 @@
 # -*- ruby -*-
-ENV['RUBY_FLAGS'] = "-I#{%w(lib ext bin test).join(File::PATH_SEPARATOR)}"
+ENV['RUBY_FLAGS'] = "-I#{%w(lib ext bin spec).join(File::PATH_SEPARATOR)}"
 
 require 'rubygems'
 require 'bundler'
@@ -28,10 +28,11 @@ end
 begin
   require 'rcov/rcovtask'
   Rcov::RcovTask.new do |t|
+    t.libs       << "spec"
     t.test_files  = Dir['spec/**/*_spec.rb']
     t.output_dir  = 'coverage'
     t.verbose     = true
-    t.rcov_opts.concat %w[--sort coverage --sort-reverse -x gems -x /var --no-validator-links]
+    t.rcov_opts.concat %w[--sort coverage --sort-reverse -x gems -x /var]
   end
 rescue LoadError
   STDERR.puts "Could not load rcov tasks -- rcov does not appear to be installed. Continuing anyway."
