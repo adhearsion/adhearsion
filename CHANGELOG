@@ -1,3 +1,6 @@
+1.0.3
+ - Fix the play() command when passing an array of strings. This was breaking the SimonGame
+
 1.0.2
  - Fix rcov Rake task
  - Add Ben Langfeld as an author (Thanks, Ben!)
