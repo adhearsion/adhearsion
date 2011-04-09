@@ -60,8 +60,7 @@ module Adhearsion
               call.hangup!
         	  # TBD: (may have more hooks than what Jay has defined in hooks.rb)
             rescue => e
-              ahn_log.agi.error "#{e.class}: #{e.message}"
-              ahn_log.agi.error e.backtrace.join("\n\t")
+              Events.trigger(['exception'], e)
             ensure
               Adhearsion.remove_inactive_call call rescue nil
             end
