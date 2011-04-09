@@ -130,19 +130,14 @@ module Theatre
 
     protected
 
-    # This will use the Adhearsion logger eventually.
-    def warn(exception)
-      # STDERR.puts exception.message, *exception.backtrace
-    end
-
     def thread_loop
       loop do
         begin
           next_invocation = @master_queue.pop
           return :stopped if next_invocation.equal? :THEATRE_SHUTDOWN!
           next_invocation.start
-        rescue => error
-          warn error
+        rescue Exception => error
+          Adhearsion::Events.trigger(['exception'], error)
         end
       end
     end
