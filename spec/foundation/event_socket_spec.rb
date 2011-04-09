@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + "/../test_helper"
+require 'spec_helper'
 
 module EventSocketTestHelper
   def mock_handler_object

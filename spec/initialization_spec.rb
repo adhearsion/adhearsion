@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/test_helper'
+require 'spec_helper'
 
 describe "Adhearsion::Initializer" do
 

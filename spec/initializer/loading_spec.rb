@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + "/../test_helper"
+require 'spec_helper'
 require 'adhearsion/initializer/database'
 require 'adhearsion/initializer/asterisk'
 require 'adhearsion/initializer/rails'

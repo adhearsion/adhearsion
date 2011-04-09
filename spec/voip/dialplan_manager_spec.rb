@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + "/../test_helper"
+require 'spec_helper'
 require 'adhearsion/voip/dsl/dialplan/parser'
 
 module DialplanTestingHelper

@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + "/../../test_helper"
+require 'spec_helper'
 require File.dirname(__FILE__) + "/../dsl/dispatcher_spec_helper"
 require 'adhearsion/voip/freeswitch/oes_server'
 

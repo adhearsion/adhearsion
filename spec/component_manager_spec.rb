@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + "/test_helper"
+require 'spec_helper'
 require 'adhearsion/component_manager/component_tester'
 
 module ComponentManagerTestHelper

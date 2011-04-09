@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + "/../test_helper"
+require 'spec_helper'
 
 module PathsTestHelper
   def mock_ahnrc_with(raw_yaml)

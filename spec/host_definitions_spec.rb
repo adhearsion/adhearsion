@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), 'test_helper.rb')
+require 'spec_helper'
 require 'adhearsion/host_definitions'
 
 describe 'HostDefinition' do

@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + "/../../test_helper"
+require 'spec_helper'
 require 'adhearsion/voip/freeswitch/inbound_connection_manager'
 include Adhearsion::VoIP::FreeSwitch
 

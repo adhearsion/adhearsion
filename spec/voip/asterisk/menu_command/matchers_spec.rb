@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), *%w[.. .. .. test_helper])
+require 'spec_helper'
 require 'adhearsion/voip/menu_state_machine/menu_builder'
 require 'adhearsion/voip/menu_state_machine/matchers'
 

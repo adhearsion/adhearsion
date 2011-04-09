@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../../test_helper'
+require 'spec_helper'
 require 'adhearsion/voip/dsl/dialing_dsl'
 
 # Keep the monkey patches in a module and load that into Regexp

@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), *%w[.. .. .. test_helper])
+require 'spec_helper'
 require 'adhearsion/voip/asterisk/config_generators/agents.conf'
 
 module AgentsConfigFileGeneratorTestHelper

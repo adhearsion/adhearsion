@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + "/test_helper"
+require 'spec_helper'
 
 describe "The Adhearsion module" do
   # This it is of questionable benefit
