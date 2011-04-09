@@ -37,6 +37,7 @@ Gem::Specification.new do |s|
       # on the safe side.
       s.add_runtime_dependency("i18n")
       s.add_runtime_dependency("rubigen", [">= 1.5.6"])
+      s.add_runtime_dependency("rake")
 
       # Development dependencies
       s.add_development_dependency('rubigen', [">= 1.5.6"])
@@ -48,10 +49,12 @@ Gem::Specification.new do |s|
       s.add_dependency("bundler", [">= 1.0.10"])
       s.add_dependency("log4r", [">= 1.0.5"])
       s.add_dependency("activesupport", [">= 2.1.0"])
+      s.add_dependency("rake")
     end
   else
     s.add_dependency("bundler", [">= 1.0.10"])
     s.add_dependency("log4r", [">= 1.0.5"])
     s.add_dependency("activesupport", [">= 2.1.0"])
+    s.add_dependency("rake")
   end
 end
