@@ -59,7 +59,7 @@ module Adhearsion
               ahn_log.agi "Ignoring meta-AGI request"
               call.hangup!
         	  # TBD: (may have more hooks than what Jay has defined in hooks.rb)
-            rescue => e
+            rescue SyntaxError, StandardError => e
               Events.trigger(['exception'], e)
             ensure
               Adhearsion.remove_inactive_call call rescue nil
