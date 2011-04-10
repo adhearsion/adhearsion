@@ -39,9 +39,9 @@ USAGE
           when 'start'
             pid_file_regexp = /^--pid-file=(.+)$/
             if args.size > 3
-              fail_and_print_usage "Too many arguments supplied!" if args.size > 3
+              raise CommandHandler::CLIException, "Too many arguments supplied!" if args.size > 3
             elsif args.size == 3
-              fail_and_print_usage "Unrecognized final argument #{args.last}" unless args.last =~ pid_file_regexp
+              raise CommandHandler::CLIException, "Unrecognized final argument #{args.last}" unless args.last =~ pid_file_regexp
               pid_file = args.pop[pid_file_regexp, 1]
             else
               pid_file = nil
@@ -52,12 +52,12 @@ USAGE
               if args.first =~ /daemon|console/
                 mode = args.first.to_sym
               else
-                fail_and_print_usage "Invalid start mode requested: #{args.first}"
+                raise CommandHandler::CLIException, "Invalid start mode requested: #{args.first}"
               end
             elsif args.size == 1
               path, mode = args.first, :foreground
             else
-              fail_and_print_usage "Invalid format for the start CLI command!"
+              raise CommandHandler::CLIException, "Invalid format for the start CLI command!"
             end
             [:start, path, mode, pid_file]
           when '-'
