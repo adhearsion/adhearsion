@@ -75,6 +75,10 @@ module Adhearsion
       end
     end
 
+    def each
+      calls.each_pair{|id, call| yield id, call }
+    end
+
     def to_a
       calls.values
     end
