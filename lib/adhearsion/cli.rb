@@ -6,7 +6,7 @@ module Adhearsion
       USAGE = <<USAGE
 Usage:
    ahn create /path/to/directory
-   ahn start [daemon] [/path/to/directory]
+   ahn start [console|daemon] [/path/to/directory]
    ahn version|-v|--v|-version|--version
    ahn help|-h|--h|--help|-help
 
@@ -47,15 +47,19 @@ USAGE
               pid_file = nil
             end
 
-            if args.first == 'daemon' && args.size == 2
+            if args.size == 2
               path   = args.last
-              daemon = true
+              if args.first =~ /daemon|console/
+                mode = args.first.to_sym
+              else
+                fail_and_print_usage "Invalid start mode requested: #{args.first}"
+              end
             elsif args.size == 1
-              path, daemon = args.first, false
+              path, mode = args.first, :foreground
             else
               fail_and_print_usage "Invalid format for the start CLI command!"
             end
-            [:start, path, daemon, pid_file]
+            [:start, path, mode, pid_file]
           when '-'
             [:start, Dir.pwd]
           when "enable", "disable"
@@ -192,9 +196,9 @@ component_name.upcase = ComponentTester.new("#{component_name}", File.dirname(__
             end
           end
 
-          def start(path, daemon=false, pid_file=nil)
+          def start(path, mode=:foreground, pid_file=nil)
             raise PathInvalid, path unless File.exists? path + "/.ahnrc"
-            Adhearsion::Initializer.start path, :daemon => daemon, :pid_file => pid_file
+            Adhearsion::Initializer.start path, :mode => mode, :pid_file => pid_file
           end
 
           def version

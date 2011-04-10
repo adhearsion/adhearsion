@@ -38,6 +38,7 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency("i18n")
       s.add_runtime_dependency("rubigen", [">= 1.5.6"])
       s.add_runtime_dependency("rake")
+      s.add_runtime_dependency("pry")
 
       # Development dependencies
       s.add_development_dependency('rubigen', [">= 1.5.6"])
