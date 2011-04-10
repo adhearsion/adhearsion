@@ -333,6 +333,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       require 'pry'
       Thread.new do
         pry
+        Adhearsion.shutdown!
       end
     end
 
