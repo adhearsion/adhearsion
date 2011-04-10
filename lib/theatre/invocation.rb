@@ -62,8 +62,6 @@ module Theatre
           @callback.call @payload
         end
         with_state_lock { @current_state = :success }
-      rescue => @error
-        with_state_lock { @current_state = :error }
       ensure
         @finished_time = Time.now.freeze
       end

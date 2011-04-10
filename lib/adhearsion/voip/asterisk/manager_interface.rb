@@ -467,7 +467,13 @@ module Adhearsion
           end
 
           def start_actions_writer_loop
-            @actions_writer_thread = Thread.new(&method(:actions_writer_loop))
+            @actions_writer_thread = Thread.new do
+              begin
+                actions_writer_loop
+              rescue => e
+                Events.trigger(['exception'], e)
+              end
+            end
           end
 
           def stop_actions_writer_loop

@@ -20,6 +20,7 @@
 ##
 # Here is a list of the events included by default:
 #
+# - events.exception
 # - events.asterisk.manager_interface
 # - events.after_initialized
 # - events.shutdown
@@ -30,3 +31,9 @@
 #
 # Note: events are mostly for components to register and expose to you.
 ##
+
+events.exception.each do |e|
+  ahn_log.error "#{e.class}: #{e.message}"
+  ahn_log.error e.backtrace.join("\n\t")
+end
+
