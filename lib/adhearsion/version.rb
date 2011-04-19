@@ -13,13 +13,16 @@ module Adhearsion #:nodoc:
     attr_reader :major, :minor, :revision
 
     def initialize(version="")
-      @major, @minor, @revision = version.split(".").map(&:to_i)
+      version = "" if version.nil?
+      @major, @minor, @revision, @patchlevel = version.split(".", 4).map(&:to_i)
+      @major = 0 unless @major
     end
 
     def <=>(other)
       return @major <=> other.major if ((@major <=> other.major) != 0)
       return @minor <=> other.minor if ((@minor <=> other.minor) != 0)
       return @revision <=> other.revision if ((@revision <=> other.revision) != 0)
+      return 0
     end
 
     def self.sort
