@@ -1,5 +1,6 @@
 1.0.3
  - Fix the play() command regression when passing an array of strings. This was breaking the SimonGame
+ - Deprecate ManagerInterface#send_action_asynchronously
 
 1.0.2
  - Fix rcov Rake task
