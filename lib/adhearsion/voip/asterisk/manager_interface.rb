@@ -285,16 +285,19 @@ module Adhearsion
           # @param [String, Symbol] action_name The name of the action (e.g. Originate)
           # @param [Hash] headers Other key/value pairs to send in this action. Note: don't provide an ActionID
           # @return [FutureResource] Call resource() on this object if you wish to access the response (optional). Note: if the response has not come in yet, your Thread will wait until it does.
+          # @deprecated Async AMI is deprecated
           #
           def send_action_asynchronously(action_name, headers={})
-            check_action_name action_name
-            action = ManagerInterfaceAction.new(action_name, headers)
-            if action.replies_with_action_id?
-              @write_queue << action
-              action
-            else
-              raise NotImplementedError
-            end
+            ahn_log.ami.deprecation.warn  <<WARN
+Asterisk only supports one outstanding action ID at a time, making the
+asynchronous AMI interface dangerous to use.  This interface is now deprecated
+and will disappear in future versions of Adhearsion.  If you need to do
+background processing while Asterisk processes a long-running action (such as
+a synchronous Originate) then you will need to handle this manually with
+Ruby threads.  Note that Originate specifically has an :Async header which tells
+Asterisk to process the Originate event asynchronously.
+WARN
+            _send_action_asynchronously(action_name, headers)
           end
 
           ##
@@ -307,33 +310,18 @@ module Adhearsion
           # @return [ManagerInterfaceResponse, ImmediateResponse] Contains the response from Asterisk and all headers
           #
           def send_action_synchronously(*args)
-            send_action_asynchronously(*args).response.tap do |response|
+            _send_action_asynchronously(*args).response.tap do |response|
               raise response if response.kind_of?(ManagerInterfaceError)
             end
           end
 
           alias send_action send_action_synchronously
 
-
-          #######                                              #######
-          ###########                                      ###########
-          ################# SOON-DEPRECATED COMMANDS #################
-          ###########                                      ###########
-          #######                                              #######
-
           # ping sends an action to the Asterisk Manager Interface that returns a pong
           # more details here: http://www.voip-info.org/wiki/index.php?page=Asterisk+Manager+API+Action+Ping
           def ping
-            #deprecation_warning
             send_action "Ping"
             true
-          end
-
-          def deprecation_warning
-            ahn_log.ami.deprecation.warn "The implementation of the ping, originate, introduce, hangup, call_into_context " +
-                "and call_and_exec methods will soon be moved from this class to SuperManager. At the moment, the " +
-                "SuperManager abstractions are not completed. Don't worry. The migration to SuperManager will be very easy."+
-                " See http://docs.adhearsion.com/AMI for more information."
           end
 
           # The originate method launches a call to Asterisk, full details here:
@@ -360,7 +348,6 @@ module Adhearsion
           #             :exten    => 's',
           #             :priority => '1' }
           def originate(options={})
-            #deprecation_warning
             options = options.clone
             options[:callerid] = options.delete :caller_id if options.has_key? :caller_id
             options[:exten] = options.delete :extension if options.has_key? :extension
@@ -382,7 +369,6 @@ module Adhearsion
           # TODO: Provide an example when this works.
           #
           def introduce(caller, callee, opts={})
-            #deprecation_warning
             dial_args  = callee
             dial_args += "|#{opts[:options]}" if opts[:options]
             call_and_exec caller, "Dial", :args => dial_args, :caller_id => opts[:caller_id]
@@ -391,14 +377,12 @@ module Adhearsion
           # hangup terminates a call accepts a channel as the argument
           # full details here: http://www.voip-info.org/wiki/index.php?page=Asterisk+Manager+API+Action+Hangup
           def hangup(channel)
-            #deprecation_warning
             send_action "Hangup", :channel => channel
           end
 
           # call_and_exec allows you to make a call to a channel and then execute an Astersik application
           # on that call
           def call_and_exec(channel, app, opts={})
-            #deprecation_warning
             args = { :channel => channel, :application => app }
             args[:caller_id] = opts[:caller_id] if opts[:caller_id]
             args[:data] = opts[:args] if opts[:args]
@@ -411,7 +395,6 @@ module Adhearsion
           #
           # call_into_context('SIP/1000@sipnetworks.com', 'my_context', { :variables => { :session_guid => new_guid }})
           def call_into_context(channel, context, options={})
-            #deprecation_warning
             args = {:channel => channel, :context => context}
             args[:priority] = options[:priority] || 1
             args[:exten] = options[:extension] if options[:extension]
@@ -420,11 +403,18 @@ module Adhearsion
             originate args
           end
 
-          #######                                                  #######
-          ###########                                          ###########
-          ################# END SOON-DEPRECATED COMMANDS #################
-          ###########                                          ###########
-          #######                                                  #######
+          private
+          def _send_action_asynchronously(action_name, headers={})
+            check_action_name action_name
+            action = ManagerInterfaceAction.new(action_name, headers)
+            if action.replies_with_action_id?
+              @write_queue << action
+              action
+            else
+              raise NotImplementedError
+            end
+          end
+
 
 
           protected

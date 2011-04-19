@@ -91,7 +91,7 @@ module Adhearsion
       end
 
       def ahn_root=(path)
-        if Object.constants.include?("AHN_ROOT")
+        if Object.constants.map(&:to_sym).include?(:AHN_ROOT)
           Object.const_get(:AHN_ROOT).base_path = File.expand_path(path)
         else
           Object.const_set(:AHN_ROOT, PathString.new(File.expand_path(path)))
