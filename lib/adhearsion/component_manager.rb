@@ -134,6 +134,13 @@ module Adhearsion
           end
         end
         container
+      rescue StandardError => e
+        # Non-fatal errors
+        Events.trigger(['exception'], e)
+      rescue Exception => e
+        # Fatal errors.  Log them and keep passing them upward
+        Events.trigger(['exception'], e)
+        raise e
       end
 
       class ComponentDefinitionContainer < Module
