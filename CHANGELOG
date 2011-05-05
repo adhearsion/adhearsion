@@ -1,9 +1,12 @@
+1.0.3
+ - Fix the play() command regression when passing an array of strings. This was breaking the SimonGame
+ - Deprecate ManagerInterface#send_action_asynchronously
+
 1.0.2
  - Fix rcov Rake task
  - Add Ben Langfeld as an author (Thanks, Ben!)
  - Add "rake" as a runtime dependency
  - Remove usage of BEGIN blocks (for Rubinius; CS)
- - Improve component testing generators
 
 1.0.1
  NOTE for Ruby 1.9 users: The behavior of Ruby 1.9 and case statements has changed
