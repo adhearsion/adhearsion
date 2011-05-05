@@ -573,24 +573,22 @@ WARN
             retry
           end
 
-          def login_actions
+          def login_actions        
             response = send_action "Login", "Username" => @username, "Secret" => @password, "Events" => "Off"
-            if response.kind_of? ManagerInterfaceError
-              raise AuthenticationFailedException, "Incorrect username and password! #{response.message}"
+            ahn_log.ami "Successful AMI actions-only connection into #{@username}@#{@host}"
+            if @actions_lexer.ami_version < 1.1
+              @coreSettings = Hash.new
+              @coreSettings["AsteriskVersion"] = "1.4.0"
+              @coreSettings["AMIversion"] = "1.0"
+              @coreSettings["ArgumentDelimiter"] = "|"
             else
-              ahn_log.ami "Successful AMI actions-only connection into #{@username}@#{@host}"
-              if @actions_lexer.ami_version < 1.1
-                @coreSettings = Hash.new
-                @coreSettings["AsteriskVersion"] = "1.4.0"
-                @coreSettings["AMIversion"] = "1.0"
-                @coreSettings["ArgumentDelimiter"] = "|"
-              else
-                @coreSettings = send_action_synchronously("CoreSettings").headers
-                @coreSettings["ArgumentDelimiter"] = ","
-              end
-              UnsupportedActionName::preinitialize(@coreSettings["AsteriskVersion"].to_f)
-              response
+              @coreSettings = send_action_synchronously("CoreSettings").headers
+              @coreSettings["ArgumentDelimiter"] = ","
             end
+            UnsupportedActionName::preinitialize(@coreSettings["AsteriskVersion"].to_f)
+            response
+          rescue ManagerInterfaceError => e
+            raise AuthenticationFailedException, "Incorrect username and password! #{e.message}"
           end
 
           def disconnect_events_connection
