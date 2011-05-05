@@ -289,13 +289,14 @@ module Adhearsion
           #
           def send_action_asynchronously(action_name, headers={})
             ahn_log.ami.deprecation.warn  <<WARN
-Asterisk only supports one outstanding action ID at a time, making the
-asynchronous AMI interface dangerous to use.  This interface is now deprecated
-and will disappear in future versions of Adhearsion.  If you need to do
-background processing while Asterisk processes a long-running action (such as
-a synchronous Originate) then you will need to handle this manually with
-Ruby threads.  Note that Originate specifically has an :Async header which tells
-Asterisk to process the Originate event asynchronously.
+\n
+  Asterisk only supports one outstanding action ID at a time, making the
+  asynchronous AMI interface dangerous to use.  This interface is now
+  deprecated and will disappear in future versions of Adhearsion.  If you need
+  to do background processing while Asterisk processes a long-running action
+  (such as a synchronous Originate) then you will need to handle this manually
+  with Ruby threads.  Note that Originate specifically has an :Async header
+  which tells Asterisk to process the Originate event asynchronously.
 WARN
             _send_action_asynchronously(action_name, headers)
           end
@@ -573,8 +574,7 @@ WARN
           end
 
           def login_actions
-            action = send_action_asynchronously "Login", "Username" => @username, "Secret" => @password, "Events" => "Off"
-            response = action.response
+            response = send_action "Login", "Username" => @username, "Secret" => @password, "Events" => "Off"
             if response.kind_of? ManagerInterfaceError
               raise AuthenticationFailedException, "Incorrect username and password! #{response.message}"
             else
