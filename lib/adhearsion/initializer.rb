@@ -330,10 +330,16 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
 
     def launch_console
-      require 'pry'
+      require 'adhearsion/console'
       Thread.new do
-        pry
-        Adhearsion.shutdown!
+        begin
+          puts "Starting console"
+          Adhearsion::Console.run
+          Adhearsion.shutdown!
+        rescue Exception => e
+          puts e.message
+          puts e.backtrace.join("\n")
+        end
       end
     end
 
@@ -395,7 +401,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
         begin
           IMPORTANT_THREADS[index].join
         rescue => e
-          ahn_log.error "Error after join()ing Thread #{thread.inspect}. #{e.message}"
+          ahn_log.error "Error after join()ing Thread #{Thread.inspect}. #{e.message}"
         ensure
           index = index + 1
         end
