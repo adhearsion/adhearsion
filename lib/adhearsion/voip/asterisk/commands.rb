@@ -42,6 +42,8 @@ module Adhearsion
           end
         } unless defined? DYNAMIC_FEATURE_EXTENSIONS
 
+        PLAYBACK_SUCCESS = 'SUCCESS' unless defined? PLAYBACK_SUCCESS
+
         # Utility method to write to pbx.
         # @param [String] message raw message
         def write(message)
@@ -195,12 +197,31 @@ module Adhearsion
         # @example Play two sound files
         #   play "you-sound-cute", "what-are-you-wearing"
         #
+        # @return [true, false] true is returned if everything was successful.  Otherwise, false indicates that
+        #   some sound file(s) could not be played.
         def play(*arguments)
+          result = true
           unless play_time(arguments)
             arguments.flatten.each do |argument|
-              play_numeric(argument) || play_string(argument)
+              # result starts off as true.  But if the following command ever returns false, then result
+              # remains false.
+              result &= (play_numeric(argument) || play_string(argument))
             end
           end
+          result
+        end
+
+        # Same as {#play}, but immediately raises an exception if a sound file cannot be played.
+        #
+        # @return [true]
+        # @raise [Adhearsion::VoIP::PlaybackError] If a sound file cannot be played
+        def play!(*arguments)
+          unless play_time(arguments)
+            arguments.flatten.each do |argument|
+              play_numeric(argument) || play_string!(argument)
+            end
+          end
+          true
         end
 
         # Records a sound file with the given name. If no filename is specified a file named by Asterisk
@@ -1089,6 +1110,19 @@ module Adhearsion
 
           def play_string(argument)
             execute(:playback, argument)
+            get_variable('PLAYBACKSTATUS') == PLAYBACK_SUCCESS
+          end
+
+          # Like play_string(), but this will raise Exceptions if there's a problem.
+          #
+          # @return [true]
+          # @raise [Adhearsion::VoIP::PlaybackError] If a sound file cannot be played
+          # @see http://www.voip-info.org/wiki/view/Asterisk+cmd+Playback More information on the Asterisk Playback command
+          def play_string!(argument)
+            response = execute(:playback, argument)
+            playback = get_variable('PLAYBACKSTATUS')
+            return true if playback == PLAYBACK_SUCCESS
+            raise PlaybackError.new "Playback failed with PLAYBACKSTATUS: #{playback.inspect}.  The raw response was #{response.inspect}."
           end
 
           def play_sound_files_for_menu(menu_instance, sound_files)

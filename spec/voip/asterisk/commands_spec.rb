@@ -107,6 +107,16 @@ module DialplanCommandTestHelpers
       pbx_should_respond_with_success digit.kind_of?(String) ? digit[0] : digit
     end
 
+    def pbx_should_respond_with_playback_success
+      pbx_should_respond_with pbx_raw_response
+      mock_call.should_receive(:get_variable).once.with('PLAYBACKSTATUS').and_return 'SUCCESS'
+    end
+
+    def pbx_should_respond_with_playback_failure
+      pbx_should_respond_with pbx_raw_response
+      mock_call.should_receive(:get_variable).once.with('PLAYBACKSTATUS').and_return 'FAILED'
+    end
+
     def pbx_should_respond_with_a_wait_for_digit_timeout
       pbx_should_respond_with_successful_background_response 0
     end
@@ -308,44 +318,61 @@ describe 'play command' do
   include DialplanCommandTestHelpers
 
   it 'passing a single string to play results in the playback application being executed with that file name on the PBX' do
-    pbx_should_respond_with_success
+    pbx_should_respond_with_playback_success
     audio_file = "cents-per-minute"
-    mock_call.play(audio_file).should == ["cents-per-minute"]
+    mock_call.play(audio_file).should be true
     pbx_was_asked_to_play audio_file
   end
 
   it 'multiple strings can be passed to play, causing multiple playback commands to be issued' do
     2.times do
-      pbx_should_respond_with_success
+      pbx_should_respond_with_playback_success
     end
     audio_files = ["cents-per-minute", 'o-hai']
-    mock_call.play(audio_files).should == audio_files
+    mock_call.play(audio_files).should be true
     pbx_was_asked_to_play audio_files
+  end
+
+  it 'should return false if an audio file cannot be found' do
+    pbx_should_respond_with_playback_failure
+    audio_file = 'nixon-tapes'
+    mock_call.play(audio_file).should be false
+    pbx_was_asked_to_play audio_file
+  end
+
+  it 'should return false when audio files cannot be found' do
+    pbx_should_respond_with_playback_success
+    pbx_should_respond_with_playback_failure # 'paperz' is the only audio that is missing
+    pbx_should_respond_with_playback_success
+    audio_files = ['rock', 'paperz', 'scissors']
+
+    mock_call.play(audio_files).should be false
+    pbx_was_asked_to_play ['rock', 'paperz']
   end
 
   it 'If a number is passed to play(), the saynumber application is executed with the number as an argument' do
     pbx_should_respond_with_success
-    mock_call.play(123).should == [123]
+    mock_call.play(123).should be true
     pbx_was_asked_to_play_number(123)
   end
 
   it 'if a string representation of a number is passed to play(), the saynumber application is executed with the number as an argument' do
     pbx_should_respond_with_success
-    mock_call.play('123').should == ['123']
+    mock_call.play('123').should be true
     pbx_was_asked_to_play_number(123)
   end
 
   it 'If a Time is passed to play(), the SayUnixTime application will be executed with the time since the UNIX epoch in seconds as an argument' do
     time = Time.parse("12/5/2000")
     pbx_should_respond_with_success
-    mock_call.play(time).should be nil
+    mock_call.play(time).should be true
     pbx_was_asked_to_play_time(time.to_i)
   end
 
   it 'If a Date is passed to play(), the SayUnixTime application will be executed with the date passed in' do
     date = Date.parse('2011-01-23')
     mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",'BdY').and_return(pbx_raw_response)
-    mock_call.play(date).should be nil
+    mock_call.play(date).should be true
   end
 
   it 'If a Date or Time is passed to play_time(), the SayUnixTime application will be executed with the date and format passed in' do
@@ -372,20 +399,53 @@ describe 'play command' do
   it 'If an array containing a Date/DateTime/Time object and a hash is passed to play(), the SayUnixTime application will be executed with the object passed in with the specified format and timezone' do
     date, format = Date.parse('2011-01-23'), 'ABdY'
     mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return(pbx_raw_response)
-    mock_call.play([date, {:format => format}]).should be nil
+    mock_call.play([date, {:format => format}]).should be true
 
     time, timezone = Time.at(1295843084), 'US/Eastern'
     mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,'').and_return(pbx_raw_response)
-    mock_call.play([time, {:timezone => timezone}]).should be nil
+    mock_call.play([time, {:timezone => timezone}]).should be true
 
     time, timezone, format = Time.at(1295843084), 'US/Eastern', 'ABdY \'digits/at\' IMp'
     mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,format).and_return(pbx_raw_response)
-    mock_call.play([time, {:timezone => timezone, :format => format}]).should be nil
+    mock_call.play([time, {:timezone => timezone, :format => format}]).should be true
   end
 
    it 'If a string matching dollars and (optionally) cents is passed to play(), a series of command will be executed to read the dollar amount', :ignore => true do
     #TODO: I think we should not have this be part of play().  Too much functionality in one method. Too much overloading.  When we want to support multiple
     # currencies, it'll be completely unwieldy.  I'd suggest play_currency as a separate method. - Chad
+  end
+end
+
+describe 'play! command' do
+  include DialplanCommandTestHelpers
+
+  it 'should accept multiple strings to play, causing multiple playback commands to be issued' do
+    2.times do
+      pbx_should_respond_with_playback_success
+    end
+    audio_files = ["cents-per-minute", 'o-hai']
+    mock_call.play!(audio_files).should be true
+    pbx_was_asked_to_play audio_files
+  end
+
+  it 'should raise an error if an audio file cannot be found' do
+    pbx_should_respond_with_playback_failure
+    audio_file = 'nixon-tapes'
+    the_following_code {
+      mock_call.play! audio_file
+    }.should raise_error Adhearsion::VoIP::PlaybackError
+    pbx_was_asked_to_play audio_file
+  end
+
+  it 'should raise an error when audio files cannot be found' do
+    pbx_should_respond_with_playback_success
+    pbx_should_respond_with_playback_failure # 'paperz' is the only audio that is missing
+    audio_files = ['rock', 'paperz', 'scissors']
+
+    the_following_code {
+      mock_call.play! audio_files
+    }.should raise_error Adhearsion::VoIP::PlaybackError
+    pbx_was_asked_to_play ['rock', 'paperz'] # stop short before playing with scissors!
   end
 end
 
