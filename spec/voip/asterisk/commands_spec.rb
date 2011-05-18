@@ -115,8 +115,16 @@ module DialplanCommandTestHelpers
       "200 result=#{success_code || default_success_code}"
     end
 
+    def pbx_raw_response(code = nil)
+      "200 result=#{code || default_code}\n"
+    end
+
     def default_success_code
       '1'
+    end
+
+    def default_code
+      '0'
     end
 
     def pbx_failure_response(failure_code = nil)
@@ -302,7 +310,7 @@ describe 'play command' do
   it 'passing a single string to play results in the playback application being executed with that file name on the PBX' do
     pbx_should_respond_with_success
     audio_file = "cents-per-minute"
-    mock_call.play audio_file
+    mock_call.play(audio_file).should == ["cents-per-minute"]
     pbx_was_asked_to_play audio_file
   end
 
@@ -311,49 +319,49 @@ describe 'play command' do
       pbx_should_respond_with_success
     end
     audio_files = ["cents-per-minute", 'o-hai']
-    mock_call.play audio_files
+    mock_call.play(audio_files).should == audio_files
     pbx_was_asked_to_play audio_files
   end
 
   it 'If a number is passed to play(), the saynumber application is executed with the number as an argument' do
     pbx_should_respond_with_success
-    mock_call.play 123
+    mock_call.play(123).should == [123]
     pbx_was_asked_to_play_number(123)
   end
 
   it 'if a string representation of a number is passed to play(), the saynumber application is executed with the number as an argument' do
     pbx_should_respond_with_success
-    mock_call.play '123'
+    mock_call.play('123').should == ['123']
     pbx_was_asked_to_play_number(123)
   end
 
   it 'If a Time is passed to play(), the SayUnixTime application will be executed with the time since the UNIX epoch in seconds as an argument' do
     time = Time.parse("12/5/2000")
     pbx_should_respond_with_success
-    mock_call.play time
+    mock_call.play(time).should be nil
     pbx_was_asked_to_play_time(time.to_i)
   end
 
   it 'If a Date is passed to play(), the SayUnixTime application will be executed with the date passed in' do
     date = Date.parse('2011-01-23')
-    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",'BdY').and_return('200')
-    mock_call.play date
+    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",'BdY').and_return(pbx_raw_response)
+    mock_call.play(date).should be nil
   end
 
   it 'If a Date or Time is passed to play_time(), the SayUnixTime application will be executed with the date and format passed in' do
     date, format = Date.parse('2011-01-23'), 'ABdY'
-    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return('200')
-    mock_call.play_time date, :format => format
+    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return("200 result=0\n")
+    mock_call.play_time(date, :format => format).should == pbx_raw_response
 
     time, format = Time.at(875121313), 'BdY \'digits/at\' IMp'
-    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, "",format).and_return('200')
-    mock_call.play_time time, :format => format
+    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, "",format).and_return(pbx_raw_response)
+    mock_call.play_time(time, :format => format).should == pbx_raw_response
   end
 
   it 'If a Time object is passed to play_time, the SayUnixTime application will be executed with the default parameters' do
     time = Time.at(875121313)
-    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, "",'').and_return('200')
-    mock_call.play_time time
+    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, "",'').and_return(pbx_raw_response)
+    mock_call.play_time(time).should == pbx_raw_response
   end
 
   it 'If an object other than Time, DateTime, or Date is passed to play_time false will be returned' do
@@ -363,16 +371,16 @@ describe 'play command' do
 
   it 'If an array containing a Date/DateTime/Time object and a hash is passed to play(), the SayUnixTime application will be executed with the object passed in with the specified format and timezone' do
     date, format = Date.parse('2011-01-23'), 'ABdY'
-    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return('200')
-    mock_call.play [date, {:format => format}]
+    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return(pbx_raw_response)
+    mock_call.play([date, {:format => format}]).should be nil
 
     time, timezone = Time.at(1295843084), 'US/Eastern'
-    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,'').and_return('200')
-    mock_call.play [time, {:timezone => timezone}]
+    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,'').and_return(pbx_raw_response)
+    mock_call.play([time, {:timezone => timezone}]).should be nil
 
     time, timezone, format = Time.at(1295843084), 'US/Eastern', 'ABdY \'digits/at\' IMp'
-    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,format).and_return('200')
-    mock_call.play [time, {:timezone => timezone, :format => format}]
+    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,format).and_return(pbx_raw_response)
+    mock_call.play([time, {:timezone => timezone, :format => format}]).should be nil
   end
 
    it 'If a string matching dollars and (optionally) cents is passed to play(), a series of command will be executed to read the dollar amount', :ignore => true do
