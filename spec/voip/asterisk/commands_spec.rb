@@ -293,6 +293,78 @@ describe 'interruptible_play command' do
 
 end
 
+describe 'interruptible_play! command' do
+  include DialplanCommandTestHelpers
+
+  it 'should return a string for the digit that was pressed' do
+    digits = %w{0 1 # * 9}.map{|c| c.ord}
+    file = "file_doesnt_matter"
+    digits.each { |digit| pbx_should_respond_with_stream_file_success digit }
+    digits.map  { |digit| mock_call.interruptible_play! file }.should == digits.map(&:chr)
+    pbx_was_asked_to_stream file
+  end
+
+  it "should return nil if no digit was pressed" do
+    pbx_should_respond_with_stream_file_success 0
+    file = 'foobar'
+    mock_call.interruptible_play!(file).should be nil
+    pbx_was_asked_to_stream file
+  end
+
+  it 'should raise an error when the sound file is not found' do
+    pbx_should_respond_with_stream_file_failure_on_open
+    file = 'foobar'
+    the_following_code {
+      mock_call.interruptible_play!(file)
+    }.should raise_error Adhearsion::VoIP::PlaybackError
+    pbx_was_asked_to_stream file
+  end
+
+  it "should play a series of files, stopping the series when a digit is played" do
+    stubbed_keypad_input = [0, 0, ?3.ord]
+    stubbed_keypad_input.each do |digit|
+      pbx_should_respond_with_stream_file_success digit
+    end
+
+    play_files = (100..105).map(&:to_s)
+    played_files = (100..102).map(&:to_s)
+    mock_call.interruptible_play!(*play_files).should == '3'
+    pbx_was_asked_to_stream played_files
+  end
+
+  it 'should play a series of files, raising an error if a sound file cannot be found' do
+    pbx_should_respond_with_stream_file_success 0
+    pbx_should_respond_with_stream_file_failure_on_open
+
+    play_files = ('sound1'..'sound6').map(&:to_s)
+    played_files = ('sound1'..'sound2').map(&:to_s)
+    the_following_code {
+      mock_call.interruptible_play!(*play_files)
+    }.should raise_error Adhearsion::VoIP::PlaybackError
+    pbx_was_asked_to_stream played_files
+  end
+
+  it 'should raise an error if an audio file cannot be found' do
+    pbx_should_respond_with_stream_file_failure_on_open
+    audio_file = 'nixon-tapes'
+    the_following_code {
+      mock_call.interruptible_play! audio_file
+    }.should raise_error Adhearsion::VoIP::PlaybackError
+    pbx_was_asked_to_stream audio_file
+  end
+
+  it 'should raise an error when audio files cannot be found' do
+    pbx_should_respond_with_stream_file_success
+    pbx_should_respond_with_stream_file_failure_on_open # 'paperz' is the only audio that is missing
+    audio_files = ['rock', 'paperz', 'scissors']
+
+    the_following_code {
+      mock_call.interruptible_play! audio_files
+    }.should raise_error Adhearsion::VoIP::PlaybackError
+    pbx_was_asked_to_stream ['rock', 'paperz'] # stop short before playing with scissors!
+  end
+end
+
 describe 'wait_for_digit command' do
 
   include DialplanCommandTestHelpers

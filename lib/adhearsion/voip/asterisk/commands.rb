@@ -940,6 +940,23 @@ module Adhearsion
           nil
         end
 
+        #
+        # Same as {#interruptible_play}, but immediately raises an exception if a sound file cannot be played.
+        #
+        # @return (see #interruptible_play)
+        # @raise [Adhearsion::VoIP::PlaybackError] If a sound file cannot be played
+        def interruptible_play!(*files)
+          startpos = 0
+          files.flatten.each do |file|
+            result = stream_file_result_from response("STREAM FILE", file, "1234567890*#")
+            if result[:endpos].to_i <= startpos
+              raise Adhearsion::VoIP::PlaybackError.new "The sound file could not opened to stream.  The parsed response was #{result.inspect}"
+            end
+            return result[:digit] if result[:digit] != 0.chr
+          end
+          nil
+        end
+
         ##
         # Executes the SayPhonetic command. This command will read the text passed in
         # out load using the NATO phonetic alphabet.
@@ -1079,6 +1096,15 @@ module Adhearsion
             raise ArgumentError, "Can't coerce nil into AGI response! This could be a bug!" unless response_string
             digit = response_string[/^#{response_prefix}(-?\d+(\.\d+)?)/,1]
             digit.to_i.chr if digit && digit.to_s != "-1"
+          end
+
+          def stream_file_result_from(response_string)
+            raise ArgumentError, "Can't coerce nil into AGI response! This could be a bug!" unless response_string
+            params = {}
+            digit, endpos = response_string.match(/^#{response_prefix}(-?\d+) endpos=(\d+)/).values_at(1, 2)
+            params[:digit] = digit.to_i.chr if digit && digit.to_s != "-1"
+            params[:endpos] = endpos.to_i if endpos
+            params
           end
 
           def extract_input_from(result)
