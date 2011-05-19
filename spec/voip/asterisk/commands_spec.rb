@@ -117,6 +117,14 @@ module DialplanCommandTestHelpers
       mock_call.should_receive(:get_variable).once.with('PLAYBACKSTATUS').and_return 'FAILED'
     end
 
+    def pbx_should_respond_with_stream_file_success(success_code = nil, endpos = '20000')
+      pbx_should_respond_with pbx_raw_stream_file_response(success_code, endpos)
+    end
+
+    def pbx_should_respond_with_stream_file_failure_on_open(endpos = nil)
+      pbx_should_respond_with pbx_raw_stream_file_response(nil, endpos)
+    end
+
     def pbx_should_respond_with_a_wait_for_digit_timeout
       pbx_should_respond_with_successful_background_response 0
     end
@@ -127,6 +135,10 @@ module DialplanCommandTestHelpers
 
     def pbx_raw_response(code = nil)
       "200 result=#{code || default_code}\n"
+    end
+
+    def pbx_raw_stream_file_response(code = nil, endpos = nil)
+      "200 result=#{code || default_code} endpos=#{endpos || default_code}\n"
     end
 
     def default_success_code
@@ -162,6 +174,12 @@ module DialplanCommandTestHelpers
 
       def pbx_was_asked_to_play_time(number)
         output_stream_matches(/sayunixtime "#{number}"/)
+      end
+
+      def pbx_was_asked_to_stream(*audio_files)
+        audio_files.flatten.each do |audio_file|
+          output_stream_matches(/^STREAM FILE "#{audio_file}" "1234567890\*#"\n$/)
+        end
       end
 
       def pbx_was_asked_to_execute(application, *options)
@@ -230,23 +248,47 @@ describe 'interruptible_play command' do
   it 'should return a string for the digit that was pressed' do
     digits = %w{0 1 # * 9}.map{|c| c.ord}
     file = "file_doesnt_matter"
-    digits.each { |digit| pbx_should_respond_with_success digit }
-    digits.map  { |digit| mock_call.send(:interruptible_play, file) }.should == digits.map(&:chr)
+    digits.each { |digit| pbx_should_respond_with_stream_file_success digit }
+    digits.map  { |digit| mock_call.interruptible_play file }.should == digits.map(&:chr)
+    pbx_was_asked_to_stream file
   end
 
   it "should return nil if no digit was pressed" do
-    pbx_should_respond_with_success 0
-    mock_call.send(:interruptible_play, 'foobar').should be nil
+    pbx_should_respond_with_stream_file_success 0
+    file = 'foobar'
+    mock_call.interruptible_play(file).should be nil
+    pbx_was_asked_to_stream file
+  end
+
+  it 'should return nil if no digit was pressed, even if the sound file is not found' do
+    pbx_should_respond_with_stream_file_failure_on_open
+    file = 'foobar'
+    mock_call.interruptible_play(file).should be nil
+    pbx_was_asked_to_stream file
   end
 
   it "should play a series of files, stopping the series when a digit is played" do
     stubbed_keypad_input = [0, 0, ?3.ord]
     stubbed_keypad_input.each do |digit|
-      pbx_should_respond_with_success digit
+      pbx_should_respond_with_stream_file_success digit
     end
 
-    files = (100..105).map(&:to_s)
-    mock_call.send(:interruptible_play, *files).should == '3'
+    play_files = (100..105).map(&:to_s)
+    played_files = (100..102).map(&:to_s)
+    mock_call.interruptible_play(*play_files).should == '3'
+    pbx_was_asked_to_stream played_files
+  end
+
+  it 'should play a series of files, stopping the series when a digit is played, even if the sound files cannot be found' do
+    pbx_should_respond_with_stream_file_success 0
+    pbx_should_respond_with_stream_file_success 0
+    pbx_should_respond_with_stream_file_failure_on_open
+    pbx_should_respond_with_stream_file_success ?9.ord
+
+    play_files = ('sound1'..'sound6').map(&:to_s)
+    played_files = ('sound1'..'sound4').map(&:to_s)
+    mock_call.interruptible_play(*play_files).should == '9'
+    pbx_was_asked_to_stream played_files
   end
 
 end
