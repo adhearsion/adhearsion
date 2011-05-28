@@ -9,8 +9,8 @@ module Adhearsion
       # Start the Adhearsion console
       #
       def run
-        Pry.prompt = [ proc {|obj, nest_level| puts obj.inspect; puts nest_level.inspect; "AHN#{'  ' * nest_level}> " },
-                       proc {|obj, nest_level| puts obj.inspect; puts nest_level.inspect; "AHN#{'  ' * nest_level}? " } ]
+        Pry.prompt = [ proc {|obj, nest_level| "AHN#{'  ' * nest_level}> " },
+                       proc {|obj, nest_level| "AHN#{'  ' * nest_level}? " } ]
         pry
       end
 
