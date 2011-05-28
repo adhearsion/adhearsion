@@ -60,6 +60,7 @@ module Adhearsion
         return calls[id]
       end
     end
+    alias :[] :find
 
     def clear!
       atomically do
@@ -83,12 +84,15 @@ module Adhearsion
       calls.values
     end
 
-    private
-      attr_reader :semaphore, :calls
+    def to_h
+      calls
+    end
 
-      def atomically(&block)
-        semaphore.synchronize(&block)
-      end
+    private
+
+    def atomically(&block)
+      semaphore.synchronize(&block)
+    end
 
   end
 
