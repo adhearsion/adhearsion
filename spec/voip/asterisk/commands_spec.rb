@@ -13,11 +13,18 @@ module DialplanCommandTestHelpers
       @output     = MockSocket.new
       @mock_call  = Object.new
       @mock_call.metaclass.send(:attr_reader, :call)
+      @mock_call.instance_variable_set(:@call, MockCall.new)
       mock_call.extend(Adhearsion::VoIP::Asterisk::Commands)
       flexmock(mock_call) do |call|
         call.should_receive(:from_pbx).and_return(input)
         call.should_receive(:to_pbx).and_return(output)
       end
+    end
+  end
+
+  class MockCall
+    def with_command_lock
+      yield
     end
   end
 
