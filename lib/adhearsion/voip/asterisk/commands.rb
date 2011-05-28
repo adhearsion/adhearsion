@@ -94,10 +94,12 @@ module Adhearsion
         #
         # @see http://www.voip-info.org/wiki/view/Asterisk+FastAGI More information about FAGI
         def raw_response(message = nil)
-          raise ArgumentError.new("illegal NUL in message #{message.inspect}") if message =~ /\0/
-          ahn_log.agi.debug ">>> #{message}"
-          write message if message
-          read
+          @call.with_command_lock do
+            raise ArgumentError.new("illegal NUL in message #{message.inspect}") if message =~ /\0/
+            ahn_log.agi.debug ">>> #{message}"
+            write message if message
+            read
+          end
         end
 
         def response(command, *arguments)

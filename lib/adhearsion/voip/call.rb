@@ -269,6 +269,15 @@ module Adhearsion
       @hungup_call
     end
 
+    # Lock the socket for a command.  Can be used to allow the console to take
+    # control of the thread in between AGI commands coming from the dialplan.
+    def with_command_lock
+      @command_monitor ||= Monitor.new
+      @command_monitor.synchronize do
+        yield
+      end
+    end
+
     # Adhearsion indexes calls by this identifier so they may later be found and manipulated. For calls from Asterisk, this
     # method uses the following properties for uniqueness, falling back to the next if one is for some reason unavailable:
     #
