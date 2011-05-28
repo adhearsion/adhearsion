@@ -24,6 +24,8 @@ module Adhearsion
   ##
   # This manages the list of calls the Adhearsion service receives
   class Calls
+    attr_reader :semaphore, :calls
+
     def initialize
       @semaphore = Monitor.new
       @calls     = {}
