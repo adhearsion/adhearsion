@@ -21,7 +21,6 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
-  s.has_rdoc      = true
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
@@ -38,6 +37,7 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency("i18n")
       s.add_runtime_dependency("rubigen", [">= 1.5.6"])
       s.add_runtime_dependency("rake")
+      s.add_runtime_dependency("pry")
 
       # Development dependencies
       s.add_development_dependency('rubigen', [">= 1.5.6"])

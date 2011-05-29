@@ -24,12 +24,15 @@ module Adhearsion
           end
         end
       end
+      alias :level= :logging_level=
 
-      def logging_level
+      def logging_level(level = nil)
+        return self.logging_level= level unless level.nil?
         @@logging_level_lock.synchronize do
           return @@logging_level ||= Log4r::INFO
         end
       end
+      alias :level :logging_level
     end
 
     class AdhearsionLogger < Log4r::Logger

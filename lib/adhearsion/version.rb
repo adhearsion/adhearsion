@@ -1,8 +1,8 @@
 module Adhearsion #:nodoc:
   module VERSION #:nodoc:
     MAJOR = 1 unless defined? MAJOR
-    MINOR = 0 unless defined? MINOR
-    TINY  = 3 unless defined? TINY
+    MINOR = 1 unless defined? MINOR
+    TINY  = 0 unless defined? TINY
 
     STRING = [MAJOR, MINOR, TINY].join('.') unless defined? STRING
   end
@@ -13,13 +13,16 @@ module Adhearsion #:nodoc:
     attr_reader :major, :minor, :revision
 
     def initialize(version="")
-      @major, @minor, @revision = version.split(".").map(&:to_i)
+      version = "" if version.nil?
+      @major, @minor, @revision, @patchlevel = version.split(".", 4).map(&:to_i)
+      @major = 0 unless @major
     end
 
     def <=>(other)
       return @major <=> other.major if ((@major <=> other.major) != 0)
       return @minor <=> other.minor if ((@minor <=> other.minor) != 0)
       return @revision <=> other.revision if ((@revision <=> other.revision) != 0)
+      return 0
     end
 
     def self.sort

@@ -1,3 +1,11 @@
+1.1.0
+ - Added interactive call control console: ahn start console <path>
+ - Added centralized exception handler through eventing system
+ - Support for using ahn_hoptoad to send Adhearsion exceptions to Hoptoad
+ - Adhearsion.active_calls can now use hash syntax to find calls by ID
+ - Added Adhearsion::Calls#to_h
+ - Add a Monitor to synchronize access to an AGI connection
+
 1.0.3
  - Fix the play() command regression when passing an array of strings. This was breaking the SimonGame
  - Deprecate ManagerInterface#send_action_asynchronously

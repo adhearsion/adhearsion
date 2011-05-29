@@ -76,39 +76,51 @@ describe "A simulated use of the 'ahn' command" do
   it "arguments to 'start' are executed properly properly" do
     some_path = "/tmp/blargh"
     simulate_args "start", some_path
-    flexmock(Adhearsion::CLI::AhnCommand::CommandHandler).should_receive(:start).once.with(some_path, false, nil)
+    flexmock(Adhearsion::CLI::AhnCommand::CommandHandler).should_receive(:start).once.with(some_path, :foreground, nil)
     Adhearsion::CLI::AhnCommand.execute!
   end
 
   it "should execute arguments to 'start' for daemonizing properly" do
     somewhere = "/tmp/blarghh"
     simulate_args "start", 'daemon', somewhere
-    flexmock(Adhearsion::CLI::AhnCommand::CommandHandler).should_receive(:start).once.with(somewhere, true, nil)
+    flexmock(Adhearsion::CLI::AhnCommand::CommandHandler).should_receive(:start).once.with(somewhere, :daemon, nil)
+    Adhearsion::CLI::AhnCommand.execute!
+  end
+
+  it "should execute arguments to 'start' for using a console properly" do
+    somewhere = "/tmp/blarghh"
+    simulate_args "start", 'console', somewhere
+    flexmock(Adhearsion::CLI::AhnCommand::CommandHandler).should_receive(:start).once.with(somewhere, :console, nil)
     Adhearsion::CLI::AhnCommand.execute!
   end
 
   it 'parse_arguments should recognize start with daemon properly' do
     path = '/path/to/somesuch'
-    arguments = ["start", 'daemon', path]
-    Adhearsion::CLI::AhnCommand.parse_arguments(arguments).should == [:start, path, true, nil]
+    arguments = ['start', 'daemon', path]
+    Adhearsion::CLI::AhnCommand.parse_arguments(arguments).should == [:start, path, :daemon, nil]
+  end
+
+  it 'should not allow both daemon and console to be specified' do
+    path = '/path/to/somesuch'
+    arguments = ['start', 'daemon', 'console', path]
+    lambda { Adhearsion::CLI::AhnCommand.parse_arguments(arguments) }.should raise_error Adhearsion::CLI::AhnCommand::CommandHandler::CLIException
   end
 
   it 'should recognize start with daemon and pid file properly' do
     project_path  = '/second/star/on/the/right'
     pid_file_path = '/straight/on/til/morning'
     arguments = ["start", "daemon", project_path, "--pid-file=#{pid_file_path}"]
-    Adhearsion::CLI::AhnCommand.parse_arguments(arguments).should == [:start, project_path, true, pid_file_path]
+    Adhearsion::CLI::AhnCommand.parse_arguments(arguments).should == [:start, project_path, :daemon, pid_file_path]
   end
 
   it 'parse_arguments should recognize start without daemon properly' do
     path = '/path/to/somewhere'
     arguments = ['start', path]
-    Adhearsion::CLI::AhnCommand.parse_arguments(arguments).should == [:start, path, false, nil]
+    Adhearsion::CLI::AhnCommand.parse_arguments(arguments).should == [:start, path, :foreground, nil]
   end
 
   it "if no path is provided, running Ahn command blows up" do
-    flexmock(Adhearsion::CLI::AhnCommand).should_receive(:fail_and_print_usage).once.and_return
-    Adhearsion::CLI::AhnCommand.parse_arguments(['start'])
+    lambda { Adhearsion::CLI::AhnCommand.parse_arguments(['start']) }.should raise_error Adhearsion::CLI::AhnCommand::CommandHandler::CLIException
   end
 
   it "printing the version" do

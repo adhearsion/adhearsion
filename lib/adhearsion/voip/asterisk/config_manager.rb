@@ -39,8 +39,10 @@ module Adhearsion
         private
 
         def read_configuration
-          normalized_file = self.class.normalize_configuration execute(read_command)
-          normalized_file.split(/^\[([-_\w]+)\]$/)[1..-1].each_slice(2).map do |(name,properties)|
+          normalized_file = self.class.normalize_configuration File.open(@filename, 'r'){|f| f.read}
+          sections = normalized_file.split(/^\[([-_\w]+)\]$/)[1..-1]
+          return [] if sections.nil?
+          sections.each_slice(2).map do |(name,properties)|
             [name, hash_from_properties(properties)]
           end
         end
@@ -53,15 +55,6 @@ module Adhearsion
             property_hash
           end
         end
-
-        def execute(command)
-          %x[command]
-        end
-
-        def read_command
-          "cat #{filename}"
-        end
-
       end
     end
   end

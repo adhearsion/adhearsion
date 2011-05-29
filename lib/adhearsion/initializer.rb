@@ -125,7 +125,7 @@ module Adhearsion
     def initialize(path=nil, options={})
       @@started = true
       @path     = path
-      @daemon   = options[:daemon] || ENV['DAEMON']
+      @mode     = options[:mode]
       @pid_file = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
       @loaded_init_files  = options[:loaded_init_files]
       self.class.ahn_root = path
@@ -137,6 +137,7 @@ module Adhearsion
       resolve_pid_file_path
       resolve_log_file_path
       daemonize! if should_daemonize?
+      launch_console if need_console?
       switch_to_root_directory
       catch_termination_signal
       create_pid_file if pid_file
@@ -168,7 +169,7 @@ module Adhearsion
       elsif pid_file then pid_file
       elsif pid_file.equal?(false) then nil
       # FIXME @pid_file = @daemon? Assignment or equality? I'm assuming equality.
-      else @pid_file = @daemon ? default_pid_path : nil
+      else @pid_file = (@mode == :daemon) ? default_pid_path : nil
       end
     end
 
@@ -315,13 +316,31 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
 
     def should_daemonize?
-      @daemon
+      @mode == :daemon
+    end
+
+    def need_console?
+      @mode == :console
     end
 
     def daemonize!
       ahn_log "Daemonizing now! Creating #{pid_file}."
       extend Adhearsion::CustomDaemonizer
       daemonize log_file
+    end
+
+    def launch_console
+      require 'adhearsion/console'
+      Thread.new do
+        begin
+          puts "Starting console"
+          Adhearsion::Console.run
+          Adhearsion.shutdown!
+        rescue Exception => e
+          puts e.message
+          puts e.backtrace.join("\n")
+        end
+      end
     end
 
     def initialize_log_file
@@ -382,7 +401,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
         begin
           IMPORTANT_THREADS[index].join
         rescue => e
-          ahn_log.error "Error after join()ing Thread #{thread.inspect}. #{e.message}"
+          ahn_log.error "Error after join()ing Thread #{Thread.inspect}. #{e.message}"
         ensure
           index = index + 1
         end
