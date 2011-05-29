@@ -24,6 +24,8 @@ module Adhearsion
   ##
   # This manages the list of calls the Adhearsion service receives
   class Calls
+    attr_reader :semaphore, :calls
+
     def initialize
       @semaphore = Monitor.new
       @calls     = {}
@@ -60,6 +62,7 @@ module Adhearsion
         return calls[id]
       end
     end
+    alias :[] :find
 
     def clear!
       atomically do
@@ -83,12 +86,15 @@ module Adhearsion
       calls.values
     end
 
-    private
-      attr_reader :semaphore, :calls
+    def to_h
+      calls
+    end
 
-      def atomically(&block)
-        semaphore.synchronize(&block)
-      end
+    private
+
+    def atomically(&block)
+      semaphore.synchronize(&block)
+    end
 
   end
 
@@ -261,6 +267,15 @@ module Adhearsion
 
     def hungup_call?
       @hungup_call
+    end
+
+    # Lock the socket for a command.  Can be used to allow the console to take
+    # control of the thread in between AGI commands coming from the dialplan.
+    def with_command_lock
+      @command_monitor ||= Monitor.new
+      @command_monitor.synchronize do
+        yield
+      end
     end
 
     # Adhearsion indexes calls by this identifier so they may later be found and manipulated. For calls from Asterisk, this
