@@ -197,7 +197,7 @@ module Adhearsion
         # @example Play two sound files
         #   play "you-sound-cute", "what-are-you-wearing"
         #
-        # @return [true, false] true is returned if everything was successful.  Otherwise, false indicates that
+        # @return [Boolean] true is returned if everything was successful.  Otherwise, false indicates that
         #   some sound file(s) could not be played.
         def play(*arguments)
           result = true
@@ -506,11 +506,10 @@ module Adhearsion
           number_of_digits = args.shift
 
           begin
-            return input!(number_of_digits, options)
+            input! number_of_digits, options
           rescue PlaybackError => e
             ahn_log.agi.warn { e }
-            # If sound playback fails, play the remaining sound files and wait for digits
-            retry
+            retry # If sound playback fails, play the remaining sound files and wait for digits
           end
         end
 
@@ -1179,7 +1178,7 @@ module Adhearsion
             response = execute(:playback, argument)
             playback = get_variable('PLAYBACKSTATUS')
             return true if playback == PLAYBACK_SUCCESS
-            raise PlaybackError.new "Playback failed with PLAYBACKSTATUS: #{playback.inspect}.  The raw response was #{response.inspect}."
+            raise PlaybackError, "Playback failed with PLAYBACKSTATUS: #{playback.inspect}.  The raw response was #{response.inspect}."
           end
 
           def play_sound_files_for_menu(menu_instance, sound_files)
