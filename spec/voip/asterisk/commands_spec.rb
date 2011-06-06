@@ -577,14 +577,16 @@ describe 'input command' do
   end
 
   it 'input() calls wait_for_digit the specified number of times (when no sound files are given)' do
-    mock_call.should_receive(:interruptible_play).never
+    mock_call.should_receive(:interruptible_play!).never
     mock_call.should_receive(:wait_for_digit).times(4).and_return('1', '2', '3', '4')
     mock_call.input(4).should == '1234'
   end
 
-  it 'should execute wait_for_digit if no digit is pressed during interruptible_play' do
+  it 'should execute wait_for_digit if no digit is pressed during interruptible_play!' do
     sound_files = %w[one two three]
-    mock_call.should_receive(:interruptible_play).once.with(*sound_files).and_return nil
+    mock_call.should_receive(:interruptible_play!).once.with('one').and_return nil
+    mock_call.should_receive(:interruptible_play!).once.with('two').and_return nil
+    mock_call.should_receive(:interruptible_play!).once.with('three').and_return nil
     mock_call.should_receive(:wait_for_digit).once.and_throw :digit_request
     should_throw(:digit_request) { mock_call.input(10, :play => sound_files) }
   end
@@ -610,14 +612,16 @@ describe 'input command' do
   end
 
   it 'passes wait_for_digit the :timeout option when one is given' do
-    mock_call.should_receive(:interruptible_play).never
+    mock_call.should_receive(:interruptible_play!).never
     mock_call.should_receive(:wait_for_digit).twice.and_return '1', '2'
     mock_call.input(2, :timeout => 1.minute).should == '12'
   end
 
-  it 'executes interruptible_play() with all of the files given to :play' do
+  it 'executes interruptible_play!() with all of the files given to :play' do
     sound_files = %w[foo bar qaz]
-    mock_call.should_receive(:interruptible_play).once.with(*sound_files).and_return '#'
+    mock_call.should_receive(:interruptible_play!).once.with('foo').and_return nil
+    mock_call.should_receive(:interruptible_play!).once.with('bar').and_return nil
+    mock_call.should_receive(:interruptible_play!).once.with('qaz').and_return '#'
     mock_call.should_receive(:wait_for_digit).once.and_return '*'
     mock_call.input(2, :play => sound_files).should == '#*'
   end
@@ -628,7 +632,7 @@ describe 'input command' do
   end
 
   it 'should execute wait_for_digit first if no sound files are given' do
-    mock_call.should_receive(:interruptible_play).never
+    mock_call.should_receive(:interruptible_play!).never
     mock_call.should_receive(:wait_for_digit).once.and_throw :digit_request
     should_throw(:digit_request) { mock_call.input(1) }
   end
@@ -683,6 +687,65 @@ describe 'input command' do
     timeout = 1.second
     mock_call.should_receive(:wait_for_digit).times(3).with(timeout).and_return '2', '3', '4'
     mock_call.input(4, :timeout => timeout, :play => play_files).should == '1234'
+    pbx_was_asked_to_stream played_files
+  end
+
+end
+
+describe 'input! command' do
+
+  include DialplanCommandTestHelpers
+
+  it 'should raise an error when the number of digits expected is -1 (this is deprecated behavior)' do
+    the_following_code {
+      mock_call.input!(-1)
+    }.should raise_error ArgumentError
+  end
+
+  it 'should execute wait_for_digit if no digit is pressed during interruptible_play!' do
+    sound_files = %w[one two three]
+    mock_call.should_receive(:interruptible_play!).once.with('one').and_return nil
+    mock_call.should_receive(:interruptible_play!).once.with('two').and_return nil
+    mock_call.should_receive(:interruptible_play!).once.with('three').and_return nil
+    mock_call.should_receive(:wait_for_digit).once.and_throw :digit_request
+    should_throw(:digit_request) { mock_call.input!(10, :play => sound_files) }
+  end
+
+  it 'executes interruptible_play!() with all of the files given to :play' do
+    sound_files = %w[foo bar qaz]
+    mock_call.should_receive(:interruptible_play!).once.with('foo').and_return nil
+    mock_call.should_receive(:interruptible_play!).once.with('bar').and_return nil
+    mock_call.should_receive(:interruptible_play!).once.with('qaz').and_return '#'
+    mock_call.should_receive(:wait_for_digit).once.and_return '*'
+    mock_call.input!(2, :play => sound_files).should == '#*'
+  end
+
+  it 'should execute wait_for_digit first if no sound files are given' do
+    mock_call.should_receive(:interruptible_play!).never
+    mock_call.should_receive(:wait_for_digit).once.and_throw :digit_request
+    should_throw(:digit_request) { mock_call.input!(1) }
+  end
+
+  it 'should raise an error when the sound file is not found' do
+    pbx_should_respond_with_stream_file_failure_on_open
+    file = 'foobar'
+    mock_call.should_receive(:wait_for_digit).never
+    the_following_code {
+      mock_call.input!(1, :play => file)
+    }.should raise_error Adhearsion::VoIP::PlaybackError
+    pbx_was_asked_to_stream file
+  end
+
+  it 'should play a series of files, raising an error if a sound file cannot be found' do
+    pbx_should_respond_with_stream_file_success 0
+    pbx_should_respond_with_stream_file_failure_on_open
+    mock_call.should_receive(:wait_for_digit).never
+
+    play_files = ('sound1'..'sound6').map(&:to_s)
+    played_files = ('sound1'..'sound2').map(&:to_s)
+    the_following_code {
+      mock_call.input!(10, :play => play_files, :timeout => 5.seconds)
+    }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_stream played_files
   end
 

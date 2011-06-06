@@ -497,13 +497,34 @@ module Adhearsion
         # Note that when the digit limit is not specified the :accept_key becomes "#".
         # Otherwise there would be no way to end the collection of digits. You can
         # obviously override this by passing in a new key with :accept_key.
+        #
+        # @return [String] The keypad input received. An empty string is returned in the
+        #                  absense of input. If the :accept_key argument was pressed, it
+        #                  will not appear in the output.
         def input(*args)
           options = args.last.kind_of?(Hash) ? args.pop : {}
           number_of_digits = args.shift
 
-          sound_files     = Array options.delete(:play)
-          timeout         = options.delete(:timeout)
-          terminating_key = options.delete(:accept_key)
+          begin
+            return input!(number_of_digits, options)
+          rescue PlaybackError => e
+            ahn_log.agi.warn { e }
+            # If sound playback fails, play the remaining sound files and wait for digits
+            retry
+          end
+        end
+
+        # Same as {#input}, but immediately raises an exception if sound playback fails
+        #
+        # @return (see #input)
+        # @raise [Adhearsion::VoIP::PlaybackError] If a sound file cannot be played
+        def input!(*args)
+          options = args.last.kind_of?(Hash) ? args.pop : {}
+          number_of_digits = args.shift
+
+          options[:play]  = options[:play].to_a
+          timeout         = options[:timeout]
+          terminating_key = options[:accept_key]
           terminating_key = if terminating_key
             terminating_key.to_s
           elsif number_of_digits.nil? && !terminating_key.equal?(false)
@@ -517,7 +538,17 @@ module Adhearsion
           end
 
           buffer = ''
-          key = sound_files.any? ? interruptible_play(*sound_files) || '' : wait_for_digit(timeout || -1)
+          if options[:play].any?
+            # Consume the sound files one at a time. In the event of playback failure, this
+            # tells us which files remain unplayed.
+            while file = options[:play].shift
+              key = interruptible_play!(file)
+              break if key
+            end
+            key ||= ''
+          else
+            key = wait_for_digit(timeout || -1)
+          end
           loop do
             return buffer if key.nil?
             if terminating_key
