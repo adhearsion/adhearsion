@@ -577,7 +577,7 @@ describe 'input command' do
   end
 
   it 'input() calls wait_for_digit the specified number of times (when no sound files are given)' do
-    # mock_call.should_receive(:interruptible_play).never
+    mock_call.should_receive(:interruptible_play).never
     mock_call.should_receive(:wait_for_digit).times(4).and_return('1', '2', '3', '4')
     mock_call.input(4).should == '1234'
   end
@@ -634,8 +634,56 @@ describe 'input command' do
   end
 
   it "Input timing out when digits are pressed returns only the collected digits" do
-    mock_call.should_receive(:wait_for_digit).twice.and_return '5', nil
-    mock_call.input(9, :timeout => 1.day).should == '5'
+    timeout = 1.day
+    mock_call.should_receive(:wait_for_digit).twice.with(timeout).and_return '5', nil
+    mock_call.input(9, :timeout => timeout).should == '5'
+  end
+
+  it 'should execute wait_for_digit, even if some sound files are not found' do
+    pbx_should_respond_with_stream_file_failure_on_open
+    file = 'foobar'
+    timeout = 1.hour
+    mock_call.should_receive(:wait_for_digit).twice.with(timeout).and_return '8', '9'
+    mock_call.input(2, :timeout => timeout, :play => file).should == '89'
+    pbx_was_asked_to_stream file
+  end
+
+  it 'should return an empty string if no keys are pressed, even if the sound file is not found' do
+    pbx_should_respond_with_stream_file_failure_on_open
+    file = 'foobar'
+    timeout = 1.second
+    mock_call.should_receive(:wait_for_digit).once.with(timeout).and_return nil
+    mock_call.input(5, :timeout => timeout, :play => file).should == ''
+    pbx_was_asked_to_stream file
+  end
+
+  it 'should play a series of files, collecting digits even if some of the sound files cannot be found' do
+    pbx_should_respond_with_stream_file_success 0
+    pbx_should_respond_with_stream_file_success 0
+    pbx_should_respond_with_stream_file_failure_on_open
+    pbx_should_respond_with_stream_file_success ?1.ord
+
+    play_files = ('sound1'..'sound6').map(&:to_s)
+    played_files = ('sound1'..'sound4').map(&:to_s)
+    timeout = 1.minute
+    mock_call.should_receive(:wait_for_digit).twice.with(timeout).and_return '2', '3'
+    mock_call.input(3, :timeout => timeout, :play => play_files).should == '123'
+    pbx_was_asked_to_stream played_files
+  end
+
+  it 'should play a series of 4 files, collecting digits even if some of the sound files cannot be found' do
+    pbx_should_respond_with_stream_file_success 0
+    pbx_should_respond_with_stream_file_success 0
+    pbx_should_respond_with_stream_file_failure_on_open
+    pbx_should_respond_with_stream_file_success 0
+    pbx_should_respond_with_stream_file_success ?1.ord
+
+    play_files = ('sound1'..'sound8').map(&:to_s)
+    played_files = ('sound1'..'sound5').map(&:to_s)
+    timeout = 1.second
+    mock_call.should_receive(:wait_for_digit).times(3).with(timeout).and_return '2', '3', '4'
+    mock_call.input(4, :timeout => timeout, :play => play_files).should == '1234'
+    pbx_was_asked_to_stream played_files
   end
 
 end
