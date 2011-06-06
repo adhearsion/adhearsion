@@ -982,7 +982,7 @@ module Adhearsion
             if result[:endpos].to_i <= startpos
               raise Adhearsion::VoIP::PlaybackError.new "The sound file could not opened to stream.  The parsed response was #{result.inspect}"
             end
-            return result[:digit] if result[:digit] != 0.chr
+            return result[:digit] unless result[:digit] == 0.chr
           end
           nil
         end
