@@ -980,7 +980,7 @@ module Adhearsion
           files.flatten.each do |file|
             result = stream_file_result_from response("STREAM FILE", file, "1234567890*#")
             if result[:endpos].to_i <= startpos
-              raise Adhearsion::VoIP::PlaybackError.new "The sound file could not opened to stream.  The parsed response was #{result.inspect}"
+              raise Adhearsion::VoIP::PlaybackError, "The sound file could not opened to stream.  The parsed response was #{result.inspect}"
             end
             return result[:digit] unless result[:digit] == 0.chr
           end
