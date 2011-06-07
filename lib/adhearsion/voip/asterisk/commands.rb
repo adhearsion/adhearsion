@@ -1175,8 +1175,8 @@ module Adhearsion
           # @raise [Adhearsion::VoIP::PlaybackError] If a sound file cannot be played
           # @see http://www.voip-info.org/wiki/view/Asterisk+cmd+Playback More information on the Asterisk Playback command
           def play_string!(argument)
-            response = execute(:playback, argument)
-            playback = get_variable('PLAYBACKSTATUS')
+            response = execute :playback, argument
+            playback = get_variable 'PLAYBACKSTATUS'
             return true if playback == PLAYBACK_SUCCESS
             raise PlaybackError, "Playback failed with PLAYBACKSTATUS: #{playback.inspect}.  The raw response was #{response.inspect}."
           end

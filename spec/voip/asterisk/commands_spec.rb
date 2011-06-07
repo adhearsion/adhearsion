@@ -273,8 +273,8 @@ describe 'interruptible_play command' do
       pbx_should_respond_with_stream_file_success digit
     end
 
-    play_files = (100..105).map(&:to_s)
-    played_files = (100..102).map(&:to_s)
+    play_files = (100..105).map &:to_s
+    played_files = (100..102).map &:to_s
     mock_call.interruptible_play(*play_files).should == '3'
     pbx_was_asked_to_stream played_files
   end
@@ -285,8 +285,8 @@ describe 'interruptible_play command' do
     pbx_should_respond_with_stream_file_failure_on_open
     pbx_should_respond_with_stream_file_success ?9.ord
 
-    play_files = ('sound1'..'sound6').map(&:to_s)
-    played_files = ('sound1'..'sound4').map(&:to_s)
+    play_files = ('sound1'..'sound6').map &:to_s
+    played_files = ('sound1'..'sound4').map &:to_s
     mock_call.interruptible_play(*play_files).should == '9'
     pbx_was_asked_to_stream played_files
   end
@@ -326,8 +326,8 @@ describe 'interruptible_play! command' do
       pbx_should_respond_with_stream_file_success digit
     end
 
-    play_files = (100..105).map(&:to_s)
-    played_files = (100..102).map(&:to_s)
+    play_files = (100..105).map &:to_s
+    played_files = (100..102).map &:to_s
     mock_call.interruptible_play!(*play_files).should == '3'
     pbx_was_asked_to_stream played_files
   end
@@ -336,8 +336,8 @@ describe 'interruptible_play! command' do
     pbx_should_respond_with_stream_file_success 0
     pbx_should_respond_with_stream_file_failure_on_open
 
-    play_files = ('sound1'..'sound6').map(&:to_s)
-    played_files = ('sound1'..'sound2').map(&:to_s)
+    play_files = ('sound1'..'sound6').map &:to_s
+    played_files = ('sound1'..'sound2').map &:to_s
     the_following_code {
       mock_call.interruptible_play! *play_files
     }.should raise_error Adhearsion::VoIP::PlaybackError
@@ -667,8 +667,8 @@ describe 'input command' do
     pbx_should_respond_with_stream_file_failure_on_open
     pbx_should_respond_with_stream_file_success ?1.ord
 
-    play_files = ('sound1'..'sound6').map(&:to_s)
-    played_files = ('sound1'..'sound4').map(&:to_s)
+    play_files = ('sound1'..'sound6').map &:to_s
+    played_files = ('sound1'..'sound4').map &:to_s
     timeout = 1.minute
     mock_call.should_receive(:wait_for_digit).twice.with(timeout).and_return '2', '3'
     mock_call.input(3, :timeout => timeout, :play => play_files).should == '123'
@@ -682,8 +682,8 @@ describe 'input command' do
     pbx_should_respond_with_stream_file_success 0
     pbx_should_respond_with_stream_file_success ?1.ord
 
-    play_files = ('sound1'..'sound8').map(&:to_s)
-    played_files = ('sound1'..'sound5').map(&:to_s)
+    play_files = ('sound1'..'sound8').map &:to_s
+    played_files = ('sound1'..'sound5').map &:to_s
     timeout = 1.second
     mock_call.should_receive(:wait_for_digit).times(3).with(timeout).and_return '2', '3', '4'
     mock_call.input(4, :timeout => timeout, :play => play_files).should == '1234'
@@ -741,8 +741,8 @@ describe 'input! command' do
     pbx_should_respond_with_stream_file_failure_on_open
     mock_call.should_receive(:wait_for_digit).never
 
-    play_files = ('sound1'..'sound6').map(&:to_s)
-    played_files = ('sound1'..'sound2').map(&:to_s)
+    play_files = ('sound1'..'sound6').map &:to_s
+    played_files = ('sound1'..'sound2').map &:to_s
     the_following_code {
       mock_call.input! 10, :play => play_files, :timeout => 5.seconds
     }.should raise_error Adhearsion::VoIP::PlaybackError
