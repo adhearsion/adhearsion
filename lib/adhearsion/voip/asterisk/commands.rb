@@ -541,12 +541,12 @@ module Adhearsion
             # Consume the sound files one at a time. In the event of playback failure, this
             # tells us which files remain unplayed.
             while file = options[:play].shift
-              key = interruptible_play!(file)
+              key = interruptible_play! file
               break if key
             end
             key ||= ''
           else
-            key = wait_for_digit(timeout || -1)
+            key = wait_for_digit timeout || -1
           end
           loop do
             return buffer if key.nil?
@@ -1131,7 +1131,7 @@ module Adhearsion
           def stream_file_result_from(response_string)
             raise ArgumentError, "Can't coerce nil into AGI response! This could be a bug!" unless response_string
             params = {}
-            digit, endpos = response_string.match(/^#{response_prefix}(-?\d+) endpos=(\d+)/).values_at(1, 2)
+            digit, endpos = response_string.match(/^#{response_prefix}(-?\d+) endpos=(\d+)/).values_at 1, 2
             params[:digit] = digit.to_i.chr if digit && digit.to_s != "-1"
             params[:endpos] = endpos.to_i if endpos
             params

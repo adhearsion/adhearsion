@@ -485,23 +485,23 @@ describe 'play command' do
 
   it 'If a Date is passed to play(), the SayUnixTime application will be executed with the date passed in' do
     date = Date.parse('2011-01-23')
-    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",'BdY').and_return(pbx_raw_response)
+    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",'BdY').and_return pbx_raw_response
     mock_call.play(date).should be true
   end
 
   it 'If a Date or Time is passed to play_time(), the SayUnixTime application will be executed with the date and format passed in' do
     date, format = Date.parse('2011-01-23'), 'ABdY'
-    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return("200 result=0\n")
+    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return "200 result=0\n"
     mock_call.play_time(date, :format => format).should == pbx_raw_response
 
     time, format = Time.at(875121313), 'BdY \'digits/at\' IMp'
-    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, "",format).and_return(pbx_raw_response)
+    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, "",format).and_return pbx_raw_response
     mock_call.play_time(time, :format => format).should == pbx_raw_response
   end
 
   it 'If a Time object is passed to play_time, the SayUnixTime application will be executed with the default parameters' do
     time = Time.at(875121313)
-    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, "",'').and_return(pbx_raw_response)
+    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, "",'').and_return pbx_raw_response
     mock_call.play_time(time).should == pbx_raw_response
   end
 
@@ -512,15 +512,15 @@ describe 'play command' do
 
   it 'If an array containing a Date/DateTime/Time object and a hash is passed to play(), the SayUnixTime application will be executed with the object passed in with the specified format and timezone' do
     date, format = Date.parse('2011-01-23'), 'ABdY'
-    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return(pbx_raw_response)
+    mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return pbx_raw_response
     mock_call.play([date, {:format => format}]).should be true
 
     time, timezone = Time.at(1295843084), 'US/Eastern'
-    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,'').and_return(pbx_raw_response)
+    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,'').and_return pbx_raw_response
     mock_call.play([time, {:timezone => timezone}]).should be true
 
     time, timezone, format = Time.at(1295843084), 'US/Eastern', 'ABdY \'digits/at\' IMp'
-    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,format).and_return(pbx_raw_response)
+    mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,format).and_return pbx_raw_response
     mock_call.play([time, {:timezone => timezone, :format => format}]).should be true
   end
 
