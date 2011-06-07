@@ -178,7 +178,7 @@ module DialplanCommandTestHelpers
 
       def pbx_was_asked_to_stream(*audio_files)
         audio_files.flatten.each do |audio_file|
-          output_stream_matches(/^STREAM FILE "#{audio_file}" "1234567890\*#"\n$/)
+          output_stream_matches /^STREAM FILE "#{audio_file}" "1234567890\*#"\n$/
         end
       end
 
@@ -315,7 +315,7 @@ describe 'interruptible_play! command' do
     pbx_should_respond_with_stream_file_failure_on_open
     file = 'foobar'
     the_following_code {
-      mock_call.interruptible_play!(file)
+      mock_call.interruptible_play! file
     }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_stream file
   end
@@ -339,7 +339,7 @@ describe 'interruptible_play! command' do
     play_files = ('sound1'..'sound6').map(&:to_s)
     played_files = ('sound1'..'sound2').map(&:to_s)
     the_following_code {
-      mock_call.interruptible_play!(*play_files)
+      mock_call.interruptible_play! *play_files
     }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_stream played_files
   end
@@ -698,7 +698,7 @@ describe 'input! command' do
 
   it 'should raise an error when the number of digits expected is -1 (this is deprecated behavior)' do
     the_following_code {
-      mock_call.input!(-1)
+      mock_call.input! -1
     }.should raise_error ArgumentError
   end
 
@@ -708,7 +708,7 @@ describe 'input! command' do
     mock_call.should_receive(:interruptible_play!).once.with('two').and_return nil
     mock_call.should_receive(:interruptible_play!).once.with('three').and_return nil
     mock_call.should_receive(:wait_for_digit).once.and_throw :digit_request
-    should_throw(:digit_request) { mock_call.input!(10, :play => sound_files) }
+    should_throw(:digit_request) { mock_call.input! 10, :play => sound_files }
   end
 
   it 'executes interruptible_play!() with all of the files given to :play' do
@@ -723,7 +723,7 @@ describe 'input! command' do
   it 'should execute wait_for_digit first if no sound files are given' do
     mock_call.should_receive(:interruptible_play!).never
     mock_call.should_receive(:wait_for_digit).once.and_throw :digit_request
-    should_throw(:digit_request) { mock_call.input!(1) }
+    should_throw(:digit_request) { mock_call.input! 1 }
   end
 
   it 'should raise an error when the sound file is not found' do
@@ -731,7 +731,7 @@ describe 'input! command' do
     file = 'foobar'
     mock_call.should_receive(:wait_for_digit).never
     the_following_code {
-      mock_call.input!(1, :play => file)
+      mock_call.input! 1, :play => file
     }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_stream file
   end
@@ -744,7 +744,7 @@ describe 'input! command' do
     play_files = ('sound1'..'sound6').map(&:to_s)
     played_files = ('sound1'..'sound2').map(&:to_s)
     the_following_code {
-      mock_call.input!(10, :play => play_files, :timeout => 5.seconds)
+      mock_call.input! 10, :play => play_files, :timeout => 5.seconds
     }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_stream played_files
   end

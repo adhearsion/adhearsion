@@ -205,7 +205,7 @@ module Adhearsion
             arguments.flatten.each do |argument|
               # result starts off as true.  But if the following command ever returns false, then result
               # remains false.
-              result &= (play_numeric(argument) || play_string(argument))
+              result &= play_numeric(argument) || play_string(argument)
             end
           end
           result
