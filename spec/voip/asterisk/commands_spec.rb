@@ -461,7 +461,7 @@ describe 'play command' do
     audio_files = ['rock', 'paperz', 'scissors']
 
     mock_call.play(audio_files).should be false
-    pbx_was_asked_to_play ['rock', 'paperz']
+    pbx_was_asked_to_play audio_files
   end
 
   it 'If a number is passed to play(), the saynumber application is executed with the number as an argument' do
