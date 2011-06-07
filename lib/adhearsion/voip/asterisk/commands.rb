@@ -521,7 +521,7 @@ module Adhearsion
           options = args.last.kind_of?(Hash) ? args.pop : {}
           number_of_digits = args.shift
 
-          options[:play]  = options[:play].to_a
+          options[:play]  = [*options[:play]].compact
           timeout         = options[:timeout]
           terminating_key = options[:accept_key]
           terminating_key = if terminating_key
