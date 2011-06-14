@@ -1,3 +1,7 @@
+1.1.1
+ - Command#play now returns false if audio failed to play
+ - Added new commands (#play!, #interruptible_play!, #input!) which raise PlaybackError if audio fails to play
+
 1.1.0
  - Added interactive call control console: ahn start console <path>
  - Added centralized exception handler through eventing system
