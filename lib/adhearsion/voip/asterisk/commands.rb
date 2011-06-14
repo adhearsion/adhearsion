@@ -42,6 +42,8 @@ module Adhearsion
           end
         } unless defined? DYNAMIC_FEATURE_EXTENSIONS
 
+        PLAYBACK_SUCCESS = 'SUCCESS' unless defined? PLAYBACK_SUCCESS
+
         # Utility method to write to pbx.
         # @param [String] message raw message
         def write(message)
@@ -197,12 +199,31 @@ module Adhearsion
         # @example Play two sound files
         #   play "you-sound-cute", "what-are-you-wearing"
         #
+        # @return [Boolean] true is returned if everything was successful.  Otherwise, false indicates that
+        #   some sound file(s) could not be played.
         def play(*arguments)
+          result = true
           unless play_time(arguments)
             arguments.flatten.each do |argument|
-              play_numeric(argument) || play_string(argument)
+              # result starts off as true.  But if the following command ever returns false, then result
+              # remains false.
+              result &= play_numeric(argument) || play_string(argument)
             end
           end
+          result
+        end
+
+        # Same as {#play}, but immediately raises an exception if a sound file cannot be played.
+        #
+        # @return [true]
+        # @raise [Adhearsion::VoIP::PlaybackError] If a sound file cannot be played
+        def play!(*arguments)
+          unless play_time(arguments)
+            arguments.flatten.each do |argument|
+              play_numeric(argument) || play_string!(argument)
+            end
+          end
+          true
         end
 
         # Records a sound file with the given name. If no filename is specified a file named by Asterisk
@@ -478,13 +499,33 @@ module Adhearsion
         # Note that when the digit limit is not specified the :accept_key becomes "#".
         # Otherwise there would be no way to end the collection of digits. You can
         # obviously override this by passing in a new key with :accept_key.
+        #
+        # @return [String] The keypad input received. An empty string is returned in the
+        #                  absense of input. If the :accept_key argument was pressed, it
+        #                  will not appear in the output.
         def input(*args)
           options = args.last.kind_of?(Hash) ? args.pop : {}
           number_of_digits = args.shift
 
-          sound_files     = Array options.delete(:play)
-          timeout         = options.delete(:timeout)
-          terminating_key = options.delete(:accept_key)
+          begin
+            input! number_of_digits, options
+          rescue PlaybackError => e
+            ahn_log.agi.warn { e }
+            retry # If sound playback fails, play the remaining sound files and wait for digits
+          end
+        end
+
+        # Same as {#input}, but immediately raises an exception if sound playback fails
+        #
+        # @return (see #input)
+        # @raise [Adhearsion::VoIP::PlaybackError] If a sound file cannot be played
+        def input!(*args)
+          options = args.last.kind_of?(Hash) ? args.pop : {}
+          number_of_digits = args.shift
+
+          options[:play]  = [*options[:play]].compact
+          timeout         = options[:timeout]
+          terminating_key = options[:accept_key]
           terminating_key = if terminating_key
             terminating_key.to_s
           elsif number_of_digits.nil? && !terminating_key.equal?(false)
@@ -498,7 +539,17 @@ module Adhearsion
           end
 
           buffer = ''
-          key = sound_files.any? ? interruptible_play(*sound_files) || '' : wait_for_digit(timeout || -1)
+          if options[:play].any?
+            # Consume the sound files one at a time. In the event of playback failure, this
+            # tells us which files remain unplayed.
+            while file = options[:play].shift
+              key = interruptible_play! file
+              break if key
+            end
+            key ||= ''
+          else
+            key = wait_for_digit timeout || -1
+          end
           loop do
             return buffer if key.nil?
             if terminating_key
@@ -921,6 +972,23 @@ module Adhearsion
           nil
         end
 
+        #
+        # Same as {#interruptible_play}, but immediately raises an exception if a sound file cannot be played.
+        #
+        # @return (see #interruptible_play)
+        # @raise [Adhearsion::VoIP::PlaybackError] If a sound file cannot be played
+        def interruptible_play!(*files)
+          startpos = 0
+          files.flatten.each do |file|
+            result = stream_file_result_from response("STREAM FILE", file, "1234567890*#")
+            if result[:endpos].to_i <= startpos
+              raise Adhearsion::VoIP::PlaybackError, "The sound file could not opened to stream.  The parsed response was #{result.inspect}"
+            end
+            return result[:digit] unless result[:digit] == 0.chr
+          end
+          nil
+        end
+
         ##
         # Executes the SayPhonetic command. This command will read the text passed in
         # out load using the NATO phonetic alphabet.
@@ -1062,6 +1130,15 @@ module Adhearsion
             digit.to_i.chr if digit && digit.to_s != "-1"
           end
 
+          def stream_file_result_from(response_string)
+            raise ArgumentError, "Can't coerce nil into AGI response! This could be a bug!" unless response_string
+            params = {}
+            digit, endpos = response_string.match(/^#{response_prefix}(-?\d+) endpos=(\d+)/).values_at 1, 2
+            params[:digit] = digit.to_i.chr if digit && digit.to_s != "-1"
+            params[:endpos] = endpos.to_i if endpos
+            params
+          end
+
           def extract_input_from(result)
             return false if error?(result)
             # return false if input_timed_out?(result)
@@ -1091,6 +1168,19 @@ module Adhearsion
 
           def play_string(argument)
             execute(:playback, argument)
+            get_variable('PLAYBACKSTATUS') == PLAYBACK_SUCCESS
+          end
+
+          # Like play_string(), but this will raise Exceptions if there's a problem.
+          #
+          # @return [true]
+          # @raise [Adhearsion::VoIP::PlaybackError] If a sound file cannot be played
+          # @see http://www.voip-info.org/wiki/view/Asterisk+cmd+Playback More information on the Asterisk Playback command
+          def play_string!(argument)
+            response = execute :playback, argument
+            playback = get_variable 'PLAYBACKSTATUS'
+            return true if playback == PLAYBACK_SUCCESS
+            raise PlaybackError, "Playback failed with PLAYBACKSTATUS: #{playback.inspect}.  The raw response was #{response.inspect}."
           end
 
           def play_sound_files_for_menu(menu_instance, sound_files)
