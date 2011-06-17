@@ -551,7 +551,6 @@ module Adhearsion
             key = wait_for_digit timeout || -1
           end
           loop do
-	    yield(buffer) if block_given? 
             return buffer if key.nil?
             if terminating_key
               if key == terminating_key
@@ -564,6 +563,7 @@ module Adhearsion
               buffer << key
               return buffer if number_of_digits && number_of_digits == buffer.length
             end
+	    yield(buffer) if block_given?
             key = wait_for_digit(timeout || -1)
           end
         end
