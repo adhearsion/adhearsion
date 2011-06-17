@@ -508,7 +508,8 @@ module Adhearsion
           number_of_digits = args.shift
 
           begin
-            input!(number_of_digits, options) { yield if block_given? }
+#            input!(number_of_digits, options) { yield if block_given? }
+	     input!(number_of_digits, options, &block)	
           rescue PlaybackError => e
             ahn_log.agi.warn { e }
             retry # If sound playback fails, play the remaining sound files and wait for digits
