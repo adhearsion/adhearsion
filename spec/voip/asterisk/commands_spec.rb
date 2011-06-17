@@ -618,6 +618,16 @@ describe 'input command' do
     }.should_not raise_error ArgumentError
   end
 
+  it 'should return not fail when passed a block' do
+    morning_time = %w[4 5 5 9]
+    mock_call.should_receive(:wait_for_digit).times(morning_time.size).and_return(*morning_time)
+    the_following_code {
+      mock_call.input(morning_time.size, :accept_key => false) { |key|  }
+    }.should_not raise_error ArgumentError
+  end
+
+
+
   it 'passes wait_for_digit the :timeout option when one is given' do
     mock_call.should_receive(:interruptible_play!).never
     mock_call.should_receive(:wait_for_digit).twice.and_return '1', '2'

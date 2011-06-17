@@ -503,12 +503,12 @@ module Adhearsion
         # @return [String] The keypad input received. An empty string is returned in the
         #                  absense of input. If the :accept_key argument was pressed, it
         #                  will not appear in the output.
-        def input(*args)
+        def input(*args, &block)
           options = args.last.kind_of?(Hash) ? args.pop : {}
           number_of_digits = args.shift
 
           begin
-            input! number_of_digits, options
+            input!(number_of_digits, options) { yield if block_given? }
           rescue PlaybackError => e
             ahn_log.agi.warn { e }
             retry # If sound playback fails, play the remaining sound files and wait for digits
@@ -519,7 +519,7 @@ module Adhearsion
         #
         # @return (see #input)
         # @raise [Adhearsion::VoIP::PlaybackError] If a sound file cannot be played
-        def input!(*args)
+        def input!(*args, &block)
           options = args.last.kind_of?(Hash) ? args.pop : {}
           number_of_digits = args.shift
 
@@ -551,6 +551,7 @@ module Adhearsion
             key = wait_for_digit timeout || -1
           end
           loop do
+	    yield(buffer) if block_given? 
             return buffer if key.nil?
             if terminating_key
               if key == terminating_key
