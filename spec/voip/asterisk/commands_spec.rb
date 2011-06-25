@@ -2012,6 +2012,12 @@ describe "Dial command" do
     }.should raise_error ArgumentError
   end
 
+  it "should not raise an exception when a caller_id is specified in E.164 format (with '+' sign)" do
+    the_following_code {
+      mock_call.dial 911, :caller_id => "+123456789"
+    }.should_not raise_error ArgumentError
+  end
+
   it 'should pass the value of the :confirm key to dial_macro_option_compiler()' do
     does_not_read_data_back
     value_of_confirm_key = {:play => "ohai", :timeout => 30}
