@@ -40,11 +40,10 @@ USAGE
             pid_file_regexp = /^--pid-file=(.+)$/
             if args.size > 3
               raise CommandHandler::CLIException, "Too many arguments supplied!" if args.size > 3
-            elsif args.size == 3
-              raise CommandHandler::CLIException, "Unrecognized final argument #{args.last}" unless args.last =~ pid_file_regexp
-              pid_file = args.pop[pid_file_regexp, 1]
             else
               pid_file = nil
+              pid_file = args.pop[pid_file_regexp, 1] if args.last =~ pid_file_regexp
+              raise CommandHandler::CLIException, "Unrecognized final argument #{args.last}" unless args.size <= 2
             end
 
             if args.size == 2
