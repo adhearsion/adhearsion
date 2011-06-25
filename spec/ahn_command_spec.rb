@@ -113,6 +113,13 @@ describe "A simulated use of the 'ahn' command" do
     Adhearsion::CLI::AhnCommand.parse_arguments(arguments).should == [:start, project_path, :daemon, pid_file_path]
   end
 
+  it 'should recognize start without daemon and with pid file properly' do
+    project_path  = '/second/star/on/the/right'
+    pid_file_path = '/straight/on/til/morning'
+    arguments = ["start", project_path, "--pid-file=#{pid_file_path}"]
+    Adhearsion::CLI::AhnCommand.parse_arguments(arguments).should == [:start, project_path, :foreground, pid_file_path]
+  end
+
   it 'parse_arguments should recognize start without daemon properly' do
     path = '/path/to/somewhere'
     arguments = ['start', path]
