@@ -1065,7 +1065,7 @@ module Adhearsion
           # allows setting of the callerid number of the call
           def set_caller_id_number(caller_id_num)
             return unless caller_id_num
-            raise ArgumentError, "Caller ID must be numeric" if caller_id_num.to_s !~ /^\d+$/
+            raise ArgumentError, "Caller ID must be numeric" if caller_id_num.to_s !~ /^\+?\d+$/
             variable "CALLERID(num)" => caller_id_num
           end
 
