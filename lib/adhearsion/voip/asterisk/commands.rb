@@ -1,4 +1,3 @@
-
 require 'adhearsion/voip/menu_state_machine/menu_class'
 
 module Adhearsion
@@ -508,7 +507,7 @@ module Adhearsion
           number_of_digits = args.shift
 
           begin
-	     input!(number_of_digits, options, &block)	
+            input! number_of_digits, options, &block
           rescue PlaybackError => e
             ahn_log.agi.warn { e }
             retry # If sound playback fails, play the remaining sound files and wait for digits
@@ -563,7 +562,7 @@ module Adhearsion
               buffer << key
               return buffer if number_of_digits && number_of_digits == buffer.length
             end
-	    yield(buffer) if block_given?
+            return buffer if block_given? && yield(buffer)
             key = wait_for_digit(timeout || -1)
           end
         end

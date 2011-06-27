@@ -618,16 +618,17 @@ describe 'input command' do
     }.should_not raise_error ArgumentError
   end
 
-  it 'should return not fail when passed a block' do
-    morning_time = %w[1 5 5 9]
-    mock_call.should_receive(:wait_for_digit).times(morning_time.size).and_return(*morning_time)
-    the_following_code {
-      mock_call.input(morning_time.size, :accept_key => false) do |buffer| 
-      return buffer if Integer(buffer) > 235 && buffer.size == 3 
-    end}.should_not raise_error ArgumentError
+  it 'should terminate early when the passed block returns something truthy' do
+    three_digits = %w[9 3 0]
+    mock_call.should_receive(:wait_for_digit).times(2).and_return(*three_digits)
+    mock_call.input(3, :accept_key => false) { |buffer| buffer.size == 2 }.should == '93'
   end
 
- 
+  it "Input timing out when digits are pressed returns only the collected digits" do
+    timeout = 1.day
+    mock_call.should_receive(:wait_for_digit).twice.with(timeout).and_return '5', nil
+    mock_call.input(9, :timeout => timeout).should == '5'
+  end
 
   it 'passes wait_for_digit the :timeout option when one is given' do
     mock_call.should_receive(:interruptible_play!).never
