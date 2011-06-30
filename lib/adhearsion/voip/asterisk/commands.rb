@@ -488,6 +488,8 @@ module Adhearsion
         #                                              # or when the "0" key is pressed.
         #   input 3, :play => "you-sound-cute"
         #   input :play => ["if-this-is-correct-press", 1, "otherwise-press", 2]
+        #   input :interruptible => false, :play => ["you-cannot-interrupt-this-message"] # Disallow DTMF (keypad) interruption
+        #                                                                                 # until after all files are played.
         #
         # When specifying files to play, the playback of the sequence of files will stop
         # immediately when the user presses the first digit.
@@ -524,6 +526,7 @@ module Adhearsion
           number_of_digits = args.shift
 
           options[:play]  = [*options[:play]].compact
+          play_command    = options[:interruptible] == false ? :play! : :interruptible_play!
           timeout         = options[:timeout]
           terminating_key = options[:accept_key]
           terminating_key = if terminating_key
@@ -543,7 +546,8 @@ module Adhearsion
             # Consume the sound files one at a time. In the event of playback failure, this
             # tells us which files remain unplayed.
             while file = options[:play].shift
-              key = interruptible_play! file
+              key = send play_command, file
+              key = nil if play_command == :play!
               break if key
             end
             key ||= ''
