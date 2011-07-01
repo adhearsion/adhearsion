@@ -36,7 +36,7 @@ namespace :test do
         end
       when :rspec
         if defined?(RSpec)
-          RSpec::Core::RakeTask.new :spec do |spec|
+          RSpec::Core::RakeTask.new task_name_for(component_path) do |spec|
             spec.pattern = "#{component_path}/spec/**/*_spec.rb"
             spec.rspec_opts = '--color'
           end
