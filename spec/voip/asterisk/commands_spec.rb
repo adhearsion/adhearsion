@@ -2254,20 +2254,21 @@ describe 'set_caller_id_name command' do
   end
 end
 
-describe "record command" do
+describe "speak command" do
   include DialplanCommandTestHelpers
 
   it "executes the command SpeechEngine gives it based on the engine name" do
     mock_speak_command = "returned command doesn't matter"
+    mock_speak_options = "speak options don't matter"
     flexmock(Adhearsion::VoIP::Asterisk::Commands::SpeechEngines).should_receive(:cepstral).
-      once.and_return(mock_speak_command)
-    mock_call.should_receive(:execute).once.with(mock_speak_command)
-    mock_call.speak "Spoken text doesn't matter", :cepstral
+      once.and_return([mock_speak_command, mock_speak_options])
+    mock_call.should_receive(:execute).once.with(mock_speak_command, mock_speak_options)
+    mock_call.speak "Spoken text doesn't matter", :engine => :cepstral
   end
 
   it "raises an InvalidSpeechEngine exception when the engine is 'none'" do
     the_following_code {
-      mock_call.speak("o hai!", :none)
+      mock_call.speak("o hai!", :engine => :none)
     }.should raise_error Adhearsion::VoIP::Asterisk::Commands::SpeechEngines::InvalidSpeechEngine
   end
 
@@ -2279,8 +2280,41 @@ describe "record command" do
     }.should raise_error Adhearsion::VoIP::Asterisk::Commands::SpeechEngines::InvalidSpeechEngine
   end
 
-  #it "Properly escapes spoken text" # TODO: What are the escaping needs?
+  it "should stringify the text" do
+    flexmock(Adhearsion::VoIP::Asterisk::Commands::SpeechEngines).should_receive(:cepstral).once.with('hello', {})
+    mock_call.should_receive(:execute).once
+    mock_call.speak :hello, :engine => :cepstral
+  end
 
+  context "with the engine :cepstral" do
+    it "should execute Swift" do
+      Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.cepstral('hello').should == ['Swift', 'hello']
+    end
+
+    context "with barge in digits set" do
+      it "should raise a not implemented error" do
+        the_following_code {
+          Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.cepstral('hello', :barge_in_digits => 'any')
+        }.should raise_error(NotImplementedError, 'Cepstral currently does not support barge in')
+      end
+    end
+  end
+
+  context "with the engine :unimrcp" do
+    it "should execute MRCPSynth" do
+      Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.unimrcp('hello').should == ['MRCPSynth', 'hello']
+    end
+
+    context "with barge in digits set" do
+      it "should pass the i option for MRCPSynth" do
+        Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.unimrcp('hello', :barge_in_digits => 'any').should == ['MRCPSynth', 'hello', 'i=any']
+      end
+    end
+  end
+
+  it "properly escapes spoken text" do
+    pending 'What are the escaping needs?'
+  end
 end
 
 describe 'The join command' do

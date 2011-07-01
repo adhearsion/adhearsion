@@ -642,10 +642,44 @@ module Adhearsion
           not last_dial_successful?
         end
 
-        # This feature is presently experimental! Do not use it!
-        def speak(text, engine=:none)
-          engine = AHN_CONFIG.asterisk.speech_engine || engine
-          execute SpeechEngines.send(engine, text)
+        ##
+        # @param [#to_s] text to speak using the TTS engine
+        # @param [Hash] options
+        # @param options [Symbol] :engine the engine to use. Currently supported engines are :cepstral and :unimrcp
+        # @param options [String] :barge_in_digits digits to allow the TTS to be interrupted with
+        #
+        def speak(text, options = {})
+          engine = AHN_CONFIG.asterisk.speech_engine || options.delete(:engine) || :none
+          execute *SpeechEngines.send(engine, text.to_s, options)
+        end
+
+        module SpeechEngines
+          class InvalidSpeechEngine < StandardError; end
+
+          class << self
+            def cepstral(text, options = {})
+              raise NotImplementedError, 'Cepstral currently does not support barge in' if options[:barge_in_digits]
+              ['Swift', text]
+            end
+
+            def unimrcp(text, options = {})
+              ['MRCPSynth', text].tap do |command|
+                command << "i=#{options[:barge_in_digits]}" if options[:barge_in_digits]
+              end
+            end
+
+            def festival(text)
+              raise NotImplementedError
+            end
+
+            def none(text, options = {})
+              raise InvalidSpeechEngine, "No speech engine selected. You must specify one in your Adhearsion config file."
+            end
+
+            def method_missing(engine_name, text, options = {})
+              raise InvalidSpeechEngine, "Unsupported speech engine #{engine_name} for speaking '#{text}'"
+            end
+          end
         end
 
         # A high-level way of enabling features you create/uncomment from features.conf.
@@ -1635,37 +1669,6 @@ module Adhearsion
           module MenuDigitResponse
             def timed_out?
               eql? 0.chr
-            end
-          end
-
-          module SpeechEngines
-
-            class InvalidSpeechEngine < StandardError; end
-
-            class << self
-              def cepstral(text)
-                puts "in ceptral"
-                puts escape(text)
-              end
-
-              def festival(text)
-                raise NotImplementedError
-              end
-
-              def none(text)
-                raise InvalidSpeechEngine, "No speech engine selected. You must specify one in your Adhearsion config file."
-              end
-
-              def method_missing(engine_name, text)
-                raise InvalidSpeechEngine, "Unsupported speech engine #{engine_name} for speaking '#{text}'"
-              end
-
-              private
-
-              def escape(text)
-                "%p" % text
-              end
-
             end
           end
 
