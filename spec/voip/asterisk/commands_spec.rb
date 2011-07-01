@@ -248,6 +248,15 @@ describe 'hangup command' do
   end
 end
 
+describe "writing a command" do
+  include DialplanCommandTestHelpers
+
+  it "should strip out excess whitespace" do
+    mock_call.write "EXEC   \nRinging\n\n"
+    pbx_should_have_been_sent "EXEC Ringing"
+  end
+end
+
 describe 'interruptible_play command' do
 
   include DialplanCommandTestHelpers

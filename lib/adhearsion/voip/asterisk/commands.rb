@@ -47,7 +47,7 @@ module Adhearsion
         # Utility method to write to pbx.
         # @param [String] message raw message
         def write(message)
-          to_pbx.print(message + "\n")
+          to_pbx.print(message.squish + "\n")
         end
 
         # Utility method to read from pbx. Hangup if nil.
