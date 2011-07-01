@@ -30,6 +30,10 @@ module DialplanCommandTestHelpers
 
   class MockSocket
 
+    def empty?
+      messages.empty?
+    end
+
     def print(message)
       messages << message
     end
@@ -168,6 +172,10 @@ module DialplanCommandTestHelpers
       output.gets.should match pattern
     end
 
+    def output_stream_empty?
+      output.empty?
+    end
+
     module OutputStreamMatchers
       def pbx_was_asked_to_play(*audio_files)
         audio_files.flatten.each do |audio_file|
@@ -191,6 +199,10 @@ module DialplanCommandTestHelpers
 
       def pbx_was_asked_to_execute(application, *options)
         output_stream_matches(/exec saydigits "#{options.join('|')}"/i)
+      end
+
+      def pbx_output_should_be_empty
+        output_stream_empty?.should be true
       end
     end
     include OutputStreamMatchers
@@ -235,6 +247,7 @@ describe 'Asterisk VoIP Commands' do
     message = 'oh hai'
     mock_call.write message
     pbx_should_have_been_sent message
+    pbx_output_should_be_empty
   end
 end
 describe 'hangup command' do
@@ -245,6 +258,7 @@ describe 'hangup command' do
     response = mock_call.hangup
     pbx_should_have_been_sent 'HANGUP'
     response.should == pbx_success_response
+    pbx_output_should_be_empty
   end
 end
 
@@ -257,7 +271,8 @@ describe 'interruptible_play command' do
     file = "file_doesnt_matter"
     digits.each { |digit| pbx_should_respond_with_stream_file_success digit }
     digits.map  { |digit| mock_call.interruptible_play file }.should == digits.map(&:chr)
-    pbx_was_asked_to_stream file
+    digits.size.times { pbx_was_asked_to_stream file }
+    pbx_output_should_be_empty
   end
 
   it "should return nil if no digit was pressed" do
@@ -265,6 +280,7 @@ describe 'interruptible_play command' do
     file = 'foobar'
     mock_call.interruptible_play(file).should be nil
     pbx_was_asked_to_stream file
+    pbx_output_should_be_empty
   end
 
   it 'should return nil if no digit was pressed, even if the sound file is not found' do
@@ -272,6 +288,7 @@ describe 'interruptible_play command' do
     file = 'foobar'
     mock_call.interruptible_play(file).should be nil
     pbx_was_asked_to_stream file
+    pbx_output_should_be_empty
   end
 
   it "should play a series of files, stopping the series when a digit is played" do
@@ -284,6 +301,7 @@ describe 'interruptible_play command' do
     played_files = (100..102).map &:to_s
     mock_call.interruptible_play(*play_files).should == '3'
     pbx_was_asked_to_stream played_files
+    pbx_output_should_be_empty
   end
 
   it 'should play a series of files, stopping the series when a digit is played, even if the sound files cannot be found' do
@@ -296,6 +314,7 @@ describe 'interruptible_play command' do
     played_files = ('sound1'..'sound4').map &:to_s
     mock_call.interruptible_play(*play_files).should == '9'
     pbx_was_asked_to_stream played_files
+    pbx_output_should_be_empty
   end
 
 end
@@ -308,7 +327,8 @@ describe 'interruptible_play! command' do
     file = "file_doesnt_matter"
     digits.each { |digit| pbx_should_respond_with_stream_file_success digit }
     digits.map  { |digit| mock_call.interruptible_play! file }.should == digits.map(&:chr)
-    pbx_was_asked_to_stream file
+    digits.size.times { pbx_was_asked_to_stream file }
+    pbx_output_should_be_empty
   end
 
   it "should return nil if no digit was pressed" do
@@ -316,6 +336,7 @@ describe 'interruptible_play! command' do
     file = 'foobar'
     mock_call.interruptible_play!(file).should be nil
     pbx_was_asked_to_stream file
+    pbx_output_should_be_empty
   end
 
   it 'should raise an error when the sound file is not found' do
@@ -325,6 +346,7 @@ describe 'interruptible_play! command' do
       mock_call.interruptible_play! file
     }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_stream file
+    pbx_output_should_be_empty
   end
 
   it "should play a series of files, stopping the series when a digit is played" do
@@ -337,6 +359,7 @@ describe 'interruptible_play! command' do
     played_files = (100..102).map &:to_s
     mock_call.interruptible_play!(*play_files).should == '3'
     pbx_was_asked_to_stream played_files
+    pbx_output_should_be_empty
   end
 
   it 'should play a series of files, raising an error if a sound file cannot be found' do
@@ -349,6 +372,7 @@ describe 'interruptible_play! command' do
       mock_call.interruptible_play! *play_files
     }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_stream played_files
+    pbx_output_should_be_empty
   end
 
   it 'should raise an error if an audio file cannot be found' do
@@ -358,6 +382,7 @@ describe 'interruptible_play! command' do
       mock_call.interruptible_play! audio_file
     }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_stream audio_file
+    pbx_output_should_be_empty
   end
 
   it 'should raise an error when audio files cannot be found' do
@@ -369,6 +394,7 @@ describe 'interruptible_play! command' do
       mock_call.interruptible_play! audio_files
     }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_stream ['rock', 'paperz'] # stop short before playing with scissors!
+    pbx_output_should_be_empty
   end
 end
 
@@ -380,12 +406,15 @@ describe 'wait_for_digit command' do
     digits = %w{0 1 # * 9}.map{|c| c.ord}
     digits.each { |digit| pbx_should_respond_with_success digit }
     digits.map  { |digit| mock_call.send(:wait_for_digit) }.should == digits.map(&:chr)
+    digits.size.times { pbx_should_have_been_sent 'WAIT FOR DIGIT "-1"' }
+    pbx_output_should_be_empty
   end
 
   it "the timeout given must be converted to milliseconds" do
     pbx_should_respond_with_success 0
     mock_call.send(:wait_for_digit, 1)
-    output.messages.first.chomp.ends_with?('"1000"').should be true
+    pbx_should_have_been_sent 'WAIT FOR DIGIT "1000"'
+    pbx_output_should_be_empty
   end
 end
 
@@ -396,6 +425,7 @@ describe 'answer' do
     does_not_read_data_back
     mock_call.answer
     pbx_should_have_been_sent 'ANSWER'
+    pbx_output_should_be_empty
   end
 
 end
@@ -407,17 +437,21 @@ describe 'execute' do
     pbx_should_respond_with_success
     assert_success mock_call.execute(:foo)
     pbx_should_have_been_sent 'EXEC foo ""'
+    pbx_output_should_be_empty
   end
 
   it 'execute returns false if the command was not executed successfully by the PBX' do
     pbx_should_respond_with_failure
     mock_call.execute(:foo).should_not be true
+    pbx_should_have_been_sent 'EXEC foo ""'
+    pbx_output_should_be_empty
   end
 
   it 'execute can accept arguments after the app name which get translated into pipe-delimited arguments to the PBX' do
     pbx_should_respond_with_success
     mock_call.execute :foo, 'bar', 'baz', 'hi'
     pbx_should_have_been_sent 'EXEC foo "bar"|"baz"|"hi"'
+    pbx_output_should_be_empty
   end
 
   it "should raise a Hangup exception when nil is returned when reading a command from Asterisk" do
@@ -443,6 +477,7 @@ describe 'play command' do
     audio_file = "cents-per-minute"
     mock_call.play(audio_file).should be true
     pbx_was_asked_to_play audio_file
+    pbx_output_should_be_empty
   end
 
   it 'multiple strings can be passed to play, causing multiple playback commands to be issued' do
@@ -452,6 +487,7 @@ describe 'play command' do
     audio_files = ["cents-per-minute", 'o-hai']
     mock_call.play(audio_files).should be true
     pbx_was_asked_to_play audio_files
+    pbx_output_should_be_empty
   end
 
   it 'should return false if an audio file cannot be found' do
@@ -459,6 +495,7 @@ describe 'play command' do
     audio_file = 'nixon-tapes'
     mock_call.play(audio_file).should be false
     pbx_was_asked_to_play audio_file
+    pbx_output_should_be_empty
   end
 
   it 'should return false when audio files cannot be found' do
@@ -469,18 +506,21 @@ describe 'play command' do
 
     mock_call.play(audio_files).should be false
     pbx_was_asked_to_play audio_files
+    pbx_output_should_be_empty
   end
 
   it 'If a number is passed to play(), the saynumber application is executed with the number as an argument' do
     pbx_should_respond_with_success
     mock_call.play(123).should be true
     pbx_was_asked_to_play_number(123)
+    pbx_output_should_be_empty
   end
 
   it 'if a string representation of a number is passed to play(), the saynumber application is executed with the number as an argument' do
     pbx_should_respond_with_success
     mock_call.play('123').should be true
     pbx_was_asked_to_play_number(123)
+    pbx_output_should_be_empty
   end
 
   it 'If a Time is passed to play(), the SayUnixTime application will be executed with the time since the UNIX epoch in seconds as an argument' do
@@ -488,6 +528,7 @@ describe 'play command' do
     pbx_should_respond_with_success
     mock_call.play(time).should be true
     pbx_was_asked_to_play_time(time.to_i)
+    pbx_output_should_be_empty
   end
 
   it 'If a Date is passed to play(), the SayUnixTime application will be executed with the date passed in' do
@@ -547,6 +588,7 @@ describe 'play! command' do
     audio_files = ["cents-per-minute", 'o-hai']
     mock_call.play!(audio_files).should be true
     pbx_was_asked_to_play audio_files
+    pbx_output_should_be_empty
   end
 
   it 'should raise an error if an audio file cannot be found' do
@@ -556,6 +598,7 @@ describe 'play! command' do
       mock_call.play! audio_file
     }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_play audio_file
+    pbx_output_should_be_empty
   end
 
   it 'should raise an error when audio files cannot be found' do
@@ -567,15 +610,13 @@ describe 'play! command' do
       mock_call.play! audio_files
     }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_play ['rock', 'paperz'] # stop short before playing with scissors!
+    pbx_output_should_be_empty
   end
 end
 
 describe 'input command' do
 
   include DialplanCommandTestHelpers
-
-  # pbx_should_respond_with_successful_background_response
-  # pbx_should_respond_with_a_wait_for_digit_timeout
 
   it 'should raise an error when the number of digits expected is -1 (this is deprecated behavior)' do
     the_following_code {
@@ -633,6 +674,15 @@ describe 'input command' do
     mock_call.input(2, :play => sound_files).should == '#*'
   end
 
+  it 'executes #play! when :interruptible is set to false' do
+    sound_files = %w[foo bar qaz]
+    mock_call.should_receive(:play!).once.with('foo').and_return true
+    mock_call.should_receive(:play!).once.with('bar').and_return true
+    mock_call.should_receive(:play!).once.with('qaz').and_return true
+    mock_call.should_receive(:wait_for_digit).once.and_return '*'
+    mock_call.input(1, :play => sound_files, :interruptible => false).should == '*'
+  end
+
   it 'pressing the terminating key before any other digits returns an empty string' do
     mock_call.should_receive(:wait_for_digit).once.and_return '*'
     mock_call.input(:accept_key => '*').should == ''
@@ -650,13 +700,24 @@ describe 'input command' do
     mock_call.input(9, :timeout => timeout).should == '5'
   end
 
-  it 'should execute wait_for_digit, even if some sound files are not found' do
+  it 'should execute wait_for_digit, even if some interruptible sound files are not found' do
     pbx_should_respond_with_stream_file_failure_on_open
     file = 'foobar'
     timeout = 1.hour
     mock_call.should_receive(:wait_for_digit).twice.with(timeout).and_return '8', '9'
     mock_call.input(2, :timeout => timeout, :play => file).should == '89'
     pbx_was_asked_to_stream file
+    pbx_output_should_be_empty
+  end
+
+  it 'should execute wait_for_digit with, even if some uninterruptible sound files are not found' do
+    pbx_should_respond_with_playback_failure
+    file = 'foobar'
+    timeout = 1.hour
+    mock_call.should_receive(:wait_for_digit).twice.with(timeout).and_return '8', '9'
+    mock_call.input(2, :timeout => timeout, :play => file, :interruptible => false).should == '89'
+    pbx_was_asked_to_play file
+    pbx_output_should_be_empty
   end
 
   it 'should return an empty string if no keys are pressed, even if the sound file is not found' do
@@ -666,6 +727,7 @@ describe 'input command' do
     mock_call.should_receive(:wait_for_digit).once.with(timeout).and_return nil
     mock_call.input(5, :timeout => timeout, :play => file).should == ''
     pbx_was_asked_to_stream file
+    pbx_output_should_be_empty
   end
 
   it 'should play a series of files, collecting digits even if some of the sound files cannot be found' do
@@ -680,9 +742,10 @@ describe 'input command' do
     mock_call.should_receive(:wait_for_digit).twice.with(timeout).and_return '2', '3'
     mock_call.input(3, :timeout => timeout, :play => play_files).should == '123'
     pbx_was_asked_to_stream played_files
+    pbx_output_should_be_empty
   end
 
-  it 'should play a series of 4 files, collecting digits even if some of the sound files cannot be found' do
+  it 'should play a series of 4 interruptible sounds, collecting digits even if some of the sound files cannot be found' do
     pbx_should_respond_with_stream_file_success 0
     pbx_should_respond_with_stream_file_success 0
     pbx_should_respond_with_stream_file_failure_on_open
@@ -695,6 +758,20 @@ describe 'input command' do
     mock_call.should_receive(:wait_for_digit).times(3).with(timeout).and_return '2', '3', '4'
     mock_call.input(4, :timeout => timeout, :play => play_files).should == '1234'
     pbx_was_asked_to_stream played_files
+    pbx_output_should_be_empty
+  end
+
+  it 'should play a series of 4 uninterruptible sounds, collecting digits even if some of the sound files cannot be found' do
+    pbx_should_respond_with_playback_success
+    pbx_should_respond_with_playback_failure
+    pbx_should_respond_with_playback_success
+
+    files = ('sound1'..'sound3').map &:to_s
+    timeout = 1.second
+    mock_call.should_receive(:wait_for_digit).twice.with(timeout).and_return '6', '7'
+    mock_call.input(2, :timeout => timeout, :play => files, :interruptible => false).should == '67'
+    pbx_was_asked_to_play files
+    pbx_output_should_be_empty
   end
 
 end
@@ -727,6 +804,15 @@ describe 'input! command' do
     mock_call.input!(2, :play => sound_files).should == '#*'
   end
 
+  it 'executes play!() with all of the files given to :play' do
+    sound_files = %w[foo bar qaz]
+    mock_call.should_receive(:play!).once.with('foo').and_return true
+    mock_call.should_receive(:play!).once.with('bar').and_return true
+    mock_call.should_receive(:play!).once.with('qaz').and_return true
+    mock_call.should_receive(:wait_for_digit).once.and_return '*'
+    mock_call.input!(1, :play => sound_files, :interruptible => false).should == '*'
+  end
+
   it 'should execute wait_for_digit first if no sound files are given' do
     mock_call.should_receive(:interruptible_play!).never
     mock_call.should_receive(:wait_for_digit).once.and_throw :digit_request
@@ -741,9 +827,10 @@ describe 'input! command' do
       mock_call.input! 1, :play => file
     }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_stream file
+    pbx_output_should_be_empty
   end
 
-  it 'should play a series of files, raising an error if a sound file cannot be found' do
+  it 'should play a series of interruptible files, raising an error if a sound file cannot be found' do
     pbx_should_respond_with_stream_file_success 0
     pbx_should_respond_with_stream_file_failure_on_open
     mock_call.should_receive(:wait_for_digit).never
@@ -754,6 +841,20 @@ describe 'input! command' do
       mock_call.input! 10, :play => play_files, :timeout => 5.seconds
     }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_stream played_files
+    pbx_output_should_be_empty
+  end
+
+  it 'should play a series of uninterruptible files, raising an error if a sound file cannot be found' do
+    pbx_should_respond_with_playback_success
+    pbx_should_respond_with_playback_failure
+
+    play_files = ('sound1'..'sound6').map &:to_s
+    played_files = ('sound1'..'sound2').map &:to_s
+    the_following_code {
+      mock_call.input! 10, :play => play_files, :timeout => 5.seconds, :interruptible => false
+    }.should raise_error Adhearsion::VoIP::PlaybackError
+    pbx_was_asked_to_play played_files
+    pbx_output_should_be_empty
   end
 
 end
@@ -1442,6 +1543,8 @@ describe 'the menu() method' do
         link.other 543
       end
     end
+    3.times { pbx_should_have_been_sent 'WAIT FOR DIGIT "5000"' }
+    pbx_output_should_be_empty
   end
 
   it "when the 'extension' variable is changed, it should be an instance of PhoneNumber" do
@@ -1455,6 +1558,8 @@ describe 'the menu() method' do
     end
     5.should === mock_call.extension
     mock_call.extension.__real_string.should == "5"
+    pbx_should_have_been_sent 'WAIT FOR DIGIT "5000"'
+    pbx_output_should_be_empty
   end
 
 end
@@ -1511,11 +1616,9 @@ describe 'the Menu class' do
   end
 
   it "should default the timeout to five seconds" do
-    pbx_should_respond_with_successful_background_response ?2.ord
-    pbx_should_respond_with_a_wait_for_digit_timeout
-
     mock_call.should_receive(:wait_for_digit).once.with(5).and_return nil
     mock_call.menu { |link| link.foobar 22 }
+    pbx_output_should_be_empty
   end
 
   it "when matches fail due to timeouts, the menu should repeat :tries times" do
@@ -1536,6 +1639,8 @@ describe 'the Menu class' do
       end
     end
     times_timed_out.should be tries
+    30.times { pbx_should_have_been_sent 'WAIT FOR DIGIT "5000"' }
+    pbx_output_should_be_empty
   end
 
   it "when matches fail due to invalid input, the menu should repeat :tries times" do
@@ -1555,6 +1660,8 @@ describe 'the Menu class' do
       end
     end
     times_invalid.should be tries
+    10.times { pbx_should_have_been_sent 'WAIT FOR DIGIT "5000"' }
+    pbx_output_should_be_empty
   end
 
   it "invoke on_invalid callback when an invalid extension was entered" do
@@ -1567,6 +1674,8 @@ describe 'the Menu class' do
         link.on_invalid { throw :inside_invalid_callback }
       end
     end
+    pbx_should_have_been_sent 'WAIT FOR DIGIT "5000"'
+    pbx_output_should_be_empty
   end
 
   it "invoke on_premature_timeout when a timeout is encountered" do
@@ -1579,6 +1688,8 @@ describe 'the Menu class' do
         link.on_premature_timeout { throw :inside_timeout }
       end
     end
+    2.times { pbx_should_have_been_sent 'WAIT FOR DIGIT "1000"' }
+    pbx_output_should_be_empty
   end
 
 end
@@ -1603,6 +1714,8 @@ describe "the Menu class's high-level judgment" do
       end
     end
     111.should === mock_call.extension
+    4.times { pbx_should_have_been_sent 'WAIT FOR DIGIT "5000"' }
+    pbx_output_should_be_empty
   end
 
   it 'should match things in a range when there are many other non-matching patterns' do
@@ -1621,6 +1734,8 @@ describe "the Menu class's high-level judgment" do
         link.conferences  900..999
       end
     end
+    3.times { pbx_should_have_been_sent 'WAIT FOR DIGIT "5000"' }
+    pbx_output_should_be_empty
   end
 
 end
@@ -1754,6 +1869,7 @@ describe 'say_digits command' do
     pbx_should_respond_with_success
     mock_call.say_digits digits
     pbx_was_asked_to_execute "saydigits", digits
+    pbx_output_should_be_empty
   end
 
   it 'Digits that include pound, star, and minus are considered valid' do
@@ -1938,11 +2054,15 @@ describe "get variable command" do
   it "Getting a variable that isn't set returns nothing" do
     pbx_should_respond_with "200 result=0"
     mock_call.get_variable('OMGURFACE').should be nil
+    pbx_should_have_been_sent 'GET VARIABLE "OMGURFACE"'
+    pbx_output_should_be_empty
   end
 
   it 'An empty variable should return an empty String' do
     pbx_should_respond_with_value ""
     mock_call.get_variable('kablamm').should == ""
+    pbx_should_have_been_sent 'GET VARIABLE "kablamm"'
+    pbx_output_should_be_empty
   end
 
   it "Getting a variable that is set returns its value" do
@@ -1950,6 +2070,8 @@ describe "get variable command" do
     pbx_should_respond_with_value unique_id
     variable_value_returned = mock_call.get_variable('UNIQUEID')
     variable_value_returned.should == unique_id
+    pbx_should_have_been_sent 'GET VARIABLE "UNIQUEID"'
+    pbx_output_should_be_empty
   end
 end
 
@@ -2176,6 +2298,7 @@ describe 'the dtmf command' do
     digits = '8404#4*'
     mock_call.dtmf digits
     pbx_should_have_been_sent "EXEC SendDTMF \"#{digits}\""
+    pbx_output_should_be_empty
   end
 end
 
