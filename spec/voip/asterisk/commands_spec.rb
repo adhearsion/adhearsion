@@ -252,8 +252,9 @@ describe "writing a command" do
   include DialplanCommandTestHelpers
 
   it "should strip out excess whitespace" do
-    mock_call.write "EXEC   \nRinging\n\n"
-    pbx_should_have_been_sent "EXEC Ringing"
+    pbx_should_respond_with_success
+    mock_call.should_receive(:write).with "EXEC Ringing"
+    mock_call.raw_response "EXEC   \nRinging\n\n"
   end
 end
 

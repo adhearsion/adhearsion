@@ -47,7 +47,7 @@ module Adhearsion
         # Utility method to write to pbx.
         # @param [String] message raw message
         def write(message)
-          to_pbx.print(message.squish + "\n")
+          to_pbx.print message + "\n"
         end
 
         # Utility method to read from pbx. Hangup if nil.
@@ -96,6 +96,7 @@ module Adhearsion
         #
         # @see http://www.voip-info.org/wiki/view/Asterisk+FastAGI More information about FAGI
         def raw_response(message = nil)
+          message.squish!
           @call.with_command_lock do
             raise ArgumentError.new("illegal NUL in message #{message.inspect}") if message =~ /\0/
             ahn_log.agi.debug ">>> #{message}"
