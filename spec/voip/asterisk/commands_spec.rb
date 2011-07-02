@@ -833,14 +833,16 @@ end
 describe "the sip_get_header method" do
   include DialplanCommandTestHelpers
 
-  it "values are properly quoted" do
-    mock_call.should_receive(:raw_response).once.with 'GET VARIABLE "SIP_HEADER(x-ahn-header)"'
-    mock_call.sip_get_header "x-ahn-header"
+  it "properly formats the AGI request" do
+    value = 'jason-was-here'
+    mock_call.should_receive(:raw_response).once.with('GET VARIABLE "SIP_HEADER(x-ahn-header)"').and_return "200 result=1 (#{value})"
+    mock_call.sip_get_header("x-ahn-header").should == value
   end
 
-  it "values are properly quoted with aliased method" do
-    mock_call.should_receive(:raw_response).once.with 'GET VARIABLE "SIP_HEADER(x-ahn-header)"'
-    mock_call.sip_header "x-ahn-header"
+  it "properly formats the AGI request using the method alias" do
+    value = 'jason-was-here'
+    mock_call.should_receive(:raw_response).once.with('GET VARIABLE "SIP_HEADER(x-ahn-header)"').and_return "200 result=1 (#{value})"
+    mock_call.sip_header("x-ahn-header").should == value
   end
 end
 
@@ -867,7 +869,7 @@ describe 'the voicemail command' do
   end
 
   it 'should combine mailbox numbers with the context name given when both are given' do
-    does_not_read_data_back
+    pbx_should_respond_with_value 'SUCCESS'
     context   = "lolcats"
     mailboxes = [1,2,3,4,5]
     mailboxes_with_context = mailboxes.map { |mailbox| "#{mailbox}@#{context}"}

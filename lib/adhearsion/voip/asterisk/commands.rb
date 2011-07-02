@@ -4,9 +4,12 @@ require 'adhearsion/voip/menu_state_machine/menu_class'
 module Adhearsion
   module VoIP
     module Asterisk
+      class AGIProtocolError < StandardError; end
+
       module Commands
 
         RESPONSE_PREFIX = "200 result=" unless defined? RESPONSE_PREFIX
+        AGI_SUCCESSFUL_RESPONSE = RESPONSE_PREFIX + "1"
 
         # These are the status messages that asterisk will issue after a dial command is executed.
         #
@@ -117,6 +120,25 @@ module Adhearsion
             raw_response("#{command} " + arguments.map{ |arg| quote_arg.call(arg.to_s) }.join(' '))
           end
         end
+
+        def inline_return_value(*args)
+          result = response *args
+          case result
+          when "200 result=0" then nil
+          when /^200 result=(.*)$/ then $LAST_PAREN_MATCH
+          else raise AGIProtocolError, "Invalid AGI response: #{result}"
+          end
+        end
+
+        def inline_result_with_return_value(*args)
+          result = response *args
+          case result
+          when "200 result=0" then nil
+          when /^#{AGI_SUCCESSFUL_RESPONSE} \((.*)\)$/ then $LAST_PAREN_MATCH
+          else raise AGIProtocolError, "Invalid AGI response: #{result}"
+          end
+        end
+
 
         # This must be called first before any other commands can be issued.
         # In typical Adhearsion applications this is called by default as soon as a call is
@@ -757,13 +779,7 @@ module Adhearsion
         #
         # @see: http://www.voip-info.org/wiki/view/get+variable Asterisk Get Variable
         def get_variable(variable_name)
-          result = response("GET VARIABLE", variable_name)
-          case result
-          when "200 result=0"
-            return nil
-          when /^200 result=1 \((.*)\)$/
-            return $LAST_PAREN_MATCH
-          end
+          inline_result_with_return_value "GET VARIABLE", variable_name
         end
 
         # Pass information back to the asterisk dial plan.
@@ -778,7 +794,7 @@ module Adhearsion
         #
         # @see http://www.voip-info.org/wiki/view/set+variable Asterisk Set Variable
         def set_variable(variable_name, value)
-          response("SET VARIABLE", variable_name, value) == "200 result=1"
+          response("SET VARIABLE", variable_name, value) == AGI_SUCCESSFUL_RESPONSE
         end
 
         # Issue the command to add a custom SIP header to the current call channel
@@ -791,7 +807,7 @@ module Adhearsion
         #
         # @see http://www.voip-info.org/wiki/index.php?page=Asterisk+cmd+SIPAddHeader Asterisk SIPAddHeader
         def sip_add_header(header, value)
-          execute("SIPAddHeader", "#{header}: #{value}") == "200 result=1"
+          execute("SIPAddHeader", "#{header}: #{value}") == AGI_SUCCESSFUL_RESPONSE
         end
 
         # Issue the command to fetch a SIP header from the current call channel
