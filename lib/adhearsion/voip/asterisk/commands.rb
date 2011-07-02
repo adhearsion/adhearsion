@@ -659,6 +659,9 @@ module Adhearsion
 
           class << self
             def cepstral(text, options = {})
+              # We need to aggressively escape commas so app_swift does not
+              # think they are arguments.
+              text.gsub! /,/, '\\\\\\\,'
               raise NotImplementedError, 'Cepstral currently does not support barge in' if options[:barge_in_digits]
               ['Swift', text]
             end
