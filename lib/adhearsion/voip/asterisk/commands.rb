@@ -759,8 +759,8 @@ module Adhearsion
         def get_variable(variable_name)
           result = response("GET VARIABLE", variable_name)
           case result
-            when "200 result=0"
-              return nil
+          when "200 result=0"
+            return nil
           when /^200 result=1 \((.*)\)$/
             return $LAST_PAREN_MATCH
           end
