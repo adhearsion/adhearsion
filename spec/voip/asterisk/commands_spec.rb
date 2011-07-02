@@ -2269,61 +2269,55 @@ end
 describe "speak command" do
   include DialplanCommandTestHelpers
 
+  before :all do
+    @speech_engines = Adhearsion::VoIP::Asterisk::Commands::SpeechEngines
+  end
+
   it "executes the command SpeechEngine gives it based on the engine name" do
-    mock_speak_command = "returned command doesn't matter"
-    mock_speak_options = "speak options don't matter"
-    flexmock(Adhearsion::VoIP::Asterisk::Commands::SpeechEngines).should_receive(:cepstral).
-      once.and_return([mock_speak_command, mock_speak_options])
-    mock_call.should_receive(:execute).once.with(mock_speak_command, mock_speak_options)
+    pbx_should_respond_with_success
+    flexmock(@speech_engines).should_receive(:cepstral).once
     mock_call.speak "Spoken text doesn't matter", :engine => :cepstral
   end
 
   it "raises an InvalidSpeechEngine exception when the engine is 'none'" do
     the_following_code {
       mock_call.speak("o hai!", :engine => :none)
-    }.should raise_error Adhearsion::VoIP::Asterisk::Commands::SpeechEngines::InvalidSpeechEngine
+    }.should raise_error @speech_engines::InvalidSpeechEngine
   end
 
   it "should default its engine to :none" do
     the_following_code {
-      flexmock(Adhearsion::VoIP::Asterisk::Commands::SpeechEngines).should_receive(:none).once.
-        and_raise(Adhearsion::VoIP::Asterisk::Commands::SpeechEngines::InvalidSpeechEngine)
+      flexmock(@speech_engines).should_receive(:none).once.
+        and_raise(@speech_engines::InvalidSpeechEngine)
       mock_call.speak "ruby ruby ruby ruby!"
-    }.should raise_error Adhearsion::VoIP::Asterisk::Commands::SpeechEngines::InvalidSpeechEngine
+    }.should raise_error @speech_engines::InvalidSpeechEngine
   end
 
   it "should stringify the text" do
-    flexmock(Adhearsion::VoIP::Asterisk::Commands::SpeechEngines).should_receive(:cepstral).once.with('hello', {})
+    flexmock(@speech_engines).should_receive(:cepstral).once.with('hello', {})
     mock_call.should_receive(:execute).once
     mock_call.speak :hello, :engine => :cepstral
   end
 
   context "with the engine :cepstral" do
     it "should execute Swift" do
-      Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.cepstral('hello').should == ['Swift', 'hello']
+      @speech_engines.cepstral('hello').should == ['Swift', 'hello']
     end
 
     it "should properly escape commas in the TTS string" do
-      Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.cepstral('Once, a long, long time ago, ...').should == ['Swift', 'Once\\\\, a long\\\\, long time ago\\\\, ...']
-    end
-
-    context "with barge in digits set" do
-      it "should raise a not implemented error" do
-        the_following_code {
-          Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.cepstral('hello', :barge_in_digits => 'any')
-        }.should raise_error(NotImplementedError, 'Cepstral currently does not support barge in')
-      end
+      @speech_engines.cepstral('Once, a long, long time ago, ...').should == ['Swift', 'Once\\\\, a long\\\\, long time ago\\\\, ...']
     end
   end
 
   context "with the engine :unimrcp" do
     it "should execute MRCPSynth" do
-      Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.unimrcp('hello').should == ['MRCPSynth', 'hello']
+      @speech_engines.unimrcp('hello').should == ['MRCPSynth', 'hello']
     end
 
     context "with barge in digits set" do
       it "should pass the i option for MRCPSynth" do
-        Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.unimrcp('hello', :barge_in_digits => 'any').should == ['MRCPSynth', 'hello', 'i=any']
+        mock_call.should_receive(:execute).with(['MRCPSynth', 'hello', 'i=any']).once.and_return pbx_success_response 0
+        @speech_engines.unimrcp('hello', :interrupt_digits => 'any')
       end
     end
   end

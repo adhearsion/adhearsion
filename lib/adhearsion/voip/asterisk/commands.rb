@@ -249,6 +249,31 @@ module Adhearsion
           true
         end
 
+        # Attempts to play a sound prompt.  If the prompt is unplayable, for
+        # example, if the file is not present, then attempt to speak the prompt
+        # using Text-To-Speech.
+        #
+        # @param [Hash] Map of prompts and fallback TTS options
+        # @return [true]
+        # @raise [ArgumentError] If prompt cannot be found and TTS text is not specified
+        #
+        # @example Play "tt-monkeys" or say "Ooh ooh eee eee eee"
+        #   play_or_speak 'tt-monkeys' => {:text => "Ooh ooh eee eee eee"}
+        #
+        # @example Play "pbx-invalid" or say "I'm sorry, that is not a valid extension.  Please try again." and allowing the user to interrupt the TTS with "#"
+        #   play_or_speak 'pbx-invalid' => {:text => "I'm sorry, that is not a valid extension.  Please try again", :options => {:barge_in_digits => '#'}}
+        def play_or_speak(prompts)
+          prompts.each do |filename, tts|
+            begin
+              play! filename
+            rescue PlaybackError
+              raise ArgumentError, "Must supply TTS text as fallback" unless tts[:text]
+              tts[:options] ||= {}
+              speak tts[:text], tts[:options]
+            end
+          end
+        end
+
         # Records a sound file with the given name. If no filename is specified a file named by Asterisk
         # will be created and returned. Else the given filename will be returned. If a relative path is
         # given, the file will be saved in the default Asterisk sound directory, /var/lib/spool/asterisk
@@ -673,7 +698,9 @@ module Adhearsion
         #
         def speak(text, options = {})
           engine = AHN_CONFIG.asterisk.speech_engine || options.delete(:engine) || :none
-          execute *SpeechEngines.send(engine, text.to_s, options)
+          options[:interruptible] = true if options[:interruptible].nil?
+
+          SpeechEngines.send(engine, text.to_s, options)
         end
 
         module SpeechEngines
@@ -683,15 +710,28 @@ module Adhearsion
             def cepstral(text, options = {})
               # We need to aggressively escape commas so app_swift does not
               # think they are arguments.
-              text.gsub! /,/, '\\\\\\\,'
-              raise NotImplementedError, 'Cepstral currently does not support barge in' if options[:barge_in_digits]
-              ['Swift', text]
+              text.gsub! /,/, '\\\\\\,'
+              command = ['Swift', text]
+
+              if options[:interrupt_digits]
+                ahn_log.agi.warn 'Cepstral does not support specifying interrupt digits'
+                options[:interruptible] = true
+              end
+              command += [1, 1] if options[:interruptible]
+              execute *command
+              get_variable('SWIFT_DTMF')
             end
 
             def unimrcp(text, options = {})
-              ['MRCPSynth', text].tap do |command|
-                command << "i=#{options[:barge_in_digits]}" if options[:barge_in_digits]
+              command = ['MRCPSynth', text]
+              args = []
+              if options[:interrupt_digits]
+                args << "i=#{options[:interrupt_digits]}"
+              else
+                args << "i=any" if options[:interruptible]
               end
+              command << args.join('&')
+              inline_return_value(command).chr
             end
 
             def festival(text)
