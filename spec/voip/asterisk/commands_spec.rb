@@ -2301,6 +2301,10 @@ describe "speak command" do
       Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.cepstral('hello').should == ['Swift', 'hello']
     end
 
+    it "should properly escape commas in the TTS string" do
+      Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.cepstral('Once, a long, long time ago, ...').should == ['Swift', 'Once\\\\, a long\\\\, long time ago\\\\, ...']
+    end
+
     context "with barge in digits set" do
       it "should raise a not implemented error" do
         the_following_code {
