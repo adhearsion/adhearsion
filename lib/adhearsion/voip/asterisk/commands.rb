@@ -121,8 +121,8 @@ module Adhearsion
           end
         end
 
-        def inline_return_value(*args)
-          result = response *args
+        # Parses a response in the form of "200 result=some_value"
+        def inline_return_value(result)
           case result
           when "200 result=0" then nil
           when /^200 result=(.*)$/ then $LAST_PAREN_MATCH
@@ -130,8 +130,8 @@ module Adhearsion
           end
         end
 
-        def inline_result_with_return_value(*args)
-          result = response *args
+        # Parses a response in the form of "200 result=0 (some_value)"
+        def inline_result_with_return_value(result)
           case result
           when "200 result=0" then nil
           when /^#{AGI_SUCCESSFUL_RESPONSE} \((.*)\)$/ then $LAST_PAREN_MATCH
@@ -698,16 +698,14 @@ module Adhearsion
         #
         def speak(text, options = {})
           engine = AHN_CONFIG.asterisk.speech_engine || options.delete(:engine) || :none
-          options[:interruptible] = true if options[:interruptible].nil?
-
-          SpeechEngines.send(engine, text.to_s, options)
+          SpeechEngines.send(engine, self, text.to_s, options)
         end
 
         module SpeechEngines
           class InvalidSpeechEngine < StandardError; end
 
           class << self
-            def cepstral(text, options = {})
+            def cepstral(call, text, options = {})
               # We need to aggressively escape commas so app_swift does not
               # think they are arguments.
               text.gsub! /,/, '\\\\\\,'
@@ -717,12 +715,13 @@ module Adhearsion
                 ahn_log.agi.warn 'Cepstral does not support specifying interrupt digits'
                 options[:interruptible] = true
               end
+              # Wait for 1ms after speaking and collect no more than 1 digit
               command += [1, 1] if options[:interruptible]
-              execute *command
-              get_variable('SWIFT_DTMF')
+              call.execute *command
+              call.get_variable('SWIFT_DTMF')
             end
 
-            def unimrcp(text, options = {})
+            def unimrcp(call, text, options = {})
               command = ['MRCPSynth', text]
               args = []
               if options[:interrupt_digits]
@@ -730,15 +729,16 @@ module Adhearsion
               else
                 args << "i=any" if options[:interruptible]
               end
-              command << args.join('&')
-              inline_return_value(command).chr
+              command << args.join('&') unless args.empty?
+              value = call.inline_return_value(call.execute *command)
+              value.chr unless value.nil?
             end
 
-            def festival(text)
+            def festival(text, call, options = {})
               raise NotImplementedError
             end
 
-            def none(text, options = {})
+            def none(text, call, options = {})
               raise InvalidSpeechEngine, "No speech engine selected. You must specify one in your Adhearsion config file."
             end
 
@@ -819,7 +819,7 @@ module Adhearsion
         #
         # @see: http://www.voip-info.org/wiki/view/get+variable Asterisk Get Variable
         def get_variable(variable_name)
-          inline_result_with_return_value "GET VARIABLE", variable_name
+          inline_result_with_return_value response "GET VARIABLE", variable_name
         end
 
         # Pass information back to the asterisk dial plan.

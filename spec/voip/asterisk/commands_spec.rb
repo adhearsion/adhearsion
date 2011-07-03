@@ -98,7 +98,7 @@ module DialplanCommandTestHelpers
     end
 
     def pbx_should_respond_with_value(value)
-      pbx_should_respond_with "200 result=1 (#{value})"
+      pbx_should_respond_with pbx_value_response value
     end
 
     def pbx_should_respond_with_success(success_code = nil)
@@ -146,6 +146,14 @@ module DialplanCommandTestHelpers
 
     def pbx_raw_stream_file_response(code = nil, endpos = nil)
       "200 result=#{code || default_code} endpos=#{endpos || default_code}\n"
+    end
+
+    def pbx_value_response(value)
+      "200 result=1 (#{value})"
+    end
+
+    def pbx_result_response(value)
+      "200 result=#{value.ord}"
     end
 
     def default_success_code
@@ -2294,30 +2302,43 @@ describe "speak command" do
   end
 
   it "should stringify the text" do
-    flexmock(@speech_engines).should_receive(:cepstral).once.with('hello', {})
-    mock_call.should_receive(:execute).once
+    flexmock(@speech_engines).should_receive(:cepstral).once.with(mock_call, 'hello', {})
     mock_call.speak :hello, :engine => :cepstral
   end
 
   context "with the engine :cepstral" do
     it "should execute Swift" do
-      @speech_engines.cepstral('hello').should == ['Swift', 'hello']
+      pbx_should_respond_with_value 0
+      mock_call.should_receive(:execute).with('Swift', 'hello')
+      @speech_engines.cepstral(mock_call, 'hello')
     end
 
     it "should properly escape commas in the TTS string" do
-      @speech_engines.cepstral('Once, a long, long time ago, ...').should == ['Swift', 'Once\\\\, a long\\\\, long time ago\\\\, ...']
+      pbx_should_respond_with_value 0
+      mock_call.should_receive(:execute).with('Swift', 'Once\\\\, a long\\\\, long time ago\\\\, ...')
+      @speech_engines.cepstral(mock_call, 'Once, a long, long time ago, ...')
+    end
+
+    context "with barge in digits set" do
+      it "should return the digit when :interruptible = true" do
+        mock_call.should_receive(:execute).once.with('Swift', 'hello', 1, 1).and_return pbx_success_response
+        mock_call.should_receive(:get_variable).once.with('SWIFT_DTMF').and_return ?1
+        @speech_engines.cepstral(mock_call, 'hello', :interruptible => true).should == ?1
+      end
     end
   end
 
   context "with the engine :unimrcp" do
     it "should execute MRCPSynth" do
-      @speech_engines.unimrcp('hello').should == ['MRCPSynth', 'hello']
+      pbx_should_respond_with_success
+      mock_call.should_receive(:execute).with('MRCPSynth', 'hello').once.and_return pbx_success_response
+      @speech_engines.unimrcp(mock_call, 'hello')
     end
 
     context "with barge in digits set" do
       it "should pass the i option for MRCPSynth" do
-        mock_call.should_receive(:execute).with(['MRCPSynth', 'hello', 'i=any']).once.and_return pbx_success_response 0
-        @speech_engines.unimrcp('hello', :interrupt_digits => 'any')
+        mock_call.should_receive(:execute).with('MRCPSynth', 'hello', 'i=any').once.and_return pbx_result_response 0
+        @speech_engines.unimrcp(mock_call, 'hello', :interrupt_digits => 'any')
       end
     end
   end
