@@ -252,6 +252,7 @@ describe "ManagerInterface" do
     write_queue_mock = mocked_queue
 
     manager = new_manager_with_events
+    flexmock(manager).should_receive(:start_actions_writer_loop).and_return true
     manager.connect!
 
     write_queue_mock.actions.first.name.should == "login"
