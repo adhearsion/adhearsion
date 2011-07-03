@@ -715,6 +715,35 @@ describe 'input command' do
     pbx_was_asked_to_stream played_files
   end
 
+  it 'should not raise an exception if the sound file is unplayable' do
+    pbx_should_respond_with_stream_file_failure_on_open
+    file = 'foobar'
+    mock_call.should_receive(:wait_for_digit).once
+    the_following_code {
+      mock_call.input 1, :play => file
+    }.should_not raise_error
+    pbx_was_asked_to_stream file
+  end
+
+  it 'should default to playing interruptible prompts' do
+    mock_call.should_receive(:interruptible_play!).once.with('does_not_matter')
+    mock_call.should_receive(:wait_for_digit).once
+    mock_call.input(1, :play => 'does_not_matter')
+  end
+
+  it 'should render uninterruptible prompts' do
+    mock_call.should_receive(:play!).once.with('does_not_matter')
+    mock_call.should_receive(:wait_for_digit).once
+    mock_call.input(1, :play => 'does_not_matter', :interruptible => false)
+  end
+
+  it 'should fall back to speaking TTS if sound file is unplayable' do
+    pbx_should_respond_with_stream_file_failure_on_open
+    mock_call.should_receive(:speak).once.with("The sound file was not available", :interruptible => true)
+    mock_call.should_receive(:wait_for_digit).once
+    mock_call.input(1, :play => 'unavailable sound file', :tts => {:text => "The sound file was not available"})
+  end
+
 end
 
 describe 'input! command' do

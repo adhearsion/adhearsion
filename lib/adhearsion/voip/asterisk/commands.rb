@@ -572,6 +572,14 @@ module Adhearsion
           number_of_digits = args.shift
 
           options[:play]  = [*options[:play]].compact
+          options[:interruptible] = true unless options.has_key? :interruptible
+          if options.has_key? :tts
+            raise ArgumentError unless options[:tts].is_a? Hash
+            raise ArgumentError, 'Must include a test string when requesting TTS fallback' unless options[:tts].has_key?(:text)
+            options[:tts][:options] ||= {}
+            options[:tts][:options][:interruptible] = options[:interruptible]
+          end
+
           timeout         = options[:timeout]
           terminating_key = options[:accept_key]
           terminating_key = if terminating_key
@@ -591,10 +599,21 @@ module Adhearsion
             # Consume the sound files one at a time. In the event of playback failure, this
             # tells us which files remain unplayed.
             while file = options[:play].shift
-              key = interruptible_play! file
-              break if key
+              begin
+                if options[:interruptible]
+                  key = interruptible_play! file
+                  break if key
+                else
+                  play! file
+                end
+              rescue PlaybackError
+                raise unless options[:tts]
+                key = speak options[:tts][:text], options[:tts][:options]
+              end
             end
             key ||= ''
+          elsif options[:tts]
+            key = speak options[:tts][:text], options[:tts][:options]
           else
             key = wait_for_digit timeout || -1
           end
