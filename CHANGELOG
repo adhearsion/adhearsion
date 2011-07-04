@@ -1,4 +1,7 @@
-1.1.2 (pending)
+1.2.0 (pending)
+ - New method: #play_or_speak allows playback of an audio file with TTS fallback
+ - #input now takes :speak as a hash for TTS prompt or fallback
+ - New method: #speak provides abstracted TTS rendering for UniMRCP and Cepstral
  - Allow leading "+" in Caller ID (E.164 format)
  - Allow using --pid-file without "daemon" for JRuby
 
