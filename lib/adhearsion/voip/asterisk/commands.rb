@@ -749,8 +749,8 @@ module Adhearsion
                 args << "i=any" if options[:interruptible]
               end
               command << args.join('&') unless args.empty?
-              value = call.inline_return_value(call.execute *command).to_i
-              value.chr unless value.nil?
+              value = call.inline_return_value(call.execute *command)
+              value.to_i.chr unless value.nil?
             end
 
             def festival(text, call, options = {})
