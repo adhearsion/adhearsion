@@ -741,7 +741,7 @@ describe 'input command' do
     pbx_should_respond_with_stream_file_failure_on_open
     mock_call.should_receive(:speak).once.with("The sound file was not available", :interruptible => true)
     mock_call.should_receive(:wait_for_digit).once
-    mock_call.input(1, :play => 'unavailable sound file', :tts => {:text => "The sound file was not available"})
+    mock_call.input(1, :play => 'unavailable sound file', :speak => {:text => "The sound file was not available"})
   end
 
 end

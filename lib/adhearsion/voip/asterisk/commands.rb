@@ -573,11 +573,11 @@ module Adhearsion
 
           options[:play]  = [*options[:play]].compact
           options[:interruptible] = true unless options.has_key? :interruptible
-          if options.has_key? :tts
-            raise ArgumentError unless options[:tts].is_a? Hash
-            raise ArgumentError, 'Must include a test string when requesting TTS fallback' unless options[:tts].has_key?(:text)
-            options[:tts][:options] ||= {}
-            options[:tts][:options][:interruptible] = options[:interruptible]
+          if options.has_key? :speak
+            raise ArgumentError unless options[:speak].is_a? Hash
+            raise ArgumentError, 'Must include a test string when requesting TTS fallback' unless options[:speak].has_key?(:text)
+            options[:speak][:options] ||= {}
+            options[:speak][:options][:interruptible] = options[:interruptible]
           end
 
           timeout         = options[:timeout]
@@ -607,13 +607,13 @@ module Adhearsion
                   play! file
                 end
               rescue PlaybackError
-                raise unless options[:tts]
-                key = speak options[:tts][:text], options[:tts][:options]
+                raise unless options[:speak]
+                key = speak options[:speak][:text], options[:speak][:options]
               end
             end
             key ||= ''
-          elsif options[:tts]
-            key = speak options[:tts][:text], options[:tts][:options]
+          elsif options[:speak]
+            key = speak options[:speak][:text], options[:speak][:options]
           else
             key = wait_for_digit timeout || -1
           end
