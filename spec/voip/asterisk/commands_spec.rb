@@ -98,7 +98,7 @@ module DialplanCommandTestHelpers
     end
 
     def pbx_should_respond_with_value(value)
-      pbx_should_respond_with "200 result=1 (#{value})"
+      pbx_should_respond_with pbx_value_response value
     end
 
     def pbx_should_respond_with_success(success_code = nil)
@@ -146,6 +146,14 @@ module DialplanCommandTestHelpers
 
     def pbx_raw_stream_file_response(code = nil, endpos = nil)
       "200 result=#{code || default_code} endpos=#{endpos || default_code}\n"
+    end
+
+    def pbx_value_response(value)
+      "200 result=1 (#{value})"
+    end
+
+    def pbx_result_response(value)
+      "200 result=#{value.ord}"
     end
 
     def default_success_code
@@ -705,6 +713,35 @@ describe 'input command' do
     mock_call.should_receive(:wait_for_digit).times(3).with(timeout).and_return '2', '3', '4'
     mock_call.input(4, :timeout => timeout, :play => play_files).should == '1234'
     pbx_was_asked_to_stream played_files
+  end
+
+  it 'should not raise an exception if the sound file is unplayable' do
+    pbx_should_respond_with_stream_file_failure_on_open
+    file = 'foobar'
+    mock_call.should_receive(:wait_for_digit).once
+    the_following_code {
+      mock_call.input 1, :play => file
+    }.should_not raise_error
+    pbx_was_asked_to_stream file
+  end
+
+  it 'should default to playing interruptible prompts' do
+    mock_call.should_receive(:interruptible_play!).once.with('does_not_matter')
+    mock_call.should_receive(:wait_for_digit).once
+    mock_call.input(1, :play => 'does_not_matter')
+  end
+
+  it 'should render uninterruptible prompts' do
+    mock_call.should_receive(:play!).once.with('does_not_matter')
+    mock_call.should_receive(:wait_for_digit).once
+    mock_call.input(1, :play => 'does_not_matter', :interruptible => false)
+  end
+
+  it 'should fall back to speaking TTS if sound file is unplayable' do
+    pbx_should_respond_with_stream_file_failure_on_open
+    mock_call.should_receive(:speak).once.with("The sound file was not available", :interruptible => true)
+    mock_call.should_receive(:wait_for_digit).once
+    mock_call.input(1, :play => 'unavailable sound file', :speak => {:text => "The sound file was not available"})
   end
 
 end
@@ -2269,61 +2306,68 @@ end
 describe "speak command" do
   include DialplanCommandTestHelpers
 
+  before :all do
+    @speech_engines = Adhearsion::VoIP::Asterisk::Commands::SpeechEngines
+  end
+
   it "executes the command SpeechEngine gives it based on the engine name" do
-    mock_speak_command = "returned command doesn't matter"
-    mock_speak_options = "speak options don't matter"
-    flexmock(Adhearsion::VoIP::Asterisk::Commands::SpeechEngines).should_receive(:cepstral).
-      once.and_return([mock_speak_command, mock_speak_options])
-    mock_call.should_receive(:execute).once.with(mock_speak_command, mock_speak_options)
+    pbx_should_respond_with_success
+    flexmock(@speech_engines).should_receive(:cepstral).once
     mock_call.speak "Spoken text doesn't matter", :engine => :cepstral
   end
 
   it "raises an InvalidSpeechEngine exception when the engine is 'none'" do
     the_following_code {
       mock_call.speak("o hai!", :engine => :none)
-    }.should raise_error Adhearsion::VoIP::Asterisk::Commands::SpeechEngines::InvalidSpeechEngine
+    }.should raise_error @speech_engines::InvalidSpeechEngine
   end
 
   it "should default its engine to :none" do
     the_following_code {
-      flexmock(Adhearsion::VoIP::Asterisk::Commands::SpeechEngines).should_receive(:none).once.
-        and_raise(Adhearsion::VoIP::Asterisk::Commands::SpeechEngines::InvalidSpeechEngine)
+      flexmock(@speech_engines).should_receive(:none).once.
+        and_raise(@speech_engines::InvalidSpeechEngine)
       mock_call.speak "ruby ruby ruby ruby!"
-    }.should raise_error Adhearsion::VoIP::Asterisk::Commands::SpeechEngines::InvalidSpeechEngine
+    }.should raise_error @speech_engines::InvalidSpeechEngine
   end
 
   it "should stringify the text" do
-    flexmock(Adhearsion::VoIP::Asterisk::Commands::SpeechEngines).should_receive(:cepstral).once.with('hello', {})
-    mock_call.should_receive(:execute).once
+    flexmock(@speech_engines).should_receive(:cepstral).once.with(mock_call, 'hello', {})
     mock_call.speak :hello, :engine => :cepstral
   end
 
   context "with the engine :cepstral" do
     it "should execute Swift" do
-      Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.cepstral('hello').should == ['Swift', 'hello']
+      pbx_should_respond_with_value 0
+      mock_call.should_receive(:execute).with('Swift', 'hello')
+      @speech_engines.cepstral(mock_call, 'hello')
     end
 
     it "should properly escape commas in the TTS string" do
-      Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.cepstral('Once, a long, long time ago, ...').should == ['Swift', 'Once\\\\, a long\\\\, long time ago\\\\, ...']
+      pbx_should_respond_with_value 0
+      mock_call.should_receive(:execute).with('Swift', 'Once\\\\, a long\\\\, long time ago\\\\, ...')
+      @speech_engines.cepstral(mock_call, 'Once, a long, long time ago, ...')
     end
 
     context "with barge in digits set" do
-      it "should raise a not implemented error" do
-        the_following_code {
-          Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.cepstral('hello', :barge_in_digits => 'any')
-        }.should raise_error(NotImplementedError, 'Cepstral currently does not support barge in')
+      it "should return the digit when :interruptible = true" do
+        mock_call.should_receive(:execute).once.with('Swift', 'hello', 1, 1).and_return pbx_success_response
+        mock_call.should_receive(:get_variable).once.with('SWIFT_DTMF').and_return ?1
+        @speech_engines.cepstral(mock_call, 'hello', :interruptible => true).should == ?1
       end
     end
   end
 
   context "with the engine :unimrcp" do
     it "should execute MRCPSynth" do
-      Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.unimrcp('hello').should == ['MRCPSynth', 'hello']
+      pbx_should_respond_with_success
+      mock_call.should_receive(:execute).with('MRCPSynth', 'hello').once.and_return pbx_success_response
+      @speech_engines.unimrcp(mock_call, 'hello')
     end
 
     context "with barge in digits set" do
       it "should pass the i option for MRCPSynth" do
-        Adhearsion::VoIP::Asterisk::Commands::SpeechEngines.unimrcp('hello', :barge_in_digits => 'any').should == ['MRCPSynth', 'hello', 'i=any']
+        mock_call.should_receive(:execute).with('MRCPSynth', 'hello', 'i=any').once.and_return pbx_result_response 0
+        @speech_engines.unimrcp(mock_call, 'hello', :interrupt_digits => 'any')
       end
     end
   end

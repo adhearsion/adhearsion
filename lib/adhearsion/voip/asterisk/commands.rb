@@ -121,18 +121,18 @@ module Adhearsion
           end
         end
 
-        def inline_return_value(*args)
-          result = response *args
-          case result
+        # Parses a response in the form of "200 result=some_value"
+        def inline_return_value(result)
+          case result.chomp
           when "200 result=0" then nil
           when /^200 result=(.*)$/ then $LAST_PAREN_MATCH
           else raise AGIProtocolError, "Invalid AGI response: #{result}"
           end
         end
 
-        def inline_result_with_return_value(*args)
-          result = response *args
-          case result
+        # Parses a response in the form of "200 result=0 (some_value)"
+        def inline_result_with_return_value(result)
+          case result.chomp
           when "200 result=0" then nil
           when /^#{AGI_SUCCESSFUL_RESPONSE} \((.*)\)$/ then $LAST_PAREN_MATCH
           else raise AGIProtocolError, "Invalid AGI response: #{result}"
@@ -230,7 +230,7 @@ module Adhearsion
             arguments.flatten.each do |argument|
               # result starts off as true.  But if the following command ever returns false, then result
               # remains false.
-              result &= play_numeric(argument) || play_string(argument)
+              result &= play_numeric(argument) || play_soundfile(argument)
             end
           end
           result
@@ -243,10 +243,35 @@ module Adhearsion
         def play!(*arguments)
           unless play_time(arguments)
             arguments.flatten.each do |argument|
-              play_numeric(argument) || play_string!(argument)
+              play_numeric(argument) || play_soundfile!(argument)
             end
           end
           true
+        end
+
+        # Attempts to play a sound prompt.  If the prompt is unplayable, for
+        # example, if the file is not present, then attempt to speak the prompt
+        # using Text-To-Speech.
+        #
+        # @param [Hash] Map of prompts and fallback TTS options
+        # @return [true]
+        # @raise [ArgumentError] If prompt cannot be found and TTS text is not specified
+        #
+        # @example Play "tt-monkeys" or say "Ooh ooh eee eee eee"
+        #   play_or_speak 'tt-monkeys' => {:text => "Ooh ooh eee eee eee"}
+        #
+        # @example Play "pbx-invalid" or say "I'm sorry, that is not a valid extension.  Please try again." and allowing the user to interrupt the TTS with "#"
+        #   play_or_speak 'pbx-invalid' => {:text => "I'm sorry, that is not a valid extension.  Please try again", :options => {:barge_in_digits => '#'}}
+        def play_or_speak(prompts)
+          prompts.each do |filename, tts|
+            begin
+              play! filename
+            rescue PlaybackError
+              raise ArgumentError, "Must supply TTS text as fallback" unless tts[:text]
+              tts[:options] ||= {}
+              speak tts[:text], tts[:options]
+            end
+          end
         end
 
         # Records a sound file with the given name. If no filename is specified a file named by Asterisk
@@ -547,6 +572,14 @@ module Adhearsion
           number_of_digits = args.shift
 
           options[:play]  = [*options[:play]].compact
+          options[:interruptible] = true unless options.has_key? :interruptible
+          if options.has_key? :speak
+            raise ArgumentError unless options[:speak].is_a? Hash
+            raise ArgumentError, 'Must include a test string when requesting TTS fallback' unless options[:speak].has_key?(:text)
+            options[:speak][:options] ||= {}
+            options[:speak][:options][:interruptible] = options[:interruptible]
+          end
+
           timeout         = options[:timeout]
           terminating_key = options[:accept_key]
           terminating_key = if terminating_key
@@ -563,13 +596,24 @@ module Adhearsion
 
           buffer = ''
           if options[:play].any?
-            # Consume the sound files one at a time. In the event of playback failure, this
-            # tells us which files remain unplayed.
-            while file = options[:play].shift
-              key = interruptible_play! file
-              break if key
+            begin
+              # Consume the sound files one at a time. In the event of playback
+              # failure, this tells us which files remain unplayed.
+              while file = options[:play].shift
+                if options[:interruptible]
+                  key = interruptible_play! file
+                  break if key
+                else
+                  play! file
+                end
+              end
+            rescue PlaybackError
+              raise unless options[:speak]
+              key = speak options[:speak][:text], options[:speak][:options]
             end
             key ||= ''
+          elsif options[:speak]
+            key = speak(options[:speak][:text], options[:speak][:options]) || ''
           else
             key = wait_for_digit timeout || -1
           end
@@ -673,32 +717,47 @@ module Adhearsion
         #
         def speak(text, options = {})
           engine = AHN_CONFIG.asterisk.speech_engine || options.delete(:engine) || :none
-          execute *SpeechEngines.send(engine, text.to_s, options)
+          SpeechEngines.send(engine, self, text.to_s, options)
         end
 
         module SpeechEngines
           class InvalidSpeechEngine < StandardError; end
 
           class << self
-            def cepstral(text, options = {})
+            def cepstral(call, text, options = {})
               # We need to aggressively escape commas so app_swift does not
               # think they are arguments.
-              text.gsub! /,/, '\\\\\\\,'
-              raise NotImplementedError, 'Cepstral currently does not support barge in' if options[:barge_in_digits]
-              ['Swift', text]
-            end
+              text.gsub! /,/, '\\\\\\,'
+              command = ['Swift', text]
 
-            def unimrcp(text, options = {})
-              ['MRCPSynth', text].tap do |command|
-                command << "i=#{options[:barge_in_digits]}" if options[:barge_in_digits]
+              if options[:interrupt_digits]
+                ahn_log.agi.warn 'Cepstral does not support specifying interrupt digits'
+                options[:interruptible] = true
               end
+              # Wait for 1ms after speaking and collect no more than 1 digit
+              command += [1, 1] if options[:interruptible]
+              call.execute *command
+              call.get_variable('SWIFT_DTMF')
             end
 
-            def festival(text)
+            def unimrcp(call, text, options = {})
+              command = ['MRCPSynth', text]
+              args = []
+              if options[:interrupt_digits]
+                args << "i=#{options[:interrupt_digits]}"
+              else
+                args << "i=any" if options[:interruptible]
+              end
+              command << args.join('&') unless args.empty?
+              value = call.inline_return_value(call.execute *command)
+              value.to_i.chr unless value.nil?
+            end
+
+            def festival(text, call, options = {})
               raise NotImplementedError
             end
 
-            def none(text, options = {})
+            def none(text, call, options = {})
               raise InvalidSpeechEngine, "No speech engine selected. You must specify one in your Adhearsion config file."
             end
 
@@ -779,7 +838,7 @@ module Adhearsion
         #
         # @see: http://www.voip-info.org/wiki/view/get+variable Asterisk Get Variable
         def get_variable(variable_name)
-          inline_result_with_return_value "GET VARIABLE", variable_name
+          inline_result_with_return_value response "GET VARIABLE", variable_name
         end
 
         # Pass information back to the asterisk dial plan.
@@ -1220,22 +1279,25 @@ module Adhearsion
             end
           end
 
-          def play_string(argument)
+          # Instruct Asterisk to play a sound file to the channel
+          def play_soundfile(argument)
             execute(:playback, argument)
             get_variable('PLAYBACKSTATUS') == PLAYBACK_SUCCESS
           end
+          alias :play_string :play_soundfile
 
-          # Like play_string(), but this will raise Exceptions if there's a problem.
+          # Like play_soundfile, but this will raise Exceptions if there's a problem.
           #
           # @return [true]
           # @raise [Adhearsion::VoIP::PlaybackError] If a sound file cannot be played
           # @see http://www.voip-info.org/wiki/view/Asterisk+cmd+Playback More information on the Asterisk Playback command
-          def play_string!(argument)
+          def play_soundfile!(argument)
             response = execute :playback, argument
             playback = get_variable 'PLAYBACKSTATUS'
             return true if playback == PLAYBACK_SUCCESS
             raise PlaybackError, "Playback failed with PLAYBACKSTATUS: #{playback.inspect}.  The raw response was #{response.inspect}."
           end
+          alias :play_string! :play_soundfile!
 
           def play_sound_files_for_menu(menu_instance, sound_files)
             digit = nil
