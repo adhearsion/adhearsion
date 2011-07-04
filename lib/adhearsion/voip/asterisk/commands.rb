@@ -613,7 +613,7 @@ module Adhearsion
             end
             key ||= ''
           elsif options[:speak]
-            key = speak options[:speak][:text], options[:speak][:options] || ''
+            key = speak(options[:speak][:text], options[:speak][:options]) || ''
           else
             key = wait_for_digit timeout || -1
           end
