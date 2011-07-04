@@ -596,24 +596,24 @@ module Adhearsion
 
           buffer = ''
           if options[:play].any?
-            # Consume the sound files one at a time. In the event of playback failure, this
-            # tells us which files remain unplayed.
-            while file = options[:play].shift
-              begin
+            begin
+              # Consume the sound files one at a time. In the event of playback
+              # failure, this tells us which files remain unplayed.
+              while file = options[:play].shift
                 if options[:interruptible]
                   key = interruptible_play! file
                   break if key
                 else
                   play! file
                 end
-              rescue PlaybackError
-                raise unless options[:speak]
-                key = speak options[:speak][:text], options[:speak][:options]
               end
+            rescue PlaybackError
+              raise unless options[:speak]
+              key = speak options[:speak][:text], options[:speak][:options]
             end
             key ||= ''
           elsif options[:speak]
-            key = speak options[:speak][:text], options[:speak][:options]
+            key = speak options[:speak][:text], options[:speak][:options] || ''
           else
             key = wait_for_digit timeout || -1
           end
