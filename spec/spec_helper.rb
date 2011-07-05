@@ -9,6 +9,7 @@ end
 SimpleCov.formatter = SimpleCov::Formatter::MergedFormatter
 SimpleCov.start do
   add_filter "/vendor/"
+  add_filter "/spec/"
 end
 
 Dir.chdir File.join(File.dirname(__FILE__), '..')
