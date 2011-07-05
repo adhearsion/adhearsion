@@ -2,13 +2,16 @@
 ENV['RUBY_FLAGS'] = "-I#{%w(lib ext bin spec).join(File::PATH_SEPARATOR)}"
 
 require 'rubygems'
-require 'bundler'
-Bundler::GemHelper.install_tasks
+require 'bundler/gem_tasks'
+require 'bundler/setup'
 require 'date'
 require 'adhearsion/version'
 
 task :default => :spec
 task :gem => :build
+
+require 'ci/reporter/rake/rspec'
+task :ci => ['ci:setup:rspec', :spec]
 
 begin
   gem 'rspec', '>= 2.3.0'
