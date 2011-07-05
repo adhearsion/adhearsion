@@ -1,5 +1,7 @@
 require 'simplecov'
-SimpleCov.start
+SimpleCov.start do
+  add_filter "/vendor/"
+end
 
 Dir.chdir File.join(File.dirname(__FILE__), '..')
 $:.push('.')
