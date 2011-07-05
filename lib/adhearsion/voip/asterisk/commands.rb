@@ -1,4 +1,5 @@
 require 'adhearsion/voip/menu_state_machine/menu_class'
+require 'json'
 
 module Adhearsion
   module VoIP
@@ -750,6 +751,16 @@ module Adhearsion
               command << args.join('&') unless args.empty?
               value = call.inline_return_value(call.execute *command)
               value.to_i.chr unless value.nil?
+            end
+
+            def tropo(call, text, options = {})
+              command = ['Ask', text]
+              args = {}
+              args[:terminator] = options[:interrupt_digits].split('').join(',') if options[:interrupt_digits]
+              args[:bargein] = options[:interruptible] if options.has_key?(:interruptible)
+              command << args.to_json unless args.empty?
+              value = JSON.parse call.raw_response(*command).sub(/^200 result=/, '')
+              value['interpretation']
             end
 
             def festival(text, call, options = {})

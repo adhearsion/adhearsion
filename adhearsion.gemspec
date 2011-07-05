@@ -26,6 +26,7 @@ Gem::Specification.new do |s|
   # Since it doesn't conflict with <3.0.0 we'll require it to be
   # on the safe side.
   s.add_runtime_dependency "i18n"
+  s.add_runtime_dependency "json"
   s.add_runtime_dependency "rubigen", [">= 1.5.6"]
   s.add_runtime_dependency "rake"
   s.add_runtime_dependency "pry"

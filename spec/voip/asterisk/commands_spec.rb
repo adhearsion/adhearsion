@@ -2402,6 +2402,23 @@ describe "speak command" do
     end
   end
 
+  context "with the engine :tropo" do
+    it "should execute tropo" do
+      pbx_should_respond_with_success
+      response = '200 result=' + {:interpretation => '1'}.to_json
+      mock_call.should_receive(:raw_response).with(/Ask/i, 'hello').once.and_return response
+      @speech_engines.tropo(mock_call, 'hello').should == "1"
+    end
+
+    context "with :interruptible set to false", :focus => true do
+      it "should pass the :bargein => false option for Tropo Ask" do
+        response = '200 result=' + {:interpretation => '1'}.to_json
+        mock_call.should_receive(:raw_response).with(/Ask/i, 'hello', {:bargein => false}.to_json).once.and_return response
+        @speech_engines.tropo(mock_call, 'hello', :interruptible => false)
+      end
+    end
+  end
+
   it "properly escapes spoken text" do
     pending 'What are the escaping needs?'
   end
