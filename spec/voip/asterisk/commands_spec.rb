@@ -2360,8 +2360,18 @@ describe "speak command" do
     mock_call.speak 'What say you now, sir?', :engine => :cepstral
   end
 
+  it 'should default to uninterruptible TTS rendering' do
+    flexmock(@speech_engines).should_receive(:cepstral).once.with(mock_call, 'hello', {:interruptible => false})
+    mock_call.speak 'hello', :engine => :cepstral
+  end
+
+  it 'should allow setting TTS rendering interruptible' do
+    flexmock(@speech_engines).should_receive(:cepstral).once.with(mock_call, 'hello', {:interruptible => true})
+    mock_call.speak 'hello', :engine => :cepstral, :interruptible => true
+  end
+
   it "should stringify the text" do
-    flexmock(@speech_engines).should_receive(:cepstral).once.with(mock_call, 'hello', {})
+    flexmock(@speech_engines).should_receive(:cepstral).once.with(mock_call, 'hello', {:interruptible => false})
     mock_call.speak :hello, :engine => :cepstral
   end
 

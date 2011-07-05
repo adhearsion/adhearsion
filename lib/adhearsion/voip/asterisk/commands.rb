@@ -717,6 +717,7 @@ module Adhearsion
         #
         def speak(text, options = {})
           engine = options.delete(:engine) || AHN_CONFIG.asterisk.speech_engine || :none
+          options[:interruptible] = false unless options.has_key?(:interruptible)
           SpeechEngines.send(engine, self, text.to_s, options)
         end
 
