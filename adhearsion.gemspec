@@ -45,6 +45,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency('flexmock')
       s.add_development_dependency('activerecord', [">= 2.1.0"])
       s.add_development_dependency('rake')
+      s.add_development_dependency('simplecov')
     else
       s.add_dependency("bundler", [">= 1.0.10"])
       s.add_dependency("log4r", [">= 1.0.5"])

@@ -1,3 +1,6 @@
+require 'simplecov'
+SimpleCov.start
+
 Dir.chdir File.join(File.dirname(__FILE__), '..')
 $:.push('.')
 
