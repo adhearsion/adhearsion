@@ -2342,6 +2342,18 @@ describe "speak command" do
     }.should raise_error @speech_engines::InvalidSpeechEngine
   end
 
+  it 'should default to a configured TTS engine' do
+    Adhearsion::Configuration.configure {|c| c.asterisk.speech_engine = :unimrcp }
+    flexmock(@speech_engines).should_receive(:unimrcp).once
+    mock_call.speak 'What say you, sir?'
+  end
+
+  it 'should allow the caller to override the default configured TTS engine' do
+    Adhearsion::Configuration.configure {|c| c.asterisk.speech_engine = :unimrcp }
+    flexmock(@speech_engines).should_receive(:cepstral).once
+    mock_call.speak 'What say you now, sir?', :engine => :cepstral
+  end
+
   it "should stringify the text" do
     flexmock(@speech_engines).should_receive(:cepstral).once.with(mock_call, 'hello', {})
     mock_call.speak :hello, :engine => :cepstral

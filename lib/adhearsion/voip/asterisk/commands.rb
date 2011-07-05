@@ -716,7 +716,7 @@ module Adhearsion
         # @param options [String] :barge_in_digits digits to allow the TTS to be interrupted with
         #
         def speak(text, options = {})
-          engine = AHN_CONFIG.asterisk.speech_engine || options.delete(:engine) || :none
+          engine = options.delete(:engine) || AHN_CONFIG.asterisk.speech_engine || :none
           SpeechEngines.send(engine, self, text.to_s, options)
         end
 
