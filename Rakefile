@@ -26,19 +26,6 @@ RSpec::Core::RakeTask.new(:theatre_specs) do |t|
 end
 
 begin
-  require 'rcov/rcovtask'
-  Rcov::RcovTask.new do |t|
-    t.libs       << "spec"
-    t.test_files  = Dir['spec/**/*_spec.rb']
-    t.output_dir  = 'coverage'
-    t.verbose     = true
-    t.rcov_opts.concat %w[--sort coverage --sort-reverse -x gems -x /var]
-  end
-rescue LoadError
-  STDERR.puts "Could not load rcov tasks -- rcov does not appear to be installed. Continuing anyway."
-end
-
-begin
   require 'yard'
   YARD::Rake::YardocTask.new do |t|
     t.files = ['lib/**/*.rb'] + %w[README.markdown TODO.markdown LICENSE]
