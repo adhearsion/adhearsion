@@ -260,7 +260,7 @@ module Adhearsion
         #   play_or_speak 'tt-monkeys' => {:text => "Ooh ooh eee eee eee"}
         #
         # @example Play "pbx-invalid" or say "I'm sorry, that is not a valid extension.  Please try again." and allowing the user to interrupt the TTS with "#"
-        #   play_or_speak 'pbx-invalid' => {:text => "I'm sorry, that is not a valid extension.  Please try again", :options => {:barge_in_digits => '#'}}
+        #   play_or_speak 'pbx-invalid' => {:text => "I'm sorry, that is not a valid extension.  Please try again", :engine => :unimrcp}
         def play_or_speak(prompts)
           prompts.each do |filename, tts|
             begin
@@ -268,7 +268,7 @@ module Adhearsion
             rescue PlaybackError
               raise ArgumentError, "Must supply TTS text as fallback" unless tts[:text]
               tts[:options] ||= {}
-              speak tts[:text], tts[:options]
+              speak tts.delete(:text), tts
             end
           end
         end
@@ -574,9 +574,8 @@ module Adhearsion
           options[:interruptible] = true unless options.has_key? :interruptible
           if options.has_key? :speak
             raise ArgumentError unless options[:speak].is_a? Hash
-            raise ArgumentError, 'Must include a test string when requesting TTS fallback' unless options[:speak].has_key?(:text)
-            options[:speak][:options] ||= {}
-            options[:speak][:options][:interruptible] = options[:interruptible]
+            raise ArgumentError, 'Must include a text string when requesting TTS fallback' unless options[:speak].has_key?(:text)
+            options[:speak][:interruptible] = options[:interruptible]
           end
 
           timeout         = options[:timeout]
@@ -608,11 +607,11 @@ module Adhearsion
               end
             rescue PlaybackError
               raise unless options[:speak]
-              key = speak options[:speak][:text], options[:speak][:options]
+              key = speak options[:speak].delete(:text), options[:speak]
             end
             key ||= ''
           elsif options[:speak]
-            key = speak(options[:speak][:text], options[:speak][:options]) || ''
+            key = speak(options[:speak].delete(:text), options[:speak]) || ''
           else
             key = wait_for_digit timeout || -1
           end

@@ -756,6 +756,12 @@ describe 'input command' do
     mock_call.input(1, :play => 'unavailable sound file', :speak => {:text => "The sound file was not available"})
   end
 
+  it 'should allow uninterruptible TTS prompts' do
+    mock_call.should_receive(:speak).once.with("The sound file was not available", :interruptible => false)
+    mock_call.should_receive(:wait_for_digit).once
+    mock_call.input(1, :speak => {:text => "The sound file was not available"}, :interruptible => false)
+  end
+
 end
 
 describe 'input! command' do
