@@ -536,6 +536,8 @@ module Adhearsion
         #                                              # or when the "0" key is pressed.
         #   input 3, :play => "you-sound-cute"
         #   input :play => ["if-this-is-correct-press", 1, "otherwise-press", 2]
+        #   input :interruptible => false, :play => ["you-cannot-interrupt-this-message"] # Disallow DTMF (keypad) interruption
+        #                                                                                 # until after all files are played.
         #
         # When specifying files to play, the playback of the sequence of files will stop
         # immediately when the user presses the first digit.
@@ -572,7 +574,14 @@ module Adhearsion
           number_of_digits = args.shift
 
           options[:play]  = [*options[:play]].compact
-          options[:interruptible] = true unless options.has_key? :interruptible
+
+          if options.has_key?(:interruptible) && options[:interruptible] == false
+            play_command = :play!
+          else
+            options[:interruptible] = true
+            play_command = :interruptible_play!
+          end
+
           if options.has_key? :speak
             raise ArgumentError unless options[:speak].is_a? Hash
             raise ArgumentError, 'Must include a text string when requesting TTS fallback' unless options[:speak].has_key?(:text)
@@ -588,8 +597,8 @@ module Adhearsion
           end
 
           if number_of_digits && number_of_digits < 0
-            ahn_log.agi.warn "Giving -1 to input() is now deprecated. Don't specify a first " +
-                             "argument to simulate unlimited digits." if number_of_digits == -1
+            ahn_log.agi.warn "Giving -1 to #input is now deprecated. Do not specify a first " +
+                             "argument to allow unlimited digits." if number_of_digits == -1
             raise ArgumentError, "The number of digits must be positive!"
           end
 
@@ -599,12 +608,9 @@ module Adhearsion
               # Consume the sound files one at a time. In the event of playback
               # failure, this tells us which files remain unplayed.
               while file = options[:play].shift
-                if options[:interruptible]
-                  key = interruptible_play! file
-                  break if key
-                else
-                  play! file
-                end
+                key = send play_command, file
+                key = nil if play_command == :play!
+                break if key
               end
             rescue PlaybackError
               raise unless options[:speak]
@@ -1089,11 +1095,18 @@ module Adhearsion
         # @return [String, nil] digit pressed, or nil if none
         #
         def interruptible_play(*files)
+          result = nil
           files.flatten.each do |file|
-            result = result_digit_from response("STREAM FILE", file, "1234567890*#")
-            return result if result != 0.chr
+            begin
+              result = interruptible_play!(file)
+            rescue PlaybackError => e
+              # Ignore this exception and play the next file
+              ahn_log.agi.warn e.message
+            ensure
+              break if result
+            end
           end
-          nil
+          result
         end
 
         #
@@ -1108,7 +1121,7 @@ module Adhearsion
             if result[:endpos].to_i <= startpos
               raise Adhearsion::VoIP::PlaybackError, "The sound file could not opened to stream.  The parsed response was #{result.inspect}"
             end
-            return result[:digit] unless result[:digit] == 0.chr
+            return result[:digit] if result.has_key? :digit
           end
           nil
         end
@@ -1258,7 +1271,7 @@ module Adhearsion
             raise ArgumentError, "Can't coerce nil into AGI response! This could be a bug!" unless response_string
             params = {}
             digit, endpos = response_string.match(/^#{response_prefix}(-?\d+) endpos=(\d+)/).values_at 1, 2
-            params[:digit] = digit.to_i.chr if digit && digit.to_s != "-1"
+            params[:digit] = digit.to_i.chr unless digit == "0" || digit.to_s == "-1"
             params[:endpos] = endpos.to_i if endpos
             params
           end

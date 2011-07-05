@@ -20,6 +20,10 @@ module DialplanCommandTestHelpers
         call.should_receive(:to_pbx).and_return(output)
       end
     end
+
+    test_case.after do
+      pbx_output_should_be_empty
+    end
   end
 
   class MockCall
@@ -29,6 +33,10 @@ module DialplanCommandTestHelpers
   end
 
   class MockSocket
+
+    def empty?
+      messages.empty?
+    end
 
     def print(message)
       messages << message
@@ -200,6 +208,10 @@ module DialplanCommandTestHelpers
       def pbx_was_asked_to_execute(application, *options)
         output_stream_matches(/exec saydigits "#{options.join('|')}"/i)
       end
+
+      def pbx_output_should_be_empty
+        output.messages.should be_empty, output.messages.inspect
+      end
     end
     include OutputStreamMatchers
 
@@ -275,7 +287,7 @@ describe 'interruptible_play command' do
     file = "file_doesnt_matter"
     digits.each { |digit| pbx_should_respond_with_stream_file_success digit }
     digits.map  { |digit| mock_call.interruptible_play file }.should == digits.map(&:chr)
-    pbx_was_asked_to_stream file
+    digits.size.times { pbx_was_asked_to_stream file }
   end
 
   it "should return nil if no digit was pressed" do
@@ -326,7 +338,7 @@ describe 'interruptible_play! command' do
     file = "file_doesnt_matter"
     digits.each { |digit| pbx_should_respond_with_stream_file_success digit }
     digits.map  { |digit| mock_call.interruptible_play! file }.should == digits.map(&:chr)
-    pbx_was_asked_to_stream file
+    digits.size.times { pbx_was_asked_to_stream file }
   end
 
   it "should return nil if no digit was pressed" do
@@ -398,12 +410,13 @@ describe 'wait_for_digit command' do
     digits = %w{0 1 # * 9}.map{|c| c.ord}
     digits.each { |digit| pbx_should_respond_with_success digit }
     digits.map  { |digit| mock_call.send(:wait_for_digit) }.should == digits.map(&:chr)
+    digits.size.times { pbx_should_have_been_sent 'WAIT FOR DIGIT "-1"' }
   end
 
   it "the timeout given must be converted to milliseconds" do
     pbx_should_respond_with_success 0
     mock_call.send(:wait_for_digit, 1)
-    output.messages.first.chomp.ends_with?('"1000"').should be true
+    pbx_should_have_been_sent 'WAIT FOR DIGIT "1000"'
   end
 end
 
@@ -430,6 +443,7 @@ describe 'execute' do
   it 'execute returns false if the command was not executed successfully by the PBX' do
     pbx_should_respond_with_failure
     mock_call.execute(:foo).should_not be true
+    pbx_should_have_been_sent 'EXEC foo ""'
   end
 
   it 'execute can accept arguments after the app name which get translated into pipe-delimited arguments to the PBX' do
@@ -443,6 +457,7 @@ describe 'execute' do
     the_following_code {
       mock_call.execute :foo, "bar"
     }.should raise_error Adhearsion::Hangup
+    pbx_should_have_been_sent 'EXEC foo "bar"'
   end
 
   it "should raise a ArgumentError if given a null byte in the arguments" do
@@ -592,9 +607,6 @@ describe 'input command' do
 
   include DialplanCommandTestHelpers
 
-  # pbx_should_respond_with_successful_background_response
-  # pbx_should_respond_with_a_wait_for_digit_timeout
-
   it 'should raise an error when the number of digits expected is -1 (this is deprecated behavior)' do
     the_following_code {
       mock_call.input(-1)
@@ -626,6 +638,7 @@ describe 'input command' do
     the_following_code {
       mock_call.input(:accept_key => false)
     }.should raise_error ArgumentError
+    pbx_should_have_been_sent 'WAIT FOR DIGIT "-1"'
   end
 
   it 'when :accept_key is false and input() is collecting a finite number of digits, it should allow all DTMFs' do
@@ -663,6 +676,15 @@ describe 'input command' do
     mock_call.input(2, :play => sound_files).should == '#*'
   end
 
+  it 'executes #play! when :interruptible is set to false' do
+    sound_files = %w[foo bar qaz]
+    mock_call.should_receive(:play!).once.with('foo').and_return true
+    mock_call.should_receive(:play!).once.with('bar').and_return true
+    mock_call.should_receive(:play!).once.with('qaz').and_return true
+    mock_call.should_receive(:wait_for_digit).once.and_return '*'
+    mock_call.input(1, :play => sound_files, :interruptible => false).should == '*'
+  end
+
   it 'pressing the terminating key before any other digits returns an empty string' do
     mock_call.should_receive(:wait_for_digit).once.and_return '*'
     mock_call.input(:accept_key => '*').should == ''
@@ -680,13 +702,22 @@ describe 'input command' do
     mock_call.input(9, :timeout => timeout).should == '5'
   end
 
-  it 'should execute wait_for_digit, even if some sound files are not found' do
+  it 'should execute wait_for_digit, even if some interruptible sound files are not found' do
     pbx_should_respond_with_stream_file_failure_on_open
     file = 'foobar'
     timeout = 1.hour
     mock_call.should_receive(:wait_for_digit).twice.with(timeout).and_return '8', '9'
     mock_call.input(2, :timeout => timeout, :play => file).should == '89'
     pbx_was_asked_to_stream file
+  end
+
+  it 'should execute wait_for_digit with, even if some uninterruptible sound files are not found' do
+    pbx_should_respond_with_playback_failure
+    file = 'foobar'
+    timeout = 1.hour
+    mock_call.should_receive(:wait_for_digit).twice.with(timeout).and_return '8', '9'
+    mock_call.input(2, :timeout => timeout, :play => file, :interruptible => false).should == '89'
+    pbx_was_asked_to_play file
   end
 
   it 'should return an empty string if no keys are pressed, even if the sound file is not found' do
@@ -712,7 +743,7 @@ describe 'input command' do
     pbx_was_asked_to_stream played_files
   end
 
-  it 'should play a series of 4 files, collecting digits even if some of the sound files cannot be found' do
+  it 'should play a series of 4 interruptible sounds, collecting digits even if some of the sound files cannot be found' do
     pbx_should_respond_with_stream_file_success 0
     pbx_should_respond_with_stream_file_success 0
     pbx_should_respond_with_stream_file_failure_on_open
@@ -754,12 +785,25 @@ describe 'input command' do
     mock_call.should_receive(:speak).once.with("The sound file was not available", :interruptible => true)
     mock_call.should_receive(:wait_for_digit).once
     mock_call.input(1, :play => 'unavailable sound file', :speak => {:text => "The sound file was not available"})
+    @output.read.should == "STREAM FILE \"unavailable sound file\" \"1234567890*#\"\n"
   end
 
   it 'should allow uninterruptible TTS prompts' do
     mock_call.should_receive(:speak).once.with("The sound file was not available", :interruptible => false)
     mock_call.should_receive(:wait_for_digit).once
     mock_call.input(1, :speak => {:text => "The sound file was not available"}, :interruptible => false)
+  end
+
+  it 'should play a series of 4 uninterruptible sounds, collecting digits even if some of the sound files cannot be found' do
+    pbx_should_respond_with_playback_success
+    pbx_should_respond_with_playback_failure
+    pbx_should_respond_with_playback_success
+
+    files = ('sound1'..'sound3').map &:to_s
+    timeout = 1.second
+    mock_call.should_receive(:wait_for_digit).twice.with(timeout).and_return '6', '7'
+    mock_call.input(2, :timeout => timeout, :play => files, :interruptible => false).should == '67'
+    pbx_was_asked_to_play files
   end
 
 end
@@ -792,6 +836,15 @@ describe 'input! command' do
     mock_call.input!(2, :play => sound_files).should == '#*'
   end
 
+  it 'executes play!() with all of the files given to :play' do
+    sound_files = %w[foo bar qaz]
+    mock_call.should_receive(:play!).once.with('foo').and_return true
+    mock_call.should_receive(:play!).once.with('bar').and_return true
+    mock_call.should_receive(:play!).once.with('qaz').and_return true
+    mock_call.should_receive(:wait_for_digit).once.and_return '*'
+    mock_call.input!(1, :play => sound_files, :interruptible => false).should == '*'
+  end
+
   it 'should execute wait_for_digit first if no sound files are given' do
     mock_call.should_receive(:interruptible_play!).never
     mock_call.should_receive(:wait_for_digit).once.and_throw :digit_request
@@ -808,7 +861,7 @@ describe 'input! command' do
     pbx_was_asked_to_stream file
   end
 
-  it 'should play a series of files, raising an error if a sound file cannot be found' do
+  it 'should play a series of interruptible files, raising an error if a sound file cannot be found' do
     pbx_should_respond_with_stream_file_success 0
     pbx_should_respond_with_stream_file_failure_on_open
     mock_call.should_receive(:wait_for_digit).never
@@ -819,6 +872,18 @@ describe 'input! command' do
       mock_call.input! 10, :play => play_files, :timeout => 5.seconds
     }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_stream played_files
+  end
+
+  it 'should play a series of uninterruptible files, raising an error if a sound file cannot be found' do
+    pbx_should_respond_with_playback_success
+    pbx_should_respond_with_playback_failure
+
+    play_files = ('sound1'..'sound6').map &:to_s
+    played_files = ('sound1'..'sound2').map &:to_s
+    the_following_code {
+      mock_call.input! 10, :play => play_files, :timeout => 5.seconds, :interruptible => false
+    }.should raise_error Adhearsion::VoIP::PlaybackError
+    pbx_was_asked_to_play played_files
   end
 
 end
@@ -930,6 +995,7 @@ describe 'the voicemail command' do
     mailboxes_with_context = mailboxes.map { |mailbox| "#{mailbox}@#{context}"}
     mock_call.should_receive(:execute).once.with('voicemail', mailboxes_with_context.join('&'), '')
     mock_call.voicemail context => mailboxes
+    pbx_should_have_been_sent 'GET VARIABLE "VMSTATUS"'
   end
 
   it 'should raise an argument error if the mailbox number is not numerical' do
@@ -1114,12 +1180,14 @@ describe "The queue management abstractions" do
     does_not_read_data_back
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return "TIMEOUT"
     mock_call.queue('monkey').join!.should be :timeout
+    pbx_should_have_been_sent 'EXEC queue "monkey"|""|""|""|""|""'
   end
 
   it 'should return :completed after joining the queue and being connected' do
     does_not_read_data_back
     mock_call.should_receive(:get_variable).once.with("QUEUESTATUS").and_return nil
     mock_call.queue('monkey').join!.should be :completed
+    pbx_should_have_been_sent 'EXEC queue "monkey"|""|""|""|""|""'
   end
 
   it 'should join a queue with a timeout properly' do
@@ -1271,6 +1339,7 @@ describe "The queue management abstractions" do
     the_following_code {
       mock_call.queue('this_should_not_exist').agents.new 'Agent/911'
     }.should raise_error Adhearsion::VoIP::Asterisk::Commands::QueueProxy::QueueDoesNotExistError
+    pbx_should_have_been_sent 'EXEC AddQueueMember "this_should_not_exist"|"Agent/911"|""|""|""|""'
   end
 
   it 'when a queue agent is dynamiaclly added and the adding was successful, an AgentProxy should be returned' do
@@ -1351,6 +1420,7 @@ describe "The queue management abstractions" do
 
     agents = mock_call.queue('lolcats').agents :cache => true
     agents.last.pause!.should be true
+    pbx_should_have_been_sent 'EXEC PauseQueueMember "lolcats"|"Agent/008"'
   end
 
   it 'should pause an agent properly from a certain queue and return false when the agent did not exist' do
@@ -1509,6 +1579,7 @@ describe 'the menu() method' do
         link.other 543
       end
     end
+    3.times { pbx_should_have_been_sent 'WAIT FOR DIGIT "5000"' }
   end
 
   it "when the 'extension' variable is changed, it should be an instance of PhoneNumber" do
@@ -1522,6 +1593,7 @@ describe 'the menu() method' do
     end
     5.should === mock_call.extension
     mock_call.extension.__real_string.should == "5"
+    pbx_should_have_been_sent 'WAIT FOR DIGIT "5000"'
   end
 
 end
@@ -1578,9 +1650,6 @@ describe 'the Menu class' do
   end
 
   it "should default the timeout to five seconds" do
-    pbx_should_respond_with_successful_background_response ?2.ord
-    pbx_should_respond_with_a_wait_for_digit_timeout
-
     mock_call.should_receive(:wait_for_digit).once.with(5).and_return nil
     mock_call.menu { |link| link.foobar 22 }
   end
@@ -1603,6 +1672,7 @@ describe 'the Menu class' do
       end
     end
     times_timed_out.should be tries
+    30.times { pbx_should_have_been_sent 'WAIT FOR DIGIT "5000"' }
   end
 
   it "when matches fail due to invalid input, the menu should repeat :tries times" do
@@ -1622,6 +1692,7 @@ describe 'the Menu class' do
       end
     end
     times_invalid.should be tries
+    10.times { pbx_should_have_been_sent 'WAIT FOR DIGIT "5000"' }
   end
 
   it "invoke on_invalid callback when an invalid extension was entered" do
@@ -1634,6 +1705,7 @@ describe 'the Menu class' do
         link.on_invalid { throw :inside_invalid_callback }
       end
     end
+    pbx_should_have_been_sent 'WAIT FOR DIGIT "5000"'
   end
 
   it "invoke on_premature_timeout when a timeout is encountered" do
@@ -1646,6 +1718,7 @@ describe 'the Menu class' do
         link.on_premature_timeout { throw :inside_timeout }
       end
     end
+    2.times { pbx_should_have_been_sent 'WAIT FOR DIGIT "1000"' }
   end
 
 end
@@ -1670,6 +1743,7 @@ describe "the Menu class's high-level judgment" do
       end
     end
     111.should === mock_call.extension
+    4.times { pbx_should_have_been_sent 'WAIT FOR DIGIT "5000"' }
   end
 
   it 'should match things in a range when there are many other non-matching patterns' do
@@ -1688,6 +1762,7 @@ describe "the Menu class's high-level judgment" do
         link.conferences  900..999
       end
     end
+    3.times { pbx_should_have_been_sent 'WAIT FOR DIGIT "5000"' }
   end
 
 end
@@ -2005,11 +2080,13 @@ describe "get variable command" do
   it "Getting a variable that isn't set returns nothing" do
     pbx_should_respond_with "200 result=0"
     mock_call.get_variable('OMGURFACE').should be nil
+    pbx_should_have_been_sent 'GET VARIABLE "OMGURFACE"'
   end
 
   it 'An empty variable should return an empty String' do
     pbx_should_respond_with_value ""
     mock_call.get_variable('kablamm').should == ""
+    pbx_should_have_been_sent 'GET VARIABLE "kablamm"'
   end
 
   it "Getting a variable that is set returns its value" do
@@ -2017,6 +2094,7 @@ describe "get variable command" do
     pbx_should_respond_with_value unique_id
     variable_value_returned = mock_call.get_variable('UNIQUEID')
     variable_value_returned.should == unique_id
+    pbx_should_have_been_sent 'GET VARIABLE "UNIQUEID"'
   end
 end
 
@@ -2058,6 +2136,7 @@ describe "Dial command" do
     does_not_read_data_back
     mock_call.should_receive(:set_caller_id_number).once
     mock_call.dial 123, :caller_id => "1234678901"
+    pbx_should_have_been_sent 'EXEC Dial "123"|""|""'
   end
 
   it 'should raise an exception when unknown hash key arguments are given to it' do
@@ -2071,6 +2150,7 @@ describe "Dial command" do
     name = "Jay Phillips"
     mock_call.should_receive(:set_caller_id_name).once.with(name)
     mock_call.dial "BlahBlahBlah", :name => name
+    pbx_should_have_been_sent 'EXEC Dial "BlahBlahBlah"|""|""'
   end
 
   it "should raise an exception when a non-numerical caller_id is specified" do
@@ -2083,6 +2163,7 @@ describe "Dial command" do
     the_following_code {
       mock_call.dial 911, :caller_id => "+123456789"
     }.should_not raise_error ArgumentError
+    pbx_should_have_been_sent 'SET VARIABLE "CALLERID(num)" "+123456789"'
   end
 
   it 'should pass the value of the :confirm key to dial_macro_option_compiler()' do
@@ -2090,6 +2171,7 @@ describe "Dial command" do
     value_of_confirm_key = {:play => "ohai", :timeout => 30}
     mock_call.should_receive(:dial_macro_option_compiler).once.with value_of_confirm_key
     mock_call.dial 123, :confirm => value_of_confirm_key
+    pbx_should_have_been_sent 'EXEC Dial "123"|""|""'
   end
 
   it "should add the return value of dial_macro_option_compiler to the :options key's value given to the dial command" do
@@ -2376,16 +2458,18 @@ describe "speak command" do
   end
 
   context "with the engine :cepstral" do
-    it "should execute Swift" do
+    it "should execute Swift"do
       pbx_should_respond_with_value 0
       mock_call.should_receive(:execute).with('Swift', 'hello')
       @speech_engines.cepstral(mock_call, 'hello')
+      @output.read.should == "GET VARIABLE \"SWIFT_DTMF\"\n"
     end
 
-    it "should properly escape commas in the TTS string" do
+    it "should properly escape commas in the TTS string"do
       pbx_should_respond_with_value 0
       mock_call.should_receive(:execute).with('Swift', 'Once\\\\, a long\\\\, long time ago\\\\, ...')
       @speech_engines.cepstral(mock_call, 'Once, a long, long time ago, ...')
+      @output.read.should == "GET VARIABLE \"SWIFT_DTMF\"\n"
     end
 
     context "with barge in digits set" do
@@ -2420,7 +2504,7 @@ describe "speak command" do
       @speech_engines.tropo(mock_call, 'hello').should == "1"
     end
 
-    context "with :interruptible set to false", :focus => true do
+    context "with :interruptible set to false"do
       it "should pass the :bargein => false option for Tropo Ask" do
         response = '200 result=' + {:interpretation => '1'}.to_json
         mock_call.should_receive(:raw_response).with(/Ask/i, 'hello', {:bargein => false}.to_json).once.and_return response
