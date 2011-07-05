@@ -4,6 +4,7 @@
  - New method: #speak provides abstracted TTS rendering for UniMRCP and Cepstral
  - Allow leading "+" in Caller ID (E.164 format)
  - Allow using --pid-file without "daemon" for JRuby
+ - Allow passing a block to #input to enable caller to detect when enough digits are collected.
 
 1.1.1
  - Command#play now returns false if audio failed to play
