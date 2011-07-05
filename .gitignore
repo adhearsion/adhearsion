@@ -8,3 +8,5 @@ vendor
 Gemfile.lock
 .bundle
 .rvmrc
+coverage
+spec/reports
