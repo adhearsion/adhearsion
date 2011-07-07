@@ -10,18 +10,11 @@ require 'adhearsion/version'
 task :default => :spec
 task :gem => :build
 
+require 'rspec/core/rake_task'
+RSpec::Core::RakeTask.new
+
 require 'ci/reporter/rake/rspec'
 task :ci => ['ci:setup:rspec', :spec]
-
-begin
-  gem 'rspec', '>= 2.3.0'
-  require 'rspec/core/rake_task'
-rescue LoadError
-  abort "You must install RSpec: sudo gem install rspec"
-end
-
-RSpec::Core::RakeTask.new do |t|
-end
 
 desc "Run all RSpecs for Theatre"
 RSpec::Core::RakeTask.new(:theatre_specs) do |t|
