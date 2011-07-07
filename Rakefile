@@ -16,11 +16,6 @@ RSpec::Core::RakeTask.new
 require 'ci/reporter/rake/rspec'
 task :ci => ['ci:setup:rspec', :spec]
 
-desc "Run all RSpecs for Theatre"
-RSpec::Core::RakeTask.new(:theatre_specs) do |t|
-  t.pattern = 'theatre-spec/**/*_spec.rb'
-end
-
 begin
   require 'yard'
   YARD::Rake::YardocTask.new do |t|

@@ -110,7 +110,6 @@ module InitializerStubs
 end
 
 Adhearsion::Initializer.ahn_root = File.dirname(__FILE__) + '/fixtures'
-require 'spec/silence' unless ENV['SHOW_DISABLED']
 
 require 'adhearsion/voip/asterisk'
 require 'adhearsion/component_manager'
