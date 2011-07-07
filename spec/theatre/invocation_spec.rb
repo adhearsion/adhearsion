@@ -158,10 +158,8 @@ describe "Using Invocations that've been ran through the Theatre" do
   it "waiting on an Invocation should execute properly" do
     wait_on_invocation = lambda { 123 }
     invocation = Theatre::Invocation.new("/namespace/whatever", wait_on_invocation)
-    Thread.new do
-      invocation.queued
-      invocation.start
-    end
+    invocation.queued
+    invocation.start
     invocation.wait.should eql(123)
     invocation.success?.should eql(true)
   end
