@@ -56,12 +56,10 @@ describe "Using Invocations that've been ran through the Theatre" do
   end
 
   it "should have a status of :error if an exception was raised and set the #error property" do
-    pending
-    errorful_callback = lambda { raise ArgumentError, "this error is intentional" } # Simulate logic error
-    invocation = Theatre::Invocation.new("/namespace/whatever", errorful_callback)
+    invocation = Theatre::Invocation.new("/namespace/whatever", lambda { raise ArgumentError, "this error is intentional" })
     invocation.queued
     invocation.start
-    invocation.current_state.should equal(:error)
+    invocation.current_state.should == :error
     invocation.should be_error
     invocation.error.should be_instance_of(ArgumentError)
   end
@@ -104,9 +102,7 @@ describe "Using Invocations that've been ran through the Theatre" do
   end
 
   it "should set the #finished_time property when a failure was encountered" do
-    pending
-    block = lambda { raise LocalJumpError }
-    invocation = Theatre::Invocation.new('/foo/bar', block)
+    invocation = Theatre::Invocation.new('/foo/bar', lambda { raise LocalJumpError })
     invocation.queued
 
     now = Time.now
