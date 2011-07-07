@@ -136,7 +136,7 @@ describe "Using Invocations that've been ran through the Theatre" do
     invocation.send(:instance_variable_set, :@started_time, time_ago)
     invocation.send(:instance_variable_set, :@finished_time, time_now)
 
-    invocation.execution_duration.should be_close(time_ago_difference.to_f, 0.01)
+    invocation.execution_duration.should be_within(0.01).of(time_ago_difference.to_f)
   end
 
   it "should return the set value of returned_value when one has been set to a non-nil value" do
