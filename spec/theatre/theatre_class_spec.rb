@@ -117,6 +117,7 @@ describe "Theatre::Theatre" do
     end
 
     it "should run the callback of the Invocation it receives from the master_queue" do
+      pending
       has_executed = false
       thrower    = lambda { has_executed = true }
       namespace  = "/foo/bar"
