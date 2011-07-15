@@ -554,11 +554,8 @@ module Adhearsion
         #                  absense of input. If the :accept_key argument was pressed, it
         #                  will not appear in the output.
         def input(*args, &block)
-          options = args.last.kind_of?(Hash) ? args.pop : {}
-          number_of_digits = args.shift
-
           begin
-            input! number_of_digits, options, &block
+            input! *args, &block
           rescue PlaybackError => e
             ahn_log.agi.warn { e }
             retry # If sound playback fails, play the remaining sound files and wait for digits
