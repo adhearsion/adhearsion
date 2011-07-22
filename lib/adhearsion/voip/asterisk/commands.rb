@@ -265,17 +265,16 @@ module Adhearsion
         def play_or_speak(prompts)
          interrupted = nil
          unless interrupted
-           prompts.each do |filename, tts|
+           prompts.each do |filename, options|
              begin
-               if tts[:interruptible]
+               if options[:interruptible]
                  interrupted = interruptible_play! filename
                else
                  play! filename
                end
              rescue PlaybackError
-               raise ArgumentError, "Must supply TTS text as fallback" unless tts[:text]
-               tts[:options] ||= tts[:interruptible] ? {:interruptible => tts.delete(:interruptible)} : {}
-               interrupted = speak tts.delete(:text), tts
+               raise ArgumentError, "Must supply TTS text as fallback" unless options[:text]
+               interrupted = speak options.delete(:text), options
              end
            end
          end

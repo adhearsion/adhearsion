@@ -501,14 +501,14 @@ describe 'play_or_speak' do
   it 'should speak the text if a sound file does not exist' do
     audio_file = "nixon tapes"
     mock_call.should_receive(:play!).with(audio_file).and_raise Adhearsion::VoIP::PlaybackError
-    mock_call.should_receive(:speak).with('hello', {:engine=>:unimrcp, :options=>{}}).once.and_return nil
+    mock_call.should_receive(:speak).with('hello', {:engine=>:unimrcp}).once.and_return nil
     mock_call.play_or_speak({audio_file => { :text => 'hello', :engine => :unimrcp }}).should be nil
   end
 
   it 'should speak the text if a sound file does not exist and pass back the entered text if a key is pressed' do
     audio_file = "nixon tapes"
     mock_call.should_receive(:interruptible_play!).with(audio_file).and_raise Adhearsion::VoIP::PlaybackError
-    mock_call.should_receive(:speak).with('hello', {:engine=>:unimrcp, :options=>{:interruptible => true}}).once.and_return '5'
+    mock_call.should_receive(:speak).with('hello', {:engine=>:unimrcp, :interruptible => true}).once.and_return '5'
     mock_call.play_or_speak({audio_file => { :text => 'hello', :engine => :unimrcp, :interruptible => true
 }}).should == '5'
   end
