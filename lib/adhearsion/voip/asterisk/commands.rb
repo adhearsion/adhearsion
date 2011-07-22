@@ -263,15 +263,23 @@ module Adhearsion
         # @example Play "pbx-invalid" or say "I'm sorry, that is not a valid extension.  Please try again." and allowing the user to interrupt the TTS with "#"
         #   play_or_speak 'pbx-invalid' => {:text => "I'm sorry, that is not a valid extension.  Please try again", :engine => :unimrcp}
         def play_or_speak(prompts)
-          prompts.each do |filename, tts|
-            begin
-              play! filename
-            rescue PlaybackError
-              raise ArgumentError, "Must supply TTS text as fallback" unless tts[:text]
-              tts[:options] ||= {}
-              speak tts.delete(:text), tts
-            end
-          end
+         interrupted = nil
+         unless interrupted
+           prompts.each do |filename, tts|
+             begin
+               if tts[:interruptible]
+                 interrupted = interruptible_play! filename
+               else
+                 play! filename
+               end
+             rescue PlaybackError
+               raise ArgumentError, "Must supply TTS text as fallback" unless tts[:text]
+               tts[:options] ||= tts[:interruptible] ? {:interruptible => tts.delete(:interruptible)} : {}
+               interrupted = speak tts.delete(:text), tts
+             end
+           end
+         end
+         interrupted
         end
 
         # Records a sound file with the given name. If no filename is specified a file named by Asterisk

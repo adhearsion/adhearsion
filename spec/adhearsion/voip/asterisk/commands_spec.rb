@@ -468,6 +468,53 @@ describe 'execute' do
 
 end
 
+describe 'play_or_speak' do
+  include DialplanCommandTestHelpers
+
+  it 'should play a sound file if one exists' do
+    pbx_should_respond_with_playback_success
+    audio_file = "cents-per-minute"
+    mock_call.play_or_speak({audio_file => {}}).should be nil
+    pbx_was_asked_to_play audio_file
+  end
+
+  it 'should play a sound file via interruptible_play if file exists and interrupbible set and return key pressed and return the key press value' do
+    audio_file = "cents-per-minute"
+    mock_call.should_receive(:interruptible_play!).with(audio_file).once.and_return '#'
+    mock_call.play_or_speak({audio_file => {:interruptible => true}}).should == '#'
+  end
+
+  it 'should play a sound file via interruptible_play if file exists and interrupbible set' do
+    audio_file = "cents-per-minute"
+    mock_call.should_receive(:interruptible_play!).with(audio_file).once.and_return nil
+    mock_call.play_or_speak({audio_file => {:interruptible => true}}).should == nil
+  end
+
+  it 'should raise and error if a sound file does not exist and there is not text specified to fall back to' do
+    audio_file = "nixon tapes"
+    mock_call.should_receive(:play!).with(audio_file).and_raise Adhearsion::VoIP::PlaybackError
+    the_following_code {
+          mock_call.play_or_speak({audio_file => { :engine => :unimrcp}})
+    }.should raise_error ArgumentError
+  end
+
+  it 'should speak the text if a sound file does not exist' do
+    audio_file = "nixon tapes"
+    mock_call.should_receive(:play!).with(audio_file).and_raise Adhearsion::VoIP::PlaybackError
+    mock_call.should_receive(:speak).with('hello', {:engine=>:unimrcp, :options=>{}}).once.and_return nil
+    mock_call.play_or_speak({audio_file => { :text => 'hello', :engine => :unimrcp }}).should be nil
+  end
+
+  it 'should speak the text if a sound file does not exist and pass back the entered text if a key is pressed' do
+    audio_file = "nixon tapes"
+    mock_call.should_receive(:interruptible_play!).with(audio_file).and_raise Adhearsion::VoIP::PlaybackError
+    mock_call.should_receive(:speak).with('hello', {:engine=>:unimrcp, :options=>{:interruptible => true}}).once.and_return '5'
+    mock_call.play_or_speak({audio_file => { :text => 'hello', :engine => :unimrcp, :interruptible => true
+}}).should == '5'
+  end
+
+end
+
 describe 'play command' do
   include DialplanCommandTestHelpers
 
