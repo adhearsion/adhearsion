@@ -498,6 +498,16 @@ describe 'play_or_speak' do
     }.should raise_error ArgumentError
   end
 
+  it 'should not send the command to play if the audio file is blank' do
+    mock_call.should_receive(:speak).with('hello', {:engine=>:unimrcp}).once.and_return nil
+    mock_call.play_or_speak({'' => { :text => 'hello', :engine => :unimrcp }}).should be nil
+  end
+
+  it 'should not send the command to play if the audio file is nil' do
+    mock_call.should_receive(:speak).with('hello', {:engine=>:unimrcp}).once.and_return nil
+    mock_call.play_or_speak({nil => { :text => 'hello', :engine => :unimrcp }}).should be nil
+  end
+
   it 'should speak the text if a sound file does not exist' do
     audio_file = "nixon tapes"
     mock_call.should_receive(:play!).with(audio_file).and_raise Adhearsion::VoIP::PlaybackError
