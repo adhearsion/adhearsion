@@ -66,6 +66,10 @@ describe "A simulated use of the 'ahn' command" do
     Adhearsion::CLI::AhnCommand.const_defined?('USAGE').should be true
   end
 
+  before do
+    flexmock Adhearsion::ScriptAhnLoader, :in_ahn_application? => true
+  end
+
   it "arguments to 'create' are executed properly" do
     some_path = "/path/somewhere"
     simulate_args "create", some_path
