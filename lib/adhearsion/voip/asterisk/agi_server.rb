@@ -25,17 +25,17 @@ module Adhearsion
               end
 
               Events.trigger_immediately([:asterisk, :before_call], call)
-          	  ahn_log.agi.debug "Handling call with variables #{call.variables.inspect}"
+              ahn_log.agi.debug "Handling call with variables #{call.variables.inspect}"
 
-          	  return DialPlan::ConfirmationManager.handle(call) if DialPlan::ConfirmationManager.confirmation_call?(call)
+              return DialPlan::ConfirmationManager.handle(call) if DialPlan::ConfirmationManager.confirmation_call?(call)
 
-      	      # This is what happens 99.9% of the time.
+              # This is what happens 99.9% of the time.
 
-      	      DialPlan::Manager.handle call
-    	      rescue Hangup
-    	        ahn_log.agi "HANGUP event for call with uniqueid #{call.variables[:uniqueid].inspect} and channel #{call.variables[:channel].inspect}"
+              DialPlan::Manager.handle call
+            rescue Hangup
+              ahn_log.agi "HANGUP event for call with uniqueid #{call.variables[:uniqueid].inspect} and channel #{call.variables[:channel].inspect}"
               Events.trigger_immediately([:asterisk, :after_call], call)
-    	        call.hangup!
+              call.hangup!
             rescue DialPlan::Manager::NoContextError => e
               ahn_log.agi e.message
               call.hangup!
@@ -58,13 +58,20 @@ module Adhearsion
             rescue UselessCallException
               ahn_log.agi "Ignoring meta-AGI request"
               call.hangup!
-        	  # TBD: (may have more hooks than what Jay has defined in hooks.rb)
+              # TBD: (may have more hooks than what Jay has defined in hooks.rb)
             rescue SyntaxError, StandardError => e
               Events.trigger(['exception'], e)
             ensure
               Adhearsion.remove_inactive_call call rescue nil
             end
 
+            def log(msg)
+              ahn_log.agi msg
+            end
+
+            def error(detail)
+              ahn_log.agi.error detail.backtrace.join("\n")
+            end
           end
 
           DEFAULT_OPTIONS = { :server_class => RubyServer, :port => 4573, :host => "0.0.0.0" } unless defined? DEFAULT_OPTIONS
