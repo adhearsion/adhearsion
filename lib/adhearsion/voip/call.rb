@@ -55,7 +55,7 @@ module Adhearsion
       end
     end
 
-    # Searches all active calls by their unique_identifier. See Call#unique_identifier. 
+    # Searches all active calls by their unique_identifier. See Call#unique_identifier.
     # Is this actually by channel?
     def find(id)
       atomically do
@@ -146,8 +146,6 @@ module Adhearsion
         raise Adhearsion::Call::CallMessageQueue::InboxClosedException, "The message queue for this call has aleady been disabled." if !@open
         super
       end
-
-
     end
 
 
@@ -292,6 +290,10 @@ module Adhearsion
         else
           raise NotImplementedError
       end
+    end
+
+    def ahn_log(*args)
+      Adhearsion::Logging::DefaultAdhearsionLogger.send unique_identifier, *args
     end
 
     def define_variable_accessors(recipient=self)

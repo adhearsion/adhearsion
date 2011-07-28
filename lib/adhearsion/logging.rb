@@ -71,7 +71,7 @@ module Adhearsion
 
       def method_missing(logger_name, *args, &block)
         define_logging_method logger_name, self.class.new(logger_name.to_s)
-        send logger_name, *args, &block
+        send sanitized_logger_name(logger_name), *args, &block
       end
 
       private
@@ -80,7 +80,7 @@ module Adhearsion
         # Can't use Module#define_method() because blocks in Ruby 1.8.x can't
         # have their own block arguments.
         self.class.class_eval(<<-CODE, __FILE__, __LINE__)
-          def #{name}(*args, &block)
+          def #{sanitized_logger_name name}(*args, &block)
             logger = Log4r::Logger['#{name}']
             if args.any? || block_given?
               logger.info(*args, &block)
@@ -89,6 +89,10 @@ module Adhearsion
             end
           end
         CODE
+      end
+
+      def sanitized_logger_name(name)
+        name.to_s.gsub(/[-\/]/, '').downcase
       end
     end
 
