@@ -16,15 +16,6 @@ Adhearsion has...
 * Easy interactive communication via XMPP instant messages using the Blather library
 * Good regression test coverage
 
-Use the public Adhearsion sandbox!
-==================================
-
-Don't want to screw with setting up a telephony system? You can test your Adhearsion applications using our public sandbox!
-
-Visit [http://adhearsion.com/getting_started](http://adhearsion.com/getting_started) for more information!
-
-Yes, in minutes you can be controlling your cell phone for free!  :)
-
 Documentation
 =============
 
