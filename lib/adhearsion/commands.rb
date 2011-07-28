@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'adhearsion/script_ahn_loader'
 
 module Adhearsion
   module CLI
@@ -17,6 +18,14 @@ USAGE
       class << self
 
         def execute!
+          if ARGV.first == 'start' && !(ScriptAhnLoader.in_ahn_application? || ScriptAhnLoader.in_ahn_application_subdirectory?)
+            args = parse_arguments
+            Dir.chdir args[1] do
+              args = args.compact.map(&:to_s)
+              args[1], args[2] = args[2], '.'
+              ScriptAhnLoader.exec_script_ahn! args
+            end
+          end
           CommandHandler.send(*parse_arguments)
         rescue CommandHandler::CLIException => error
           fail_and_print_usage error
@@ -48,7 +57,7 @@ USAGE
 
             if args.size == 2
               path   = args.last
-              if args.first =~ /daemon|console/
+              if args.first =~ /foreground|daemon|console/
                 mode = args.first.to_sym
               else
                 raise CommandHandler::CLIException, "Invalid start mode requested: #{args.first}"
