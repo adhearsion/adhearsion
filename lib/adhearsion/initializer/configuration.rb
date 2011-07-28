@@ -69,6 +69,7 @@ module Adhearsion
       Adhearsion::Logging.logging_level = options[:level] if options.has_key? :level
       Adhearsion::Logging::AdhearsionLogger.outputters = Array(options[:outputters]) if options.has_key? :outputters
       Adhearsion::Logging::AdhearsionLogger.formatters = Array(options[:formatters]) if options.has_key? :formatters
+      Adhearsion::Logging::AdhearsionLogger.formatters = Array(options[:formatter]) * Adhearsion::Logging::AdhearsionLogger.outputters.count if options.has_key? :formatter
     end
 
     def add_component(*list)
