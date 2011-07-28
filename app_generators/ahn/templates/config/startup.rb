@@ -9,7 +9,11 @@ Adhearsion::Configuration.configure do |config|
   # List the gem names here:
   # config.add_component "ahn_test_component"
 
-  # Supported levels (in increasing severity) -- :debug < :info < :warn < :error < :fatal
+  # Log configuration
+  # :level : Supported levels (in increasing severity) -- :debug < :info < :warn < :error < :fatal
+  # :outputters : An array of log outputters to use. The default is to log to stdout and log/adhearsion.log
+  # :formatters : An array of log formatters to apply to the outputters in use
+  # :formatter : A log formatter to apply to all active outputters
   config.logging :level => :info
 
   # Whether incoming calls be automatically answered. Defaults to true.
