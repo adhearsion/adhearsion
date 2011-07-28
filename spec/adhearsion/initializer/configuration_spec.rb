@@ -95,6 +95,18 @@ describe 'Logging configuration' do
     Adhearsion::Logging.logging_level.should be Log4r::WARN
   end
 
+  it 'outputters should be settable' do
+    Adhearsion::Logging::AdhearsionLogger.outputters.should == [Log4r::Outputter.stdout]
+    config.logging :outputters => Log4r::Outputter.stderr
+    Adhearsion::Logging::AdhearsionLogger.outputters.should == [Log4r::Outputter.stderr]
+  end
+
+  it 'formatters should be settable' do
+    Adhearsion::Logging::AdhearsionLogger.formatters.map(&:class).should == [Log4r::DefaultFormatter]
+    config.logging :formatters => Log4r::ObjectFormatter
+    Adhearsion::Logging::AdhearsionLogger.formatters.map(&:class).should == [Log4r::ObjectFormatter]
+  end
+
 end
 
 describe "AMI configuration defaults" do

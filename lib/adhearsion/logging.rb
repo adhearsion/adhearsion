@@ -47,6 +47,17 @@ module Adhearsion
         def outputters=(other)
           @@outputters = other
         end
+
+        def formatters
+          @@outputters.map &:formatter
+        end
+
+        def formatters=(other)
+          other.each_with_index do |formatter, i|
+            outputter = @@outputters[i]
+            outputter.formatter = formatter if outputter
+          end
+        end
       end
 
       def initialize(*args)
@@ -59,8 +70,8 @@ module Adhearsion
       end
 
       def method_missing(logger_name, *args, &block)
-        define_logging_method(logger_name, self.class.new(logger_name.to_s))
-        send(logger_name, *args, &block)
+        define_logging_method logger_name, self.class.new(logger_name.to_s)
+        send logger_name, *args, &block
       end
 
       private
