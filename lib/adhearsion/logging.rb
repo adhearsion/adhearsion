@@ -92,7 +92,7 @@ module Adhearsion
       end
 
       def sanitized_logger_name(name)
-        name.to_s.gsub(/[-\/]/, '').downcase
+        name.to_s.gsub(/\W/, '').downcase
       end
     end
 
