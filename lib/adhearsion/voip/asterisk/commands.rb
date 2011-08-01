@@ -123,6 +123,7 @@ module Adhearsion
 
         # Parses a response in the form of "200 result=some_value"
         def inline_return_value(result)
+          return nil unless result
           case result.chomp
           when "200 result=0" then nil
           when /^200 result=(.*)$/ then $LAST_PAREN_MATCH
@@ -132,6 +133,7 @@ module Adhearsion
 
         # Parses a response in the form of "200 result=0 (some_value)"
         def inline_result_with_return_value(result)
+          return nil unless result
           case result.chomp
           when "200 result=0" then nil
           when /^#{AGI_SUCCESSFUL_RESPONSE} \((.*)\)$/ then $LAST_PAREN_MATCH

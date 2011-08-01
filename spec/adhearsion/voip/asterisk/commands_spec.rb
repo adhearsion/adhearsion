@@ -278,7 +278,7 @@ describe "writing a command" do
   end
 end
 
-describe 'interruptible_play command' do
+describe 'The #interruptible_play method' do
 
   include DialplanCommandTestHelpers
 
@@ -330,7 +330,7 @@ describe 'interruptible_play command' do
 
 end
 
-describe 'interruptible_play! command' do
+describe 'The #interruptible_play! method' do
   include DialplanCommandTestHelpers
 
   it 'should return a string for the digit that was pressed' do
@@ -402,7 +402,7 @@ describe 'interruptible_play! command' do
   end
 end
 
-describe 'wait_for_digit command' do
+describe 'The #wait_for_digit method' do
 
   include DialplanCommandTestHelpers
 
@@ -420,7 +420,7 @@ describe 'wait_for_digit command' do
   end
 end
 
-describe 'answer' do
+describe 'The #answer method' do
   include DialplanCommandTestHelpers
 
   it 'should send ANSWER over the AGI socket' do
@@ -431,7 +431,7 @@ describe 'answer' do
 
 end
 
-describe 'execute' do
+describe 'The #execute method' do
   include DialplanCommandTestHelpers
 
   it 'execute writes exec and app name to the PBX' do
@@ -465,10 +465,64 @@ describe 'execute' do
       mock_call.execute :foo, "bar\0"
     }.should raise_error ArgumentError
   end
-
 end
 
-describe 'play_or_speak' do
+describe 'The #inline_return_value method' do
+  include DialplanCommandTestHelpers
+
+  it 'should return nil when given false or nil' do
+    mock_call.inline_return_value(false).should be nil
+    mock_call.inline_return_value(nil).should be nil
+  end
+
+  it 'should return nil when given an empty AGI value (0)' do
+    mock_call.inline_return_value(pbx_result_response(0)).should be nil
+  end
+
+
+  it 'should raise AGIProtocolError with an invalid response' do
+    expect {
+      mock_call.inline_return_value("500 result=foo\n")
+    }.to raise_error Adhearsion::VoIP::Asterisk::AGIProtocolError
+
+    expect {
+      mock_call.inline_return_value('Hey man, not so loud!')
+    }.to raise_error Adhearsion::VoIP::Asterisk::AGIProtocolError
+  end
+
+  it 'should parse the return value' do
+    mock_call.inline_return_value(pbx_result_response(5)).should == '5'
+  end
+end
+
+describe 'The #inline_result_with_return_value method' do
+  include DialplanCommandTestHelpers
+
+  it 'should return nil when given false or nil' do
+    mock_call.inline_result_with_return_value(false).should be nil
+    mock_call.inline_result_with_return_value(nil).should be nil
+  end
+
+  it 'should return nil when given an empty AGI value (0)' do
+    mock_call.inline_result_with_return_value(pbx_result_response(0)).should be nil
+  end
+
+  it 'should raise AGIProtocolError with an invalid response' do
+    expect {
+      mock_call.inline_result_with_return_value("500 result=1 (foo)\n")
+    }.to raise_error Adhearsion::VoIP::Asterisk::AGIProtocolError
+
+    expect {
+      mock_call.inline_result_with_return_value('Hey man, not so loud!')
+    }.to raise_error Adhearsion::VoIP::Asterisk::AGIProtocolError
+  end
+
+  it 'should parse the return value' do
+    mock_call.inline_result_with_return_value(pbx_value_response(5)).should == '5'
+  end
+end
+
+describe 'The #play_or_speak method' do
   include DialplanCommandTestHelpers
 
   it 'should play a sound file if one exists' do
@@ -525,7 +579,7 @@ describe 'play_or_speak' do
 
 end
 
-describe 'play command' do
+describe 'The #play method' do
   include DialplanCommandTestHelpers
 
   it 'passing a single string to play results in the playback application being executed with that file name on the PBX' do
@@ -627,7 +681,7 @@ describe 'play command' do
   end
 end
 
-describe 'play! command' do
+describe 'The #play! method' do
   include DialplanCommandTestHelpers
 
   it 'should accept multiple strings to play, causing multiple playback commands to be issued' do
@@ -660,7 +714,7 @@ describe 'play! command' do
   end
 end
 
-describe 'input command' do
+describe 'The #input method' do
 
   include DialplanCommandTestHelpers
 
@@ -865,7 +919,7 @@ describe 'input command' do
 
 end
 
-describe 'input! command' do
+describe 'The #input! method' do
 
   include DialplanCommandTestHelpers
 
@@ -945,7 +999,7 @@ describe 'input! command' do
 
 end
 
-describe "The variable() command" do
+describe "The #variable method" do
 
   include DialplanCommandTestHelpers
 
@@ -982,7 +1036,7 @@ describe "The variable() command" do
 
 end
 
-describe "the set_variable method" do
+describe "The #set_variable method" do
 
   include DialplanCommandTestHelpers
 
@@ -998,7 +1052,7 @@ describe "the set_variable method" do
 
 end
 
-describe "the sip_add_header method" do
+describe "The #sip_add_header method" do
   include DialplanCommandTestHelpers
 
   it "values are properly quoted" do
@@ -1007,7 +1061,7 @@ describe "the sip_add_header method" do
   end
 end
 
-describe "the sip_get_header method" do
+describe "The #sip_get_header method" do
   include DialplanCommandTestHelpers
 
   it "properly formats the AGI request" do
@@ -1023,7 +1077,7 @@ describe "the sip_get_header method" do
   end
 end
 
-describe 'the voicemail command' do
+describe 'The #voicemail command' do
 
   include DialplanCommandTestHelpers
 
