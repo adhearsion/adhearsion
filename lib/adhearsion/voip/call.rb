@@ -293,7 +293,7 @@ module Adhearsion
     end
 
     def ahn_log(*args)
-      Adhearsion::Logging::DefaultAdhearsionLogger.send unique_identifier, *args
+      Adhearsion::Logging::DefaultAdhearsionLogger.send Adhearsion::Logging::AdhearsionLogger.sanitized_logger_name(unique_identifier), *args
     end
 
     def define_variable_accessors(recipient=self)
