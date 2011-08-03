@@ -1,15 +1,17 @@
-require 'simplecov'
-require 'simplecov-rcov'
-class SimpleCov::Formatter::MergedFormatter
-  def format(result)
-     SimpleCov::Formatter::HTMLFormatter.new.format(result)
-     SimpleCov::Formatter::RcovFormatter.new.format(result)
+unless ENV['SKIP_RCOV']
+  require 'simplecov'
+  require 'simplecov-rcov'
+  class SimpleCov::Formatter::MergedFormatter
+    def format(result)
+       SimpleCov::Formatter::HTMLFormatter.new.format(result)
+       SimpleCov::Formatter::RcovFormatter.new.format(result)
+    end
   end
-end
-SimpleCov.formatter = SimpleCov::Formatter::MergedFormatter
-SimpleCov.start do
-  add_filter "/vendor/"
-  add_filter "/spec/"
+  SimpleCov.formatter = SimpleCov::Formatter::MergedFormatter
+  SimpleCov.start do
+    add_filter "/vendor/"
+    add_filter "/spec/"
+  end
 end
 
 Dir.chdir File.join(File.dirname(__FILE__), '..')
