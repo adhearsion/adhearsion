@@ -437,13 +437,13 @@ describe 'The #execute method' do
   it 'execute writes exec and app name to the PBX' do
     pbx_should_respond_with_success
     assert_success mock_call.execute(:foo)
-    pbx_should_have_been_sent 'EXEC foo ""'
+    pbx_should_have_been_sent 'EXEC foo'
   end
 
   it 'execute returns false if the command was not executed successfully by the PBX' do
     pbx_should_respond_with_failure
     mock_call.execute(:foo).should_not be true
-    pbx_should_have_been_sent 'EXEC foo ""'
+    pbx_should_have_been_sent 'EXEC foo'
   end
 
   it 'execute can accept arguments after the app name which get translated into pipe-delimited arguments to the PBX' do
