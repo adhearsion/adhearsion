@@ -109,16 +109,17 @@ module Adhearsion
         end
 
         def response(command, *arguments)
-          # Arguments surrounded by quotes; quotes backslash-escaped.
-          # See parse_args in asterisk/res/res_agi.c (Asterisk 1.4.21.1)
-          quote_arg = lambda { |arg|
-            '"' + arg.gsub(/["\\]/) { |m| "\\#{m}" } + '"'
-          }
           if arguments.empty?
             raw_response("#{command}")
           else
-            raw_response("#{command} " + arguments.map{ |arg| quote_arg.call(arg.to_s) }.join(' '))
+            raw_response("#{command} " + arguments.map{ |arg| quote_arg(arg) }.join(' '))
           end
+        end
+
+        # Arguments surrounded by quotes; quotes backslash-escaped.
+        # See parse_args in asterisk/res/res_agi.c (Asterisk 1.4.21.1)
+        def quote_arg(arg)
+          '"' + arg.to_s.gsub(/["\\]/) { |m| "\\#{m}" } + '"'
         end
 
         # Parses a response in the form of "200 result=some_value"
@@ -169,8 +170,9 @@ module Adhearsion
         #
         # @see http://www.voip-info.org/wiki/view/Asterisk+-+documentation+of+application+commands Asterisk Dialplan Commands
         def execute(application, *arguments)
-          result = raw_response(%{EXEC %s "%s"} % [ application,
-            arguments.join(%{"#{AHN_CONFIG.asterisk.argument_delimiter}"}) ])
+          command = "EXEC #{application}"
+          arguments = arguments.map { |arg| quote_arg(arg) }.join(AHN_CONFIG.asterisk.argument_delimiter)
+          result = raw_response("#{command} #{arguments}")
           return false if error?(result)
           result
         end
@@ -188,7 +190,7 @@ module Adhearsion
         #
         # @see http://www.voip-info.org/wiki/view/verbose
         def verbose(message, level = nil)
-            result = raw_response("VERBOSE \"#{message}\" #{level}")
+            result = response('VERBOSE', message, level)
             return false if error?(result)
             result
         end
@@ -758,7 +760,14 @@ module Adhearsion
             end
 
             def unimrcp(call, text, options = {})
-              command = ['MRCPSynth', text]
+              # app_unimrcp strips quotes, which will already be stripped by the AGI parser.
+              # To work around this bug, we have to actually quote the arguments twice, once
+              # in this method and again inside #execute.
+              # Example from the logs:
+              # AGI Input: EXEC MRCPSynth "<speak xmlns=\"http://www.w3.org/2001/10/synthesis\" version=\"1.0\" xml:lang=\"en-US\"> <voice name=\"Paul\"> <prosody rate=\"1.0\">Howdy, stranger. How are you today?</prosody> </voice> </speak>"
+              # [Aug  3 13:39:02] VERBOSE[8495] logger.c:     -- AGI Script Executing Application: (MRCPSynth) Options: (<speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="en-US"> <voice name="Paul"> <prosody rate="1.0">Howdy, stranger. How are you today?</prosody> </voice> </speak>)
+              # [Aug  3 13:39:02] NOTICE[8495] app_unimrcp.c: Text to synthesize is: <speak xmlns=http://www.w3.org/2001/10/synthesis version=1.0 xml:lang=en-US> <voice name=Paul> <prosody rate=1.0>Howdy, stranger. How are you today?</prosody> </voice> </speak>
+              command = ['MRCPSynth', text.gsub(/["\\]/) { |m| "\\#{m}" }]
               args = []
               if options[:interrupt_digits]
                 args << "i=#{options[:interrupt_digits]}"

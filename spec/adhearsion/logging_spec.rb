@@ -41,6 +41,12 @@ describe 'The ahn_log command' do
     ahn_log.qwerty.should be_a_kind_of Adhearsion::Logging::AdhearsionLogger
   end
 
+  it "handles crazy logger names" do
+    ahn_log.send :'locals@DEMO_ca.ll&', "hey"
+    Log4r::Logger['locals@DEMO_ca.ll&'].should_not be nil
+    ahn_log.send(:'localsdemo_call').should == Log4r::Logger['locals@DEMO_ca.ll&']
+  end
+
 end
 
 # Essential for running the tests
