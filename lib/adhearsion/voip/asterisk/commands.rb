@@ -760,7 +760,14 @@ module Adhearsion
             end
 
             def unimrcp(call, text, options = {})
-              command = ['MRCPSynth', text]
+              # app_unimrcp strips quotes, which will already be stripped by the AGI parser.
+              # To work around this bug, we have to actually quote the arguments twice, once
+              # in this method and again inside #execute.
+              # Example from the logs:
+              # AGI Input: EXEC MRCPSynth "<speak xmlns=\"http://www.w3.org/2001/10/synthesis\" version=\"1.0\" xml:lang=\"en-US\"> <voice name=\"Paul\"> <prosody rate=\"1.0\">Howdy, stranger. How are you today?</prosody> </voice> </speak>"
+              # [Aug  3 13:39:02] VERBOSE[8495] logger.c:     -- AGI Script Executing Application: (MRCPSynth) Options: (<speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="en-US"> <voice name="Paul"> <prosody rate="1.0">Howdy, stranger. How are you today?</prosody> </voice> </speak>)
+              # [Aug  3 13:39:02] NOTICE[8495] app_unimrcp.c: Text to synthesize is: <speak xmlns=http://www.w3.org/2001/10/synthesis version=1.0 xml:lang=en-US> <voice name=Paul> <prosody rate=1.0>Howdy, stranger. How are you today?</prosody> </voice> </speak>
+              command = ['MRCPSynth', text.gsub(/["\\]/) { |m| "\\#{m}" }]
               args = []
               if options[:interrupt_digits]
                 args << "i=#{options[:interrupt_digits]}"
