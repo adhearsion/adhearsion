@@ -294,7 +294,87 @@ module Adhearsion
         # given, the file will be saved in the default Asterisk sound directory, /var/lib/spool/asterisk
         # by default.
         #
+        # @param [string] file name to record to.  Full path information is optional.  If you want to change the
+        #   format of the file you will want to add a .<valid extention> to the end of the file name specifying the 
+        #   filetype you want to record in.
+        #
+        # @param [hash] options
+        #
+        # Valid options are 
+        #   +:silence+ - silence in seconds
+        #
+        #   +:maxduration+ - maximum duration in seconds
+        #
+        #   +:escapedigits+ - digits to be used to excape from recording
+        #
+        #   +:beep+ - soundfile to use as a beep before recording.  if not specifed defaults to system generated beep,  
+        #           set to nil for no beep.
+        #
         # Silence and maxduration is specified in seconds.
+        # 
+        # @return [String] The filename of the recorded file.  
+        #         
+        # @example Asterisk generated filename
+        #   filename = record
+        # @example Specified filename
+        #   record '/path/to/my-file.gsm'
+        # @example All options specified
+        #   record 'my-file.gsm', :silence => 5, :maxduration => 120
+        # 
+        # @depricated please use {#record_to_file} instead
+        def record(*args)
+          options = args.last.kind_of?(Hash) ? args.last : {}
+          filename = args.first || "/tmp/recording_%d"
+
+          if filename.index("%d")
+            if @call.variables.has_key?(:recording_counter)
+              @call.variables[:recording_counter] += 1
+            else
+              @call.variables[:recording_counter]  = 0
+            end
+            filename = filename % @call.variables[:recording_counter]
+          end
+
+          if (!options.has_key?(:format))
+            format = filename.slice!(/\.[^\.]+$/)
+            if (format.nil?)
+              ahn_log.agi.warn "Format not specified and not detected.  Defaulting to \"gsm\""
+              format = "gsm"
+            end
+            format.sub!(/^\./, "")
+          else
+            format = options.delete(:format)
+          end
+
+          record_to_file(*args)
+          filename + "." + format
+        end
+
+        # Records a sound file with the given name. If no filename is specified a file named by Asterisk
+        # will be created and returned. Else the given filename will be returned. If a relative path is
+        # given, the file will be saved in the default Asterisk sound directory, /var/lib/spool/asterisk
+        # by default.
+        #
+        # @param [string] file name to record to.  Full path information is optional.  If you want to change the
+        #   format of the file you will want to add a .<valid extention> to the end of the file name specifying the 
+        #   filetype you want to record in.
+        #
+        # @param [hash] options
+        #
+        # Valid options are 
+        #   +:silence+ - silence in seconds
+        #
+        #   +:maxduration+ - maximum duration in seconds
+        #
+        #   +:escapedigits+ - digits to be used to excape from recording
+        #
+        #   +:beep+ - soundfile to use as a beep before recording.  if not specifed defaults to system generated beep,  
+        #           set to nil for no beep.
+        #
+        # Silence and maxduration is specified in seconds.
+        # 
+        # @return [String] The filename of the recorded file.  If the user hangs up before the recording is entered, 
+        # -1 is returned and RECORDED_FILE will not contain the name of the file, even though it IS in fact recorded.
         #
         # @example Asterisk generated filename
         #   filename = record
@@ -303,7 +383,7 @@ module Adhearsion
         # @example All options specified
         #   record 'my-file.gsm', :silence => 5, :maxduration => 120
         #
-        def record(*args)
+        def record_to_file(*args)
           options = args.last.kind_of?(Hash) ? args.pop : {}
           filename = args.shift || "/tmp/recording_%d"
 
@@ -335,14 +415,22 @@ module Adhearsion
           silence     = options.delete(:silence) || 0
 
           if (silence > 0)
-            response("RECORD FILE", filename, format, escapedigits, maxduration, 0, "BEEP", "s=#{silence}")
+            resp = response("RECORD FILE", filename, format, escapedigits, maxduration, 0, "BEEP", "s=#{silence}")
           else
-            response("RECORD FILE", filename, format, escapedigits, maxduration, 0, "BEEP")
+            resp = response("RECORD FILE", filename, format, escapedigits, maxduration, 0, "BEEP")
           end
 
           # If the user hangs up before the recording is entered, -1 is returned and RECORDED_FILE
           # will not contain the name of the file, even though it IS in fact recorded.
-          filename + "." + format
+          if resp.match /hangup/
+            return :hangup
+          elsif resp.match /writefile/
+            return :write_error 
+          elsif resp.match /dtmf/
+            return :success_dtmf
+          elsif resp.match /timeout/
+            return :success_timeout
+          end
         end
 
         # Simulates pressing the specified digits over the current channel. Can be used to
