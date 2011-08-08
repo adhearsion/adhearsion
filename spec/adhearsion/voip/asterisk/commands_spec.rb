@@ -27,6 +27,12 @@ module DialplanCommandTestHelpers
   end
 
   class MockCall
+    attr_accessor :variables
+
+    def initialize 
+      @variables = {}
+    end
+
     def with_command_lock
       yield
     end
@@ -718,33 +724,97 @@ describe 'the #record method' do
   include DialplanCommandTestHelpers
 
   it 'should return the recorded file name if the user hangs up during the recording' do
-    mock_call.should_receive(:response).once.with("RECORD FILE", "foo", "gsm", "#", -1, 0, "BEEP").and_return("200 result=-1 (hangup) endpos=167840\n")
+    mock_call.should_receive(:response).once.with('RECORD FILE', ['foo', 'gsm', '#', -1, 0, 'BEEP']).and_return("200 result=-1 (hangup) endpos=167840\n")
     mock_call.record('foo').should == 'foo.gsm'
   end
-  
+
+  it 'create a default filename if no file is specifed and icrement it on subsequent calls' do
+    mock_call.call.variables.delete :recording_counter
+    mock_call.should_receive(:response).once.with('RECORD FILE', ['/tmp/recording_0', 'gsm', '26', -1, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.should_receive(:response).once.with('RECORD FILE', ['/tmp/recording_1', 'gsm', '26', -1, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record(:beep => nil, :escapedigits => '26').should == '/tmp/recording_0.gsm'
+    mock_call.record(:beep => nil, :escapedigits => '26').should == '/tmp/recording_1.gsm'
+  end  
+
+  it 'determine the format from the filename' do
+    mock_call.should_receive(:response).once.with('RECORD FILE', ['foo', 'wav', '26', -1, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record('foo.wav', :beep => nil, :escapedigits => '26').should == 'foo.wav'
+  end  
+
+  it 'set the format of a file via the :format option' do
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "wav", "#", 2000, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record('foo', :beep => nil, :maxduration => 2, :format => 'wav').should == 'foo.wav'
+  end  
+
+  it 'set the format of a file via the :format option over-riding a implicit format' do
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo.wav", "mpeg", "#", 2000, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record('foo.wav', :beep => nil, :maxduration => 2, :format => 'mpeg').should == 'foo.wav.mpeg'
+  end  
 end
 
 describe 'the #record_to_file method' do
   include DialplanCommandTestHelpers
 
   it 'should return :hangup if the user hangs up during the recording' do
-    mock_call.should_receive(:response).once.with("RECORD FILE", "foo", "gsm", "#", -1, 0, "BEEP").and_return("200 result=-1 (hangup) endpos=167840\n")
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "gsm", "#", -1, 0, "BEEP"]).and_return("200 result=-1 (hangup) endpos=167840\n")
     mock_call.record_to_file('foo').should == :hangup
   end
 
   it 'should return :write error if the recording had a problem writing the file' do
-    mock_call.should_receive(:response).once.with("RECORD FILE", "foo", "gsm", "#", -1, 0, "BEEP").and_return("200 result=-1 (writefile) endpos=167840\n")
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "gsm", "#", -1, 0, "BEEP"]).and_return("200 result=-1 (writefile) endpos=167840\n")
     mock_call.record_to_file('foo').should == :write_error
   end  
 
   it 'should return :success_dtmf if the recording was completed successfully with a dtmf tone to end' do
-    mock_call.should_receive(:response).once.with("RECORD FILE", "foo", "gsm", "#", -1, 0, "BEEP").and_return("200 result=35 (dtmf) endpos=29120\n")
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "gsm", "#", -1, 0, "BEEP"]).and_return("200 result=35 (dtmf) endpos=29120\n")
     mock_call.record_to_file('foo').should == :success_dtmf
   end  
 
   it 'should return :success_timeout if the recording was completed successfully by timing out with silence' do
-    mock_call.should_receive(:response).once.with("RECORD FILE", "foo", "gsm", "#", -1, 0, "BEEP").and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "gsm", "#", -1, 0, "BEEP"]).and_return("200 result=0 (timeout) endpos=21600\n")
     mock_call.record_to_file('foo').should == :success_timeout
+  end  
+
+  it 'not send a beep if a :beep=>nil is passed in' do
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "gsm", "#", -1, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record_to_file('foo', :beep => nil).should == :success_timeout
+  end  
+
+  it 'set the silence if it is passed in' do
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "gsm", "#", -1, 0, 's=2']).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record_to_file('foo', :beep => nil, :silence => 2).should == :success_timeout
+  end  
+
+  it 'set the maxduration if it is passed in' do
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "gsm", "#", 2000, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record_to_file('foo', :beep => nil, :maxduration => 2).should == :success_timeout
+  end  
+
+  it 'set the format of a file via the :format option' do
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "wav", "#", 2000, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record_to_file('foo', :beep => nil, :maxduration => 2, :format => 'wav').should == :success_timeout
+  end  
+
+  it 'set the format of a file via the :format option over-riding a implicit format' do
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo.wav", "mpeg", "#", 2000, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record_to_file('foo.wav', :beep => nil, :maxduration => 2, :format => 'mpeg').should == :success_timeout
+  end  
+
+  it 'set the escapedigits if it is passed in' do
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "gsm", "26", -1, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record_to_file('foo', :beep => nil, :escapedigits => '26').should == :success_timeout
+  end  
+
+  it 'determine the format from the filename' do
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "wav", "26", -1, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record_to_file('foo.wav', :beep => nil, :escapedigits => '26').should == :success_timeout
+  end  
+
+  it 'create a default filename if no file is specifed and icrement it on subsequent calls' do
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["/tmp/recording_0", "gsm", "26", -1, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["/tmp/recording_1", "gsm", "26", -1, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record_to_file(:beep => nil, :escapedigits => '26').should == :success_timeout
+    mock_call.record_to_file(:beep => nil, :escapedigits => '26').should == :success_timeout
   end  
 end
 

@@ -296,7 +296,7 @@ module Adhearsion
         #
         # @param [string] file name to record to.  Full path information is optional.  If you want to change the
         #   format of the file you will want to add a .<valid extention> to the end of the file name specifying the 
-        #   filetype you want to record in.
+        #   filetype you want to record in.  Alternately you can pass it is as :format in the options
         #
         # @param [hash] options
         #
@@ -309,6 +309,8 @@ module Adhearsion
         #
         #   +:beep+ - soundfile to use as a beep before recording.  if not specifed defaults to system generated beep,  
         #           set to nil for no beep.
+        #
+        #   +:format+ - the format of the file to be recorded
         #
         # Silence and maxduration is specified in seconds.
         # 
@@ -324,8 +326,7 @@ module Adhearsion
         # @depricated please use {#record_to_file} instead
         def record(*args)
           options = args.last.kind_of?(Hash) ? args.last : {}
-          filename = args.first || "/tmp/recording_%d"
-
+          filename = args.first && !args.first.kind_of?(Hash) ? String.new(args.first) : "/tmp/recording_%d"
           if filename.index("%d")
             if @call.variables.has_key?(:recording_counter)
               @call.variables[:recording_counter] += 1
@@ -333,6 +334,7 @@ module Adhearsion
               @call.variables[:recording_counter]  = 0
             end
             filename = filename % @call.variables[:recording_counter]
+            @call.variables[:recording_counter] -= 1
           end
 
           if (!options.has_key?(:format))
@@ -343,9 +345,8 @@ module Adhearsion
             end
             format.sub!(/^\./, "")
           else
-            format = options.delete(:format)
+            format = options[:format]
           end
-
           record_to_file(*args)
           filename + "." + format
         end
@@ -357,7 +358,9 @@ module Adhearsion
         #
         # @param [string] file name to record to.  Full path information is optional.  If you want to change the
         #   format of the file you will want to add a .<valid extention> to the end of the file name specifying the 
-        #   filetype you want to record in.
+        #   filetype you want to record in.  If you don't specify a valid extension it will default to gsm and a
+        #   .gsm will be added to the file.  If you don't specify a filename it will write one in /tmp/recording_%d
+        #   with %d being a counter that increments from 0 onward for the particular call you are making.
         #
         # @param [hash] options
         #
@@ -371,10 +374,16 @@ module Adhearsion
         #   +:beep+ - soundfile to use as a beep before recording.  if not specifed defaults to system generated beep,  
         #           set to nil for no beep.
         #
+        #   +:format+ - the format of the file to be recorded.  This will over-ride a implicit format in a file extension
+        #           and append a .<format> to the end of the file.
+        #
         # Silence and maxduration is specified in seconds.
         # 
-        # @return [String] The filename of the recorded file.  If the user hangs up before the recording is entered, 
-        # -1 is returned and RECORDED_FILE will not contain the name of the file, even though it IS in fact recorded.
+        # @return [Symbol] One of the follwing..... :hangup, :write_error, :success_dtmf, :success_timeout  
+        #        
+        # A sound file will be recorded to the specifed file unless a :write_error is returned.  A :success_dtmf is
+        # for when a call was ended with a DTMF tone.  A :success_timeout is returned when a call times out due to 
+        # a silence longer than the specified silence or if the recording reaches the maxduration.
         #
         # @example Asterisk generated filename
         #   filename = record
@@ -414,13 +423,18 @@ module Adhearsion
           escapedigits = options.delete(:escapedigits) || "#"
           silence     = options.delete(:silence) || 0
 
-          if (silence > 0)
-            resp = response("RECORD FILE", filename, format, escapedigits, maxduration, 0, "BEEP", "s=#{silence}")
-          else
-            resp = response("RECORD FILE", filename, format, escapedigits, maxduration, 0, "BEEP")
+          response_params = filename, format, escapedigits, maxduration, 0
+          
+          if !options.has_key? :beep 
+            response_params << 'BEEP'
           end
 
-          # If the user hangs up before the recording is entered, -1 is returned and RECORDED_FILE
+          if silence > 0
+            response_params << "s=#{silence}"
+          end
+
+          resp = response 'RECORD FILE', response_params
+          # If the user hangs up before the recording is entered, -1 is returned by asterisk and RECORDED_FILE
           # will not contain the name of the file, even though it IS in fact recorded.
           if resp.match /hangup/
             return :hangup
