@@ -1,0 +1,421 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Module: Adhearsion
+  
+    &mdash; Documentation by YARD 0.7.2
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '';
+  if (relpath != '') relpath += '/';
+</script>
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="_index.html">Index (A)</a> &raquo; 
+    
+    
+    <span class="title">Adhearsion</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><h1>Module: Adhearsion
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+  
+    
+  
+    
+  
+  
+    <dt class="r1">Included in:</dt>
+    <dd class="r1"><span class='object_link'><a href="Adhearsion/Console.html" title="Adhearsion::Console (module)">Console</a></span></dd>
+    
+  
+  
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">lib/adhearsion/version.rb<span class="defines">,<br />
+  lib/adhearsion.rb,<br /> lib/adhearsion/logging.rb,<br /> lib/adhearsion/console.rb,<br /> lib/adhearsion/commands.rb,<br /> lib/adhearsion/voip/call.rb,<br /> lib/adhearsion/initializer.rb,<br /> lib/adhearsion/voip/commands.rb,<br /> lib/adhearsion/voip/constants.rb,<br /> lib/adhearsion/voip/dial_plan.rb,<br /> lib/adhearsion/events_support.rb,<br /> lib/adhearsion/xmpp/connection.rb,<br /> lib/adhearsion/initializer/drb.rb,<br /> lib/adhearsion/initializer/ldap.rb,<br /> lib/adhearsion/host_definitions.rb,<br /> lib/adhearsion/initializer/xmpp.rb,<br /> lib/adhearsion/voip/conveniences.rb,<br /> lib/adhearsion/script_ahn_loader.rb,<br /> lib/adhearsion/voip/call_routing.rb,<br /> lib/adhearsion/initializer/rails.rb,<br /> lib/adhearsion/component_manager.rb,<br /> lib/adhearsion/voip/dsl/dialing_dsl.rb,<br /> lib/adhearsion/initializer/asterisk.rb,<br /> lib/adhearsion/initializer/database.rb,<br /> lib/adhearsion/voip/asterisk/commands.rb,<br /> lib/adhearsion/voip/asterisk/agi_server.rb,<br /> lib/adhearsion/voip/dsl/dialplan/parser.rb,<br /> lib/adhearsion/voip/dsl/numerical_string.rb,<br /> lib/adhearsion/initializer/configuration.rb,<br /> lib/adhearsion/voip/freeswitch/oes_server.rb,<br /> lib/adhearsion/foundation/custom_daemonizer.rb,<br /> lib/adhearsion/voip/asterisk/config_manager.rb,<br /> lib/adhearsion/voip/dsl/dialplan/dispatcher.rb,<br /> lib/adhearsion/voip/freeswitch/event_handler.rb,<br /> lib/adhearsion/voip/dsl/dialplan/thread_mixin.rb,<br /> lib/adhearsion/voip/asterisk/manager_interface.rb,<br /> lib/adhearsion/voip/menu_state_machine/matchers.rb,<br /> lib/adhearsion/voip/menu_state_machine/menu_class.rb,<br /> lib/adhearsion/voip/menu_state_machine/menu_builder.rb,<br /> lib/adhearsion/voip/asterisk/special_dial_plan_managers.rb,<br /> lib/adhearsion/voip/freeswitch/basic_connection_manager.rb,<br /> lib/adhearsion/voip/menu_state_machine/calculated_match.rb,<br /> lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rb,<br /> lib/adhearsion/voip/freeswitch/inbound_connection_manager.rb,<br /> lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb,<br /> lib/adhearsion/voip/asterisk/config_generators/agents.conf.rb,<br /> lib/adhearsion/voip/dsl/dialplan/control_passing_exception.rb,<br /> lib/adhearsion/voip/asterisk/manager_interface/ami_messages.rb,<br /> lib/adhearsion/voip/asterisk/config_generators/voicemail.conf.rb,<br /> lib/adhearsion/voip/dsl/dialing_dsl/dialing_dsl_monkey_patches.rb,<br /> lib/adhearsion/voip/asterisk/config_generators/config_generator.rb,<br /> lib/adhearsion/voip/freeswitch/freeswitch_dialplan_command_factory.rb</span>
+</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>
+This is largely based on the Daemonize library by Travis Whitton and Judson
+Lester. <a href="http://grub.ath.cx/daemonize">grub.ath.cx/daemonize</a>. I
+cleaned it up a bit to meet Adhearsion&#8217;s quality standards.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+   
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Adhearsion/CLI.html" title="Adhearsion::CLI (module)">CLI</a></span>, <span class='object_link'><a href="Adhearsion/Components.html" title="Adhearsion::Components (module)">Components</a></span>, <span class='object_link'><a href="Adhearsion/Console.html" title="Adhearsion::Console (module)">Console</a></span>, <span class='object_link'><a href="Adhearsion/CustomDaemonizer.html" title="Adhearsion::CustomDaemonizer (module)">CustomDaemonizer</a></span>, <span class='object_link'><a href="Adhearsion/Events.html" title="Adhearsion::Events (module)">Events</a></span>, <span class='object_link'><a href="Adhearsion/Logging.html" title="Adhearsion::Logging (module)">Logging</a></span>, <span class='object_link'><a href="Adhearsion/ScriptAhnLoader.html" title="Adhearsion::ScriptAhnLoader (module)">ScriptAhnLoader</a></span>, <span class='object_link'><a href="Adhearsion/VERSION.html" title="Adhearsion::VERSION (module)">VERSION</a></span>, <span class='object_link'><a href="Adhearsion/VoIP.html" title="Adhearsion::VoIP (module)">VoIP</a></span>, <span class='object_link'><a href="Adhearsion/XMPP.html" title="Adhearsion::XMPP (module)">XMPP</a></span>
+    
+   
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Adhearsion/Call.html" title="Adhearsion::Call (class)">Call</a></span>, <span class='object_link'><a href="Adhearsion/Calls.html" title="Adhearsion::Calls (class)">Calls</a></span>, <span class='object_link'><a href="Adhearsion/Configuration.html" title="Adhearsion::Configuration (class)">Configuration</a></span>, <span class='object_link'><a href="Adhearsion/DialPlan.html" title="Adhearsion::DialPlan (class)">DialPlan</a></span>, <span class='object_link'><a href="Adhearsion/FailedExtensionCallException.html" title="Adhearsion::FailedExtensionCallException (class)">FailedExtensionCallException</a></span>, <span class='object_link'><a href="Adhearsion/Hangup.html" title="Adhearsion::Hangup (class)">Hangup</a></span>, <span class='object_link'><a href="Adhearsion/HostDefinition.html" title="Adhearsion::HostDefinition (class)">HostDefinition</a></span>, <span class='object_link'><a href="Adhearsion/HungupExtensionCallException.html" title="Adhearsion::HungupExtensionCallException (class)">HungupExtensionCallException</a></span>, <span class='object_link'><a href="Adhearsion/Initializer.html" title="Adhearsion::Initializer (class)">Initializer</a></span>, <span class='object_link'><a href="Adhearsion/MetaAgiCallException.html" title="Adhearsion::MetaAgiCallException (class)">MetaAgiCallException</a></span>, <span class='object_link'><a href="Adhearsion/PathString.html" title="Adhearsion::PathString (class)">PathString</a></span>, <span class='object_link'><a href="Adhearsion/PkgVersion.html" title="Adhearsion::PkgVersion (class)">PkgVersion</a></span>, <span class='object_link'><a href="Adhearsion/UselessCallException.html" title="Adhearsion::UselessCallException (class)">UselessCallException</a></span>
+    
+  
+</p>
+
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="AHN_INSTALL_DIR-constant" class="">AHN_INSTALL_DIR =
+          <div class="docstring">
+  <div class="discussion">
+    <p>
+Sets up the Gem require path.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>File</span><span class='period'>.</span><span class='id expand_path'>expand_path</span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id dirname'>dirname</span><span class='lparen'>(</span><span class='kw'>__FILE__</span><span class='rparen'>)</span> <span class='op'>+</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>/..</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span></pre></dd>
+      
+        <dt id="AHN_CONFIG-constant" class="">AHN_CONFIG =
+          
+        </dt>
+        <dd><pre class="code"><span class='const'>Configuration</span><span class='period'>.</span><span class='id new'>new</span></pre></dd>
+      
+        <dt id="IMPORTANT_THREADS-constant" class="">IMPORTANT_THREADS =
+          <div class="docstring">
+  <div class="discussion">
+    <p>
+This Array holds all the Threads whose life matters. Adhearsion will not
+exit until all of these have died.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div>
+        </dt>
+        <dd><pre class="code"><span class='lbracket'>[</span><span class='rbracket'>]</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#active_calls-class_method" title="active_calls (class method)">+ (Object) <strong>active_calls</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#receive_call_from-class_method" title="receive_call_from (class method)">+ (Object) <strong>receive_call_from</strong>(io, &amp;block) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#remove_inactive_call-class_method" title="remove_inactive_call (class method)">+ (Object) <strong>remove_inactive_call</strong>(call) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#shutdown%21-class_method" title="shutdown! (class method)">+ (Object) <strong>shutdown!</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Shuts down the framework.
+</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="active_calls-class_method">
+  
+    + (<tt><span class='object_link'><a href="Object.html" title="Object (class)">Object</a></span></tt>) <strong>active_calls</strong> 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+6
+7
+8</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 6</span>
+
+<span class='kw'>def</span> <span class='id active_calls'>active_calls</span>
+  <span class='ivar'>@calls</span> <span class='op'>||=</span> <span class='const'>Calls</span><span class='period'>.</span><span class='id new'>new</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="receive_call_from-class_method">
+  
+    + (<tt><span class='object_link'><a href="Object.html" title="Object (class)">Object</a></span></tt>) <strong>receive_call_from</strong>(io, &amp;block) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+10
+11
+12
+13</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 10</span>
+
+<span class='kw'>def</span> <span class='id receive_call_from'>receive_call_from</span><span class='lparen'>(</span><span class='id io'>io</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id block'>block</span><span class='rparen'>)</span>
+  <span class='id active_calls'>active_calls</span> <span class='op'>&lt;&lt;</span> <span class='lparen'>(</span><span class='id call'>call</span> <span class='op'>=</span> <span class='const'>Call</span><span class='period'>.</span><span class='id receive_from'>receive_from</span><span class='lparen'>(</span><span class='id io'>io</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id block'>block</span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='id call'>call</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="remove_inactive_call-class_method">
+  
+    + (<tt><span class='object_link'><a href="Object.html" title="Object (class)">Object</a></span></tt>) <strong>remove_inactive_call</strong>(call) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+15
+16
+17</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 15</span>
+
+<span class='kw'>def</span> <span class='id remove_inactive_call'>remove_inactive_call</span><span class='lparen'>(</span><span class='id call'>call</span><span class='rparen'>)</span>
+  <span class='id active_calls'>active_calls</span><span class='period'>.</span><span class='id remove_inactive_call'>remove_inactive_call</span><span class='lparen'>(</span><span class='id call'>call</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="shutdown!-class_method">
+  
+    + (<tt><span class='object_link'><a href="Object.html" title="Object (class)">Object</a></span></tt>) <strong>shutdown!</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Shuts down the framework.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/initializer.rb', line 10</span>
+
+<span class='kw'>def</span> <span class='id shutdown!'>shutdown!</span>
+  <span class='kw'>if</span> <span class='kw'>self</span><span class='period'>.</span><span class='id status'>status</span> <span class='op'>==</span> <span class='symbol'>:stopping</span>
+    <span class='comment'># This is the second shutdown request we've received while attempting
+</span>    <span class='comment'># to shut down gracefully.  At this point, let's pull the plug...
+</span>    <span class='id ahn_log'>ahn_log</span><span class='period'>.</span><span class='id warning'>warning</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Shutting down immediately at </span><span class='embexpr_beg'>#{</span><span class='const'>Time</span><span class='period'>.</span><span class='id now'>now</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id exit'>exit</span>
+  <span class='kw'>end</span>
+  <span class='id ahn_log'>ahn_log</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Shutting down gracefully at </span><span class='embexpr_beg'>#{</span><span class='const'>Time</span><span class='period'>.</span><span class='id now'>now</span><span class='rbrace'>}</span><span class='tstring_content'>.</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>self</span><span class='period'>.</span><span class='id status'>status</span> <span class='op'>=</span> <span class='symbol'>:stopping</span>
+  <span class='const'>Events</span><span class='period'>.</span><span class='id trigger_immediately'>trigger_immediately</span> <span class='symbol'>:shutdown</span>
+  <span class='const'>Events</span><span class='period'>.</span><span class='id stop!'>stop!</span>
+  <span class='id exit'>exit</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+    
+    <div id="footer">
+  Generated on Mon Aug  8 16:22:03 2011 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.2 (ruby-1.9.2).
+</div>
+
+  </body>
+</html>

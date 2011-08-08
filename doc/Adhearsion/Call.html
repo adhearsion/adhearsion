@@ -1,0 +1,1706 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: Adhearsion::Call
+  
+    &mdash; Documentation by YARD 0.7.2
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '..';
+  if (relpath != '') relpath += '/';
+</script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../_index.html">Index (C)</a> &raquo; 
+    <span class='title'><span class='object_link'><a href="../Adhearsion.html" title="Adhearsion (module)">Adhearsion</a></span></span>
+     &raquo; 
+    <span class="title">Call</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><h1>Class: Adhearsion::Call
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName"><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></span>
+      
+        <ul class="fullTree">
+          <li><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></li>
+          
+            <li class="next">Adhearsion::Call</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">lib/adhearsion/voip/call.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>
+Encapsulates call-related data and behavior. For example, variables passed
+in on call initiation are accessible here as attributes
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+   
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Call/Variables.html" title="Adhearsion::Call::Variables (module)">Variables</a></span>
+    
+   
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Call/CallMessageQueue.html" title="Adhearsion::Call::CallMessageQueue (class)">CallMessageQueue</a></span>
+    
+  
+</p>
+
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="ASTERISK_FRAME_STATES-constant" class="">ASTERISK_FRAME_STATES =
+          <div class="docstring">
+  <div class="discussion">
+    <p>
+This is basically a translation of ast_channel_reason2str() from
+main/channel.c and ast_control_frame_type in include/asterisk/frame.h in
+the Asterisk source code. When Asterisk jumps to the &#8216;failed&#8217;
+extension, it sets a REASON channel variable to a number. The indexes of
+these symbols represent the possible numbers REASON could be.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div>
+        </dt>
+        <dd><pre class="code"><span class='lbracket'>[</span>
+  <span class='symbol'>:failure</span><span class='comma'>,</span>     <span class='comment'># &quot;Call Failure (not BUSY, and not NO_ANSWER, maybe Circuit busy or down?)&quot;
+</span>  <span class='symbol'>:hangup</span><span class='comma'>,</span>      <span class='comment'># Other end has hungup
+</span>  <span class='symbol'>:ring</span><span class='comma'>,</span>        <span class='comment'># Local ring
+</span>  <span class='symbol'>:ringing</span><span class='comma'>,</span>     <span class='comment'># Remote end is ringing
+</span>  <span class='symbol'>:answer</span><span class='comma'>,</span>      <span class='comment'># Remote end has answered
+</span>  <span class='symbol'>:busy</span><span class='comma'>,</span>        <span class='comment'># Remote end is busy
+</span>  <span class='symbol'>:takeoffhook</span><span class='comma'>,</span> <span class='comment'># Make it go off hook
+</span>  <span class='symbol'>:offhook</span><span class='comma'>,</span>     <span class='comment'># Line is off hook
+</span>  <span class='symbol'>:congestion</span><span class='comma'>,</span>  <span class='comment'># Congestion (circuits busy)
+</span>  <span class='symbol'>:flash</span><span class='comma'>,</span>       <span class='comment'># Flash hook
+</span>  <span class='symbol'>:wink</span><span class='comma'>,</span>        <span class='comment'># Wink
+</span>  <span class='symbol'>:option</span><span class='comma'>,</span>      <span class='comment'># Set a low-level option
+</span>  <span class='symbol'>:radio_key</span><span class='comma'>,</span>   <span class='comment'># Key Radio
+</span>  <span class='symbol'>:radio_unkey</span><span class='comma'>,</span> <span class='comment'># Un-Key Radio
+</span>  <span class='symbol'>:progress</span><span class='comma'>,</span>    <span class='comment'># Indicate PROGRESS
+</span>  <span class='symbol'>:proceeding</span><span class='comma'>,</span>  <span class='comment'># Indicate CALL PROCEEDING
+</span>  <span class='symbol'>:hold</span><span class='comma'>,</span>        <span class='comment'># Indicate call is placed on hold
+</span>  <span class='symbol'>:unhold</span><span class='comma'>,</span>      <span class='comment'># Indicate call is left from hold
+</span>  <span class='symbol'>:vidupdate</span>    <span class='comment'># Indicate video frame update
+</span><span class='rbracket'>]</span></pre></dd>
+      
+    </dl>
+  
+
+
+  <h2>Instance Attribute Summary <small>(<a href="#" class="summary_toggle">collapse</a>)</small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#inbox-instance_method" title="#inbox (instance method)">- (Object) <strong>inbox</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Returns the value of attribute inbox.
+</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#io-instance_method" title="#io (instance method)">- (Object) <strong>io</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Returns the value of attribute io.
+</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#originating_voip_platform-instance_method" title="#originating_voip_platform (instance method)">- (Object) <strong>originating_voip_platform</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Returns the value of attribute originating_voip_platform.
+</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#type-instance_method" title="#type (instance method)">- (Object) <strong>type</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Returns the value of attribute type.
+</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#variables-instance_method" title="#variables (instance method)">- (Object) <strong>variables</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Returns the value of attribute variables.
+</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#receive_from-class_method" title="receive_from (class method)">+ (Object) <strong>receive_from</strong>(io, &amp;block) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+The primary public interface for creating a Call instance.
+</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#ahn_log-instance_method" title="#ahn_log (instance method)">- (Object) <strong>ahn_log</strong>(*args) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#can_use_messaging%3F-instance_method" title="#can_use_messaging? (instance method)">- (Boolean) <strong>can_use_messaging?</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#closed%3F-instance_method" title="#closed? (instance method)">- (Boolean) <strong>closed?</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#define_variable_accessors-instance_method" title="#define_variable_accessors (instance method)">- (Object) <strong>define_variable_accessors</strong>(recipient = self) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#deliver_message-instance_method" title="#deliver_message (instance method)">- (Object) <strong>deliver_message</strong>(message) </a>
+    
+
+    
+      (also: #&lt;&lt;)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#extract_failed_reason_from-instance_method" title="#extract_failed_reason_from (instance method)">- (Object) <strong>extract_failed_reason_from</strong>(environment) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#failed_call%3F-instance_method" title="#failed_call? (instance method)">- (Boolean) <strong>failed_call?</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Asterisk sometimes uses the &#8220;failed&#8221; extension to indicate a
+failed dial attempt.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#hangup%21-instance_method" title="#hangup! (instance method)">- (Object) <strong>hangup!</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#hungup_call%3F-instance_method" title="#hungup_call? (instance method)">- (Boolean) <strong>hungup_call?</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">- (Call) <strong>initialize</strong>(io, variables) </a>
+    
+
+    
+  </span>
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+A new instance of Call.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#remove_tag-instance_method" title="#remove_tag (instance method)">- (Object) <strong>remove_tag</strong>(symbol) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#tag-instance_method" title="#tag (instance method)">- (Object) <strong>tag</strong>(label) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+This may still be a symbol, but no longer requires the tag to be a symbol
+although beware that using a symbol would create a memory leak if used
+improperly.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#tagged_with%3F-instance_method" title="#tagged_with? (instance method)">- (Boolean) <strong>tagged_with?</strong>(symbol) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#tags-instance_method" title="#tags (instance method)">- (Object) <strong>tags</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#unique_identifier-instance_method" title="#unique_identifier (instance method)">- (Object) <strong>unique_identifier</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Adhearsion indexes calls by this identifier so they may later be found and
+manipulated.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#with_command_lock-instance_method" title="#with_command_lock (instance method)">- (Object) <strong>with_command_lock</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Lock the socket for a command.
+</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <p class="signature first" id="initialize-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Adhearsion::Call (class)">Call</a></span></tt>) <strong>initialize</strong>(io, variables) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+A new instance of Call
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+198
+199
+200
+201
+202
+203
+204
+205</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 198</span>
+
+<span class='kw'>def</span> <span class='id initialize'>initialize</span><span class='lparen'>(</span><span class='id io'>io</span><span class='comma'>,</span> <span class='id variables'>variables</span><span class='rparen'>)</span>
+  <span class='ivar'>@io</span><span class='comma'>,</span> <span class='ivar'>@variables</span> <span class='op'>=</span> <span class='id io'>io</span><span class='comma'>,</span> <span class='id variables'>variables</span><span class='period'>.</span><span class='id symbolize_keys'>symbolize_keys</span>
+  <span class='id check_if_valid_call'>check_if_valid_call</span>
+  <span class='id define_variable_accessors'>define_variable_accessors</span>
+  <span class='id set_originating_voip_platform!'>set_originating_voip_platform!</span>
+  <span class='ivar'>@tag_mutex</span> <span class='op'>=</span> <span class='const'>Mutex</span><span class='period'>.</span><span class='id new'>new</span>
+  <span class='ivar'>@tags</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id="inbox=-instance_method"></span>
+      <span id="inbox-instance_method"></span>
+      <div class="method_details first">
+  <p class="signature first" id="inbox-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>inbox</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Returns the value of attribute inbox
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+197
+198
+199</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 197</span>
+
+<span class='kw'>def</span> <span class='id inbox'>inbox</span>
+  <span class='ivar'>@inbox</span> <span class='op'>||=</span> <span class='const'>CallMessageQueue</span><span class='period'>.</span><span class='id new'>new</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="io=-instance_method"></span>
+      <span id="io-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="io-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>io</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Returns the value of attribute io
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+197
+198
+199</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 197</span>
+
+<span class='kw'>def</span> <span class='id io'>io</span>
+  <span class='ivar'>@io</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="originating_voip_platform=-instance_method"></span>
+      <span id="originating_voip_platform-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="originating_voip_platform-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>originating_voip_platform</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Returns the value of attribute originating_voip_platform
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+197
+198
+199</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 197</span>
+
+<span class='kw'>def</span> <span class='id originating_voip_platform'>originating_voip_platform</span>
+  <span class='ivar'>@originating_voip_platform</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="type=-instance_method"></span>
+      <span id="type-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="type-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>type</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Returns the value of attribute type
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+197
+198
+199</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 197</span>
+
+<span class='kw'>def</span> <span class='id type'>type</span>
+  <span class='ivar'>@type</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="variables=-instance_method"></span>
+      <span id="variables-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="variables-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>variables</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Returns the value of attribute variables
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+197
+198
+199</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 197</span>
+
+<span class='kw'>def</span> <span class='id variables'>variables</span>
+  <span class='ivar'>@variables</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="receive_from-class_method">
+  
+    + (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>receive_from</strong>(io, &amp;block) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+The primary public interface for creating a Call instance. Given an IO
+(probably a socket accepted from an Asterisk service), creates a Call
+instance which encapsulates everything we know about that call.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+184
+185
+186
+187
+188</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 184</span>
+
+<span class='kw'>def</span> <span class='id receive_from'>receive_from</span><span class='lparen'>(</span><span class='id io'>io</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id block'>block</span><span class='rparen'>)</span>
+  <span class='id new'>new</span><span class='lparen'>(</span><span class='id io'>io</span><span class='comma'>,</span> <span class='id variable_parser_for'>variable_parser_for</span><span class='lparen'>(</span><span class='id io'>io</span><span class='rparen'>)</span><span class='period'>.</span><span class='id variables'>variables</span><span class='rparen'>)</span><span class='period'>.</span><span class='id tap'>tap</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id call'>call</span><span class='op'>|</span>
+    <span class='id block'>block</span><span class='period'>.</span><span class='id call'>call</span><span class='lparen'>(</span><span class='id call'>call</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id block'>block</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="ahn_log-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>ahn_log</strong>(*args) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+295
+296
+297</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 295</span>
+
+<span class='kw'>def</span> <span class='id ahn_log'>ahn_log</span><span class='lparen'>(</span><span class='op'>*</span><span class='id args'>args</span><span class='rparen'>)</span>
+  <span class='const'>Adhearsion</span><span class='op'>::</span><span class='const'>Logging</span><span class='op'>::</span><span class='const'>DefaultAdhearsionLogger</span><span class='period'>.</span><span class='id send'>send</span> <span class='const'>Adhearsion</span><span class='op'>::</span><span class='const'>Logging</span><span class='op'>::</span><span class='const'>AdhearsionLogger</span><span class='period'>.</span><span class='id sanitized_logger_name'>sanitized_logger_name</span><span class='lparen'>(</span><span class='id unique_identifier'>unique_identifier</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='op'>*</span><span class='id args'>args</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="can_use_messaging?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>can_use_messaging?</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <h3>Returns:</h3>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+242
+243
+244</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 242</span>
+
+<span class='kw'>def</span> <span class='id can_use_messaging?'>can_use_messaging?</span>
+  <span class='kw'>return</span> <span class='id inbox'>inbox</span><span class='period'>.</span><span class='id open'>open</span> <span class='op'>==</span> <span class='kw'>true</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="closed?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>closed?</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <h3>Returns:</h3>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+255
+256
+257</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 255</span>
+
+<span class='kw'>def</span> <span class='id closed?'>closed?</span>
+  <span class='id io'>io</span><span class='period'>.</span><span class='id closed?'>closed?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="define_variable_accessors-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>define_variable_accessors</strong>(recipient = self) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+299
+300
+301
+302
+303</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 299</span>
+
+<span class='kw'>def</span> <span class='id define_variable_accessors'>define_variable_accessors</span><span class='lparen'>(</span><span class='id recipient'>recipient</span><span class='op'>=</span><span class='kw'>self</span><span class='rparen'>)</span>
+  <span class='id variables'>variables</span><span class='period'>.</span><span class='id each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id key'>key</span><span class='comma'>,</span> <span class='id value'>value</span><span class='op'>|</span>
+    <span class='id define_singleton_accessor_with_pair'>define_singleton_accessor_with_pair</span><span class='lparen'>(</span><span class='id key'>key</span><span class='comma'>,</span> <span class='id value'>value</span><span class='comma'>,</span> <span class='id recipient'>recipient</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="deliver_message-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>deliver_message</strong>(message) 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='<<-instance_method'>&lt;&lt;</span></span>
+    </span>
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+237
+238
+239</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 237</span>
+
+<span class='kw'>def</span> <span class='id deliver_message'>deliver_message</span><span class='lparen'>(</span><span class='id message'>message</span><span class='rparen'>)</span>
+  <span class='id inbox'>inbox</span> <span class='op'>&lt;&lt;</span> <span class='id message'>message</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="extract_failed_reason_from-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>extract_failed_reason_from</strong>(environment) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+305
+306
+307
+308
+309
+310
+311</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 305</span>
+
+<span class='kw'>def</span> <span class='id extract_failed_reason_from'>extract_failed_reason_from</span><span class='lparen'>(</span><span class='id environment'>environment</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id originating_voip_platform'>originating_voip_platform</span> <span class='op'>==</span> <span class='symbol'>:asterisk</span>
+    <span class='id failed_reason'>failed_reason</span> <span class='op'>=</span> <span class='id environment'>environment</span><span class='period'>.</span><span class='id variable'>variable</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>REASON</span><span class='tstring_end'>'</span></span>
+    <span class='id failed_reason'>failed_reason</span> <span class='op'>&amp;&amp;=</span> <span class='const'>ASTERISK_FRAME_STATES</span><span class='lbracket'>[</span><span class='id failed_reason'>failed_reason</span><span class='period'>.</span><span class='id to_i'>to_i</span><span class='rbracket'>]</span>
+    <span class='id define_singleton_accessor_with_pair'>define_singleton_accessor_with_pair</span><span class='lparen'>(</span><span class='symbol'>:failed_reason</span><span class='comma'>,</span> <span class='id failed_reason'>failed_reason</span><span class='comma'>,</span> <span class='id environment'>environment</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="failed_call?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>failed_call?</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Asterisk sometimes uses the &#8220;failed&#8221; extension to indicate a
+failed dial attempt. Since it may be important to handle these, this flag
+helps the dialplan Manager figure that out.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <h3>Returns:</h3>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+262
+263
+264</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 262</span>
+
+<span class='kw'>def</span> <span class='id failed_call?'>failed_call?</span>
+  <span class='ivar'>@failed_call</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="hangup!-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>hangup!</strong> 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+250
+251
+252
+253</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 250</span>
+
+<span class='kw'>def</span> <span class='id hangup!'>hangup!</span>
+  <span class='id io'>io</span><span class='period'>.</span><span class='id close'>close</span>
+  <span class='const'>Adhearsion</span><span class='period'>.</span><span class='id remove_inactive_call'>remove_inactive_call</span> <span class='kw'>self</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="hungup_call?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>hungup_call?</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <h3>Returns:</h3>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+266
+267
+268</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 266</span>
+
+<span class='kw'>def</span> <span class='id hungup_call?'>hungup_call?</span>
+  <span class='ivar'>@hungup_call</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="remove_tag-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>remove_tag</strong>(symbol) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+225
+226
+227
+228
+229</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 225</span>
+
+<span class='kw'>def</span> <span class='id remove_tag'>remove_tag</span><span class='lparen'>(</span><span class='id symbol'>symbol</span><span class='rparen'>)</span>
+  <span class='ivar'>@tag_mutex</span><span class='period'>.</span><span class='id synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='ivar'>@tags</span><span class='period'>.</span><span class='id reject!'>reject!</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id tag'>tag</span><span class='op'>|</span> <span class='id tag'>tag</span> <span class='op'>==</span> <span class='id symbol'>symbol</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="tag-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>tag</strong>(label) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+This may still be a symbol, but no longer requires the tag to be a symbol
+although beware that using a symbol would create a memory leak if used
+improperly
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <h3>Parameters:</h3>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>label</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../String.html" title="String (class)">String</a></span></tt>, <tt>Symbol</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>
+String or Symbol with which to tag this call
+</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+216
+217
+218
+219
+220
+221
+222
+223</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 216</span>
+
+<span class='kw'>def</span> <span class='id tag'>tag</span><span class='lparen'>(</span><span class='id label'>label</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='lbracket'>[</span><span class='const'>String</span><span class='comma'>,</span> <span class='const'>Symbol</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id include?'>include?</span><span class='lparen'>(</span><span class='id label'>label</span><span class='period'>.</span><span class='id class'>class</span><span class='rparen'>)</span>
+    <span class='id raise'>raise</span> <span class='const'>ArgumentError</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Tag must be a String or Symbol</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@tag_mutex</span><span class='period'>.</span><span class='id synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='ivar'>@tags</span> <span class='op'>&lt;&lt;</span> <span class='id label'>label</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="tagged_with?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>tagged_with?</strong>(symbol) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <h3>Returns:</h3>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+231
+232
+233
+234
+235</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 231</span>
+
+<span class='kw'>def</span> <span class='id tagged_with?'>tagged_with?</span><span class='lparen'>(</span><span class='id symbol'>symbol</span><span class='rparen'>)</span>
+  <span class='ivar'>@tag_mutex</span><span class='period'>.</span><span class='id synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='ivar'>@tags</span><span class='period'>.</span><span class='id include?'>include?</span> <span class='id symbol'>symbol</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="tags-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>tags</strong> 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+207
+208
+209
+210
+211</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 207</span>
+
+<span class='kw'>def</span> <span class='id tags'>tags</span>
+  <span class='ivar'>@tag_mutex</span><span class='period'>.</span><span class='id synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='kw'>return</span> <span class='ivar'>@tags</span><span class='period'>.</span><span class='id clone'>clone</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="unique_identifier-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>unique_identifier</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Adhearsion indexes calls by this identifier so they may later be found and
+manipulated. For calls from Asterisk, this method uses the following
+properties for uniqueness, falling back to the next if one is for some
+reason unavailable:
+</p>
+<pre class="code">
+    Asterisk channel ID     -&gt;        unique ID        -&gt; Call#object_id
+</pre>
+<p>
+(e.g. SIP/mytrunk-jb12c88a) -> (e.g. 1215039989.47033) -> (e.g. 2792080)
+</p>
+<p>
+Note: channel is used over unique ID because channel may be used to bridge
+two channels together.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+286
+287
+288
+289
+290
+291
+292
+293</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 286</span>
+
+<span class='kw'>def</span> <span class='id unique_identifier'>unique_identifier</span>
+  <span class='kw'>case</span> <span class='id originating_voip_platform'>originating_voip_platform</span>
+    <span class='kw'>when</span> <span class='symbol'>:asterisk</span>
+      <span class='id variables'>variables</span><span class='lbracket'>[</span><span class='symbol'>:channel</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='id variables'>variables</span><span class='lbracket'>[</span><span class='symbol'>:uniqueid</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='id object_id'>object_id</span>
+    <span class='kw'>else</span>
+      <span class='id raise'>raise</span> <span class='const'>NotImplementedError</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="with_command_lock-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../Object.html" title="Object (class)">Object</a></span></tt>) <strong>with_command_lock</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Lock the socket for a command.  Can be used to allow the console to take
+control of the thread in between AGI commands coming from the dialplan.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+272
+273
+274
+275
+276
+277</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/call.rb', line 272</span>
+
+<span class='kw'>def</span> <span class='id with_command_lock'>with_command_lock</span>
+  <span class='ivar'>@command_monitor</span> <span class='op'>||=</span> <span class='const'>Monitor</span><span class='period'>.</span><span class='id new'>new</span>
+  <span class='ivar'>@command_monitor</span><span class='period'>.</span><span class='id synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='kw'>yield</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+    
+    <div id="footer">
+  Generated on Mon Aug  8 16:22:04 2011 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.2 (ruby-1.9.2).
+</div>
+
+  </body>
+</html>

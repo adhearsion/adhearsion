@@ -1,0 +1,366 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: Adhearsion::VoIP::FreeSwitch::InboundConnectionManager
+  
+    &mdash; Documentation by YARD 0.7.2
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" media="screen" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '../../..';
+  if (relpath != '') relpath += '/';
+</script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../../../_index.html">Index (I)</a> &raquo; 
+    <span class='title'><span class='object_link'><a href="../../../Adhearsion.html" title="Adhearsion (module)">Adhearsion</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../VoIP.html" title="Adhearsion::VoIP (module)">VoIP</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../FreeSwitch.html" title="Adhearsion::VoIP::FreeSwitch (module)">FreeSwitch</a></span></span>
+     &raquo; 
+    <span class="title">InboundConnectionManager</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><h1>Class: Adhearsion::VoIP::FreeSwitch::InboundConnectionManager
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName"><span class='object_link'><a href="BasicConnectionManager.html" title="Adhearsion::VoIP::FreeSwitch::BasicConnectionManager (class)">BasicConnectionManager</a></span></span>
+      
+        <ul class="fullTree">
+          <li><span class='object_link'><a href="../../../Object.html" title="Object (class)">Object</a></span></li>
+          
+            <li class="next"><span class='object_link'><a href="BasicConnectionManager.html" title="Adhearsion::VoIP::FreeSwitch::BasicConnectionManager (class)">BasicConnectionManager</a></span></li>
+          
+            <li class="next">Adhearsion::VoIP::FreeSwitch::InboundConnectionManager</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">lib/adhearsion/voip/freeswitch/inbound_connection_manager.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="DEFAULTS-constant" class="">DEFAULTS =
+          
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span> <span class='symbol'>:pass</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ClueCon</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:host</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>127.0.0.1</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='symbol'>:port</span> <span class='op'>=&gt;</span> <span class='int'>8021</span> <span class='rbrace'>}</span></pre></dd>
+      
+    </dl>
+  
+
+
+  
+  
+  
+  
+
+
+  
+  
+  
+
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#enable_events%21-instance_method" title="#enable_events! (instance method)">- (Object) <strong>enable_events!</strong>(which = 'ALL') </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">- (InboundConnectionManager) <strong>initialize</strong>(arg) </a>
+    
+
+    
+  </span>
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+A new instance of InboundConnectionManager.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#login-instance_method" title="#login (instance method)">- (Object) <strong>login</strong>(pass) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Only called when nothing has been sent over the socket.
+</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="BasicConnectionManager.html" title="Adhearsion::VoIP::FreeSwitch::BasicConnectionManager (class)">BasicConnectionManager</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="BasicConnectionManager.html#%3C%3C-instance_method" title="Adhearsion::VoIP::FreeSwitch::BasicConnectionManager#<< (method)">#<<</a></span>, <span class='object_link'><a href="BasicConnectionManager.html#get_header-instance_method" title="Adhearsion::VoIP::FreeSwitch::BasicConnectionManager#get_header (method)">#get_header</a></span>, <span class='object_link'><a href="BasicConnectionManager.html#get_raw_header-instance_method" title="Adhearsion::VoIP::FreeSwitch::BasicConnectionManager#get_raw_header (method)">#get_raw_header</a></span>, <span class='object_link'><a href="BasicConnectionManager.html#next_event-instance_method" title="Adhearsion::VoIP::FreeSwitch::BasicConnectionManager#next_event (method)">#next_event</a></span>, <span class='object_link'><a href="BasicConnectionManager.html#separate_pairs-instance_method" title="Adhearsion::VoIP::FreeSwitch::BasicConnectionManager#separate_pairs (method)">#separate_pairs</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <p class="signature first" id="initialize-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Adhearsion::VoIP::FreeSwitch::InboundConnectionManager (class)">InboundConnectionManager</a></span></tt>) <strong>initialize</strong>(arg) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+A new instance of InboundConnectionManager
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/freeswitch/inbound_connection_manager.rb', line 9</span>
+
+<span class='kw'>def</span> <span class='id initialize'>initialize</span><span class='lparen'>(</span><span class='id arg'>arg</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id arg'>arg</span><span class='period'>.</span><span class='id kind_of?'>kind_of?</span> <span class='const'>Hash</span>
+    <span class='ivar'>@opts</span> <span class='op'>=</span> <span class='const'>DEFAULTS</span><span class='period'>.</span><span class='id merge'>merge</span> <span class='id arg'>arg</span>
+    <span class='ivar'>@io</span> <span class='op'>=</span> <span class='const'>TCPSocket</span><span class='period'>.</span><span class='id new'>new</span><span class='lparen'>(</span><span class='ivar'>@opts</span><span class='lbracket'>[</span><span class='symbol'>:host</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='ivar'>@opts</span><span class='lbracket'>[</span><span class='symbol'>:port</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+    <span class='kw'>super</span> <span class='ivar'>@io</span>
+    <span class='kw'>unless</span> <span class='id login'>login</span><span class='lparen'>(</span><span class='ivar'>@opts</span><span class='lbracket'>[</span><span class='symbol'>:pass</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+      <span class='id raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Your FreeSwitch Event Socket password for </span><span class='embexpr_beg'>#{</span><span class='ivar'>@opts</span><span class='lbracket'>[</span><span class='symbol'>:host</span><span class='rbracket'>]</span><span class='rbrace'>}</span><span class='tstring_content'> was invalid!</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>else</span> <span class='id arg'>arg</span><span class='period'>.</span><span class='id kind_of?'>kind_of?</span> <span class='const'>IO</span>
+    <span class='ivar'>@io</span> <span class='op'>=</span> <span class='id arg'>arg</span>
+    <span class='kw'>super</span> <span class='ivar'>@io</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="enable_events!-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>enable_events!</strong>(which = 'ALL') 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+23
+24
+25
+26</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/freeswitch/inbound_connection_manager.rb', line 23</span>
+
+<span class='kw'>def</span> <span class='id enable_events!'>enable_events!</span><span class='lparen'>(</span><span class='id which'>which</span><span class='op'>=</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>ALL</span><span class='tstring_end'>'</span></span><span class='rparen'>)</span>
+  <span class='kw'>self</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>event plain </span><span class='embexpr_beg'>#{</span><span class='id which'>which</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id get_raw_header'>get_raw_header</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="login-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>login</strong>(pass) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Only called when nothing has been sent over the socket.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+29
+30
+31
+32
+33</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/freeswitch/inbound_connection_manager.rb', line 29</span>
+
+<span class='kw'>def</span> <span class='id login'>login</span><span class='lparen'>(</span><span class='id pass'>pass</span><span class='rparen'>)</span>
+  <span class='id get_raw_header'>get_raw_header</span>
+  <span class='kw'>self</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>auth </span><span class='embexpr_beg'>#{</span><span class='id pass'>pass</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id get_raw_header'>get_raw_header</span><span class='period'>.</span><span class='id include?'>include?</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>+OK</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+    
+    <div id="footer">
+  Generated on Mon Aug  8 16:22:09 2011 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.2 (ruby-1.9.2).
+</div>
+
+  </body>
+</html>

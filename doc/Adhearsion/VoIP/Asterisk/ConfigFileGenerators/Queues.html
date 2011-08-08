@@ -1,0 +1,716 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Queues
+  
+    &mdash; Documentation by YARD 0.7.2
+  
+</title>
+
+  <link rel="stylesheet" href="../../../../css/style.css" type="text/css" media="screen" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../../../css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '../../../..';
+  if (relpath != '') relpath += '/';
+</script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../../../../_index.html">Index (Q)</a> &raquo; 
+    <span class='title'><span class='object_link'><a href="../../../../Adhearsion.html" title="Adhearsion (module)">Adhearsion</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../../VoIP.html" title="Adhearsion::VoIP (module)">VoIP</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Asterisk.html" title="Adhearsion::VoIP::Asterisk (module)">Asterisk</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../ConfigFileGenerators.html" title="Adhearsion::VoIP::Asterisk::ConfigFileGenerators (module)">ConfigFileGenerators</a></span></span>
+     &raquo; 
+    <span class="title">Queues</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><h1>Class: Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Queues
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName"><span class='object_link'><a href="AsteriskConfigGenerator.html" title="Adhearsion::VoIP::Asterisk::ConfigFileGenerators::AsteriskConfigGenerator (class)">AsteriskConfigGenerator</a></span></span>
+      
+        <ul class="fullTree">
+          <li><span class='object_link'><a href="../../../../Object.html" title="Object (class)">Object</a></span></li>
+          
+            <li class="next"><span class='object_link'><a href="AsteriskConfigGenerator.html" title="Adhearsion::VoIP::Asterisk::ConfigFileGenerators::AsteriskConfigGenerator (class)">AsteriskConfigGenerator</a></span></li>
+          
+            <li class="next">Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Queues</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>
+This will generate a queues.conf file. If there is no documentation on what
+a method actually does, take a look at the documentation for its original
+key/value pair in an unedited queues.conf file. WARNING! Don&#8217;t get
+too embedded with these method names. I&#8217;m still not satisfied. These
+settings will be greatly abstracted eventually.
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+   
+    
+   
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Queues/QueueDefinition.html" title="Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Queues::QueueDefinition (class)">QueueDefinition</a></span>
+    
+  
+</p>
+
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="DEFAULT_GENERAL_SECTION-constant" class="">DEFAULT_GENERAL_SECTION =
+          
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span>
+  <span class='symbol'>:autofill</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>yes</span><span class='tstring_end'>&quot;</span></span>
+<span class='rbrace'>}</span></pre></dd>
+      
+    </dl>
+  
+
+
+  
+  
+  
+  
+  <h3 class="inherited">Constants inherited from <span class='object_link'><a href="AsteriskConfigGenerator.html" title="Adhearsion::VoIP::Asterisk::ConfigFileGenerators::AsteriskConfigGenerator (class)">AsteriskConfigGenerator</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="AsteriskConfigGenerator.html#SECTION_TITLE-constant" title="Adhearsion::VoIP::Asterisk::ConfigFileGenerators::AsteriskConfigGenerator::SECTION_TITLE (constant)">SECTION_TITLE</a></span></p>
+
+  <h2>Instance Attribute Summary <small>(<a href="#" class="summary_toggle">collapse</a>)</small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#general_section-instance_method" title="#general_section (instance method)">- (Object) <strong>general_section</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title readonly">readonly</span>
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Returns the value of attribute general_section.
+</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#properties-instance_method" title="#properties (instance method)">- (Object) <strong>properties</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title readonly">readonly</span>
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Returns the value of attribute properties.
+</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#queue_definitions-instance_method" title="#queue_definitions (instance method)">- (Object) <strong>queue_definitions</strong> </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title readonly">readonly</span>
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+Returns the value of attribute queue_definitions.
+</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+  
+  
+  
+
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">- (Queues) <strong>initialize</strong> </a>
+    
+
+    
+  </span>
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>
+A new instance of Queues.
+</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#monitor_type-instance_method" title="#monitor_type (instance method)">- (Object) <strong>monitor_type</strong>(symbol) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#persistent_members-instance_method" title="#persistent_members (instance method)">- (Object) <strong>persistent_members</strong>(yes_no) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#queue-instance_method" title="#queue (instance method)">- (Object) <strong>queue</strong>(name) {|new_queue| ... }</a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#to_s-instance_method" title="#to_s (instance method)">- (Object) <strong>to_s</strong> </a>
+    
+
+    
+      (also: #conf)
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="AsteriskConfigGenerator.html" title="Adhearsion::VoIP::Asterisk::ConfigFileGenerators::AsteriskConfigGenerator (class)">AsteriskConfigGenerator</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="AsteriskConfigGenerator.html#create_sanitary_hash_from-class_method" title="Adhearsion::VoIP::Asterisk::ConfigFileGenerators::AsteriskConfigGenerator.create_sanitary_hash_from (method)">create_sanitary_hash_from</a></span>, <span class='object_link'><a href="AsteriskConfigGenerator.html#to_sanitary_hash-instance_method" title="Adhearsion::VoIP::Asterisk::ConfigFileGenerators::AsteriskConfigGenerator#to_sanitary_hash (method)">#to_sanitary_hash</a></span>, <span class='object_link'><a href="AsteriskConfigGenerator.html#warning_message-class_method" title="Adhearsion::VoIP::Asterisk::ConfigFileGenerators::AsteriskConfigGenerator.warning_message (method)">warning_message</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <p class="signature first" id="initialize-instance_method">
+  
+    - (<tt><span class='object_link'><a href="" title="Adhearsion::VoIP::Asterisk::ConfigFileGenerators::Queues (class)">Queues</a></span></tt>) <strong>initialize</strong> 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+A new instance of Queues
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+19
+20
+21
+22
+23
+24</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb', line 19</span>
+
+<span class='kw'>def</span> <span class='id initialize'>initialize</span>
+  <span class='ivar'>@general_section</span>   <span class='op'>=</span> <span class='const'>DEFAULT_GENERAL_SECTION</span><span class='period'>.</span><span class='id clone'>clone</span>
+  <span class='ivar'>@properties</span>        <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@queue_definitions</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='kw'>super</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <span id="general_section-instance_method"></span>
+      <div class="method_details first">
+  <p class="signature first" id="general_section-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>general_section</strong>  <span class="extras">(readonly)</span>
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Returns the value of attribute general_section
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+18
+19
+20</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb', line 18</span>
+
+<span class='kw'>def</span> <span class='id general_section'>general_section</span>
+  <span class='ivar'>@general_section</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <span id="properties-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="properties-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>properties</strong>  <span class="extras">(readonly)</span>
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Returns the value of attribute properties
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+18
+19
+20</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb', line 18</span>
+
+<span class='kw'>def</span> <span class='id properties'>properties</span>
+  <span class='ivar'>@properties</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <span id="queue_definitions-instance_method"></span>
+      <div class="method_details ">
+  <p class="signature " id="queue_definitions-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>queue_definitions</strong>  <span class="extras">(readonly)</span>
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    <p>
+Returns the value of attribute queue_definitions
+</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+18
+19
+20</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb', line 18</span>
+
+<span class='kw'>def</span> <span class='id queue_definitions'>queue_definitions</span>
+  <span class='ivar'>@queue_definitions</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="monitor_type-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>monitor_type</strong>(symbol) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+44
+45
+46
+47</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb', line 44</span>
+
+<span class='kw'>def</span> <span class='id monitor_type'>monitor_type</span><span class='lparen'>(</span><span class='id symbol'>symbol</span><span class='rparen'>)</span>
+  <span class='id criteria'>criteria</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='symbol'>:monitor</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Monitor</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:mix_monitor</span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>MixMonitor</span><span class='tstring_end'>&quot;</span></span><span class='rbrace'>}</span>
+  <span class='id one_of_and_translate'>one_of_and_translate</span> <span class='id criteria'>criteria</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>monitor-type</span><span class='tstring_end'>'</span></span> <span class='op'>=&gt;</span> <span class='id symbol'>symbol</span><span class='comma'>,</span> <span class='symbol'>:with</span> <span class='op'>=&gt;</span> <span class='id general_section'>general_section</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="persistent_members-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>persistent_members</strong>(yes_no) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+40
+41
+42</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb', line 40</span>
+
+<span class='kw'>def</span> <span class='id persistent_members'>persistent_members</span><span class='lparen'>(</span><span class='id yes_no'>yes_no</span><span class='rparen'>)</span>
+  <span class='id boolean'>boolean</span> <span class='symbol'>:persistentmembers</span> <span class='op'>=&gt;</span> <span class='id yes_no'>yes_no</span><span class='comma'>,</span> <span class='symbol'>:with</span> <span class='op'>=&gt;</span> <span class='id general_section'>general_section</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="queue-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>queue</strong>(name) {|new_queue| ... }
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <h3>Yields:</h3>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>new_queue</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+26
+27
+28
+29
+30
+31</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb', line 26</span>
+
+<span class='kw'>def</span> <span class='id queue'>queue</span><span class='lparen'>(</span><span class='id name'>name</span><span class='rparen'>)</span>
+  <span class='id new_queue'>new_queue</span> <span class='op'>=</span> <span class='const'>QueueDefinition</span><span class='period'>.</span><span class='id new'>new</span> <span class='id name'>name</span>
+  <span class='kw'>yield</span> <span class='id new_queue'>new_queue</span> <span class='kw'>if</span> <span class='id block_given?'>block_given?</span>
+  <span class='id queue_definitions'>queue_definitions</span> <span class='op'>&lt;&lt;</span> <span class='id new_queue'>new_queue</span>
+  <span class='id new_queue'>new_queue</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="to_s-instance_method">
+  
+    - (<tt><span class='object_link'><a href="../../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>to_s</strong> 
+  
+
+  
+    <span class="aliases">Also known as:
+    <span class="names"><span id='conf-instance_method'>conf</span></span>
+    </span>
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+33
+34
+35
+36
+37</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/asterisk/config_generators/queues.conf.rb', line 33</span>
+
+<span class='kw'>def</span> <span class='id to_s'>to_s</span>
+  <span class='const'>AsteriskConfigGenerator</span><span class='period'>.</span><span class='id warning_message'>warning_message</span> <span class='op'>+</span>
+  <span class='id general_section'>general_section</span><span class='period'>.</span><span class='id inject'>inject</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[general]</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id section'>section</span><span class='comma'>,</span><span class='lparen'>(</span><span class='id key'>key</span><span class='comma'>,</span><span class='id value'>value</span><span class='rparen'>)</span><span class='op'>|</span> <span class='id section'>section</span> <span class='op'>+</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='embexpr_beg'>#{</span><span class='id key'>key</span><span class='rbrace'>}</span><span class='tstring_content'>=</span><span class='embexpr_beg'>#{</span><span class='id value'>value</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span> <span class='op'>+</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n\n</span><span class='tstring_end'>&quot;</span></span> <span class='op'>+</span>
+  <span class='id queue_definitions'>queue_definitions</span><span class='period'>.</span><span class='id map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:to_s</span><span class='rparen'>)</span><span class='period'>.</span><span class='id join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+    
+    <div id="footer">
+  Generated on Mon Aug  8 16:22:09 2011 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.2 (ruby-1.9.2).
+</div>
+
+  </body>
+</html>

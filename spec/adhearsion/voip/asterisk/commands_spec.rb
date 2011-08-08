@@ -805,6 +805,22 @@ describe 'the #record_to_file method' do
     mock_call.record_to_file('foo', :beep => nil, :escapedigits => '26').should == :success_timeout
   end  
 
+  it 'play a passed in beep file if it is passed in' do
+    mock_call.should_receive(:execute).once.with(:playback, 'my_awesome_beep.wav').and_return(true)
+    pbx_should_respond_with_playback_success
+    pbx_should_respond_with_playback_success
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "gsm", "26", -1, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record_to_file('foo', :beep => 'my_awesome_beep.wav', :escapedigits => '26').should == :success_timeout
+  end  
+
+  it "should silently fail if the beep file passed in can't be played" do
+    mock_call.should_receive(:execute).once.with(:playback, 'my_awesome_beep.wav').and_return(true)
+    pbx_should_respond_with_playback_failure
+    pbx_should_respond_with_playback_failure
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "gsm", "26", -1, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record_to_file('foo', :beep => 'my_awesome_beep.wav', :escapedigits => '26').should == :success_timeout
+  end  
+
   it 'determine the format from the filename' do
     mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "wav", "26", -1, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
     mock_call.record_to_file('foo.wav', :beep => nil, :escapedigits => '26').should == :success_timeout
@@ -815,6 +831,32 @@ describe 'the #record_to_file method' do
     mock_call.should_receive(:response).once.with("RECORD FILE", ["/tmp/recording_1", "gsm", "26", -1, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
     mock_call.record_to_file(:beep => nil, :escapedigits => '26').should == :success_timeout
     mock_call.record_to_file(:beep => nil, :escapedigits => '26').should == :success_timeout
+  end  
+end
+
+describe 'The #record_to_file! method' do
+  include DialplanCommandTestHelpers
+
+  it "should throw an exception the beep file passed in can't be played" do
+    mock_call.should_receive(:execute).once.with(:playback, 'my_awesome_beep.wav').and_return(false)
+    pbx_should_respond_with_playback_failure
+    pbx_should_respond_with_playback_failure
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "gsm", "26", -1, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    the_following_code {
+      mock_call.record_to_file!('foo', :beep => 'my_awesome_beep.wav', :escapedigits => '26').should == :success_timeout
+    }.should raise_error Adhearsion::VoIP::PlaybackError
+  end  
+
+  it 'should throw RecordError if the recording had a problem writing the file' do
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "gsm", "#", -1, 0, "BEEP"]).and_return("200 result=-1 (writefile) endpos=167840\n")
+    the_following_code {
+      mock_call.record_to_file!('foo').should == :write_error
+    }.should raise_error Adhearsion::VoIP::RecordError
+  end  
+
+  it 'should be able get a response from a successfull call' do
+    mock_call.should_receive(:response).once.with("RECORD FILE", ["foo", "wav", "26", -1, 0]).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.record_to_file!('foo.wav', :beep => nil, :escapedigits => '26').should == :success_timeout
   end  
 end
 

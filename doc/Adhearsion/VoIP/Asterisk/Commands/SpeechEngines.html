@@ -1,0 +1,548 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Module: Adhearsion::VoIP::Asterisk::Commands::SpeechEngines
+  
+    &mdash; Documentation by YARD 0.7.2
+  
+</title>
+
+  <link rel="stylesheet" href="../../../../css/style.css" type="text/css" media="screen" charset="utf-8" />
+
+  <link rel="stylesheet" href="../../../../css/common.css" type="text/css" media="screen" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  relpath = '../../../..';
+  if (relpath != '') relpath += '/';
+</script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <script type="text/javascript" charset="utf-8">
+      if (window.top.frames.main) document.body.className = 'frames';
+    </script>
+    
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../../../../_index.html">Index (S)</a> &raquo; 
+    <span class='title'><span class='object_link'><a href="../../../../Adhearsion.html" title="Adhearsion (module)">Adhearsion</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../../VoIP.html" title="Adhearsion::VoIP (module)">VoIP</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Asterisk.html" title="Adhearsion::VoIP::Asterisk (module)">Asterisk</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Commands.html" title="Adhearsion::VoIP::Asterisk::Commands (module)">Commands</a></span></span>
+     &raquo; 
+    <span class="title">SpeechEngines</span>
+  
+  
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a id="class_list_link" href="#">Class List</a>
+  
+    <a id="method_list_link" href="#">Method List</a>
+  
+    <a id="file_list_link" href="#">File List</a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+    
+    <iframe id="search_frame"></iframe>
+    
+    <div id="content"><h1>Module: Adhearsion::VoIP::Asterisk::Commands::SpeechEngines
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r1 last">Defined in:</dt>
+    <dd class="r1 last">lib/adhearsion/voip/asterisk/commands.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Defined Under Namespace</h2>
+<p class="children">
+   
+    
+   
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="SpeechEngines/InvalidSpeechEngine.html" title="Adhearsion::VoIP::Asterisk::Commands::SpeechEngines::InvalidSpeechEngine (class)">InvalidSpeechEngine</a></span>
+    
+  
+</p>
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#cepstral-class_method" title="cepstral (class method)">+ (Object) <strong>cepstral</strong>(call, text, options = {}) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#festival-class_method" title="festival (class method)">+ (Object) <strong>festival</strong>(text, call, options = {}) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#method_missing-class_method" title="method_missing (class method)">+ (Object) <strong>method_missing</strong>(engine_name, text, options = {}) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#none-class_method" title="none (class method)">+ (Object) <strong>none</strong>(text, call, options = {}) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#tropo-class_method" title="tropo (class method)">+ (Object) <strong>tropo</strong>(call, text, options = {}) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#unimrcp-class_method" title="unimrcp (class method)">+ (Object) <strong>unimrcp</strong>(call, text, options = {}) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+    
+    
+      <div class="method_details first">
+  <p class="signature first" id="cepstral-class_method">
+  
+    + (<tt><span class='object_link'><a href="../../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>cepstral</strong>(call, text, options = {}) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+875
+876
+877
+878
+879
+880
+881
+882
+883
+884
+885
+886
+887
+888
+889</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/asterisk/commands.rb', line 875</span>
+
+<span class='kw'>def</span> <span class='id cepstral'>cepstral</span><span class='lparen'>(</span><span class='id call'>call</span><span class='comma'>,</span> <span class='id text'>text</span><span class='comma'>,</span> <span class='id options'>options</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='comment'># We need to aggressively escape commas so app_swift does not
+</span>  <span class='comment'># think they are arguments.
+</span>  <span class='id text'>text</span><span class='period'>.</span><span class='id gsub!'>gsub!</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>,</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>\\\\\\,</span><span class='tstring_end'>'</span></span>
+  <span class='id command'>command</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>Swift</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='id text'>text</span><span class='rbracket'>]</span>
+
+  <span class='kw'>if</span> <span class='id options'>options</span><span class='lbracket'>[</span><span class='symbol'>:interrupt_digits</span><span class='rbracket'>]</span>
+    <span class='id ahn_log'>ahn_log</span><span class='period'>.</span><span class='id agi'>agi</span><span class='period'>.</span><span class='id warn'>warn</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>Cepstral does not support specifying interrupt digits</span><span class='tstring_end'>'</span></span>
+    <span class='id options'>options</span><span class='lbracket'>[</span><span class='symbol'>:interruptible</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>true</span>
+  <span class='kw'>end</span>
+  <span class='comment'># Wait for 1ms after speaking and collect no more than 1 digit
+</span>  <span class='id command'>command</span> <span class='op'>+=</span> <span class='lbracket'>[</span><span class='int'>1</span><span class='comma'>,</span> <span class='int'>1</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id options'>options</span><span class='lbracket'>[</span><span class='symbol'>:interruptible</span><span class='rbracket'>]</span>
+  <span class='id call'>call</span><span class='period'>.</span><span class='id execute'>execute</span> <span class='op'>*</span><span class='id command'>command</span>
+  <span class='id call'>call</span><span class='period'>.</span><span class='id get_variable'>get_variable</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>SWIFT_DTMF</span><span class='tstring_end'>'</span></span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="festival-class_method">
+  
+    + (<tt><span class='object_link'><a href="../../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>festival</strong>(text, call, options = {}) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <h3>Raises:</h3>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>NotImplementedError</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+921
+922
+923</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/asterisk/commands.rb', line 921</span>
+
+<span class='kw'>def</span> <span class='id festival'>festival</span><span class='lparen'>(</span><span class='id text'>text</span><span class='comma'>,</span> <span class='id call'>call</span><span class='comma'>,</span> <span class='id options'>options</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='id raise'>raise</span> <span class='const'>NotImplementedError</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="method_missing-class_method">
+  
+    + (<tt><span class='object_link'><a href="../../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>method_missing</strong>(engine_name, text, options = {}) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <h3>Raises:</h3>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="SpeechEngines/InvalidSpeechEngine.html" title="Adhearsion::VoIP::Asterisk::Commands::SpeechEngines::InvalidSpeechEngine (class)">InvalidSpeechEngine</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+929
+930
+931</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/asterisk/commands.rb', line 929</span>
+
+<span class='kw'>def</span> <span class='id method_missing'>method_missing</span><span class='lparen'>(</span><span class='id engine_name'>engine_name</span><span class='comma'>,</span> <span class='id text'>text</span><span class='comma'>,</span> <span class='id options'>options</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='id raise'>raise</span> <span class='const'>InvalidSpeechEngine</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Unsupported speech engine </span><span class='embexpr_beg'>#{</span><span class='id engine_name'>engine_name</span><span class='rbrace'>}</span><span class='tstring_content'> for speaking '</span><span class='embexpr_beg'>#{</span><span class='id text'>text</span><span class='rbrace'>}</span><span class='tstring_content'>'</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="none-class_method">
+  
+    + (<tt><span class='object_link'><a href="../../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>none</strong>(text, call, options = {}) 
+  
+
+  
+</p><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  <h3>Raises:</h3>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="SpeechEngines/InvalidSpeechEngine.html" title="Adhearsion::VoIP::Asterisk::Commands::SpeechEngines::InvalidSpeechEngine (class)">InvalidSpeechEngine</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+925
+926
+927</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/asterisk/commands.rb', line 925</span>
+
+<span class='kw'>def</span> <span class='id none'>none</span><span class='lparen'>(</span><span class='id text'>text</span><span class='comma'>,</span> <span class='id call'>call</span><span class='comma'>,</span> <span class='id options'>options</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='id raise'>raise</span> <span class='const'>InvalidSpeechEngine</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>No speech engine selected. You must specify one in your Adhearsion config file.</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="tropo-class_method">
+  
+    + (<tt><span class='object_link'><a href="../../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>tropo</strong>(call, text, options = {}) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+911
+912
+913
+914
+915
+916
+917
+918
+919</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/asterisk/commands.rb', line 911</span>
+
+<span class='kw'>def</span> <span class='id tropo'>tropo</span><span class='lparen'>(</span><span class='id call'>call</span><span class='comma'>,</span> <span class='id text'>text</span><span class='comma'>,</span> <span class='id options'>options</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='id command'>command</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>Ask</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='id text'>text</span><span class='rbracket'>]</span>
+  <span class='id args'>args</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='id args'>args</span><span class='lbracket'>[</span><span class='symbol'>:terminator</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id options'>options</span><span class='lbracket'>[</span><span class='symbol'>:interrupt_digits</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id split'>split</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_end'>'</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>,</span><span class='tstring_end'>'</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id options'>options</span><span class='lbracket'>[</span><span class='symbol'>:interrupt_digits</span><span class='rbracket'>]</span>
+  <span class='id args'>args</span><span class='lbracket'>[</span><span class='symbol'>:bargein</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id options'>options</span><span class='lbracket'>[</span><span class='symbol'>:interruptible</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id options'>options</span><span class='period'>.</span><span class='id has_key?'>has_key?</span><span class='lparen'>(</span><span class='symbol'>:interruptible</span><span class='rparen'>)</span>
+  <span class='id command'>command</span> <span class='op'>&lt;&lt;</span> <span class='id args'>args</span><span class='period'>.</span><span class='id to_json'>to_json</span> <span class='kw'>unless</span> <span class='id args'>args</span><span class='period'>.</span><span class='id empty?'>empty?</span>
+  <span class='id value'>value</span> <span class='op'>=</span> <span class='const'>JSON</span><span class='period'>.</span><span class='id parse'>parse</span> <span class='id call'>call</span><span class='period'>.</span><span class='id raw_response'>raw_response</span><span class='lparen'>(</span><span class='op'>*</span><span class='id command'>command</span><span class='rparen'>)</span><span class='period'>.</span><span class='id sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^200 result=</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_end'>'</span></span><span class='rparen'>)</span>
+  <span class='id value'>value</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>interpretation</span><span class='tstring_end'>'</span></span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <p class="signature " id="unimrcp-class_method">
+  
+    + (<tt><span class='object_link'><a href="../../../../Object.html" title="Object (class)">Object</a></span></tt>) <strong>unimrcp</strong>(call, text, options = {}) 
+  
+
+  
+</p><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+891
+892
+893
+894
+895
+896
+897
+898
+899
+900
+901
+902
+903
+904
+905
+906
+907
+908
+909</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/adhearsion/voip/asterisk/commands.rb', line 891</span>
+
+<span class='kw'>def</span> <span class='id unimrcp'>unimrcp</span><span class='lparen'>(</span><span class='id call'>call</span><span class='comma'>,</span> <span class='id text'>text</span><span class='comma'>,</span> <span class='id options'>options</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='comment'># app_unimrcp strips quotes, which will already be stripped by the AGI parser.
+</span>  <span class='comment'># To work around this bug, we have to actually quote the arguments twice, once
+</span>  <span class='comment'># in this method and again inside #execute.
+</span>  <span class='comment'># Example from the logs:
+</span>  <span class='comment'># AGI Input: EXEC MRCPSynth &quot;&lt;speak xmlns=\&quot;http://www.w3.org/2001/10/synthesis\&quot; version=\&quot;1.0\&quot; xml:lang=\&quot;en-US\&quot;&gt; &lt;voice name=\&quot;Paul\&quot;&gt; &lt;prosody rate=\&quot;1.0\&quot;&gt;Howdy, stranger. How are you today?&lt;/prosody&gt; &lt;/voice&gt; &lt;/speak&gt;&quot;
+</span>  <span class='comment'># [Aug  3 13:39:02] VERBOSE[8495] logger.c:     -- AGI Script Executing Application: (MRCPSynth) Options: (&lt;speak xmlns=&quot;http://www.w3.org/2001/10/synthesis&quot; version=&quot;1.0&quot; xml:lang=&quot;en-US&quot;&gt; &lt;voice name=&quot;Paul&quot;&gt; &lt;prosody rate=&quot;1.0&quot;&gt;Howdy, stranger. How are you today?&lt;/prosody&gt; &lt;/voice&gt; &lt;/speak&gt;)
+</span>  <span class='comment'># [Aug  3 13:39:02] NOTICE[8495] app_unimrcp.c: Text to synthesize is: &lt;speak xmlns=http://www.w3.org/2001/10/synthesis version=1.0 xml:lang=en-US&gt; &lt;voice name=Paul&gt; &lt;prosody rate=1.0&gt;Howdy, stranger. How are you today?&lt;/prosody&gt; &lt;/voice&gt; &lt;/speak&gt;
+</span>  <span class='id command'>command</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>MRCPSynth</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='id text'>text</span><span class='period'>.</span><span class='id gsub'>gsub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>[&quot;\\]</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id m'>m</span><span class='op'>|</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\\</span><span class='embexpr_beg'>#{</span><span class='id m'>m</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span> <span class='rbrace'>}</span><span class='rbracket'>]</span>
+  <span class='id args'>args</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='kw'>if</span> <span class='id options'>options</span><span class='lbracket'>[</span><span class='symbol'>:interrupt_digits</span><span class='rbracket'>]</span>
+    <span class='id args'>args</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>i=</span><span class='embexpr_beg'>#{</span><span class='id options'>options</span><span class='lbracket'>[</span><span class='symbol'>:interrupt_digits</span><span class='rbracket'>]</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>else</span>
+    <span class='id args'>args</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>i=any</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id options'>options</span><span class='lbracket'>[</span><span class='symbol'>:interruptible</span><span class='rbracket'>]</span>
+  <span class='kw'>end</span>
+  <span class='id command'>command</span> <span class='op'>&lt;&lt;</span> <span class='id args'>args</span><span class='period'>.</span><span class='id join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>&amp;</span><span class='tstring_end'>'</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id args'>args</span><span class='period'>.</span><span class='id empty?'>empty?</span>
+  <span class='id value'>value</span> <span class='op'>=</span> <span class='id call'>call</span><span class='period'>.</span><span class='id inline_return_value'>inline_return_value</span><span class='lparen'>(</span><span class='id call'>call</span><span class='period'>.</span><span class='id execute'>execute</span> <span class='op'>*</span><span class='id command'>command</span><span class='rparen'>)</span>
+  <span class='id value'>value</span><span class='period'>.</span><span class='id to_i'>to_i</span><span class='period'>.</span><span class='id chr'>chr</span> <span class='kw'>unless</span> <span class='id value'>value</span><span class='period'>.</span><span class='id nil?'>nil?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+    
+    <div id="footer">
+  Generated on Mon Aug  8 16:22:06 2011 by 
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.7.2 (ruby-1.9.2).
+</div>
+
+  </body>
+</html>

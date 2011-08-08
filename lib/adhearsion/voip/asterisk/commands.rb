@@ -300,17 +300,15 @@ module Adhearsion
         #
         # @param [hash] options
         #
-        # Valid options are 
-        #   +:silence+ - silence in seconds
+        # +:silence+ - silence in seconds
         #
-        #   +:maxduration+ - maximum duration in seconds
+        # +:maxduration+ - maximum duration in seconds
         #
-        #   +:escapedigits+ - digits to be used to excape from recording
+        # +:escapedigits+ - digits to be used to excape from recording
         #
-        #   +:beep+ - soundfile to use as a beep before recording.  if not specifed defaults to system generated beep,  
-        #           set to nil for no beep.
+        # +:beep+ - soundfile to use as a beep before recording.  if not specifed defaults to system generated beep, set to nil for no beep.
         #
-        #   +:format+ - the format of the file to be recorded
+        # +:format+ - the format of the file to be recorded
         #
         # Silence and maxduration is specified in seconds.
         # 
@@ -364,18 +362,15 @@ module Adhearsion
         #
         # @param [hash] options
         #
-        # Valid options are 
-        #   +:silence+ - silence in seconds
+        # +:silence+ - silence in seconds
         #
-        #   +:maxduration+ - maximum duration in seconds
+        # +:maxduration+ - maximum duration in seconds
         #
-        #   +:escapedigits+ - digits to be used to excape from recording
+        # +:escapedigits+ - digits to be used to excape from recording
         #
-        #   +:beep+ - soundfile to use as a beep before recording.  if not specifed defaults to system generated beep,  
-        #           set to nil for no beep.
+        # +:beep+ - soundfile to use as a beep before recording.  if not specifed defaults to system generated beep, set to nil for no beep.
         #
-        #   +:format+ - the format of the file to be recorded.  This will over-ride a implicit format in a file extension
-        #           and append a .<format> to the end of the file.
+        # +:format+ - the format of the file to be recorded.  This will over-ride a implicit format in a file extension and append a .<format> to the end of the file.
         #
         # Silence and maxduration is specified in seconds.
         # 
@@ -393,6 +388,25 @@ module Adhearsion
         #   record 'my-file.gsm', :silence => 5, :maxduration => 120
         #
         def record_to_file(*args)
+          base_record_to_file(*args).last
+        end
+
+        # This works the same record_to_file except is throws an exception if a playback or write error occurs.
+        #
+        def record_to_file!(*args)
+           # raise PlaybackError, "Playback failed with PLAYBACKSTATUS: #{playback.inspect}.  The raw response was #{response.inspect}."
+          return_values = base_record_to_file(*args)
+          if return_values.first == :playback_error
+            raise PlaybackError, "Playback failed with PLAYBACKSTATUS: #{return_values.second.inspect}."
+          elsif return_values.first == :write_error
+            raise RecordError, "Record failed on write."
+          end
+          return_values.first
+        end
+
+        # this is a base methor record_to_file and record_to_file! and should only be used via those methods
+        #
+        def base_record_to_file(*args)
           options = args.last.kind_of?(Hash) ? args.pop : {}
           filename = args.shift || "/tmp/recording_%d"
 
@@ -423,10 +437,18 @@ module Adhearsion
           escapedigits = options.delete(:escapedigits) || "#"
           silence     = options.delete(:silence) || 0
 
-          response_params = filename, format, escapedigits, maxduration, 0
-          
+          response_params = filename, format, escapedigits, maxduration, 0          
+          response_values = []
+ 
           if !options.has_key? :beep 
             response_params << 'BEEP'
+          elsif options[:beep]
+            play_soundfile options[:beep]
+            playback_response = get_variable('PLAYBACKSTATUS')
+            if playback_response != PLAYBACK_SUCCESS 
+              response_values << :playback_error
+              response_values << playback_response
+            end
           end
 
           if silence > 0
@@ -437,14 +459,16 @@ module Adhearsion
           # If the user hangs up before the recording is entered, -1 is returned by asterisk and RECORDED_FILE
           # will not contain the name of the file, even though it IS in fact recorded.
           if resp.match /hangup/
-            return :hangup
+            response_values << :hangup
           elsif resp.match /writefile/
-            return :write_error 
+            response_values << :write_error 
           elsif resp.match /dtmf/
-            return :success_dtmf
+            response_values << :success_dtmf
           elsif resp.match /timeout/
-            return :success_timeout
+            response_values << :success_timeout
           end
+
+          response_values
         end
 
         # Simulates pressing the specified digits over the current channel. Can be used to
