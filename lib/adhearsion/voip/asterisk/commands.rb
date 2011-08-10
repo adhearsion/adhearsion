@@ -455,7 +455,7 @@ module Adhearsion
             response_params << "s=#{silence}"
           end
 
-          resp = response 'RECORD FILE', response_params
+          resp = response 'RECORD FILE', *response_params
           # If the user hangs up before the recording is entered, -1 is returned by asterisk and RECORDED_FILE
           # will not contain the name of the file, even though it IS in fact recorded.
           if resp.match /hangup/
