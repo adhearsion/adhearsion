@@ -8,6 +8,7 @@
  - Fix some issues with starting apps outside of their directory, generally related to Bundler/gem environments
  - Allow configuration of logging outputters/formatters
  - Using ahn_log in a dialplan context or on a call object logs to the call's context, named after its unique identifier
+ - New method: #record_to_file with more useful return values
 
 1.1.1
  - Command#play now returns false if audio failed to play
