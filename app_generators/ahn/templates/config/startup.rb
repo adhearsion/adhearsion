@@ -33,6 +33,11 @@ Adhearsion::Configuration.configure do |config|
   config.enable_asterisk :argument_delimiter => '|'
   # config.asterisk.enable_ami :host => "127.0.0.1", :username => "admin", :password => "password", :events => true
 
+  # Adhearsion supports two possible speech engines with Asterisk: UniMRCP and Cepstral.
+  # Uncomment one of the below if you have it available.
+  # config.asterisk.speech_engine = :cepstral
+  # config.asterisk.speech_engine = :unimrcp
+
   # config.enable_drb
 
   # Streamlined Rails integration! The first argument should be a relative or absolute path to
