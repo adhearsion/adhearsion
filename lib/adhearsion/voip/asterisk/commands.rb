@@ -321,7 +321,7 @@ module Adhearsion
         # @example All options specified
         #   record 'my-file.gsm', :silence => 5, :maxduration => 120
         # 
-        # @depricated please use {#record_to_file} instead
+        # @deprecated please use {#record_to_file} instead
         def record(*args)
           options = args.last.kind_of?(Hash) ? args.last : {}
           filename = args.first && !args.first.kind_of?(Hash) ? String.new(args.first) : "/tmp/recording_%d"
