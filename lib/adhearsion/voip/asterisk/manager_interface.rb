@@ -577,7 +577,7 @@ WARN
           end
 
           def login_actions
-            action = send_action_asynchronously "Login", "Username" => @username, "Secret" => @password, "Events" => "Off"
+            action = _send_action_asynchronously "Login", "Username" => @username, "Secret" => @password, "Events" => "Off"
             response = action.response
             if response.kind_of? ManagerInterfaceError
               raise AuthenticationFailedException, "Incorrect username and password! #{response.message}"
