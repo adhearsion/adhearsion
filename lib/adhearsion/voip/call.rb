@@ -90,6 +90,12 @@ module Adhearsion
       calls
     end
 
+    def method_missing(m, *args)
+      atomically do
+        calls.send(m.to_sym, *args)
+      end
+    end
+
     private
 
     def atomically(&block)
