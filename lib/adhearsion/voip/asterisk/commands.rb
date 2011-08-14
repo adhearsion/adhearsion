@@ -1271,23 +1271,6 @@ module Adhearsion
           nil
         end
 
-        #
-        # Same as {#interruptible_play}, but immediately raises an exception if a sound file cannot be played.
-        #
-        # @return (see #interruptible_play)
-        # @raise [Adhearsion::VoIP::PlaybackError] If a sound file cannot be played
-        def interruptible_play!(*files)
-          startpos = 0
-          files.flatten.each do |file|
-            result = stream_file_result_from response("STREAM FILE", file, "1234567890*#")
-            if result[:endpos].to_i <= startpos
-              raise Adhearsion::VoIP::PlaybackError, "The sound file could not opened to stream.  The parsed response was #{result.inspect}"
-            end
-            return result[:digit] unless result[:digit] == 0.chr
-          end
-          nil
-        end
-
         ##
         # Executes the SayPhonetic command. This command will read the text passed in
         # out load using the NATO phonetic alphabet.

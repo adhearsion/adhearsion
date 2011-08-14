@@ -333,38 +333,6 @@ describe 'The #interruptible_play method' do
     mock_call.interruptible_play(*play_files).should == '9'
     pbx_was_asked_to_stream played_files
   end
-
-  it 'should play a series of files, raising an error if a sound file cannot be found' do
-    pbx_should_respond_with_stream_file_success 0
-    pbx_should_respond_with_stream_file_failure_on_open
-
-    play_files = ('sound1'..'sound6').map &:to_s
-    played_files = ('sound1'..'sound2').map &:to_s
-    the_following_code {
-      mock_call.interruptible_play! *play_files
-    }.should raise_error Adhearsion::VoIP::PlaybackError
-    pbx_was_asked_to_stream played_files
-  end
-
-  it 'should raise an error if an audio file cannot be found' do
-    pbx_should_respond_with_stream_file_failure_on_open
-    audio_file = 'nixon-tapes'
-    the_following_code {
-      mock_call.interruptible_play! audio_file
-    }.should raise_error Adhearsion::VoIP::PlaybackError
-    pbx_was_asked_to_stream audio_file
-  end
-
-  it 'should raise an error when audio files cannot be found' do
-    pbx_should_respond_with_stream_file_success
-    pbx_should_respond_with_stream_file_failure_on_open # 'paperz' is the only audio that is missing
-    audio_files = ['rock', 'paperz', 'scissors']
-
-    the_following_code {
-      mock_call.interruptible_play! audio_files
-    }.should raise_error Adhearsion::VoIP::PlaybackError
-    pbx_was_asked_to_stream ['rock', 'paperz'] # stop short before playing with scissors!
-  end
 end
 
 describe 'The #interruptible_play! method' do
