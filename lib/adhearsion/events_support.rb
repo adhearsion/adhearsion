@@ -1,24 +1,4 @@
-%w[theatre jicksta-theatre].each do |theatre_gem_name|
-  # Some older versions of the master branch required the theatre gem be installed. This is deprecation logic to inform the
-  # user to uninstall the gem if they happened to have used theatre in the past.
-  begin
-    gem theatre_gem_name
-  rescue LoadError
-    # Good. It should not be installed.
-  else
-    abort <<-MESSAGE
-It seems you have the "#{theatre_gem_name}" gem installed. As of Dec. 7th, 2008 Theatre has been rolled into Adhearsion
-and will be distributed with it.
-
-Please uninstall the gem by doing "sudo gem uninstall #{theatre_gem_name}".
-
-You will not need to install it again in the future. Sorry for the inconvenience.
-    MESSAGE
-  end
-end
-
 require 'theatre'
-
 
 module Adhearsion
   module Events

@@ -1,7 +1,4 @@
-require 'rubygems'
-require 'bundler'
-Bundler.setup
-Bundler.require
+require File.join(File.dirname(__FILE__), 'environment')
 
 Adhearsion::Configuration.configure do |config|
 
@@ -12,7 +9,11 @@ Adhearsion::Configuration.configure do |config|
   # List the gem names here:
   # config.add_component "ahn_test_component"
 
-  # Supported levels (in increasing severity) -- :debug < :info < :warn < :error < :fatal
+  # Log configuration
+  # :level : Supported levels (in increasing severity) -- :debug < :info < :warn < :error < :fatal
+  # :outputters : An array of log outputters to use. The default is to log to stdout and log/adhearsion.log
+  # :formatters : An array of log formatters to apply to the outputters in use
+  # :formatter : A log formatter to apply to all active outputters
   config.logging :level => :info
 
   # Whether incoming calls be automatically answered. Defaults to true.
@@ -31,6 +32,11 @@ Adhearsion::Configuration.configure do |config|
   # This setting applies only to AGI.  The AMI delimiter is auto-detected.
   config.enable_asterisk :argument_delimiter => '|'
   # config.asterisk.enable_ami :host => "127.0.0.1", :username => "admin", :password => "password", :events => true
+
+  # Adhearsion supports two possible speech engines with Asterisk: UniMRCP and Cepstral.
+  # Uncomment one of the below if you have it available.
+  # config.asterisk.speech_engine = :cepstral
+  # config.asterisk.speech_engine = :unimrcp
 
   # config.enable_drb
 

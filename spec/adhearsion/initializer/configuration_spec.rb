@@ -87,12 +87,33 @@ describe 'Logging configuration' do
 
   after :each do
     Adhearsion::Logging.logging_level = :fatal
+    Adhearsion::Logging::AdhearsionLogger.outputters = [Log4r::Outputter.stdout]
+    Adhearsion::Logging::AdhearsionLogger.formatters = [Log4r::DefaultFormatter]
   end
 
   it 'the logging level should translate from symbols into Log4r constants' do
     Adhearsion::Logging.logging_level.should_not be Log4r::WARN
     config.logging :level => :warn
     Adhearsion::Logging.logging_level.should be Log4r::WARN
+  end
+
+  it 'outputters should be settable' do
+    Adhearsion::Logging::AdhearsionLogger.outputters.should == [Log4r::Outputter.stdout]
+    config.logging :outputters => Log4r::Outputter.stderr
+    Adhearsion::Logging::AdhearsionLogger.outputters.should == [Log4r::Outputter.stderr]
+  end
+
+  it 'formatters should be settable' do
+    Adhearsion::Logging::AdhearsionLogger.formatters.map(&:class).should == [Log4r::DefaultFormatter]
+    config.logging :formatters => Log4r::ObjectFormatter
+    Adhearsion::Logging::AdhearsionLogger.formatters.map(&:class).should == [Log4r::ObjectFormatter]
+  end
+
+  it 'a global formatter should be settable' do
+    Adhearsion::Logging::AdhearsionLogger.outputters << Log4r::Outputter.stdout
+    Adhearsion::Logging::AdhearsionLogger.formatters.map(&:class).should == [Log4r::DefaultFormatter, Log4r::DefaultFormatter]
+    config.logging :formatter => Log4r::ObjectFormatter
+    Adhearsion::Logging::AdhearsionLogger.formatters.map(&:class).should == [Log4r::ObjectFormatter, Log4r::ObjectFormatter]
   end
 
 end

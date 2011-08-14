@@ -1,3 +1,15 @@
+1.2.0
+ - New method: #play_or_speak allows playback of an audio file with TTS fallback
+ - #input now takes :speak as a hash for TTS prompt or fallback
+ - New method: #speak provides abstracted TTS rendering for UniMRCP and Cepstral
+ - Allow leading "+" in Caller ID (E.164 format)
+ - Allow using --pid-file without "daemon" for JRuby
+ - Allow passing a block to #input to enable caller to detect when enough digits are collected.
+ - Fix some issues with starting apps outside of their directory, generally related to Bundler/gem environments
+ - Allow configuration of logging outputters/formatters
+ - Using ahn_log in a dialplan context or on a call object logs to the call's context, named after its unique identifier
+ - New method: #record_to_file with more useful return values
+
 1.1.1
  - Command#play now returns false if audio failed to play
  - Added new commands (#play!, #interruptible_play!, #input!) which raise PlaybackError if audio fails to play

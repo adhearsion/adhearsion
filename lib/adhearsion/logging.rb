@@ -40,12 +40,27 @@ module Adhearsion
       @@outputters = [Log4r::Outputter.stdout]
 
       class << self
+        def sanitized_logger_name(name)
+          name.to_s.gsub(/\W/, '').downcase
+        end
+
         def outputters
           @@outputters
         end
 
         def outputters=(other)
           @@outputters = other
+        end
+
+        def formatters
+          @@outputters.map &:formatter
+        end
+
+        def formatters=(other)
+          other.each_with_index do |formatter, i|
+            outputter = @@outputters[i]
+            outputter.formatter = formatter if outputter
+          end
         end
       end
 
@@ -59,8 +74,8 @@ module Adhearsion
       end
 
       def method_missing(logger_name, *args, &block)
-        define_logging_method(logger_name, self.class.new(logger_name.to_s))
-        send(logger_name, *args, &block)
+        define_logging_method logger_name, self.class.new(logger_name.to_s)
+        send self.class.sanitized_logger_name(logger_name), *args, &block
       end
 
       private
@@ -69,7 +84,7 @@ module Adhearsion
         # Can't use Module#define_method() because blocks in Ruby 1.8.x can't
         # have their own block arguments.
         self.class.class_eval(<<-CODE, __FILE__, __LINE__)
-          def #{name}(*args, &block)
+          def #{self.class.sanitized_logger_name name}(*args, &block)
             logger = Log4r::Logger['#{name}']
             if args.any? || block_given?
               logger.info(*args, &block)

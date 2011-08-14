@@ -2,41 +2,19 @@
 ENV['RUBY_FLAGS'] = "-I#{%w(lib ext bin spec).join(File::PATH_SEPARATOR)}"
 
 require 'rubygems'
-require 'bundler'
-Bundler::GemHelper.install_tasks
+require 'bundler/gem_tasks'
+require 'bundler/setup'
 require 'date'
 require 'adhearsion/version'
 
 task :default => :spec
 task :gem => :build
 
-begin
-  gem 'rspec', '>= 2.3.0'
-  require 'rspec/core/rake_task'
-rescue LoadError
-  abort "You must install RSpec: sudo gem install rspec"
-end
+require 'rspec/core/rake_task'
+RSpec::Core::RakeTask.new
 
-RSpec::Core::RakeTask.new do |t|
-end
-
-desc "Run all RSpecs for Theatre"
-RSpec::Core::RakeTask.new(:theatre_specs) do |t|
-  t.pattern = 'theatre-spec/**/*_spec.rb'
-end
-
-begin
-  require 'rcov/rcovtask'
-  Rcov::RcovTask.new do |t|
-    t.libs       << "spec"
-    t.test_files  = Dir['spec/**/*_spec.rb']
-    t.output_dir  = 'coverage'
-    t.verbose     = true
-    t.rcov_opts.concat %w[--sort coverage --sort-reverse -x gems -x /var]
-  end
-rescue LoadError
-  STDERR.puts "Could not load rcov tasks -- rcov does not appear to be installed. Continuing anyway."
-end
+require 'ci/reporter/rake/rspec'
+task :ci => ['ci:setup:rspec', :spec]
 
 begin
   require 'yard'

@@ -9,5 +9,9 @@ module Adhearsion
     class PlaybackError < StandardError
       # Represents failure to play audio, such as when the sound file cannot be found
     end
+
+    class RecordError < StandardError
+      # Represents failure to record such as when a file cannot be written.
+    end
   end
 end

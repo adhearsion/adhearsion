@@ -41,7 +41,6 @@ module Adhearsion
                 ahn_log.warn "Asterisk.manager_interface already initialized?"
               else
                 def manager_interface
-                  # ahn_log.ami.warn "Warning! This Asterisk.manager_interface() notation is for Adhearsion version 0.8.0 only. Subsequent versions of Adhearsion will use a feature called SuperManager. Migrating to use SuperManager will be very simple. See http://docs.adhearsion.com/AMI for more information."
                   Adhearsion::Initializer::AsteriskInitializer.ami_client
                 end
               end

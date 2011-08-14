@@ -100,7 +100,7 @@ describe "The provider DSL's 'provider' macro" do
     end
     provider_holder.providers.map { |x| x.name }.should == [:tweedledee, :tweedledum]
   end
-  it "should define a singleton method for the provider name given", :focus => true do
+  it "should define a singleton method for the provider name given" do
     dsl_class = Class.new(Adhearsion::VoIP::DSL::DialingDSL)
     dsl_class.class_eval do
       class_variable_get(:@@providers).size.should == 0

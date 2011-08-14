@@ -118,11 +118,8 @@ describe "Theatre::Theatre" do
 
     it "should run the callback of the Invocation it receives from the master_queue" do
       has_executed = false
-      thrower    = lambda { has_executed = true }
-      namespace  = "/foo/bar"
-      payload    = [1,2,3]
 
-      invocation = Theatre::Invocation.new(namespace, thrower, payload)
+      invocation = Theatre::Invocation.new("/foo/bar", lambda { has_executed = true })
       invocation.queued
 
       theatre = Theatre::Theatre.new
@@ -134,7 +131,7 @@ describe "Theatre::Theatre" do
 
       theatre.send :thread_loop
 
-      has_executed.should equal(true)
+      has_executed.should be_true
     end
 
     it "should stop when receiving the shutdown command and return :stopped" do

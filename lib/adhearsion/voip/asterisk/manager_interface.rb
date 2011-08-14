@@ -25,8 +25,6 @@ module Adhearsion
         # ManagerInterfaceResponse, ManagerInterfaceError, etc.) are relatively user-friendly, they're designed to be a
         # building block on which to build higher-level abstractions of the Asterisk Manager Interface.
         #
-        # For a higher-level abstraction of the Asterisk Manager Interface, see the SuperManager class.
-        #
         class ManagerInterface
 
           CAUSAL_EVENT_NAMES = %w[queuestatus sippeers iaxpeers parkedcalls
