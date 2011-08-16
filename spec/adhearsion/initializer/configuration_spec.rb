@@ -45,10 +45,6 @@ describe "Configuration defaults" do
     config.ldap_enabled?.should be false
   end
 
-  it "freeswith is NOT enabled by default" do
-    config.freeswitch_enabled?.should be false
-  end
-
   it "AMI is NOT enabled by default" do
     config.asterisk.ami_enabled?.should be false
   end
@@ -166,22 +162,6 @@ describe "Database configuration defaults" do
     config = Adhearsion::Configuration::DatabaseConfiguration.new(sample_options.clone)
     config.orm.should be sample_options.delete(:orm)
     config.connection_options.should == sample_options
-  end
-end
-
-describe "Freeswitch configuration defaults" do
-  attr_reader :config
-
-  before(:each) do
-    @config = Adhearsion::Configuration::FreeswitchConfiguration.new
-  end
-
-  it "freeswitch configuration sets default listening port" do
-    config.listening_port.should be Adhearsion::Configuration::FreeswitchConfiguration.default_listening_port
-  end
-
-  it "freeswitch configuration sets default listening host" do
-    config.listening_host.should == Adhearsion::Configuration::FreeswitchConfiguration.default_listening_host
   end
 end
 
