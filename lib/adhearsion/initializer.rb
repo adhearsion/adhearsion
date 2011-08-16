@@ -280,12 +280,12 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
 
     def init_modules
-      require 'adhearsion/initializer/asterisk.rb'
+      require 'adhearsion/initializer/punchblock.rb'
       require 'adhearsion/initializer/drb.rb'
       require 'adhearsion/initializer/rails.rb'
       require 'adhearsion/initializer/xmpp.rb'
 
-      AsteriskInitializer.start   if AHN_CONFIG.asterisk_enabled?
+      PunchblockInitializer.start if AHN_CONFIG.punchblock_enabled?
       DrbInitializer.start        if AHN_CONFIG.drb_enabled?
       RailsInitializer.start      if AHN_CONFIG.rails_enabled?
       XMPPInitializer.start       if AHN_CONFIG.xmpp_enabled?
