@@ -199,14 +199,15 @@ module Adhearsion
     end
     add_configuration_for :Asterisk
 
-    class FreeswitchConfiguration < TelephonyPlatformConfiguration
-      class << self
-        def default_listening_port
-          4572
-        end
+    class PunchblockConfiguration < AbstractConfiguration
+      attr_accessor :username, :password, :wire_logger, :transport_logger, :auto_reconnect
+
+      def initialize(options = {})
+        options = {:username => 'usera@127.0.0.1', :password => '1', :wire_logger => ahn_log.punchblock.wire, :transport_logger => ahn_log.punchblock, :auto_reconnect => true}.merge options
+        @username, @password, @wire_logger, @transport_logger, @auto_reconnect = options.values_at :username, :password, :wire_logger, :transport_logger, :auto_reconnect
       end
     end
-    add_configuration_for :Freeswitch
+    add_configuration_for :Punchblock
 
     class DatabaseConfiguration < AbstractConfiguration
       attr_accessor :connection_options, :orm
