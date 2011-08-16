@@ -1,4 +1,5 @@
 require 'thread'
+
 class Object
   def synchronize(&block)
     @mutex ||= Mutex.new

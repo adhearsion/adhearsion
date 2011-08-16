@@ -3,6 +3,8 @@ require 'rubygems'
 
 $: << File.expand_path(File.dirname(__FILE__))
 
+require 'uuid'
+
 require 'theatre/version'
 require 'theatre/namespace_manager'
 require 'theatre/invocation'

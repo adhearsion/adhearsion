@@ -7,14 +7,13 @@ class SynchronizedHash
     class_eval(<<-RUBY, __FILE__, __LINE__)
       def #{method_name}(*args, &block)
         @lock.synchronize do
-          @delegate.send(#{method_name.inspect}, *args, &block)
+          @delegate.send #{method_name.inspect}, *args, &block
         end
       end
     RUBY
   end
 
   # Hash-related methods
-
   atomically_delegate :[]
   atomically_delegate :[]=
   atomically_delegate :all?
@@ -73,13 +72,12 @@ class SynchronizedHash
   atomically_delegate :zip
 
   # Object-related methods
-
   atomically_delegate :inspect
   atomically_delegate :to_s
   atomically_delegate :marshal_dump
 
   def initialize(*args, &block)
-    @delegate = Hash.new(*args, &block)
+    @delegate = Hash.new *args, &block
     @lock     = Mutex.new
   end
 
@@ -92,5 +90,4 @@ class SynchronizedHash
   def with_lock(&block)
     @lock.synchronize { yield @delegate }
   end
-
 end

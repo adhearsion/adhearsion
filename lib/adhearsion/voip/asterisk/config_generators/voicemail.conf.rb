@@ -11,14 +11,14 @@ module Adhearsion
           }
 
           # Don't worry. These will be overridable soon.
-          STATIC_ZONEMESSAGES_CONTEXT = %{
+          STATIC_ZONEMESSAGES_CONTEXT = <<-ZONEMESSAGES.strip_heredoc
             [zonemessages]
             eastern=America/New_York|'vm-received' Q 'digits/at' IMp
             central=America/Chicago|'vm-received' Q 'digits/at' IMp
             central24=America/Chicago|'vm-received' q 'digits/at' H N 'hours'
             military=Zulu|'vm-received' q 'digits/at' H N 'hours' 'phonetic/z_p'
             european=Europe/Copenhagen|'vm-received' a d b 'digits/at' HM
-          }.unindent
+          ZONEMESSAGES
 
           attr_reader :properties, :context_definitions
           def initialize

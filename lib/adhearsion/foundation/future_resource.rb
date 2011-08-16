@@ -1,7 +1,6 @@
 require "thread"
 
 class FutureResource
-
   def initialize
     @resource_lock          = Monitor.new
     @resource_value_blocker = @resource_lock.new_cond
@@ -32,5 +31,4 @@ class FutureResource
       super "Cannot set this resource twice!"
     end
   end
-
 end

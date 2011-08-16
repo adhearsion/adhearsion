@@ -253,7 +253,7 @@ describe 'An expansive example of the Voicemail config generator' do
         config.attach_recordings true
         config.command '/usr/sbin/sendmail -f alice@wonderland.com -t'
         config.subject "New voicemail for #{config[:name]}"
-        config.body <<-BODY.unindent
+        config.body <<-BODY.strip_heredoc
           Dear #{config[:name]}:
 
           The caller #{config[:caller_id]} left you a #{config[:duration]} long voicemail
@@ -270,7 +270,7 @@ describe 'An expansive example of the Voicemail config generator' do
     target_config = <<-CONFIG
 [general]
 attach=yes
-emailbody=Dear ${VM_NAME}:\\nThe caller ${VM_CALLERID} left you a ${VM_DUR} long voicemail\\n(number ${VM_MSGNUM}) on ${VM_DATE} in mailbox ${VM_MAILBOX}.\\nThe recording is attached to this email.\\n- Your Friendly Phone System\\n
+emailbody=Dear ${VM_NAME}:\\n\\nThe caller ${VM_CALLERID} left you a ${VM_DUR} long voicemail\\n(number ${VM_MSGNUM}) on ${VM_DATE} in mailbox ${VM_MAILBOX}.\\n\\nThe recording is attached to this email.\\n\\n- Your Friendly Phone System\\n
 emailsubject=New voicemail for ${VM_NAME}
 externpass=/path/to/my/changer_script.rb
 format=wav

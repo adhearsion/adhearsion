@@ -392,7 +392,7 @@ WARN
           # call_into_context is syntactic sugar for the Asterisk originate command that allows you to
           # launch a call into a particular context. For example:
           #
-          # call_into_context('SIP/1000@sipnetworks.com', 'my_context', { :variables => { :session_guid => new_guid }})
+          # call_into_context('SIP/1000@sipnetworks.com', 'my_context', { :variables => { :session_guid => UUID.new.generate }})
           def call_into_context(channel, context, options={})
             args = {:channel => channel, :context => context}
             args[:priority] = options[:priority] || 1
@@ -577,7 +577,7 @@ WARN
             retry
           end
 
-          def login_actions        
+          def login_actions
             response = send_action "Login", "Username" => @username, "Secret" => @password, "Events" => "Off"
             ahn_log.ami "Successful AMI actions-only connection into #{@username}@#{@host}"
             if @actions_lexer.ami_version < 1.1
@@ -666,7 +666,7 @@ WARN
             # @return [String] characters in GUID format (e.g. "4C5F4E1C-A0F1-4D13-8751-C62F2F783062")
             #
             def new_action_id
-              new_guid # Implemented in lib/adhearsion/foundation/pseudo_guid.rb
+              UUID.new.generate
             end
 
             ##

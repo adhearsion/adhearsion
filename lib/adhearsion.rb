@@ -8,6 +8,8 @@ $: << File.expand_path(File.dirname(__FILE__))
 require 'rubygems'
 require 'bundler/setup'
 
+require 'uuid'
+
 require 'adhearsion/version'
 require 'adhearsion/voip/call'
 require 'adhearsion/voip/dial_plan'
@@ -42,5 +44,4 @@ module Adhearsion
   # This Array holds all the Threads whose life matters. Adhearsion will not exit until all of these have died.
   #
   IMPORTANT_THREADS = []
-
 end

@@ -1,4 +1,3 @@
-require 'theatre/guid'
 require 'thread'
 require 'monitor'
 
@@ -23,7 +22,7 @@ module Theatre
     def initialize(namespace, callback, payload=:theatre_no_payload)
       raise ArgumentError, "Callback must be a Proc" unless callback.kind_of? Proc
       @payload       = payload
-      @unique_id     = new_guid.freeze
+      @unique_id     = UUID.new.generate.freeze
       @callback      = callback
       @current_state = :new
       @state_lock    = Mutex.new

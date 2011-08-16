@@ -55,12 +55,11 @@ require "socket"
 class EventSocket
 
   class << self
-
     ##
     # Creates and returns a connected EventSocket instance.
     #
     def connect(*args, &block)
-      instance = new(*args, &block)
+      instance = new *args, &block
       instance.connect!
       instance
     end
@@ -68,9 +67,9 @@ class EventSocket
 
   MAX_CHUNK_SIZE = 256 * 1024
 
-  def initialize(host, port, handler=nil, &block)
+  def initialize(host, port, handler = nil, &block)
     raise ArgumentError, "Cannot supply both a handler object and a block" if handler && block_given?
-    raise ArgumentError, "Must supply either a handler object or a block" if !handler && !block_given?
+    raise ArgumentError, "Must supply either a handler object or a block" unless handler || block_given?
 
     @state_lock = Mutex.new
     @host  = host
@@ -89,7 +88,7 @@ class EventSocket
       if @state.equal? :connected
         raise ConnectionError, "Already connected!"
       else
-        @socket = TCPSocket.new(@host, @port)
+        @socket = TCPSocket.new @host, @port
         @state  = :connected
       end
     end
@@ -136,7 +135,7 @@ class EventSocket
   end
 
   def receive_data(data)
-    @handler.receive_data(data)
+    @handler.receive_data data
   end
 
   protected
@@ -152,12 +151,12 @@ class EventSocket
   end
 
   def spawn_reader_thread
-    Thread.new(&method(:reader_loop))
+    Thread.new &method(:reader_loop)
   end
 
   def reader_loop
     until state.equal? :stopped
-      data = @socket.readpartial(MAX_CHUNK_SIZE)
+      data = @socket.readpartial MAX_CHUNK_SIZE
       @handler.receive_data data
     end
   rescue EOFError
@@ -175,11 +174,13 @@ class EventSocket
       self.metaclass.send(:define_method, :receive_data) { |data| block.call data }
       set_callbacks[:receive_data] = true
     end
+
     def handler.connected(&block)
       self.metaclass.send(:remove_method, :connected)
       self.metaclass.send(:define_method, :connected) { block.call }
       set_callbacks[:connected] = true
     end
+
     def handler.disconnected(&block)
       self.metaclass.send(:remove_method, :disconnected)
       self.metaclass.send(:define_method, :disconnected) { block.call }
@@ -197,9 +198,7 @@ class EventSocket
     end
 
     handler
-
   end
 
-  class ConnectionError < StandardError; end
-
+  ConnectionError = Class.new StandardError
 end
