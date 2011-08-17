@@ -32,6 +32,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "rake"
   s.add_runtime_dependency "pry"
   s.add_runtime_dependency "uuid"
+  s.add_runtime_dependency "future-resource"
 
   # Development dependencies
   s.add_development_dependency 'rubigen', [">= 1.5.6"]

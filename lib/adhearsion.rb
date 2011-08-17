@@ -9,6 +9,7 @@ require 'rubygems'
 require 'bundler/setup'
 
 require 'uuid'
+require 'future-resource'
 
 require 'adhearsion/version'
 require 'adhearsion/voip/call'
