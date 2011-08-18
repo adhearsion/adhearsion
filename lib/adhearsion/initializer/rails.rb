@@ -1,14 +1,12 @@
-require 'adhearsion/voip/asterisk'
-
 module Adhearsion
   class Initializer
-    class RailsInitializer
+    class Rails
 
       cattr_accessor :rails_root, :config, :environment
       class << self
 
         def start
-          ahn_config       = Adhearsion::AHN_CONFIG
+          ahn_config       = AHN_CONFIG
           self.config      = ahn_config.rails
           self.rails_root  = config.rails_root
           self.environment = config.environment

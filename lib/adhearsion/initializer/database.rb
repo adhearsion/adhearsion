@@ -3,7 +3,7 @@
 module Adhearsion
   class Initializer
 
-    class DatabaseInitializer
+    class Database
 
       class << self
 

@@ -8,37 +8,34 @@ $: << File.expand_path(File.dirname(__FILE__))
 require 'rubygems'
 require 'bundler/setup'
 
+require 'active_support/all'
 require 'uuid'
 require 'future-resource'
 require 'punchblock'
 
-require 'adhearsion/version'
-require 'adhearsion/voip/call'
-require 'adhearsion/voip/calls'
-require 'adhearsion/voip/dial_plan'
-require 'adhearsion/voip/asterisk/special_dial_plan_managers'
 require 'adhearsion/foundation/all'
-require 'adhearsion/events_support'
-require 'adhearsion/logging'
-require 'adhearsion/component_manager'
-require 'adhearsion/initializer/configuration'
-require 'adhearsion/initializer'
-require 'adhearsion/voip/dsl/numerical_string'
-require 'adhearsion/voip/dsl/dialplan/parser'
-require 'adhearsion/voip/commands'
-require 'adhearsion/voip/asterisk/commands'
-require 'adhearsion/voip/dsl/dialing_dsl'
-require 'adhearsion/voip/call_routing'
 
-begin
-  # Try ActiveSupport >= 2.3.0
-  require 'active_support/all'
-rescue LoadError
-  # Assume ActiveSupport < 2.3.0
-  require 'active_support'
-end
+require 'adhearsion/dsl/numerical_string'
+require 'adhearsion/dsl/dialplan/parser'
+require 'adhearsion/dsl/dialing_dsl'
 
 module Adhearsion
+  extend ActiveSupport::Autoload
+
+  autoload :Asterisk
+  autoload :Call
+  autoload :CallRouting
+  autoload :Calls
+  autoload :Commands
+  autoload :Components
+  autoload :Configuration
+  autoload :DialPlan
+  autoload :Dispatcher
+  autoload :Events
+  autoload :Initializer
+  autoload :Logging
+  autoload :Version
+
   # Sets up the Gem require path.
   AHN_INSTALL_DIR = File.expand_path(File.dirname(__FILE__) + "/..")
   AHN_CONFIG = Configuration.new
@@ -65,4 +62,6 @@ module Adhearsion
   end
 
   Hangup = Class.new StandardError # At the moment, we'll just use this to end a call-handling Thread
+  PlaybackError = Class.new StandardError # Represents failure to play audio, such as when the sound file cannot be found
+  RecordError = Class.new StandardError # Represents failure to record such as when a file cannot be written.
 end

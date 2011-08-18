@@ -4,8 +4,8 @@ methods_for :rpc do
 
   [:send_action, :introduce, :originate, :call_into_context, :call_and_exec, :ping].each do |method_name|
     define_method(method_name) do |*args|
-      if VoIP::Asterisk.manager_interface
-        VoIP::Asterisk.manager_interface.send(method_name, *args)
+      if Asterisk.manager_interface
+        Asterisk.manager_interface.send(method_name, *args)
       else
         ahn_log.ami_remote.error "AMI has not been enabled in startup.rb!"
       end

@@ -30,8 +30,6 @@ $: << File.dirname(__FILE__)
   pp
   stringio
   adhearsion
-  adhearsion/voip/asterisk
-  adhearsion/component_manager
 }.each { |f| require f }
 
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |f| require f }

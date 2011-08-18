@@ -84,6 +84,15 @@ module Adhearsion
 
   class Initializer
 
+    extend ActiveSupport::Autoload
+
+    autoload :Database
+    autoload :DRb
+    autoload :LDAP
+    autoload :Punchblock
+    autoload :Rails
+    autoload :XMPP
+
     class << self
       def get_rules_from(location)
         location = File.join location, ".ahnrc" if File.directory? location
@@ -272,23 +281,15 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
 
     def init_datasources
-      require 'adhearsion/initializer/database.rb'
-      require 'adhearsion/initializer/ldap.rb'
-
-      DatabaseInitializer.start   if AHN_CONFIG.database_enabled?
-      LdapInitializer.start       if AHN_CONFIG.ldap_enabled?
+      Database.start if AHN_CONFIG.database_enabled?
+      Ldap.start     if AHN_CONFIG.ldap_enabled?
     end
 
     def init_modules
-      require 'adhearsion/initializer/punchblock.rb'
-      require 'adhearsion/initializer/drb.rb'
-      require 'adhearsion/initializer/rails.rb'
-      require 'adhearsion/initializer/xmpp.rb'
-
-      PunchblockInitializer.start if AHN_CONFIG.punchblock_enabled?
-      DrbInitializer.start        if AHN_CONFIG.drb_enabled?
-      RailsInitializer.start      if AHN_CONFIG.rails_enabled?
-      XMPPInitializer.start       if AHN_CONFIG.xmpp_enabled?
+      Punchblock.start if AHN_CONFIG.punchblock_enabled?
+      Drb.start        if AHN_CONFIG.drb_enabled?
+      Rails.start      if AHN_CONFIG.rails_enabled?
+      XMPP.start       if AHN_CONFIG.xmpp_enabled?
     end
 
     def init_events_subsystem

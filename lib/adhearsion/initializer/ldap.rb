@@ -3,7 +3,7 @@
 module Adhearsion
   class Initializer
 
-    class LdapInitializer
+    class Ldap
 
       class << self
 
