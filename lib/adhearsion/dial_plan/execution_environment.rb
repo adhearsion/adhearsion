@@ -12,6 +12,7 @@ module Adhearsion
       end
 
       attr_reader :call
+
       def initialize(call, entry_point)
         @call, @entry_point = call, entry_point
       end
@@ -31,7 +32,7 @@ module Adhearsion
         current_context = entry_point
         answer if AHN_CONFIG.automatically_answer_incoming_calls
         begin
-          instance_eval(&current_context)
+          instance_eval &current_context
         rescue Adhearsion::DSL::Dialplan::ControlPassingException => exception
           current_context = exception.target
           retry
