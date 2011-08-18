@@ -10,9 +10,11 @@ require 'bundler/setup'
 
 require 'uuid'
 require 'future-resource'
+require 'punchblock'
 
 require 'adhearsion/version'
 require 'adhearsion/voip/call'
+require 'adhearsion/voip/calls'
 require 'adhearsion/voip/dial_plan'
 require 'adhearsion/voip/asterisk/special_dial_plan_managers'
 require 'adhearsion/foundation/all'
@@ -51,8 +53,8 @@ module Adhearsion
       @calls ||= Calls.new
     end
 
-    def receive_call_from(io)
-      Call.receive_from(io).tap do |call|
+    def receive_call_from(offer)
+      Call.new(offer).tap do |call|
         active_calls << call
       end
     end
