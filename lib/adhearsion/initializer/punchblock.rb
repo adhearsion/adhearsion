@@ -1,4 +1,5 @@
 require 'punchblock'
+require 'timeout'
 
 module Adhearsion
   class Initializer
@@ -23,9 +24,28 @@ module Adhearsion
           Events.register_callback(:after_initialized) do
             begin
               IMPORTANT_THREADS << client.run
+              first_event = nil
+              Timeout::timeout(30) { first_event = client.event_queue.pop }
+              ahn_log.punchblock.info "Connected via Punchblock" if first_event == client.connected
+              poll_queue
             rescue => e
-              ahn_log.fatal "Failed to start Punchblock client! #{e.inspect}"
+              ahn_log.punchblock.fatal "Failed to start Punchblock client! #{e.inspect}"
               abort
+            end
+          end
+        end
+
+        def poll_queue
+          Thread.new do
+            loop do
+              event = client.event_queue.pop
+              ahn_log.punchblock.events.notice "#{event.class} event for call: #{event.call_id}"
+              case event
+              when Punchblock::Rayo::Event::Offer
+                ahn_log.punchblock.events.info "Offer received for call ID #{event.call_id}"
+              else
+                ahn_log.punchblock.events.error "Unknown event: #{event.inspect}"
+              end
             end
           end
         end
