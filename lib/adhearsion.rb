@@ -45,4 +45,22 @@ module Adhearsion
   # This Array holds all the Threads whose life matters. Adhearsion will not exit until all of these have died.
   #
   IMPORTANT_THREADS = []
+
+  class << self
+    def active_calls
+      @calls ||= Calls.new
+    end
+
+    def receive_call_from(io)
+      Call.receive_from(io).tap do |call|
+        active_calls << call
+      end
+    end
+
+    def remove_inactive_call(call)
+      active_calls.remove_inactive_call(call)
+    end
+  end
+
+  Hangup = Class.new StandardError # At the moment, we'll just use this to end a call-handling Thread
 end
