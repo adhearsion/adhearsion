@@ -1,6 +1,4 @@
 require File.dirname(__FILE__) + '/dispatcher_spec_helper'
-require 'adhearsion/dsl/dialplan/dispatcher'
-
 
 describe "A EventCommand" do
 

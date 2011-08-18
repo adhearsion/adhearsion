@@ -1,8 +1,6 @@
-require 'ostruct'
-
 module Adhearsion
   module DSL
-    module Dialplan
+    class Dialplan
       #TODO: This is obsolete, but we still need it for Freeswitch until we port that to the new 0.8.0 APIs
       module DialplanParser
 
@@ -41,27 +39,6 @@ module Adhearsion
           end
         end
       end
-
-      class ContextsEnvelope
-
-        keep = [:define_method, :instance_eval, :meta_def, :meta_eval, :metaclass, :methods, :object_id]
-        (instance_methods.map{|m| m.to_sym} - keep).each { |m| undef_method m unless m.to_s =~ /^__/ }
-
-        def initialize
-          @parsed_contexts = {}
-        end
-
-        attr_reader :parsed_contexts
-
-        def method_missing(name, *args, &block)
-          super unless block_given?
-          @parsed_contexts[name] = block
-          meta_def(name) { block }
-        end
-
-      end
-
     end
-
   end
 end

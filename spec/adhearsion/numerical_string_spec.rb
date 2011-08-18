@@ -1,8 +1,5 @@
 require 'spec_helper'
 
-require 'adhearsion/dsl/numerical_string'
-require 'adhearsion/constants'
-
 describe "A NumericalString" do
   # FIXME: This test is fundamentally broken in Ruby 1.9.
   # See https://adhearsion.lighthouseapp.com/projects/5871/tickets/127-ruby-19-and-numericalstring-comparisons-in-case-statements

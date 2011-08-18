@@ -1,7 +1,5 @@
 require 'spec_helper'
 
-require 'adhearsion/dsl/dialplan/dispatcher'
-
 module StandardDispatcherBehavior
   def xtest_standard_dispatcher_behavior
     #"This it looks bogus.  Not finished?  Let's not check in failing specs ever if we can help it."

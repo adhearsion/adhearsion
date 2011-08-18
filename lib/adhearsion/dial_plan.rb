@@ -1,7 +1,3 @@
-# Hardcoding require for now since for some reason it's not being loaded
-require 'adhearsion/dsl/dialplan/control_passing_exception'
-
-require 'adhearsion/version'
 # JRuby contains a bug that breaks some of the menu functionality
 # See: https://adhearsion.lighthouseapp.com/projects/5871/tickets/92-menu-method-under-jruby-does-not-appear-to-work
 begin

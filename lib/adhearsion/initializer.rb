@@ -327,7 +327,6 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
 
     def launch_console
-      require 'adhearsion/console'
       Thread.new do
         begin
           puts "Starting console"

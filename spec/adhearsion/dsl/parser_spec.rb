@@ -1,7 +1,5 @@
 require 'spec_helper'
 
-require 'adhearsion/dsl/dialplan/parser'
-
 describe "The Adhearsion VoIP dialplan parser" do
 
   it "should return a list of dialplans properly from dialplan code" do

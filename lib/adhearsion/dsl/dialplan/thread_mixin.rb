@@ -1,14 +1,10 @@
-require 'ostruct'
-
 module Adhearsion
   module DSL
-    module Dialplan
+    class Dialplan
       module ThreadMixin
-
         def call
           @thread_call_struct ||= OpenStruct.new
         end
-
       end
     end
   end

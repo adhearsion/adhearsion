@@ -5,19 +5,18 @@ Please upgrade to at least Ruby v1.8.5." if RUBY_VERSION < "1.8.5"
 
 $: << File.expand_path(File.dirname(__FILE__))
 
-require 'rubygems'
-require 'bundler/setup'
+%w{
+  rubygems
+  bundler/setup
 
-require 'active_support/all'
-require 'uuid'
-require 'future-resource'
-require 'punchblock'
+  active_support/all
+  uuid
+  future-resource
+  punchblock
+  ostruct
 
-require 'adhearsion/foundation/all'
-
-require 'adhearsion/dsl/numerical_string'
-require 'adhearsion/dsl/dialplan/parser'
-require 'adhearsion/dsl/dialing_dsl'
+  adhearsion/foundation/all
+}.each { |f| require f }
 
 module Adhearsion
   extend ActiveSupport::Autoload
@@ -29,8 +28,12 @@ module Adhearsion
   autoload :Commands
   autoload :Components
   autoload :Configuration
+  autoload :Console
+  autoload :Constants
+  autoload :Conveniences
   autoload :DialPlan
   autoload :Dispatcher
+  autoload :DSL
   autoload :Events
   autoload :Initializer
   autoload :Logging
