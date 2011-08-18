@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
 
   # Runtime dependencies
   s.add_runtime_dependency "bundler", [">= 1.0.10"]
-  s.add_runtime_dependency 'punchblock', [">= 0.2.0"]
+  s.add_runtime_dependency 'punchblock', [">= 0.2.3"]
   s.add_runtime_dependency "log4r", [">= 1.0.5"]
   s.add_runtime_dependency "activesupport", [">= 2.1.0"]
   # i18n is only strictly a dependency for ActiveSupport >= 3.0.0
@@ -32,7 +32,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "rake"
   s.add_runtime_dependency "pry"
   s.add_runtime_dependency "uuid"
-  s.add_runtime_dependency "future-resource"
+  s.add_runtime_dependency "future-resource", [">= 0.0.2"]
 
   # Development dependencies
   s.add_development_dependency 'rubigen', [">= 1.5.6"]
@@ -43,5 +43,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'simplecov'
   s.add_development_dependency 'simplecov-rcov'
   s.add_development_dependency 'ci_reporter'
+  s.add_development_dependency 'yard'
   s.add_development_dependency 'guard-rspec'
 end

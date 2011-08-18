@@ -185,26 +185,26 @@ end
 describe "Punchblock configuration" do
   describe "with config specified" do
     subject do
-      Adhearsion::Configuration::PunchblockConfiguration.new :username => 'userb@127.0.0.1', :password => 'abc123', :wire_logger => ahn_log.pb.wire, :transport_logger => ahn_log.pb, :auto_reconnect => false
+      Adhearsion::Configuration::PunchblockConfiguration.new(:username => 'userb@127.0.0.1', :password => 'abc123', :wire_logger => ahn_log.pb.wire, :transport_logger => ahn_log.pb, :auto_reconnect => false).connection_options
     end
 
-    its(:username)          { should == 'userb@127.0.0.1' }
-    its(:password)          { should == 'abc123' }
-    its(:wire_logger)       { should == ahn_log.pb.wire }
-    its(:transport_logger)  { should == ahn_log.pb }
-    its(:auto_reconnect)    { should == false }
+    it { subject[:username].should == 'userb@127.0.0.1' }
+    it { subject[:password].should == 'abc123' }
+    it { subject[:wire_logger].should == ahn_log.pb.wire }
+    it { subject[:transport_logger].should == ahn_log.pb }
+    it { subject[:auto_reconnect].should == false }
   end
 
   describe "with defaults" do
     subject do
-      Adhearsion::Configuration::PunchblockConfiguration.new
+      Adhearsion::Configuration::PunchblockConfiguration.new.connection_options
     end
 
-    its(:username)          { should == 'usera@127.0.0.1' }
-    its(:password)          { should == '1' }
-    its(:wire_logger)       { should == ahn_log.punchblock.wire }
-    its(:transport_logger)  { should == ahn_log.punchblock }
-    its(:auto_reconnect)    { should == true }
+    it { subject[:username].should == 'usera@127.0.0.1' }
+    it { subject[:password].should == '1' }
+    it { subject[:wire_logger].should == ahn_log.punchblock.wire }
+    it { subject[:transport_logger].should == ahn_log.punchblock }
+    it { subject[:auto_reconnect].should == true }
   end
 end
 

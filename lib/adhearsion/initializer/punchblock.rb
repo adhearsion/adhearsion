@@ -8,8 +8,18 @@ module Adhearsion
       class << self
         def start
           self.config = AHN_CONFIG.punchblock
-          self.client = Punchblock::Rayo.new config
+          self.client = Punchblock::Rayo.new self.config.connection_options
 
+          # Make sure we stop everything when we shutdown
+          Events.register_callback(:shutdown) do
+            ahn_log.info "Shutting down with #{Adhearsion.active_calls.size} active calls"
+            client.stop
+          end
+
+          connect
+        end
+
+        def connect
           Events.register_callback(:after_initialized) do
             begin
               IMPORTANT_THREADS << client.run
@@ -17,12 +27,6 @@ module Adhearsion
               ahn_log.fatal "Failed to start Punchblock client! #{e.inspect}"
               abort
             end
-          end
-
-          # Make sure we stop everything when we shutdown
-          Events.register_callback(:shutdown) do
-            ahn_log.info "Shutting down with #{Adhearsion.active_calls.size} active calls"
-            client.stop
           end
         end
       end
