@@ -17,14 +17,6 @@ module Adhearsion
       end
 
       def handle(call)
-        if call.failed_call?
-          environment = ExecutionEnvironment.create call, nil
-          call.extract_failed_reason_from environment
-          raise FailedExtensionCallException.new(environment)
-        end
-
-        raise HungupExtensionCallException.new(ExecutionEnvironment.new(call, nil)) if call.hungup_call?
-
         starting_entry_point = entry_point_for call
         raise NoContextError, "No dialplan entry point for call context '#{call.context}' -- Ignoring call!" unless starting_entry_point
         @context = ExecutionEnvironment.create call, starting_entry_point

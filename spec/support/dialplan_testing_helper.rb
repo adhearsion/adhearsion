@@ -1,5 +1,4 @@
 module DialplanTestingHelper
-
   def load(dial_plan_as_string)
     Adhearsion::DialPlan::Loader.load dial_plan_as_string
   end
@@ -32,6 +31,12 @@ module DialplanTestingHelper
   end
 
   def new_call_for_context(context)
-    Adhearsion::Call.new mock_offer
+    Adhearsion::Call.new(mock_offer).tap do |call|
+      call.context = context
+    end
+  end
+
+  def mock_dial_plan_lookup_for_context_name
+    flexstub(Adhearsion::DialPlan).new_instances.should_receive(:lookup).with(context_name).and_return(mock_context)
   end
 end

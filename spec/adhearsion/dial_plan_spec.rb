@@ -5,7 +5,6 @@ describe "DialPlan" do
   attr_accessor :loader, :loader_instance, :dial_plan
 
   before do
-    pending
     @loader = Adhearsion::DialPlan::Loader
     @loader_instance = @loader.new
     flexmock(Adhearsion::DialPlan::Loader).should_receive(:load_dialplans).once.and_return(@loader_instance)

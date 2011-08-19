@@ -37,6 +37,7 @@ module Adhearsion
   autoload :Events
   autoload :Initializer
   autoload :Logging
+  autoload :Rayo
   autoload :Version
 
   # Sets up the Gem require path.

@@ -5,13 +5,14 @@ module Adhearsion
   # Encapsulates call-related data and behavior.
   #
   class Call
-    attr_accessor :offer, :originating_voip_platform, :inbox
+    attr_accessor :offer, :originating_voip_platform, :inbox, :context
 
     def initialize(offer)
       @offer = offer
       set_originating_voip_platform!
       @tag_mutex = Mutex.new
       @tags = []
+      @context = :adhearsion
     end
 
     def id
@@ -77,7 +78,7 @@ module Adhearsion
 
     def set_originating_voip_platform!
       # TODO: Determine this from the headers somehow
-      self.originating_voip_platform = :rayo_server
+      self.originating_voip_platform = :rayo
     end
 
     ##

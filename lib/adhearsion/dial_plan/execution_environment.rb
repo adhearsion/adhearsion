@@ -23,7 +23,6 @@ module Adhearsion
       #
       def stage!
         extend_with_voip_commands!
-        extend_with_call_variables!
         extend_with_dialplan_component_methods!
       end
 
@@ -45,11 +44,7 @@ module Adhearsion
 
       def extend_with_voip_commands!
         extend Adhearsion::Conveniences
-        extend Adhearsion::Commands.for(call.originating_voip_platform)
-      end
-
-      def extend_with_call_variables!
-        call.define_variable_accessors self
+        extend Adhearsion::Commands.for call.originating_voip_platform
       end
 
       def extend_with_dialplan_component_methods!

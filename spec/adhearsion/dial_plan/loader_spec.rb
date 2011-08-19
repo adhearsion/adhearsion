@@ -3,8 +3,6 @@ require 'spec_helper'
 describe "DialPlan loader" do
   include DialplanTestingHelper
 
-  before { pending }
-
   it '::build should raise a SyntaxError when the dialplan String contains one' do
     the_following_code {
       Adhearsion::DialPlan::Loader.load "foo { ((((( *@!^*@&*^!^@ }"

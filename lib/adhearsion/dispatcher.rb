@@ -24,7 +24,7 @@ module Adhearsion
     end
 
     def dispatch_offer(offer)
-      call = Adhearsion.receive_call_from event
+      call = Adhearsion.receive_call_from offer
 
       Events.trigger_immediately [:before_call], call
       ahn_log.punchblock.notice "Handling call with ID #{call.id}"
@@ -40,7 +40,7 @@ module Adhearsion
     rescue SyntaxError, StandardError => e
       Events.trigger ['exception'], e
     ensure
-      Adhearsion.remove_inactive_call call
+      # Adhearsion.remove_inactive_call call
     end
   end
 end

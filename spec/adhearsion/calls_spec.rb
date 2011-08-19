@@ -53,5 +53,17 @@ module Adhearsion
       flexmock(subject).should_receive(:calls).once.and_return(call_database)
       subject.find id
     end
+
+    it "finding calls by a tag" do
+      Adhearsion.active_calls.clear!
+
+      calls = Array.new(5) { Adhearsion::Call.new mock_offer }
+      calls.each { |call| subject << call }
+
+      tagged_call = calls.last
+      tagged_call.tag :moderator
+
+      subject.with_tag(:moderator).should == [tagged_call]
+    end
   end
 end
