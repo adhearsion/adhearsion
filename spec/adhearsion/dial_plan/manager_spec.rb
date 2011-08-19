@@ -21,11 +21,19 @@ module Adhearsion
           call.context.should be context_name # Sanity check context name being set
         end
 
+        it 'invokes the before_call event' do
+          flexmock(Events).should_receive(:trigger_immediately).once.with([:before_call], call).and_throw :triggered
+
+          the_following_code {
+            subject.handle call
+          }.should throw_symbol :triggered
+        end
+
         it "Given a Call, the manager finds the call's desired entry point based on the originating context" do
           subject.entry_point_for(call).should be mock_context
         end
 
-        it "The manager handles a call by executing the proper context" do
+        it "handles a call by executing the proper context" do
           flexmock(ExecutionEnvironment).new_instances.should_receive(:run).once
           subject.handle call
         end

@@ -17,11 +17,25 @@ module Adhearsion
       end
 
       def handle(call)
+        Events.trigger_immediately [:before_call], call
+        ahn_log.dial_plan.notice "Handling call with ID #{call.id}"
+
         starting_entry_point = entry_point_for call
         raise NoContextError, "No dialplan entry point for call context '#{call.context}' -- Ignoring call!" unless starting_entry_point
         @context = ExecutionEnvironment.create call, starting_entry_point
         inject_context_names_into_environment @context
         @context.run
+      # rescue Hangup
+      #   ahn_log.punchblock "HANGUP event for call with id #{call.id}"
+      #   Events.trigger_immediately [:after_call], call
+      #   call.hangup!
+      # rescue DialPlan::Manager::NoContextError => e
+      #   ahn_log.punchblock e.message
+      #   call.hangup!
+      # rescue SyntaxError, StandardError => e
+      #   Events.trigger ['exception'], e
+      # ensure
+      #   Adhearsion.remove_inactive_call call
       end
 
       # Find the dialplan by the context name from the call or from the
