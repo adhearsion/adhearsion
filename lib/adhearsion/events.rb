@@ -7,11 +7,9 @@ module Adhearsion
       /after_initialized
       /shutdown
       /exception
+      /before_call
+      /after_call
       /asterisk/manager_interface
-      /asterisk/before_call
-      /asterisk/after_call
-      /asterisk/hungup_call
-      /asterisk/failed_call
     ]
 
     class << self

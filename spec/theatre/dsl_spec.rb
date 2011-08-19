@@ -34,7 +34,7 @@ describe "CallbackDefinitionContainer" do
     example.register_namespaces_on theatre
 
     flexmock(theatre.namespace_manager).should_receive(:register_callback_at_namespace).
-        with([:asterisk, :before_call], Proc).once
+        with([:before_call], Proc).once
 
     loader  = Theatre::CallbackDefinitionLoader.new(theatre)
     loader.load_events_file example.file

@@ -29,6 +29,7 @@ $: << File.dirname(__FILE__)
   rubigen
   pp
   stringio
+  theatre
   adhearsion
 }.each { |f| require f }
 
