@@ -14,6 +14,8 @@ $: << File.expand_path(File.dirname(__FILE__))
   future-resource
   punchblock
   ostruct
+  log4r
+  theatre
 
   adhearsion/foundation/all
 }.each { |f| require f }
