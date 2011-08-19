@@ -30,17 +30,17 @@ module Adhearsion
       ahn_log.punchblock.notice "Handling call with ID #{call.id}"
 
       DialPlan::Manager.handle call
-    rescue Hangup
-      ahn_log.punchblock "HANGUP event for call with id #{call.id}"
-      Events.trigger_immediately [:after_call], call
-      call.hangup!
-    rescue DialPlan::Manager::NoContextError => e
-      ahn_log.punchblock e.message
-      call.hangup!
-    rescue SyntaxError, StandardError => e
-      Events.trigger ['exception'], e
-    ensure
-      # Adhearsion.remove_inactive_call call
+    # rescue Hangup
+    #   ahn_log.punchblock "HANGUP event for call with id #{call.id}"
+    #   Events.trigger_immediately [:after_call], call
+    #   call.hangup!
+    # rescue DialPlan::Manager::NoContextError => e
+    #   ahn_log.punchblock e.message
+    #   call.hangup!
+    # rescue SyntaxError, StandardError => e
+    #   Events.trigger ['exception'], e
+    # ensure
+    #   Adhearsion.remove_inactive_call call
     end
   end
 end

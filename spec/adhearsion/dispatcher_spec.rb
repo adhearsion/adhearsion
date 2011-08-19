@@ -27,18 +27,15 @@ module Adhearsion
           subject.dispatch_offer mock_offer
         }.should throw_symbol :triggered
       end
-    end
 
-    it 'should hand the call off to a new Manager if the request is agi://IP_ADDRESS_HERE' do
-      pending
-      stub_before_call_hooks!
-      call_mock = flexmock 'A new mock call that will be passed to the manager', :variables => {}, :id => "X"
-
-      flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return call_mock
-      manager_mock = flexmock 'a mock dialplan manager'
-      manager_mock.should_receive(:handle).once.with(call_mock)
-      flexmock(DialPlan::Manager).should_receive(:new).once.and_return manager_mock
-      server.serve(nil)
+      it 'should hand the call off to a new Manager' do
+        stub_before_call_hooks!
+        flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return mock_call
+        manager_mock = flexmock 'a mock dialplan manager'
+        manager_mock.should_receive(:handle).once.with(mock_call)
+        flexmock(DialPlan::Manager).should_receive(:new).once.and_return manager_mock
+        subject.dispatch_offer mock_offer
+      end
     end
   end
 end
