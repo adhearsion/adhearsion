@@ -67,7 +67,7 @@ module Adhearsion
     end
 
     def write_command(command)
-      connection.async_write command
+      connection.async_write id, command
     end
 
     def ahn_log(*args)
