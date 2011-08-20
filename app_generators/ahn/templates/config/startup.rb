@@ -16,8 +16,8 @@ Adhearsion::Configuration.configure do |config|
   # :formatter : A log formatter to apply to all active outputters
   config.logging :level => :info
 
-  # Whether incoming calls be automatically answered. Defaults to true.
-  # config.automatically_answer_incoming_calls = false
+  # Whether incoming calls be automatically accepted. Defaults to true.
+  # config.automatically_accept_incoming_calls = false
 
   # Whether the other end hanging up should end the call immediately. Defaults to true.
   # config.end_call_on_hangup = false

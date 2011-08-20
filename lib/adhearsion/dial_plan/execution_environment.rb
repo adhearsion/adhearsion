@@ -29,7 +29,7 @@ module Adhearsion
       def run
         raise "Cannot run ExecutionEnvironment without an entry point!" unless entry_point
         current_context = entry_point
-        answer if AHN_CONFIG.automatically_answer_incoming_calls
+        accept if AHN_CONFIG.automatically_accept_incoming_calls
         begin
           instance_eval &current_context
         rescue Adhearsion::DSL::Dialplan::ControlPassingException => exception

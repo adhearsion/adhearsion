@@ -45,19 +45,19 @@ module Adhearsion
           }.should raise_error(Manager::NoContextError)
         end
 
-        it 'should send :answer to the execution environment if Adhearsion::AHN_CONFIG.automatically_answer_incoming_calls is set' do
-          flexmock(ExecutionEnvironment).new_instances.should_receive(:answer).once.and_throw :answered_call!
+        it 'should send :accept to the execution environment if Adhearsion::AHN_CONFIG.automatically_accept_incoming_calls is set' do
+          flexmock(ExecutionEnvironment).new_instances.should_receive(:accept).once.and_throw :accepted_call!
           Configuration.configure do |config|
-            config.automatically_answer_incoming_calls = true
+            config.automatically_accept_incoming_calls = true
           end
           the_following_code {
             subject.handle call
-          }.should throw_symbol :answered_call!
+          }.should throw_symbol :accepted_call!
         end
 
-        it 'should NOT send :answer to the execution environment if Adhearsion::AHN_CONFIG.automatically_answer_incoming_calls is NOT set' do
+        it 'should NOT send :accept to the execution environment if Adhearsion::AHN_CONFIG.automatically_accept_incoming_calls is NOT set' do
           Configuration.configure do |config|
-            config.automatically_answer_incoming_calls = false
+            config.automatically_accept_incoming_calls = false
           end
 
           entry_point = DialplanContextProc.new(:does_not_matter) { "Do nothing" }
@@ -65,7 +65,7 @@ module Adhearsion
 
           execution_env = ExecutionEnvironment.create(call, nil)
           flexmock(execution_env).should_receive(:entry_point).and_return entry_point
-          flexmock(execution_env).should_receive(:answer).never
+          flexmock(execution_env).should_receive(:accept).never
 
           flexmock(ExecutionEnvironment).should_receive(:new).once.and_return execution_env
 
@@ -100,7 +100,7 @@ module Adhearsion
       describe "control statements" do
 
         it "should catch ControlPassingExceptions" do
-          flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_answer_incoming_calls).and_return false
+          flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_accept_incoming_calls).and_return false
           dialplan = %{
             foo { raise Adhearsion::DSL::Dialplan::ControlPassingException.new(bar) }
             bar {}
@@ -158,7 +158,7 @@ module Adhearsion
 
 
         it "new constants should still be accessible within the dialplan" do
-          flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_answer_incoming_calls).and_return false
+          flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_accept_incoming_calls).and_return false
           ::Jicksta = :Jicksta
           dialplan = %{
             constant_test {

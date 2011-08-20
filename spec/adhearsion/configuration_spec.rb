@@ -17,8 +17,8 @@ describe "Configuration defaults" do
     @config = default_config
   end
 
-  it "incoming calls are answered by default" do
-    config.automatically_answer_incoming_calls.should be true
+  it "incoming calls are accepted by default" do
+    config.automatically_accept_incoming_calls.should be true
   end
 
   it "calls are ended when hung up" do

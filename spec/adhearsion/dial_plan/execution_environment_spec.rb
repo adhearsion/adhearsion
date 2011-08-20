@@ -20,7 +20,7 @@ module Adhearsion
       describe "an executed context" do
         it "should raise a NameError error when a missing constant is referenced" do
           the_following_code {
-            flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_answer_incoming_calls).and_return false
+            flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_accept_incoming_calls).and_return false
             context = :context_with_missing_constant
             call = new_call_for_context context
             mock_dialplan_with "#{context} { ThisConstantDoesntExist }"

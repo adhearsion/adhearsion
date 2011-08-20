@@ -32,13 +32,13 @@ module Adhearsion
       end
     end
 
-    attr_accessor :automatically_answer_incoming_calls
+    attr_accessor :automatically_accept_incoming_calls
     attr_accessor :end_call_on_hangup
     attr_accessor :end_call_on_error
     attr_accessor :components_to_load
 
     def initialize
-      @automatically_answer_incoming_calls = true
+      @automatically_accept_incoming_calls = true
       @end_call_on_hangup                  = true
       @end_call_on_error                   = true
       @components_to_load                  = []
