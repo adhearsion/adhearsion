@@ -24,6 +24,13 @@ module Adhearsion
       Adhearsion::Call.new(offer).offer.should == offer
     end
 
+    it "should store the Punchblock connection from the Offer" do
+      offer = mock_offer
+      connection = flexmock('Connection')
+      offer.should_receive(:connection).once.and_return(connection)
+      Adhearsion::Call.new(offer).connection.should == connection
+    end
+
     it 'can create a call and add it via a top-level method on the Adhearsion module' do
       Adhearsion.active_calls.any?.should == false
       call = Adhearsion.receive_call_from mock_offer
@@ -86,6 +93,18 @@ module Adhearsion
         subject.tagged_with?(:customer).should be true
         subject.tagged_with?(:authorized).should be true
       end
+    end
+
+    describe "#write_command" do
+      let(:mock_command) { flexmock('Command') }
+
+      it "should asynchronously write the command to the Punchblock connection" do
+        mock_connection = flexmock('Connection')
+        flexmock(subject).should_receive(:connection).once.and_return mock_connection
+        mock_connection.should_receive(:async_write).once.with(mock_command).and_return true
+      end
+
+      after { subject.write_command mock_command }
     end
   end
 end

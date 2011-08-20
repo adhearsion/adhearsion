@@ -5,14 +5,15 @@ module Adhearsion
   # Encapsulates call-related data and behavior.
   #
   class Call
-    attr_accessor :offer, :originating_voip_platform, :inbox, :context
+    attr_accessor :offer, :originating_voip_platform, :inbox, :context, :connection
 
     def initialize(offer)
-      @offer = offer
+      @offer      = offer
+      @connection = offer.connection
+      @tag_mutex  = Mutex.new
+      @tags       = []
+      @context    = :adhearsion
       set_originating_voip_platform!
-      @tag_mutex = Mutex.new
-      @tags = []
-      @context = :adhearsion
     end
 
     def id
@@ -68,6 +69,10 @@ module Adhearsion
     def with_command_lock
       @command_monitor ||= Monitor.new
       @command_monitor.synchronize { yield }
+    end
+
+    def write_command(command)
+      connection.async_write command
     end
 
     def ahn_log(*args)
