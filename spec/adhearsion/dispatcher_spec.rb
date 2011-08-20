@@ -9,15 +9,15 @@ module Adhearsion
     let(:call_id)       { rand }
     let(:mock_offer)    { flexmock 'Offer', :call_id => call_id }
     let(:mock_call)     { flexmock('Call', :id => call_id).tap { |call| call.should_ignore_missing } }
-    let(:mock_client)   { flexmock 'Client', :event_queue => Queue.new }
+    let(:event_queue)   { Queue.new }
     let(:mock_manager)  { flexmock 'a mock dialplan manager' }
 
-    subject { Dispatcher.new mock_client }
+    subject { Dispatcher.new event_queue }
 
     describe "reading Punchblock event queue" do
       before do
-        mock_client.event_queue << :foo
-        mock_client.event_queue << :bar
+        event_queue << :foo
+        event_queue << :bar
       end
 
       let(:latch) { CountDownLatch.new 2 }
@@ -52,7 +52,7 @@ module Adhearsion
         end
 
         it "should log an error" do
-          flexmock(ahn_log.punchblock.events).should_receive(:notice).once.with("Event received for call #{call_id}: #{mock_event.inspect}")
+          flexmock(ahn_log.dispatcher).should_receive(:notice).once.with("Event received for call #{call_id}: #{mock_event.inspect}")
         end
 
         it "should place the event in the call's inbox" do
@@ -64,7 +64,7 @@ module Adhearsion
         let(:mock_event) { flexmock 'Event', :call_id => call_id }
 
         it "should log an error" do
-          flexmock(ahn_log.punchblock.events).should_receive(:error).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
+          flexmock(ahn_log.dispatcher).should_receive(:error).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
         end
       end
 
