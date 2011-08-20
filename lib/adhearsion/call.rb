@@ -56,12 +56,7 @@ module Adhearsion
     end
 
     def hangup!
-      io.close
       Adhearsion.remove_inactive_call self
-    end
-
-    def closed?
-      io.closed?
     end
 
     # Lock the socket for a command.  Can be used to allow the console to take

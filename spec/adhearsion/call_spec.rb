@@ -39,10 +39,9 @@ module Adhearsion
     end
 
     it 'a hungup call removes itself from the active calls' do
-      pending
       size_before = Adhearsion.active_calls.size
 
-      call = Adhearsion.receive_call_from mock_io
+      call = Adhearsion.receive_call_from mock_offer
       Adhearsion.active_calls.size.should > size_before
       call.hangup!
       Adhearsion.active_calls.size.should == size_before
