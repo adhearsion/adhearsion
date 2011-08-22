@@ -33,6 +33,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "pry"
   s.add_runtime_dependency "uuid"
   s.add_runtime_dependency "future-resource", [">= 0.0.2"]
+  s.add_runtime_dependency 'celluloid'
 
   # Development dependencies
   s.add_development_dependency 'rubigen', [">= 1.5.6"]

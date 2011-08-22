@@ -36,7 +36,7 @@ module Adhearsion
     describe "dispatching an offer" do
       it 'should hand the call off to a new Manager' do
         flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return mock_call
-        mock_manager.should_receive(:handle).once.with(mock_call)
+        mock_manager.should_receive(:handle!).once.with(mock_call)
         flexmock(DialPlan::Manager).should_receive(:new).once.and_return mock_manager
       end
 

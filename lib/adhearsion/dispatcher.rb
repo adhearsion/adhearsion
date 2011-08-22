@@ -29,7 +29,7 @@ module Adhearsion
     end
 
     def dispatch_offer(offer)
-      DialPlan::Manager.handle Adhearsion.receive_call_from(offer)
+      DialPlan::Manager.handle! Adhearsion.receive_call_from(offer)
     end
 
     def dispatch_call_event(event)

@@ -16,6 +16,7 @@ $: << File.expand_path(File.dirname(__FILE__))
   ostruct
   log4r
   theatre
+  celluloid
 
   adhearsion/foundation/all
 }.each { |f| require f }
