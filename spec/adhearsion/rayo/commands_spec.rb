@@ -40,21 +40,21 @@ module Adhearsion
 
       describe '#accept' do
         it 'should send an Accept message' do
-          expect_message_waiting_for_response Punchblock::Rayo::Command::Accept
+          expect_message_waiting_for_response Punchblock::Command::Accept
           mock_execution_environment.accept
         end
       end
 
       describe '#answer' do
         it 'should send an Answer message' do
-          expect_message_waiting_for_response Punchblock::Rayo::Command::Answer
+          expect_message_waiting_for_response Punchblock::Command::Answer
           mock_execution_environment.answer
         end
       end
 
       describe '#hangup' do
         it 'should send a Hangup message' do
-          expect_message_waiting_for_response Punchblock::Rayo::Command::Hangup
+          expect_message_waiting_for_response Punchblock::Command::Hangup
           mock_execution_environment.hangup
         end
       end

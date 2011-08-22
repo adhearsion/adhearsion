@@ -3,7 +3,7 @@ module Adhearsion
     module Commands
       extend ActiveSupport::Autoload
 
-      include Punchblock::Rayo::Command
+      include Punchblock::Command
 
       def accept
         write_and_await_response Accept.new
@@ -14,7 +14,7 @@ module Adhearsion
       end
 
       def hangup
-        write_and_await_response Punchblock::Rayo::Command::Hangup.new
+        write_and_await_response Punchblock::Command::Hangup.new
       end
 
       def write(command)

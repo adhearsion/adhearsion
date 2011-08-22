@@ -16,7 +16,7 @@ module Adhearsion
     end
 
     def dispatch_event(event)
-      if event.is_a?(Punchblock::Rayo::Event::Offer)
+      if event.is_a?(Punchblock::Event::Offer)
         ahn_log.dispatcher.info "Offer received for call ID #{event.call_id}"
         dispatch_offer event
       else

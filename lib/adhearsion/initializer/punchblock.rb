@@ -8,7 +8,7 @@ module Adhearsion
       class << self
         def start
           self.config = AHN_CONFIG.punchblock
-          self.client = ::Punchblock::Rayo.new self.config.connection_options
+          self.client = ::Punchblock::Connection.new self.config.connection_options
           self.dispatcher = Dispatcher.new self.client.event_queue
 
           # Make sure we stop everything when we shutdown
