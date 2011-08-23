@@ -6,7 +6,7 @@ port: 5000
 # The "handler" option here can be any valid Rack::Handler constant name.
 # Other options: WEBrick, EventedMongrel.
 # If you don't know the differences between these, "Mongrel" is definitely a good choice.
-handler: Mongrel
+handler: WEBrick
 
 # In a production system, you should make this "false" since
 show_exceptions: true
