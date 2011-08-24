@@ -166,6 +166,29 @@ module Adhearsion
           mock_execution_environment.unmute
         end
       end
+
+      describe "#execute_component_and_await_completion" do
+        let(:component) { Punchblock::Component::Output.new }
+
+        it "writes component to the server and waits on response" do
+          expect_message_waiting_for_response component
+          mock_execution_environment.execute_component_and_await_completion component
+        end
+
+        it "blocks until the component receives a complete event"
+      end
+
+      describe "#raw_output" do
+        pending
+      end
+
+      describe "#raw_input" do
+        pending
+      end
+
+      describe "#raw_record" do
+        pending
+      end
     end
   end
 end

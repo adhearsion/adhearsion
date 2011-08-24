@@ -42,6 +42,10 @@ module Adhearsion
           command
         end
       end
+
+      def execute_component_and_await_completion(component)
+        write_and_await_response component
+      end
     end
   end
 end
