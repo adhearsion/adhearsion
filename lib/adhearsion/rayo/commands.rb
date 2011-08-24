@@ -5,16 +5,28 @@ module Adhearsion
 
       include Punchblock::Command
 
-      def accept
-        write_and_await_response Accept.new
+      def accept(headers = nil)
+        write_and_await_response Accept.new(:headers => headers)
       end
 
-      def answer
-        write_and_await_response Answer.new
+      def answer(headers = nil)
+        write_and_await_response Answer.new(:headers => headers)
       end
 
-      def hangup
-        write_and_await_response Punchblock::Command::Hangup.new
+      def reject(reason = :busy, headers = nil)
+        write_and_await_response Reject.new(:reason => reason, :headers => headers)
+      end
+
+      def hangup(headers = nil)
+        write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
+      end
+
+      def mute
+        write_and_await_response Punchblock::Command::Mute.new
+      end
+
+      def unmute
+        write_and_await_response Punchblock::Command::Unmute.new
       end
 
       def write(command)

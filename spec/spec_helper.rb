@@ -24,6 +24,7 @@ $: << File.dirname(__FILE__)
   rubygems
   rspec/core
   bundler/setup
+  flexmock
   flexmock/rspec
   active_support
   rubigen

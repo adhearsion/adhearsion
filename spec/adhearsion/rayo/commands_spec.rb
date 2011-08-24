@@ -4,6 +4,7 @@ module Adhearsion
   module Rayo
     describe Commands do
       include RayoCommandTestHelpers
+      include FlexMock::ArgumentTypes
 
       let(:mock_execution_environment) do
         ee = Object.new.tap do |ee|
@@ -71,23 +72,98 @@ module Adhearsion
       end
 
       describe '#accept' do
-        it 'should send an Accept message' do
-          expect_message_waiting_for_response Punchblock::Command::Accept
-          mock_execution_environment.accept
+        describe "with no headers" do
+          it 'should send an Accept message' do
+            expect_message_waiting_for_response Punchblock::Command::Accept.new
+            mock_execution_environment.accept
+          end
+        end
+
+        describe "with headers set" do
+          it 'should send an Accept message with the correct headers' do
+            headers = {:foo => 'bar'}
+            expect_message_waiting_for_response Punchblock::Command::Accept.new(:headers => headers)
+            mock_execution_environment.accept headers
+          end
         end
       end
 
       describe '#answer' do
-        it 'should send an Answer message' do
-          expect_message_waiting_for_response Punchblock::Command::Answer
-          mock_execution_environment.answer
+        describe "with no headers" do
+          it 'should send an Answer message' do
+            expect_message_waiting_for_response Punchblock::Command::Answer.new
+            mock_execution_environment.answer
+          end
+        end
+
+        describe "with headers set" do
+          it 'should send an Answer message with the correct headers' do
+            headers = {:foo => 'bar'}
+            expect_message_waiting_for_response Punchblock::Command::Answer.new(:headers => headers)
+            mock_execution_environment.answer headers
+          end
+        end
+      end
+
+      describe '#reject' do
+        describe "with a reason given" do
+          it 'should send a Reject message with the correct reason' do
+            expect_message_waiting_for_response Punchblock::Command::Reject.new(:reason => :decline)
+            mock_execution_environment.reject :decline
+          end
+        end
+
+        describe "with no reason given" do
+          it 'should send a Reject message with the reason busy' do
+            expect_message_waiting_for_response Punchblock::Command::Reject.new(:reason => :busy)
+            mock_execution_environment.reject
+          end
+        end
+
+        describe "with no headers" do
+          it 'should send a Reject message' do
+            expect_message_waiting_for_response on { |c| c.is_a?(Punchblock::Command::Reject) && c.headers_hash == {} }
+            mock_execution_environment.reject
+          end
+        end
+
+        describe "with headers set" do
+          it 'should send a Hangup message with the correct headers' do
+            headers = {:foo => 'bar'}
+            expect_message_waiting_for_response on { |c| c.is_a?(Punchblock::Command::Reject) && c.headers_hash == headers }
+            mock_execution_environment.reject nil, headers
+          end
         end
       end
 
       describe '#hangup' do
-        it 'should send a Hangup message' do
-          expect_message_waiting_for_response Punchblock::Command::Hangup
-          mock_execution_environment.hangup
+        describe "with no headers" do
+          it 'should send a Hangup message' do
+            expect_message_waiting_for_response Punchblock::Command::Hangup.new
+            mock_execution_environment.hangup
+          end
+        end
+
+        describe "with headers set" do
+          it 'should send a Hangup message with the correct headers' do
+            headers = {:foo => 'bar'}
+            expect_message_waiting_for_response Punchblock::Command::Hangup.new(:headers => headers)
+            mock_execution_environment.hangup headers
+          end
+        end
+      end
+
+      describe '#mute' do
+        it 'should send a Mute message' do
+          expect_message_waiting_for_response Punchblock::Command::Mute.new
+          mock_execution_environment.mute
+        end
+      end
+
+      describe '#unmute' do
+        it 'should send an Unmute message' do
+          expect_message_waiting_for_response Punchblock::Command::Unmute.new
+          mock_execution_environment.unmute
         end
       end
     end
