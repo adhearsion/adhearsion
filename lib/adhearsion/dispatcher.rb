@@ -18,7 +18,9 @@ module Adhearsion
     def dispatch_event(event)
       if event.is_a?(Punchblock::Event::Offer)
         ahn_log.dispatcher.info "Offer received for call ID #{event.call_id}"
-        dispatch_offer event
+        Thread.new do
+          dispatch_offer event
+        end
       else
         if event.responds_to?(:call_id) && event.call_id
           dispatch_call_event event
@@ -29,7 +31,7 @@ module Adhearsion
     end
 
     def dispatch_offer(offer)
-      DialPlan::Manager.handle! Adhearsion.receive_call_from(offer)
+      DialPlan::Manager.handle Adhearsion.receive_call_from(offer)
     end
 
     def dispatch_call_event(event)

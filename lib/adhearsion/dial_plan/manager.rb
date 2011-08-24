@@ -2,13 +2,11 @@ module Adhearsion
   class DialPlan
     class Manager
 
-      include Celluloid
-
       NoContextError = Class.new StandardError
 
       class << self
-        def handle!(call)
-          new.handle! call
+        def handle(call)
+          new.handle call
         end
       end
 
