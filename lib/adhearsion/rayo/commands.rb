@@ -23,7 +23,12 @@ module Adhearsion
 
       def write_and_await_response(command, timeout = 60.seconds)
         write command
-        # command.response(timeout).tap { |result| raise result if result.is_a? Exception }
+        response = command.response timeout
+        if response.is_a? Exception
+          raise response
+        else
+          command
+        end
       end
     end
   end
