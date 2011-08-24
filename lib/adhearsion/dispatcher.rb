@@ -22,7 +22,7 @@ module Adhearsion
           dispatch_offer event
         end
       else
-        if event.responds_to?(:call_id) && event.call_id
+        if event.respond_to?(:call_id) && event.call_id
           dispatch_call_event event
         else
           ahn_log.dispatcher.error "Unknown event: #{event.inspect}"
