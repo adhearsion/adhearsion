@@ -67,6 +67,49 @@ module Adhearsion
         end
       end
 
+      describe "#execute_component_and_await_completion" do
+        let(:component) { Punchblock::Component::Output.new }
+        let(:response) { Punchblock::Event::Complete.new }
+
+        before do
+          # flexmock(component).should_receive(:execute!).and_return true
+          expect_message_waiting_for_response component
+          component.complete_event.resource = response
+        end
+
+        it "writes component to the server and waits on response" do
+          mock_execution_environment.execute_component_and_await_completion component
+        end
+
+        describe "with a successful completion" do
+          it "returns the executed component" do
+            mock_execution_environment.execute_component_and_await_completion(component).should be component
+          end
+        end
+
+        describe "with an error response" do
+          let(:response) do
+            Punchblock::Event::Complete.new.tap do |complete|
+              complete << error
+            end
+          end
+
+          let(:error) do |error|
+            Punchblock::Event::Complete::Error.new.tap do |error|
+              error << details
+            end
+          end
+
+          let(:details) { "Oh noes, it's all borked" }
+
+          it "raises the error" do
+            lambda { mock_execution_environment.execute_component_and_await_completion component }.should raise_error(StandardError, details)
+          end
+        end
+
+        it "blocks until the component receives a complete event"
+      end
+
       def expect_message_waiting_for_response(message)
         mock_execution_environment.should_receive(:write_and_await_response).once.with(message).and_return(true)
       end
@@ -165,17 +208,6 @@ module Adhearsion
           expect_message_waiting_for_response Punchblock::Command::Unmute.new
           mock_execution_environment.unmute
         end
-      end
-
-      describe "#execute_component_and_await_completion" do
-        let(:component) { Punchblock::Component::Output.new }
-
-        it "writes component to the server and waits on response" do
-          expect_message_waiting_for_response component
-          mock_execution_environment.execute_component_and_await_completion component
-        end
-
-        it "blocks until the component receives a complete event"
       end
 
       describe "#raw_output" do
