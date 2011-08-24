@@ -107,7 +107,16 @@ module Adhearsion
           end
         end
 
-        it "blocks until the component receives a complete event"
+        it "blocks until the component receives a complete event" do
+          slow_component = Punchblock::Component::Output.new
+          Thread.new do
+            sleep 0.5
+            slow_component.complete_event.resource = response
+          end
+          starting_time = Time.now
+          mock_execution_environment.execute_component_and_await_completion slow_component
+          (Time.now - starting_time).should > 0.5
+        end
       end
 
       def expect_message_waiting_for_response(message)
