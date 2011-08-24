@@ -72,7 +72,6 @@ module Adhearsion
         let(:response) { Punchblock::Event::Complete.new }
 
         before do
-          # flexmock(component).should_receive(:execute!).and_return true
           expect_message_waiting_for_response component
           component.complete_event.resource = response
         end
