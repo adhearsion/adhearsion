@@ -1,6 +1,6 @@
 # Monkey patch Object to support the #tap method.
 # This method is present in Ruby 1.8.7 and later.
-if !Object.respond_to?(:tap)
+unless Object.respond_to?(:tap)
   class Object
     def tap
       yield self
