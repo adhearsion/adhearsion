@@ -54,7 +54,7 @@ module Adhearsion
       describe "with a Punchblock End" do
         let :end_event do
           Punchblock::Event::End.new.tap do |e|
-            e << Punchblock::RayoNode.new('hangup')
+            flexmock e, :reason => :hangup
           end
         end
 
