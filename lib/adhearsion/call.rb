@@ -81,6 +81,7 @@ module Adhearsion
     end
 
     def write_command(command)
+      raise Hangup unless active?
       connection.async_write id, command
     end
 

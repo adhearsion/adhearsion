@@ -125,9 +125,18 @@ module Adhearsion
         mock_connection = flexmock('Connection')
         flexmock(subject).should_receive(:connection).once.and_return mock_connection
         mock_connection.should_receive(:async_write).once.with(subject.id, mock_command).and_return true
+        subject.write_command mock_command
       end
 
-      after { subject.write_command mock_command }
+      describe "with a hungup call" do
+        before do
+          flexmock(subject).should_receive(:active?).and_return(false)
+        end
+
+        it "should raise a Hangup exception" do
+          lambda { subject.write_command mock_command }.should raise_error(Hangup)
+        end
+      end
     end
   end
 end
