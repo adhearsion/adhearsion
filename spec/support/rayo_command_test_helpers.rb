@@ -1,17 +1,13 @@
 module RayoCommandTestHelpers
-  class MockCall
-    attr_accessor :variables
+  include FlexMock::ArgumentTypes
 
-    def initialize
-      @variables = {}
+  def self.included(test_case)
+    test_case.let :mock_execution_environment do
+      flexmock Object.new.tap { |ee| ee.extend Adhearsion::Rayo::Commands }, :call => mock_call
     end
 
-    def with_command_lock
-      yield
-    end
-
-    def write_command(command)
-      command
+    test_case.let :mock_call do
+      flexmock :write_command => true
     end
   end
 end

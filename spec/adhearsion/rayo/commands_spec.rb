@@ -4,20 +4,6 @@ module Adhearsion
   module Rayo
     describe Commands do
       include RayoCommandTestHelpers
-      include FlexMock::ArgumentTypes
-
-      let(:mock_execution_environment) do
-        ee = Object.new.tap do |ee|
-          ee.metaclass.send :attr_reader, :call
-          ee.instance_variable_set :@call, RayoCommandTestHelpers::MockCall.new
-          ee.extend Adhearsion::Rayo::Commands
-        end
-        flexmock(ee)
-      end
-
-      before do
-        Adhearsion::Configuration.configure { |config| config.enable_punchblock }
-      end
 
       describe '#write' do
         it "writes a command to the call" do
