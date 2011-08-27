@@ -3,10 +3,18 @@ module Adhearsion
     module Commands
       extend ActiveSupport::Autoload
 
+      autoload :Conference
+      autoload :Dial
+      autoload :Input
       autoload :Output
+      autoload :Record
 
       include Punchblock::Command
+      include Conference
+      include Dial
+      include Input
       include Output
+      include Record
 
       def accept(headers = nil)
         write_and_await_response Accept.new(:headers => headers)
