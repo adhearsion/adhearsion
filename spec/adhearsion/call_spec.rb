@@ -14,6 +14,9 @@ module Adhearsion
 
     its(:originating_voip_platform) { should == :rayo }
 
+    its(:end_reason) { should == nil }
+    it { should be_active }
+
     it '#id should return the ID from the Offer' do
       offer = mock_offer
       Adhearsion::Call.new(offer).id.should == offer.call_id
@@ -45,6 +48,27 @@ module Adhearsion
       Adhearsion.active_calls.size.should > size_before
       call.hangup!
       Adhearsion.active_calls.size.should == size_before
+    end
+
+    describe "#<<" do
+      describe "with a Punchblock End" do
+        let :end_event do
+          Punchblock::Event::End.new.tap do |e|
+            e << Punchblock::RayoNode.new('hangup')
+          end
+        end
+
+        it "should mark the call as ended" do
+          flexmock(subject).should_receive(:hangup!).once
+          subject << end_event
+          subject.should_not be_active
+        end
+
+        it "should set the end reason" do
+          subject << end_event
+          subject.end_reason.should == :hangup
+        end
+      end
     end
 
     describe "tagging a call" do

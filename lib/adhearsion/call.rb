@@ -5,7 +5,7 @@ module Adhearsion
   # Encapsulates call-related data and behavior.
   #
   class Call
-    attr_accessor :offer, :originating_voip_platform, :inbox, :context, :connection
+    attr_accessor :offer, :originating_voip_platform, :inbox, :context, :connection, :end_reason
 
     def initialize(offer)
       @offer      = offer
@@ -13,6 +13,7 @@ module Adhearsion
       @tag_mutex  = Mutex.new
       @tags       = []
       @context    = :adhearsion
+      @end_reason = nil
       set_originating_voip_platform!
     end
 
@@ -43,12 +44,25 @@ module Adhearsion
     end
 
     def deliver_message(message)
-      inbox << message
+      if message.is_a?(Punchblock::Event::End)
+        process_end message
+      else
+        inbox << message
+      end
     end
     alias << deliver_message
 
+    def process_end(event)
+      hangup!
+      @end_reason = event.reason
+    end
+
     def can_use_messaging?
       inbox.open == true
+    end
+
+    def active?
+      !end_reason
     end
 
     def inbox
