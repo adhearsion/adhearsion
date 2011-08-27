@@ -8,12 +8,13 @@ module Adhearsion
     attr_accessor :offer, :originating_voip_platform, :inbox, :context, :connection, :end_reason
 
     def initialize(offer)
-      @offer      = offer
-      @connection = offer.connection
-      @tag_mutex  = Mutex.new
-      @tags       = []
-      @context    = :adhearsion
-      @end_reason = nil
+      @offer            = offer
+      @connection       = offer.connection
+      @tag_mutex        = Mutex.new
+      @tags             = []
+      @context          = :adhearsion
+      @end_reason_mutex = Mutex.new
+      end_reason        = nil
       set_originating_voip_platform!
     end
 
@@ -54,7 +55,7 @@ module Adhearsion
 
     def process_end(event)
       hangup!
-      @end_reason = event.reason
+      @end_reason_mutex.synchronize { @end_reason = event.reason }
     end
 
     def can_use_messaging?
@@ -62,7 +63,7 @@ module Adhearsion
     end
 
     def active?
-      !end_reason
+      @end_reason_mutex.synchronize { !end_reason }
     end
 
     def inbox
