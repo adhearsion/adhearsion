@@ -47,22 +47,16 @@ module Adhearsion
       def write_and_await_response(command, timeout = 60.seconds)
         write command
         response = command.response timeout
-        if response.is_a? Exception
-          raise response
-        else
-          command
-        end
+        raise response if response.is_a? Exception
+        command
       end
 
       def execute_component_and_await_completion(component)
         write_and_await_response component
 
         complete_event = component.complete_event.resource
-        if complete_event.reason.is_a? Punchblock::Event::Complete::Error
-          raise StandardError, complete_event.reason.details
-        else
-          component
-        end
+        raise StandardError, complete_event.reason.details if complete_event.reason.is_a? Punchblock::Event::Complete::Error
+        component
       end
     end
   end
