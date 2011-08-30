@@ -92,7 +92,7 @@ module Adhearsion
         def play_ssml(ssml)
           return unless [RubySpeech::SSML::Speak, Nokogiri::XML::Document].include? ssml.class
           begin
-            execute_component_and_await_completion Punchblock::Component::Output.new(:ssml => ssml)
+            execute_component_and_await_completion Punchblock::Component::Output.new(:ssml => ssml.to_s)
           rescue StandardError => e
             false
           end
