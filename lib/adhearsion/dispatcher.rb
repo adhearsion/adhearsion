@@ -10,7 +10,7 @@ module Adhearsion
     def start
       Thread.new do
         loop do
-          dispatch_event event_queue.pop rescue nil
+          catching_standard_errors { dispatch_event event_queue.pop }
         end
       end
     end
@@ -18,9 +18,7 @@ module Adhearsion
     def dispatch_event(event)
       if event.is_a?(Punchblock::Event::Offer)
         ahn_log.dispatcher.info "Offer received for call ID #{event.call_id}"
-        Thread.new do
-          dispatch_offer event
-        end
+        Thread.new { dispatch_offer event }
       else
         if event.respond_to?(:call_id) && event.call_id
           dispatch_call_event event
@@ -31,7 +29,9 @@ module Adhearsion
     end
 
     def dispatch_offer(offer)
-      DialPlan::Manager.handle Adhearsion.receive_call_from(offer)
+      catching_standard_errors do
+        DialPlan::Manager.handle Adhearsion.receive_call_from(offer)
+      end
     end
 
     def dispatch_call_event(event)
