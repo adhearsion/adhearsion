@@ -66,6 +66,12 @@ module Adhearsion
           mock_execution_environment.execute_component_and_await_completion component
         end
 
+        it "takes a block which is executed after acknowledgement but before waiting on completion" do
+          @comp = nil
+          mock_execution_environment.execute_component_and_await_completion(component) { |comp| @comp = comp }.should == component
+          @comp.should == component
+        end
+
         describe "with a successful completion" do
           it "returns the executed component" do
             mock_execution_environment.execute_component_and_await_completion(component).should be component

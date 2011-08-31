@@ -18,7 +18,7 @@ module Adhearsion
     def dispatch_event(event)
       if event.is_a?(Punchblock::Event::Offer)
         ahn_log.dispatcher.info "Offer received for call ID #{event.call_id}"
-        Thread.new { dispatch_offer event }
+        IMPORTANT_THREADS << Thread.new { dispatch_offer event }
       else
         if event.respond_to?(:call_id) && event.call_id
           dispatch_call_event event

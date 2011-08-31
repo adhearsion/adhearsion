@@ -87,7 +87,7 @@ module Adhearsion
     end
 
     def ahn_log(*args)
-      Adhearsion::Logging::DefaultAdhearsionLogger.send Adhearsion::Logging::AdhearsionLogger.sanitized_logger_name(id), *args
+      Adhearsion::Logging::DefaultAdhearsionLogger.send Adhearsion::Logging::AdhearsionLogger.sanitized_logger_name("call_#{id}"), *args
     end
 
     private
