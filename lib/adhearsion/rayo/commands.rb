@@ -54,6 +54,8 @@ module Adhearsion
       def execute_component_and_await_completion(component)
         write_and_await_response component
 
+        yield component if block_given?
+
         complete_event = component.complete_event.resource
         raise StandardError, complete_event.reason.details if complete_event.reason.is_a? Punchblock::Event::Complete::Error
         component

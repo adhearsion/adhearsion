@@ -14,9 +14,9 @@ module Adhearsion
         # @option options [Boolean, Optional] :tone_passthrough Identifies whether or not conference members can hear the tone generated when a a key on the phone is pressed.
         # @option options [String, Optional] :terminator This is the touch-tone key (also known as "DTMF digit") used to exit the conference.
         #
-        def conference(conference_id, options = {})
+        def conference(conference_id, options = {}, &block)
           options.merge! :name => conference_id
-          execute_component_and_await_completion Punchblock::Component::Tropo::Conference.new(options)
+          execute_component_and_await_completion Punchblock::Component::Tropo::Conference.new(options), &block
         end
       end
     end
