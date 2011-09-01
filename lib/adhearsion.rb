@@ -40,6 +40,7 @@ module Adhearsion
   autoload :Events
   autoload :Initializer
   autoload :Logging
+  autoload :PathString
   autoload :Rayo
   autoload :Version
 
