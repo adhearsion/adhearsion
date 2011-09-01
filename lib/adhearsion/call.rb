@@ -70,12 +70,21 @@ module Adhearsion
       @inbox ||= CallMessageQueue.new
     end
 
-    def hangup!(timeout = 30)
+    def accept(headers = nil)
+      write_and_await_response Punchblock::Command::Accept.new(:headers => headers)
+    end
+
+    def answer(headers = nil)
+      write_and_await_response Punchblock::Command::Answer.new(:headers => headers)
+    end
+
+    def reject(reason = :busy, headers = nil)
+      write_and_await_response Punchblock::Command::Reject.new(:reason => reason, :headers => headers)
+    end
+
+    def hangup!(headers = nil)
       return unless active?
-      command = Punchblock::Command::Hangup.new
-      write_command command
-      response = command.response timeout
-      raise response if response.is_a? Exception
+      write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
     end
 
     def hangup
@@ -87,6 +96,13 @@ module Adhearsion
     def with_command_lock
       @command_monitor ||= Monitor.new
       @command_monitor.synchronize { yield }
+    end
+
+    def write_and_await_response(command, timeout = 60.seconds)
+      write_command command
+      response = command.response timeout
+      raise response if response.is_a? Exception
+      command
     end
 
     def write_command(command)

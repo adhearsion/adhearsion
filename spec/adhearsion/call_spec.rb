@@ -139,20 +139,146 @@ module Adhearsion
       end
     end
 
-    describe "#hangup!" do
-      describe "if the call is not active" do
-        before do
-          flexmock(subject).should_receive(:active?).and_return false
-        end
+    describe '#write_and_await_response' do
+      let(:message) { Punchblock::Command::Accept.new }
+      let(:response) { :foo }
 
-        it "should do nothing" do
-          flexmock(subject).should_receive(:write_command).never
-          subject.hangup!
+      before do
+        flexmock(message).should_receive(:execute!).and_return true
+        message.response = response
+      end
+
+      it "writes a command to the call" do
+        flexmock(subject).should_receive(:write_command).once.with(message)
+        subject.write_and_await_response message
+      end
+
+      it "blocks until a response is received" do
+        slow_command = Punchblock::Command::Dial.new
+        Thread.new do
+          sleep 0.5
+          slow_command.response = response
+        end
+        starting_time = Time.now
+        subject.write_and_await_response slow_command
+        (Time.now - starting_time).should > 0.5
+      end
+
+      describe "with a successful response" do
+        it "returns the executed command" do
+          subject.write_and_await_response(message).should be message
         end
       end
 
-      describe "if the call is active" do
-        it "should issue a hangup and wait for the response if the call is active"
+      describe "with an error response" do
+        let(:response) { Exception.new }
+
+        it "raises the error" do
+          lambda { subject.write_and_await_response message }.should raise_error(response)
+        end
+      end
+    end
+
+    describe "basic control commands" do
+      include FlexMock::ArgumentTypes
+
+      def expect_message_waiting_for_response(message)
+        flexmock(subject).should_receive(:write_and_await_response).once.with(message).and_return(true)
+      end
+
+      describe '#accept' do
+        describe "with no headers" do
+          it 'should send an Accept message' do
+            expect_message_waiting_for_response Punchblock::Command::Accept.new
+            subject.accept
+          end
+        end
+
+        describe "with headers set" do
+          it 'should send an Accept message with the correct headers' do
+            headers = {:foo => 'bar'}
+            expect_message_waiting_for_response Punchblock::Command::Accept.new(:headers => headers)
+            subject.accept headers
+          end
+        end
+      end
+
+      describe '#answer' do
+        describe "with no headers" do
+          it 'should send an Answer message' do
+            expect_message_waiting_for_response Punchblock::Command::Answer.new
+            subject.answer
+          end
+        end
+
+        describe "with headers set" do
+          it 'should send an Answer message with the correct headers' do
+            headers = {:foo => 'bar'}
+            expect_message_waiting_for_response Punchblock::Command::Answer.new(:headers => headers)
+            subject.answer headers
+          end
+        end
+      end
+
+      describe '#reject' do
+        describe "with a reason given" do
+          it 'should send a Reject message with the correct reason' do
+            expect_message_waiting_for_response Punchblock::Command::Reject.new(:reason => :decline)
+            subject.reject :decline
+          end
+        end
+
+        describe "with no reason given" do
+          it 'should send a Reject message with the reason busy' do
+            expect_message_waiting_for_response Punchblock::Command::Reject.new(:reason => :busy)
+            subject.reject
+          end
+        end
+
+        describe "with no headers" do
+          it 'should send a Reject message' do
+            expect_message_waiting_for_response on { |c| c.is_a?(Punchblock::Command::Reject) && c.headers_hash == {} }
+            subject.reject
+          end
+        end
+
+        describe "with headers set" do
+          it 'should send a Hangup message with the correct headers' do
+            headers = {:foo => 'bar'}
+            expect_message_waiting_for_response on { |c| c.is_a?(Punchblock::Command::Reject) && c.headers_hash == headers }
+            subject.reject nil, headers
+          end
+        end
+      end
+
+      describe "#hangup!" do
+        describe "if the call is not active" do
+          before do
+            flexmock(subject).should_receive(:active?).and_return false
+          end
+
+          it "should do nothing" do
+            flexmock(subject).should_receive(:write_and_await_response).never
+            subject.hangup!
+          end
+        end
+
+        describe "if the call is active" do
+          describe "with no headers" do
+            it 'should send a Hangup message' do
+              expect_message_waiting_for_response Punchblock::Command::Hangup.new
+              subject.hangup!
+            end
+          end
+
+          describe "with headers set" do
+            it 'should send a Hangup message with the correct headers' do
+              headers = {:foo => 'bar'}
+              expect_message_waiting_for_response Punchblock::Command::Hangup.new(:headers => headers)
+              subject.hangup! headers
+            end
+          end
+        end
       end
     end
   end

@@ -17,19 +17,19 @@ module Adhearsion
       include Record
 
       def accept(headers = nil)
-        write_and_await_response Accept.new(:headers => headers)
+        call.accept headers
       end
 
       def answer(headers = nil)
-        write_and_await_response Answer.new(:headers => headers)
+        call.answer headers
       end
 
       def reject(reason = :busy, headers = nil)
-        write_and_await_response Reject.new(:reason => reason, :headers => headers)
+        call.reject reason, headers
       end
 
       def hangup(headers = nil)
-        write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
+        call.hangup! headers
       end
 
       def mute
@@ -40,15 +40,8 @@ module Adhearsion
         write_and_await_response Punchblock::Command::Unmute.new
       end
 
-      def write(command)
-        call.write_command command
-      end
-
-      def write_and_await_response(command, timeout = 60.seconds)
-        write command
-        response = command.response timeout
-        raise response if response.is_a? Exception
-        command
+      def write_and_await_response(command, timeout = nil)
+        call.write_and_await_response command, timeout
       end
 
       def execute_component_and_await_completion(component)
