@@ -2,7 +2,8 @@ require 'spec_helper'
 
 module Adhearsion
   describe Call do
-    subject { Adhearsion::Call.new mock_offer }
+    let(:headers) { {:x_foo => 'bar'} }
+    subject { Adhearsion::Call.new mock_offer(nil, headers) }
 
     after do
       Adhearsion.active_calls.clear!
@@ -16,6 +17,8 @@ module Adhearsion
 
     its(:end_reason) { should == nil }
     it { should be_active }
+
+    its(:variables) { should == headers }
 
     it '#id should return the ID from the Offer' do
       offer = mock_offer
@@ -115,6 +118,16 @@ module Adhearsion
         subject.tag :authorized
         subject.tagged_with?(:customer).should be true
         subject.tagged_with?(:authorized).should be true
+      end
+    end
+
+    describe "#define_singleton_accessor_with_pair" do
+      it "should define a singleton method, not a class method" do
+        subject.should_not respond_to "ohai"
+
+        subject.send(:define_singleton_accessor_with_pair, "ohai", 123)
+        subject.should respond_to "ohai"
+        subject.ohai.should == 123
       end
     end
 

@@ -114,7 +114,23 @@ module Adhearsion
       Adhearsion::Logging::DefaultAdhearsionLogger.send Adhearsion::Logging::AdhearsionLogger.sanitized_logger_name("call_#{id}"), *args
     end
 
+    def variables
+      offer.headers_hash
+    end
+
+    def define_variable_accessors(recipient = self)
+      variables.each do |key, value|
+        define_singleton_accessor_with_pair key, value, recipient
+      end
+    end
+
     private
+
+    def define_singleton_accessor_with_pair(key, value, recipient = self)
+      recipient.metaclass.send :attr_accessor, key unless recipient.class.respond_to?("#{key}=")
+      recipient.metaclass.send :public, key, "#{key}=".to_sym
+      recipient.send "#{key}=", value
+    end
 
     def set_originating_voip_platform!
       # TODO: Determine this from the headers somehow
