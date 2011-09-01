@@ -3,5 +3,5 @@ source "http://geminabox.voxeolabs.com/"
 
 gemspec
 
-gem 'growl_notify'
+gem 'growl_notify' if RUBY_PLATFORM =~ /darwin/
 # gem 'punchblock', :path => '/Users/ben/code/VoIP/punchblock'
