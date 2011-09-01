@@ -1,28 +1,4 @@
 module Adhearsion
-
-  mattr_accessor :status
-
-  class << self
-
-    ##
-    # Shuts down the framework.
-    #
-    def shutdown!
-      if self.status == :stopping
-        # This is the second shutdown request we've received while attempting
-        # to shut down gracefully.  At this point, let's pull the plug...
-        ahn_log.warning "Shutting down immediately at #{Time.now}"
-        exit
-      end
-      ahn_log "Shutting down gracefully at #{Time.now}."
-      self.status = :stopping
-      Events.trigger_immediately :shutdown
-      Events.stop!
-      exit
-    end
-
-  end
-
   class Initializer
 
     extend ActiveSupport::Autoload
