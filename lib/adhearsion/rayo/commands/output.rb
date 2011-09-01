@@ -3,27 +3,30 @@ module Adhearsion
     module Commands
       module Output
         # Plays the specified sound file names. This method will handle Time/DateTime objects (e.g. Time.now),
-        # Fixnums (e.g. 1000), Strings which are valid Fixnums (e.g "123"), and direct sound files. When playing
-        # numbers, Adhearsion assumes you're saying the number, not the digits. For example, play("100")
-        # is pronounced as "one hundred" instead of "one zero zero". To specify how the Date/Time objects are said
+        # Fixnums (e.g. 1000), Strings which are valid Fixnums (e.g "123"), and direct sound files. To specify how the Date/Time objects are said
         # pass in as an array with the first parameter as the Date/Time/DateTime object along with a hash with the
         # additional options. See play_time for more information.
         #
-        # @example Play file hello-world.???
-        #   play 'hello-world'
+        # @example Play file hello-world
+        #   play 'http://www.example.com/hello-world.mp3'
+        #   play '/path/on/disk/hello-world.wav'
         # @example Speak current time
         #   play Time.now
         # @example Speak today's date
         #   play Date.today
         # @example Speak today's date in a specific format
-        #   play [Date.today, {:format => 'BdY'}]
+        #   play Date.today, :strftime => "%d/%m/%Y", :format => "dmy"
         # @example Play sound file, speak number, play two more sound files
-        #   play %w"a-connect-charge-of 22 cents-per-minute will-apply"
+        #   play %w"http://www.example.com/a-connect-charge-of.wav 22 /path/to/cents-per-minute.wav /path/to/will-apply.mp3"
         # @example Play two sound files
-        #   play "you-sound-cute", "what-are-you-wearing"
+        #   play "/path/to/you-sound-cute.mp3", "/path/to/what-are-you-wearing.wav"
         #
         # @return [Boolean] true is returned if everything was successful. Otherwise, false indicates that
         #   some sound file(s) could not be played.
+        #
+        # @see play_time
+        # @see play_numeric
+        # @see play_audio
         def play(*arguments)
           result = true
           unless play_time(arguments)
@@ -42,41 +45,49 @@ module Adhearsion
         # @param [Date|Time|DateTime] Time to be said.
         # @param [Hash] Additional options to specify how exactly to say time specified.
         #
-        # +:timezone+ - Sends a timezone to asterisk. See /usr/share/zoneinfo for a list. Defaults to the machine timezone.
-        # +:format+   - This is the format the time is to be said in.  Defaults to "ABdY 'digits/at' IMp"
+        # +:format+   - This format is used only to disambiguate times that could be interpreted in different ways.
+        #   For example, 01/06/2011 could mean either the 1st of June or the 6th of January.
+        #   Please refer to the SSML specification.
+        # @see http://www.w3.org/TR/ssml-sayas/#S3.1
+        # +:strftime+ - This format is what defines the string that is sent to the Speech Synthesis Engine.
+        #   It uses Time::strftime symbols.
+        #
+        # @return [Boolean] true if successful, false if the given argument could not be played.
         #
         def play_time(*args)
           argument, options = args.flatten
           return false unless [Date, Time, DateTime].include? argument.class
 
+          options ||= {}
+          return false unless options.is_a? Hash
+          
           interpretation = case argument
-          when Date then 'date'
-          when Time then 'time'
+            when Date then 'date'
+            when Time then 'time'
           end
 
-          play_ssml(RubySpeech::SSML.draw do
-            say_as(:interpret_as => interpretation) { argument.to_s }
-          end)
+          strftime = options.delete(:strftime) || nil
+          if !strftime.nil?
+            string_to_play = argument.strftime(strftime)
+          else
+            string_to_play = argument.to_s
+          end
 
-          # options ||= {}
-          #
-          # return false unless options.is_a? Hash
-          #
-          # timezone = options.delete(:timezone) || ''
-          # format   = options.delete(:format)   || ''
-          # epoch    = case argument
-          #            when Time || DateTime
-          #              argument.to_i
-          #            when Date
-          #              format = 'BdY' unless format.present?
-          #              argument.to_time.to_i
-          #            end
-          #
-          # return false if epoch.nil?
-          #
-          # execute :sayunixtime, epoch, timezone, format
+          format   = options.delete(:format)   || nil
+
+          play_ssml(RubySpeech::SSML.draw do
+            say_as(:interpret_as => interpretation, :format => format) { string_to_play }
+          end)
         end
 
+        # Plays the given Numeric argument or string representing a decimal number.
+        # When playing numbers, Adhearsion assumes you're saying the number, not the digits. For example, play("100") 
+        # is pronounced as "one hundred" instead of "one zero zero".
+        #
+        # @param [Numeric|String] Numeric or String containing a valid Numeric, like "321".
+        #
+        # @return [Boolean] true if successful, false if the given argument could not be played.
+        #
         def play_numeric(argument)
           if argument.kind_of?(Numeric) || argument =~ /^\d+$/
             play_ssml(RubySpeech::SSML.draw do
@@ -84,7 +95,15 @@ module Adhearsion
             end)
           end
         end
-
+        
+        # Plays the given audio file.
+        # SSML supports http:// paths and full disk paths.
+        # The Punchblock backend will have to handle cases like Asterisk where there is a fixed sounds directory.
+        #
+        # @param [String] http:// URL or full disk path to the sound file
+        #
+        # @return [Boolean] true on correct play of the file, false on file missing or not playable
+        #
         def play_audio(filename)
           play_ssml RubySpeech::SSML.draw { audio :src => filename }
         end
