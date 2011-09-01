@@ -19,17 +19,6 @@ module Adhearsion
 
       before { flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_accept_incoming_calls).and_return false }
 
-      describe "an executed context" do
-        it "should raise a NameError error when a missing constant is referenced" do
-          the_following_code {
-            context = :context_with_missing_constant
-            call = new_call_for_context context
-            mock_dialplan_with "#{context} { ThisConstantDoesntExist }"
-            Manager.new.handle call
-          }.should raise_error NameError
-        end
-      end
-
       it "should define variables accessors within itself" do
         pending
         call.variables.empty?.should be false
@@ -50,6 +39,8 @@ module Adhearsion
 
         manager = Adhearsion::DialPlan::Manager.new
         manager.dial_plan.entry_points.empty?.should_not be true
+
+        flexmock(call).should_receive(:hangup!).once
 
         manager.handle call
 

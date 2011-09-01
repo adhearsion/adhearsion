@@ -46,7 +46,7 @@ module Adhearsion
 
       call = Adhearsion.receive_call_from mock_offer
       Adhearsion.active_calls.size.should > size_before
-      call.hangup!
+      call.hangup
       Adhearsion.active_calls.size.should == size_before
     end
 
@@ -59,7 +59,7 @@ module Adhearsion
         end
 
         it "should mark the call as ended" do
-          flexmock(subject).should_receive(:hangup!).once
+          flexmock(subject).should_receive(:hangup).once
           subject << end_event
           subject.should_not be_active
         end
@@ -136,6 +136,23 @@ module Adhearsion
         it "should raise a Hangup exception" do
           lambda { subject.write_command mock_command }.should raise_error(Hangup)
         end
+      end
+    end
+
+    describe "#hangup!" do
+      describe "if the call is not active" do
+        before do
+          flexmock(subject).should_receive(:active?).and_return false
+        end
+
+        it "should do nothing" do
+          flexmock(subject).should_receive(:write_command).never
+          subject.hangup!
+        end
+      end
+
+      describe "if the call is active" do
+        it "should issue a hangup and wait for the response if the call is active"
       end
     end
   end

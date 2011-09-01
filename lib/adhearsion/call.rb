@@ -54,7 +54,7 @@ module Adhearsion
     alias << deliver_message
 
     def process_end(event)
-      hangup!
+      hangup
       @end_reason_mutex.synchronize { @end_reason = event.reason }
     end
 
@@ -70,7 +70,15 @@ module Adhearsion
       @inbox ||= CallMessageQueue.new
     end
 
-    def hangup!
+    def hangup!(timeout = 30)
+      return unless active?
+      command = Punchblock::Command::Hangup.new
+      write_command command
+      response = command.response timeout
+      raise response if response.is_a? Exception
+    end
+
+    def hangup
       Adhearsion.remove_inactive_call self
     end
 

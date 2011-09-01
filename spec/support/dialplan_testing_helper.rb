@@ -33,6 +33,10 @@ module DialplanTestingHelper
   def new_call_for_context(context)
     Adhearsion::Call.new(mock_offer).tap do |call|
       call.context = context
+
+      def call.hangup!
+        nil
+      end
     end
   end
 
