@@ -149,6 +149,14 @@ module Adhearsion
         it "should raise a Hangup exception" do
           lambda { subject.write_command mock_command }.should raise_error(Hangup)
         end
+
+        describe "if the command is a Hangup" do
+          let(:mock_command) { Punchblock::Command::Hangup.new }
+
+          it "should not raise a Hangup exception" do
+            lambda { subject.write_command mock_command }.should_not raise_error
+          end
+        end
       end
     end
 
@@ -277,6 +285,12 @@ module Adhearsion
         end
 
         describe "if the call is active" do
+          it "should mark the call inactive" do
+            expect_message_waiting_for_response Punchblock::Command::Hangup.new
+            subject.hangup!
+            subject.should_not be_active
+          end
+
           describe "with no headers" do
             it 'should send a Hangup message' do
               expect_message_waiting_for_response Punchblock::Command::Hangup.new
