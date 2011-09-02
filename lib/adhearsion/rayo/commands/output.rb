@@ -2,6 +2,10 @@ module Adhearsion
   module Rayo
     module Commands
       module Output
+        def speak(text, options = {})
+          play_ssml(text, options) || output(:text, text, options)
+        end
+
         # Plays the specified sound file names. This method will handle Time/DateTime objects (e.g. Time.now),
         # Fixnums (e.g. 1000), Strings which are valid Fixnums (e.g "123"), and direct sound files. To specify how the Date/Time objects are said
         # pass in as an array with the first parameter as the Date/Time/DateTime object along with a hash with the
@@ -104,10 +108,16 @@ module Adhearsion
           play_ssml RubySpeech::SSML.draw { audio :src => filename }
         end
 
-        def play_ssml(ssml)
-          return unless [RubySpeech::SSML::Speak, Nokogiri::XML::Document].include? ssml.class
+        def play_ssml(ssml, options = {})
+          if [RubySpeech::SSML::Speak, Nokogiri::XML::Document].include? ssml.class
+            output :ssml, ssml.to_s, options
+          end
+        end
+
+        def output(type, content, options = {})
           begin
-            execute_component_and_await_completion Punchblock::Component::Output.new(:ssml => ssml.to_s)
+            options.merge! type => content
+            execute_component_and_await_completion Punchblock::Component::Output.new(options)
           rescue StandardError => e
             false
           end
