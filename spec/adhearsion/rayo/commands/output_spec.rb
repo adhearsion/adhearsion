@@ -101,27 +101,41 @@ module Adhearsion
             end
           end
 
-          # describe "with a Date or Time" do
-          #   it 'the SayUnixTime application will be executed with the date and format passed in' do
-          #     pending
-          #     date, format = Date.parse('2011-01-23'), 'ABdY'
-          #     mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return "200 result=0\n"
-          #     mock_call.play_time(date, :format => format).should == pbx_raw_response
-          #
-          #     time, format = Time.at(875121313), 'BdY \'digits/at\' IMp'
-          #     mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, "",format).and_return pbx_raw_response
-          #     mock_call.play_time(time, :format => format).should == pbx_raw_response
-          #   end
-          # end
-          #
-          # describe "with a Time" do
-          #   it 'If a Time object is passed to play_time, the SayUnixTime application will be executed with the default parameters' do
-          #     pending
-          #     time = Time.at(875121313)
-          #     mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, "",'').and_return pbx_raw_response
-          #     mock_call.play_time(time).should == pbx_raw_response
-          #   end
-          # end
+          describe "with a date and a say_as format" do
+            let(:input) { Date.parse('2011-01-23') }
+            let(:format) { "d-m-y" }
+            let(:expected_say_as_options) { {:interpret_as => 'date', :format => format} }
+
+            it 'plays the correct SSML' do
+              mock_execution_environment.should_receive(:play_ssml).once.with(expected_doc).and_return true
+              mock_execution_environment.play_time(input, :format => format).should be true
+            end
+          end
+
+          describe "with a date and a strftime option" do
+            let(:strftime) { "%d-%m-%Y" }
+            let(:base_input) { Date.parse('2011-01-23') }
+            let(:input) { base_input.strftime(strftime) }
+            let(:expected_say_as_options) { {:interpret_as => 'date'} }
+
+            it 'plays the correct SSML' do
+              mock_execution_environment.should_receive(:play_ssml).once.with(expected_doc).and_return true
+              mock_execution_environment.play_time(base_input, :strftime => strftime).should be true
+            end
+          end
+
+          describe "with a date, a format option and a strftime option" do
+            let(:strftime) { "%d-%m-%Y" }
+            let(:format) { "d-m-y" }
+            let(:base_input) { Date.parse('2011-01-23') }
+            let(:input) { base_input.strftime(strftime) }
+            let(:expected_say_as_options) { {:interpret_as => 'date', :format => format} }
+
+            it 'plays the correct SSML' do
+              mock_execution_environment.should_receive(:play_ssml).once.with(expected_doc).and_return true
+              mock_execution_environment.play_time(base_input, :format => format, :strftime => strftime).should be true
+            end
+          end
 
           describe "with an object other than Time, DateTime, or Date" do
             let(:input) { "foo" }
@@ -131,22 +145,6 @@ module Adhearsion
             end
           end
 
-          describe "with an array containing a Date/DateTime/Time object and a hash" do
-            it 'the SayUnixTime application will be executed with the object passed in with the specified format and timezone' do
-              pending
-              date, format = Date.parse('2011-01-23'), 'ABdY'
-              mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return pbx_raw_response
-              mock_call.play([date, {:format => format}]).should be true
-
-              time, timezone = Time.at(1295843084), 'US/Eastern'
-              mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,'').and_return pbx_raw_response
-              mock_call.play([time, {:timezone => timezone}]).should be true
-
-              time, timezone, format = Time.at(1295843084), 'US/Eastern', 'ABdY \'digits/at\' IMp'
-              mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,format).and_return pbx_raw_response
-              mock_call.play([time, {:timezone => timezone, :format => format}]).should be true
-            end
-          end
         end
 
         describe '#play' do
@@ -215,19 +213,13 @@ module Adhearsion
           end
 
           describe "with an array containing a Date/DateTime/Time object and a hash" do
-            it 'the SayUnixTime application will be executed with the object passed in with the specified format and timezone' do
-              pending
-              date, format = Date.parse('2011-01-23'), 'ABdY'
-              mock_call.should_receive(:execute).once.with(:sayunixtime, date.to_time.to_i, "",format).and_return pbx_raw_response
-              mock_call.play([date, {:format => format}]).should be true
+            let(:date) { Date.parse('2011-01-23') }
+            let(:format) { "d-m-y" }
+            let(:strftime) { "%d-%m%Y" }
 
-              time, timezone = Time.at(1295843084), 'US/Eastern'
-              mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,'').and_return pbx_raw_response
-              mock_call.play([time, {:timezone => timezone}]).should be true
-
-              time, timezone, format = Time.at(1295843084), 'US/Eastern', 'ABdY \'digits/at\' IMp'
-              mock_call.should_receive(:execute).once.with(:sayunixtime, time.to_i, timezone,format).and_return pbx_raw_response
-              mock_call.play([time, {:timezone => timezone, :format => format}]).should be true
+            it 'plays the time with the specified format and strftime' do
+              mock_execution_environment.should_receive(:play_time).with([date, {:format => format, :strftime => strftime}]).and_return(true)
+              mock_execution_environment.play(date, :format => format, :strftime => strftime).should be true
             end
           end
 
