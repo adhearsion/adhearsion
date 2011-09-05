@@ -15,4 +15,10 @@ end
 RSpec.configure do |config|
   config.mock_with :rspec
   config.include ComponentConfigurationSpecHelper
+
+  config.before { $mock_logger = mock.as_null_object }
+
+  def ahn_log
+    $mock_logger
+  end
 end
