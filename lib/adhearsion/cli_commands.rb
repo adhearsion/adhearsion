@@ -195,7 +195,7 @@ Bundler.require
 
 require 'adhearsion/component_manager/spec_framework'
 
-component_name.upcase = ComponentTester.new("#{component_name}", File.dirname(__FILE__) + "/../..")
+#{component_name.upcase} = ComponentTester.new("#{component_name}", File.dirname(__FILE__) + "../..", '/lib/#{component_name}.rb')
                 RUBY
               end
               puts "Created blank component '#{component_name}' at #{new_component_dir}"

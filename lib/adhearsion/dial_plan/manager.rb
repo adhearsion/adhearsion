@@ -25,17 +25,16 @@ module Adhearsion
         @context = ExecutionEnvironment.create call, starting_entry_point
         inject_context_names_into_environment @context
         @context.run
-      # rescue Hangup
-      #   ahn_log.punchblock "HANGUP event for call with id #{call.id}"
-      #   Events.trigger_immediately [:after_call], call
-      #   call.hangup!
-      # rescue DialPlan::Manager::NoContextError => e
-      #   ahn_log.punchblock e.message
-      #   call.hangup!
-      # rescue SyntaxError, StandardError => e
-      #   Events.trigger ['exception'], e
-      # ensure
-      #   Adhearsion.remove_inactive_call call
+      rescue Hangup
+        call.ahn_log "Hangup event for call with id #{call.id}"
+        Events.trigger_immediately [:after_call], call
+      rescue NoContextError => e
+        call.ahn_log e.message
+        raise e
+      rescue SyntaxError, StandardError => e
+        Events.trigger ['exception'], e
+      ensure
+        call.hangup!
       end
 
       # Find the dialplan by the context name from the call or from the

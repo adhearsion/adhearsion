@@ -33,9 +33,31 @@ module Adhearsion
           subject.entry_point_for(call).should be mock_context
         end
 
-        it "handles a call by executing the proper context" do
-          flexmock(ExecutionEnvironment).new_instances.should_receive(:run).once
-          subject.handle call
+        describe "handles a call" do
+          it "by executing the proper context" do
+            flexmock(ExecutionEnvironment).new_instances.should_receive(:run).once
+            subject.handle call
+          end
+
+          it "and catches standard errors, raising an exception event" do
+            e = StandardError.new
+            flexmock(ExecutionEnvironment).new_instances.should_receive(:run).once.and_raise(e)
+            flexmock(Events).should_receive(:trigger).once.with(['exception'], e)
+            subject.handle call
+          end
+
+          it "catches Hangup exceptions and fires the after_call event immediately" do
+            flexmock(Events).should_receive(:trigger_immediately).once.with([:before_call], call)
+            flexmock(ExecutionEnvironment).new_instances.should_receive(:run).once.and_raise(Hangup)
+            flexmock(Events).should_receive(:trigger_immediately).once.with([:after_call], call)
+            subject.handle call
+          end
+
+          it "hangs up the call" do
+            flexmock(ExecutionEnvironment).new_instances.should_receive(:run).once.ordered.and_raise(StandardError)
+            flexmock(call).should_receive(:hangup!).once.ordered
+            subject.handle call
+          end
         end
 
         it "should raise a NoContextError exception if the targeted context is not found" do
@@ -155,7 +177,6 @@ module Adhearsion
             executing_dialplan(:zuerst => dialplan).should_not raise_error
           end
         end
-
 
         it "new constants should still be accessible within the dialplan" do
           flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_accept_incoming_calls).and_return false

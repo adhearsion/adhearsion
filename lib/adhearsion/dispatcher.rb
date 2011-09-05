@@ -3,20 +3,31 @@ module Adhearsion
 
     attr_accessor :event_queue
 
+    STOP_EVENT = :STOP
+
     def initialize(event_queue)
       @event_queue = event_queue
     end
 
     def start
+      Events.register_callback(:shutdown) do
+        ahn_log.info "Shutting down dispatcher"
+        event_queue << STOP_EVENT
+      end
+
       Thread.new do
-        loop do
-          catching_standard_errors { dispatch_event event_queue.pop }
+        catch STOP_EVENT do
+          loop do
+            catching_standard_errors { dispatch_event event_queue.pop }
+          end
         end
       end
     end
 
     def dispatch_event(event)
-      if event.is_a?(Punchblock::Event::Offer)
+      if event == STOP_EVENT
+        throw STOP_EVENT
+      elsif event.is_a?(Punchblock::Event::Offer)
         ahn_log.dispatcher.info "Offer received for call ID #{event.call_id}"
         IMPORTANT_THREADS << Thread.new { dispatch_offer event }
       else

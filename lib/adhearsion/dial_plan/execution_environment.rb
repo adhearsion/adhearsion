@@ -24,6 +24,7 @@ module Adhearsion
       def stage!
         extend_with_voip_commands!
         extend_with_dialplan_component_methods!
+        extend_with_variable_accessor_methods!
       end
 
       def run
@@ -38,6 +39,10 @@ module Adhearsion
         end
       end
 
+      def variables
+        call.variables
+      end
+
       protected
 
       attr_reader :entry_point
@@ -49,6 +54,10 @@ module Adhearsion
 
       def extend_with_dialplan_component_methods!
         Components.component_manager.extend_object_with(self, :dialplan) if Components.component_manager
+      end
+
+      def extend_with_variable_accessor_methods!
+        call.define_variable_accessors self
       end
 
       def ahn_log(*args)

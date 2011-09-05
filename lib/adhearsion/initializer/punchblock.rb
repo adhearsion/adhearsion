@@ -26,8 +26,12 @@ module Adhearsion
               IMPORTANT_THREADS << client.run
               first_event = nil
               Timeout::timeout(30) { first_event = client.event_queue.pop }
-              ahn_log.punchblock.info "Connected via Punchblock" if first_event == client.connected
-              IMPORTANT_THREADS << dispatcher.start
+              if first_event == client.connected
+                ahn_log.punchblock.info "Connected via Punchblock"
+                IMPORTANT_THREADS << dispatcher.start
+              else
+                ahn_log.punchblock.fatal "Failed to connect via Punchblock"
+              end
             rescue => e
               ahn_log.punchblock.fatal "Failed to start Punchblock client! #{e.inspect}"
               abort

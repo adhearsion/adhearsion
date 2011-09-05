@@ -2,7 +2,8 @@ require 'spec_helper'
 
 module Adhearsion
   describe Call do
-    subject { Adhearsion::Call.new mock_offer }
+    let(:headers) { {:x_foo => 'bar'} }
+    subject { Adhearsion::Call.new mock_offer(nil, headers) }
 
     after do
       Adhearsion.active_calls.clear!
@@ -16,6 +17,8 @@ module Adhearsion
 
     its(:end_reason) { should == nil }
     it { should be_active }
+
+    its(:variables) { should == headers }
 
     it '#id should return the ID from the Offer' do
       offer = mock_offer
@@ -46,7 +49,7 @@ module Adhearsion
 
       call = Adhearsion.receive_call_from mock_offer
       Adhearsion.active_calls.size.should > size_before
-      call.hangup!
+      call.hangup
       Adhearsion.active_calls.size.should == size_before
     end
 
@@ -59,7 +62,7 @@ module Adhearsion
         end
 
         it "should mark the call as ended" do
-          flexmock(subject).should_receive(:hangup!).once
+          flexmock(subject).should_receive(:hangup).once
           subject << end_event
           subject.should_not be_active
         end
@@ -118,6 +121,16 @@ module Adhearsion
       end
     end
 
+    describe "#define_singleton_accessor_with_pair" do
+      it "should define a singleton method, not a class method" do
+        subject.should_not respond_to "ohai"
+
+        subject.send(:define_singleton_accessor_with_pair, "ohai", 123)
+        subject.should respond_to "ohai"
+        subject.ohai.should == 123
+      end
+    end
+
     describe "#write_command" do
       let(:mock_command) { flexmock('Command') }
 
@@ -135,6 +148,163 @@ module Adhearsion
 
         it "should raise a Hangup exception" do
           lambda { subject.write_command mock_command }.should raise_error(Hangup)
+        end
+
+        describe "if the command is a Hangup" do
+          let(:mock_command) { Punchblock::Command::Hangup.new }
+
+          it "should not raise a Hangup exception" do
+            lambda { subject.write_command mock_command }.should_not raise_error
+          end
+        end
+      end
+    end
+
+    describe '#write_and_await_response' do
+      let(:message) { Punchblock::Command::Accept.new }
+      let(:response) { :foo }
+
+      before do
+        flexmock(message).should_receive(:execute!).and_return true
+        message.response = response
+      end
+
+      it "writes a command to the call" do
+        flexmock(subject).should_receive(:write_command).once.with(message)
+        subject.write_and_await_response message
+      end
+
+      it "blocks until a response is received" do
+        slow_command = Punchblock::Command::Dial.new
+        Thread.new do
+          sleep 0.5
+          slow_command.response = response
+        end
+        starting_time = Time.now
+        subject.write_and_await_response slow_command
+        (Time.now - starting_time).should > 0.5
+      end
+
+      describe "with a successful response" do
+        it "returns the executed command" do
+          subject.write_and_await_response(message).should be message
+        end
+      end
+
+      describe "with an error response" do
+        let(:response) { Exception.new }
+
+        it "raises the error" do
+          lambda { subject.write_and_await_response message }.should raise_error(response)
+        end
+      end
+    end
+
+    describe "basic control commands" do
+      include FlexMock::ArgumentTypes
+
+      def expect_message_waiting_for_response(message)
+        flexmock(subject).should_receive(:write_and_await_response).once.with(message).and_return(true)
+      end
+
+      describe '#accept' do
+        describe "with no headers" do
+          it 'should send an Accept message' do
+            expect_message_waiting_for_response Punchblock::Command::Accept.new
+            subject.accept
+          end
+        end
+
+        describe "with headers set" do
+          it 'should send an Accept message with the correct headers' do
+            headers = {:foo => 'bar'}
+            expect_message_waiting_for_response Punchblock::Command::Accept.new(:headers => headers)
+            subject.accept headers
+          end
+        end
+      end
+
+      describe '#answer' do
+        describe "with no headers" do
+          it 'should send an Answer message' do
+            expect_message_waiting_for_response Punchblock::Command::Answer.new
+            subject.answer
+          end
+        end
+
+        describe "with headers set" do
+          it 'should send an Answer message with the correct headers' do
+            headers = {:foo => 'bar'}
+            expect_message_waiting_for_response Punchblock::Command::Answer.new(:headers => headers)
+            subject.answer headers
+          end
+        end
+      end
+
+      describe '#reject' do
+        describe "with a reason given" do
+          it 'should send a Reject message with the correct reason' do
+            expect_message_waiting_for_response Punchblock::Command::Reject.new(:reason => :decline)
+            subject.reject :decline
+          end
+        end
+
+        describe "with no reason given" do
+          it 'should send a Reject message with the reason busy' do
+            expect_message_waiting_for_response Punchblock::Command::Reject.new(:reason => :busy)
+            subject.reject
+          end
+        end
+
+        describe "with no headers" do
+          it 'should send a Reject message' do
+            expect_message_waiting_for_response on { |c| c.is_a?(Punchblock::Command::Reject) && c.headers_hash == {} }
+            subject.reject
+          end
+        end
+
+        describe "with headers set" do
+          it 'should send a Hangup message with the correct headers' do
+            headers = {:foo => 'bar'}
+            expect_message_waiting_for_response on { |c| c.is_a?(Punchblock::Command::Reject) && c.headers_hash == headers }
+            subject.reject nil, headers
+          end
+        end
+      end
+
+      describe "#hangup!" do
+        describe "if the call is not active" do
+          before do
+            flexmock(subject).should_receive(:active?).and_return false
+          end
+
+          it "should do nothing" do
+            flexmock(subject).should_receive(:write_and_await_response).never
+            subject.hangup!
+          end
+        end
+
+        describe "if the call is active" do
+          it "should mark the call inactive" do
+            expect_message_waiting_for_response Punchblock::Command::Hangup.new
+            subject.hangup!
+            subject.should_not be_active
+          end
+
+          describe "with no headers" do
+            it 'should send a Hangup message' do
+              expect_message_waiting_for_response Punchblock::Command::Hangup.new
+              subject.hangup!
+            end
+          end
+
+          describe "with headers set" do
+            it 'should send a Hangup message with the correct headers' do
+              headers = {:foo => 'bar'}
+              expect_message_waiting_for_response Punchblock::Command::Hangup.new(:headers => headers)
+              subject.hangup! headers
+            end
+          end
         end
       end
     end

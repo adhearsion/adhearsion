@@ -54,7 +54,7 @@ module Adhearsion
     alias << deliver_message
 
     def process_end(event)
-      hangup!
+      hangup
       @end_reason_mutex.synchronize { @end_reason = event.reason }
     end
 
@@ -70,7 +70,25 @@ module Adhearsion
       @inbox ||= CallMessageQueue.new
     end
 
-    def hangup!
+    def accept(headers = nil)
+      write_and_await_response Punchblock::Command::Accept.new(:headers => headers)
+    end
+
+    def answer(headers = nil)
+      write_and_await_response Punchblock::Command::Answer.new(:headers => headers)
+    end
+
+    def reject(reason = :busy, headers = nil)
+      write_and_await_response Punchblock::Command::Reject.new(:reason => reason, :headers => headers)
+    end
+
+    def hangup!(headers = nil)
+      return unless active?
+      @end_reason_mutex.synchronize { @end_reason = true }
+      write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
+    end
+
+    def hangup
       Adhearsion.remove_inactive_call self
     end
 
@@ -81,8 +99,15 @@ module Adhearsion
       @command_monitor.synchronize { yield }
     end
 
+    def write_and_await_response(command, timeout = 60.seconds)
+      write_command command
+      response = command.response timeout
+      raise response if response.is_a? Exception
+      command
+    end
+
     def write_command(command)
-      raise Hangup unless active?
+      raise Hangup unless active? || command.is_a?(Punchblock::Command::Hangup)
       connection.async_write id, command
     end
 
@@ -90,7 +115,23 @@ module Adhearsion
       Adhearsion::Logging::DefaultAdhearsionLogger.send Adhearsion::Logging::AdhearsionLogger.sanitized_logger_name("call_#{id}"), *args
     end
 
+    def variables
+      offer.headers_hash
+    end
+
+    def define_variable_accessors(recipient = self)
+      variables.each do |key, value|
+        define_singleton_accessor_with_pair key, value, recipient
+      end
+    end
+
     private
+
+    def define_singleton_accessor_with_pair(key, value, recipient = self)
+      recipient.metaclass.send :attr_accessor, key unless recipient.class.respond_to?("#{key}=")
+      recipient.metaclass.send :public, key, "#{key}=".to_sym
+      recipient.send "#{key}=", value
+    end
 
     def set_originating_voip_platform!
       # TODO: Determine this from the headers somehow

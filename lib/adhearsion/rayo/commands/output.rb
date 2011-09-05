@@ -2,6 +2,10 @@ module Adhearsion
   module Rayo
     module Commands
       module Output
+        def speak(text, options = {})
+          play_ssml(text, options) || output(:text, text, options)
+        end
+
         # Plays the specified sound file names. This method will handle Time/DateTime objects (e.g. Time.now),
         # Fixnums (e.g. 1000), Strings which are valid Fixnums (e.g "123"), and direct sound files. To specify how the Date/Time objects are said
         # pass in as an array with the first parameter as the Date/Time/DateTime object along with a hash with the
@@ -60,28 +64,24 @@ module Adhearsion
 
           options ||= {}
           return false unless options.is_a? Hash
-          
+
           interpretation = case argument
             when Date then 'date'
             when Time then 'time'
           end
 
-          strftime = options.delete(:strftime) || nil
-          if !strftime.nil?
-            string_to_play = argument.strftime(strftime)
-          else
-            string_to_play = argument.to_s
-          end
+          format    = options.delete :format
+          strftime  = options.delete :strftime
 
-          format   = options.delete(:format)   || nil
+          time_to_say = strftime ? argument.strftime(strftime) : argument.to_s
 
           play_ssml(RubySpeech::SSML.draw do
-            say_as(:interpret_as => interpretation, :format => format) { string_to_play }
+            say_as(:interpret_as => interpretation, :format => format) { time_to_say }
           end)
         end
 
         # Plays the given Numeric argument or string representing a decimal number.
-        # When playing numbers, Adhearsion assumes you're saying the number, not the digits. For example, play("100") 
+        # When playing numbers, Adhearsion assumes you're saying the number, not the digits. For example, play("100")
         # is pronounced as "one hundred" instead of "one zero zero".
         #
         # @param [Numeric|String] Numeric or String containing a valid Numeric, like "321".
@@ -95,7 +95,7 @@ module Adhearsion
             end)
           end
         end
-        
+
         # Plays the given audio file.
         # SSML supports http:// paths and full disk paths.
         # The Punchblock backend will have to handle cases like Asterisk where there is a fixed sounds directory.
@@ -108,10 +108,16 @@ module Adhearsion
           play_ssml RubySpeech::SSML.draw { audio :src => filename }
         end
 
-        def play_ssml(ssml)
-          return unless [RubySpeech::SSML::Speak, Nokogiri::XML::Document].include? ssml.class
+        def play_ssml(ssml, options = {})
+          if [RubySpeech::SSML::Speak, Nokogiri::XML::Document].include? ssml.class
+            output :ssml, ssml.to_s, options
+          end
+        end
+
+        def output(type, content, options = {})
           begin
-            execute_component_and_await_completion Punchblock::Component::Output.new(:ssml => ssml.to_s)
+            options.merge! type => content
+            execute_component_and_await_completion Punchblock::Component::Output.new(options)
           rescue StandardError => e
             false
           end

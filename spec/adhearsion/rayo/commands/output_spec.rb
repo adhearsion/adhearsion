@@ -236,6 +236,26 @@ module Adhearsion
           end
         end
 
+        describe "#speak" do
+          describe "with a RubySpeech document" do
+            it 'plays the correct SSML' do
+              doc = RubySpeech::SSML.draw { "Hello world" }
+              mock_execution_environment.should_receive(:play_ssml).once.with(doc, {}).and_return true
+              mock_execution_environment.should_receive(:output).never
+              mock_execution_environment.speak(doc).should be true
+            end
+          end
+
+          describe "with a string" do
+            it 'outputs the correct text' do
+              string = "Hello world"
+              mock_execution_environment.should_receive(:play_ssml).once.with(string, {})
+              mock_execution_environment.should_receive(:output).once.with(:text, string, {}).and_return true
+              mock_execution_environment.speak(string).should be true
+            end
+          end
+        end
+
         describe "#raw_output" do
           pending
         end
