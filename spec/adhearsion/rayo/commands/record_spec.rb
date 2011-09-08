@@ -23,6 +23,15 @@ module Adhearsion
           end
         end
 
+        describe "#record :terminator => '#'" do
+          let(:options) { {:format => 'mp3'} }
+          let(:component) { Punchblock::Component::Record.new(options) }
+          let(:terminator) { '#' }
+          subject {component.stop_action}
+
+          its(:to_xml) { should == '<stop xmlns="urn:xmpp:rayo:1"/>' }
+        end
+
       end
     end
   end
