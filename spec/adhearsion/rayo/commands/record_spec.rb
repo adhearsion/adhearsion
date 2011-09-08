@@ -23,13 +23,14 @@ module Adhearsion
           end
         end
 
-        describe "#record :terminator => '#'" do
+        describe "#stop_recording" do
           let(:options) { {:format => 'mp3'} }
-          let(:component) { Punchblock::Component::Record.new(options) }
-          let(:terminator) { '#' }
-          subject {component.stop_action}
+          let(:terminator) { { :terminator => '#' } }
 
-          its(:to_xml) { should == '<stop xmlns="urn:xmpp:rayo:1"/>' }
+          it "accepts terminator and stop the recording" do
+            expect_component_execution Punchblock::Component::Record.new(options.merge(:terminator => terminator))
+            mock_execution_environment.stop_recording(options).should be true
+          end
         end
 
       end
