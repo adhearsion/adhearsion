@@ -30,6 +30,12 @@ module Adhearsion
       Adhearsion::Call.new(offer).offer.should == offer
     end
 
+    describe 'without an offer' do
+      it 'should not raise an exception' do
+        lambda { Adhearsion::Call.new }.should_not raise_error
+      end
+    end
+
     it "should store the Punchblock connection from the Offer" do
       offer = mock_offer
       connection = flexmock('Connection')
@@ -204,7 +210,7 @@ module Adhearsion
       include FlexMock::ArgumentTypes
 
       def expect_message_waiting_for_response(message)
-        flexmock(subject).should_receive(:write_and_await_response).once.with(message).and_return(true)
+        flexmock(subject).should_receive(:write_and_await_response).once.with(message).and_return(message)
       end
 
       describe '#accept' do

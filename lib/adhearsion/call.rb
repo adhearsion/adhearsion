@@ -7,9 +7,12 @@ module Adhearsion
   class Call
     attr_accessor :offer, :originating_voip_platform, :inbox, :context, :connection, :end_reason
 
-    def initialize(offer)
-      @offer            = offer
-      @connection       = offer.connection
+    def initialize(offer = nil)
+      if offer
+        @offer      = offer
+        @connection = offer.connection
+      end
+
       @tag_mutex        = Mutex.new
       @tags             = []
       @context          = :adhearsion

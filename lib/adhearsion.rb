@@ -40,6 +40,7 @@ module Adhearsion
   autoload :Events
   autoload :Initializer
   autoload :Logging
+  autoload :OutboundCall
   autoload :Rayo
   autoload :Version
 
