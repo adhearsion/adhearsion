@@ -5,7 +5,7 @@ module Adhearsion
   # Encapsulates call-related data and behavior.
   #
   class Call
-    attr_accessor :offer, :originating_voip_platform, :inbox, :context, :connection, :end_reason
+    attr_accessor :offer, :originating_voip_platform, :inbox, :context, :connection, :end_reason, :commands
 
     def initialize(offer = nil)
       if offer
@@ -18,6 +18,7 @@ module Adhearsion
       @context          = :adhearsion
       @end_reason_mutex = Mutex.new
       end_reason        = nil
+      @commands         = CommandRegistry.new
       set_originating_voip_platform!
     end
 
@@ -59,6 +60,7 @@ module Adhearsion
     def process_end(event)
       hangup
       @end_reason_mutex.synchronize { @end_reason = event.reason }
+      commands.terminate
     end
 
     def can_use_messaging?
@@ -103,6 +105,7 @@ module Adhearsion
     end
 
     def write_and_await_response(command, timeout = 60.seconds)
+      commands << command
       write_command command
       response = command.response timeout
       raise response if response.is_a? Exception
@@ -139,6 +142,31 @@ module Adhearsion
     def set_originating_voip_platform!
       # TODO: Determine this from the headers somehow
       self.originating_voip_platform = :rayo
+    end
+
+    class CommandRegistry
+      include Enumerable
+
+      def initialize
+        @commands = []
+      end
+
+      def self.synchronized_delegate(*args)
+        args.each do |method_name|
+          class_eval <<-EOS
+            def #{method_name}(*args, &block)
+              synchronize { @commands.__send__ #{method_name.inspect}, *args, &block }
+            end
+          EOS
+        end
+      end
+
+      synchronized_delegate :empty?, :<<, :delete, :each
+
+      def terminate
+        hangup = Hangup.new
+        each { |command| command.response = hangup if command.requested? }
+      end
     end
 
     ##

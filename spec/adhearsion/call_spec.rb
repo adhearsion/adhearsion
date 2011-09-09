@@ -19,6 +19,8 @@ module Adhearsion
     it { should be_active }
 
     its(:variables) { should == headers }
+    its(:commands) { should be_a Call::CommandRegistry }
+    its(:commands) { should be_empty }
 
     it '#id should return the ID from the Offer' do
       offer = mock_offer
@@ -76,6 +78,11 @@ module Adhearsion
         it "should set the end reason" do
           subject << end_event
           subject.end_reason.should == :hangup
+        end
+
+        it "should instruct the command registry to terminate" do
+          flexmock(subject.commands).should_receive(:terminate).once
+          subject << end_event
         end
       end
     end
@@ -178,6 +185,11 @@ module Adhearsion
       it "writes a command to the call" do
         flexmock(subject).should_receive(:write_command).once.with(message)
         subject.write_and_await_response message
+      end
+
+      it "adds the command to the registry" do
+        subject.write_and_await_response message
+        subject.commands.should_not be_empty
       end
 
       it "blocks until a response is received" do
@@ -311,6 +323,53 @@ module Adhearsion
               subject.hangup! headers
             end
           end
+        end
+      end
+    end
+
+    describe Call::CommandRegistry do
+      subject { Call::CommandRegistry.new }
+
+      it { should be_empty }
+
+      describe "#<<" do
+        it "should add a command to the registry" do
+          subject << :foo
+          subject.should_not be_empty
+        end
+      end
+
+      describe "#delete" do
+        it "should remove a command from the registry" do
+          subject << :foo
+          subject.should_not be_empty
+          subject.delete :foo
+          subject.should be_empty
+        end
+      end
+
+      describe "#terminate" do
+        let :commands do
+          [
+            Punchblock::Command::Answer.new,
+            Punchblock::Command::Answer.new
+          ]
+        end
+
+        it "should set each command's response to an instance of Adhearsion::Hangup if it doesn't already have a response" do
+          finished_command = Punchblock::Command::Answer.new
+          finished_command.request!
+          finished_command.response = :foo
+          subject << finished_command
+          commands.each do |command|
+            command.request!
+            subject << command
+          end
+          subject.terminate
+          commands.each do |command|
+            command.response.should == Hangup.new
+          end
+          finished_command.response.should == :foo
         end
       end
     end
