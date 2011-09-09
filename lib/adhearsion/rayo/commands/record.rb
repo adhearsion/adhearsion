@@ -3,16 +3,23 @@ module Adhearsion
     module Commands
       module Record
 
-        def record(options = {}, &block)
-          execute_component_and_await_completion Punchblock::Component::Record.new(options), &block
-        end# record(text, options = {}, &block)
+        def record(options = {})
+          async = options[:async]? true : false
+          on_complete = options[:on_complete]
+          options.delete :async
+          options.delete :on_complete
 
-        def stop_recording(terminator = nil)
-          if terminator?
-            options.merge! :terminator => terminator
-            execute_component_and_await_completion Punchblock::Component::Record.new(options), &block
+          if async
+            # Executes the dialplan with the given parameters most commonly used for voicemail applications
+            # Accepts a :terminator digit to end the recording
+            options.merge! :event_callback => lambda { |recording| on_complete }
+            execute_component_and_await_completion Punchblock::Component::Record.new(options), &on_complete
+          else
+            # Executes the dialplan with the given parameters most commonly used for supervision mode.
+            # Accepts keypress/DTMF to pause/unpause the recording
+            execute_component_and_await_completion Punchblock::Component::Record.new(options)
           end
-        end# stop_recording(terminator = nil)
+        end# record(async, options = {}, &block)
 
       end
     end
