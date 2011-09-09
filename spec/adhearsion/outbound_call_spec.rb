@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 module Adhearsion
-  describe OutboundCall, :focus => true do
+  describe OutboundCall do
     it { should be_a Call }
 
     its(:id) { should be_nil }
