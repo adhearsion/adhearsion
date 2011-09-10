@@ -46,5 +46,67 @@ module Adhearsion
         subject.id.should == call_id
       end
     end
+
+    describe "#on_accept" do
+      it "should take a lambda" do
+        l = lambda { :foo }
+        subject.on_accept = l
+        subject.on_accept.should == l
+      end
+    end
+
+    describe "#on_answer" do
+      it "should take a lambda" do
+        l = lambda { :foo }
+        subject.on_answer = l
+        subject.on_answer.should == l
+      end
+    end
+
+    describe "#<<" do
+      describe "with a Ringing event" do
+        let(:event) { Punchblock::Event::Ringing.new }
+
+        describe "with an on_accept callback set" do
+          before do
+            @foo = nil
+            subject.on_accept = lambda { |event| @foo = event }
+          end
+
+          it "should fire the on_accept callback" do
+            subject << event
+            @foo.should == event
+          end
+        end
+
+        describe "without an on_accept callback set" do
+          it "should not raise an exception" do
+            lambda { subject << event }.should_not raise_error
+          end
+        end
+      end
+
+      describe "with an Answered event" do
+        let(:event) { Punchblock::Event::Answered.new }
+
+        describe "with an on_answer callback set" do
+          before do
+            @foo = nil
+            subject.on_answer = lambda { |event| @foo = event }
+          end
+
+          it "should fire the on_answer callback" do
+            subject << event
+            @foo.should == event
+          end
+        end
+
+        describe "without an on_answer callback set" do
+          it "should not raise an exception" do
+            lambda { subject << event }.should_not raise_error
+          end
+        end
+      end
+    end
   end
 end
