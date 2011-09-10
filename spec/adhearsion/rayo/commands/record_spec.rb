@@ -17,19 +17,48 @@ module Adhearsion
             :final_timeout => 30000
           }}
 
-          it 'executes a Record with the correct options' do
-            expect_component_execution Punchblock::Component::Record.new(options)
-            mock_execution_environment.record(options).should be true
+          let(:component) { Punchblock::Component::Record.new(options) }
+          let(:response) { Punchblock::Event::Complete.new }
+
+          before do
+            expect_message_waiting_for_response component
+            component.complete_event.resource = response
           end
-        end
 
-        describe "#stop_recording" do
-          let(:options) { {:format => 'mp3'} }
-          let(:terminator) { { :terminator => '#' } }
+          it 'executes a #record with the correct options' do
+            mock_execution_environment.execute_component_and_await_completion component
+          end
 
-          it "accepts terminator and stop the recording" do
-            expect_component_execution Punchblock::Component::Record.new(options.merge(:terminator => terminator))
-            mock_execution_environment.stop_recording(options).should be true
+          it 'takes a block which is executed after acknowledgement but before waiting on completion' do
+            @comp = nil
+            mock_execution_environment.execute_component_and_await_completion(component) { |comp| @comp = comp }.should == component
+            @comp.should == component
+          end
+
+          describe "with a successful completion" do
+            it 'returns the executed component' do
+              mock_execution_environment.execute_component_and_await_completion(component).should be component
+            end
+          end
+
+          describe 'with an error response' do
+            let(:response) do
+              Punchblock::Event::Complete.new.tap do |complete|
+                complete << error
+              end
+            end
+
+            let(:error) do |error|
+              Punchblock::Event::Complete::Error.new.tap do |error|
+                error << details
+              end
+            end
+
+            let(:details) { "Something came up" }
+
+            it 'raises the error' do
+              lambda { mock_execution_environment.execute_component_and_await_completion component }.should raise_error(StandardError, details)
+            end
           end
         end
 
