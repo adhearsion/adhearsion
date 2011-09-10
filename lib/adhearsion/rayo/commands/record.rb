@@ -20,19 +20,17 @@ module Adhearsion
         # @return recording object
 
         def record(options = {}, &block)
-          async = options[:async]? true : false
-          on_complete = options[:on_complete]
-          options.delete :async
-          options.delete :on_complete
+          async = options.delete(:async) ? true : false
+          on_complete = options.delete :on_complete
 
           if async
-            options.merge! :event_callback => lambda { |event| on_complete.call(event.recording) if event.is_a? Punchblock::Event::Complete }
+            options.merge! :event_callback => lambda { |event| on_complete.call event.recording if event.is_a? Punchblock::Event::Complete }
             execute_component_and_await_completion Punchblock::Component::Record.new(options)
           else
-            evented = execute_component_and_await_completion Punchblock::Component::Record.new(options)
-            block.call(evented.complete_event.resource.recording)
+            component = execute_component_and_await_completion Punchblock::Component::Record.new(options)
+            block.call component.complete_event.resource.recording
           end
-        end# record(options = {}, &block)
+        end
 
       end
     end
