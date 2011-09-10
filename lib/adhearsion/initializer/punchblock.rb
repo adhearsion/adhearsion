@@ -23,7 +23,9 @@ module Adhearsion
         def connect
           Events.register_callback(:after_initialized) do
             begin
-              IMPORTANT_THREADS << client.run
+              IMPORTANT_THREADS << Thread.new do
+                catching_standard_errors { client.run }
+              end
               first_event = nil
               Timeout::timeout(30) { first_event = client.event_queue.pop }
               if first_event == client.connected
