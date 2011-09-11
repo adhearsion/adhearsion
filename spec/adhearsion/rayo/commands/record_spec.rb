@@ -26,12 +26,22 @@ module Adhearsion
               mock_execution_environment.record options
               component.request!
               component.execute!
-              component.add_event response
             end
 
             it "should execute the callback" do
+              component.add_event response
               Timeout::timeout 5 do
                 @rec.pop.should == response
+              end
+            end
+
+            describe "when the callback raises an exception" do
+              before { TestException = Class.new StandardError }
+              let(:callback) { lambda { |rec| raise TestException } }
+
+              it "should pass the exception to the events system" do
+                flexmock(Events).should_receive(:trigger).once.with(['exception'], TestException)
+                component.add_event response
               end
             end
           end

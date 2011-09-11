@@ -27,7 +27,9 @@ module Adhearsion
 
           if async
             result = execute_component component
-            result.event_callback = lambda { |event| on_complete.call event if event.is_a? Punchblock::Event::Complete }
+            result.event_callback = lambda do |event|
+              catching_standard_errors { on_complete.call event } if event.is_a? Punchblock::Event::Complete
+            end
           else
             result = execute_component_and_await_completion component
             yield result.complete_event.resource if block_given?
