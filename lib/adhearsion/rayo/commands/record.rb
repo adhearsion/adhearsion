@@ -7,8 +7,8 @@ module Adhearsion
         #
         # @param [Hash] options
         # @param [Block] &block to process result of the record method
-        # @option options [Boolean, Optional] :async is default to false if not defined
-        # @option options [Lambda, Optional] :on_complete if :async is set to true this will replace the &block parameter
+        # @option options [Boolean, Optional] :async Execute asynchronously. Defaults to false
+        # @option options [Proc, Optional] :on_complete Block to be executed on completion when this method is invoked asynchronously
         # @option options [Boolean, Optional] :start_beep Indicates whether subsequent record will be preceded with a beep. Default is true.
         # @option options [Boolean, Optional] :start_paused Whether subsequent record will start in PAUSE mode. Default is false.
         # @option options [String, Optional] :max_duration Indicates the maximum duration (milliseconds) for a recording.
@@ -23,15 +23,17 @@ module Adhearsion
           async = options.delete(:async) ? true : false
           on_complete = options.delete :on_complete
 
+          callback = async ? on_complete : block
+
           if async
-            options.merge! :event_callback => lambda { |event| on_complete.call event.recording if event.is_a? Punchblock::Event::Complete }
+            result = execute_component Punchblock::Component::Record.new(options)
+            result.event_callback = lambda { |event| callback.call event if event.is_a? Punchblock::Event::Complete }
           else
-            options.merge! :event_callback => lambda { |event| block.call event.recording if event.is_a? Punchblock::Event::Complete }
+            result = execute_component_and_await_completion Punchblock::Component::Record.new(options)
+            yield result.complete_event.resource if block_given?
           end
-
-          execute_component_and_await_completion Punchblock::Component::Record.new(options)
+          result
         end
-
       end
     end
   end

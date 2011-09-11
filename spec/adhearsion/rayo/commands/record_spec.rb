@@ -15,14 +15,23 @@ module Adhearsion
           let(:response) { Punchblock::Event::Complete.new }
 
           it 'should accept :async => true and executes :on_complete => lambda' do
-            expect_component_execution component
-            mock_execution_environment.record(options.merge({:async => true, :on_complete => lambda {|rec| rec }})).should be true
+            expect_component_execution_asynchronously component
+            @rec = Queue.new
+            mock_execution_environment.record(options.merge({:async => true, :on_complete => lambda {|rec| puts "Received #{rec.inspect}";@rec.push rec }}))
+            component.request!
+            component.execute!
+            component.add_event response
+            @rec.pop.should == response
           end
 
           it 'should accept :async => false and executes a block' do
-            expect_message_waiting_for_response component
-            component.complete_event.resource = response
-            mock_execution_environment.record(options.merge({:async => true})).should be true
+            expect_component_execution component
+            component.request!
+            component.execute!
+            component.add_event response
+            @rec = Queue.new
+            mock_execution_environment.record(options.merge({:async => false})) {|rec| @rec.push rec}
+            @rec.pop.should == response
           end
 
         end

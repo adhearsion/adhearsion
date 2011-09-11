@@ -44,6 +44,7 @@ module Adhearsion
       def write_and_await_response(command, timeout = nil)
         call.write_and_await_response command, timeout
       end
+      alias :execute_component :write_and_await_response
 
       def execute_component_and_await_completion(component)
         write_and_await_response component
