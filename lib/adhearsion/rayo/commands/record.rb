@@ -25,11 +25,11 @@ module Adhearsion
 
           if async
             options.merge! :event_callback => lambda { |event| on_complete.call event.recording if event.is_a? Punchblock::Event::Complete }
-            execute_component_and_await_completion Punchblock::Component::Record.new(options)
           else
-            component = execute_component_and_await_completion Punchblock::Component::Record.new(options)
-            block.call component.complete_event.resource.recording
+            options.merge! :event_callback => lambda { |event| block.call event.recording if event.is_a? Punchblock::Event::Complete }
           end
+
+          execute_component_and_await_completion Punchblock::Component::Record.new(options)
         end
 
       end

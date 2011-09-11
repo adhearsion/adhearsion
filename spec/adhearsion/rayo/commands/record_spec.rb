@@ -9,6 +9,27 @@ module Adhearsion
         describe "#record" do
           let(:options) {{
             :start_beep => true,
+            :max_duration => 5000
+          }}
+          let(:component) { Punchblock::Component::Record.new(options) }
+          let(:response) { Punchblock::Event::Complete.new }
+
+          it 'should accept :async => true and executes :on_complete => lambda' do
+            expect_component_execution component
+            mock_execution_environment.record(options.merge({:async => true, :on_complete => lambda {|rec| rec }})).should be true
+          end
+
+          it 'should accept :async => false and executes a block' do
+            expect_message_waiting_for_response component
+            component.complete_event.resource = response
+            mock_execution_environment.record(options.merge({:async => true})).should be true
+          end
+
+        end
+
+        describe "#record with default options" do
+          let(:options) {{
+            :start_beep => true,
             :format => 'mp3',
             :start_paused => false,
             :stop_beep => true,
