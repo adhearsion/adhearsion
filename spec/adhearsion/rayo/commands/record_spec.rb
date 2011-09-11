@@ -16,31 +16,42 @@ module Adhearsion
           let(:component) { Punchblock::Component::Record.new options }
           let(:response)  { Punchblock::Event::Complete.new }
 
-          it 'should accept :async => true and executes :on_complete => lambda' do
-            expect_component_execution_asynchronously component
-            @rec = Queue.new
-            options.merge! :async => true, :on_complete => lambda { |rec| @rec.push rec }
-            mock_execution_environment.record options
-            component.request!
-            component.execute!
-            component.add_event response
-            Timeout::timeout 5 do
-              @rec.pop.should == response
+          describe "with :async => true and an :on_complete callback" do
+            let(:callback) { lambda { |rec| @rec.push rec } }
+
+            before do
+              expect_component_execution_asynchronously component
+              @rec = Queue.new
+              options.merge! :async => true, :on_complete => callback
+              mock_execution_environment.record options
+              component.request!
+              component.execute!
+              component.add_event response
+            end
+
+            it "should execute the callback" do
+              Timeout::timeout 5 do
+                @rec.pop.should == response
+              end
             end
           end
 
-          it 'should accept :async => false and executes a block' do
-            expect_component_execution component
-            component.request!
-            component.execute!
-            component.add_event response
-            @rec = Queue.new
-            mock_execution_environment.record(options.merge(:async => false)) { |rec| @rec.push rec }
-            Timeout::timeout 5 do
-              @rec.pop.should == response
+          describe "with :async => false" do
+            before do
+              expect_component_execution component
+              component.request!
+              component.execute!
+              component.add_event response
+              @rec = Queue.new
+              mock_execution_environment.record(options.merge(:async => false)) { |rec| @rec.push rec }
+            end
+
+            it 'should execute a passed block' do
+              Timeout::timeout 5 do
+                @rec.pop.should == response
+              end
             end
           end
-
         end
 
         describe "#record with default options" do
