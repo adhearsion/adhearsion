@@ -11,7 +11,7 @@ module Adhearsion
 
           it 'executes an Output with the correct ssml' do
             expect_component_execution Punchblock::Component::Output.new(:ssml => ssml.to_s)
-            mock_execution_environment.play_ssml(ssml).should be true
+            mock_execution_environment.play_ssml(ssml)
           end
 
           describe "if an error is returned" do

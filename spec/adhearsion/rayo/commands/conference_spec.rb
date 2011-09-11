@@ -12,7 +12,7 @@ module Adhearsion
 
           it 'executes a Conference with the correct options' do
             expect_component_execution Punchblock::Component::Tropo::Conference.new(options.merge(:name => conference_id))
-            mock_execution_environment.conference(conference_id, options).should be true
+            mock_execution_environment.conference(conference_id, options)
           end
 
           it "passes the block to component execution" do
