@@ -7,21 +7,26 @@ module Adhearsion
         include RayoCommandTestHelpers
 
         describe "#record" do
-          let(:options) {{
-            :start_beep => true,
-            :max_duration => 5000
-          }}
-          let(:component) { Punchblock::Component::Record.new(options) }
-          let(:response) { Punchblock::Event::Complete.new }
+          let(:options) do
+            {
+              :start_beep => true,
+              :max_duration => 5000
+            }
+          end
+          let(:component) { Punchblock::Component::Record.new options }
+          let(:response)  { Punchblock::Event::Complete.new }
 
           it 'should accept :async => true and executes :on_complete => lambda' do
             expect_component_execution_asynchronously component
             @rec = Queue.new
-            mock_execution_environment.record(options.merge({:async => true, :on_complete => lambda {|rec| puts "Received #{rec.inspect}";@rec.push rec }}))
+            options.merge! :async => true, :on_complete => lambda { |rec| @rec.push rec }
+            mock_execution_environment.record options
             component.request!
             component.execute!
             component.add_event response
-            @rec.pop.should == response
+            Timeout::timeout 5 do
+              @rec.pop.should == response
+            end
           end
 
           it 'should accept :async => false and executes a block' do
@@ -30,8 +35,10 @@ module Adhearsion
             component.execute!
             component.add_event response
             @rec = Queue.new
-            mock_execution_environment.record(options.merge({:async => false})) {|rec| @rec.push rec}
-            @rec.pop.should == response
+            mock_execution_environment.record(options.merge(:async => false)) { |rec| @rec.push rec }
+            Timeout::timeout 5 do
+              @rec.pop.should == response
+            end
           end
 
         end

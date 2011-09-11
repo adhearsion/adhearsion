@@ -23,13 +23,13 @@ module Adhearsion
           async = options.delete(:async) ? true : false
           on_complete = options.delete :on_complete
 
-          callback = async ? on_complete : block
+          component = Punchblock::Component::Record.new options
 
           if async
-            result = execute_component Punchblock::Component::Record.new(options)
-            result.event_callback = lambda { |event| callback.call event if event.is_a? Punchblock::Event::Complete }
+            result = execute_component component
+            result.event_callback = lambda { |event| on_complete.call event if event.is_a? Punchblock::Event::Complete }
           else
-            result = execute_component_and_await_completion Punchblock::Component::Record.new(options)
+            result = execute_component_and_await_completion component
             yield result.complete_event.resource if block_given?
           end
           result
