@@ -408,7 +408,7 @@ module Adhearsion
         #
         def base_record_to_file(*args)
           options = args.last.kind_of?(Hash) ? args.pop : {}
-          filename = args.shift || "/tmp/recording_%d"
+          filename = args.shift || "/tmp/recording_#{new_guid}_%d"
 
           if filename.index("%d")
             if @call.variables.has_key?(:recording_counter)

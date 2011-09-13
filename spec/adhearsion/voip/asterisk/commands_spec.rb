@@ -729,8 +729,10 @@ describe 'the #record method' do
 
   it 'create a default filename if no file is specifed and icrement it on subsequent calls' do
     mock_call.call.variables.delete :recording_counter
-    mock_call.should_receive(:response).once.with('RECORD FILE', '/tmp/recording_0', 'gsm', '26', -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
-    mock_call.should_receive(:response).once.with('RECORD FILE', '/tmp/recording_1', 'gsm', '26', -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.should_receive(:new_guid).once.and_return('2345')
+    mock_call.should_receive(:new_guid).once.and_return('4322')
+    mock_call.should_receive(:response).once.with('RECORD FILE', '/tmp/recording_2345_0', 'gsm', '26', -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.should_receive(:response).once.with('RECORD FILE', '/tmp/recording_4322_1', 'gsm', '26', -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
     mock_call.record(:beep => nil, :escapedigits => '26').should == '/tmp/recording_0.gsm'
     mock_call.record(:beep => nil, :escapedigits => '26').should == '/tmp/recording_1.gsm'
   end  
@@ -826,8 +828,10 @@ describe 'the #record_to_file method' do
   end  
 
   it 'create a default filename if no file is specifed and icrement it on subsequent calls' do
-    mock_call.should_receive(:response).once.with("RECORD FILE", "/tmp/recording_0", "gsm", "26", -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
-    mock_call.should_receive(:response).once.with("RECORD FILE", "/tmp/recording_1", "gsm", "26", -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.should_receive(:new_guid).once.and_return('2345')
+    mock_call.should_receive(:new_guid).once.and_return('4322')
+    mock_call.should_receive(:response).once.with("RECORD FILE", "/tmp/recording_2345_0", "gsm", "26", -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.should_receive(:response).once.with("RECORD FILE", "/tmp/recording_4322_1", "gsm", "26", -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
     mock_call.record_to_file(:beep => nil, :escapedigits => '26').should == :success_timeout
     mock_call.record_to_file(:beep => nil, :escapedigits => '26').should == :success_timeout
   end  
