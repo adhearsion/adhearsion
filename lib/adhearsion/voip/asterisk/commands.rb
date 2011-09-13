@@ -55,36 +55,40 @@ module Adhearsion
 
         # Utility method to read from pbx. Hangup if nil.
         def read
-          from_pbx.gets.tap do |message|
-            # AGI has many conditions that might indicate a hangup
-            raise Hangup if message.nil?
+          begin
+            from_pbx.gets.tap do |message|
+              # AGI has many conditions that might indicate a hangup
+              raise Hangup if message.nil?
 
-            ahn_log.agi.debug "<<< #{message}"
+              ahn_log.agi.debug "<<< #{message}"
 
-            code, rest = *message.split(' ', 2)
+              code, rest = *message.split(' ', 2)
 
-            case code.to_i
-            when 510
-              # This error is non-fatal for the call
-              ahn_log.agi.warn "510: Invalid or unknown AGI command"
-            when 511
-              # 511 Command Not Permitted on a dead channel
-              ahn_log.agi.debug "511: Dead channel. Raising Hangup"
-              raise Hangup
-            when 520
-              # This error is non-fatal for the call
-              ahn_log.agi.warn "520: Invalid command syntax"
-            when (500..599)
-              # Assume this error is non-fatal for the call and try to keep running
-              ahn_log.agi.warn "#{code}: Unknown AGI protocol error."
+              case code.to_i
+              when 510
+                # This error is non-fatal for the call
+                ahn_log.agi.warn "510: Invalid or unknown AGI command"
+              when 511
+                # 511 Command Not Permitted on a dead channel
+                ahn_log.agi.debug "511: Dead channel. Raising Hangup"
+                raise Hangup
+              when 520
+                # This error is non-fatal for the call
+                ahn_log.agi.warn "520: Invalid command syntax"
+              when (500..599)
+                # Assume this error is non-fatal for the call and try to keep running
+                ahn_log.agi.warn "#{code}: Unknown AGI protocol error."
+              end
+
+              # If the message starts with HANGUP it's a silly 1.6 OOB message
+              case message
+              when /^HANGUP/, /^HANGUP\n?$/i, /^HANGUP\s?\d{3}/i
+                ahn_log.agi.debug "AGI HANGUP. Raising hangup"
+                raise Hangup
+              end
             end
-
-            # If the message starts with HANGUP it's a silly 1.6 OOB message
-            case message
-            when /^HANGUP/, /^HANGUP\n?$/i, /^HANGUP\s?\d{3}/i
-              ahn_log.agi.debug "AGI HANGUP. Raising hangup"
-              raise Hangup
-            end
+          rescue Errno::ECONNRESET
+            raise Hangup
           end
         end
 

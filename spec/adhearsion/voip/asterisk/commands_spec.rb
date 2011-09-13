@@ -274,6 +274,20 @@ describe 'hangup command' do
   end
 end
 
+describe 'receiving a hangup' do
+  include DialplanCommandTestHelpers
+
+  it "should treat a ECONNRESET as a hangup" do
+    pbx_should_respond_with_success
+    def input.gets()
+      raise Errno::ECONNRESET
+    end
+    the_following_code {
+      mock_call.read()
+    }.should raise_error(Adhearsion::Hangup)   
+  end
+end
+
 describe "writing a command" do
   include DialplanCommandTestHelpers
 
