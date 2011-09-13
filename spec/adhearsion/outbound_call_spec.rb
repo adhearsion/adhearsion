@@ -92,6 +92,12 @@ module Adhearsion
         subject.dial to, :from => from
         subject.id.should == call_id
       end
+
+      it "should add the call to the active calls registry" do
+        Adhearsion.active_calls.clear!
+        subject.dial to, :from => from
+        Adhearsion.active_calls[call_id].should be subject
+      end
     end
 
     describe "#on_accept" do

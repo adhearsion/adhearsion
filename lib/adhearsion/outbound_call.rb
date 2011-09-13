@@ -42,6 +42,7 @@ module Adhearsion
       options.merge! :to => to
       write_and_await_response(Punchblock::Command::Dial.new(options)).tap do |dial_command|
         @dial_command = dial_command
+        Adhearsion.active_calls << self
       end
     end
 
