@@ -14,6 +14,52 @@ module Adhearsion
 
     its(:connection) { should be mock_client }
 
+    describe ".originate" do
+      let(:to) { 'sip:foo@bar.com' }
+
+      let(:mock_manager)  { flexmock 'DialPlan::Manager' }
+      let(:mock_call)     { OutboundCall.new }
+
+      def mock_dial
+        flexmock(OutboundCall).new_instances.should_receive(:dial).and_return true
+      end
+
+      it "should create a new call and return it" do
+        mock_dial
+        OutboundCall.originate(to).should be_a OutboundCall
+      end
+
+      it "should allow setting the call's dialplan context" do
+        mock_dial
+        call = OutboundCall.originate to, :context => :foo
+        call.context.should == :foo
+      end
+
+      it "uses the default context if none is provided" do
+        mock_dial
+        call = OutboundCall.originate to
+        call.context.should == Call.new.context
+      end
+
+      it "should dial the call to the correct endpoint" do
+        mock_call
+        flexmock(OutboundCall).should_receive(:new).and_return mock_call
+        flexmock(mock_call).should_receive(:dial).with(to, :from => 'foo').once
+        OutboundCall.originate to, :from => 'foo'
+      end
+
+      it "should run the dialplan when the call is answered" do
+        mock_call
+
+        flexmock(OutboundCall).should_receive(:new).and_return mock_call
+        flexmock(mock_call).should_receive(:dial).once
+
+        flexmock(DialPlan::Manager).should_receive(:handle).once.with(mock_call)
+
+        OutboundCall.originate(to).deliver_message Punchblock::Event::Answered.new
+      end
+    end
+
     describe "#dial" do
       def expect_message_waiting_for_response(message)
         flexmock(subject).should_receive(:write_and_await_response).once.with(message).and_return do
