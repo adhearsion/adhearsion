@@ -45,10 +45,13 @@ module Adhearsion
       end
     end
 
-    def dispatch_call_event(event)
+    def dispatch_call_event(event, latch = nil)
       if call = Adhearsion.active_calls.find(event.call_id)
         ahn_log.dispatcher.notice "Event received for call #{call.id}: #{event.inspect}"
-        call << event
+        Thread.new do
+          call << event
+          latch.countdown! if latch
+        end
       else
         ahn_log.dispatcher.error "Event received for inactive call #{event.call_id}: #{event.inspect}"
       end

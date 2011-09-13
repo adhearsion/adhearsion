@@ -44,7 +44,8 @@ module Adhearsion
     end
 
     describe "dispatching a call event" do
-      let(:mock_event) { flexmock 'Event', :call_id => call_id }
+      let(:mock_event)  { flexmock 'Event', :call_id => call_id }
+      let(:latch)       { CountDownLatch.new 1 }
 
       describe "with an active call" do
         before do
@@ -53,10 +54,13 @@ module Adhearsion
 
         it "should log an error" do
           flexmock(ahn_log.dispatcher).should_receive(:notice).once.with("Event received for call #{call_id}: #{mock_event.inspect}")
+          subject.dispatch_call_event mock_event
         end
 
         it "should place the event in the call's inbox" do
           mock_call.should_receive(:<<).once.with(mock_event)
+          subject.dispatch_call_event mock_event, latch
+          latch.wait(10).should be_true
         end
       end
 
@@ -65,10 +69,9 @@ module Adhearsion
 
         it "should log an error" do
           flexmock(ahn_log.dispatcher).should_receive(:error).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
+          subject.dispatch_call_event mock_event
         end
       end
-
-      after { subject.dispatch_call_event mock_event }
     end
   end
 end
