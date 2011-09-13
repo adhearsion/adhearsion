@@ -29,6 +29,15 @@ module Adhearsion
       Initializer::Punchblock.client
     end
 
+    def accept(*args)
+    end
+
+    def answer(*args)
+    end
+
+    def reject(*args)
+    end
+
     def dial(to, options = {})
       options.merge! :to => to
       write_and_await_response(Punchblock::Command::Dial.new(options)).tap do |dial_command|

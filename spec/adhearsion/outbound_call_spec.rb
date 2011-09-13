@@ -155,5 +155,73 @@ module Adhearsion
         end
       end
     end
+
+    describe "basic control commands" do
+      def expect_no_message_waiting_for_response
+        flexmock(subject).should_receive(:write_and_await_response).never
+      end
+
+      describe '#accept' do
+        describe "with no headers" do
+          it 'should not send any message' do
+            expect_no_message_waiting_for_response
+            subject.accept
+          end
+        end
+
+        describe "with headers set" do
+          it 'should not send any message' do
+            expect_no_message_waiting_for_response
+            subject.accept :foo => 'bar'
+          end
+        end
+      end
+
+      describe '#answer' do
+        describe "with no headers" do
+          it 'should not send any message' do
+            expect_no_message_waiting_for_response
+            subject.answer
+          end
+        end
+
+        describe "with headers set" do
+          it 'should not send any message' do
+            expect_no_message_waiting_for_response
+            subject.answer :foo => 'bar'
+          end
+        end
+      end
+
+      describe '#reject' do
+        describe "with a reason given" do
+          it 'should not send any message' do
+            expect_no_message_waiting_for_response
+            subject.reject :decline
+          end
+        end
+
+        describe "with no reason given" do
+          it 'should not send any message' do
+            expect_no_message_waiting_for_response
+            subject.reject
+          end
+        end
+
+        describe "with no headers" do
+          it 'should not send any message' do
+            expect_no_message_waiting_for_response
+            subject.reject
+          end
+        end
+
+        describe "with headers set" do
+          it 'should not send any message' do
+            expect_no_message_waiting_for_response
+            subject.reject nil, :foo => 'bar'
+          end
+        end
+      end
+    end
   end
 end
