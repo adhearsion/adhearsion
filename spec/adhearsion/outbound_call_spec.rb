@@ -5,6 +5,7 @@ module Adhearsion
     it { should be_a Call }
 
     its(:id) { should be_nil }
+    its(:variables) { should == {} }
 
     let(:mock_client) { flexmock 'Punchblock Client' }
 
