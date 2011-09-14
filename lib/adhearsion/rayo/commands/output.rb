@@ -121,8 +121,48 @@ module Adhearsion
           rescue StandardError => e
             false
           end
-        end
-      end
-    end
-  end
-end
+        end#output
+
+        # Plays the given SSML, allowing for DTMF input of a single digit from the user
+        # At the end of the played file it returns nil
+        #
+        # @example Ask the user for a number, then play it back
+        #   ssml = RubySpeech::SSML.draw do
+        #     "Please press a button"
+        #   end
+        #   input = interruptible_play(ssml)
+        #   if !input.nil?
+        #     play input
+        #   end
+        #
+        # @params [RubySpeech::SSML::Speak] The SSML to play to the user
+        #
+        # @return [String|Nil] The single DTMF character entered by the user, or nil if nothing was entered
+        #
+        def interruptible_play(ssml)
+          result = nil
+          options = {:ssml => ssml.to_s}
+          output_component = Punchblock::Component::Output.new(options)
+          input_options = {
+            :mode => :dtmf,
+            :grammar => {:value => '[1 DIGIT]', :content_type => 'application/grammar+voxeo'},
+            :event_callback => lambda { |event|
+              Thread.new {
+                if !output_component.complete_event.set_yet?
+                  output_component.stop!
+                end
+                if event.reason.is_a? Punchblock::Component::Input::Complete::Success
+                  result = event.reason.interpretation
+                end
+              }
+            }
+          }
+          write_and_await_response Punchblock::Component::Input.new(input_options)
+          execute_component_and_await_completion output_component
+          return result
+        end#interruptible_play
+
+      end#module
+    end#module
+  end#module
+end#module
