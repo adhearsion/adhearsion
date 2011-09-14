@@ -248,6 +248,10 @@ module Adhearsion
           end
         end
 
+        describe "#interruptible_play" do
+          pending
+        end
+
         describe "#raw_output" do
           pending
         end

@@ -157,8 +157,12 @@ module Adhearsion
               }
             }
           }
-          write_and_await_response Punchblock::Component::Input.new(input_options)
+          input_component = Punchblock::Component::Input.new(input_options)
+          write_and_await_response input_component
           execute_component_and_await_completion output_component
+          if !input_component.complete_event.set_yet?
+            input_component.stop!
+          end
           return result
         end#interruptible_play
 
