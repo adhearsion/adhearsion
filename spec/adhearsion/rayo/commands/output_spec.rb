@@ -249,8 +249,24 @@ module Adhearsion
         end
 
         describe "#interruptible_play" do
-          pending
-        end
+          let(:ssml) { RubySpeech::SSML.draw {"press a button"} }
+          let(:component) { 
+            Punchblock::Component::Input.new(
+              {:mode => :dtmf, 
+               :grammar => {:value => '[1 DIGIT]', :content_type => 'application/grammar+voxeo'}
+            }) 
+          }
+          it "accepts SSML to play as a prompt" do
+            mock_execution_environment.should_receive(:interruptible_play).once.with(ssml)
+            mock_execution_environment.interruptible_play(ssml).should be nil
+          end
+
+          it "sends the correct input command" do
+            pending
+            #expect_message_waiting_for_response component
+            #mock_execution_environment.interruptible_play(ssml) 
+          end
+        end#describe #interruptible_play
 
         describe "#raw_output" do
           pending
