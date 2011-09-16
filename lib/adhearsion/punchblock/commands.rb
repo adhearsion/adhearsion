@@ -1,5 +1,5 @@
 module Adhearsion
-  module Rayo
+  module Punchblock
     module Commands
       extend ActiveSupport::Autoload
 
@@ -34,11 +34,11 @@ module Adhearsion
       end
 
       def mute
-        write_and_await_response Punchblock::Command::Mute.new
+        write_and_await_response ::Punchblock::Command::Mute.new
       end
 
       def unmute
-        write_and_await_response Punchblock::Command::Unmute.new
+        write_and_await_response ::Punchblock::Command::Unmute.new
       end
 
       def write_and_await_response(command, timeout = nil)

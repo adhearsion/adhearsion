@@ -1,5 +1,5 @@
 module Adhearsion
-  module Rayo
+  module Punchblock
     module Commands
       module Record
         #
@@ -23,7 +23,7 @@ module Adhearsion
           async = options.delete(:async) ? true : false
           on_complete = options.delete :on_complete
 
-          component = Punchblock::Component::Record.new options
+          component = ::Punchblock::Component::Record.new options
 
           if async
             result = execute_component component

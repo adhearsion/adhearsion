@@ -1,9 +1,9 @@
 require 'spec_helper'
 
 module Adhearsion
-  module Rayo
+  module Punchblock
     describe Commands do
-      include RayoCommandTestHelpers
+      include PunchblockCommandTestHelpers
 
       describe '#write_and_await_response' do
         let(:message) { Punchblock::Command::Accept.new }

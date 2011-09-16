@@ -1,5 +1,5 @@
 module Adhearsion
-  module Rayo
+  module Punchblock
     module Commands
       module Conference
         #
@@ -16,7 +16,7 @@ module Adhearsion
         #
         def conference(conference_id, options = {}, &block)
           options.merge! :name => conference_id
-          execute_component_and_await_completion Punchblock::Component::Tropo::Conference.new(options), &block
+          execute_component_and_await_completion ::Punchblock::Component::Tropo::Conference.new(options), &block
         end
       end
     end

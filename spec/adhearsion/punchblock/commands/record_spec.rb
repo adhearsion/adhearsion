@@ -1,10 +1,10 @@
 require 'spec_helper'
 
 module Adhearsion
-  module Rayo
+  module Punchblock
     module Commands
       describe Record do
-        include RayoCommandTestHelpers
+        include PunchblockCommandTestHelpers
 
         describe "#record" do
           let(:options) do

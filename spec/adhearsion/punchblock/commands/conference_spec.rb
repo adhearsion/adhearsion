@@ -1,10 +1,10 @@
 require 'spec_helper'
 
 module Adhearsion
-  module Rayo
+  module Punchblock
     module Commands
       describe Conference do
-        include RayoCommandTestHelpers
+        include PunchblockCommandTestHelpers
 
         describe "#conference" do
           let(:conference_id) { 'abc123' }

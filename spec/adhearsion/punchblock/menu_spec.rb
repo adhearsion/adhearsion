@@ -1,9 +1,9 @@
 require 'spec_helper'
 
 module Adhearsion
-  module Rayo
+  module Punchblock
     describe Menu do
-      include RayoCommandTestHelpers
+      include PunchblockCommandTestHelpers
 
       it "should accept hash options"
 

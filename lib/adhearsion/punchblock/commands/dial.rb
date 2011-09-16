@@ -1,7 +1,7 @@
 module Adhearsion
-  module Rayo
+  module Punchblock
     module Commands
-      module Input
+      module Dial
 
       end
     end

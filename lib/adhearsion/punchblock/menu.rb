@@ -1,5 +1,5 @@
 module Adhearsion
-  module Rayo
+  module Punchblock
     module Menu
       extend ActiveSupport::Autoload
 

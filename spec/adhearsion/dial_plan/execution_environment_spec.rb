@@ -13,8 +13,8 @@ module Adhearsion
       include DialplanTestingHelper
 
       it "should extend itself with behavior specific to the voip platform which originated the call" do
-        ExecutionEnvironment.included_modules.should_not include(Adhearsion::Rayo::Commands)
-        subject.metaclass.included_modules.should include(Adhearsion::Rayo::Commands)
+        ExecutionEnvironment.included_modules.should_not include(Adhearsion::Punchblock::Commands)
+        subject.metaclass.included_modules.should include(Adhearsion::Punchblock::Commands)
       end
 
       before { flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_accept_incoming_calls).and_return false }

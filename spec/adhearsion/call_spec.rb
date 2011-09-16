@@ -13,7 +13,7 @@ module Adhearsion
 
     it { should respond_to :<< }
 
-    its(:originating_voip_platform) { should == :rayo }
+    its(:originating_voip_platform) { should == :punchblock }
 
     its(:end_reason) { should == nil }
     it { should be_active }

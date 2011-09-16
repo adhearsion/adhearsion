@@ -1,5 +1,5 @@
 module Adhearsion
-  module Rayo
+  module Punchblock
     module Commands
       module Output
         def speak(text, options = {})
@@ -117,7 +117,7 @@ module Adhearsion
         def output(type, content, options = {})
           begin
             options.merge! type => content
-            execute_component_and_await_completion Punchblock::Component::Output.new(options)
+            execute_component_and_await_completion ::Punchblock::Component::Output.new(options)
           rescue StandardError => e
             false
           end
@@ -142,7 +142,7 @@ module Adhearsion
         def interruptible_play(ssml)
           result = nil
           options = {:ssml => ssml.to_s}
-          output_component = Punchblock::Component::Output.new(options)
+          output_component = ::Punchblock::Component::Output.new(options)
           input_options = {
             :mode => :dtmf,
             :grammar => {:value => '[1 DIGIT]', :content_type => 'application/grammar+voxeo'},
@@ -151,13 +151,13 @@ module Adhearsion
                 if !output_component.complete_event.set_yet?
                   output_component.stop!
                 end
-                if event.reason.is_a? Punchblock::Component::Input::Complete::Success
+                if event.reason.is_a? ::Punchblock::Component::Input::Complete::Success
                   result = event.reason.interpretation
                 end
               }
             }
           }
-          input_component = Punchblock::Component::Input.new(input_options)
+          input_component = ::Punchblock::Component::Input.new(input_options)
           write_and_await_response input_component
           execute_component_and_await_completion output_component
           if !input_component.complete_event.set_yet?

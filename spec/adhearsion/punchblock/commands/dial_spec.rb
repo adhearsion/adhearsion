@@ -1,10 +1,10 @@
 require 'spec_helper'
 
 module Adhearsion
-  module Rayo
+  module Punchblock
     module Commands
       describe Dial do
-        include RayoCommandTestHelpers
+        include PunchblockCommandTestHelpers
 
         describe "#dial" do
           describe "without a block" do

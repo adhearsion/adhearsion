@@ -141,7 +141,7 @@ module Adhearsion
 
     def set_originating_voip_platform!
       # TODO: Determine this from the headers somehow
-      self.originating_voip_platform = :rayo
+      self.originating_voip_platform = :punchblock
     end
 
     class CommandRegistry

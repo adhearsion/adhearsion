@@ -1,10 +1,10 @@
 require 'spec_helper'
 
 module Adhearsion
-  module Rayo
+  module Punchblock
     module Commands
       describe Output do
-        include RayoCommandTestHelpers
+        include PunchblockCommandTestHelpers
 
         describe "#play_ssml" do
           let(:ssml) { RubySpeech::SSML.draw { string "BOO" } }
@@ -250,11 +250,11 @@ module Adhearsion
 
         describe "#interruptible_play" do
           let(:ssml) { RubySpeech::SSML.draw {"press a button"} }
-          let(:component) { 
+          let(:component) {
             Punchblock::Component::Input.new(
-              {:mode => :dtmf, 
+              {:mode => :dtmf,
                :grammar => {:value => '[1 DIGIT]', :content_type => 'application/grammar+voxeo'}
-            }) 
+            })
           }
           it "accepts SSML to play as a prompt" do
             mock_execution_environment.should_receive(:interruptible_play).once.with(ssml)
@@ -264,7 +264,7 @@ module Adhearsion
           it "sends the correct input command" do
             pending
             #expect_message_waiting_for_response component
-            #mock_execution_environment.interruptible_play(ssml) 
+            #mock_execution_environment.interruptible_play(ssml)
           end
         end#describe #interruptible_play
 

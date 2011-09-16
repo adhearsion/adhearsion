@@ -1,10 +1,10 @@
 require 'spec_helper'
 
 module Adhearsion
-  module Rayo
+  module Punchblock
     module Commands
       describe Input do
-        include RayoCommandTestHelpers
+        include PunchblockCommandTestHelpers
 
       end
     end

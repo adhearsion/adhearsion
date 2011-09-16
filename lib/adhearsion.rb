@@ -41,7 +41,7 @@ module Adhearsion
   autoload :Initializer
   autoload :Logging
   autoload :OutboundCall
-  autoload :Rayo
+  autoload :Punchblock
   autoload :Version
 
   # Sets up the Gem require path.
