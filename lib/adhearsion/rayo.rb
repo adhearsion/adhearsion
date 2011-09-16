@@ -3,5 +3,7 @@ module Adhearsion
     extend ActiveSupport::Autoload
 
     autoload :Commands
+    autoload :Menu
+
   end
 end
