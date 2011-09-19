@@ -116,6 +116,14 @@ module Adhearsion
       end
     end
 
+    describe "#on_end" do
+      it "should take a lambda" do
+        l = lambda { :foo }
+        subject.on_end = l
+        subject.on_end.should == l
+      end
+    end
+
     describe "#<<" do
       describe "with a Ringing event" do
         let(:event) { Punchblock::Event::Ringing.new }
@@ -155,6 +163,28 @@ module Adhearsion
         end
 
         describe "without an on_answer callback set" do
+          it "should not raise an exception" do
+            lambda { subject << event }.should_not raise_error
+          end
+        end
+      end
+
+      describe "with an End event" do
+        let(:event) { flexmock Punchblock::Event::End.new, :reason => :hangup }
+
+        describe "with an on_end callback set" do
+          before do
+            @foo = nil
+            subject.on_end = lambda { |event| @foo = event }
+          end
+
+          it "should fire the on_end callback" do
+            subject << event
+            @foo.should == event
+          end
+        end
+
+        describe "without an on_end callback set" do
           it "should not raise an exception" do
             lambda { subject << event }.should_not raise_error
           end

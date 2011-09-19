@@ -1,7 +1,7 @@
 module Adhearsion
   class OutboundCall < Call
     attr_reader :dial_command
-    attr_accessor :on_accept, :on_answer
+    attr_accessor :on_accept, :on_answer, :on_end
 
     class << self
       def originate(to, opts = {})
@@ -62,5 +62,10 @@ module Adhearsion
       super
     end
     alias << deliver_message
+
+    def process_end(event)
+      super
+      on_end.call event if on_end
+    end
   end
 end
