@@ -8,9 +8,11 @@ module Adhearsion
 
         let(:to) { 'sip:foo@bar.com' }
 
-        let(:mock_call) { OutboundCall.new }
+        let(:other_call_id) { rand }
+        let(:other_mock_call) { flexmock OutboundCall.new, :id => other_call_id }
 
         let(:mock_end) { flexmock Punchblock::Event::End.new, :reason => :hangup }
+        let(:mock_answered) { Punchblock::Event::Answered.new }
 
         def mock_dial
           flexmock(OutboundCall).new_instances.should_receive(:dial).and_return true
@@ -22,43 +24,63 @@ module Adhearsion
             Thread.new do
               mock_execution_environment.dial(to).should be_a OutboundCall
             end
-            mock_call << mock_end
+            other_mock_call << mock_end
           end
 
           it "should dial the call to the correct endpoint" do
-            mock_call
-            flexmock(OutboundCall).should_receive(:new).and_return mock_call
-            flexmock(mock_call).should_receive(:dial).with(to, :from => 'foo').once
+            other_mock_call
+            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+            flexmock(other_mock_call).should_receive(:dial).with(to, :from => 'foo').once
             dial_thread = Thread.new do
               mock_execution_environment.dial to, :from => 'foo'
             end
             sleep 0.1
-            mock_call << mock_end
+            other_mock_call << mock_end
             dial_thread.join.should be_true
           end
 
           describe "without a block" do
             it "blocks the original dialplan until the new call ends" do
-              mock_call
+              other_mock_call
 
-              flexmock(mock_call).should_receive(:dial).once
-              flexmock(OutboundCall).should_receive(:new).and_return mock_call
+              flexmock(other_mock_call).should_receive(:dial).once
+              flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
 
               latch = CountDownLatch.new 1
 
               Thread.new do
-                mock_execution_environment.dial(to)
+                mock_execution_environment.dial to
                 latch.countdown!
               end
 
               latch.wait(1).should be_false
 
-              mock_call << mock_end
+              other_mock_call << mock_end
 
               latch.wait(1).should be_true
             end
 
-            it "joins the new call to the existing one on answer"
+            it "joins the new call to the existing one on answer" do
+              other_mock_call
+
+              flexmock(other_mock_call).should_receive(:dial).once
+              flexmock(other_mock_call).should_receive(:join).once.with(call_id)
+              flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+
+              latch = CountDownLatch.new 1
+
+              Thread.new do
+                mock_execution_environment.dial to
+                latch.countdown!
+              end
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_answered
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+            end
           end
 
           describe "with multiple third parties specified" do

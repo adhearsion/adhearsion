@@ -6,8 +6,10 @@ module PunchblockCommandTestHelpers
       flexmock Object.new.tap { |ee| ee.extend Adhearsion::Punchblock::Commands }, :call => mock_call
     end
 
+    test_case.let(:call_id) { rand }
+
     test_case.let :mock_call do
-      flexmock :write_command => true
+      flexmock :write_command => true, :id => call_id
     end
   end
 

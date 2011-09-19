@@ -39,10 +39,11 @@ module Adhearsion
         #   dial "IAX2/my.id@voipjet/19095551234", :name => "John Doe", :caller_id => "9095551234"
         #
         def dial(to, options = {})
-          OutboundCall.new(options).tap do |call|
+          OutboundCall.new(options).tap do |new_call|
             latch = CountDownLatch.new 1
-            call.on_end = lambda { |event| latch.countdown! }
-            call.dial to, options
+            new_call.on_answer  = lambda { |event| new_call.join call.id }
+            new_call.on_end     = lambda { |event| latch.countdown! }
+            new_call.dial to, options
             latch.wait
           end
         end
