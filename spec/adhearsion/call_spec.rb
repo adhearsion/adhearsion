@@ -325,6 +325,15 @@ module Adhearsion
           end
         end
       end
+
+      describe "#join" do
+        let(:other_call_id) { rand }
+
+        it "should mark the call inactive" do
+          expect_message_waiting_for_response Punchblock::Command::Join.new :other_call_id => other_call_id
+          subject.join other_call_id
+        end
+      end
     end
 
     describe Call::CommandRegistry do
