@@ -1,7 +1,8 @@
 # Check the Ruby version
-STDERR.puts "WARNING: You are running Adhearsion in an unsupported
-version of Ruby (Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE})!
-Please upgrade to at least Ruby v1.8.5." if RUBY_VERSION < "1.8.5"
+STDERR.puts "NOTICE: You are running Adhearsion in
+(Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE}).
+We are not dropping #{RUBY_VERSION} support,
+but we encourage you for an upgrade." if RUBY_VERSION < "1.8.5"
 
 $: << File.expand_path(File.dirname(__FILE__))
 
