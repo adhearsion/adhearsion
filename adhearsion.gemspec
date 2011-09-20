@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "uuid"
   s.add_runtime_dependency "future-resource", [">= 0.0.2"]
   s.add_runtime_dependency "ruby_speech", [">= 0.2.0"]
+  s.add_runtime_dependency 'countdownlatch'
 
   # Development dependencies
   s.add_development_dependency 'rspec', [">= 2.4.0"]
@@ -44,5 +45,4 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'ci_reporter'
   s.add_development_dependency 'yard'
   s.add_development_dependency 'guard-rspec'
-  s.add_development_dependency 'countdownlatch'
 end
