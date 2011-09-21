@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
 
   # Runtime dependencies
   s.add_runtime_dependency "bundler", [">= 1.0.10"]
-  s.add_runtime_dependency 'punchblock', [">= 0.4.0"]
+  s.add_runtime_dependency 'punchblock', [">= 0.4.1"]
   s.add_runtime_dependency "log4r", [">= 1.0.5"]
   s.add_runtime_dependency "activesupport", [">= 3.0.10"]
   # i18n is only strictly a dependency for ActiveSupport >= 3.0.0
@@ -35,7 +35,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "future-resource", [">= 0.0.2"]
   s.add_runtime_dependency "ruby_speech", [">= 0.2.0"]
   s.add_runtime_dependency 'countdownlatch'
-  s.add_runtime_dependency 'has-guarded-handlers'
+  s.add_runtime_dependency 'has-guarded-handlers', [">= 0.0.3"]
 
   # Development dependencies
   s.add_development_dependency 'rspec', [">= 2.4.0"]

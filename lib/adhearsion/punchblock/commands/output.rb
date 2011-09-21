@@ -130,10 +130,8 @@ module Adhearsion
         #   ssml = RubySpeech::SSML.draw do
         #     "Please press a button"
         #   end
-        #   input = interruptible_play(ssml)
-        #   if !input.nil?
-        #     play input
-        #   end
+        #   input = interruptible_play ssml
+        #   play input unless input.nil?
         #
         # @params [RubySpeech::SSML::Speak] The SSML to play to the user
         #
@@ -141,29 +139,20 @@ module Adhearsion
         #
         def interruptible_play(ssml)
           result = nil
-          options = {:ssml => ssml.to_s}
-          output_component = ::Punchblock::Component::Output.new(options)
-          input_options = {
-            :mode => :dtmf,
-            :grammar => {:value => '[1 DIGIT]', :content_type => 'application/grammar+voxeo'},
-            :event_callback => lambda { |event|
-              Thread.new {
-                if !output_component.complete_event.set_yet?
-                  output_component.stop!
-                end
-                if event.reason.is_a? ::Punchblock::Component::Input::Complete::Success
-                  result = event.reason.interpretation
-                end
-              }
+          output_component = ::Punchblock::Component::Output.new :ssml => ssml.to_s
+          input_component = ::Punchblock::Component::Input.new :mode => :dtmf,
+            :grammar => {:value => '[1 DIGIT]', :content_type => 'application/grammar+voxeo'}
+          input_component.register_event_handler ::Punchblock::Event::Complete do |event|
+            Thread.new {
+              output_component.stop! unless output_component.complete?
+              reason = event.reason
+              result = reason.interpretation if reason.respond_to? :interpretation
             }
-          }
-          input_component = ::Punchblock::Component::Input.new(input_options)
+          end
           write_and_await_response input_component
           execute_component_and_await_completion output_component
-          if !input_component.complete_event.set_yet?
-            input_component.stop!
-          end
-          return result
+          input_component.stop! unless input_component.complete?
+          result
         end#interruptible_play
 
       end#module
