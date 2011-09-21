@@ -3,7 +3,7 @@ module Adhearsion
     extend ActiveSupport::Autoload
 
     autoload :Commands
-    autoload :Menu
+    autoload :MenuDSL
 
     include ::Punchblock
   end

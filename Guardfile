@@ -32,10 +32,9 @@ end
 
 group 'punchblock:menu' do
 
-  guard 'rspec', :version => 2, :cli => '--format documentation', :spec_paths => ['spec/adhearsion/punchblock/menu'] do
-    # watch(%r{^spec/adhearsion/punchblock/menu/.+_spec\.rb$})
+  guard 'rspec', :version => 2, :cli => '--format documentation', :spec_paths => ['spec/adhearsion/punchblock/menu_dsl'] do
     watch(%r{/.+_spec\.rb$})
-    watch(%r{^lib/adhearsion/punchblock/menu/(.+)\.rb$}) { |m| "spec/adhearsion/punchblock/menu/#{m[1]}_spec.rb"}
+    watch(%r{^lib/adhearsion/punchblock/menu/(.+)\.rb$}) { |m| "spec/adhearsion/punchblock/menu_dsl/#{m[1]}_spec.rb"}
   end
 
 end

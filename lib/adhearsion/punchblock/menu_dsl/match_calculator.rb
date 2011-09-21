@@ -1,6 +1,6 @@
 module Adhearsion
   module Punchblock
-    module Menu
+    module MenuDSL
 
       class MatchCalculator
 
@@ -16,7 +16,7 @@ module Adhearsion
           private
 
           def class_for_pattern_type(pattern_type)
-            sought_class_name = "Adhearsion::Punchblock::Menu::#{pattern_type.camelize}MatchCalculator"
+            sought_class_name = "Adhearsion::Punchblock::MenuDSL::#{pattern_type.camelize}MatchCalculator"
             subclasses.find { |klass| klass.name == sought_class_name }
           end
 

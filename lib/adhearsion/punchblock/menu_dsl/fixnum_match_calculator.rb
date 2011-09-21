@@ -1,6 +1,6 @@
 module Adhearsion
   module Punchblock
-    module Menu
+    module MenuDSL
 
       class FixnumMatchCalculator < MatchCalculator
 

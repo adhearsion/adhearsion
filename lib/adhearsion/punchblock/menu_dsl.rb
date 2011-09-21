@@ -1,6 +1,6 @@
 module Adhearsion
   module Punchblock
-    module Menu
+    module MenuDSL
       extend ActiveSupport::Autoload
 
       autoload :CalculatedMatch
@@ -10,9 +10,6 @@ module Adhearsion
       autoload :RangeMatchCalculator
       autoload :StringMatchCalculator
       autoload :MenuBuilder
-
-      def menu(*args, &block)
-      end
 
     end
   end

@@ -2,14 +2,14 @@ require 'spec_helper'
 
 module Adhearsion
   module Punchblock
-    module Menu
+    module MenuDSL
 
       describe CalculatedMatchCollection do
         include PunchblockCommandTestHelpers
 
         attr_reader :collection
         before(:each) do
-          @collection = Adhearsion::Punchblock::Menu::CalculatedMatchCollection.new
+          @collection = Adhearsion::Punchblock::MenuDSL::CalculatedMatchCollection.new
         end
 
         it "the <<() method should collect the potential matches into the actual_potential_matches Array" do

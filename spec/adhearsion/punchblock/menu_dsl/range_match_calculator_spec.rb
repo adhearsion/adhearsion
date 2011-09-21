@@ -2,7 +2,7 @@ require 'spec_helper'
 
 module Adhearsion
   module Punchblock
-    module Menu
+    module MenuDSL
 
       describe "RangeMatchCalculator" do
         it "matching with a Range should handle the case of two potential matches in the range" do

@@ -2,7 +2,7 @@ require 'spec_helper'
 
 module Adhearsion
   module Punchblock
-    module Menu
+    module MenuDSL
 
       describe "MatchCalculator" do
         include PunchblockCommandTestHelpers

@@ -1,6 +1,6 @@
 module Adhearsion
   module Punchblock
-    module Menu
+    module MenuDSL
 
       class CalculatedMatchCollection
         attr_reader :calculated_matches, :potential_matches, :exact_matches,

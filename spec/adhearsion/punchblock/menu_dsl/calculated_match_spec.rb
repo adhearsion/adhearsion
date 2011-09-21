@@ -2,12 +2,12 @@ require 'spec_helper'
 
 module Adhearsion
   module Punchblock
-    module Menu
+    module MenuDSL
 
       describe CalculatedMatch do
         include PunchblockCommandTestHelpers
 
-        let (:calculated_match) { Adhearsion::Punchblock::Menu::CalculatedMatch }
+        let (:calculated_match) { Adhearsion::Punchblock::MenuDSL::CalculatedMatch }
 
         it "should make accessible the context name" do
           calculated_match.new(:match_payload => :foobar).match_payload.should be :foobar

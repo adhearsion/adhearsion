@@ -2,7 +2,7 @@ require 'spec_helper'
 
 module Adhearsion
   module Punchblock
-    describe Menu do
+    describe MenuDSL do
       include PunchblockCommandTestHelpers
 
       it "should accept hash options"
