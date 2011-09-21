@@ -5,6 +5,11 @@ module Adhearsion
 
       autoload :CalculatedMatch
       autoload :CalculatedMatchCollection
+      autoload :MatchCalculator
+      autoload :FixnumMatchCalculator
+      autoload :RangeMatchCalculator
+      autoload :StringMatchCalculator
+      autoload :MenuBuilder
 
       def menu(*args, &block)
       end
