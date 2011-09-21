@@ -61,6 +61,20 @@ module Adhearsion
       end
     end
 
+    describe "event handlers" do
+      let(:response) { flexmock 'Response' }
+
+      describe "for answered events" do
+        let(:event) { Punchblock::Event::Answered.new }
+
+        it "should trigger any on_answer callbacks set" do
+          response.should_receive(:call).once.with(event)
+          subject.on_answer { |event| response.call event }
+          subject << event
+        end
+      end
+    end
+
     describe "#dial" do
       def expect_message_waiting_for_response(message)
         flexmock(subject).should_receive(:write_and_await_response).once.with(message).and_return do
@@ -97,98 +111,6 @@ module Adhearsion
         Adhearsion.active_calls.clear!
         subject.dial to, :from => from
         Adhearsion.active_calls[call_id].should be subject
-      end
-    end
-
-    describe "#on_accept" do
-      it "should take a lambda" do
-        l = lambda { :foo }
-        subject.on_accept = l
-        subject.on_accept.should == l
-      end
-    end
-
-    describe "#on_answer" do
-      it "should take a lambda" do
-        l = lambda { :foo }
-        subject.on_answer = l
-        subject.on_answer.should == l
-      end
-    end
-
-    describe "#on_end" do
-      it "should take a lambda" do
-        l = lambda { :foo }
-        subject.on_end = l
-        subject.on_end.should == l
-      end
-    end
-
-    describe "#<<" do
-      describe "with a Ringing event" do
-        let(:event) { Punchblock::Event::Ringing.new }
-
-        describe "with an on_accept callback set" do
-          before do
-            @foo = nil
-            subject.on_accept = lambda { |event| @foo = event }
-          end
-
-          it "should fire the on_accept callback" do
-            subject << event
-            @foo.should == event
-          end
-        end
-
-        describe "without an on_accept callback set" do
-          it "should not raise an exception" do
-            lambda { subject << event }.should_not raise_error
-          end
-        end
-      end
-
-      describe "with an Answered event" do
-        let(:event) { Punchblock::Event::Answered.new }
-
-        describe "with an on_answer callback set" do
-          before do
-            @foo = nil
-            subject.on_answer = lambda { |event| @foo = event }
-          end
-
-          it "should fire the on_answer callback" do
-            subject << event
-            @foo.should == event
-          end
-        end
-
-        describe "without an on_answer callback set" do
-          it "should not raise an exception" do
-            lambda { subject << event }.should_not raise_error
-          end
-        end
-      end
-
-      describe "with an End event" do
-        let(:event) { flexmock Punchblock::Event::End.new, :reason => :hangup }
-
-        describe "with an on_end callback set" do
-          before do
-            @foo = nil
-            subject.on_end = lambda { |event| @foo = event }
-          end
-
-          it "should fire the on_end callback" do
-            subject << event
-            @foo.should == event
-          end
-        end
-
-        describe "without an on_end callback set" do
-          it "should not raise an exception" do
-            lambda { subject << event }.should_not raise_error
-          end
-        end
       end
     end
 

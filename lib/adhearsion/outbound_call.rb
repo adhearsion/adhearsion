@@ -1,12 +1,11 @@
 module Adhearsion
   class OutboundCall < Call
     attr_reader :dial_command
-    attr_accessor :on_accept, :on_answer, :on_end
 
     class << self
       def originate(to, opts = {})
         new(opts).tap do |call|
-          call.on_answer = lambda { |answer| call.run_dialplan }
+          call.run_dialplan_on_answer
           call.dial to, opts
         end
       end
@@ -52,20 +51,18 @@ module Adhearsion
       end
     end
 
-    def deliver_message(message)
-      case message
-      when Punchblock::Event::Ringing
-        on_accept.call message if on_accept
-      when Punchblock::Event::Answered
-        on_answer.call message if on_answer
+    def run_dialplan_on_answer
+      register_event_handler :class => Punchblock::Event::Answered do |event|
+        run_dialplan
+        throw :pass
       end
-      super
     end
-    alias << deliver_message
 
-    def process_end(event)
-      super
-      on_end.call event if on_end
+    def on_answer(&block)
+      register_event_handler :class => Punchblock::Event::Answered do |event|
+        block.call event
+        throw :pass
+      end
     end
   end
 end

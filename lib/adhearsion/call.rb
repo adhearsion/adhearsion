@@ -5,9 +5,14 @@ module Adhearsion
   # Encapsulates call-related data and behavior.
   #
   class Call
-    attr_accessor :offer, :originating_voip_platform, :inbox, :context, :connection, :end_reason, :commands
+
+    include HasGuardedHandlers
+
+    attr_accessor :offer, :originating_voip_platform, :context, :connection, :end_reason, :commands
 
     def initialize(offer = nil)
+      super
+
       if offer
         @offer      = offer
         @connection = offer.connection
@@ -20,6 +25,8 @@ module Adhearsion
       end_reason        = nil
       @commands         = CommandRegistry.new
       set_originating_voip_platform!
+
+      register_initial_handlers
     end
 
     def id
@@ -48,31 +55,32 @@ module Adhearsion
       @tag_mutex.synchronize { @tags.include? symbol }
     end
 
+    def register_event_handler(*guards, &block)
+      register_handler :event, *guards, &block
+    end
+
     def deliver_message(message)
-      if message.is_a?(Punchblock::Event::End)
-        process_end message
-      else
-        inbox << message
-      end
+      trigger_handler :event, message
     end
     alias << deliver_message
 
-    def process_end(event)
-      hangup
-      @end_reason_mutex.synchronize { @end_reason = event.reason }
-      commands.terminate
+    def register_initial_handlers
+      on_end do |event|
+        hangup
+        @end_reason_mutex.synchronize { @end_reason = event.reason }
+        commands.terminate
+      end
     end
 
-    def can_use_messaging?
-      inbox.open == true
+    def on_end(&block)
+      register_event_handler :class => Punchblock::Event::End do |event|
+        block.call event
+        throw :pass
+      end
     end
 
     def active?
       @end_reason_mutex.synchronize { !end_reason }
-    end
-
-    def inbox
-      @inbox ||= CallMessageQueue.new
     end
 
     def accept(headers = nil)
@@ -170,32 +178,6 @@ module Adhearsion
       def terminate
         hangup = Hangup.new
         each { |command| command.response = hangup if command.requested? }
-      end
-    end
-
-    ##
-    # Wraps the Queue object (subclasses it) so we can handle runaway threads,
-    # namely those originating from using with_next_message in commands.rb - this
-    # overrides << to check for the :cancel symbol and trigger the automessaging_tainted
-    # instance variable.
-    class CallMessageQueue < Queue
-      InboxClosedException = Class.new StandardError # This gets raised when the :cancel message is delivered to the queue and with_next_message (or similar auto-message-iteration) features are called.
-
-      attr_reader :open
-
-      def initialize
-        @open = true
-        super
-      end
-
-      def <<(queue_obj)
-        @open = false if queue_obj == :cancel
-        super
-      end
-
-      def pop
-        raise InboxClosedException, "The message queue for this call has aleady been disabled." unless @open
-        super
       end
     end
   end

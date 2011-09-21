@@ -9,8 +9,6 @@ module Adhearsion
       Adhearsion.active_calls.clear!
     end
 
-    its(:inbox) { should be_a_kind_of Queue }
-
     it { should respond_to :<< }
 
     its(:originating_voip_platform) { should == :punchblock }
@@ -59,6 +57,33 @@ module Adhearsion
       Adhearsion.active_calls.size.should > size_before
       call.hangup
       Adhearsion.active_calls.size.should == size_before
+    end
+
+    it 'allows the registration of event handlers which are called when messages are delivered' do
+      event = flexmock 'Event'
+      event.should_receive(:foo?).and_return true
+      response = flexmock 'Response'
+      response.should_receive(:call).once
+      subject.register_event_handler(:foo?) { response.call }
+      subject << event
+    end
+
+    describe "event handlers" do
+      let(:response) { flexmock 'Response' }
+
+      describe "for end events" do
+        let :event do
+          Punchblock::Event::End.new.tap do |e|
+            flexmock e, :reason => :hangup
+          end
+        end
+
+        it "should trigger any on_end callbacks set" do
+          response.should_receive(:call).once.with(event)
+          subject.on_end { |event| response.call event }
+          subject << event
+        end
+      end
     end
 
     describe "#<<" do

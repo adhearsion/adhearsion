@@ -41,8 +41,8 @@ module Adhearsion
         def dial(to, options = {})
           OutboundCall.new(options).tap do |new_call|
             latch = CountDownLatch.new 1
-            new_call.on_answer  = lambda { |event| new_call.join call.id }
-            new_call.on_end     = lambda { |event| latch.countdown! }
+            new_call.on_answer { |event| new_call.join call.id }
+            new_call.on_end    { |event| latch.countdown! }
             new_call.dial to, options
             latch.wait
           end

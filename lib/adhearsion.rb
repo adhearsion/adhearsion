@@ -20,6 +20,7 @@ $: << File.expand_path(File.dirname(__FILE__))
   theatre
   ruby_speech
   countdownlatch
+  has_guarded_handlers
 
   adhearsion/foundation/all
 }.each { |f| require f }
