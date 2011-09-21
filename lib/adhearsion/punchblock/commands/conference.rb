@@ -15,8 +15,23 @@ module Adhearsion
         # @option options [String, Optional] :terminator This is the touch-tone key (also known as "DTMF digit") used to exit the conference.
         #
         def conference(conference_id, options = {}, &block)
+          on_speaking = options.delete :on_speaking
+          on_finished_speaking = options.delete :on_finished_speaking
           options.merge! :name => conference_id
-          execute_component_and_await_completion ::Punchblock::Component::Tropo::Conference.new(options), &block
+          component = ::Punchblock::Component::Tropo::Conference.new options
+          if on_speaking
+            component.register_event_handler ::Punchblock::Component::Tropo::Conference::Speaking do |event|
+              on_speaking.call event.speaking_call_id
+              throw :pass
+            end
+          end
+          if on_finished_speaking
+            component.register_event_handler ::Punchblock::Component::Tropo::Conference::FinishedSpeaking do |event|
+              on_finished_speaking.call event.speaking_call_id
+              throw :pass
+            end
+          end
+          execute_component_and_await_completion component, &block
         end
       end
     end
