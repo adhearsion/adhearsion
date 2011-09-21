@@ -5,6 +5,7 @@ module Adhearsion
       class MatchCalculator
 
         class << self
+
           def build_with_pattern(pattern, match_payload, &block)
             class_for_pattern_type(pattern.class.name).new(pattern, match_payload, &block)
           end
@@ -23,6 +24,7 @@ module Adhearsion
           def subclasses
             @@subclasses ||= []
           end
+
         end
 
         attr_reader :pattern, :match_payload
@@ -42,6 +44,12 @@ module Adhearsion
         end
 
       end # class MatchCalculator
+
+      class RangeMatchCalculator < MatchCalculator; end
+
+      class FixnumMatchCalculator < MatchCalculator; end
+
+      class StringMatchCalculator < MatchCalculator; end
 
     end
   end

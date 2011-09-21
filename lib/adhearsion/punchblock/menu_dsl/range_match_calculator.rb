@@ -36,7 +36,7 @@ module Adhearsion
         # Huge thanks to Dave Troy (http://davetroy.blogspot.com) for this awesomely
         # efficient code!
         def numbers_in_range_like(num)
-          return (pattern == 0 ? [0] : nil) if num == 0
+          return (pattern === 0 ? [0] : nil) if num == 0
           raise ArgumentError unless num.kind_of?(Numeric)
           Array.new.tap do |matches|
             first, last = pattern.first, pattern.last

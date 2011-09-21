@@ -10,6 +10,7 @@ module Adhearsion
       autoload :RangeMatchCalculator
       autoload :StringMatchCalculator
       autoload :MenuBuilder
+      autoload :Menu
 
     end
   end
