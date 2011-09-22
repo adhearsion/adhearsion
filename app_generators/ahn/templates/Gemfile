@@ -1,5 +1,5 @@
 source "http://rubygems.org"
 
-gem "adhearsion", ">= 1.2.0"
+gem "adhearsion", ">= 1.2.1"
 
 # gem 'ahn-restful-rpc'
