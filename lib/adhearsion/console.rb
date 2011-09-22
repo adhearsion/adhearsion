@@ -42,7 +42,7 @@ module Adhearsion
 
       def initialize(call)
         @call = call
-        extend Adhearsion::VoIP::Commands.for('asterisk')
+        extend Adhearsion::Commands.for('asterisk')
       end
     end
   end

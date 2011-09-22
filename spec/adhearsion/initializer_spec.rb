@@ -85,7 +85,6 @@ describe "Adhearsion::Initializer" do
       flexmock(Adhearsion::Initializer).should_receive(:get_rules_from).once.and_return ahn_rc
       flexstub(ahn).should_receive(:gem).once.with("twitter")
       flexmock(ahn).should_receive(:require).once.with("sometwitterstuffs")
-      flexmock(ahn).should_receive(:require).at_least.once.with(String)
       ahn.start
     end
   end

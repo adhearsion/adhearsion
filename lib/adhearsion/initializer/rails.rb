@@ -1,14 +1,12 @@
-require 'adhearsion/voip/asterisk'
-
 module Adhearsion
   class Initializer
-    class RailsInitializer
+    class Rails
 
       cattr_accessor :rails_root, :config, :environment
       class << self
 
         def start
-          ahn_config       = Adhearsion::AHN_CONFIG
+          ahn_config       = AHN_CONFIG
           self.config      = ahn_config.rails
           self.rails_root  = config.rails_root
           self.environment = config.environment
@@ -19,7 +17,7 @@ module Adhearsion
           if defined? ActiveRecord
             # You may need to uncomment the following line for older versions of ActiveRecord
             # ActiveRecord::Base.allow_concurrency = true
-            Events.register_callback([:asterisk, :before_call]) do
+            Events.register_callback([:before_call]) do
               ActiveRecord::Base.verify_active_connections!
             end
           end

@@ -17,15 +17,13 @@ module Adhearsion
     end
 
     # This method causes the current running process to become a daemon
-    def daemonize(log_file='/dev/null')
+    def daemonize(log_file = '/dev/null')
       oldmode = 0
       srand # Split rand streams between spawning and daemonized process
       safefork and exit # Fork and exit from the parent
 
       # Detach from the controlling terminal
-      unless sess_id = Process.setsid
-        raise 'Cannot detach from controlled terminal'
-      end
+      raise 'Cannot detach from controlled terminal' unless sess_id = Process.setsid
 
       # Prevent the possibility of acquiring a controlling terminal
       if oldmode.zero?
@@ -39,7 +37,7 @@ module Adhearsion
       STDIN.reopen "/dev/null"
       STDOUT.reopen '/dev/null', "a"
       STDERR.reopen log_file, "a"
-      return oldmode ? sess_id : 0
+      oldmode ? sess_id : 0
     end
   end
 end

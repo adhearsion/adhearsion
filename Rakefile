@@ -41,7 +41,7 @@ task :check_ragel_version do
   end
 end
 
-RAGEL_FILES = %w[lib/adhearsion/voip/asterisk/manager_interface/ami_lexer.rl.rb]
+RAGEL_FILES = %w[lib/adhearsion/asterisk/manager_interface/ami_lexer.rl.rb]
 
 desc "Used to regenerate the AMI source code files. Note: requires Ragel 6.3 or later be installed on your system"
 task :ragel => :check_ragel_version do

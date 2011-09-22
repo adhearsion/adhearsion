@@ -5,7 +5,7 @@ require 'thread'
 module Adhearsion
   class Initializer
 
-    class DrbInitializer
+    class Drb
 
       class << self
 

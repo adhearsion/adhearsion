@@ -16,8 +16,8 @@ Adhearsion::Configuration.configure do |config|
   # :formatter : A log formatter to apply to all active outputters
   config.logging :level => :info
 
-  # Whether incoming calls be automatically answered. Defaults to true.
-  # config.automatically_answer_incoming_calls = false
+  # Whether incoming calls be automatically accepted. Defaults to true.
+  # config.automatically_accept_incoming_calls = false
 
   # Whether the other end hanging up should end the call immediately. Defaults to true.
   # config.end_call_on_hangup = false
@@ -25,14 +25,7 @@ Adhearsion::Configuration.configure do |config|
   # Whether to end the call immediately if an unrescued exception is caught. Defaults to true.
   # config.end_call_on_error = false
 
-  # NOTE: Pay special attention to the argument_delimiter field below:
-  # For Asterisk <= 1.4, use "|" (default)
-  # For Asterisk >= 1.6, use ","
-  # The delimiter can also be specified in Asterisk's asterisk.conf.
-  # This setting applies only to AGI.  The AMI delimiter is auto-detected.
-  # NB: The AMI user should have write access in order to execute actions, and AMI connections will fail otherwise.
-  config.enable_asterisk :argument_delimiter => '|'
-  # config.asterisk.enable_ami :host => "127.0.0.1", :username => "admin", :password => "password", :events => true
+  config.enable_punchblock
 
   # Adhearsion supports two possible speech engines with Asterisk: UniMRCP and Cepstral.
   # Uncomment one of the below if you have it available.

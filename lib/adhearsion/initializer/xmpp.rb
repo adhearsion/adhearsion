@@ -1,8 +1,6 @@
-require 'adhearsion/xmpp/connection.rb'
-
 module Adhearsion
   class Initializer
-    class XMPPInitializer
+    class XMPP
 
       cattr_accessor :config, :jid, :password, :server, :port
       class << self

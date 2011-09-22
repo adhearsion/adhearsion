@@ -24,14 +24,15 @@ $: << File.dirname(__FILE__)
   rubygems
   rspec/core
   bundler/setup
+  flexmock
   flexmock/rspec
   active_support
   rubigen
   pp
   stringio
+  countdownlatch
+  theatre
   adhearsion
-  adhearsion/voip/asterisk
-  adhearsion/component_manager
 }.each { |f| require f }
 
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |f| require f }

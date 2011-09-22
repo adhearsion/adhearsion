@@ -17,7 +17,7 @@ module AhnCommandSpecHelper
     return io.string
   end
 
-  def new_tmp_dir(filename=new_guid)
+  def new_tmp_dir(filename=UUID.new.generate)
     File.join Dir.tmpdir, filename
   end
 

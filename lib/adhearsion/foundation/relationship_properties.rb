@@ -6,7 +6,7 @@ class Module
   # subclassing.
   #
   # For example, say you have an Automobile class which, in its constructor, instantiates a new Battery class and performs
-  # some operations on it such as calling an install() method. Let's also assume the Automobile class exposes a repair()
+  # some operations on it such as calling an #install method. Let's also assume the Automobile class exposes a #repair
   # method which uses a class-level method of Battery to diagnose your own instance of Battery. If the result of the
   # diagnosis shows that the Battery is bad, the Automobile will instantiate a new Battery object and replace the old battery
   # with the new one.
@@ -38,5 +38,4 @@ class Module
       define_method(class_name) { class_object }
     end
   end
-
 end
