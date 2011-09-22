@@ -7,7 +7,7 @@ module Adhearsion
         DEFAULT_MAX_NUMBER_OF_TRIES = 1
         DEFAULT_TIMEOUT             = 5
 
-        relationships :menu_builder => MenuBuilder
+        relationships :menu_builder => Punchblock::MenuDSL::MenuBuilder
 
         attr_reader :builder, :timeout, :tries_count, :max_number_of_tries
 
