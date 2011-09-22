@@ -7,9 +7,10 @@ module ComponentTester
     #
     # @return [Module] an anonymous module which includes the ComponentTester module.
     #
-    def new(component_name, component_directory)
+    def new(component_name, component_directory, main_file = nil)
       component_directory = File.expand_path component_directory
-      main_file = component_directory + "/#{component_name}/#{component_name}.rb"
+      main_file ||= "/#{component_name}/#{component_name}.rb"
+      main_file.insert 0, component_directory
 
       component_manager = Adhearsion::Components::ComponentManager.new(component_directory)
       component_module  = Adhearsion::Components::ComponentManager::ComponentDefinitionContainer.load_file main_file

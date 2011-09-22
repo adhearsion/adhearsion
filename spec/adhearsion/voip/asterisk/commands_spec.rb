@@ -274,6 +274,20 @@ describe 'hangup command' do
   end
 end
 
+describe 'receiving a hangup' do
+  include DialplanCommandTestHelpers
+
+  it "should treat a ECONNRESET as a hangup" do
+    pbx_should_respond_with_success
+    def input.gets()
+      raise Errno::ECONNRESET
+    end
+    the_following_code {
+      mock_call.read()
+    }.should raise_error(Adhearsion::Hangup)   
+  end
+end
+
 describe "writing a command" do
   include DialplanCommandTestHelpers
 
@@ -729,8 +743,10 @@ describe 'the #record method' do
 
   it 'create a default filename if no file is specifed and icrement it on subsequent calls' do
     mock_call.call.variables.delete :recording_counter
-    mock_call.should_receive(:response).once.with('RECORD FILE', '/tmp/recording_0', 'gsm', '26', -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
-    mock_call.should_receive(:response).once.with('RECORD FILE', '/tmp/recording_1', 'gsm', '26', -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.should_receive(:new_guid).once.and_return('2345')
+    mock_call.should_receive(:new_guid).once.and_return('4322')
+    mock_call.should_receive(:response).once.with('RECORD FILE', '/tmp/recording_2345_0', 'gsm', '26', -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.should_receive(:response).once.with('RECORD FILE', '/tmp/recording_4322_1', 'gsm', '26', -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
     mock_call.record(:beep => nil, :escapedigits => '26').should == '/tmp/recording_0.gsm'
     mock_call.record(:beep => nil, :escapedigits => '26').should == '/tmp/recording_1.gsm'
   end  
@@ -826,8 +842,10 @@ describe 'the #record_to_file method' do
   end  
 
   it 'create a default filename if no file is specifed and icrement it on subsequent calls' do
-    mock_call.should_receive(:response).once.with("RECORD FILE", "/tmp/recording_0", "gsm", "26", -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
-    mock_call.should_receive(:response).once.with("RECORD FILE", "/tmp/recording_1", "gsm", "26", -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.should_receive(:new_guid).once.and_return('2345')
+    mock_call.should_receive(:new_guid).once.and_return('4322')
+    mock_call.should_receive(:response).once.with("RECORD FILE", "/tmp/recording_2345_0", "gsm", "26", -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
+    mock_call.should_receive(:response).once.with("RECORD FILE", "/tmp/recording_4322_1", "gsm", "26", -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
     mock_call.record_to_file(:beep => nil, :escapedigits => '26').should == :success_timeout
     mock_call.record_to_file(:beep => nil, :escapedigits => '26').should == :success_timeout
   end  
@@ -2723,7 +2741,7 @@ describe "speak command" do
 
     it "should properly escape commas in the TTS string" do
       pbx_should_respond_with_value 0
-      mock_call.should_receive(:execute).with('Swift', 'Once\\\\, a long\\\\, long time ago\\\\, ...')
+      mock_call.should_receive(:execute).with('Swift', 'Once\, a long\, long time ago\, ...')
       @speech_engines.cepstral(mock_call, 'Once, a long, long time ago, ...')
       @output.read.should == "GET VARIABLE \"SWIFT_DTMF\"\n"
     end

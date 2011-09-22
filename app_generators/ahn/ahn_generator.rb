@@ -35,12 +35,6 @@ class AhnGenerator < RubiGen::Base
       m.file  *["components/disabled/stomp_gateway/stomp_gateway.yml"]*2
       m.file  *["components/disabled/stomp_gateway/README.markdown"]*2
 
-      m.file  *["components/disabled/restful_rpc/restful_rpc.rb"]*2
-      m.file  *["components/disabled/restful_rpc/restful_rpc.yml"]*2
-      m.file  *["components/disabled/restful_rpc/README.markdown"]*2
-      m.file  *["components/disabled/restful_rpc/example-client.rb"]*2
-      m.file  *["components/disabled/restful_rpc/spec/restful_rpc_spec.rb"]*2
-
       m.file  *["config/environment.rb"]*2
       m.file  *["config/startup.rb"]*2
       m.file  *["dialplan.rb"]*2
@@ -89,7 +83,6 @@ EOS
       components/disabled/stomp_gateway
       components/disabled/xmpp_gateway
       components/ami_remote
-      components/disabled/restful_rpc/spec
       config
       script
     )

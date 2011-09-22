@@ -143,6 +143,7 @@ module Adhearsion
       create_pid_file if pid_file
       bootstrap_rc
       initialize_log_file
+      initialize_exception_logger
       load_all_init_files
       init_datasources
       init_components_subsystem
@@ -353,6 +354,13 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
         Logging::AdhearsionLogger.outputters << file_logger
       end
       Logging::DefaultAdhearsionLogger.redefine_outputters
+    end
+
+    def initialize_exception_logger
+      Events.register_callback :exception do |e|
+        ahn_log.error "#{e.class}: #{e.message}"
+        ahn_log.debug e.backtrace.join("\n\t")
+      end
     end
 
     def create_pid_file

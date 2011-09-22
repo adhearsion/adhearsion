@@ -1,3 +1,11 @@
+1.2.1
+ - Removed the restful_rpc component since it is now in a gem.
+ - Allow overriding the path to a component in the testing framework so as to support new style components (lib/)
+ - Added a GUID to the default recording filename to ensure uniqueness
+ - ECONNRESET exceptions are now handled as a call hangup
+ - Fixed escaping of TTS strings containing commas when used with Cepstral via #speak
+ - Made logging exceptions the responsibility of the framework rather than the app, so that this may not be disabled
+
 1.2.0
  - New method: #play_or_speak allows playback of an audio file with TTS fallback
  - #input now takes :speak as a hash for TTS prompt or fallback
