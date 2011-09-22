@@ -359,7 +359,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     def initialize_exception_logger
       Events.register_callback :exception do |e|
         ahn_log.error "#{e.class}: #{e.message}"
-        ahn_log.error e.backtrace.join("\n\t")
+        ahn_log.debug e.backtrace.join("\n\t")
       end
     end
 
