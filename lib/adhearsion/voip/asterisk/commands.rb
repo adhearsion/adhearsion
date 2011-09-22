@@ -876,7 +876,7 @@ module Adhearsion
             def cepstral(call, text, options = {})
               # We need to aggressively escape commas so app_swift does not
               # think they are arguments.
-              text.gsub! /,/, '\\\\\\,'
+              text.gsub! /,/, '\\\\,'
               command = ['Swift', text]
 
               if options[:interrupt_digits]

@@ -2741,7 +2741,7 @@ describe "speak command" do
 
     it "should properly escape commas in the TTS string" do
       pbx_should_respond_with_value 0
-      mock_call.should_receive(:execute).with('Swift', 'Once\\\\, a long\\\\, long time ago\\\\, ...')
+      mock_call.should_receive(:execute).with('Swift', 'Once\, a long\, long time ago\, ...')
       @speech_engines.cepstral(mock_call, 'Once, a long, long time ago, ...')
       @output.read.should == "GET VARIABLE \"SWIFT_DTMF\"\n"
     end
