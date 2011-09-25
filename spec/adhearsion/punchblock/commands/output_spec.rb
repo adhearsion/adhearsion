@@ -267,7 +267,38 @@ module Adhearsion
             #mock_execution_environment.interruptible_play(ssml)
           end
         end#describe #interruptible_play
-
+        
+        describe "#detect_type" do
+          it "detects an HTTP path" do
+            http_path = "http://adhearsion.com/sounds/hello.mp3"
+            mock_execution_environment.detect_type(http_path).should be :file
+          end
+          it "detects a file path" do
+            http_path = "/usr/shared/sounds/hello.mp3"
+            mock_execution_environment.detect_type(http_path).should be :file
+          end
+          it "detects a Date object" do
+            today = Date.today
+            mock_execution_environment.detect_type(today).should be :time
+          end
+          it "detects a Time object" do
+            now = Time.now
+            mock_execution_environment.detect_type(now).should be :time
+          end
+          it "detects a DateTime object" do
+            today = DateTime.now
+            mock_execution_environment.detect_type(today).should be :time
+          end
+          it "detects a Numeric object" do
+            number = 123
+            mock_execution_environment.detect_type(number).should be :numeric
+          end
+          it "returns text as a fallback" do
+            output = "Hello"
+            mock_execution_environment.detect_type(output).should be :text
+          end
+        end
+        
         describe "#raw_output" do
           pending
         end
