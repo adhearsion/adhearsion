@@ -137,11 +137,15 @@ module Adhearsion
         #
         # @return [String|Nil] The single DTMF character entered by the user, or nil if nothing was entered
         #
-        def interruptible_play(ssml)
+        def interruptible_play(ssml, options = {})
           result = nil
+          digits = options.delete :digits
           output_component = ::Punchblock::Component::Output.new :ssml => ssml.to_s
           input_component = ::Punchblock::Component::Input.new :mode => :dtmf,
-            :grammar => {:value => '[1 DIGIT]', :content_type => 'application/grammar+voxeo'}
+            :grammar => {
+              :value => digits == 1 ? '[1 DIGIT]' : "[#{digits} DIGITS]",
+              :content_type => 'application/grammar+voxeo'
+          }
           input_component.register_event_handler ::Punchblock::Event::Complete do |event|
             Thread.new {
               output_component.stop! unless output_component.complete?
@@ -154,6 +158,66 @@ module Adhearsion
           input_component.stop! unless input_component.complete?
           result
         end#interruptible_play
+
+        def detect_type(output)
+          result = nil
+          if [Date, Time, DateTime].include? output.class
+            result = :time
+          end
+          if output.kind_of?(Numeric) || output =~ /^\d+$/
+            result = :numeric
+          end
+          if !result && URI::regexp(%w(http https)).match(output.to_s)
+            result = :file
+          end
+          if !result && /\//.match(output.to_s)
+            result = :file
+          end
+          result ||= :text
+        end#detect_type
+        
+        def play_ssml_for(*args)
+          play_ssml ssml_for(args)
+        end
+
+        def ssml_for(*args)
+          argument, options = args.flatten
+          options ||= {}
+          type = detect_type(argument)
+          send("ssml_for_#{type}", argument, options)
+        end#ssml_for
+
+        def ssml_for_text(argument, options = {})
+          RubySpeech::SSML.draw do
+            argument
+          end
+        end#ssml_for_text
+
+        def ssml_for_time(argument, options = {})
+          interpretation = case argument
+            when Date then 'date'
+            when Time then 'time'
+          end
+
+          format = options.delete :format
+          strftime = options.delete :strftime
+
+          time_to_say = strftime ? argument.strftime(strftime) : argument.to_s
+
+          RubySpeech::SSML.draw do
+            say_as(:interpret_as => interpretation, :format => format) { time_to_say }
+          end 
+        end#ssml_for_time
+
+        def ssml_for_numeric(argument, options = {})
+          RubySpeech::SSML.draw do
+            say_as(:interpret_as => 'cardinal') { argument.to_s }
+          end
+        end
+
+        def ssml_for_audio(argument, options = {})
+          
+        end
 
       end#module
     end#module
