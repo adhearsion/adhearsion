@@ -250,7 +250,6 @@ module Adhearsion
           RubySpeech::SSML.draw {
             audio :src => argument
           }
-          
         end
 
       end#module
