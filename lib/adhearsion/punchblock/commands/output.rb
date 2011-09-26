@@ -133,29 +133,62 @@ module Adhearsion
         #   input = interruptible_play ssml
         #   play input unless input.nil?
         #
-        # @params [RubySpeech::SSML::Speak] The SSML to play to the user
+        # @param [RubySpeech::SSML::Speak] The SSML to play to the user
+        # @param [Hash] Additional options.
+        # +:digits+ - How many digits to expect from the user
+        # +:initial_timeout+ - Time in ms to wait for the first digit before time-out
+        # +:inter_digit_timeout+ - Milliseconds to wait between every digit before timeout
         #
         # @return [String|Nil] The single DTMF character entered by the user, or nil if nothing was entered
         #
         def interruptible_play(ssml, options = {})
           result = nil
+          continue = true
+
           digits = options.delete :digits
+          digits ||= 1
+
+          initial_timeout = options.delete :initial_timeout
+          initial_timeout ||= 2000
+
+          inter_digit_timeout = options.delete :inter_digit_timeout
+          inter_digit_timeout ||= 2000
+
           output_component = ::Punchblock::Component::Output.new :ssml => ssml.to_s
-          input_component = ::Punchblock::Component::Input.new :mode => :dtmf,
+          input_stopper_component = ::Punchblock::Component::Input.new :mode => :dtmf,
+            :initial_timeout => initial_timeout,
             :grammar => {
-              :value => digits == 1 ? '[1 DIGIT]' : "[#{digits} DIGITS]",
+              :value => '[1 DIGIT]',
               :content_type => 'application/grammar+voxeo'
           }
-          input_component.register_event_handler ::Punchblock::Event::Complete do |event|
+          input_stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
             Thread.new {
               output_component.stop! unless output_component.complete?
               reason = event.reason
               result = reason.interpretation if reason.respond_to? :interpretation
+              if reason.name == :noinput
+                continue = false
+              end
             }
           end
-          write_and_await_response input_component
+          write_and_await_response input_stopper_component
           execute_component_and_await_completion output_component
-          input_component.stop! unless input_component.complete?
+          input_stopper_component.stop! unless input_stopper_component.complete?
+          if digits > 1 && continue
+            input_component = ::Punchblock::Component::Input.new :mode => :dtmf,
+            :initial_timeout => inter_digit_timeout,
+            :inter_digit_timeout => inter_digit_timeout,
+              :grammar => {
+                :value => (digits - 1) == 1 ? '[1 DIGIT]' : "[#{(digits - 1)} DIGITS]",
+                :content_type => 'application/grammar+voxeo'
+            }
+            input_component.register_event_handler ::Punchblock::Event::Complete do |event|
+              reason = event.reason
+              result += reason.interpretation if reason.respond_to? :interpretation
+            end
+            execute_component_and_await_completion input_component
+            #write_and_await_response input_component
+          end
           result
         end#interruptible_play
 
@@ -216,7 +249,9 @@ module Adhearsion
         end
 
         def ssml_for_audio(argument, options = {})
-          
+          RubySpeech::SSML.draw {
+            audio :src => argument
+          }
         end
 
       end#module
