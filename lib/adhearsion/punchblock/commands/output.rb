@@ -158,8 +158,7 @@ module Adhearsion
           input_stopper_component = ::Punchblock::Component::Input.new :mode => :dtmf,
             :initial_timeout => initial_timeout,
             :grammar => {
-              :value => '[1 DIGIT]',
-              :content_type => 'application/grammar+voxeo'
+              :value => grammar_digits(1).to_s
           }
           input_stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
             Thread.new {
@@ -179,8 +178,7 @@ module Adhearsion
             :initial_timeout => inter_digit_timeout,
             :inter_digit_timeout => inter_digit_timeout,
               :grammar => {
-                :value => (digits - 1) == 1 ? '[1 DIGIT]' : "[#{(digits - 1)} DIGITS]",
-                :content_type => 'application/grammar+voxeo'
+                :value => grammar_digits(digits - 1)
             }
             input_component.register_event_handler ::Punchblock::Event::Complete do |event|
               reason = event.reason
