@@ -11,8 +11,6 @@ module Adhearsion
     attr_accessor :offer, :originating_voip_platform, :context, :connection, :end_reason, :commands
 
     def initialize(offer = nil)
-      super
-
       if offer
         @offer      = offer
         @connection = offer.connection
