@@ -238,7 +238,7 @@ module Adhearsion
         let(:response) { Exception.new }
 
         it "raises the error" do
-          lambda { subject.write_and_await_response message }.should raise_error(response)
+          lambda { subject.write_and_await_response message }.should raise_error Exception
         end
       end
     end
@@ -401,7 +401,7 @@ module Adhearsion
           end
           subject.terminate
           commands.each do |command|
-            command.response.should == Hangup.new
+            command.response.should be_a Hangup
           end
           finished_command.response.should == :foo
         end
