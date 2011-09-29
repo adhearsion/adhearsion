@@ -107,7 +107,7 @@ describe 'A mailbox definition' do
 
   it 'setting the pin_number should be reflected in the to_hash form of the definition' do
     mailbox.pin_number 555
-    mailbox.to_hash[:pin_number].should be 555
+    mailbox.to_hash[:pin_number].should == 555
   end
 
   it 'the mailbox number should be available in the mailbox_number getter' do
