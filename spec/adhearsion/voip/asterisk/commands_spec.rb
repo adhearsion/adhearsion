@@ -1540,7 +1540,7 @@ describe "The queue management abstractions" do
 
   it 'should fetch the members with the name given to queue()' do
     mock_call.should_receive(:variable).once.with("QUEUE_MEMBER_COUNT(jay)").and_return 5
-    mock_call.queue('jay').agents.size.should be 5
+    mock_call.queue('jay').agents.size.should == 5
   end
 
   it 'should not fetch a QUEUE_MEMBER_COUNT each time count() is called when caching is enabled' do
@@ -1559,7 +1559,7 @@ describe "The queue management abstractions" do
   it 'when fetching agents, it should properly split by the supported delimiters' do
     queue_name = "doesnt_matter"
     mock_call.should_receive(:get_variable).with("QUEUE_MEMBER_LIST(#{queue_name})").and_return('Agent/007,Agent/003,Zap/2')
-    mock_call.queue(queue_name).agents(:cache => true).to_a.size.should be 3
+    mock_call.queue(queue_name).agents(:cache => true).to_a.size.should == 3
   end
 
   it 'when fetching agents, each array index should be an instance of AgentProxy' do
@@ -1739,7 +1739,7 @@ describe "The queue management abstractions" do
   it 'waiting_count for a queue that does exist' do
     mock_call.should_receive(:get_variable).once.with("QUEUE_WAITING_COUNT(q)").and_return "50"
     flexmock(mock_call.queue('q')).should_receive(:exists?).once.and_return true
-    mock_call.queue('q').waiting_count.should be 50
+    mock_call.queue('q').waiting_count.should == 50
   end
 
   it 'waiting_count for a queue that does not exist' do
@@ -2061,7 +2061,7 @@ describe 'the MenuBuilder' do
       link.bar "4", "5", 6
     end
 
-    builder.weighted_match_calculators.size.should be 6
+    builder.weighted_match_calculators.size.should == 6
     builder.weighted_match_calculators.each do |match_calculator|
       match_calculator.should be_a_kind_of Adhearsion::VoIP::MatchCalculator
     end
@@ -2107,12 +2107,12 @@ describe 'the MenuBuilder' do
     end
     1.upto 9 do |num|
       builder.calculate_matches_for(num).tap do |matches_of_num|
-        matches_of_num.potential_match_count.should be 100
-        matches_of_num.exact_match_count.should be 1
+        matches_of_num.potential_match_count.should == 100
+        matches_of_num.exact_match_count.should == 1
       end
       builder.calculate_matches_for((num * 100) + 5).tap do |matches_of_num|
-        matches_of_num.potential_match_count.should be 0
-        matches_of_num.exact_match_count.should be 1
+        matches_of_num.potential_match_count.should == 0
+        matches_of_num.exact_match_count.should == 1
       end
     end
   end
@@ -2122,7 +2122,7 @@ describe 'the MenuBuilder' do
       link.nineninenine 999
       link.shouldnt_match 4444
     end
-    builder.calculate_matches_for(9).potential_match_count.should be 1
+    builder.calculate_matches_for(9).potential_match_count.should == 1
   end
 
   it "three fixnums that obviously don't conflict" do
@@ -2163,7 +2163,7 @@ describe 'the MenuBuilder' do
       link.range 100..200
     end
     matches = builder.calculate_matches_for 1
-    matches.potential_match_count.should be 100
+    matches.potential_match_count.should == 100
   end
 
 end
@@ -2338,7 +2338,7 @@ describe 'jump_to command' do
     rescue Adhearsion::VoIP::DSL::Dialplan::ControlPassingException
       # Eating this exception
     end
-    mock_call.extension.__real_num.should be 1337
+    mock_call.extension.__real_num.should == 1337
   end
 
   it 'other overrides should be simply metadef()d' do
@@ -2874,7 +2874,7 @@ describe 'the DialPlan::ConfirmationManager' do
   it '::decode_hash() should split the sound files in the :play key to an array by splitting by "++"' do
     decoded_sound_files = Adhearsion::DialPlan::ConfirmationManager.decode_hash(example_encoded_hash)[:play]
     decoded_sound_files.should be_a_kind_of Array
-    decoded_sound_files.size.should be 2
+    decoded_sound_files.size.should == 2
   end
 
   it 'a call to a party which is acknowledged with the proper key during the call to interruptible_play' do
