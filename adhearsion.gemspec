@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
   # Development dependencies
   s.add_development_dependency 'rubigen', [">= 1.5.6"]
   s.add_development_dependency 'rspec', [">= 2.4.0"]
+  s.add_development_dependency 'sqlite3', '>= 1.0.0'
   s.add_development_dependency 'flexmock'
   s.add_development_dependency 'activerecord', [">= 2.1.0"]
   s.add_development_dependency 'rake'
