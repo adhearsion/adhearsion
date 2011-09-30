@@ -107,7 +107,7 @@ describe 'A mailbox definition' do
 
   it 'setting the pin_number should be reflected in the to_hash form of the definition' do
     mailbox.pin_number 555
-    mailbox.to_hash[:pin_number].should be 555
+    mailbox.to_hash[:pin_number].should == 555
   end
 
   it 'the mailbox number should be available in the mailbox_number getter' do
@@ -265,7 +265,7 @@ describe 'An expansive example of the Voicemail config generator' do
       end
     end
     internalized = vm.to_sanitary_hash
-    internalized.size.should be 5 # general, zonemessages, default, employees, groups
+    internalized.size.should == 5 # general, zonemessages, default, employees, groups
 
     target_config = <<-CONFIG
 [general]
