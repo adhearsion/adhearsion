@@ -265,7 +265,7 @@ describe 'An expansive example of the Voicemail config generator' do
       end
     end
     internalized = vm.to_sanitary_hash
-    internalized.size.should be 5 # general, zonemessages, default, employees, groups
+    internalized.size.should == 5 # general, zonemessages, default, employees, groups
 
     target_config = <<-CONFIG
 [general]
