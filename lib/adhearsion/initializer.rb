@@ -74,7 +74,6 @@ module Adhearsion
       init_datasources
       init_components_subsystem
       init_modules
-      init_events_subsystem
       load_components
       init_events_file
 
@@ -210,23 +209,9 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       XMPP.start       if AHN_CONFIG.xmpp_enabled?
     end
 
-    def init_events_subsystem
-      application_events_files = AHN_CONFIG.files_from_setting("paths", "events")
-      if application_events_files.any?
-        Events.register_callback(:shutdown) do
-          ahn_log.events "Performing a graceful stop of events subsystem"
-          Events.framework_theatre.graceful_stop!
-        end
-        Events.framework_theatre.start!
-      else
-        ahn_log.events.warn 'No entries in the "events" section of .ahnrc. Skipping its initialization.'
-      end
-    end
-
     def init_events_file
-      application_events_files = AHN_CONFIG.files_from_setting("paths", "events")
-      application_events_files.each do |file|
-        Events.framework_theatre.load_events_file file
+      AHN_CONFIG.files_from_setting("paths", "events").each do |file|
+        require file
       end
     end
 
@@ -270,7 +255,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
 
     def initialize_exception_logger
-      Events.register_callback :exception do |e|
+      Events.register_handler :exception do |e|
         ahn_log.error "#{e.class}: #{e.message}"
         ahn_log.debug e.backtrace.join("\n\t")
       end
@@ -329,6 +314,6 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       end
     end
 
-    class InitializationFailedError < StandardError; end
+    InitializationFailedError = Class.new StandardError
   end
 end

@@ -17,7 +17,7 @@ module Adhearsion
           if defined? ActiveRecord
             # You may need to uncomment the following line for older versions of ActiveRecord
             # ActiveRecord::Base.allow_concurrency = true
-            Events.register_callback([:before_call]) do
+            Events.register_callback :before_call do
               ActiveRecord::Base.verify_active_connections!
             end
           end

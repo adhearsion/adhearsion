@@ -11,7 +11,7 @@ describe "Adhearsion::Initializer" do
   end
 
   after :each do
-    Adhearsion::Events.reinitialize_theatre!
+    Adhearsion::Events.reinitialize_queue!
   end
 
   it "initialization will start with only a path given" do
@@ -100,15 +100,12 @@ describe "Adhearsion::Initializer" do
   end
 
   it "should initialze events properly" do
-    require 'theatre'
     events_rb = Tempfile.new "events.rb"
     initializer = Adhearsion::Initializer.new("/does/not/matter")
     flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).at_least.once.with("paths", "events").
         and_return([events_rb.path])
-    flexmock(Adhearsion::Events.framework_theatre).should_receive(:load_events_file).once.with events_rb.path
-    flexmock(Adhearsion::Events.framework_theatre).should_receive(:start!).once
+    flexmock(initializer).should_receive(:require).once.with events_rb.path
 
-    initializer.send :init_events_subsystem
     initializer.send :init_events_file
   end
 
