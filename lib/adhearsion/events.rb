@@ -1,5 +1,3 @@
-require 'theatre'
-
 module Adhearsion
   module Events
 

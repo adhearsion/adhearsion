@@ -31,7 +31,6 @@ $: << File.dirname(__FILE__)
   pp
   stringio
   countdownlatch
-  theatre
   adhearsion
 }.each { |f| require f }
 
