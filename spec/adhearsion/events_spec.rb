@@ -68,5 +68,22 @@ module Adhearsion
       Events.trigger_immediately :event, EventClass.new
     end
 
+    describe '#draw' do
+      it "should allow registering handlers by type" do
+        result = nil
+        Events.draw do
+          event do
+            result = :foo
+          end
+        end
+
+        Events.trigger_immediately :event
+
+        result.should == :foo
+
+        Events.clear_handlers :event
+      end
+    end
+
   end
 end

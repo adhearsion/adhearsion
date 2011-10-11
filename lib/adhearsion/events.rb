@@ -37,6 +37,19 @@ module Adhearsion
         trigger_handler message.type, message.object
       end
 
+      def draw(&block)
+        instance_exec &block
+      end
+
+      def method_missing(method_name, *args, &block)
+        register_handler method_name, *args, &block
+      end
+
+      def respond_to?(method_name)
+        return true if @handlers && @handlers.has_key?(method_name)
+        super
+      end
+
       alias :register_callback :register_handler
     end
 
