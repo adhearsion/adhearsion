@@ -33,14 +33,24 @@ module Adhearsion
         # @see play_audio
         def play(*arguments)
           result = true
-          unless play_time(arguments)
-            arguments.flatten.each do |argument|
-              # result starts off as true.  But if the following command ever returns false, then result
-              # remains false.
-              result &= play_numeric(argument) || play_audio(argument)
+          arguments.each do |argument|
+            if argument.is_a? Hash
+              value = argument.delete(:value)
+              result = play_ssml_for(value, argument)
+            else
+              result = play_ssml_for(argument)
             end
           end
           result
+          #result = true
+          #unless play_time(arguments)
+            #arguments.flatten.each do |argument|
+              ## result starts off as true.  But if the following command ever returns false, then result
+              ## remains false.
+              #result &= play_numeric(argument) || play_audio(argument)
+            #end
+          #end
+          #result
         end
 
         # Plays the given Date, Time, or Integer (seconds since epoch)
@@ -64,20 +74,7 @@ module Adhearsion
 
           options ||= {}
           return false unless options.is_a? Hash
-
-          interpretation = case argument
-            when Date then 'date'
-            when Time then 'time'
-          end
-
-          format    = options.delete :format
-          strftime  = options.delete :strftime
-
-          time_to_say = strftime ? argument.strftime(strftime) : argument.to_s
-
-          play_ssml(RubySpeech::SSML.draw do
-            say_as(:interpret_as => interpretation, :format => format) { time_to_say }
-          end)
+          play_ssml(ssml_for_time(argument, options))
         end
 
         # Plays the given Numeric argument or string representing a decimal number.
@@ -90,9 +87,7 @@ module Adhearsion
         #
         def play_numeric(argument)
           if argument.kind_of?(Numeric) || argument =~ /^\d+$/
-            play_ssml(RubySpeech::SSML.draw do
-              say_as(:interpret_as => 'cardinal') { argument.to_s }
-            end)
+            play_ssml(ssml_for_numeric(argument))
           end
         end
 
@@ -105,7 +100,7 @@ module Adhearsion
         # @return [Boolean] true on correct play of the file, false on file missing or not playable
         #
         def play_audio(filename)
-          play_ssml RubySpeech::SSML.draw { audio :src => filename }
+          play_ssml(ssml_for_audio(filename))
         end
 
         def play_ssml(ssml, options = {})

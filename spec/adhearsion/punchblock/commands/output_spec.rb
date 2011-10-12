@@ -152,7 +152,7 @@ module Adhearsion
             let(:file) { "cents-per-minute" }
 
             it 'plays the audio file' do
-              mock_execution_environment.should_receive(:play_audio).once.with(file).and_return true
+              mock_execution_environment.should_receive(:play_ssml_for).once.with(file).and_return true
               mock_execution_environment.play(file).should be true
             end
           end
@@ -162,7 +162,7 @@ module Adhearsion
 
             it 'plays multiple files' do
               args.each do |file|
-                mock_execution_environment.should_receive(:play_audio).once.with(file).and_return true
+                mock_execution_environment.should_receive(:play_ssml_for).once.with(file).and_return true
               end
               mock_execution_environment.play(*args).should be true
             end
@@ -182,14 +182,14 @@ module Adhearsion
 
           describe "with a number" do
             it 'plays the number' do
-              mock_execution_environment.should_receive(:play_numeric).with(123).and_return(true)
+              mock_execution_environment.should_receive(:play_ssml_for).with(123).and_return(true)
               mock_execution_environment.play(123).should be true
             end
           end
 
           describe "with a string representation of a number" do
             it 'plays the number' do
-              mock_execution_environment.should_receive(:play_numeric).with('123').and_return(true)
+              mock_execution_environment.should_receive(:play_ssml_for).with('123').and_return(true)
               mock_execution_environment.play('123').should be true
             end
           end
@@ -198,7 +198,7 @@ module Adhearsion
             let(:time) { Time.parse("12/5/2000") }
 
             it 'plays the time' do
-              mock_execution_environment.should_receive(:play_time).with([time]).and_return(true)
+              mock_execution_environment.should_receive(:play_ssml_for).with(time).and_return(true)
               mock_execution_environment.play(time).should be true
             end
           end
@@ -207,7 +207,7 @@ module Adhearsion
             let(:date) { Date.parse('2011-01-23') }
 
             it 'plays the time' do
-              mock_execution_environment.should_receive(:play_time).with([date]).and_return(true)
+              mock_execution_environment.should_receive(:play_ssml_for).with(date).and_return(true)
               mock_execution_environment.play(date).should be true
             end
           end
@@ -218,8 +218,8 @@ module Adhearsion
             let(:strftime) { "%d-%m%Y" }
 
             it 'plays the time with the specified format and strftime' do
-              mock_execution_environment.should_receive(:play_time).with([date, {:format => format, :strftime => strftime}]).and_return(true)
-              mock_execution_environment.play(date, :format => format, :strftime => strftime).should be true
+              mock_execution_environment.should_receive(:play_ssml_for).with([date, {:format => format, :strftime => strftime}]).and_return(true)
+              mock_execution_environment.play({:value => date, :format => format, :strftime => strftime}).should be true
             end
           end
 
