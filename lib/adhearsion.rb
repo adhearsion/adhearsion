@@ -17,10 +17,10 @@ $: << File.expand_path(File.dirname(__FILE__))
   punchblock
   ostruct
   log4r
-  theatre
   ruby_speech
   countdownlatch
   has_guarded_handlers
+  girl_friday
 
   adhearsion/foundation/all
 }.each { |f| require f }
@@ -74,7 +74,6 @@ module Adhearsion
       ahn_log "Shutting down gracefully at #{Time.now}."
       self.status = :stopping
       Events.trigger_immediately :shutdown
-      Events.stop!
       exit
     end
 

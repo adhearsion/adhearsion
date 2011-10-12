@@ -1,62 +1,60 @@
-require 'theatre'
-
 module Adhearsion
   module Events
 
-    DEFAULT_FRAMEWORK_EVENT_NAMESPACES = %w[
-      /after_initialized
-      /shutdown
-      /exception
-      /before_call
-      /after_call
-      /asterisk/manager_interface
-    ]
+    extend HasGuardedHandlers
+
+    Message = Struct.new :type, :object
 
     class << self
 
-      def framework_theatre
-        defined?(@@framework_theatre) ? @@framework_theatre : reinitialize_theatre!
+      def queue
+        defined?(@@queue) ? @@queue : reinitialize_queue!
       end
 
-      def trigger(*args)
-        framework_theatre.trigger(*args)
+      def trigger(type, object = nil)
+        queue.push_async Message.new(type, object)
       end
 
-      def trigger_immediately(*args)
-        framework_theatre.trigger_immediately(*args)
+      def trigger_immediately(type, object = nil)
+        queue.push_immediately Message.new(type, object)
       end
 
-      def reinitialize_theatre!
-        @@framework_theatre.gracefully_stop! if defined? @@framework_theatre
-      rescue
-        # Recover and reinitalize
-      ensure
+      def reinitialize_queue!
+        GirlFriday.shutdown! if defined? @@queue
         # TODO: Extract number of threads to use from AHN_CONFIG
-        @@framework_theatre = Theatre::Theatre.new
-        DEFAULT_FRAMEWORK_EVENT_NAMESPACES.each do |namespace|
-          register_namespace_name namespace
+        @@queue = GirlFriday::WorkQueue.new 'main_queue', :error_handler => ErrorHandler do |message|
+          begin
+            handle_message message
+          rescue Exception => e
+            ErrorHandler.new.handle e
+          end
         end
-        return @@framework_theatre
       end
 
-      def register_namespace_name(name)
-        framework_theatre.register_namespace_name name
+      def handle_message(message)
+        trigger_handler message.type, message.object
       end
 
-      def stop!
-        Events.trigger :shutdown
-        framework_theatre.graceful_stop!
-        framework_theatre.join
+      def draw(&block)
+        instance_exec &block
       end
 
-      def register_callback(namespace, block_arg=nil, &method_block)
-        raise ArgumentError, "Cannot supply two blocks!" if block_arg && block_given?
-        block = method_block || block_arg
-        raise ArgumentError, "Must supply a callback!" unless block
-
-        framework_theatre.register_callback_at_namespace(namespace, block)
+      def method_missing(method_name, *args, &block)
+        register_handler method_name, *args, &block
       end
 
+      def respond_to?(method_name)
+        return true if @handlers && @handlers.has_key?(method_name)
+        super
+      end
+
+      alias :register_callback :register_handler
+    end
+
+    class ErrorHandler
+      def handle(exception)
+        Events.trigger :exception, exception
+      end
     end
 
   end

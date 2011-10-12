@@ -11,8 +11,6 @@ module Adhearsion
     attr_accessor :offer, :originating_voip_platform, :context, :connection, :end_reason, :commands
 
     def initialize(offer = nil)
-      super
-
       if offer
         @offer      = offer
         @connection = offer.connection
@@ -116,7 +114,7 @@ module Adhearsion
       @command_monitor.synchronize { yield }
     end
 
-    def write_and_await_response(command, timeout = 60.seconds)
+    def write_and_await_response(command, timeout = 60)
       commands << command
       write_command command
       response = command.response timeout

@@ -3,7 +3,7 @@ require 'spec_helper'
 module Adhearsion
   describe Dispatcher do
     before do
-      Adhearsion::Events.reinitialize_theatre!
+      Adhearsion::Events.reinitialize_queue!
     end
 
     let(:call_id)       { rand }
