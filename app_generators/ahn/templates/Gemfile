@@ -1,6 +1,6 @@
 source "http://rubygems.org"
 
-gem "adhearsion", ">= 1.2.1"
+gem "adhearsion", :git => 'git://github.com/adhearsion/adhearsion.git', :branch => :develop
 
 #
 # Here are some example components you might like to use. Simply
