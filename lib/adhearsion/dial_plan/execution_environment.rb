@@ -60,10 +60,6 @@ module Adhearsion
         call.define_variable_accessors self
       end
 
-      def ahn_log(*args)
-        @call.ahn_log *args
-      end
-
     end
   end
 end

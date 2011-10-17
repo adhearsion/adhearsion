@@ -11,7 +11,7 @@ module Adhearsion
 
     def start
       Events.register_callback(:shutdown) do
-        ahn_log.info "Shutting down dispatcher"
+        logger.info "Shutting down dispatcher"
         event_queue << STOP_EVENT
       end
 
@@ -28,13 +28,13 @@ module Adhearsion
       if event == STOP_EVENT
         throw STOP_EVENT
       elsif event.is_a?(Punchblock::Event::Offer)
-        ahn_log.dispatcher.info "Offer received for call ID #{event.call_id}"
+        logger.info "Offer received for call ID #{event.call_id}"
         IMPORTANT_THREADS << Thread.new { dispatch_offer event }
       else
         if event.respond_to?(:call_id) && event.call_id
           dispatch_call_event event
         else
-          ahn_log.dispatcher.error "Unknown event: #{event.inspect}"
+          logger.error "Unknown event: #{event.inspect}"
         end
       end
     end
@@ -47,13 +47,13 @@ module Adhearsion
 
     def dispatch_call_event(event, latch = nil)
       if call = Adhearsion.active_calls.find(event.call_id)
-        ahn_log.dispatcher.notice "Event received for call #{call.id}: #{event.inspect}"
+        logger.info "Event received for call #{call.id}: #{event.inspect}"
         Thread.new do
           call << event
           latch.countdown! if latch
         end
       else
-        ahn_log.dispatcher.error "Event received for inactive call #{event.call_id}: #{event.inspect}"
+        logger.error "Event received for inactive call #{event.call_id}: #{event.inspect}"
       end
     end
   end

@@ -18,7 +18,7 @@ module Adhearsion
 
           DRb.start_service "druby://#{config.host}:#{config.port}", drb_door
 
-          ahn_log "Starting DRb on #{config.host}:#{config.port}"
+          logger.info "Starting DRb on #{config.host}:#{config.port}"
         end
 
         def stop

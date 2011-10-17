@@ -1414,7 +1414,7 @@ describe 'the check_voicemail command' do
   include DialplanCommandTestHelpers
 
   it "should simply execute voicemail_main with no arguments after warning" do
-    flexmock(ahn_log.agi).should_receive(:warn).once.with(String)
+    flexmock(Adhearsion::Logging.get_logger(Agi)).should_receive(:warn).once.with(String)
     mock_call.should_receive(:voicemail_main).once.and_return :mocked_out
     mock_call.check_voicemail.should be :mocked_out
   end

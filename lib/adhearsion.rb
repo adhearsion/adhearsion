@@ -16,7 +16,6 @@ $: << File.expand_path(File.dirname(__FILE__))
   future-resource
   punchblock
   ostruct
-  log4r
   ruby_speech
   countdownlatch
   has_guarded_handlers
@@ -68,10 +67,10 @@ module Adhearsion
       if self.status == :stopping
         # This is the second shutdown request we've received while attempting
         # to shut down gracefully.  At this point, let's pull the plug...
-        ahn_log.warning "Shutting down immediately at #{Time.now}"
+        logger.warn "Shutting down immediately at #{Time.now}"
         exit
       end
-      ahn_log "Shutting down gracefully at #{Time.now}."
+      logger.info "Shutting down gracefully at #{Time.now}."
       self.status = :stopping
       Events.trigger_immediately :shutdown
       exit

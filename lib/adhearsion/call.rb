@@ -127,10 +127,6 @@ module Adhearsion
       connection.async_write id, command
     end
 
-    def ahn_log(*args)
-      Adhearsion::Logging::DefaultAdhearsionLogger.send Adhearsion::Logging::AdhearsionLogger.sanitized_logger_name("call_#{id}"), *args
-    end
-
     def variables
       offer.headers_hash
     end

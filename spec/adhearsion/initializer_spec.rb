@@ -6,6 +6,8 @@ describe "Adhearsion::Initializer" do
   # TODO: create a specification for aliases
 
   before :each do
+    Adhearsion::Logging.reset
+    flexmock(Adhearsion::Initializer::Logging).should_receive(:start).once.and_return('')
     Adhearsion.send(:remove_const, 'AHN_CONFIG') if Adhearsion.const_defined? 'AHN_CONFIG'
     Adhearsion::AHN_CONFIG = Adhearsion::Configuration.new
   end
@@ -99,7 +101,14 @@ describe "Adhearsion::Initializer" do
     end
   end
 
-  it "should initialze events properly" do
+  private
+    def path
+      '/any/ole/path'
+    end
+end
+
+describe "Adhearsion::Initializer" do
+  it "should initialize events properly" do
     events_rb = Tempfile.new "events.rb"
     initializer = Adhearsion::Initializer.new("/does/not/matter")
     flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).at_least.once.with("paths", "events").
@@ -108,20 +117,18 @@ describe "Adhearsion::Initializer" do
 
     initializer.send :init_events_file
   end
-
-  private
-    def path
-      '/any/ole/path'
-    end
 end
 
 describe "AHN_ROOT" do
+  
   include InitializerStubs
+
   before(:each) do
     Object.send(:remove_const, :AHN_ROOT) if defined? AHN_ROOT
   end
 
   it "initializing will create the AHN_ROOT" do
+    flexmock(Adhearsion::Initializer::Logging).should_receive(:start).once.and_return('')
     stub_behavior_for_initializer_with_no_path_changing_behavior do
       ahn = Adhearsion::Initializer.start path
       Object.constants.map(&:to_s).include?("AHN_ROOT").should be true
@@ -142,6 +149,7 @@ describe "AHN_ROOT" do
   end
 
   it "creating the AHN_ROOT will set defaults" do
+    flexmock(Adhearsion::Initializer::Logging).should_receive(:start).once.and_return('')
     stub_behavior_for_initializer_with_no_path_changing_behavior do
       flexstub(Adhearsion::Initializer).new_instances.should_receive(:load).and_return
       ahn = Adhearsion::Initializer.start path

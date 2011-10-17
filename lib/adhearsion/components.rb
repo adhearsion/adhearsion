@@ -54,7 +54,7 @@ module Adhearsion
           if File.exists? component_file
             load_file component_file
           else
-            ahn_log.warn "Component directory does not contain a matching .rb file! Was expecting #{component_file.inspect}"
+            logger.warn "Component directory does not contain a matching .rb file! Was expecting #{component_file.inspect}"
           end
         end
 
@@ -83,7 +83,7 @@ module Adhearsion
           YAML.load_file config_file
         else
           # Nothing found? Return an empty hash
-          ahn_log.warn "No configuration found for requested component #{component_name}"
+          logger.warn "No configuration found for requested component #{component_name}"
           return {}
         end
       end

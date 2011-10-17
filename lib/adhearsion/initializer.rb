@@ -9,6 +9,7 @@ module Adhearsion
     autoload :Punchblock
     autoload :Rails
     autoload :XMPP
+    autoload :Logging
 
     class << self
       def get_rules_from(location)
@@ -77,7 +78,7 @@ module Adhearsion
       load_components
       init_events_file
 
-      ahn_log "Adhearsion v#{Adhearsion::VERSION::STRING} initialized!"
+      logger.info "Adhearsion v#{Adhearsion::VERSION::STRING} initialized!"
       Adhearsion.status = :running
 
       trigger_after_initialized_hooks
@@ -207,6 +208,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       Drb.start        if AHN_CONFIG.drb_enabled?
       Rails.start      if AHN_CONFIG.rails_enabled?
       XMPP.start       if AHN_CONFIG.xmpp_enabled?
+      Logging.start
     end
 
     def init_events_file
@@ -224,7 +226,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
 
     def daemonize!
-      ahn_log "Daemonizing now! Creating #{pid_file}."
+      logger.info "Daemonizing now! Creating #{pid_file}."
       extend Adhearsion::CustomDaemonizer
       daemonize log_file
     end
@@ -256,8 +258,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
 
     def initialize_exception_logger
       Events.register_handler :exception do |e|
-        ahn_log.error "#{e.class}: #{e.message}"
-        ahn_log.debug e.backtrace.join("\n\t")
+        logger.error e
       end
     end
 
@@ -281,7 +282,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
         Components.component_manager.globalize_global_scope!
         Components.component_manager.extend_object_with(Events, :events)
       else
-        ahn_log.warn "No components directory found. Not initializing any components."
+        logger.warn "No components directory found. Not initializing any components."
       end
     end
 
@@ -307,7 +308,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
         begin
           IMPORTANT_THREADS[index].join
         rescue => e
-          ahn_log.error "Error after join()ing Thread #{Thread.inspect}. #{e.message}"
+          logger.error "Error after join()ing Thread #{Thread.inspect}. #{e.message}"
         ensure
           index = index + 1
         end

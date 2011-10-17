@@ -60,30 +60,30 @@ module Adhearsion
               # AGI has many conditions that might indicate a hangup
               raise Hangup if message.nil?
 
-              ahn_log.agi.debug "<<< #{message}"
+              logger.debug "<<< #{message}"
 
               code, rest = *message.split(' ', 2)
 
               case code.to_i
               when 510
                 # This error is non-fatal for the call
-                ahn_log.agi.warn "510: Invalid or unknown AGI command"
+                logger.warn "510: Invalid or unknown AGI command"
               when 511
                 # 511 Command Not Permitted on a dead channel
-                ahn_log.agi.debug "511: Dead channel. Raising Hangup"
+                logger.debug "511: Dead channel. Raising Hangup"
                 raise Hangup
               when 520
                 # This error is non-fatal for the call
-                ahn_log.agi.warn "520: Invalid command syntax"
+                logger.warn "520: Invalid command syntax"
               when (500..599)
                 # Assume this error is non-fatal for the call and try to keep running
-                ahn_log.agi.warn "#{code}: Unknown AGI protocol error."
+                logger.warn "#{code}: Unknown AGI protocol error."
               end
 
               # If the message starts with HANGUP it's a silly 1.6 OOB message
               case message
               when /^HANGUP/, /^HANGUP\n?$/i, /^HANGUP\s?\d{3}/i
-                ahn_log.agi.debug "AGI HANGUP. Raising hangup"
+                logger.debug "AGI HANGUP. Raising hangup"
                 raise Hangup
               end
             end
@@ -106,7 +106,7 @@ module Adhearsion
           message.squish!
           @call.with_command_lock do
             raise ArgumentError.new("illegal NUL in message #{message.inspect}") if message =~ /\0/
-            ahn_log.agi.debug ">>> #{message}"
+            logger.debug ">>> #{message}"
             write message if message
             read
           end
@@ -342,7 +342,7 @@ module Adhearsion
           if (!options.has_key?(:format))
             format = filename.slice!(/\.[^\.]+$/)
             if (format.nil?)
-              ahn_log.agi.warn "Format not specified and not detected.  Defaulting to \"gsm\""
+              logger.warn "Format not specified and not detected.  Defaulting to \"gsm\""
               format = "gsm"
             end
             format.sub!(/^\./, "")
@@ -426,7 +426,7 @@ module Adhearsion
           if (!options.has_key?(:format))
             format = filename.slice!(/\.[^\.]+$/)
             if (format.nil?)
-              ahn_log.agi.warn "Format not specified and not detected.  Defaulting to \"gsm\""
+              logger.warn "Format not specified and not detected.  Defaulting to \"gsm\""
               format = "gsm"
             end
             format.sub!(/^\./, "")
@@ -702,7 +702,7 @@ module Adhearsion
           begin
             input! *args, &block
           rescue PlaybackError => e
-            ahn_log.agi.warn { e }
+            logger.warn { e }
             retry # If sound playback fails, play the remaining sound files and wait for digits
           end
         end
@@ -739,7 +739,7 @@ module Adhearsion
           end
 
           if number_of_digits && number_of_digits < 0
-            ahn_log.agi.warn "Giving -1 to #input is now deprecated. Do not specify a first " +
+            logger.warn "Giving -1 to #input is now deprecated. Do not specify a first " +
                              "argument to allow unlimited digits." if number_of_digits == -1
             raise ArgumentError, "The number of digits must be positive!"
           end
@@ -880,7 +880,7 @@ module Adhearsion
               command = ['Swift', text]
 
               if options[:interrupt_digits]
-                ahn_log.agi.warn 'Cepstral does not support specifying interrupt digits'
+                logger.warn 'Cepstral does not support specifying interrupt digits'
                 options[:interruptible] = true
               end
               # Wait for 1ms after speaking and collect no more than 1 digit
@@ -1143,7 +1143,7 @@ module Adhearsion
         end
 
         def check_voicemail
-          ahn_log.agi.warn "THE check_voicemail() DIALPLAN METHOD WILL SOON BE DEPRECATED! CHANGE THIS TO voicemail_main() INSTEAD"
+          logger.warn "THE check_voicemail() DIALPLAN METHOD WILL SOON BE DEPRECATED! CHANGE THIS TO voicemail_main() INSTEAD"
           voicemail_main
         end
 
@@ -1250,7 +1250,7 @@ module Adhearsion
               result = interruptible_play!(file)
             rescue PlaybackError => e
               # Ignore this exception and play the next file
-              ahn_log.agi.warn e.message
+              logger.warn e.message
             ensure
               break if result
             end
@@ -1344,7 +1344,7 @@ module Adhearsion
           # Deprecated name of interruptible_play(). This is a misspelling!
           #
           def interruptable_play(*files)
-            ahn_log.deprecation.warn 'Please change your code to use interruptible_play() instead. "interruptable" is a misspelling! interruptable_play() will work for now but will be deprecated in the future!'
+            logger.warn 'Please change your code to use interruptible_play() instead. "interruptable" is a misspelling! interruptable_play() will work for now but will be deprecated in the future!'
             interruptible_play(*files)
           end
 
