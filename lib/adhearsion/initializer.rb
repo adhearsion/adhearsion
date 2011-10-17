@@ -208,7 +208,30 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       Drb.start        if AHN_CONFIG.drb_enabled?
       Rails.start      if AHN_CONFIG.rails_enabled?
       XMPP.start       if AHN_CONFIG.xmpp_enabled?
-      Logging.start
+
+      Logging.start(init_get_logging_appenders)
+    end
+
+    def init_get_logging_appenders
+      file_logger = ::Logging.appenders.file(log_file,
+                                              :layout => ::Logging.layouts.pattern(
+                                                :pattern => Adhearsion::Logging.adhearsion_pattern
+                                              )
+                                            )
+
+      if should_daemonize?
+        file_logger
+      else
+        stdout = ::Logging.appenders.stdout(
+                            'stdout',
+                            :layout => ::Logging.layouts.pattern(
+                              :pattern => Adhearsion::Logging.adhearsion_pattern,
+                              :color_scheme => 'bright'
+                            )
+                          )
+        [file_logger, stdout]
+      end
+
     end
 
     def init_events_file
@@ -246,14 +269,6 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
 
     def initialize_log_file
       Dir.mkdir(ahn_app_log_directory) unless File.directory? ahn_app_log_directory
-      file_logger = Log4r::FileOutputter.new("Main Adhearsion log file", :filename => log_file, :trunc => false)
-
-      if should_daemonize?
-        Logging::AdhearsionLogger.outputters  = file_logger
-      else
-        Logging::AdhearsionLogger.outputters << file_logger
-      end
-      Logging::DefaultAdhearsionLogger.redefine_outputters
     end
 
     def initialize_exception_logger

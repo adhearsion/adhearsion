@@ -8,6 +8,12 @@ describe Adhearsion::Initializer::Logging do
 
   it "initializes properly a Logging object" do
     
+    ::Logging.logger.root.appenders.length.should eql(1)
+    ::Logging.logger.root.appenders.select{|a| a.is_a?(::Logging::Appenders::Stdout)}.length.should eql(1)
+  end
+
+  it "initializes properly a Logging object" do
+    Adhearsion::Initializer::Logging.start([::Logging.appenders.stdout, ::Logging.appenders.file('example.log')])
     ::Logging.logger.root.appenders.length.should eql(2)
     ::Logging.logger.root.appenders.select{|a| a.is_a?(::Logging::Appenders::Stdout)}.length.should eql(1)
     ::Logging.logger.root.appenders.select{|a| a.is_a?(::Logging::Appenders::File)}.length.should eql(1)
