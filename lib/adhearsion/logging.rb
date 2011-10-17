@@ -5,6 +5,8 @@ module Adhearsion
 
     LOG_LEVELS = %w(DEBUG INFO WARN ERROR)
 
+    METHOD = :logger
+
     class << self
 
       def silence!
