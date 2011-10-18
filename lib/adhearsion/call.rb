@@ -126,6 +126,16 @@ module Adhearsion
       raise Hangup unless active? || command.is_a?(Punchblock::Command::Hangup)
       connection.async_write id, command
     end
+    
+    # Logger per instance to log the call_id
+    def logger
+      @logger ||= Adhearsion::Logging::get_logger(self.class.to_s.concat(" ").concat(logger_id))
+    end
+
+    # Sanitize the offer id
+    def logger_id
+      Adhearsion::Logging.sanitized_logger_name(id)
+    end
 
     def variables
       offer.headers_hash
