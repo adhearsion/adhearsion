@@ -70,6 +70,7 @@ module Adhearsion
       create_pid_file if pid_file
       bootstrap_rc
       initialize_log_file
+      start_logging
       initialize_exception_logger
       load_all_init_files
       init_datasources
@@ -208,8 +209,6 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       Drb.start        if AHN_CONFIG.drb_enabled?
       Rails.start      if AHN_CONFIG.rails_enabled?
       XMPP.start       if AHN_CONFIG.xmpp_enabled?
-
-      Logging.start(init_get_logging_appenders)
     end
 
     def init_get_logging_appenders
@@ -269,6 +268,10 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
 
     def initialize_log_file
       Dir.mkdir(ahn_app_log_directory) unless File.directory? ahn_app_log_directory
+    end
+
+    def start_logging
+      Logging.start init_get_logging_appenders
     end
 
     def initialize_exception_logger
