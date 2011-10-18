@@ -70,25 +70,25 @@ describe 'Logger level changing' do
   end
 
   it 'should change all the Logger instance level' do
-    Foo.logger.level.should be 1
+    Foo.logger.level.should be Adhearsion::Logging::INFO
     Adhearsion::Logging.logging_level = :fatal
-    Foo.logger.level.should be 4
+    Foo.logger.level.should be Adhearsion::Logging::FATAL
   end
 
   it 'a new logger should have the :root logging level' do
-    Foo.logger.level.should be 1
+    Foo.logger.level.should be Adhearsion::Logging::INFO
     Adhearsion::Logging.logging_level = :fatal
-    Foo::Bar.logger.level.should be 4
+    Foo::Bar.logger.level.should be Adhearsion::Logging::FATAL
   end
 
   it '#silence!() should change the level to be FATAL' do
     Adhearsion::Logging.silence!
-    Adhearsion::Logging.logging_level.should be(4)
+    Adhearsion::Logging.logging_level.should be(Adhearsion::Logging::FATAL)
   end
 
   it '#unsilence!() should change the level to be INFO' do
     Adhearsion::Logging.unsilence!
-    Adhearsion::Logging.logging_level.should be(1)
+    Adhearsion::Logging.logging_level.should be(Adhearsion::Logging::INFO)
   end
 
 end

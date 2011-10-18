@@ -3,7 +3,7 @@ require 'logging'
 module Adhearsion
   module Logging
 
-    LOG_LEVELS = %w(DEBUG INFO WARN ERROR)
+    LOG_LEVELS = %w(TRACE DEBUG INFO WARN ERROR FATAL)
 
     METHOD = :logger
 
@@ -38,9 +38,10 @@ module Adhearsion
       end
 
       def start
-        ::Logging.init 
+        ::Logging.init(%w(trace debug info warn error fatal)) 
         ::Logging.logger.root.appenders = [::Logging.appenders.stdout('stdout')]
         self.send(:_set_formatter, ::Logging::Layouts.basic({:format_as => :string, :backtrace => true}))
+        
         LOG_LEVELS.each{|level|
           Adhearsion::Logging.const_defined?(level) or Adhearsion::Logging.const_set(level, ::Logging::LEVELS[::Logging.levelify(level)])
         }
