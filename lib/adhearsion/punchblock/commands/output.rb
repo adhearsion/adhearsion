@@ -149,7 +149,7 @@ module Adhearsion
 #          inter_digit_timeout = options.delete :inter_digit_timeout
 #          inter_digit_timeout ||= 2000
 #
-#          output_component = ::Punchblock::Component::Output.new :ssml => ssml.to_s
+          output_component = ::Punchblock::Component::Output.new :ssml => ssml.to_s
 #          input_stopper_component = ::Punchblock::Component::Input.new :mode => :dtmf,
 #            :initial_timeout => initial_timeout,
 #            :grammar => {
@@ -166,7 +166,7 @@ module Adhearsion
 #            }
 #          end
 #          write_and_await_response input_stopper_component
-#          execute_component_and_await_completion output_component
+          execute_component_and_await_completion output_component
 #          input_stopper_component.stop! unless input_stopper_component.complete?
 #          if digits > 1 && continue
 #            input_component = ::Punchblock::Component::Input.new :mode => :dtmf,
