@@ -10,7 +10,11 @@ describe Adhearsion::Logging do
   it 'should be added to any Object' do
     Foo.should respond_to(:logger)
   end
-
+  
+  it 'should created the predefined set of log levels' do
+    ::Logging::LEVELS.length.should eql(Adhearsion::Logging::LOG_LEVELS.length)
+  end
+  
   it 'should be added to any Object instance' do
     Foo.new.should respond_to(:logger)
   end

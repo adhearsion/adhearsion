@@ -5,19 +5,33 @@ describe Adhearsion::Initializer::Logging do
   before(:each) do
     Adhearsion::Initializer::Logging.start
 	end
+	
+	after(:each) do
+	  Adhearsion::Logging.reset
+  end
 
-  it "initializes properly a Logging object" do
-    
+  it "initializes properly a Logging object" do    
     ::Logging.logger.root.appenders.length.should eql(1)
     ::Logging.logger.root.appenders.select{|a| a.is_a?(::Logging::Appenders::Stdout)}.length.should eql(1)
   end
 
-  it "initializes properly a Logging object" do
+  it 'should created the predefined set of log levels' do
+    ::Logging::LEVELS.length.should eql(Adhearsion::Logging::LOG_LEVELS.length)
+  end
+  
+  it "initializes properly a Logging object with appenders as parameter" do
     Adhearsion::Initializer::Logging.start([::Logging.appenders.stdout, ::Logging.appenders.file('example.log')])
     ::Logging.logger.root.appenders.length.should eql(2)
     ::Logging.logger.root.appenders.select{|a| a.is_a?(::Logging::Appenders::Stdout)}.length.should eql(1)
     ::Logging.logger.root.appenders.select{|a| a.is_a?(::Logging::Appenders::File)}.length.should eql(1)
+  end
 
+  it "initializes properly a Logging object with appenders and log level as parameter" do
+    Adhearsion::Initializer::Logging.start([::Logging.appenders.stdout, ::Logging.appenders.file('example.log')], :debug)
+    ::Logging.logger.root.appenders.length.should eql(2)
+    ::Logging.logger.root.appenders.select{|a| a.is_a?(::Logging::Appenders::Stdout)}.length.should eql(1)
+    ::Logging.logger.root.appenders.select{|a| a.is_a?(::Logging::Appenders::File)}.length.should eql(1)
+    ::Logging.logger.root.level.should eql(::Logging::LEVELS["debug"])
   end
 
   it "should create only a Logging object per Class (reuse per all the instances)" do

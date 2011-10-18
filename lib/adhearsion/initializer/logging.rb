@@ -6,7 +6,7 @@ module Adhearsion
       class << self
 
         def start(_appenders = nil, level = :info)
-          ::Logging.init(%w(trace debug info warn error fatal)) 
+          ::Logging.init(Adhearsion::Logging::LOG_LEVELS) 
           
           ::Logging.logger.root.appenders = _appenders.nil? ? appenders : _appenders
 
