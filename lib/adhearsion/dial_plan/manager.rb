@@ -18,7 +18,7 @@ module Adhearsion
 
       def handle(call)
         Events.trigger_immediately [:before_call], call
-        logger.info "Handling call with ID #{call.id}"
+        call.logger.info "Handling call with ID #{call.id}"
 
         starting_entry_point = entry_point_for call
         raise NoContextError, "No dialplan entry point for call context '#{call.context}' -- Ignoring call!" unless starting_entry_point
@@ -26,10 +26,10 @@ module Adhearsion
         inject_context_names_into_environment @context
         @context.run
       rescue Hangup
-        logger.info "Hangup event for call with id #{call.id}"
+        call.logger.info "Hangup event for call with id #{call.id}"
         Events.trigger_immediately [:after_call], call
       rescue NoContextError => e
-        logger.error e
+        call.logger.error e
         raise e
       rescue SyntaxError, StandardError => e
         Events.trigger ['exception'], e

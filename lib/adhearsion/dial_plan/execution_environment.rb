@@ -43,6 +43,10 @@ module Adhearsion
         call.variables
       end
 
+      def logger
+        call.logger
+      end
+
       protected
 
       attr_reader :entry_point
