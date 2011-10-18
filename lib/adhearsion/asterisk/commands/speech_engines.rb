@@ -12,7 +12,7 @@ module Adhearsion
             command = ['Swift', text]
 
             if options[:interrupt_digits]
-              ahn_log.agi.warn 'Cepstral does not support specifying interrupt digits'
+              logger.warn 'Cepstral does not support specifying interrupt digits'
               options[:interruptible] = true
             end
             # Wait for 1ms after speaking and collect no more than 1 digit

@@ -29,7 +29,7 @@ describe "The Adhearsion VoIP dialplan parser" do
 
   it "should warn when no dialplan paths were in the .ahnrc file" do
     flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return []
-    flexmock(ahn_log.dialplan).should_receive(:warn).once.with(String)
+    flexmock(Adhearsion::Logging.get_logger(Adhearsion::DSL::Dialplan::DialplanParser)).should_receive(:warn).once.with(String)
 
     # Not loading it here is the same as it not existing in the "paths" sub-Hash
     Adhearsion::DSL::Dialplan::DialplanParser.get_contexts

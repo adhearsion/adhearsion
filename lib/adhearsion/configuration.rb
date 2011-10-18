@@ -67,9 +67,9 @@ module Adhearsion
 
     def logging(options)
       Adhearsion::Logging.logging_level = options[:level] if options.has_key? :level
-      Adhearsion::Logging::AdhearsionLogger.outputters = Array(options[:outputters]) if options.has_key? :outputters
-      Adhearsion::Logging::AdhearsionLogger.formatters = Array(options[:formatters]) if options.has_key? :formatters
-      Adhearsion::Logging::AdhearsionLogger.formatters = Array(options[:formatter]) * Adhearsion::Logging::AdhearsionLogger.outputters.count if options.has_key? :formatter
+      Adhearsion::Logging.outputters = Array(options[:outputters]) if options.has_key? :outputters
+      Adhearsion::Logging.formatter = options[:formatter] if options.has_key? :formatter
+      #Adhearsion::Logging::AdhearsionLogger.formatters = Array(options[:formatter]) * Adhearsion::Logging::AdhearsionLogger.outputters.count if options.has_key? :formatter
     end
 
     def add_component(*list)
@@ -203,7 +203,7 @@ module Adhearsion
       attr_accessor :connection_options
 
       def initialize(options = {})
-        @connection_options = {:username => 'usera@127.0.0.1', :password => '1', :wire_logger => ahn_log.punchblock.wire, :transport_logger => ahn_log.punchblock, :auto_reconnect => true}.merge options
+        @connection_options = {:username => 'usera@127.0.0.1', :password => '1', :wire_logger => Adhearsion::Logging.get_logger(::Adhearsion::Punchblock), :transport_logger => Adhearsion::Logging.get_logger(::Adhearsion::Punchblock), :auto_reconnect => true}.merge options
       end
     end
     add_configuration_for :Punchblock

@@ -29,7 +29,7 @@ module Adhearsion
             require 'blather/client/client'
             require 'blather/client/dsl'
           rescue LoadError
-            ahn_log.fatal "XMPP support requires the \"blather\" gem."
+            logger.fatal "XMPP support requires the \"blather\" gem."
             # Silence the abort so we don't get an ugly backtrace
             abort ""
           end

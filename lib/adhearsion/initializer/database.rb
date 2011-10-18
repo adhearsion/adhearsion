@@ -17,7 +17,7 @@ module Adhearsion
           ActiveRecord::Base.logger =
             @@config.connection_options.has_key?(:logger) ?
               @@config.connection_options[:logger] :
-              ahn_log.db
+              logger
           create_call_hook_for_connection_cleanup
         end
 
@@ -37,7 +37,7 @@ module Adhearsion
           begin
             require 'active_record'
           rescue LoadError
-            ahn_log.fatal "Database support requires the \"activerecord\" gem."
+            logger.fatal "Database support requires the \"activerecord\" gem."
             # Silence the abort so we don't get an ugly backtrace
             abort ""
           end
