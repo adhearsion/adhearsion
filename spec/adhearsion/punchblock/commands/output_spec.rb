@@ -218,7 +218,7 @@ module Adhearsion
             let(:strftime) { "%d-%m%Y" }
 
             it 'plays the time with the specified format and strftime' do
-              mock_execution_environment.should_receive(:play_ssml_for).with([date, {:format => format, :strftime => strftime}]).and_return(true)
+              mock_execution_environment.should_receive(:play_ssml_for).with(date, {:format => format, :strftime => strftime}).and_return(true)
               mock_execution_environment.play({:value => date, :format => format, :strftime => strftime}).should be true
             end
           end
@@ -257,7 +257,9 @@ module Adhearsion
             })
           }
           it "accepts SSML to play as a prompt" do
-            mock_execution_environment.should_receive(:interruptible_play).once.with(ssml)
+            output_component = ::Punchblock::Component::Output.new :ssml => ssml.to_s
+            mock_execution_environment.should_receive(:play)
+            mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(output_component)
             mock_execution_environment.interruptible_play(ssml).should be nil
           end
 

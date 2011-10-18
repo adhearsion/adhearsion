@@ -137,52 +137,52 @@ module Adhearsion
         # @return [String|Nil] The single DTMF character entered by the user, or nil if nothing was entered
         #
         def interruptible_play(ssml, options = {})
-          result = nil
-          continue = true
-
-          digits = options.delete :digits
-          digits ||= 1
-
-          initial_timeout = options.delete :initial_timeout
-          initial_timeout ||= 2000
-
-          inter_digit_timeout = options.delete :inter_digit_timeout
-          inter_digit_timeout ||= 2000
-
-          output_component = ::Punchblock::Component::Output.new :ssml => ssml.to_s
-          input_stopper_component = ::Punchblock::Component::Input.new :mode => :dtmf,
-            :initial_timeout => initial_timeout,
-            :grammar => {
-              :value => grammar_digits(1).to_s
-          }
-          input_stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
-            Thread.new {
-              output_component.stop! unless output_component.complete?
-              reason = event.reason
-              result = reason.interpretation if reason.respond_to? :interpretation
-              if reason.name == :noinput
-                continue = false
-              end
-            }
-          end
-          write_and_await_response input_stopper_component
-          execute_component_and_await_completion output_component
-          input_stopper_component.stop! unless input_stopper_component.complete?
-          if digits > 1 && continue
-            input_component = ::Punchblock::Component::Input.new :mode => :dtmf,
-            :initial_timeout => inter_digit_timeout,
-            :inter_digit_timeout => inter_digit_timeout,
-              :grammar => {
-                :value => grammar_digits(digits - 1)
-            }
-            input_component.register_event_handler ::Punchblock::Event::Complete do |event|
-              reason = event.reason
-              result += reason.interpretation if reason.respond_to? :interpretation
-            end
-            execute_component_and_await_completion input_component
-            #write_and_await_response input_component
-          end
-          result
+#          result = nil
+#          continue = true
+#
+#          digits = options.delete :digits
+#          digits ||= 1
+#
+#          initial_timeout = options.delete :initial_timeout
+#          initial_timeout ||= 2000
+#
+#          inter_digit_timeout = options.delete :inter_digit_timeout
+#          inter_digit_timeout ||= 2000
+#
+#          output_component = ::Punchblock::Component::Output.new :ssml => ssml.to_s
+#          input_stopper_component = ::Punchblock::Component::Input.new :mode => :dtmf,
+#            :initial_timeout => initial_timeout,
+#            :grammar => {
+#              :value => grammar_digits(1).to_s
+#          }
+#          input_stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
+#            Thread.new {
+#              output_component.stop! unless output_component.complete?
+#              reason = event.reason
+#              result = reason.interpretation if reason.respond_to? :interpretation
+#              if reason.name == :noinput
+#                continue = false
+#              end
+#            }
+#          end
+#          write_and_await_response input_stopper_component
+#          execute_component_and_await_completion output_component
+#          input_stopper_component.stop! unless input_stopper_component.complete?
+#          if digits > 1 && continue
+#            input_component = ::Punchblock::Component::Input.new :mode => :dtmf,
+#            :initial_timeout => inter_digit_timeout,
+#            :inter_digit_timeout => inter_digit_timeout,
+#              :grammar => {
+#                :value => grammar_digits(digits - 1)
+#            }
+#            input_component.register_event_handler ::Punchblock::Event::Complete do |event|
+#              reason = event.reason
+#              result += reason.interpretation if reason.respond_to? :interpretation
+#            end
+#            execute_component_and_await_completion input_component
+#            #write_and_await_response input_component
+#          end
+#          result
         end#interruptible_play
 
         def detect_type(output)
