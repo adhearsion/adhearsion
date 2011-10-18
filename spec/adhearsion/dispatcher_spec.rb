@@ -53,7 +53,7 @@ module Adhearsion
         end
 
         it "should log an error" do
-          flexmock(ahn_log.dispatcher).should_receive(:notice).once.with("Event received for call #{call_id}: #{mock_event.inspect}")
+          flexmock(Adhearsion::Logging.get_logger(Dispatcher)).should_receive(:info).once.with("Event received for call #{call_id}: #{mock_event.inspect}")
           subject.dispatch_call_event mock_event
         end
 
@@ -68,7 +68,7 @@ module Adhearsion
         let(:mock_event) { flexmock 'Event', :call_id => call_id }
 
         it "should log an error" do
-          flexmock(ahn_log.dispatcher).should_receive(:error).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
+          flexmock(Adhearsion::Logging.get_logger(Dispatcher)).should_receive(:error).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
           subject.dispatch_call_event mock_event
         end
       end

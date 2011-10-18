@@ -12,7 +12,7 @@ initialization do
 
   subscriptions = COMPONENTS.stomp_gateway["subscriptions"]
 
-  ahn_log.stomp_gateway "Connection established. Subscriptions: #{subscriptions.inspect}"
+  logger.info "Connection established. Subscriptions: #{subscriptions.inspect}"
 
   Events.register_namespace_name "/stomp"
 

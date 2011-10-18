@@ -14,7 +14,7 @@ module Adhearsion
           envelope = ContextsEnvelope.new
 
           dialplans = AHN_CONFIG.files_from_setting "paths", "dialplan"
-          ahn_log.dialplan.warn "No dialplan files were found!" if dialplans.empty?
+          logger.warn "No dialplan files were found!" if dialplans.empty?
 
           {}.tap do |contexts|
             dialplans.each do |file|

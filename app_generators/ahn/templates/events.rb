@@ -6,14 +6,14 @@ Adhearsion::Events.draw do
   # before_call do |call|
   #   # This simply logs the extension for all calls going through this Adhearsion app.
   #   extension = call.variables[:extension]
-  #   ahn_log "Got a new call with extension #{extension}"
+  #   logger.info "Got a new call with extension #{extension}"
   # end
   #
   ##
   # Asterisk Manager Interface example:
   #
   # asterisk_manager_interface do |event|
-  #   ahn_log.events event.inspect
+  #   logger.info event.inspect
   # end
   #
   # This assumes you gave :events => true to the config.asterisk.enable_ami method in config/startup.rb

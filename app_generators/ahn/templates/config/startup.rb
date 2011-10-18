@@ -60,7 +60,7 @@ Adhearsion::Configuration.configure do |config|
   # config.enable_ldap :host => 'ldap.dataspill.org',
   #                    :port => 389,
   #                    :base => 'dc=dataspill,dc=org',
-  #                    :logger => ahn_log.ldap,
+  #                    :logger => logger,
   #                    :bind_dn => "uid=drewry,ou=People,dc=dataspill,dc=org",
   #                    :password => 'password12345',
   #                    :allow_anonymous => false,

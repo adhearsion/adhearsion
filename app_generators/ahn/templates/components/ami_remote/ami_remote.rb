@@ -7,7 +7,7 @@ methods_for :rpc do
       if Asterisk.manager_interface
         Asterisk.manager_interface.send(method_name, *args)
       else
-        ahn_log.ami_remote.error "AMI has not been enabled in startup.rb!"
+        logger.error "AMI has not been enabled in startup.rb!"
       end
     end
   end

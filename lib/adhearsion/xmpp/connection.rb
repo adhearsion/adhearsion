@@ -12,7 +12,7 @@ module Adhearsion
         # @param [String] server
         # @param [Integer] port
         def start(jid, password, server, port)
-          Blather.logger = ahn_log.xmpp
+          Blather.logger = logger
           setup_client_object(jid, password, server, port)
           register_event_namespaces
           register_default_client_handlers
@@ -42,12 +42,12 @@ module Adhearsion
 
         def register_default_client_handlers
           client.register_handler(:ready) do
-            ahn_log.xmpp.info "Connected to XMPP server! Send messages to #{client.jid.stripped}."
+            logger.info "Connected to XMPP server! Send messages to #{client.jid.stripped}."
           end
 
           client.register_handler(:disconnected) do
             if Adhearsion.status == :running
-              ahn_log.xmpp.warning "XMPP Disconnected. Reconnecting."
+              logger.warn "XMPP Disconnected. Reconnecting."
               connect
             end
             # TODO: fix this to reconnect XMPP cleanly
