@@ -67,8 +67,26 @@ module Adhearsion
         end
       end
 
+      # method to be implemented by subclasses
       def init
         logger.warn "#{self.name} should overwrite the init method"
+      end
+
+      def count
+        subclasses.length
+      end
+
+      def add(klass)
+        klass.ancestors.include?(self) and subclasses << klass
+      end
+
+      def delete(plugin_name)
+        plugin_name.ancestors.include?(self) and plugin_name = plugin_name.plugin_name
+        subclasses.delete_if{ |plugin| plugin.plugin_name.eql?(plugin_name)}
+      end
+
+      def delete_all
+        self.subclasses = nil
       end
 
       private

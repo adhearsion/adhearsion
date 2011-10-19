@@ -26,6 +26,8 @@ end
   adhearsion
 }.each { |f| require f }
 
+Bundler.require(:default, :test) if defined?(Bundler)
+
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |f| require f }
 
 RSpec.configure do |config|
@@ -39,8 +41,6 @@ end
 Adhearsion::Initializer.ahn_root = File.dirname(__FILE__) + '/fixtures'
 Adhearsion::Logging.silence!
 
-class Foo
-end
+Foo = Class.new
 
-class Foo::Bar
-end
+Bar = Class.new Foo
