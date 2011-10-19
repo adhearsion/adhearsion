@@ -1,8 +1,9 @@
 require 'spec_helper'
 
+include InitializerStubs
+
 # If you have a Gemfile, require the gems listed there, including any gems
 # This is done by config/environment.rb in a real app
-
 
 describe Adhearsion::Plugin do
 
@@ -129,6 +130,16 @@ end
 
 describe "Initializing Adhearsion" do
   it "should load the new dial plans" do
-    
+    flexmock(Adhearsion::Initializer::Logging).should_receive(:start).once.and_return('')
+    flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
+    flexmock(::Logging::Appenders).should_receive(:file).and_return(nil)
+
+    #say_hello = AhnPluginDemo::SayText.new("value")
+    #flexmock(say_hello).should_receive(:start).once.and_return(true)
+    #flexmock(AhnPluginDemo).should_receive(:create_say_text).once.and_return(say_hello)
+
+    stub_behavior_for_initializer_with_no_path_changing_behavior do
+      ahn = Adhearsion::Initializer.start "/path"
+    end
   end
 end

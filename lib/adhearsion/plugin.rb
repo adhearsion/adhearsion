@@ -30,6 +30,7 @@ module Adhearsion
   class Plugin
 
     autoload :Configuration, 'adhearsion/plugin/configuration'
+    autoload :ExecutionEnvironment, 'adhearsion/plugin/execution_environment'
 
     class << self
 
@@ -61,6 +62,8 @@ module Adhearsion
       def load(klass = self)
         klass.subclasses.each do |plugin|
           logger.debug "Initialing plugin #{plugin.plugin_name}"
+          
+          plugin.extend(ExecutionEnvironment)
           plugin.init
           # load plugin childs
           load(plugin)
