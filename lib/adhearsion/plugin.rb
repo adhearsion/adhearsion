@@ -58,10 +58,30 @@ module Adhearsion
         @config ||= Configuration.new
       end
 
+      def load(klass = self)
+        klass.subclasses.each do |plugin|
+          logger.debug "Initialing plugin #{plugin.plugin_name}"
+          plugin.init
+          # load plugin childs
+          load(plugin)
+        end
+      end
+
+      def init
+        logger.warn "#{self.name} should overwrite the init method"
+      end
+
+      private
+
+      def subclasses=(value)
+        @subclasses = value
+      end
+
     end
 
-    delegate :plugin_name, :to => "self.class"
-    delegate :plugin_name=, :to => "self.class"
+    [:plugin_name, :plugin_name=].each do |method|
+      delegate method, :to => "self.class"
+    end
 
   end
 

@@ -1,6 +1,11 @@
 require 'spec_helper'
 
 describe Adhearsion::Plugin do
+
+  before(:each) do
+    Adhearsion::Plugin.send(:subclasses=, nil)
+  end
+
   after(:each) do
     defined?(FooBar) and Object.send(:remove_const, :"FooBar")
   end
@@ -62,4 +67,24 @@ describe Adhearsion::Plugin do
     FooBar.config.foo.should eql("bar")
     FooBar.config.length.should eql(1)
   end
+
+  it "should initialize all Plugin childs" do
+    FooBar = Class.new Adhearsion::Plugin
+
+    flexmock(FooBar).should_receive(:init).once
+    Adhearsion::Plugin.load
+  end
+
+  it "should initialize all Plugin childs, including deep childs" do
+    FooBar = Class.new Adhearsion::Plugin
+    FooBarBaz = Class.new FooBar
+    FooBarBazz = Class.new FooBarBaz
+
+    flexmock(FooBar).should_receive(:init).once
+    flexmock(FooBarBaz).should_receive(:init).once
+    flexmock(FooBarBazz).should_receive(:init).once
+
+    Adhearsion::Plugin.load
+  end
+
 end

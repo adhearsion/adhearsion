@@ -79,6 +79,8 @@ module Adhearsion
       load_components
       init_events_file
 
+      Plugin.load
+
       logger.info "Adhearsion v#{Adhearsion::VERSION::STRING} initialized!"
       Adhearsion.status = :running
 
