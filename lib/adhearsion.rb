@@ -7,8 +7,9 @@ STDERR.puts "NOTICE: As of v3.0.0, Adhearsion will be dropping support for any R
 
 $: << File.expand_path(File.dirname(__FILE__))
 
+RUBY_VERSION < "1.9" and require 'rubygems'
+
 %w{
-  rubygems
   bundler/setup
 
   active_support/all
