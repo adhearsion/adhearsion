@@ -44,6 +44,7 @@ module Adhearsion
   autoload :Initializer
   autoload :Logging
   autoload :OutboundCall
+  autoload :Plugin
   autoload :Punchblock
   autoload :Version
 
