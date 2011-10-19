@@ -14,21 +14,13 @@ unless ENV['SKIP_RCOV']
   end
 end
 
-Dir.chdir File.join(File.dirname(__FILE__), '..')
-$:.push('.')
-$: << File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
-$: << File.expand_path('lib')
-$: << File.dirname(__FILE__)
-
 %w{
   rubygems
-  rspec/core
   bundler/setup
   flexmock
   flexmock/rspec
   active_support
   rubigen
-  pp
   stringio
   countdownlatch
   adhearsion
