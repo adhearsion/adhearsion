@@ -78,8 +78,7 @@ module Adhearsion
       init_modules
       load_components
       init_events_file
-
-      Plugin.load
+      init_plugins
 
       logger.info "Adhearsion v#{Adhearsion::VERSION::STRING} initialized!"
       Adhearsion.status = :running
@@ -239,6 +238,10 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       AHN_CONFIG.files_from_setting("paths", "events").each do |file|
         require file
       end
+    end
+
+    def init_plugins
+      Plugin.load
     end
 
     def should_daemonize?
