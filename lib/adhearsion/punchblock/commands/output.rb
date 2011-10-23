@@ -160,7 +160,6 @@ module Adhearsion
 #              output_component.stop! unless output_component.complete?
               reason = event.reason
               result = reason.interpretation if reason.respond_to? :interpretation
-              result = '4'
 #              if reason.name == :noinput
 #                continue = false
 #              end

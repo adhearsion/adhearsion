@@ -1,5 +1,19 @@
 require 'spec_helper'
 
+module Punchblock
+  module Component
+    class Input
+      def register_event_handler(method, &block)
+        @input_handler = block 
+      end
+ 
+      def execute_handler
+        @input_handler.call(Punchblock::Event::Complete.new).join
+      end
+    end
+  end
+end
+
 module Adhearsion
   module Punchblock
     module Commands
@@ -260,25 +274,12 @@ module Adhearsion
             })
           }
 
-          it "accepts SSML to play as a prompt" do
-            mock_execution_environment.should_receive(:play)
-            mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(output_component)
-            mock_execution_environment.interruptible_play(ssml).should be nil
-          end
-
           it "allows dtmf input to interrupt the playout and returns the value" do
-            #reason = (Class.new do def interpretation
-            #            '4'
-            #          end
-            #          end).new
             flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => '4'))
-            mock_execution_environment.should_receive(:play)
-            #mock_call = flexmock('mock_call')
-            #mock_call.should_receive(:write_and_await_response).once.with(component)
-            #mock_execution_environment.should_receive(:call).once.returns(mock_call)
-            mock_execution_environment.should_receive(:write_and_await_response).once.returns(nil)
+            def mock_execution_environment.write_and_await_response(input_component)
+              input_component.execute_handler
+            end
             mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(output_component)
-p mock_execution_environment
             mock_execution_environment.interruptible_play(ssml).should == '4'
           end
 
