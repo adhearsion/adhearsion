@@ -99,33 +99,90 @@ describe Adhearsion::Plugin do
 end
 
 describe "Adhearsion::Plugin.load" do
-
+  
   before(:each) do
     Adhearsion::Plugin.send(:subclasses=, nil)
+  end
+
+  let(:o) do
+    o = Object.new
+    o.class.send(:define_method, :load_code) do |code|
+    end
+  end
+
+  let(:dialplan_module) do
+    Module.new
   end
 
   after(:each) do
     defined?(FooBar) and Object.send(:remove_const, :"FooBar")
   end
 
-  it "should initialize all Plugin childs" do
-    FooBar = Class.new Adhearsion::Plugin
+  describe "Plugin subclass with no dialplan_methods definition" do
 
-    flexmock(FooBar).should_receive(:init).once
-    Adhearsion::Plugin.load
+    it "should initialize all Plugin childs" do
+      FooBar = Class.new Adhearsion::Plugin
+      flexmock(FooBar).should_receive(:init).once
+      flexmock(Adhearsion::Components).should_receive(:component_manager).once.and_return(o)
+      Adhearsion::Plugin.load
+    end
+
+    it "should initialize all Plugin childs, including deep childs" do
+      FooBar = Class.new Adhearsion::Plugin
+      FooBarBaz = Class.new FooBar
+      FooBarBazz = Class.new FooBarBaz
+
+      flexmock(FooBar).should_receive(:init).once
+      flexmock(FooBarBaz).should_receive(:init).once
+      flexmock(FooBarBazz).should_receive(:init).once
+      flexmock(Adhearsion::Components).should_receive(:component_manager).times(3).and_return(o)
+      Adhearsion::Plugin.load
+    end
   end
+  
+  describe "Plugin subclass with dialplan_methods definition" do
+    it "should not add any method if dialplan_methods is empty" do
+      FooBar = Class.new Adhearsion::Plugin do
+        def self.dialplan_methods
+          []
+        end
+      end
+      
+      flexmock(FooBar).should_receive(:init).once
+      flexmock(Adhearsion::Components).should_receive(:component_manager).once.and_return(o)
+      Adhearsion::Plugin.load
+    end
 
-  it "should initialize all Plugin childs, including deep childs" do
-    FooBar = Class.new Adhearsion::Plugin
-    FooBarBaz = Class.new FooBar
-    FooBarBazz = Class.new FooBarBaz
+    it "should add a method if dialplan_methods returns an array with one element" do
+      FooBar = Class.new Adhearsion::Plugin do
+        def self.dialplan_methods
+          [:hello]
+        end
+        def self.hello
+        end
+      end
+      
+      flexmock(FooBar).should_receive(:init).once
+      flexmock(Adhearsion::Components).should_receive(:component_manager).twice.and_return(o)
+      Adhearsion::Plugin.load
+    end
 
-    flexmock(FooBar).should_receive(:init).once
-    flexmock(FooBarBaz).should_receive(:init).once
-    flexmock(FooBarBazz).should_receive(:init).once
-
-    Adhearsion::Plugin.load
+    it "should add a method if dialplan_methods returns an array with ten elements" do
+      FooBar = Class.new Adhearsion::Plugin do
+        def self.dialplan_methods
+          [:hello]*10
+        end
+        def self.hello
+        end
+      end
+      
+      flexmock(FooBar).should_receive(:init).once
+      flexmock(Adhearsion::Components).should_receive(:component_manager).times(2).and_return(o)
+      Adhearsion::Plugin.load
+    end
   end
+  
+  
 end
 
 describe "Initializing Adhearsion" do

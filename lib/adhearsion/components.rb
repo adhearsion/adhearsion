@@ -148,7 +148,12 @@ module Adhearsion
         class << self
           def load_code(code)
             new.tap do |instance|
-              instance.module_eval code
+              case code.class.name
+              when "Proc"
+                instance.instance_exec &code
+              else
+                instance.module_eval code
+              end
             end
           end
 
@@ -199,7 +204,7 @@ module Adhearsion
           raise ArgumentError if scopes.empty?
 
           ComponentManager.scopes_valid? scopes
-
+            
           metadata = metaclass.send(:instance_variable_get, :@metadata)
           scopes.each { |scope| metadata[:scopes][scope] << block }
         end
