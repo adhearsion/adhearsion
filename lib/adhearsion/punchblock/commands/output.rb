@@ -160,9 +160,9 @@ module Adhearsion
 #              output_component.stop! unless output_component.complete?
               reason = event.reason
               result = reason.interpretation if reason.respond_to? :interpretation
-#              if reason.name == :noinput
-#                continue = false
-#              end
+              if reason.name == :noinput
+                continue = false
+              end
             }
           end
           write_and_await_response input_stopper_component
@@ -176,11 +176,9 @@ module Adhearsion
                 :value => grammar_digits(digits - 1)
             }
             input_component.register_event_handler ::Punchblock::Event::Complete do |event|
-              p 'in second block'
               reason = event.reason
               result += reason.interpretation if reason.respond_to? :interpretation
             end
-            p 'before last execute'
             execute_component_and_await_completion input_component
 #            #write_and_await_response input_component
           end

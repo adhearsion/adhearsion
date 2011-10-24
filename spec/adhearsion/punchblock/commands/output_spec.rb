@@ -284,7 +284,7 @@ module Adhearsion
           }
 
           it "allows dtmf input to interrupt the playout and returns the value" do
-            flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => '4'))
+            flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => '4', :name => :input))
             def mock_execution_environment.write_and_await_response(input_component)
               input_component.execute_handler
             end
@@ -293,7 +293,7 @@ module Adhearsion
           end
 
           it "allows dtmf input to interrupt the playout and return a multi digit value" do
-            flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => '4')).once.ordered
+            flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => '4', :name => :input))
             def mock_execution_environment.write_and_await_response(input_component)
               input_component.execute_handler
             end
@@ -301,6 +301,15 @@ module Adhearsion
               component.execute_handler if component.respond_to? :execute_handler 
             end
             mock_execution_environment.interruptible_play(ssml, :digits => 2).should == '44'
+          end
+
+          it "should not pause to try to read more digits if no input is received" do
+            flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:name => :noinput))
+            def mock_execution_environment.write_and_await_response(input_component)
+              input_component.execute_handler
+            end
+            mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(output_component)
+            mock_execution_environment.interruptible_play(ssml, :digits => 2).should == nil
           end
 
           it "sends the correct input command" do
