@@ -8,7 +8,8 @@ module Punchblock
       end
  
       def execute_handler
-        @input_handler.call(Punchblock::Event::Complete.new).join
+        possible_thread = @input_handler.call(Punchblock::Event::Complete.new)
+        possible_thread.join if possible_thread.respond_to? :join
       end
     end
   end
@@ -273,6 +274,14 @@ module Adhearsion
                :grammar => {:value => '[1 DIGIT]', :content_type => 'application/grammar+voxeo'}
             })
           }
+          let(:input_component) {
+            Punchblock::Component::Input.new(
+              {:mode => :dtmf,
+               :initial_timeout => 2000,
+               :inter_digit_timeout => 2000,
+               :grammar => {:value => '[1 DIGIT]'}
+            })
+          }
 
           it "allows dtmf input to interrupt the playout and returns the value" do
             flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => '4'))
@@ -281,6 +290,17 @@ module Adhearsion
             end
             mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(output_component)
             mock_execution_environment.interruptible_play(ssml).should == '4'
+          end
+
+          it "allows dtmf input to interrupt the playout and return a multi digit value" do
+            flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => '4')).once.ordered
+            def mock_execution_environment.write_and_await_response(input_component)
+              input_component.execute_handler
+            end
+            def mock_execution_environment.execute_component_and_await_completion(component)
+              component.execute_handler if component.respond_to? :execute_handler 
+            end
+            mock_execution_environment.interruptible_play(ssml, :digits => 2).should == '44'
           end
 
           it "sends the correct input command" do
