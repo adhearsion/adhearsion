@@ -7,4 +7,6 @@ gem "adhearsion", :git => 'git://github.com/adhearsion/adhearsion.git', :branch 
 # uncomment them, run `bundle install` and enable in startup.rb.
 #
 
-# gem 'ahn-restful-rpc'
+group :components do
+  # gem 'ahn-restful-rpc'
+end
