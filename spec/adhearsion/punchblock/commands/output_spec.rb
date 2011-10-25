@@ -288,12 +288,19 @@ module Adhearsion
             def mock_execution_environment.write_and_await_response(input_component)
               input_component.execute_handler
             end
+            flexmock(Punchblock::Component::Input).new_instances do |input|
+              input.should_receive(:complete?).and_return(false)
+              input.should_receive(:stop!).once.and_return('')
+            end
+            flexmock(Punchblock::Component::Output).new_instances.should_receive(:stop!)
             mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(output_component)
             mock_execution_environment.interruptible_play(ssml).should == '4'
           end
 
           it "allows dtmf input to interrupt the playout and return a multi digit value" do
             flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => '4', :name => :input))
+            flexmock(Punchblock::Component::Input).new_instances.should_receive(:complete?).returns(true)
+            flexmock(Punchblock::Component::Output).new_instances.should_receive(:stop!)
             def mock_execution_environment.write_and_await_response(input_component)
               input_component.execute_handler
             end
@@ -303,20 +310,34 @@ module Adhearsion
             mock_execution_environment.interruptible_play(ssml, :digits => 2).should == '44'
           end
 
+          it "applies initial_timeout and inter_digit_timeout to interrupt the playout and return a multi digit value to input component" do
+            flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => '4', :name => :input))
+            flexmock(Punchblock::Component::Input).should_receive(:new).once.with(:mode => :dtmf,
+            :initial_timeout => 66,
+            :grammar => {
+              :value => mock_execution_environment.grammar_digits(1).to_s}).returns(flexmock(:register_event_handler => '',
+                                                                                             :complete? => true))
+            flexmock(Punchblock::Component::Input).should_receive(:new).once.with(:mode => :dtmf,
+            :initial_timeout => 55,
+            :inter_digit_timeout => 55,
+            :grammar => {
+              :value => mock_execution_environment.grammar_digits(1).to_s}).returns(flexmock(:register_event_handler => ''))
+            mock_execution_environment.should_receive(:write_and_await_response)
+            mock_execution_environment.should_receive(:execute_component_and_await_completion)
+            mock_execution_environment.interruptible_play(ssml, :digits => 2, :initial_timeout => 66, :inter_digit_timeout => 55).should == nil
+          end
+
           it "should not pause to try to read more digits if no input is received" do
             flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:name => :noinput))
             def mock_execution_environment.write_and_await_response(input_component)
               input_component.execute_handler
             end
+            flexmock(Punchblock::Component::Input).new_instances.should_receive(:complete?).returns(true)
+            flexmock(Punchblock::Component::Output).new_instances.should_receive(:complete?).returns(true)
             mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(output_component)
             mock_execution_environment.interruptible_play(ssml, :digits => 2).should == nil
           end
 
-          it "sends the correct input command" do
-            pending
-            #expect_message_waiting_for_response component
-            #mock_execution_environment.interruptible_play(ssml)
-          end
         end#describe #interruptible_play
         
         describe "#detect_type" do
