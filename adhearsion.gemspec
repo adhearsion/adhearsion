@@ -4,7 +4,7 @@ require "adhearsion/version"
 
 Gem::Specification.new do |s|
   s.name        = "adhearsion"
-  s.version     = Adhearsion::VERSION::STRING
+  s.version     = Adhearsion::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Jay Phillips", "Jason Goecke", "Ben Klang", "Ben Langfeld"]
   s.email       = "dev&Adhearsion.com"
