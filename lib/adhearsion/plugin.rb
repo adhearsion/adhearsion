@@ -79,6 +79,7 @@ module Adhearsion
             end
             logger.debug "Defining method #{method}"
             dialplan_module.send(:define_method, method) do |*args|
+              block.nil? and raise NoMethodError.new "Invalid dialplan method: <#{method}>"
               block.call(args)
             end
           end
