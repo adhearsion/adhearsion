@@ -79,7 +79,7 @@ module Adhearsion
       load_components
       init_events_file
 
-      logger.info "Adhearsion v#{Adhearsion::VERSION::STRING} initialized!"
+      logger.info "Adhearsion v#{Adhearsion::VERSION} initialized!"
       Adhearsion.status = :running
 
       trigger_after_initialized_hooks
