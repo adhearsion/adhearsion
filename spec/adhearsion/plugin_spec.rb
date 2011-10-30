@@ -102,6 +102,7 @@ describe "Adhearsion::Plugin.load" do
   
   before(:each) do
     Adhearsion::Plugin.send(:subclasses=, nil)
+    Adhearsion::Plugin.send(:dialplan_methods=, {})
   end
 
   let(:o) do
@@ -118,12 +119,11 @@ describe "Adhearsion::Plugin.load" do
     defined?(FooBar) and Object.send(:remove_const, :"FooBar")
   end
 
-  describe "Plugin subclass with no dialplan_methods definition" do
+  describe "Plugin subclass with no dialplan definition" do
 
     it "should initialize all Plugin childs" do
       FooBar = Class.new Adhearsion::Plugin
       flexmock(FooBar).should_receive(:init).once
-      flexmock(Adhearsion::Components).should_receive(:component_manager).once.and_return(o)
       Adhearsion::Plugin.load
     end
 
@@ -135,50 +135,57 @@ describe "Adhearsion::Plugin.load" do
       flexmock(FooBar).should_receive(:init).once
       flexmock(FooBarBaz).should_receive(:init).once
       flexmock(FooBarBazz).should_receive(:init).once
-      flexmock(Adhearsion::Components).should_receive(:component_manager).times(3).and_return(o)
       Adhearsion::Plugin.load
     end
   end
   
-  describe "Plugin subclass with dialplan_methods definition" do
-    it "should not add any method if dialplan_methods is empty" do
+  describe "Plugin subclass with dialplan_method definition" do
+    it "should add a method defined using dialplan" do
       FooBar = Class.new Adhearsion::Plugin do
-        def self.dialplan_methods
-          []
+        dialplan :foo
+        def self.foo(call)
+          "bar"
         end
       end
       
       flexmock(FooBar).should_receive(:init).once
-      flexmock(Adhearsion::Components).should_receive(:component_manager).once.and_return(o)
+      flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).once.and_return(dialplan_module)
       Adhearsion::Plugin.load
+      dialplan_module.instance_methods.include?(:foo).should be true
     end
 
-    it "should add a method if dialplan_methods returns an array with one element" do
+    it "should add an array of methods defined using dialplan_method" do
       FooBar = Class.new Adhearsion::Plugin do
-        def self.dialplan_methods
-          [:hello]
+        dialplan [:foo, :bar]
+
+        def self.foo(call)
+          call
         end
-        def self.hello
+
+        def self.bar(call)
+          "foo"
         end
       end
       
       flexmock(FooBar).should_receive(:init).once
-      flexmock(Adhearsion::Components).should_receive(:component_manager).twice.and_return(o)
+      flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).twice.and_return(dialplan_module)
       Adhearsion::Plugin.load
+      [:foo, :bar].each do |method|
+        dialplan_module.instance_methods.include?(method).should be true
+      end
     end
 
-    it "should add a method if dialplan_methods returns an array with ten elements" do
+    it "should add a method defined using dialplan with a specific block" do
       FooBar = Class.new Adhearsion::Plugin do
-        def self.dialplan_methods
-          [:hello]*10
-        end
-        def self.hello
+        dialplan :foo do |call|
+          puts call
         end
       end
       
       flexmock(FooBar).should_receive(:init).once
-      flexmock(Adhearsion::Components).should_receive(:component_manager).times(2).and_return(o)
+      flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).once.and_return(dialplan_module)
       Adhearsion::Plugin.load
+      dialplan_module.instance_methods.include?(:foo).should be true
     end
   end
   
