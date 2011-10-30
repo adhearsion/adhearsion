@@ -154,6 +154,20 @@ describe "Adhearsion::Plugin.load" do
       dialplan_module.instance_methods.include?(:foo).should be true
     end
 
+    it "should add an instance method defined using dialplan" do
+      FooBar = Class.new Adhearsion::Plugin do
+        dialplan :foo
+        def foo(call)
+          call
+        end
+      end
+      
+      flexmock(FooBar).should_receive(:init).once
+      flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).once.and_return(dialplan_module)
+      Adhearsion::Plugin.load
+      dialplan_module.instance_methods.include?(:foo).should be true
+    end
+
     it "should add an array of methods defined using dialplan_method" do
       FooBar = Class.new Adhearsion::Plugin do
         dialplan [:foo, :bar]
@@ -164,6 +178,46 @@ describe "Adhearsion::Plugin.load" do
 
         def self.bar(call)
           "foo"
+        end
+      end
+      
+      flexmock(FooBar).should_receive(:init).once
+      flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).twice.and_return(dialplan_module)
+      Adhearsion::Plugin.load
+      [:foo, :bar].each do |method|
+        dialplan_module.instance_methods.include?(method).should be true
+      end
+    end
+
+    it "should add an array of instance methods defined using dialplan" do
+      FooBar = Class.new Adhearsion::Plugin do
+        dialplan [:foo, :bar]
+        def foo(call)
+          call
+        end
+
+        def bar(call)
+          call
+        end
+      end
+      
+      flexmock(FooBar).should_receive(:init).once
+      flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).twice.and_return(dialplan_module)
+      Adhearsion::Plugin.load
+      [:foo, :bar].each do |method|
+        dialplan_module.instance_methods.include?(method).should be true
+      end
+    end
+
+    it "should add an array of instance and singleton methods defined using dialplan" do
+      FooBar = Class.new Adhearsion::Plugin do
+        dialplan [:foo, :bar]
+        def self.foo(call)
+          call
+        end
+
+        def bar(call)
+          call
         end
       end
       
