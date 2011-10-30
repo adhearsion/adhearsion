@@ -35,7 +35,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "future-resource", [">= 0.0.2"]
   s.add_runtime_dependency "ruby_speech", [">= 0.2.0"]
   s.add_runtime_dependency 'countdownlatch'
-  s.add_runtime_dependency 'has-guarded-handlers', [">= 0.0.3"]
+  s.add_runtime_dependency 'has-guarded-handlers', [">= 0.1.1"]
   s.add_runtime_dependency 'girl_friday'
 
   # Development dependencies

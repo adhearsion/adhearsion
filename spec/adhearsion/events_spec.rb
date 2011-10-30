@@ -66,6 +66,7 @@ module Adhearsion
       end
 
       Events.trigger_immediately :event, EventClass.new
+      Events.clear_handlers :event, EventClass
     end
 
     describe '#draw' do

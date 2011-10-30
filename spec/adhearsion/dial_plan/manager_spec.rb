@@ -22,7 +22,7 @@ module Adhearsion
         end
 
         it 'invokes the before_call event' do
-          flexmock(Events).should_receive(:trigger_immediately).once.with([:before_call], call).and_throw :triggered
+          flexmock(Events).should_receive(:trigger_immediately).once.with(:before_call, call).and_throw :triggered
 
           the_following_code {
             subject.handle call
@@ -40,16 +40,15 @@ module Adhearsion
           end
 
           it "and catches standard errors, raising an exception event" do
-            e = StandardError.new
-            flexmock(ExecutionEnvironment).new_instances.should_receive(:run).once.and_raise(e)
-            flexmock(Events).should_receive(:trigger).once.with(['exception'], e)
+            flexmock(ExecutionEnvironment).new_instances.should_receive(:run).once.and_raise(StandardError)
+            flexmock(Events).should_receive(:trigger).once.with(:exception, StandardError)
             subject.handle call
           end
 
           it "catches Hangup exceptions and fires the after_call event immediately" do
-            flexmock(Events).should_receive(:trigger_immediately).once.with([:before_call], call)
+            flexmock(Events).should_receive(:trigger_immediately).once.with(:before_call, call)
             flexmock(ExecutionEnvironment).new_instances.should_receive(:run).once.and_raise(Hangup)
-            flexmock(Events).should_receive(:trigger_immediately).once.with([:after_call], call)
+            flexmock(Events).should_receive(:trigger_immediately).once.with(:after_call, call)
             subject.handle call
           end
 
