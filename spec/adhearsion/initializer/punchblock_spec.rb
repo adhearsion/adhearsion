@@ -17,8 +17,8 @@ describe Adhearsion::Initializer::Punchblock do
 
   it "starts the client with any overridden settings" do
     overrides = {:username => 'userb@127.0.0.1', :password => '123', :wire_logger => Adhearsion::Logging.get_logger(Punchblock), :transport_logger => Adhearsion::Logging.get_logger(Punchblock), :auto_reconnect => false}
-    flexmock(::Punchblock::Connection).should_receive(:new).once.with(overrides).and_return do
-      flexmock 'Client', :event_queue => Queue.new
+    flexmock(::Punchblock::Connection::XMPP).should_receive(:new).once.with(overrides).and_return do
+      flexmock 'Client', :event_queue => Queue.new, :event_handler= => true
     end
     initialize_punchblock_with_options overrides
   end

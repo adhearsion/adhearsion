@@ -4,7 +4,7 @@ require "adhearsion/version"
 
 Gem::Specification.new do |s|
   s.name        = "adhearsion"
-  s.version     = Adhearsion::VERSION::STRING
+  s.version     = Adhearsion::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Jay Phillips", "Jason Goecke", "Ben Klang", "Ben Langfeld"]
   s.email       = "dev&Adhearsion.com"
@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
 
   # Runtime dependencies
   s.add_runtime_dependency "bundler", [">= 1.0.10"]
-  s.add_runtime_dependency 'punchblock', [">= 0.4.2"]
+  s.add_runtime_dependency 'punchblock', [">= 0.5.0"]
   s.add_runtime_dependency "logging", [">= 1.6.1"]
   s.add_runtime_dependency "activesupport", [">= 3.0.10"]
   # i18n is only strictly a dependency for ActiveSupport >= 3.0.0
@@ -35,7 +35,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "future-resource", [">= 0.0.2"]
   s.add_runtime_dependency "ruby_speech", [">= 0.2.0"]
   s.add_runtime_dependency 'countdownlatch'
-  s.add_runtime_dependency 'has-guarded-handlers', [">= 0.0.3"]
+  s.add_runtime_dependency 'has-guarded-handlers', [">= 0.1.1"]
   s.add_runtime_dependency 'girl_friday'
 
   # Development dependencies

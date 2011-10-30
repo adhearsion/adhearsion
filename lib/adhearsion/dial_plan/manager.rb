@@ -17,7 +17,7 @@ module Adhearsion
       end
 
       def handle(call)
-        Events.trigger_immediately [:before_call], call
+        Events.trigger_immediately :before_call, call
         call.logger.info "Handling call with ID #{call.id}"
 
         starting_entry_point = entry_point_for call
@@ -27,12 +27,12 @@ module Adhearsion
         @context.run
       rescue Hangup
         call.logger.info "Hangup event for call with id #{call.id}"
-        Events.trigger_immediately [:after_call], call
+        Events.trigger_immediately :after_call, call
       rescue NoContextError => e
         call.logger.error e
         raise e
       rescue SyntaxError, StandardError => e
-        Events.trigger ['exception'], e
+        Events.trigger :exception, e
       ensure
         call.hangup!
       end

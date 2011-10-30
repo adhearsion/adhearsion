@@ -138,7 +138,7 @@ describe "A simulated use of the 'ahn' command" do
     capture_stdout do
       simulate_args 'version'
       Adhearsion::CLI::AhnCommand.execute!
-    end.should =~ Regexp.new(Regexp.escape(Adhearsion::VERSION::STRING))
+    end.should =~ Regexp.new(Regexp.escape(Adhearsion::VERSION))
   end
 
   it "printing the help" do

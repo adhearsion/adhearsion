@@ -11,3 +11,5 @@ Gemfile.lock
 coverage
 spec/reports
 doc
+/.rbx/
+example.log
