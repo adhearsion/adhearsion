@@ -1,3 +1,3 @@
 module Adhearsion #:nodoc:
-  VERSION = 'head'
+  VERSION = '2.0.0-head'
 end
