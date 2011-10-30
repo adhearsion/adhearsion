@@ -210,7 +210,7 @@ require 'adhearsion/component_manager/spec_framework'
           end
 
           def version
-            puts "Adhearsion v#{Adhearsion::VERSION::STRING}"
+            puts "Adhearsion v#{Adhearsion::VERSION}"
           end
 
           def help
