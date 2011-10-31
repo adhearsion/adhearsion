@@ -3,7 +3,7 @@ class Object
     begin
       yield
     rescue StandardError => e
-      Adhearsion::Events.trigger ['exception'], e
+      Adhearsion::Events.trigger :exception, e
     end
   end
 end
