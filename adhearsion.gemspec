@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   # i18n is only strictly a dependency for ActiveSupport >= 3.0.0
   # Since it doesn't conflict with <3.0.0 we'll require it to be
   # on the safe side.
-  s.add_runtime_dependency "i18n", "~> 0.5.0"
+  s.add_runtime_dependency "i18n", ">= 0.5.0"
   s.add_runtime_dependency "json"
   s.add_runtime_dependency "rubigen", [">= 1.5.6"]
   s.add_runtime_dependency "rake"
