@@ -1136,6 +1136,14 @@ describe 'The #input! method' do
     pbx_was_asked_to_stream file
   end
 
+  it 'should fall back to speaking TTS if sound file is unplayable' do
+    pbx_should_respond_with_stream_file_failure_on_open
+    mock_call.should_receive(:speak).once.with("The sound file was not available", :interruptible => true)
+    mock_call.should_receive(:wait_for_digit).once.with -1
+    mock_call.input!(1, :play => 'unavailable sound file', :speak => {:text => "The sound file was not available"})
+    @output.read.should == "STREAM FILE \"unavailable sound file\" \"1234567890*#\"\n"
+  end
+
   it 'should play a series of interruptible files, raising an error if a sound file cannot be found' do
     pbx_should_respond_with_stream_file_success 0
     pbx_should_respond_with_stream_file_failure_on_open
