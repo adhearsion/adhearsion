@@ -29,9 +29,13 @@ module Adhearsion
 
   class Plugin
 
+    extend ActiveSupport::Autoload
+
     DIALPLAN_OPTIONS = {:load => true, :scope => false}
 
-    autoload :Configuration, 'adhearsion/plugin/configuration'
+    autoload :Configuration
+    autoload :Collection   
+    autoload :Initializer
 
     class << self
 
@@ -61,7 +65,7 @@ module Adhearsion
       end
 
       def load
-        init_plugin(self)
+        init_plugin
 
         # load plugins dialplan methods
         unless dialplan_methods.empty?
@@ -83,23 +87,16 @@ module Adhearsion
               block.call(args)
             end
           end
-        end
-          
+        end          
       end
 
       ##
       # Recursively initialization of all the loaded plugins
       # @param klass working class: Plugin or Plugin child
       #
-      def init_plugin(klass = self)
-        klass.subclasses.each do |plugin|
-          logger.debug "Initialing plugin #{plugin.plugin_name}"
-          
-          # load plugin code based on init method
-          plugin.init 
-
-          # load plugin childs
-          init_plugin(plugin)
+      def init_plugin(*args)
+        initializers.tsort.each do |initializer|
+          initializer.run(*args)
         end
       end
       
@@ -131,10 +128,14 @@ module Adhearsion
         end
       end
 
+      def initializers
+        @initializers ||= Collection.new
+      end
 
-      # method to be implemented by subclasses
-      def init
-        logger.warn "#{self.name} should overwrite the init method"
+      def init(name, opts = {})
+        block_given? or raise ArgumentError, "A block must be passed while defining the Plugin initialization process"
+        opts[:after] ||= initializers.last.name unless initializers.empty? || initializers.find { |i| i.name == opts[:before] }
+        Adhearsion::Plugin.initializers << Initializer.new(name, nil, opts, &Proc.new)
       end
 
       def count

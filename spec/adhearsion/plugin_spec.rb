@@ -31,6 +31,13 @@ describe Adhearsion::Plugin do
 
       ::FooBar.plugin_name.should eql("bar_foo")
     end
+  end
+
+  describe "While configuring plugins" do
+
+    after(:each) do
+      defined?(FooBar) and Object.send(:remove_const, :"FooBar")
+    end
 
     it "should provide access to a config mechanism" do
       FooBar = Class.new Adhearsion::Plugin
@@ -116,26 +123,102 @@ describe "Adhearsion::Plugin.load" do
   end
 
   after(:each) do
+    Adhearsion::Plugin.initializers.clear
     defined?(FooBar) and Object.send(:remove_const, :"FooBar")
+    defined?(FooBarBaz) and Object.send(:remove_const, :"FooBarBaz")
+    defined?(FooBarBazz) and Object.send(:remove_const, :"FooBarBazz")
   end
 
-  describe "Plugin subclass with no dialplan definition" do
+  describe "while registering plugins initializers" do
 
-    it "should initialize all Plugin childs" do
+    it "should do nothing with a Plugin that has no init method call" do
       FooBar = Class.new Adhearsion::Plugin
-      flexmock(FooBar).should_receive(:init).once
+
+      Adhearsion::Plugin.initializers.should be_empty
+      Adhearsion::Plugin.load
+    end
+
+    it "should add a initializer when Plugin defines it" do
+      FooBar = Class.new Adhearsion::Plugin do
+        init :foo_bar do
+          FooBar.log "foo bar"
+        end
+        def self.log
+        end
+      end
+
+      flexmock(FooBar).should_receive(:log).once
+      Adhearsion::Plugin.initializers.length.should be(1)
       Adhearsion::Plugin.load
     end
 
     it "should initialize all Plugin childs, including deep childs" do
-      FooBar = Class.new Adhearsion::Plugin
-      FooBarBaz = Class.new FooBar
-      FooBarBazz = Class.new FooBarBaz
+      FooBar = Class.new Adhearsion::Plugin do
+        init :foo_bar do
+          FooBar.log "foo bar"
+        end
+        def self.log
+        end
+      end
 
-      flexmock(FooBar).should_receive(:init).once
-      flexmock(FooBarBaz).should_receive(:init).once
-      flexmock(FooBarBazz).should_receive(:init).once
+      FooBarBaz = Class.new FooBar do
+        init :foo_bar_baz do
+          FooBar.log "foo bar baz"
+        end
+      end
+      FooBarBazz = Class.new FooBar do
+        init :foo_bar_bazz do
+          FooBar.log "foo bar bazz"
+        end
+      end
+
+      flexmock(FooBar).should_receive(:log).times(3)
       Adhearsion::Plugin.load
+    end
+
+    it "should allow to include an initializer before another one" do
+      FooBar = Class.new Adhearsion::Plugin do
+        init :foo_bar do
+          FooBar.log "foo bar"
+        end
+        def self.log
+        end
+      end
+
+      FooBarBaz = Class.new FooBar do
+        init :foo_bar_baz, :before => :foo_bar do
+          FooBar.log "foo bar baz"
+        end
+      end
+
+      Adhearsion::Plugin.initializers.tsort.first.name.should eql(:foo_bar_baz)
+      Adhearsion::Plugin.initializers.tsort.last.name.should eql(:foo_bar)
+    end
+
+    it "should allow to include an initializer after another one" do
+      FooBar = Class.new Adhearsion::Plugin do
+        init :foo_bar do
+          FooBar.log "foo bar"
+        end
+        def self.log
+        end
+      end
+
+      FooBarBaz = Class.new FooBar do
+        init :foo_bar_baz, :after => :foo_bar_bazz do
+          FooBar.log "foo bar baz"
+        end
+      end
+
+      FooBarBazz = Class.new FooBar do
+        init :foo_bar_bazz do
+          FooBar.log "foo bar bazz"
+        end
+      end
+
+      Adhearsion::Plugin.initializers.length.should eql(3)
+      Adhearsion::Plugin.initializers.tsort.first.name.should eql(:foo_bar)
+      Adhearsion::Plugin.initializers.tsort.last.name.should eql(:foo_bar_baz)
     end
   end
   
@@ -148,7 +231,6 @@ describe "Adhearsion::Plugin.load" do
         end
       end
       
-      flexmock(FooBar).should_receive(:init).once
       flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).once.and_return(dialplan_module)
       Adhearsion::Plugin.load
       dialplan_module.instance_methods.include?(:foo).should be true
@@ -162,7 +244,6 @@ describe "Adhearsion::Plugin.load" do
         end
       end
       
-      flexmock(FooBar).should_receive(:init).once
       flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).once.and_return(dialplan_module)
       Adhearsion::Plugin.load
       dialplan_module.instance_methods.include?(:foo).should be true
@@ -181,7 +262,6 @@ describe "Adhearsion::Plugin.load" do
         end
       end
       
-      flexmock(FooBar).should_receive(:init).once
       flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).twice.and_return(dialplan_module)
       Adhearsion::Plugin.load
       [:foo, :bar].each do |method|
@@ -201,7 +281,6 @@ describe "Adhearsion::Plugin.load" do
         end
       end
       
-      flexmock(FooBar).should_receive(:init).once
       flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).twice.and_return(dialplan_module)
       Adhearsion::Plugin.load
       [:foo, :bar].each do |method|
@@ -221,7 +300,6 @@ describe "Adhearsion::Plugin.load" do
         end
       end
       
-      flexmock(FooBar).should_receive(:init).once
       flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).twice.and_return(dialplan_module)
       Adhearsion::Plugin.load
       [:foo, :bar].each do |method|
@@ -236,7 +314,6 @@ describe "Adhearsion::Plugin.load" do
         end
       end
       
-      flexmock(FooBar).should_receive(:init).once
       flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).once.and_return(dialplan_module)
       Adhearsion::Plugin.load
       dialplan_module.instance_methods.include?(:foo).should be true
