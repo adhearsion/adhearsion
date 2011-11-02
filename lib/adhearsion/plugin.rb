@@ -31,13 +31,51 @@ module Adhearsion
 
     extend ActiveSupport::Autoload
 
-    DIALPLAN_OPTIONS = {:load => true, :scope => false}
+    METHODS_OPTIONS = {:load => true, :scope => false}
 
     autoload :Configuration
     autoload :Collection   
     autoload :Initializer
+    autoload :MethodsContainer
 
     class << self
+
+      [:dialplan, :rpc, :events].each do |name|
+
+        ##
+        # This block will create the relevant methods to handle how to add new methods
+        # to Adhearsion scopes via an Adhearsion Plugin
+        #
+        # class AhnPluginDemo < Adhearsion::Plugin
+        #   dialplan :adh_plugin_demo do |call|
+        #    call.say "hello world"
+        #   end
+        # end
+
+        define_method(name) do |method_name, args = nil|
+          if method_name.is_a?(Array)
+            method_name.each do |method| 
+              send(name, method, args)
+            end
+            return
+          end
+          options = args.nil? ? METHODS_OPTIONS : METHODS_OPTIONS.merge(args)
+          options[:load] or return
+          logger.debug "Adding method #{method_name} to scope #{name}"
+          if block_given?
+            @@methods_container[name].store({:class => self, :method => method_name}, Proc.new)
+          else
+            @@methods_container[name].store({:class => self, :method => method_name}, nil)
+          end
+        end
+
+        define_method("#{name.to_s}_module") do
+          Adhearsion::Components.component_manager.instance_variable_get("@scopes")[name]
+        end
+
+      end
+
+      @@methods_container = Hash.new{|hash, key| hash[key] = MethodsContainer.new }
 
       def subclasses
         @subclasses ||= []
@@ -68,23 +106,25 @@ module Adhearsion
         init_plugin
 
         # load plugins dialplan methods
-        unless dialplan_methods.empty?
-          logger.debug "Loading #{dialplan_methods.length} dialplan methods"
-          dialplan_methods.each_pair do |class_method, block|
-            klass, method = class_method[:class], class_method[:method]
-            if block.nil?
-              if klass.respond_to?(method)
-                block = klass.method(method)
-              elsif klass.instance_methods.include?(method)
-                block = klass.instance_method(method).bind(klass.new)
-              else
-                logger.warn("Unable to load dialplan method #{method} from plugin class #{klass}")
+        unless @@methods_container.empty?
+          @@methods_container.each_pair do |scope, methods|
+            logger.debug "Loading #{methods.length} #{scope} methods"
+            methods.each_pair do |class_method, block|
+              klass, method = class_method[:class], class_method[:method]
+              if block.nil?
+                if klass.respond_to?(method)
+                  block = klass.method(method)
+                elsif klass.instance_methods.include?(method)
+                  block = klass.instance_method(method).bind(klass.new)
+                else
+                  logger.warn("Unable to load #{scope} method #{method} from plugin class #{klass}")
+                end
               end
-            end
-            logger.debug "Defining method #{method}"
-            dialplan_module.send(:define_method, method) do |*args|
-              block.nil? and raise NoMethodError.new "Invalid dialplan method: <#{method}>"
-              block.call(args)
+              logger.debug "Defining method #{method}"
+              self.send("#{scope}_module").send(:define_method, method) do |*args|
+                block.nil? and raise NoMethodError.new "Invalid #{scope} method: <#{method}>"
+                block.call(args)
+              end
             end
           end
         end          
@@ -92,39 +132,10 @@ module Adhearsion
 
       ##
       # Recursively initialization of all the loaded plugins
-      # @param klass working class: Plugin or Plugin child
       #
       def init_plugin(*args)
         initializers.tsort.each do |initializer|
           initializer.run(*args)
-        end
-      end
-      
-      def dialplan_module
-        Adhearsion::Components.component_manager.instance_variable_get("@scopes")[:dialplan]
-      end
-
-      
-      ##
-      # Method to be use when defining dialplan methods
-      #
-      # class AhnPluginDemo < Adhearsion::Plugin
-      #   dialplan :adh_plugin_demo do |call|
-      #    call.say "hello world"
-      #   end
-      # end
-      def dialplan(method_name, args = nil)
-        method_name.is_a?(Array) and method_name.each { |method| dialplan(method, args)} and return
-
-        options = args.nil? ? DIALPLAN_OPTIONS : DIALPLAN_OPTIONS.merge(args)
-
-        options[:load] or return
-
-        logger.debug "Adding method #{method_name} to scope dialplan"
-        if block_given?
-          dialplan_methods.store({:class => self, :method => method_name}, Proc.new)
-        else
-          dialplan_methods.store({:class => self, :method => method_name}, nil)
         end
       end
 
@@ -159,14 +170,6 @@ module Adhearsion
 
       def subclasses=(value)
         @subclasses = value
-      end
-
-      def dialplan_methods
-        @@dialplan_methods ||= {}
-      end
-
-      def dialplan_methods=(value)
-        @@dialplan_methods = value
       end
 
     end

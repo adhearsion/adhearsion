@@ -33,6 +33,17 @@ describe Adhearsion::Plugin do
     end
   end
 
+  describe "metaprogramming" do
+    [:dialplan, :rpc, :events].each do |method|
+      it "should respond to #{method.to_s}" do
+        Adhearsion::Plugin.should respond_to(method)
+      end      
+      it "should respond to #{method.to_s}_module" do
+        Adhearsion::Plugin.should respond_to("#{method.to_s}_module")
+      end      
+    end
+  end
+
   describe "While configuring plugins" do
 
     after(:each) do
@@ -109,7 +120,7 @@ describe "Adhearsion::Plugin.load" do
   
   before(:each) do
     Adhearsion::Plugin.send(:subclasses=, nil)
-    Adhearsion::Plugin.send(:dialplan_methods=, {})
+    Adhearsion::Plugin.class_variable_set("@@methods_container", Hash.new{|hash, key| hash[key] = Adhearsion::Plugin::MethodsContainer.new })
   end
 
   let(:o) do
@@ -119,6 +130,10 @@ describe "Adhearsion::Plugin.load" do
   end
 
   let(:dialplan_module) do
+    Module.new
+  end
+
+  let(:rpc_module) do
     Module.new
   end
 
@@ -221,6 +236,21 @@ describe "Adhearsion::Plugin.load" do
       Adhearsion::Plugin.initializers.tsort.last.name.should eql(:foo_bar_baz)
     end
   end
+
+  describe "Plugin subclass with rpc_method definition" do
+    it "should add a method defined using rpc" do
+      FooBar = Class.new Adhearsion::Plugin do
+        rpc :foo
+        def self.foo(call)
+          "bar"
+        end
+      end
+      
+      flexmock(Adhearsion::Plugin).should_receive(:rpc_module).once.and_return(rpc_module)
+      Adhearsion::Plugin.load
+      rpc_module.instance_methods.include?(:foo).should be true
+    end
+  end
   
   describe "Plugin subclass with dialplan_method definition" do
     it "should add a method defined using dialplan" do
@@ -320,6 +350,24 @@ describe "Adhearsion::Plugin.load" do
     end
   end
   
+  describe "Plugin subclass with rpc_method and dialplan_method definitions" do
+    it "should add a method defined using rpc and a method defined using dialplan" do
+      FooBar = Class.new Adhearsion::Plugin do
+        rpc :foo
+        dialplan :foo
+        
+        def self.foo(call)
+          "bar"
+        end
+      end
+      
+      flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).once.and_return(dialplan_module)
+      flexmock(Adhearsion::Plugin).should_receive(:rpc_module).once.and_return(rpc_module)
+      Adhearsion::Plugin.load
+      rpc_module.instance_methods.include?(:foo).should be true
+      dialplan_module.instance_methods.include?(:foo).should be true
+    end
+  end
   
 end
 
