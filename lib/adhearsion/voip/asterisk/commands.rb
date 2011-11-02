@@ -663,7 +663,7 @@ module Adhearsion
         end
 
         # Used to receive keypad input from the user. Digits are collected
-        # via DTMF (keypad) input until one of three things happens:
+        # via DTMF (keypad) input until one of four things happens:
         #
         # 1. The number of digits you specify as the first argument is collected
         # 2. The timeout elapses.  You can specify the timeout by either:
@@ -672,6 +672,7 @@ module Adhearsion
         #    * Providing the :initial_timeout for 1st digit and
         #      :interdigit_timeout for subsequent digits.
         # 3. The "#" key (or the key you specify with :accept_key) is pressed
+        # 4. You return true from a block you pass in (see "Currency Example" below)
         #
         # Usage examples
         #
@@ -690,9 +691,22 @@ module Adhearsion
         #   input :play => ["if-this-is-correct-press", 1, "otherwise-press", 2]
         #   input :interruptible => false, :play => ["you-cannot-interrupt-this-message"] # Disallow DTMF (keypad) interruption
         #                                                                                 # until after all files are played.
+        #   input 3, :speak => {:text => 'How much wood could a woodchuck chuck?'} # Say an interruptible TTS phrase
+        #                                                                          # before waiting for input
+        #   input 5, :play => 'this-sound-file-might-not-exist', :speak => {:text => "Here's the TTS I say in case I can't find the sound file"}
+        #
+        # Currency Example
+        #   # Use a block to describe what kind of data will satisfy our input.  Your block will be invoked each time a new digit is
+        #   # received. When your block returns true, it signals #input not to wait for digits anymore.  In the example below, we are
+        #   # expecting a "currency" value, like 10*99.  If the data ends with 2 decimal places, we immediately stop waiting for input.
+        #   input 7, :speak => {:text => "How much is that doggie in the window?"} { |value| value =~ /\*\d\d/ }
         #
         # When specifying files to play, the playback of the sequence of files will stop
-        # immediately when the user presses the first digit.
+        # immediately when the user presses the first digit unless you set :interruptible
+        # to false.
+        #
+        # The :speak option takes a Hash.  The Hash should include a :text key with a
+        # TTS phrase to say. All other keys accepted by {#speak} are also supported.
         #
         # The :timeout option works like a digit timeout, therefore each digit pressed
         # causes the timer to reset. This is a much more user-friendly approach than an
@@ -705,6 +719,8 @@ module Adhearsion
         # @return [String] The keypad input received. An empty string is returned in the
         #                  absense of input. If the :accept_key argument was pressed, it
         #                  will not appear in the output.
+        #
+        # @see http://mojolingo.com/blog/2011/getting_ready_for_adhearsion_1_2/ More information on :speak, and &block parameters
         def input(*args, &block)
           begin
             input! *args, &block
