@@ -666,9 +666,13 @@ module Adhearsion
         # Used to receive keypad input from the user. Digits are collected
         # via DTMF (keypad) input until one of three things happens:
         #
-        #  1. The number of digits you specify as the first argument is collected
-        #  2. The timeout you specify with the :timeout option elapses.
-        #  3. The "#" key (or the key you specify with :accept_key) is pressed
+        # 1. The number of digits you specify as the first argument is collected
+        # 2. The timeout elapses.  You can specify the timeout by either:
+        #    * Providing the :timeout option which applies for each awaited
+        #      digit
+        #    * Providing the :initial_timeout for 1st digit and
+        #      :interdigit_timeout for subsequent digits.
+        # 3. The "#" key (or the key you specify with :accept_key) is pressed
         #
         # Usage examples
         #
@@ -676,7 +680,10 @@ module Adhearsion
         #   input 3 # Receives three digits. Can be 0-9, * or #
         #   input 5, :accept_key => "*"   # Receive at most 5 digits, stopping if '*' is pressed
         #   input 1, :timeout => 1.minute # Receive a single digit, returning an empty
-        #                                   string if the timeout is encountered
+        #                                 # string if the timeout is encountered
+        #   input 3, :initial_timeout => 10.seconds, :interdigit_timeout => 5.seconds # Accept up to 3 digits,
+        #                                                                             # waiting 10 seconds for the 1st digit
+        #                                                                             # and 5 seconds for each subsequent digit.
         #   input 9, :timeout => 7, :accept_key => "0" # Receives nine digits, returning
         #                                              # when the timeout is encountered
         #                                              # or when the "0" key is pressed.
@@ -731,8 +738,10 @@ module Adhearsion
             options[:speak][:interruptible] = options[:interruptible]
           end
 
-          timeout         = options[:timeout]
-          terminating_key = options[:accept_key]
+          timeout             = options[:timeout] || -1
+          initial_timeout     = options[:initial_timeout] || timeout
+          interdigit_timeout  = options[:interdigit_timeout] || timeout
+          terminating_key     = options[:accept_key]
           terminating_key = if terminating_key
             terminating_key.to_s
           elsif number_of_digits.nil? && !terminating_key.equal?(false)
@@ -763,8 +772,10 @@ module Adhearsion
           elsif options[:speak]
             key = speak(options[:speak].delete(:text), options[:speak]) || ''
           else
-            key = wait_for_digit timeout || -1
+            key = ''
           end
+          initial_timeout = nil if key.present?
+
           loop do
             return buffer if key.nil?
             if terminating_key
@@ -779,7 +790,8 @@ module Adhearsion
               return buffer if number_of_digits && number_of_digits == buffer.length
             end
             return buffer if block_given? && yield(buffer)
-            key = wait_for_digit(timeout || -1)
+            key = wait_for_digit(initial_timeout || interdigit_timeout)
+            initial_timeout = nil
           end
         end
 
