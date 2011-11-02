@@ -771,7 +771,7 @@ module Adhearsion
           elsif options[:speak]
             key = speak(options[:speak].delete(:text), options[:speak]) || ''
           else
-            key = wait_for_digit initial_timeout
+            key = ''
           end
           initial_timeout = nil if key.present?
 
