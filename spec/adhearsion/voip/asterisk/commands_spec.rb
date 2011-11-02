@@ -1063,18 +1063,22 @@ describe 'The #input method' do
   it 'should execute wait_for_digit, even if some interruptible sound files are not found' do
     pbx_should_respond_with_stream_file_failure_on_open
     file = 'foobar'
-    timeout = 1.hour
-    mock_call.should_receive(:wait_for_digit).twice.with(timeout).and_return '8', '9'
-    mock_call.input(2, :timeout => timeout, :play => file).should == '89'
+    initial_timeout = 1.hour
+    interdigit_timeout = 1.minute
+    mock_call.should_receive(:wait_for_digit).once.with(initial_timeout).and_return '8'
+    mock_call.should_receive(:wait_for_digit).once.with(interdigit_timeout).and_return '9'
+    mock_call.input(2, :initial_timeout => initial_timeout, :interdigit_timeout => interdigit_timeout, :play => file).should == '89'
     pbx_was_asked_to_stream file
   end
 
-  it 'should execute wait_for_digit with, even if some uninterruptible sound files are not found' do
+  it 'should execute wait_for_digit, even if some uninterruptible sound files are not found' do
     pbx_should_respond_with_playback_failure
     file = 'foobar'
-    timeout = 1.hour
-    mock_call.should_receive(:wait_for_digit).twice.with(timeout).and_return '8', '9'
-    mock_call.input(2, :timeout => timeout, :play => file, :interruptible => false).should == '89'
+    initial_timeout = 1.hour
+    interdigit_timeout = 1.minute
+    mock_call.should_receive(:wait_for_digit).once.with(initial_timeout).and_return '8'
+    mock_call.should_receive(:wait_for_digit).once.with(interdigit_timeout).and_return '9'
+    mock_call.input(2, :initial_timeout => initial_timeout, :interdigit_timeout => interdigit_timeout, :play => file, :interruptible => false).should == '89'
     pbx_was_asked_to_play file
   end
 
