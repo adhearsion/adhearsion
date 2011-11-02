@@ -25,6 +25,9 @@ Adhearsion::Configuration.configure do |config|
   # Whether to end the call immediately if an unrescued exception is caught. Defaults to true.
   # config.end_call_on_error = false
 
+  # Here you can specify the :username, :password and :rayo_domain as keys in a hash.
+  # eg. config.enable_punchblock :username => 'me@jabber.org', :password => 'foobar', :rayo_domain => 'go.rayo.org'
+  # The defaults are suitable for a stock local Rayo installation
   config.enable_punchblock
 
   # Adhearsion supports two possible speech engines with Asterisk: UniMRCP and Cepstral.
@@ -57,7 +60,7 @@ Adhearsion::Configuration.configure do |config|
   # config.enable_ldap :host => 'ldap.dataspill.org',
   #                    :port => 389,
   #                    :base => 'dc=dataspill,dc=org',
-  #                    :logger => ahn_log.ldap,
+  #                    :logger => logger,
   #                    :bind_dn => "uid=drewry,ou=People,dc=dataspill,dc=org",
   #                    :password => 'password12345',
   #                    :allow_anonymous => false,

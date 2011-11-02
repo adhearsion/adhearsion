@@ -77,39 +77,38 @@ end
 describe 'Logging configuration' do
 
   attr_reader :config
+
   before :each do
     @config = Adhearsion::Configuration.new
+    Adhearsion::Logging.start
   end
 
   after :each do
-    Adhearsion::Logging.logging_level = :fatal
-    Adhearsion::Logging::AdhearsionLogger.outputters = [Log4r::Outputter.stdout]
-    Adhearsion::Logging::AdhearsionLogger.formatters = [Log4r::DefaultFormatter]
+    Adhearsion::Logging.reset
   end
 
-  it 'the logging level should translate from symbols into Log4r constants' do
-    Adhearsion::Logging.logging_level.should_not be Log4r::WARN
+  it 'the logging level should translate from symbols into Logging constants' do
+    Adhearsion::Logging.logging_level.should_not be Adhearsion::Logging::WARN
     config.logging :level => :warn
-    Adhearsion::Logging.logging_level.should be Log4r::WARN
+    Adhearsion::Logging.logging_level.should be Adhearsion::Logging::WARN
   end
 
   it 'outputters should be settable' do
-    Adhearsion::Logging::AdhearsionLogger.outputters.should == [Log4r::Outputter.stdout]
-    config.logging :outputters => Log4r::Outputter.stderr
-    Adhearsion::Logging::AdhearsionLogger.outputters.should == [Log4r::Outputter.stderr]
+    Adhearsion::Logging.outputters.length.should eql(1)
+    config.logging :outputters => ::Logging.appenders.stdout
+    Adhearsion::Logging.outputters.should == [::Logging.appenders.stdout]
   end
 
-  it 'formatters should be settable' do
-    Adhearsion::Logging::AdhearsionLogger.formatters.map(&:class).should == [Log4r::DefaultFormatter]
-    config.logging :formatters => Log4r::ObjectFormatter
-    Adhearsion::Logging::AdhearsionLogger.formatters.map(&:class).should == [Log4r::ObjectFormatter]
+  it 'formatter should be settable' do
+    Adhearsion::Logging.formatter.class.should == ::Logging::Layouts::Basic
+    config.logging :formatter => ::Logging::Layouts.pattern({:pattern => '[%d] %-5l %c: %m\n'})
+    Adhearsion::Logging.formatter.class.should == ::Logging::Layouts.pattern
   end
 
   it 'a global formatter should be settable' do
-    Adhearsion::Logging::AdhearsionLogger.outputters << Log4r::Outputter.stdout
-    Adhearsion::Logging::AdhearsionLogger.formatters.map(&:class).should == [Log4r::DefaultFormatter, Log4r::DefaultFormatter]
-    config.logging :formatter => Log4r::ObjectFormatter
-    Adhearsion::Logging::AdhearsionLogger.formatters.map(&:class).should == [Log4r::ObjectFormatter, Log4r::ObjectFormatter]
+    Adhearsion::Logging.formatter.class.should == ::Logging::Layouts::Basic
+    config.logging :formatter => ::Logging::Layouts.pattern({:pattern => '[%d] %-5l %c: %m\n'})
+    Adhearsion::Logging.formatter.class.should == ::Logging::Layouts.pattern
   end
 
 end
@@ -185,13 +184,13 @@ end
 describe "Punchblock configuration" do
   describe "with config specified" do
     subject do
-      Adhearsion::Configuration::PunchblockConfiguration.new(:username => 'userb@127.0.0.1', :password => 'abc123', :wire_logger => ahn_log.pb.wire, :transport_logger => ahn_log.pb, :auto_reconnect => false).connection_options
+      Adhearsion::Configuration::PunchblockConfiguration.new(:username => 'userb@127.0.0.1', :password => 'abc123', :wire_logger => Adhearsion::Logging.get_logger(::Adhearsion::Punchblock), :transport_logger => Adhearsion::Logging.get_logger(::Adhearsion::Punchblock), :auto_reconnect => false).connection_options
     end
 
     it { subject[:username].should == 'userb@127.0.0.1' }
     it { subject[:password].should == 'abc123' }
-    it { subject[:wire_logger].should == ahn_log.pb.wire }
-    it { subject[:transport_logger].should == ahn_log.pb }
+    it { subject[:wire_logger].should == Adhearsion::Logging.get_logger(::Adhearsion::Punchblock) }
+    it { subject[:transport_logger].should == Adhearsion::Logging.get_logger(::Adhearsion::Punchblock) }
     it { subject[:auto_reconnect].should == false }
   end
 
@@ -202,8 +201,8 @@ describe "Punchblock configuration" do
 
     it { subject[:username].should == 'usera@127.0.0.1' }
     it { subject[:password].should == '1' }
-    it { subject[:wire_logger].should == ahn_log.punchblock.wire }
-    it { subject[:transport_logger].should == ahn_log.punchblock }
+    it { subject[:wire_logger].should == Adhearsion::Logging.get_logger(::Adhearsion::Punchblock) }
+    it { subject[:transport_logger].should == Adhearsion::Logging.get_logger(::Adhearsion::Punchblock) }
     it { subject[:auto_reconnect].should == true }
   end
 end

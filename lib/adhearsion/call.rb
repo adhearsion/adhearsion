@@ -8,12 +8,12 @@ module Adhearsion
 
     include HasGuardedHandlers
 
-    attr_accessor :offer, :originating_voip_platform, :context, :connection, :end_reason, :commands
+    attr_accessor :offer, :originating_voip_platform, :context, :client, :end_reason, :commands
 
     def initialize(offer = nil)
       if offer
         @offer      = offer
-        @connection = offer.connection
+        @client = offer.client
       end
 
       @tag_mutex        = Mutex.new
@@ -124,11 +124,17 @@ module Adhearsion
 
     def write_command(command)
       raise Hangup unless active? || command.is_a?(Punchblock::Command::Hangup)
-      connection.async_write id, command
+      client.execute_command command, :call_id => id
+    end
+    
+    # Logger per instance to log the call_id
+    def logger
+      @logger ||= Adhearsion::Logging::get_logger(self.class.to_s.concat(" ").concat(logger_id))
     end
 
-    def ahn_log(*args)
-      Adhearsion::Logging::DefaultAdhearsionLogger.send Adhearsion::Logging::AdhearsionLogger.sanitized_logger_name("call_#{id}"), *args
+    # Sanitize the offer id
+    def logger_id
+      Adhearsion::Logging.sanitized_logger_name(id)
     end
 
     def variables

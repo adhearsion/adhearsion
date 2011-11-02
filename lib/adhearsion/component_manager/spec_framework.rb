@@ -18,7 +18,7 @@ RSpec.configure do |config|
 
   config.before { $mock_logger = mock.as_null_object }
 
-  def ahn_log
+  def logger
     $mock_logger
   end
 end

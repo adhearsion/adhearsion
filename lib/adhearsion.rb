@@ -1,9 +1,5 @@
 # Check the Ruby version
-STDERR.puts "WARNING: You are running Adhearsion on an unsupported
-version of Ruby (Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE})!
-Please upgrade to at least Ruby v1.8.7." if RUBY_VERSION < "1.8.7"
-
-STDERR.puts "NOTICE: As of v3.0.0, Adhearsion will be dropping support for any Ruby version before v1.9.2. You should upgrade now to get ready!" if RUBY_VERSION < "1.9.2"
+STDERR.puts "WARNING: You are running Adhearsion on an unsupported version of Ruby (Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE})! Please upgrade to at least Ruby v1.9.2, JRuby 1.6.4 or Rubinius 2.0." if RUBY_VERSION < "1.9.2"
 
 $: << File.expand_path(File.dirname(__FILE__))
 
@@ -16,7 +12,6 @@ $: << File.expand_path(File.dirname(__FILE__))
   future-resource
   punchblock
   ostruct
-  log4r
   ruby_speech
   countdownlatch
   has_guarded_handlers
@@ -68,10 +63,10 @@ module Adhearsion
       if self.status == :stopping
         # This is the second shutdown request we've received while attempting
         # to shut down gracefully.  At this point, let's pull the plug...
-        ahn_log.warning "Shutting down immediately at #{Time.now}"
+        logger.warn "Shutting down immediately at #{Time.now}"
         exit
       end
-      ahn_log "Shutting down gracefully at #{Time.now}."
+      logger.info "Shutting down gracefully at #{Time.now}."
       self.status = :stopping
       Events.trigger_immediately :shutdown
       exit
