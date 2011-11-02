@@ -902,6 +902,89 @@ describe 'The #input method' do
     should_throw(:digit_request) { mock_call.input(10, :play => sound_files) }
   end
 
+  it 'waits for digits with :initial_timeout and :interdigit_timeout' do
+    initial_timeout = 6.seconds
+    interdigit_timeout = 3.seconds
+    mock_call.should_receive(:interruptible_play!).never
+    mock_call.should_receive(:wait_for_digit).once.with(initial_timeout).and_return '1'
+    mock_call.should_receive(:wait_for_digit).times(3).with(interdigit_timeout).and_return  '2', '3', '4'
+    mock_call.input(4, :initial_timeout => initial_timeout, :interdigit_timeout => interdigit_timeout).should eq '1234'
+  end
+
+  it 'waits for digits with :initial_timeout when nothing is pressed' do
+    initial_timeout = 6.seconds
+    interdigit_timeout = 3.seconds
+    mock_call.should_receive(:interruptible_play!).never
+    mock_call.should_receive(:wait_for_digit).once.with(initial_timeout).and_return nil
+    mock_call.input(4, :initial_timeout => initial_timeout, :interdigit_timeout => interdigit_timeout).should eq ''
+  end
+
+  it 'waits for digits, ignoring :timeout if :initial_timeout and :interdigit_timeout are provided' do
+    timeout = 99.hours
+    initial_timeout = 2.seconds
+    interdigit_timeout = 1.second
+    mock_call.should_receive(:wait_for_digit).once.with(initial_timeout).and_return '1'
+    mock_call.should_receive(:wait_for_digit).times(3).with(interdigit_timeout).and_return  '2', '3', '4'
+    mock_call.input(4, :timeout => timeout, :initial_timeout => initial_timeout, :interdigit_timeout => interdigit_timeout).should eq '1234'
+  end
+
+  it 'waits for digits, and given a :timeout and :initial_timeout, defaults :interdigit_timeout to :timeout' do
+    initial_timeout = 20.seconds
+    timeout = 10.seconds
+    mock_call.should_receive(:wait_for_digit).once.with(initial_timeout).and_return '1'
+    mock_call.should_receive(:wait_for_digit).times(2).with(timeout).and_return  '2', '3'
+    mock_call.input(3, :timeout => timeout, :initial_timeout => initial_timeout).should eq '123'
+  end
+
+  it 'waits for digits, and given a :timeout and :interdigit_timeout, defaults :initial_timeout to :timeout' do
+    timeout = 12.seconds
+    interdigit_timeout = 6.seconds
+    mock_call.should_receive(:wait_for_digit).once.with(timeout).and_return '1'
+    mock_call.should_receive(:wait_for_digit).times(4).with(interdigit_timeout).and_return  '2', '3', '4', '5'
+    mock_call.input(5, :timeout => timeout, :interdigit_timeout => interdigit_timeout).should eq '12345'
+  end
+
+  it 'waits for digits for :initial_timeout if sound playback is not interrupted' do
+    initial_timeout = 8.seconds
+    interdigit_timeout = 4.seconds
+    sound_files = %w[ready set go]
+    mock_call.should_receive(:interruptible_play!).once.with('ready').and_return nil
+    mock_call.should_receive(:interruptible_play!).once.with('set').and_return nil
+    mock_call.should_receive(:interruptible_play!).once.with('go').and_return nil
+    mock_call.should_receive(:wait_for_digit).once.with(initial_timeout).and_return '1'
+    mock_call.should_receive(:wait_for_digit).times(4).with(interdigit_timeout).and_return  '2', '3', '4', '5'
+    mock_call.input(5, :play => sound_files, :initial_timeout => initial_timeout, :interdigit_timeout => interdigit_timeout).should eq '12345'
+  end
+
+  it 'ignores :initial_timeout if sound playback is interrupted' do
+    initial_timeout = 8.seconds
+    interdigit_timeout = 4.seconds
+    sound_files = %w[ready set go]
+    mock_call.should_receive(:interruptible_play!).once.with('ready').and_return nil
+    mock_call.should_receive(:interruptible_play!).once.with('set').and_return '*'
+    mock_call.should_receive(:wait_for_digit).times(4).with(interdigit_timeout).and_return  '2', '3', '4', '5'
+    mock_call.input(5, :play => sound_files, :initial_timeout => initial_timeout, :interdigit_timeout => interdigit_timeout).should eq '*2345'
+  end
+
+  it 'waits for digits for :initial_timeout if speech is not interrupted' do
+    initial_timeout = 10.seconds
+    interdigit_timeout = 5.seconds
+    text = "What's your area code?"
+    mock_call.should_receive(:speak).once.with(text, :interruptible => true).and_return nil
+    mock_call.should_receive(:wait_for_digit).once.with(initial_timeout).and_return '1'
+    mock_call.should_receive(:wait_for_digit).times(2).with(interdigit_timeout).and_return '2', '0'
+    mock_call.input(3, :initial_timeout => initial_timeout, :interdigit_timeout => interdigit_timeout, :speak => {:text => text}).should eq '120'
+  end
+
+  it 'ignores :initial_timeout if speech is interrupted' do
+    initial_timeout = 10.seconds
+    interdigit_timeout = 5.seconds
+    text = "What's your area code?"
+    mock_call.should_receive(:speak).once.with(text, :interruptible => true).and_return '3'
+    mock_call.should_receive(:wait_for_digit).times(2).with(interdigit_timeout).and_return '1', '2'
+    mock_call.input(3, :initial_timeout => initial_timeout, :interdigit_timeout => interdigit_timeout, :speak => {:text => text}).should eq '312'
+  end
+
   it 'should default the :accept_key to "#" when unlimited digits are to be collected' do
     mock_call.should_receive(:wait_for_digit).times(2).with(-1).and_return '*', '#'
     mock_call.input.should == '*'
@@ -1061,6 +1144,31 @@ describe 'The #input method' do
     mock_call.should_receive(:wait_for_digit).once.with -1
     mock_call.input(1, :play => 'unavailable sound file', :speak => {:text => "The sound file was not available"})
     @output.read.should == "STREAM FILE \"unavailable sound file\" \"1234567890*#\"\n"
+  end
+
+  it 'waits for digits for :initial_timeout if fall back TTS is not interrupted' do
+    initial_timeout = 10.seconds
+    interdigit_timeout = 5.seconds
+    text = "What's your sign?"
+    missing_sound_file = 'missing-sound-file'
+    pbx_should_respond_with_stream_file_failure_on_open
+    mock_call.should_receive(:speak).once.with(text, :interruptible => true).and_return nil
+    mock_call.should_receive(:wait_for_digit).once.with(initial_timeout).and_return '1'
+    mock_call.should_receive(:wait_for_digit).once.with(interdigit_timeout).and_return '2'
+    mock_call.input(2, :play => missing_sound_file, :speak => {:text => text}, :initial_timeout => initial_timeout, :interdigit_timeout => interdigit_timeout).should eq '12'
+    @output.read.should == "STREAM FILE \"#{missing_sound_file}\" \"1234567890*#\"\n"
+  end
+
+  it 'ignores :initial_timeout if fall back TTS is interrupted' do
+    initial_timeout = 10.seconds
+    interdigit_timeout = 5.seconds
+    text = "What's your sign?"
+    missing_sound_file = 'missing-sound-file'
+    pbx_should_respond_with_stream_file_failure_on_open
+    mock_call.should_receive(:speak).once.with(text, :interruptible => true).and_return '1'
+    mock_call.should_receive(:wait_for_digit).once.with(interdigit_timeout).and_return '2'
+    mock_call.input(2, :play => missing_sound_file, :speak => {:text => text}, :initial_timeout => initial_timeout, :interdigit_timeout => interdigit_timeout).should eq '12'
+    @output.read.should == "STREAM FILE \"#{missing_sound_file}\" \"1234567890*#\"\n"
   end
 
   it 'should allow uninterruptible TTS prompts' do
