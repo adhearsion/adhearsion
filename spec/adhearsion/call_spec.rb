@@ -408,4 +408,11 @@ module Adhearsion
       end
     end
   end
+
+  describe Call::Registry do
+    it "should set a value and retrieve it"
+      Adhearsion::Call::Registry[:test_value] = '123'
+      Adhearsion::Call::Registry[:test_value].should == '123'
+    end
+  end#Call::Registry
 end

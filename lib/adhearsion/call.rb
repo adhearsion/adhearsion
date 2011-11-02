@@ -177,6 +177,26 @@ module Adhearsion
         hangup = Hangup.new
         each { |command| command.response = hangup if command.requested? }
       end
+
     end
-  end
-end
+
+
+      class Registry
+          @registry = Hash.new
+          @mutex = Mutex.new
+          
+          def self.[](k)
+            @mutex.synchronize do
+              @registry[k]
+            end
+          end
+          
+          def self.[]=(k, value)
+            @mutex.synchronize do
+              @registry[k] = value
+            end
+          end
+      end#Registry
+
+  end#Call
+end#Adhearsion

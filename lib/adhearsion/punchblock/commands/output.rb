@@ -118,25 +118,10 @@ module Adhearsion
           end
         end#output
 
-        # Plays the given SSML, allowing for DTMF input of a single digit from the user
-        # At the end of the played file it returns nil
+        # Same as interruptible_play, but throws an error if unable to play the output
+        # @see play_time
         #
-        # @example Ask the user for a number, then play it back
-        #   ssml = RubySpeech::SSML.draw do
-        #     "Please press a button"
-        #   end
-        #   input = interruptible_play ssml
-        #   play input unless input.nil?
-        #
-        # @param [RubySpeech::SSML::Speak] The SSML to play to the user
-        # @param [Hash] Additional options.
-        # +:digits+ - How many digits to expect from the user
-        # +:initial_timeout+ - Time in ms to wait for the first digit before time-out
-        # +:inter_digit_timeout+ - Milliseconds to wait between every digit before timeout
-        #
-        # @return [String|Nil] The single DTMF character entered by the user, or nil if nothing was entered
-        #
-        def interruptible_play(ssml, options = {})
+        def interruptible_play!(ssml, options = {})
           result = nil
           continue = true
 
@@ -182,7 +167,33 @@ module Adhearsion
             execute_component_and_await_completion input_component
           end
           result
-        end#interruptible_play
+        end#interruptible_play!
+        
+        # Plays the given SSML, allowing for DTMF input of a single digit from the user
+        # At the end of the played file it returns nil
+        #
+        # @example Ask the user for a number, then play it back
+        #   ssml = RubySpeech::SSML.draw do
+        #     "Please press a button"
+        #   end
+        #   input = interruptible_play ssml
+        #   play input unless input.nil?
+        #
+        # @param [RubySpeech::SSML::Speak] The SSML to play to the user
+        # @param [Hash] Additional options.
+        # +:digits+ - How many digits to expect from the user
+        # +:initial_timeout+ - Time in ms to wait for the first digit before time-out
+        # +:inter_digit_timeout+ - Milliseconds to wait between every digit before timeout
+        #
+        # @return [String|Nil] The single DTMF character entered by the user, or nil if nothing was entered
+        #
+        def interruptible_play(ssml, options = {})
+          begin
+            interruptible_play! ssml, options
+          rescue Exception => e
+            false
+          end
+        end
 
         def detect_type(output)
           result = nil
