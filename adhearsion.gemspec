@@ -39,7 +39,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'girl_friday'
 
   # Development dependencies
-  s.add_development_dependency 'rspec', [">= 2.4.0"]
+  s.add_development_dependency 'rspec', [">= 2.7.0"]
   s.add_development_dependency 'flexmock'
   s.add_development_dependency 'activerecord', [">= 3.0.10"]
   s.add_development_dependency 'simplecov'
