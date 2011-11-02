@@ -237,119 +237,107 @@ describe "Adhearsion::Plugin.load" do
     end
   end
 
-  describe "Plugin subclass with rpc_method definition" do
-    it "should add a method defined using rpc" do
-      FooBar = Class.new Adhearsion::Plugin do
-        rpc :foo
-        def self.foo(call)
-          "bar"
+  [:rpc, :dialplan].each do |method|
+    describe "Plugin subclass with #{method.to_s}_method definition" do
+      it "should add a method defined using #{method.to_s} method" do
+        FooBar = Class.new Adhearsion::Plugin do
+          self.method(method).call(:foo) 
+          
+          def self.foo(call)
+            "bar"
+          end
+        end
+        
+        flexmock(Adhearsion::Plugin).should_receive("#{method.to_s}_module".to_sym).once.and_return(send("#{method.to_s}_module".to_sym))
+        Adhearsion::Plugin.load
+        send("#{method.to_s}_module".to_sym).instance_methods.include?(:foo).should be true
+      end
+
+      it "should add an instance method defined using #{method.to_s} method" do
+        FooBar = Class.new Adhearsion::Plugin do
+          self.method(method).call(:foo) 
+          def foo(call)
+            call
+          end
+        end
+        
+        flexmock(Adhearsion::Plugin).should_receive("#{method.to_s}_module".to_sym).once.and_return(send("#{method.to_s}_module".to_sym))
+        Adhearsion::Plugin.load
+        send("#{method.to_s}_module".to_sym).instance_methods.include?(:foo).should be true
+      end
+
+      it "should add an array of methods defined using #{method.to_s} method" do
+        FooBar = Class.new Adhearsion::Plugin do
+          self.method(method).call([:foo, :bar])
+
+          def self.foo(call)
+            call
+          end
+
+          def self.bar(call)
+            "foo"
+          end
+        end
+        
+        flexmock(Adhearsion::Plugin).should_receive("#{method.to_s}_module".to_sym).twice.and_return(send("#{method.to_s}_module".to_sym))
+        Adhearsion::Plugin.load
+        [:foo, :bar].each do |_method|
+          send("#{method.to_s}_module".to_sym).instance_methods.include?(_method).should be true
         end
       end
       
-      flexmock(Adhearsion::Plugin).should_receive(:rpc_module).once.and_return(rpc_module)
-      Adhearsion::Plugin.load
-      rpc_module.instance_methods.include?(:foo).should be true
+      it "should add an array of instance methods defined using #{method.to_s} method" do
+        FooBar = Class.new Adhearsion::Plugin do
+          self.method(method).call([:foo, :bar])
+          def foo(call)
+            call
+          end
+
+          def bar(call)
+            call
+          end
+        end
+        
+        flexmock(Adhearsion::Plugin).should_receive("#{method.to_s}_module".to_sym).twice.and_return(send("#{method.to_s}_module".to_sym))
+        Adhearsion::Plugin.load
+        [:foo, :bar].each do |_method|
+          send("#{method.to_s}_module".to_sym).instance_methods.include?(_method).should be true
+        end
+      end
+    
+      it "should add an array of instance and singleton methods defined using #{method.to_s} method" do
+        FooBar = Class.new Adhearsion::Plugin do
+          self.method(method).call([:foo, :bar])
+          def self.foo(call)
+            call
+          end
+
+          def bar(call)
+            call
+          end
+        end
+        
+        flexmock(Adhearsion::Plugin).should_receive("#{method.to_s}_module".to_sym).twice.and_return(send("#{method.to_s}_module".to_sym))
+        Adhearsion::Plugin.load
+        [:foo, :bar].each do |_method|
+          send("#{method.to_s}_module".to_sym).instance_methods.include?(_method).should be true
+        end
+      end
+
+      it "should add a method defined using #{method.to_s} method with a specific block" do
+        FooBar = Class.new Adhearsion::Plugin do
+          self.method(method).call(:foo) do |call|
+            puts call
+          end
+        end
+        
+        flexmock(Adhearsion::Plugin).should_receive("#{method.to_s}_module".to_sym).once.and_return(send("#{method.to_s}_module".to_sym))
+        Adhearsion::Plugin.load
+        send("#{method.to_s}_module".to_sym).instance_methods.include?(:foo).should be true
+      end
     end
   end
-  
-  describe "Plugin subclass with dialplan_method definition" do
-    it "should add a method defined using dialplan" do
-      FooBar = Class.new Adhearsion::Plugin do
-        dialplan :foo
-        def self.foo(call)
-          "bar"
-        end
-      end
-      
-      flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).once.and_return(dialplan_module)
-      Adhearsion::Plugin.load
-      dialplan_module.instance_methods.include?(:foo).should be true
-    end
 
-    it "should add an instance method defined using dialplan" do
-      FooBar = Class.new Adhearsion::Plugin do
-        dialplan :foo
-        def foo(call)
-          call
-        end
-      end
-      
-      flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).once.and_return(dialplan_module)
-      Adhearsion::Plugin.load
-      dialplan_module.instance_methods.include?(:foo).should be true
-    end
-
-    it "should add an array of methods defined using dialplan_method" do
-      FooBar = Class.new Adhearsion::Plugin do
-        dialplan [:foo, :bar]
-
-        def self.foo(call)
-          call
-        end
-
-        def self.bar(call)
-          "foo"
-        end
-      end
-      
-      flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).twice.and_return(dialplan_module)
-      Adhearsion::Plugin.load
-      [:foo, :bar].each do |method|
-        dialplan_module.instance_methods.include?(method).should be true
-      end
-    end
-
-    it "should add an array of instance methods defined using dialplan" do
-      FooBar = Class.new Adhearsion::Plugin do
-        dialplan [:foo, :bar]
-        def foo(call)
-          call
-        end
-
-        def bar(call)
-          call
-        end
-      end
-      
-      flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).twice.and_return(dialplan_module)
-      Adhearsion::Plugin.load
-      [:foo, :bar].each do |method|
-        dialplan_module.instance_methods.include?(method).should be true
-      end
-    end
-
-    it "should add an array of instance and singleton methods defined using dialplan" do
-      FooBar = Class.new Adhearsion::Plugin do
-        dialplan [:foo, :bar]
-        def self.foo(call)
-          call
-        end
-
-        def bar(call)
-          call
-        end
-      end
-      
-      flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).twice.and_return(dialplan_module)
-      Adhearsion::Plugin.load
-      [:foo, :bar].each do |method|
-        dialplan_module.instance_methods.include?(method).should be true
-      end
-    end
-
-    it "should add a method defined using dialplan with a specific block" do
-      FooBar = Class.new Adhearsion::Plugin do
-        dialplan :foo do |call|
-          puts call
-        end
-      end
-      
-      flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).once.and_return(dialplan_module)
-      Adhearsion::Plugin.load
-      dialplan_module.instance_methods.include?(:foo).should be true
-    end
-  end
-  
   describe "Plugin subclass with rpc_method and dialplan_method definitions" do
     it "should add a method defined using rpc and a method defined using dialplan" do
       FooBar = Class.new Adhearsion::Plugin do
