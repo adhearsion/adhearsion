@@ -2,9 +2,6 @@ require 'spec_helper'
 
 include InitializerStubs
 
-# If you have a Gemfile, require the gems listed there, including any gems
-# This is done by config/environment.rb in a real app
-
 describe Adhearsion::Plugin do
 
   describe "inheritance" do

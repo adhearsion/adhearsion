@@ -13,7 +13,7 @@ module Adhearsion
   # * create initializers
   # * add rake tasks to Adhearsion
   # * add/modify configuration files
-  # * add dialplan methods
+  # * add dialplan, rpc, console and events methods
   #
   # == How to create your Adhearsion Plugin
   #
@@ -23,6 +23,16 @@ module Adhearsion
   #   # lib/my_plugin/plugin.rb
   #   module MyPlugin
   #     class Plugin < Adhearsion::Plugin
+  #     end
+  #   end
+  #
+  # == How to add a new dialplan method
+  #
+  #   module MyPlugin
+  #     class Plugin < Adhearsion::Plugin
+  #       dialplan :my_new_dialplan_method do |call|
+  #         logger.info "this dialplan method is really awesome #{call.inspect}"
+  #       end
   #     end
   #   end
   #
@@ -40,9 +50,10 @@ module Adhearsion
 
     class << self
 
+      # Metaprogramming to create the class methods that can be used in user defined plugins to 
+      # create specific scope methods
       [:dialplan, :rpc, :events].each do |name|
 
-        ##
         # This block will create the relevant methods to handle how to add new methods
         # to Adhearsion scopes via an Adhearsion Plugin
         #
@@ -69,12 +80,14 @@ module Adhearsion
           end
         end
 
+        # This method is a helper to retrieve the specific scope module
         define_method("#{name.to_s}_module") do
           Adhearsion::Components.component_manager.instance_variable_get("@scopes")[name]
         end
 
       end
 
+      # Keep methods to be added
       @@methods_container = Hash.new{|hash, key| hash[key] = MethodsContainer.new }
 
       def subclasses
@@ -90,7 +103,7 @@ module Adhearsion
         if name.nil?
           @plugin_name ||= ActiveSupport::Inflector.underscore(self.name)
         else
-          self.plugin_name=name
+          self.plugin_name = name
         end
       end
 
@@ -109,6 +122,7 @@ module Adhearsion
         unless @@methods_container.empty?
           @@methods_container.each_pair do |scope, methods|
             logger.debug "Loading #{methods.length} #{scope} methods"
+
             methods.each_pair do |class_method, block|
               klass, method = class_method[:class], class_method[:method]
               if block.nil?
@@ -120,19 +134,19 @@ module Adhearsion
                   logger.warn("Unable to load #{scope} method #{method} from plugin class #{klass}")
                 end
               end
+
               logger.debug "Defining method #{method}"
               self.send("#{scope}_module").send(:define_method, method) do |*args|
                 block.nil? and raise NoMethodError.new "Invalid #{scope} method: <#{method}>"
                 block.call(args)
               end
+
             end
           end
         end          
       end
 
-      ##
       # Recursively initialization of all the loaded plugins
-      #
       def init_plugin(*args)
         initializers.tsort.each do |initializer|
           initializer.run(*args)
@@ -143,6 +157,11 @@ module Adhearsion
         @initializers ||= Collection.new
       end
 
+      # Class method that will be used by subclasses to initialize the plugin
+      # @param name Symbol plugin initializer name
+      # @param opts Hash
+      #     * :before specify the plugin to be loaded before another plugin
+      #     * :after  specify the plugin to be loaded after another plugin
       def init(name, opts = {})
         block_given? or raise ArgumentError, "A block must be passed while defining the Plugin initialization process"
         opts[:after] ||= initializers.last.name unless initializers.empty? || initializers.find { |i| i.name == opts[:before] }
