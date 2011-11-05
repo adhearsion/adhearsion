@@ -6,7 +6,7 @@ module Adhearsion
       describe Input do
         include PunchblockCommandTestHelpers
 
-        describe "grammar_digits" do 
+        describe "#grammar_digits" do 
           let(:grxml) {
             RubySpeech::GRXML.draw do
               self.mode = 'dtmf'
@@ -29,7 +29,31 @@ module Adhearsion
             mock_execution_environment.grammar_digits(2).to_s.should == grxml.to_s 
           end#it
 
-        end#describe
+        end#describe #grammar_digits
+
+        describe "#grammar_accept" do
+          let(:grxml) {
+            RubySpeech::GRXML.draw do
+              self.mode = 'dtmf'
+              self.root = 'acceptdigits'
+              rule id: 'acceptdigits' do
+                one_of do
+                  item {'3'}
+                  item {'5'}
+                end
+              end
+            end
+          }
+
+          it 'generates the correct GRXML grammar' do
+            mock_execution_environment.grammar_accept('35').to_s.should == grxml.to_s 
+          end#it
+
+          it 'filters meaningless characters out' do
+            mock_execution_environment.grammar_accept('3+5').to_s.should == grxml.to_s 
+          end#it
+
+        end#describe #grammar_accept
       end#describe
     end
   end

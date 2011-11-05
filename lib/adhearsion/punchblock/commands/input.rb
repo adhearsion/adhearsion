@@ -23,6 +23,25 @@ module Adhearsion
             end
           end
         end#grammar_digits
+ 
+        # Utility method to create a single-digit grammar to accept only some digits
+        #
+        # @param [String] String representing the digits to accept
+        # @return [RubySpeech::GRXML::Grammar] A grammar suitable for use in SSML prompts.
+        def grammar_accept(digits)
+            allowed_digits = '012345789#*'
+            gram_digits = digits.chars.map {|x| x if allowed_digits.include? x}
+            gram_digits.compact!
+            grammar = RubySpeech::GRXML.draw do
+              self.mode = 'dtmf'
+              self.root = 'acceptdigits'
+              rule id: 'acceptdigits' do
+                one_of do
+                  gram_digits.each {|d| item { d.to_s}}
+                end
+              end
+            end
+        end
 
         def input!(*args, &block)
           options = args.last.kind_of?(Hash) ? args.pop : {}

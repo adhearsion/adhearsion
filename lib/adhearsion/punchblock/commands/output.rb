@@ -257,6 +257,27 @@ module Adhearsion
           }
         end
 
+        def stream_file(argument, digits = '0123456789#*')
+          result = nil
+          ssml = ssml_for argument
+          output_component = ::Punchblock::Component::Output.new :ssml => ssml.to_s
+          input_stopper_component = ::Punchblock::Component::Input.new :mode => :dtmf,
+            :grammar => {
+              :value => grammar_accept(digits).to_s
+          }
+          input_stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
+            Thread.new {
+              output_component.stop! unless output_component.complete?
+              reason = event.reason
+              result = reason.interpretation if reason.respond_to? :interpretation
+            }
+          end
+          write_and_await_response input_stopper_component
+          execute_component_and_await_completion output_component
+          input_stopper_component.stop! unless input_stopper_component.complete?
+          result
+        end
+
       end#module
     end#module
   end#module

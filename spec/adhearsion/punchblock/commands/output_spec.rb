@@ -383,6 +383,61 @@ module Adhearsion
             mock_execution_environment.detect_type(output).should be :text
           end
         end
+
+        describe "#stream_file" do
+          let (:allowed_digits) { '35' }
+          let(:prompt) { "Press 3 or 5 to make something happen." }
+
+          let(:ssml) {
+            RubySpeech::SSML.draw do
+              "Press 3 or 5 to make something happen."
+            end
+          }
+          let(:grammar) {
+           RubySpeech::GRXML.draw do
+              self.mode = 'dtmf'
+              self.root = 'acceptdigits'
+              rule id: 'acceptdigits' do
+                one_of do
+                  allowed_digits.each {|d| item { d.to_s}}
+                end
+              end
+            end 
+          }
+
+          let(:output_component) {
+            Punchblock::Component::Output.new :ssml => ssml.to_s
+          }
+          let(:input_component) {
+            Punchblock::Component::Input.new(
+              {:mode => :dtmf,
+               :grammar => { :value => grammar.to_s }
+            })
+          }
+
+          #test does pass and method works, but not sure if the empty method is a good idea
+          it "plays the correct input" do
+            def mock_execution_environment.write_and_await_response(input_component)
+              # it is actually a no-op here
+            end
+            expect_component_execution Punchblock::Component::Output.new(:ssml => ssml.to_s)
+            mock_execution_environment.stream_file(prompt, allowed_digits)
+          end
+
+          it "returns a single digit amongst the allowed when pressed" do
+            flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => '5', :name => :input))
+            def mock_execution_environment.write_and_await_response(input_component)
+              input_component.execute_handler
+            end
+            flexmock(Punchblock::Component::Input).new_instances do |input|
+              input.should_receive(:complete?).and_return(false)
+            end
+            flexmock(Punchblock::Component::Output).new_instances.should_receive(:stop!)
+            mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(output_component)
+            mock_execution_environment.stream_file(prompt, allowed_digits).should == '5'
+          end
+
+        end#describe #stream_file
         
         describe "#raw_output" do
           pending
