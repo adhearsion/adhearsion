@@ -31,13 +31,53 @@ describe Adhearsion::Plugin do
   end
 
   describe "metaprogramming" do
-    [:dialplan, :rpc, :events].each do |method|
+    Adhearsion::Plugin::SCOPE_NAMES.each do |method|
       it "should respond to #{method.to_s}" do
         Adhearsion::Plugin.should respond_to(method)
       end      
       it "should respond to #{method.to_s}_module" do
         Adhearsion::Plugin.should respond_to("#{method.to_s}_module")
       end      
+    end
+  end
+
+  describe "extending an object with a scope methods" do
+    
+    before(:each) do
+      FooBar = Class.new Adhearsion::Plugin do
+        rpc :foo
+        dialplan :foo
+        
+        def self.foo(call)
+          "bar"
+        end
+      end
+    end
+    
+    after(:each) do
+      defined?(FooBar) and Object.send(:remove_const, :"FooBar")
+    end
+
+    describe "when extending a Class" do
+      it "should respond to any of the scope methods" do
+        Adhearsion::Plugin.load
+        Adhearsion::Plugin.send(:dialplan_module).instance_methods.include?(:foo).should be true
+        A = Class.new
+        Adhearsion::Plugin.add_dialplan_methods(A)
+        A.new.should respond_to(:foo)
+      end
+    end
+    
+    describe "when extending an instance" do
+      it "should respond to any of the scope methods" do
+        
+        Adhearsion::Plugin.load
+        Adhearsion::Plugin.send(:dialplan_module).instance_methods.include?(:foo).should be true
+        B = Class.new
+        b = B.new
+        Adhearsion::Plugin.add_dialplan_methods(b)
+        b.should respond_to(:foo)
+      end
     end
   end
 
@@ -116,22 +156,19 @@ end
 describe "Adhearsion::Plugin.load" do
   
   before(:each) do
-    Adhearsion::Plugin.send(:subclasses=, nil)
-    Adhearsion::Plugin.class_variable_set("@@methods_container", Hash.new{|hash, key| hash[key] = Adhearsion::Plugin::MethodsContainer.new })
-  end
+    Adhearsion::Plugin.class_eval do
+      def self.reset_methods_scope
+        @methods_scope = Hash.new{|hash, key| hash[key] = Module.new}
+      end
 
-  let(:o) do
-    o = Object.new
-    o.class.send(:define_method, :load_code) do |code|
+      def self.reset_subclasses
+        @subclasses=nil
+      end
     end
-  end
 
-  let(:dialplan_module) do
-    Module.new
-  end
-
-  let(:rpc_module) do
-    Module.new
+    Adhearsion::Plugin.class_variable_set("@@methods_container", Hash.new{|hash, key| hash[key] = Adhearsion::Plugin::MethodsContainer.new })
+    Adhearsion::Plugin.reset_methods_scope
+    Adhearsion::Plugin.reset_subclasses
   end
 
   after(:each) do
@@ -245,9 +282,18 @@ describe "Adhearsion::Plugin.load" do
           end
         end
         
-        flexmock(Adhearsion::Plugin).should_receive("#{method.to_s}_module".to_sym).once.and_return(send("#{method.to_s}_module".to_sym))
         Adhearsion::Plugin.load
-        send("#{method.to_s}_module".to_sym).instance_methods.include?(:foo).should be true
+        Adhearsion::Plugin.methods_scope[method].instance_methods.include?(:foo).should be true
+      end
+
+      it "should add a method defined using #{method.to_s} method with a block" do
+        FooBar = Class.new Adhearsion::Plugin do
+          block = lambda{|call| "bar"}
+          self.method(method).call(:foo, &block)
+        end
+        
+        Adhearsion::Plugin.load
+        Adhearsion::Plugin.methods_scope[method].instance_methods.include?(:foo).should be true
       end
 
       it "should add an instance method defined using #{method.to_s} method" do
@@ -258,9 +304,8 @@ describe "Adhearsion::Plugin.load" do
           end
         end
         
-        flexmock(Adhearsion::Plugin).should_receive("#{method.to_s}_module".to_sym).once.and_return(send("#{method.to_s}_module".to_sym))
         Adhearsion::Plugin.load
-        send("#{method.to_s}_module".to_sym).instance_methods.include?(:foo).should be true
+        Adhearsion::Plugin.methods_scope[method].instance_methods.include?(:foo).should be true
       end
 
       it "should add an array of methods defined using #{method.to_s} method" do
@@ -276,11 +321,11 @@ describe "Adhearsion::Plugin.load" do
           end
         end
         
-        flexmock(Adhearsion::Plugin).should_receive("#{method.to_s}_module".to_sym).twice.and_return(send("#{method.to_s}_module".to_sym))
         Adhearsion::Plugin.load
         [:foo, :bar].each do |_method|
-          send("#{method.to_s}_module".to_sym).instance_methods.include?(_method).should be true
+          Adhearsion::Plugin.methods_scope[method].instance_methods.include?(_method).should be true
         end
+        Adhearsion::Plugin.methods_scope[method].instance_methods.length.should eql(2)
       end
       
       it "should add an array of instance methods defined using #{method.to_s} method" do
@@ -295,10 +340,9 @@ describe "Adhearsion::Plugin.load" do
           end
         end
         
-        flexmock(Adhearsion::Plugin).should_receive("#{method.to_s}_module".to_sym).twice.and_return(send("#{method.to_s}_module".to_sym))
         Adhearsion::Plugin.load
         [:foo, :bar].each do |_method|
-          send("#{method.to_s}_module".to_sym).instance_methods.include?(_method).should be true
+          Adhearsion::Plugin.methods_scope[method].instance_methods.include?(_method).should be true
         end
       end
     
@@ -314,10 +358,9 @@ describe "Adhearsion::Plugin.load" do
           end
         end
         
-        flexmock(Adhearsion::Plugin).should_receive("#{method.to_s}_module".to_sym).twice.and_return(send("#{method.to_s}_module".to_sym))
         Adhearsion::Plugin.load
         [:foo, :bar].each do |_method|
-          send("#{method.to_s}_module".to_sym).instance_methods.include?(_method).should be true
+          Adhearsion::Plugin.methods_scope[method].instance_methods.include?(_method).should be true
         end
       end
 
@@ -328,9 +371,9 @@ describe "Adhearsion::Plugin.load" do
           end
         end
         
-        flexmock(Adhearsion::Plugin).should_receive("#{method.to_s}_module".to_sym).once.and_return(send("#{method.to_s}_module".to_sym))
         Adhearsion::Plugin.load
-        send("#{method.to_s}_module".to_sym).instance_methods.include?(:foo).should be true
+        Adhearsion::Plugin.methods_scope[method].instance_methods.include?(:foo).should be true
+        Adhearsion::Plugin.send("#{method.to_s}_module".to_sym).instance_methods.include?(:foo).should be true
       end
     end
   end
@@ -346,11 +389,8 @@ describe "Adhearsion::Plugin.load" do
         end
       end
       
-      flexmock(Adhearsion::Plugin).should_receive(:dialplan_module).once.and_return(dialplan_module)
-      flexmock(Adhearsion::Plugin).should_receive(:rpc_module).once.and_return(rpc_module)
       Adhearsion::Plugin.load
-      rpc_module.instance_methods.include?(:foo).should be true
-      dialplan_module.instance_methods.include?(:foo).should be true
+      Adhearsion::Plugin.send(:dialplan_module).instance_methods.include?(:foo).should be true
     end
   end
   
