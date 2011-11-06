@@ -57,7 +57,7 @@ module Adhearsion
       end
 
       def extend_with_dialplan_component_methods!
-        Components.component_manager.extend_object_with(self, :dialplan) if Components.component_manager
+        Plugin.add_dialplan_methods(self) if Plugin
       end
 
       def extend_with_variable_accessor_methods!

@@ -17,6 +17,12 @@ module Adhearsion
         subject.metaclass.included_modules.should include(Adhearsion::Punchblock::Commands)
       end
 
+      it "should add plugin dialplan methods" do
+        flexmock(Adhearsion::Plugin).should_receive(:methods_scope).once.and_return({:dialplan => Module.new { def foo; end}})
+        e = ExecutionEnvironment.create call, entry_point
+        e.should respond_to(:foo)
+      end
+
       before { flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_accept_incoming_calls).and_return false }
 
       it "should define variables accessor methods" do
