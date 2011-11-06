@@ -43,6 +43,8 @@ module Adhearsion
 
     METHODS_OPTIONS = {:load => true, :scope => false}
 
+    SCOPE_NAMES = [:dialplan, :rpc, :events]
+    
     autoload :Configuration
     autoload :Collection   
     autoload :Initializer
@@ -50,9 +52,10 @@ module Adhearsion
 
     class << self
 
+      
       # Metaprogramming to create the class methods that can be used in user defined plugins to 
       # create specific scope methods
-      [:dialplan, :rpc, :events].each do |name|
+      SCOPE_NAMES.each do |name|
 
         # This block will create the relevant methods to handle how to add new methods
         # to Adhearsion scopes via an Adhearsion Plugin
@@ -63,7 +66,7 @@ module Adhearsion
         #   end
         # end
 
-        define_method(name) do |method_name, args = nil|
+        define_method(name) do |method_name, args = nil, &block|
           if method_name.is_a?(Array)
             method_name.each do |method| 
               send(name, method, args)
@@ -73,18 +76,32 @@ module Adhearsion
           options = args.nil? ? METHODS_OPTIONS : METHODS_OPTIONS.merge(args)
           options[:load] or return
           logger.debug "Adding method #{method_name} to scope #{name}"
-          if block_given?
-            @@methods_container[name].store({:class => self, :method => method_name}, Proc.new)
-          else
+          if block.nil?
             @@methods_container[name].store({:class => self, :method => method_name}, nil)
+
+          else
+            @@methods_container[name].store({:class => self, :method => method_name}, block)
           end
         end
 
         # This method is a helper to retrieve the specific scope module
         define_method("#{name.to_s}_module") do
-          Adhearsion::Components.component_manager.instance_variable_get("@scopes")[name]
+          Adhearsion::Plugin.methods_scope[name]
         end
 
+        # Helper to add scope methods to any class/instance
+        define_method("add_#{name.to_s}_methods") do |object|
+          if object.kind_of?(Module)
+            object.send :include, Adhearsion::Plugin.methods_scope[name]
+          else
+            object.extend Adhearsion::Plugin.methods_scope[name]
+          end
+          object
+        end
+      end
+
+      def methods_scope
+        @methods_scope ||= Hash.new{|hash, key| hash[key] = Module.new}
       end
 
       # Keep methods to be added
@@ -95,7 +112,7 @@ module Adhearsion
       end
       
       def inherited(base)
-        logger.trace "Detected new plugin: #{base.name}"
+        logger.debug "Detected new plugin: #{base.name}"
         subclasses << base
       end
 
@@ -182,13 +199,7 @@ module Adhearsion
       end
 
       def delete_all
-        self.subclasses = nil
-      end
-
-      private
-
-      def subclasses=(value)
-        @subclasses = value
+        @subclasses = nil
       end
 
     end
