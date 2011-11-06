@@ -119,55 +119,64 @@ module Adhearsion
         end#output
 
         # Same as interruptible_play, but throws an error if unable to play the output
-        # @see play_time
+        # @see interruptible_play
         #
-        def interruptible_play!(ssml, options = {})
+        def interruptible_play!(*outputs)
           result = nil
-          continue = true
-
-          digits = options.delete :digits
-          digits ||= 1
-
-          initial_timeout = options.delete :initial_timeout
-          initial_timeout ||= 2000
-
-          inter_digit_timeout = options.delete :inter_digit_timeout
-          inter_digit_timeout ||= 2000
-
-          output_component = ::Punchblock::Component::Output.new :ssml => ssml.to_s
-          input_stopper_component = ::Punchblock::Component::Input.new :mode => :dtmf,
-            :initial_timeout => initial_timeout,
-            :grammar => {
-              :value => grammar_digits(1).to_s
-          }
-          input_stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
-            Thread.new {
-              output_component.stop! unless output_component.complete?
-              reason = event.reason
-              result = reason.interpretation if reason.respond_to? :interpretation
-              if reason.name == :noinput
-                continue = false
-              end
-            }
-          end
-          write_and_await_response input_stopper_component
-          execute_component_and_await_completion output_component
-          input_stopper_component.stop! unless input_stopper_component.complete?
-          if digits > 1 && continue
-            input_component = ::Punchblock::Component::Input.new :mode => :dtmf,
-            :initial_timeout => inter_digit_timeout,
-            :inter_digit_timeout => inter_digit_timeout,
-              :grammar => {
-                :value => grammar_digits(digits - 1).to_s
-            }
-            input_component.register_event_handler ::Punchblock::Event::Complete do |event|
-              reason = event.reason
-              result += reason.interpretation if reason.respond_to? :interpretation
-            end
-            execute_component_and_await_completion input_component
+          outputs.flatten.each do |output|
+            result = stream_file(output,  "1234567890*#")
+            break if !result.nil?
           end
           result
-        end#interruptible_play!
+        end
+
+        # def interruptible_play!(ssml, options = {})
+        #   result = nil
+        #   continue = true
+
+        #   digits = options.delete :digits
+        #   digits ||= 1
+
+        #   initial_timeout = options.delete :initial_timeout
+        #   initial_timeout ||= 2000
+
+        #   inter_digit_timeout = options.delete :inter_digit_timeout
+        #   inter_digit_timeout ||= 2000
+
+        #   output_component = ::Punchblock::Component::Output.new :ssml => ssml.to_s
+        #   input_stopper_component = ::Punchblock::Component::Input.new :mode => :dtmf,
+        #     :initial_timeout => initial_timeout,
+        #     :grammar => {
+        #       :value => grammar_digits(1).to_s
+        #   }
+        #   input_stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
+        #     Thread.new {
+        #       output_component.stop! unless output_component.complete?
+        #       reason = event.reason
+        #       result = reason.interpretation if reason.respond_to? :interpretation
+        #       if reason.name == :noinput
+        #         continue = false
+        #       end
+        #     }
+        #   end
+        #   write_and_await_response input_stopper_component
+        #   execute_component_and_await_completion output_component
+        #   input_stopper_component.stop! unless input_stopper_component.complete?
+        #   if digits > 1 && continue
+        #     input_component = ::Punchblock::Component::Input.new :mode => :dtmf,
+        #     :initial_timeout => inter_digit_timeout,
+        #     :inter_digit_timeout => inter_digit_timeout,
+        #       :grammar => {
+        #         :value => grammar_digits(digits - 1).to_s
+        #     }
+        #     input_component.register_event_handler ::Punchblock::Event::Complete do |event|
+        #       reason = event.reason
+        #       result += reason.interpretation if reason.respond_to? :interpretation
+        #     end
+        #     execute_component_and_await_completion input_component
+        #   end
+        #   result
+        # end#interruptible_play!
         
         # Plays the given SSML, allowing for DTMF input of a single digit from the user
         # At the end of the played file it returns nil
@@ -187,12 +196,19 @@ module Adhearsion
         #
         # @return [String|Nil] The single DTMF character entered by the user, or nil if nothing was entered
         #
-        def interruptible_play(ssml, options = {})
-          begin
-            interruptible_play! ssml, options
-          rescue Exception => e
-            false
+        def interruptible_play(*outputs)
+          result = nil
+          outputs.flatten.each do |output|
+            begin
+              result = interruptible_play!(output)
+            rescue PlaybackError => e
+              # Ignore this exception and play the next output
+              logger.warn e.message
+            ensure
+              break if result
+            end
           end
+          result
         end
 
         def detect_type(output)
@@ -204,10 +220,10 @@ module Adhearsion
             result = :numeric
           end
           if !result && URI::regexp(%w(http https)).match(output.to_s)
-            result = :file
+            result = :audio
           end
           if !result && /\//.match(output.to_s)
-            result = :file
+            result = :audio
           end
           result ||= :text
         end#detect_type
@@ -257,6 +273,12 @@ module Adhearsion
           }
         end
 
+        # Plays a single output, not only files, accepting interruption by one of the digits specified
+        # Currently still stops execution, will be fixed soon in Punchblock
+        #
+        # @param [Object] String or Hash specifying output and options
+        # @param [String] String with the digits that are allowed to interrupt output
+        # @return [String|nil] The pressed digit, or nil if nothing was pressed
         def stream_file(argument, digits = '0123456789#*')
           result = nil
           ssml = ssml_for argument
@@ -274,8 +296,26 @@ module Adhearsion
           end
           write_and_await_response input_stopper_component
           execute_component_and_await_completion output_component
-          input_stopper_component.stop! unless input_stopper_component.complete?
+          # input_stopper_component.stop! unless input_stopper_component.complete?
+          input_stopper_component.stop! if input_stopper_component.executing?
+          return parse_single_dtmf result if !result.nil?
           result
+        end
+
+
+        # Parses a single DTMF tone in the format dtmf-*
+        #
+        # @param [String] the tone string to be parsed
+        # @return [String] the digit in case input was 0-9, * or # if star or pound respectively
+        def parse_single_dtmf(result)
+          tone = result.split('-')[1]
+          case tone
+            when 'star'
+              return '*'
+            when 'pound'
+              return '#'
+          end
+          return tone
         end
 
       end#module

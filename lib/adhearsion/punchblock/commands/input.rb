@@ -32,15 +32,25 @@ module Adhearsion
             allowed_digits = '012345789#*'
             gram_digits = digits.chars.map {|x| x if allowed_digits.include? x}
             gram_digits.compact!
+
             grammar = RubySpeech::GRXML.draw do
               self.mode = 'dtmf'
-              self.root = 'acceptdigits'
+              self.root = 'inputdigits'
               rule id: 'acceptdigits' do
                 one_of do
                   gram_digits.each {|d| item { d.to_s}}
                 end
               end
+
+
+              rule id: 'inputdigits', scope: 'public' do
+                item repeat: '1' do
+                  ruleref uri: '#acceptdigits'
+                end
+              end
+
             end
+            grammar
         end
 
         def input!(*args, &block)
