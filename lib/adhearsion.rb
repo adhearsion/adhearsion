@@ -26,7 +26,6 @@ module Adhearsion
 
   autoload :Asterisk
   autoload :Call
-  autoload :CallRouting
   autoload :Calls
   autoload :Commands
   autoload :Components

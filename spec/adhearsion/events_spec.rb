@@ -6,6 +6,10 @@ module Adhearsion
     EventClass = Class.new
     ExceptionClass = Class.new StandardError
 
+    before do
+      Events.refresh!
+    end
+
     it "should have a GirlFriday::Queue to handle events" do
       Events.queue.should be_a GirlFriday::WorkQueue
     end
@@ -15,7 +19,7 @@ module Adhearsion
       o = nil
       latch = CountDownLatch.new 1
 
-      flexmock(Events).should_receive(:handle_message).and_return do |message|
+      flexmock(Events.instance).should_receive(:handle_message).and_return do |message|
         t = message.type
         o = message.object
         latch.countdown!
@@ -23,7 +27,7 @@ module Adhearsion
 
       Events.trigger :event, :foo
 
-      latch.wait(10).should be_true
+      latch.wait(2).should be_true
       t.should == :event
       o.should == :foo
     end
@@ -32,7 +36,7 @@ module Adhearsion
       t = nil
       o = nil
 
-      flexmock(Events).should_receive(:handle_message).and_return do |message|
+      flexmock(Events.instance).should_receive(:handle_message).and_return do |message|
         sleep 0.25
         t = message.type
         o = message.object
@@ -59,7 +63,7 @@ module Adhearsion
     end
 
     it "should handle exceptions in event processing by raising the exception as an event" do
-      flexmock(Events).should_receive(:trigger).with(:exception, ExceptionClass).once
+      flexmock(Events.instance).should_receive(:trigger).with(:exception, ExceptionClass).once
 
       Events.register_handler :event, EventClass do |event|
         raise ExceptionClass

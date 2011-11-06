@@ -6,7 +6,9 @@ module Adhearsion
 
       class << self
         def handle(call)
-          new.handle call
+          IMPORTANT_THREADS << Thread.new do
+            new.handle call
+          end
         end
       end
 

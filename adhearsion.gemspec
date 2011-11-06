@@ -20,13 +20,13 @@ Gem::Specification.new do |s|
 
   # Runtime dependencies
   s.add_runtime_dependency "bundler", [">= 1.0.10"]
-  s.add_runtime_dependency 'punchblock', [">= 0.5.0"]
+  s.add_runtime_dependency 'punchblock', [">= 0.5.1"]
   s.add_runtime_dependency "logging", [">= 1.6.1"]
   s.add_runtime_dependency "activesupport", [">= 3.0.10"]
   # i18n is only strictly a dependency for ActiveSupport >= 3.0.0
   # Since it doesn't conflict with <3.0.0 we'll require it to be
   # on the safe side.
-  s.add_runtime_dependency "i18n", "~> 0.5.0"
+  s.add_runtime_dependency "i18n", ">= 0.5.0"
   s.add_runtime_dependency "json"
   s.add_runtime_dependency "rubigen", [">= 1.5.6"]
   s.add_runtime_dependency "rake"
@@ -39,7 +39,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'girl_friday'
 
   # Development dependencies
-  s.add_development_dependency 'rspec', [">= 2.4.0"]
+  s.add_development_dependency 'rspec', [">= 2.7.0"]
   s.add_development_dependency 'flexmock'
   s.add_development_dependency 'activerecord', [">= 3.0.10"]
   s.add_development_dependency 'simplecov'
