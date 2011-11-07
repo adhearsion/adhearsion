@@ -41,15 +41,30 @@ module Adhearsion
         end
 
         describe "#play_audio" do
-          let(:audio_file) { "boo.wav" }
+          let(:audio_file) { "/sounds/boo.wav" }
+          let(:fallback) { "text for tts" }
           let(:ssml) do
             file = audio_file
             RubySpeech::SSML.draw { audio :src => file }
+          end
+          let(:ssml_with_fallback) do
+            file = audio_file
+            fallback_text = fallback
+            RubySpeech::SSML.draw { 
+              audio :src => file do
+                fallback_text
+              end
+            }
           end
 
           it 'plays the correct ssml' do
             mock_execution_environment.should_receive(:play_ssml).once.with(ssml).and_return true
             mock_execution_environment.play_audio(audio_file).should be true
+          end
+
+          it 'allows for fallback tts' do
+            mock_execution_environment.should_receive(:play_ssml).once.with(ssml_with_fallback).and_return true
+            mock_execution_environment.play_audio(audio_file, :fallback => fallback).should be true
           end
         end
 

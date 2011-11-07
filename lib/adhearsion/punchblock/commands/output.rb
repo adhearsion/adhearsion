@@ -96,11 +96,14 @@ module Adhearsion
         # The Punchblock backend will have to handle cases like Asterisk where there is a fixed sounds directory.
         #
         # @param [String] http:// URL or full disk path to the sound file
+        # @param [Hash] Additional options to specify how exactly to say time specified.
+        # +:fallback+ - The text to play if the file is not available
         #
         # @return [Boolean] true on correct play of the file, false on file missing or not playable
         #
-        def play_audio(filename)
-          play_ssml(ssml_for_audio(filename))
+        def play_audio(*args)
+          argument, options = args.flatten
+          play_ssml(ssml_for_audio(argument, options))
         end
 
         def play_ssml(ssml, options = {})
@@ -268,8 +271,12 @@ module Adhearsion
         end
 
         def ssml_for_audio(argument, options = {})
+          options ||= {}
+          fallback = options.delete :fallback
           RubySpeech::SSML.draw {
-            audio :src => argument
+            audio :src => argument do
+              fallback
+            end
           }
         end
 
