@@ -40,7 +40,7 @@ module Adhearsion
               let(:callback) { lambda { |rec| raise TestException } }
 
               it "should pass the exception to the events system" do
-                flexmock(Events).should_receive(:trigger).once.with(['exception'], TestException)
+                flexmock(Events).should_receive(:trigger).once.with(:exception, TestException)
                 component.add_event response
               end
             end
