@@ -633,6 +633,18 @@ module Adhearsion
                 menu_instance.execute_invalid_hook
                 menu_instance.restart!
               when Menu::MenuGetAnotherDigit
+        		   
+                if options.has_key? :speak				
+        				  raise ArgumentError unless options[:speak].is_a? Hash
+        				  raise ArgumentError, 'Must include a text string when requesting TTS fallback' unless options[:speak].has_key?(:text)
+        				
+        				  unless defined? speak_options
+          					speak_options = options[:speak].clone
+          					speak_text = speak_options.delete(:text)
+        				  end				
+        				
+        				  speak(speak_text, speak_options)
+      			    end
 
                 next_digit = play_sound_files_for_menu(menu_instance, sound_files)
                 if next_digit
