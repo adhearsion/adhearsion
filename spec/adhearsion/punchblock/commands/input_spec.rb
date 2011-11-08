@@ -6,7 +6,7 @@ module Adhearsion
       describe Input do
         include PunchblockCommandTestHelpers
 
-        describe "#grammar_digits" do 
+        describe "#grammar_digits" do
           let(:grxml) {
             RubySpeech::GRXML.draw do
               self.mode = 'dtmf'
@@ -24,9 +24,9 @@ module Adhearsion
               end
             end
           }
-          
+
           it 'generates the correct GRXML grammar' do
-            mock_execution_environment.grammar_digits(2).to_s.should == grxml.to_s 
+            mock_execution_environment.grammar_digits(2).to_s.should == grxml.to_s
           end#it
 
         end#describe #grammar_digits
@@ -53,11 +53,11 @@ module Adhearsion
           }
 
           it 'generates the correct GRXML grammar' do
-            mock_execution_environment.grammar_accept('35').to_s.should == grxml.to_s 
+            mock_execution_environment.grammar_accept('35').to_s.should == grxml.to_s
           end#it
 
           it 'filters meaningless characters out' do
-            mock_execution_environment.grammar_accept('3+5').to_s.should == grxml.to_s 
+            mock_execution_environment.grammar_accept('3+5').to_s.should == grxml.to_s
           end#it
 
         describe "#parse_single_dtmf"  do
@@ -109,20 +109,24 @@ module Adhearsion
               )
             }
 
+            def expect_component_complete_event
+              complete_event = Punchblock::Event::Complete.new
+              flexmock(complete_event).should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
+              flexmock(Punchblock::Component::Input).new_instances do |input|
+                input.should_receive(:complete?).and_return(false)
+                input.should_receive(:complete_event).and_return(flexmock('FutureResource', :resource => complete_event))
+              end
+            end
+
             it "sends the correct input component" do
-              mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(input_component)
-              mock_execution_environment.wait_for_digit(timeout)
+              expect_component_complete_event
+              mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(input_component).and_return input_component
+              mock_execution_environment.wait_for_digit timeout
             end
 
             it "returns the correct pressed digit" do
-              flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
-              def mock_execution_environment.write_and_await_response(input_component)
-                input_component.execute_handler
-              end
-              flexmock(Punchblock::Component::Input).new_instances do |input|
-                input.should_receive(:complete?).and_return(false)
-              end
-              mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(input_component)
+              expect_component_complete_event
+              mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(Punchblock::Component::Input).and_return input_component
               mock_execution_environment.wait_for_digit(timeout).should == '5'
             end
           end
