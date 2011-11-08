@@ -32,7 +32,6 @@ describe "Invoking an interface method via DRb" do
     end unless defined?(A)
 
     Adhearsion::Plugin.load
-    @component_manager = Adhearsion::Components::ComponentManager.new("/path/doesnt/matter")
     @door = DRb.start_service "druby://127.0.0.1:#{37832 + rand(1500)}", new_drb_rpc_object
   end
 

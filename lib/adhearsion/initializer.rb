@@ -298,20 +298,25 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
 
     def init_components_subsystem
-      @components_directory = File.expand_path "components"
-      if File.directory? @components_directory
-        Components.component_manager = Components::ComponentManager.new @components_directory
-        Kernel.send(:const_set, :COMPONENTS, Components.component_manager.lazy_config_loader)
-        Components.component_manager.globalize_global_scope!
-        Components.component_manager.extend_object_with(Events, :events)
+      if defined? Adhearsion::Components
+        logger.warn "Using deprecated components subsystem"
+        @components_directory = File.expand_path "components"
+        if File.directory? @components_directory
+          Adhearsion::Components.component_manager = Adhearsion::Components::ComponentManager.new @components_directory
+          Kernel.send(:const_set, :COMPONENTS, Adhearsion::Components.component_manager.lazy_config_loader)
+          Adhearsion::Components.component_manager.globalize_global_scope!
+          Adhearsion::Components.component_manager.extend_object_with(Events, :events)
+        else
+          logger.warn "No components directory found. Not initializing any components."
+        end
       else
-        logger.warn "No components directory found. Not initializing any components."
+        logger.info "Deprecated components subsystem not being used"
       end
     end
 
     def load_components
-      if Components.component_manager
-        Components.component_manager.load_components
+      if defined? Adhearsion::Components.component_manager
+        Adhearsion::Components.component_manager.load_components
       end
     end
 

@@ -28,7 +28,6 @@ module Adhearsion
   autoload :Call
   autoload :Calls
   autoload :Commands
-  autoload :Components
   autoload :Configuration
   autoload :Console
   autoload :Constants
