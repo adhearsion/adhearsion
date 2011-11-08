@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'pry'
 
 include InitializerStubs
 
@@ -45,11 +46,9 @@ describe Adhearsion::Plugin do
     
     before(:each) do
       FooBar = Class.new Adhearsion::Plugin do
-        rpc :foo
-        dialplan :foo
-        
-        def self.foo(call)
-          "bar"
+        #rpc :foo
+        dialplan :foo do
+          "foo".concat(bar)
         end
       end
     end
@@ -62,9 +61,16 @@ describe Adhearsion::Plugin do
       it "should respond to any of the scope methods" do
         Adhearsion::Plugin.load
         Adhearsion::Plugin.send(:dialplan_module).instance_methods.include?(:foo).should be true
-        A = Class.new
+        A = Class.new do
+          def bar
+            "bar"
+          end
+        end
+        
         Adhearsion::Plugin.add_dialplan_methods(A)
-        A.new.should respond_to(:foo)
+        a = A.new
+        a.should respond_to(:foo)
+        a.foo.should eql("foobar")
       end
     end
     

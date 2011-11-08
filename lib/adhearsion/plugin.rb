@@ -78,7 +78,6 @@ module Adhearsion
           logger.debug "Adding method #{method_name} to scope #{name}"
           if block.nil?
             @@methods_container[name].store({:class => self, :method => method_name}, nil)
-
           else
             @@methods_container[name].store({:class => self, :method => method_name}, block)
           end
@@ -144,7 +143,7 @@ module Adhearsion
               klass, method = class_method[:class], class_method[:method]
               if block.nil?
                 if klass.respond_to?(method)
-                  block = klass.method(method)
+                  block = klass.method(method).to_proc
                 elsif klass.instance_methods.include?(method)
                   block = klass.instance_method(method).bind(klass.new)
                 else
@@ -153,9 +152,9 @@ module Adhearsion
               end
 
               logger.debug "Defining method #{method}"
-              self.send("#{scope}_module").send(:define_method, method) do |*args|
+              self.send("#{scope}_module").send(:define_method, method) do
                 block.nil? and raise NoMethodError.new "Invalid #{scope} method: <#{method}>"
-                block.call(args)
+                instance_exec &block
               end
 
             end

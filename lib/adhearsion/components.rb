@@ -148,8 +148,8 @@ module Adhearsion
         class << self
           def load_code(code)
             new.tap do |instance|
-              case code.class.name
-              when "Proc"
+              case code
+              when Proc
                 instance.instance_exec &code
               else
                 instance.module_eval code
