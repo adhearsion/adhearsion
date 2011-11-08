@@ -26,7 +26,7 @@ module Adhearsion
 
       def bind(context)
         return self if @context
-        Initializer.new(@name, context, @options, &block)
+        Initializer.new @name, context, @options, &block
       end
 
       def to_s
