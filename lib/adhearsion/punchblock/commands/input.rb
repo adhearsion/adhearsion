@@ -23,55 +23,50 @@ module Adhearsion
             end
           end
         end#grammar_digits
- 
+
         # Utility method to create a single-digit grammar to accept only some digits
         #
         # @param [String] String representing the digits to accept
         # @return [RubySpeech::GRXML::Grammar] A grammar suitable for use in SSML prompts.
         def grammar_accept(digits = '0123456789#*')
-            allowed_digits = '0123456789#*'
-            gram_digits = digits.chars.map {|x| x if allowed_digits.include? x}
-            gram_digits.compact!
+          allowed_digits = '0123456789#*'
+          gram_digits = digits.chars.map {|x| x if allowed_digits.include? x}
+          gram_digits.compact!
 
-            grammar = RubySpeech::GRXML.draw do
-              self.mode = 'dtmf'
-              self.root = 'inputdigits'
-              rule id: 'acceptdigits' do
-                one_of do
-                  gram_digits.each {|d| item { d.to_s}}
-                end
+          grammar = RubySpeech::GRXML.draw do
+            self.mode = 'dtmf'
+            self.root = 'inputdigits'
+            rule id: 'acceptdigits' do
+              one_of do
+                gram_digits.each {|d| item { d.to_s}}
               end
-
-
-              rule id: 'inputdigits', scope: 'public' do
-                item repeat: '1' do
-                  ruleref uri: '#acceptdigits'
-                end
-              end
-
             end
-            grammar
+
+
+            rule id: 'inputdigits', scope: 'public' do
+              item repeat: '1' do
+                ruleref uri: '#acceptdigits'
+              end
+            end
+
+          end
+          grammar
         end
-        
+
         # Waits for a single digit and returns it, or returns nil if nothing was pressed
         #
         # @param [Integer] the timeout to wait before returning, in milliseconds
         # @return [String|nil] the pressed key, or nil if timeout was reached
         def wait_for_digit(timeout = 1000)
-          result = nil
+          input_component = execute_component_and_await_completion ::Punchblock::Component::Input.new :mode => :dtmf,
+            :initial_timeout => timeout,
+            :inter_digit_timeout => timeout,
+              :grammar => {
+                :value => grammar_accept.to_s
+            }
 
-          input_component = ::Punchblock::Component::Input.new :mode => :dtmf,
-          :initial_timeout => timeout,
-          :inter_digit_timeout => timeout,
-            :grammar => {
-              :value => grammar_accept.to_s
-          }
-
-          input_component.register_event_handler ::Punchblock::Event::Complete do |event|
-              reason = event.reason
-              result = reason.interpretation if reason.respond_to? :interpretation
-          end
-          execute_component_and_await_completion input_component
+          reason = input_component.complete_event.resource.reason
+          result = reason.respond_to?(:interpretation) ? reason.interpretation : nil
           parse_single_dtmf result
         end
 
@@ -80,20 +75,18 @@ module Adhearsion
         # @param [String] the tone string to be parsed
         # @return [String] the digit in case input was 0-9, * or # if star or pound respectively
         def parse_single_dtmf(result)
-          if result.nil?
-            return result
+          return if result.nil?
+          case tone = result.split('-')[1]
+          when 'star'
+            '*'
+          when 'pound'
+            '#'
+          else
+            tone
           end
-          tone = result.split('-')[1]
-          case tone
-            when 'star'
-              return '*'
-            when 'pound'
-              return '#'
-          end
-          return tone
         end
 
-        
+
         # Reworking of input
         # - Raise an exception if both :play and :speak are specified - DONE
         # - Allow :play arguments to be automatic, hashes, or SSML (is_a RubySpeech::SSML::Speak)
