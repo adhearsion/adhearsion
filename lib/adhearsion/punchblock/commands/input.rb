@@ -98,6 +98,39 @@ module Adhearsion
         # - Raise an exception if both :play and :speak are specified - DONE
         # - Allow :play arguments to be automatic, hashes, or SSML (is_a RubySpeech::SSML::Speak)
         # - :speak stays as a quick TTS option
+        
+
+        def input!(*args, &block)
+          options = args.last.kind_of?(Hash) ? args.pop : {}
+          number_of_digits = args.shift
+
+          options[:play]  = [*options[:play]].compact
+
+          if options.has_key?(:interruptible) && options[:interruptible] == false
+            play_command = :play!
+          else
+            options[:interruptible] = true
+            play_command = :interruptible_play!
+          end
+
+          if options.has_key? :speak
+            raise ArgumentError unless options[:speak].is_a? Hash
+            raise ArgumentError, 'Must include a text string when requesting TTS fallback' unless options[:speak].has_key?(:text)
+            if options.has_key?(:speak) && options.has_key(:play)
+              raise ArgumentError, 'Must specify only one of :play or :speak'
+            end
+            options[:speak][:interruptible] = options[:interruptible]
+          end
+
+          timeout         = options[:timeout]
+          terminating_key = options[:accept_key]
+          if terminating_key
+            terminating_key = terminating_key.to_s
+          elsif number_of_digits.nil? && !terminating_key.equal?(false)
+            terminating_key = '#'
+          end
+        end
+
         # def input!(*args, &block)
         #   options = args.last.kind_of?(Hash) ? args.pop : {}
         #   number_of_digits = args.shift
