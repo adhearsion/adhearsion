@@ -41,6 +41,7 @@ describe "The database initializer" do
   end
 
   it "should make any required models available in the main namespace" do
+    pending
     bogus_model = tempfile_with_contents sample_user_model
     flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.
         with("paths", "models").and_return [bogus_model.path]
