@@ -431,7 +431,7 @@ module Adhearsion
           }
 
           #test does pass and method works, but not sure if the empty method is a good idea
-          it "plays the correct input" do
+          it "plays the correct output" do
             def mock_execution_environment.write_and_await_response(input_component)
               # it is actually a no-op here
             end
@@ -454,17 +454,6 @@ module Adhearsion
 
         end#describe #stream_file
 
-        describe "#parse_single_dtmf"  do
-          it "correctly returns the parsed input" do
-            mock_execution_environment.parse_single_dtmf("dtmf-3").should == '3'
-          end
-          it "correctly returns star as *" do
-            mock_execution_environment.parse_single_dtmf("dtmf-star").should == '*'
-          end
-          it "correctly returns pound as #" do
-            mock_execution_environment.parse_single_dtmf("dtmf-pound").should == '#'
-          end
-        end#describe #parse_single_dtmf
         
         describe "#interruptible_play!" do
           let(:output1) {"one two"}
