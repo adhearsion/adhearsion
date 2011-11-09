@@ -42,47 +42,54 @@ describe Adhearsion::Plugin do
     end
   end
 
-  describe "extending an object with a scope methods" do
-    
-    before(:each) do
-      FooBar = Class.new Adhearsion::Plugin do
-        #rpc :foo
-        dialplan :foo do
-          "foo".concat(bar)
-        end
-      end
-    end
-    
-    after(:each) do
-      defined?(FooBar) and Object.send(:remove_const, :"FooBar")
-    end
+  [:rpc, :dialplan].each do |method|
 
-    describe "when extending a Class" do
-      it "should respond to any of the scope methods" do
-        Adhearsion::Plugin.load
-        Adhearsion::Plugin.send(:dialplan_module).instance_methods.include?(:foo).should be true
+    describe "extending an object with #{method.to_s} scope methods" do
+      
+      before(:all) do
         A = Class.new do
           def bar
             "bar"
           end
         end
-        
-        Adhearsion::Plugin.add_dialplan_methods(A)
-        a = A.new
-        a.should respond_to(:foo)
-        a.foo.should eql("foobar")
       end
-    end
-    
-    describe "when extending an instance" do
-      it "should respond to any of the scope methods" do
-        
+
+      after(:all) do
+        defined?(A) and Object.send(:remove_const, :"A")
+      end
+
+      before(:each) do
+        FooBar = Class.new Adhearsion::Plugin do
+          self.method(method).call(:foo) do
+            "foo".concat(bar)
+          end
+        end
         Adhearsion::Plugin.load
-        Adhearsion::Plugin.send(:dialplan_module).instance_methods.include?(:foo).should be true
-        B = Class.new
-        b = B.new
-        Adhearsion::Plugin.add_dialplan_methods(b)
-        b.should respond_to(:foo)
+        Adhearsion::Plugin.send("#{method.to_s}_module".to_sym).instance_methods.include?(:foo).should be true
+      end
+      
+      after(:each) do
+        defined?(FooBar) and Object.send(:remove_const, :"FooBar")
+      end
+
+      describe "when extending a Class" do
+        it "should respond to any of the #{method.to_s} scope methods and have visibility to the own instance methods" do
+          
+          Adhearsion::Plugin.send("add_#{method}_methods".to_sym, A)
+          a = A.new
+          a.should respond_to(:foo)
+          a.foo.should eql("foobar")
+        end
+      end
+      
+      describe "when extending an instance" do
+        it "should respond to any of the scope methods and have visibility to the own instance methods" do
+
+          a = A.new
+          Adhearsion::Plugin.send("add_#{method}_methods".to_sym, a)
+          a.should respond_to(:foo)
+          a.foo.should eql("foobar")
+        end
       end
     end
   end
@@ -168,7 +175,7 @@ describe "Adhearsion::Plugin.load" do
       end
 
       def self.reset_subclasses
-        @subclasses=nil
+        @subclasses = nil
       end
     end
 
@@ -396,24 +403,9 @@ describe "Adhearsion::Plugin.load" do
       end
       
       Adhearsion::Plugin.load
-      Adhearsion::Plugin.send(:dialplan_module).instance_methods.include?(:foo).should be true
+      [:dialplan_module, :rpc_module].each do |_module|
+        Adhearsion::Plugin.send(_module).instance_methods.include?(:foo).should be true
+      end
     end
-  end
-  
-end
-
-describe "Initializing Adhearsion" do
-  it "should load the new dial plans" do
-    flexmock(Adhearsion::Initializer::Logging).should_receive(:start).once.and_return('')
-    flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
-    flexmock(::Logging::Appenders).should_receive(:file).and_return(nil)
-
-    #say_hello = AhnPluginDemo::SayText.new("value")
-    #flexmock(say_hello).should_receive(:start).once.and_return(true)
-    #flexmock(AhnPluginDemo).should_receive(:create_say_text).once.and_return(say_hello)
-
-    stub_behavior_for_initializer_with_no_path_changing_behavior do
-      ahn = Adhearsion::Initializer.start "/path"
-    end
-  end
+  end  
 end
