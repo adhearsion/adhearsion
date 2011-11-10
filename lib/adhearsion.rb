@@ -3,8 +3,9 @@ STDERR.puts "WARNING: You are running Adhearsion on an unsupported version of Ru
 
 $: << File.expand_path(File.dirname(__FILE__))
 
+RUBY_VERSION < "1.9" and require 'rubygems'
+
 %w{
-  rubygems
   bundler/setup
 
   active_support/all
@@ -27,7 +28,6 @@ module Adhearsion
   autoload :Call
   autoload :Calls
   autoload :Commands
-  autoload :Components
   autoload :Configuration
   autoload :Console
   autoload :Constants
@@ -39,6 +39,7 @@ module Adhearsion
   autoload :Initializer
   autoload :Logging
   autoload :OutboundCall
+  autoload :Plugin
   autoload :Punchblock
   autoload :Version
 

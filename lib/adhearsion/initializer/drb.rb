@@ -14,7 +14,7 @@ module Adhearsion
           DRb.install_acl ACL.new(config.acl) if config.acl
 
           drb_door = Object.new
-          Components.component_manager.extend_object_with(drb_door, :rpc)
+          Plugin.add_rpc_methods(drb_door)
 
           DRb.start_service "druby://#{config.host}:#{config.port}", drb_door
 
