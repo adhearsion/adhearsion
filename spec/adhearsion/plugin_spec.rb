@@ -170,7 +170,6 @@ describe Adhearsion::Plugin do
         end
       end
 
-      Adhearsion::Plugin.class_variable_set "@@methods_container", Hash.new { |hash, key| hash[key] = Adhearsion::Plugin::MethodsContainer.new }
       Adhearsion::Plugin.reset_methods_scope
       Adhearsion::Plugin.reset_subclasses
     end
