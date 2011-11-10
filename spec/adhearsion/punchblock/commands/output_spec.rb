@@ -261,7 +261,7 @@ module Adhearsion
         describe "#speak" do
           describe "with a RubySpeech document" do
             it 'plays the correct SSML' do
-              doc = RubySpeech::SSML.draw { "Hello world" }
+              doc = RubySpeech::SSML.draw { string "Hello world" }
               mock_execution_environment.should_receive(:play_ssml).once.with(doc, {}).and_return true
               mock_execution_environment.should_receive(:output).never
               mock_execution_environment.speak(doc).should be true
@@ -278,95 +278,23 @@ module Adhearsion
           end
         end
 
-        # describe "#interruptible_play!" do
-        #   let(:ssml) { RubySpeech::SSML.draw {"press a button"} }
-        #   let(:output_component) {
-        #     Punchblock::Component::Output.new :ssml => ssml.to_s
-        #   }
-        #   let(:component) {
-        #     Punchblock::Component::Input.new(
-        #       {:mode => :dtmf,
-        #        :grammar => {:value => '[1 DIGIT]', :content_type => 'application/grammar+voxeo'}
-        #     })
-        #   }
-        #   let(:input_component) {
-        #     Punchblock::Component::Input.new(
-        #       {:mode => :dtmf,
-        #        :initial_timeout => 2000,
-        #        :inter_digit_timeout => 2000,
-        #        :grammar => {:value => '[1 DIGIT]'}
-        #     })
-        #   }
+        describe "#ssml_for" do
+          let(:prompt) { "Please stand by"}
+          let(:ssml) {
+            RubySpeech::SSML.draw do
+              string 'Please stand by'
+            end
+          }
+          
+          it 'returns SSML for a text argument' do
+            mock_execution_environment.ssml_for(prompt).should == ssml
+          end
 
-        #   it "allows dtmf input to interrupt the playout and returns the value" do
-        #     flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => '4', :name => :input))
-        #     def mock_execution_environment.write_and_await_response(input_component)
-        #       input_component.execute_handler
-        #     end
-        #     flexmock(Punchblock::Component::Input).new_instances do |input|
-        #       input.should_receive(:complete?).and_return(false)
-        #       input.should_receive(:stop!).once.and_return('')
-        #     end
-        #     flexmock(Punchblock::Component::Output).new_instances.should_receive(:stop!)
-        #     mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(output_component)
-        #     mock_execution_environment.interruptible_play!(ssml).should == '4'
-        #   end
+          it 'returns the same SSML passed in if it is SSML' do
+            mock_execution_environment.ssml_for(ssml) == ssml
+          end
 
-        #   it "allows dtmf input to interrupt the playout and return a multi digit value" do
-        #     flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => '4', :name => :input))
-        #     flexmock(Punchblock::Component::Input).new_instances.should_receive(:complete?).returns(true)
-        #     flexmock(Punchblock::Component::Output).new_instances.should_receive(:stop!)
-        #     def mock_execution_environment.write_and_await_response(input_component)
-        #       input_component.execute_handler
-        #     end
-        #     def mock_execution_environment.execute_component_and_await_completion(component)
-        #       component.execute_handler if component.respond_to? :execute_handler 
-        #     end
-        #     mock_execution_environment.interruptible_play!(ssml, :digits => 2).should == '44'
-        #   end
-
-        #   it "applies initial_timeout and inter_digit_timeout to interrupt the playout and return a multi digit value to input component" do
-        #     flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => '4', :name => :input))
-        #     flexmock(Punchblock::Component::Input).should_receive(:new).once.with(:mode => :dtmf,
-        #     :initial_timeout => 66,
-        #     :grammar => {
-        #       :value => mock_execution_environment.grammar_digits(1).to_s}).returns(flexmock(:register_event_handler => '',
-        #                                                                                      :complete? => true))
-        #     flexmock(Punchblock::Component::Input).should_receive(:new).once.with(:mode => :dtmf,
-        #     :initial_timeout => 55,
-        #     :inter_digit_timeout => 55,
-        #     :grammar => {
-        #       :value => mock_execution_environment.grammar_digits(1).to_s}).returns(flexmock(:register_event_handler => ''))
-        #     mock_execution_environment.should_receive(:write_and_await_response)
-        #     mock_execution_environment.should_receive(:execute_component_and_await_completion)
-        #     mock_execution_environment.interruptible_play!(ssml, :digits => 2, :initial_timeout => 66, :inter_digit_timeout => 55).should == nil
-        #   end
-
-        #   it "should not pause to try to read more digits if no input is received" do
-        #     flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:name => :noinput))
-        #     def mock_execution_environment.write_and_await_response(input_component)
-        #       input_component.execute_handler
-        #     end
-        #     flexmock(Punchblock::Component::Input).new_instances.should_receive(:complete?).returns(true)
-        #     flexmock(Punchblock::Component::Output).new_instances.should_receive(:complete?).returns(true)
-        #     mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(output_component)
-        #     mock_execution_environment.interruptible_play!(ssml, :digits => 2).should == nil
-        #   end
-
-        # end#describe #interruptible_play!
-
-        # describe "#interruptible_play" do
-
-        #   let(:ssml) { RubySpeech::SSML.draw {
-        #       audio :src => "/this/file/does/not/exist.mp3"
-        #     }
-        #   }
-        #   it "should not throw an exception if unable to play output" do
-        #       mock_execution_environment.should_receive(:interruptible_play!).once.with(ssml, {}).returns(nil)
-        #       mock_execution_environment.interruptible_play(ssml)
-        #   end
-
-        # end#describe interruptible_play
+        end
 
         describe "#detect_type" do
           it "detects an HTTP path" do
@@ -405,7 +333,7 @@ module Adhearsion
 
           let(:ssml) {
             RubySpeech::SSML.draw do
-              "Press 3 or 5 to make something happen."
+              string "Press 3 or 5 to make something happen."
             end
           }
           let(:grammar) {

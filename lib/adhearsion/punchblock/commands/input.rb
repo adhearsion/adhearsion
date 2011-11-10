@@ -91,6 +91,16 @@ module Adhearsion
         # - Raise an exception if both :play and :speak are specified - DONE
         # - Allow :play arguments to be automatic, hashes, or SSML (is_a RubySpeech::SSML::Speak)
         # - :speak stays as a quick TTS option
+        #
+        
+        def input(*args, &block)
+          begin
+            input! *args, &block
+          rescue PlaybackError => e
+            logger.warn { e }
+            retry # If sound playback fails, play the remaining sound files and wait for digits
+          end
+        end
         
 
         def input!(*args, &block)
@@ -107,12 +117,12 @@ module Adhearsion
           end
 
           if options.has_key? :speak
-            raise ArgumentError unless options[:speak].is_a? Hash
+            raise ArgumentError, ':speak must be a Hash' unless options[:speak].is_a? Hash
             raise ArgumentError, 'Must include a text string when requesting TTS fallback' unless options[:speak].has_key?(:text)
-            if options.has_key?(:speak) && options.has_key(:play)
+            if options.has_key?(:speak) && options.has_key?(:play) && options[:play].size > 0
               raise ArgumentError, 'Must specify only one of :play or :speak'
             end
-            options[:speak][:interruptible] = options[:interruptible]
+            # options[:speak][:interruptible] = options[:interruptible]
           end
 
           timeout         = options[:timeout]
@@ -122,7 +132,54 @@ module Adhearsion
           elsif number_of_digits.nil? && !terminating_key.equal?(false)
             terminating_key = '#'
           end
-        end
+          if number_of_digits && number_of_digits < 0
+            ahn_log.warn "Giving -1 to #input is now deprecated. Do not specify a first " +
+                             "argument to allow unlimited digits." if number_of_digits == -1
+            raise ArgumentError, "The number of digits must be positive!"
+          end
+          buffer = ''
+          if options[:play].any?
+            # Consume the sound files one at a time. In the event of playback
+            # failure, this tells us which files remain unplayed.
+            while output = options[:play].shift
+              #detect what we are dealing with
+              case output.class
+                when Hash
+                  argument = output.delete(:value)
+                  raise ArgumentError, ':value has to be specified for each :play argument that is a Hash' if argument.nil?
+                  key = send play_command argument, output
+                else
+                  key = send play_command, output
+                end
+              key = nil if play_command == :play!
+              break if key
+            end
+            key ||= ''
+            # speak does not currently take a digit
+            # basically treat it as a non-interruptible play for now
+          elsif options[:speak]
+            speak_output = ssml_for(options[:speak].delete(:text))
+            key = speak(speak_output, options[:speak]) || ''
+          else
+            key = wait_for_digit timeout || -1
+          end
+          loop do
+            return buffer if key.nil?
+            if terminating_key
+              if key == terminating_key
+                return buffer
+              else
+                buffer << key
+                return buffer if number_of_digits && number_of_digits == buffer.length
+              end
+            else
+              buffer << key
+              return buffer if number_of_digits && number_of_digits == buffer.length
+            end
+            return buffer if block_given? && yield(buffer)
+            key = wait_for_digit(timeout || -1)
+          end
+        end#input!
 
         # def input!(*args, &block)
         #   options = args.last.kind_of?(Hash) ? args.pop : {}
