@@ -1,12 +1,12 @@
 
 module Adhearsion
 
-  # Plugin is the core of extension of Adhearsion framework and provides the path
-  # to add new functionality, configuration or modify the initialization process.
+  # Plugin is the core of extension of Adhearsion framework and provides the easiest
+  # path to add new functionality, configuration or modify the initialization process.
   #
   # Its behavior is based on Rails::Railtie, so if you are familiar with Rails 
   # this will be easier for you to start using Adhearsion::Plugin, but of course
-  # it is not required any previous knowledge.
+  # no previous knowledge is required.
   #
   # With an Adhearsion Plugin you can:
   #
@@ -17,8 +17,8 @@ module Adhearsion
   #
   # == How to create your Adhearsion Plugin
   #
-  # Create a class that inherits from Adhearsion::Plugin within your extension's namespace.
-  # This class must be loaded during the Adhearsion boot process.
+  # Create a class that inherits from Adhearsion::Plugin within your plugin namespace.
+  # This class shall be loaded during your awesome Adhearsion application boot process.
   #
   #   # lib/my_plugin/plugin.rb
   #   module MyPlugin
@@ -30,8 +30,32 @@ module Adhearsion
   #
   #   module MyPlugin
   #     class Plugin < Adhearsion::Plugin
-  #       dialplan :my_new_dialplan_method do |call|
-  #         logger.info "this dialplan method is really awesome #{call.inspect}"
+  #       dialplan :my_new_dialplan_method do
+  #         logger.info "this dialplan method is really awesome #{call.inspect}. It says 'hello world'"
+  #         speak "hello world"
+  #       end
+  #     end
+  #   end
+  #
+  # Create a new rpc, console or events methods is as ease just following this approach
+  #
+  # == Execute a specific code while initializing Adhearison
+  #
+  #   module MyPlugin
+  #     class Plugin < Adhearsion::Plugin
+  #       init :my_plugin do
+  #         logger.warn "I want to ensure my plugin is being loaded!!!"
+  #       end
+  #     end
+  #   end
+  #
+  # As Rails::Railtie does, you can define the exact point when you want to load your plugin
+  # during the initilization process
+  #
+  #   module MyPlugin
+  #     class Plugin < Adhearsion::Plugin
+  #       init :my_plugin, :after => :my_other_plugin do
+  #         logger.warn "My Plugin depends on My Other Plugin, so it must be loaded after"
   #       end
   #     end
   #   end
@@ -58,14 +82,33 @@ module Adhearsion
       SCOPE_NAMES.each do |name|
 
         # This block will create the relevant methods to handle how to add new methods
-        # to Adhearsion scopes via an Adhearsion Plugin
+        # to Adhearsion scopes via an Adhearsion Plugin.
+        # The scope method should have a name and a lambda block that will be executed in the
+        # call ExecutionEnvironment context. 
         #
         # class AhnPluginDemo < Adhearsion::Plugin
-        #   dialplan :adh_plugin_demo do |call|
-        #    call.say "hello world"
+        #   dialplan :adh_plugin_demo do
+        #     speak "hello world"
         #   end
         # end
-
+        #
+        # You could also defined a dialplan or other scope method as above, but you cannot acces
+        # the ExecutionEnvironment methods from your specific method due to ruby restrictions
+        # when defining methods (the above lambda version should fit any requirement)
+        #
+        # class AhnPluginDemo < Adhearsion::Plugin
+        #   dialplan :adh_plugin_demo
+        #
+        #   def self.adh_plugin_demo
+        #     logger.debug "I can do fun stuff here, but I cannot access methods as speak"
+        #     logger.debug "I can make an HTTP request"
+        #     logger.debug "I can log to a specific logging system"
+        #     logger.debug "I can access database..."
+        #     logger.debug "but I cannot access call control methods"
+        #   end
+        #
+        # end
+        #
         define_method(name) do |method_name, args = nil, &block|
           if method_name.is_a?(Array)
             method_name.each do |method| 
@@ -73,6 +116,7 @@ module Adhearsion
             end
             return
           end
+
           options = args.nil? ? METHODS_OPTIONS : METHODS_OPTIONS.merge(args)
           options[:load] or return
           logger.debug "Adding method #{method_name} to scope #{name}"
@@ -83,7 +127,8 @@ module Adhearsion
           end
         end
 
-        # This method is a helper to retrieve the specific scope module
+        # This method is a helper to retrieve the specific module that holds the user
+        # defined scope methods
         define_method("#{name.to_s}_module") do
           Adhearsion::Plugin.methods_scope[name]
         end

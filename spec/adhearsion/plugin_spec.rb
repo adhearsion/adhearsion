@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'pry'
 
 include InitializerStubs
 
@@ -63,6 +62,7 @@ describe Adhearsion::Plugin do
           self.method(method).call(:foo) do
             "foo".concat(bar)
           end
+
         end
         Adhearsion::Plugin.load
         Adhearsion::Plugin.send("#{method.to_s}_module".to_sym).instance_methods.include?(:foo).should be true
