@@ -126,7 +126,7 @@ module Adhearsion
       raise Hangup unless active? || command.is_a?(Punchblock::Command::Hangup)
       client.execute_command command, :call_id => id
     end
-    
+
     # Logger per instance to log the call_id
     def logger
       @logger ||= Adhearsion::Logging::get_logger(self.class.to_s.concat(" ").concat(logger_id))

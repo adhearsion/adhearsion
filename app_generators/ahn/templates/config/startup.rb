@@ -2,13 +2,6 @@ require File.join(File.dirname(__FILE__), 'environment')
 
 Adhearsion::Configuration.configure do |config|
 
-  # Components to load from the system.
-  # All components that are activated in components/ will be automatically
-  # loaded and made available.
-  # This configuration option allows you to load components provided by gems.
-  # List the gem names here:
-  # config.add_component "ahn_test_component"
-
   # Log configuration
   # :level : Supported levels (in increasing severity) -- :debug < :info < :warn < :error < :fatal
   # :outputters : An array of log outputters to use. The default is to log to stdout and log/adhearsion.log

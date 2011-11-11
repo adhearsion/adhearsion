@@ -3,10 +3,8 @@ source "http://rubygems.org"
 gem "adhearsion", :git => 'git://github.com/adhearsion/adhearsion.git', :branch => :develop
 
 #
-# Here are some example components you might like to use. Simply
-# uncomment them, run `bundle install` and enable in startup.rb.
+# Here are some example plugins you might like to use. Simply
+# uncomment them and run `bundle install`.
 #
 
-group :components do
-  # gem 'ahn-restful-rpc'
-end
+# gem 'ahn-asterisk'

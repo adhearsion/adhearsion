@@ -10,7 +10,7 @@ Adhearsion has...
 * An elegant dialplan system for writing the code which controls a live phone call
 * A sophisticated Asterisk Manager Interface library with a lexer written in [Ragel](http://www.complang.org/ragel).
 * An events subsystem which maintains a Thread-pool for executing your namespaced callbacks. (supports AMI events too!)
-* A very useful component architecture with which you may write Adhearsion plugins and share them with the world via RubyGems.
+* A very useful plugin architecture with which you may write Adhearsion plugins and share them with the world via RubyGems.
 * JRuby compatibility for running atop the Java Virtual Machine and using virtually any Java library.
 * Ability to re-use existing Ruby on Rails database models with ActiveRecord/ActiveLDAP
 * Easy interactive communication via XMPP instant messages using the Blather library

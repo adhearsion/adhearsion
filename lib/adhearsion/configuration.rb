@@ -35,7 +35,6 @@ module Adhearsion
     attr_accessor :automatically_accept_incoming_calls
     attr_accessor :end_call_on_hangup
     attr_accessor :end_call_on_error
-    attr_accessor :components_to_load
 
     def initialize
       @automatically_accept_incoming_calls = true
@@ -70,10 +69,6 @@ module Adhearsion
       Adhearsion::Logging.outputters = Array(options[:outputters]) if options.has_key? :outputters
       Adhearsion::Logging.formatter = options[:formatter] if options.has_key? :formatter
       #Adhearsion::Logging::AdhearsionLogger.formatters = Array(options[:formatter]) * Adhearsion::Logging::AdhearsionLogger.outputters.count if options.has_key? :formatter
-    end
-
-    def add_component(*list)
-      AHN_CONFIG.components_to_load |= list
     end
 
     ##
