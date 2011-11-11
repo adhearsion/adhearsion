@@ -34,6 +34,17 @@ module Adhearsion
         initialize_punchblock_with_options overrides
       end
 
+      describe 'using Asterisk' do
+        let(:overrides) { {:username => 'test', :password => '123', :wire_logger => Adhearsion::Logging.get_logger(Punchblock), :transport_logger => Adhearsion::Logging.get_logger(Punchblock), :auto_reconnect => false} }
+
+        it 'should start an Asterisk PB connection' do
+          flexmock(::Punchblock::Connection::Asterisk).should_receive(:new).once.with(overrides).and_return do
+            flexmock 'Client', :event_handler= => true
+          end
+          initialize_punchblock_with_options overrides.merge(:platform => :asterisk)
+        end
+      end
+
       it 'should place events from Punchblock into the event handler' do
         flexmock(Events.instance).should_receive(:trigger).once.with(:punchblock, offer)
         initialize_punchblock_with_defaults
