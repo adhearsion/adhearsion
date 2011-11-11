@@ -25,7 +25,7 @@ module Adhearsion
 
           # Handle events from Punchblock via events system
           self.client.register_event_handler do |event|
-            logger.info "Received event from Punchblock: #{event.inspect}"
+            logger.debug "Received event from Punchblock: #{event.inspect}"
             Events.trigger :punchblock, event
           end
 
