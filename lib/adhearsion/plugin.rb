@@ -65,7 +65,7 @@ module Adhearsion
 
     METHODS_OPTIONS = {:load => true, :scope => false}
 
-    SCOPE_NAMES = [:dialplan, :rpc, :events]
+    SCOPE_NAMES = [:dialplan, :rpc, :events, :console]
 
     autoload :Configuration
     autoload :Collection
@@ -200,6 +200,8 @@ module Adhearsion
             end
           end
         end
+
+        Adhearsion::Console.extend(self.console_module) unless self.console_module.instance_methods.empty?
       end
 
       # Recursively initialization of all the loaded plugins
