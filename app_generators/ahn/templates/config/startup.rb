@@ -20,7 +20,8 @@ Adhearsion::Configuration.configure do |config|
 
   # Here you can specify the :username, :password and :rayo_domain as keys in a hash.
   # eg. config.enable_punchblock :username => 'me@jabber.org', :password => 'foobar', :rayo_domain => 'go.rayo.org'
-  # The defaults are suitable for a stock local Rayo installation
+  # The defaults are suitable for a stock local Rayo installation. To use with Asterisk, do something like:
+  # config.enable_punchblock :platform => :asterisk, :username => 'admin', :password => 'foo', :host => 'localhost', :port => 5038
   config.enable_punchblock
 
   # Adhearsion supports two possible speech engines with Asterisk: UniMRCP and Cepstral.
