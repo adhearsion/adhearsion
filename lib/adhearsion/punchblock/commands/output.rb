@@ -37,6 +37,8 @@ module Adhearsion
             if argument.is_a? Hash
               value = argument.delete(:value)
               result = play_ssml_for(value, argument)
+            elsif argument.is_a? RubySpeech::SSML::Speak
+              result = play_ssml argument
             else
               result = play_ssml_for(argument)
             end
@@ -47,9 +49,12 @@ module Adhearsion
         def play!(*arguments)
           result = true
           arguments.each do |argument|
+            p argument.class
             if argument.is_a? Hash
               value = argument.delete(:value)
               result = play_ssml_for(value, argument)
+            elsif argument.is_a? RubySpeech::SSML::Speak
+              result = play_ssml argument
             else
               result = play_ssml_for(argument)
             end
@@ -206,7 +211,6 @@ module Adhearsion
         # @param [String|Hash|RubySpeech::SSML::Speak] the argument with options as accepted by the play_ methods, or an SSML document
         # @return [RubySpeech::SSML::Speak] an SSML document
         def ssml_for(*args)
-          p "ARGH #{args}"
           if args.size == 1 && args[0].class == RubySpeech::SSML::Speak
             return args[0]
           end

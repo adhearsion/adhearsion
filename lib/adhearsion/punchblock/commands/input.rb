@@ -147,7 +147,7 @@ module Adhearsion
                 raise ArgumentError, ':value has to be specified for each :play argument that is a Hash' if argument.nil?
                 key = send play_command, [argument, output]
               else
-                key = send play_command, output
+                key = send play_command, *output
               end
               key = nil if play_command == :play!
               break if key
@@ -175,7 +175,7 @@ module Adhearsion
               return buffer if number_of_digits && number_of_digits == buffer.length
             end
             return buffer if block_given? && yield(buffer)
-            key = wait_for_digit(timeout || -1)
+            key = wait_for_digit(timeout || nil)
           end
         end#input!
 
