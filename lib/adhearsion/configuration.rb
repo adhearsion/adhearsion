@@ -198,7 +198,7 @@ module Adhearsion
       attr_accessor :connection_options
 
       def initialize(options = {})
-        @connection_options = {:username => 'usera@127.0.0.1', :password => '1', :wire_logger => Adhearsion::Logging.get_logger(::Adhearsion::Punchblock), :transport_logger => Adhearsion::Logging.get_logger(::Adhearsion::Punchblock), :auto_reconnect => true}.merge options
+        @connection_options = {:username => 'usera@127.0.0.1', :password => '1', :auto_reconnect => true}.merge options
       end
     end
     add_configuration_for :Punchblock

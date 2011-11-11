@@ -184,13 +184,11 @@ end
 describe "Punchblock configuration" do
   describe "with config specified" do
     subject do
-      Adhearsion::Configuration::PunchblockConfiguration.new(:username => 'userb@127.0.0.1', :password => 'abc123', :wire_logger => Adhearsion::Logging.get_logger(::Adhearsion::Punchblock), :transport_logger => Adhearsion::Logging.get_logger(::Adhearsion::Punchblock), :auto_reconnect => false).connection_options
+      Adhearsion::Configuration::PunchblockConfiguration.new(:username => 'userb@127.0.0.1', :password => 'abc123', :auto_reconnect => false).connection_options
     end
 
     it { subject[:username].should == 'userb@127.0.0.1' }
     it { subject[:password].should == 'abc123' }
-    it { subject[:wire_logger].should == Adhearsion::Logging.get_logger(::Adhearsion::Punchblock) }
-    it { subject[:transport_logger].should == Adhearsion::Logging.get_logger(::Adhearsion::Punchblock) }
     it { subject[:auto_reconnect].should == false }
   end
 
@@ -201,8 +199,6 @@ describe "Punchblock configuration" do
 
     it { subject[:username].should == 'usera@127.0.0.1' }
     it { subject[:password].should == '1' }
-    it { subject[:wire_logger].should == Adhearsion::Logging.get_logger(::Adhearsion::Punchblock) }
-    it { subject[:transport_logger].should == Adhearsion::Logging.get_logger(::Adhearsion::Punchblock) }
     it { subject[:auto_reconnect].should == true }
   end
 end
