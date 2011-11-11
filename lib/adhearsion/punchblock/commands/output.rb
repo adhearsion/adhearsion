@@ -42,15 +42,21 @@ module Adhearsion
             end
           end
           result
-          #result = true
-          #unless play_time(arguments)
-            #arguments.flatten.each do |argument|
-              ## result starts off as true.  But if the following command ever returns false, then result
-              ## remains false.
-              #result &= play_numeric(argument) || play_audio(argument)
-            #end
-          #end
-          #result
+        end
+
+        def play!(*arguments)
+          result = true
+          arguments.each do |argument|
+            if argument.is_a? Hash
+              value = argument.delete(:value)
+              result = play_ssml_for(value, argument)
+            else
+              result = play_ssml_for(argument)
+            end
+            if result == false
+              raise Adhearsion::PlaybackError, "One of the passed outputs is invalid"
+            end
+          end
         end
 
         # Plays the given Date, Time, or Integer (seconds since epoch)
@@ -132,7 +138,7 @@ module Adhearsion
         #
         def interruptible_play!(*outputs)
           result = nil
-          outputs.flatten.each do |output|
+          outputs.each do |output|
             result = stream_file(output,  "1234567890*#")
             break if !result.nil?
           end
@@ -160,7 +166,7 @@ module Adhearsion
         #
         def interruptible_play(*outputs)
           result = nil
-          outputs.flatten.each do |output|
+          outputs.each do |output|
             begin
               result = interruptible_play!(output)
             rescue PlaybackError => e
@@ -200,6 +206,7 @@ module Adhearsion
         # @param [String|Hash|RubySpeech::SSML::Speak] the argument with options as accepted by the play_ methods, or an SSML document
         # @return [RubySpeech::SSML::Speak] an SSML document
         def ssml_for(*args)
+          p "ARGH #{args}"
           if args.size == 1 && args[0].class == RubySpeech::SSML::Speak
             return args[0]
           end

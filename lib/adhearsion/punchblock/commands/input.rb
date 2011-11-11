@@ -142,24 +142,22 @@ module Adhearsion
             # Consume the sound files one at a time. In the event of playback
             # failure, this tells us which files remain unplayed.
             while output = options[:play].shift
-              #detect what we are dealing with
-              case output.class
-                when Hash
-                  argument = output.delete(:value)
-                  raise ArgumentError, ':value has to be specified for each :play argument that is a Hash' if argument.nil?
-                  key = send play_command argument, output
-                else
-                  key = send play_command, output
-                end
+              if output.class == Hash
+                argument = output.delete(:value)
+                raise ArgumentError, ':value has to be specified for each :play argument that is a Hash' if argument.nil?
+                key = send play_command, [argument, output]
+              else
+                key = send play_command, output
+              end
               key = nil if play_command == :play!
               break if key
             end
             key ||= ''
-            # speak does not currently take a digit
-            # basically treat it as a non-interruptible play for now
+            # instead use a normal play command, :speak is basically an alias
           elsif options[:speak]
             speak_output = ssml_for(options[:speak].delete(:text))
-            key = speak(speak_output, options[:speak]) || ''
+            key = send play_command speak_output, options[:speak]
+            key = nil if play_command == :play!
           else
             key = wait_for_digit timeout || -1
           end

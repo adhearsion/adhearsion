@@ -132,6 +132,11 @@ module Adhearsion
             end
         end#wait_for_digit
 
+        describe "#input!" do
+
+        end#describe input!
+
+
      end#describe Input
     end
   end
