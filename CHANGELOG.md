@@ -1,4 +1,17 @@
 # develop
+  * Migrated to Punchblock
+  * Removed all Asterisk specific functionality
+  * Removed LDAP, XMPP, Rails and ActiveRecord functionality and replaced them with plugins
+  * Deprecated the components architecture in favour of the new style Plugins
+  * Removed Theatre in favour of girl_friday. Event namespaces no longer need to be registered, and events with any name may be triggered and handled. The DSL has been simplified. For example, AMI events may now be handled like:
+    asterisk_manager_interface do |event|
+      ...
+    end
+
+    asterisk_manager_interface :name => /NewChannel/ do |event|
+      ...
+    end
+  * Dialplan DSL changes:
 
 # 1.2.1
   * Removed the restful_rpc component since it is now in a gem.

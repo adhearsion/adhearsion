@@ -8,7 +8,13 @@ module Adhearsion
       class << self
         def start
           self.config = AHN_CONFIG.punchblock
-          connection  = ::Punchblock::Connection::XMPP.new self.config.connection_options
+          connection_class = case (self.config.connection_options.delete(:platform) || :xmpp)
+          when :xmpp
+            ::Punchblock::Connection::XMPP
+          when :asterisk
+            ::Punchblock::Connection::Asterisk
+          end
+          connection = connection_class.new self.config.connection_options
           self.client = ::Punchblock::Client.new :connection => connection
 
           # Make sure we stop everything when we shutdown
@@ -19,7 +25,7 @@ module Adhearsion
 
           # Handle events from Punchblock via events system
           self.client.register_event_handler do |event|
-            logger.info "Received event from Punchblock: #{event.inspect}"
+            logger.debug "Received event from Punchblock: #{event.inspect}"
             Events.trigger :punchblock, event
           end
 

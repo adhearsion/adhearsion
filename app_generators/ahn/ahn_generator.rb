@@ -5,14 +5,13 @@ class AhnGenerator < RubiGen::Base
 
   default_options :author => nil
 
-  attr_reader :name, :component
+  attr_reader :name
 
   def initialize(runtime_args, runtime_options = {})
     super
     usage if args.empty?
     @destination_root = File.expand_path(args.shift)
     @name = base_name
-    @component = 'simon_game'
     extract_options
   end
 
@@ -23,18 +22,6 @@ class AhnGenerator < RubiGen::Base
       BASEDIRS.each { |path| m.directory path }
 
       m.file  *[".ahnrc"]*2
-
-      m.file  *["components/simon_game/simon_game.rb"]*2
-      m.file  *["components/ami_remote/ami_remote.rb"]*2
-
-      m.file  *["components/disabled/xmpp_gateway/xmpp_gateway.rb"]*2
-      m.file  *["components/disabled/xmpp_gateway/xmpp_gateway.yml"]*2
-      m.file  *["components/disabled/xmpp_gateway/README.markdown"]*2
-
-      m.file  *["components/disabled/stomp_gateway/stomp_gateway.rb"]*2
-      m.file  *["components/disabled/stomp_gateway/stomp_gateway.yml"]*2
-      m.file  *["components/disabled/stomp_gateway/README.markdown"]*2
-
       m.file  *["config/environment.rb"]*2
       m.file  *["config/startup.rb"]*2
       m.file  *["dialplan.rb"]*2
@@ -76,14 +63,11 @@ EOS
       # @author = options[:author]
     end
 
-    # Installation skeleton.  Intermediate directories are automatically
+    # Installation skeleton. Intermediate directories are automatically
     # created so don't sweat their absence here.
     BASEDIRS = %w(
-      components/simon_game
-      components/disabled/stomp_gateway
-      components/disabled/xmpp_gateway
-      components/ami_remote
       config
+      lib
       script
     )
 end

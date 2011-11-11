@@ -1,10 +1,11 @@
 require 'spec_helper'
+require 'drb'
 
 module DRbTestHelper
 
   def new_drb_rpc_object
     Object.new.tap do |obj|
-      @component_manager.extend_object_with(obj, :rpc)
+      Adhearsion::Plugin.add_rpc_methods(obj)
     end
   end
 
@@ -23,11 +24,19 @@ describe "Invoking an interface method via DRb" do
     end.should raise_error NoMethodError
   end
 
-  before(:all) { require 'drb' }
-
   before :each do
-    @component_manager = Adhearsion::Components::ComponentManager.new("/path/doesnt/matter")
+    A = Class.new Adhearsion::Plugin do
+      rpc :foo do
+        [3,2,1]
+      end
+    end unless defined?(A)
+
+    Adhearsion::Plugin.load
     @door = DRb.start_service "druby://127.0.0.1:#{37832 + rand(1500)}", new_drb_rpc_object
+  end
+
+  after :each do
+    Object.send(:remove_const, :"A") if defined?(A)
   end
 
   after :each do
@@ -36,13 +45,8 @@ describe "Invoking an interface method via DRb" do
   end
 
   it "should return normal Ruby data structures properly over DRb" do
-    add_rpc_methods <<-RUBY
-      def bar
-        [3,2,1]
-      end
-    RUBY
     client = DRbObject.new nil, DRb.uri
-    client.bar.should == [3, 2, 1]
+    client.foo.should == [3, 2, 1]
   end
 
   it "should raise an exception for a non-existent interface" do

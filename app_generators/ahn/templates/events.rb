@@ -30,6 +30,6 @@ Adhearsion::Events.draw do
   # - hungup_call
   #
   #
-  # Note: events are mostly for components to register and expose to you.
+  # Note: events are mostly for plugins to register and expose to you.
   ##
 end

@@ -23,7 +23,7 @@ module Adhearsion
       #
       def stage!
         extend_with_voip_commands!
-        extend_with_dialplan_component_methods!
+        extend_with_dialplan_methods!
         extend_with_variable_accessor_methods!
       end
 
@@ -56,8 +56,8 @@ module Adhearsion
         extend Adhearsion::Commands.for call.originating_voip_platform
       end
 
-      def extend_with_dialplan_component_methods!
-        Components.component_manager.extend_object_with(self, :dialplan) if Components.component_manager
+      def extend_with_dialplan_methods!
+        Plugin.add_dialplan_methods(self) if Plugin
       end
 
       def extend_with_variable_accessor_methods!
