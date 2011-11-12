@@ -107,7 +107,13 @@ module Adhearsion
           options = args.last.kind_of?(Hash) ? args.pop : {}
           number_of_digits = args.shift
 
-          options[:play]  = [*options[:play]].compact
+          if options[:play].class == Array 
+            options[:play]  = [*options[:play]].compact
+          elsif options[:play] == nil
+            options[:play] = []
+          else
+            options[:play] = [options[:play]]
+          end
 
           if options.has_key?(:interruptible) && options[:interruptible] == false
             play_command = :play!
