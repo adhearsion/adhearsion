@@ -108,14 +108,14 @@ module Adhearsion
           number_of_digits = args.shift
 
           options[:play] = Array(case options[:play]
-          when String
-            options[:play]
-          when Array
-            options[:play].compact
-          when NilClass
-            []
-          else
-            [options[:play]]
+            when String
+              options[:play]
+            when Array
+              options[:play].compact
+            when NilClass
+              []
+            else
+              [options[:play]]
           end)
 
           if options.has_key?(:interruptible) && options[:interruptible] == false
@@ -164,8 +164,8 @@ module Adhearsion
             key ||= ''
             # instead use a normal play command, :speak is basically an alias
           elsif options[:speak]
-            speak_output = ssml_for(options[:speak].delete(:text))
-            key = send play_command speak_output, options[:speak]
+            speak_output = options[:speak].delete(:text)
+            key = send play_command, speak_output, options[:speak]
             key = nil if play_command == :play!
           else
             key = wait_for_digit timeout || nil

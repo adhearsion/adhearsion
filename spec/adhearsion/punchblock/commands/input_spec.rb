@@ -212,6 +212,64 @@ module Adhearsion
               mock_execution_environment.input!(:play => [string_play, ssml_play, hash_play])
             end
 
+            it "plays a string argument, takes 1 digit and returns the input" do
+              mock_execution_environment.should_receive(:interruptible_play!).with(string_play).and_return('1')
+              mock_execution_environment.input!(1, :play => string_play).should == '1'
+            end
+
+            it "plays a string argument, takes 2 digits and returns the input" do
+              mock_execution_environment.should_receive(:interruptible_play!).with(string_play).and_return('1')
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('1')
+              mock_execution_environment.input!(2, :play => string_play).should == '11'
+            end
+
+            it "plays a string argument, allows for any number of digit and an accept key" do
+              mock_execution_environment.should_receive(:interruptible_play!).with(string_play).and_return('1').ordered
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('2').ordered
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('#').ordered
+              mock_execution_environment.input!(:play => string_play).should == '12'
+            end
+
+            it "plays an array of mixed arguments, stops playing when a key is pressed, and returns the input" do
+              mock_execution_environment.should_receive(:interruptible_play!).with(string_play).and_return(nil)
+              mock_execution_environment.should_receive(:interruptible_play!).with(ssml_play).and_return('1')
+              # mock_execution_environment.should_not_receive(:interruptible_play!).with([hash_value, hash_options])
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('#')
+              mock_execution_environment.input!(:play => [string_play, ssml_play, hash_play]).should == '1'
+            end
+
+          end#describe with play arguments
+
+          describe "non interruptible play" do
+            let(:string_play) { "Thanks for calling" }
+
+            it "calls play! when passed :interruptible => false" do
+              mock_execution_environment.should_receive(:play!).with(string_play)
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('#')
+              mock_execution_environment.input!(:play => string_play, :interruptible => false)
+            end
+
+            it "still collects digits when passed :interruptible => false" do
+              mock_execution_environment.should_receive(:play!).with(string_play)
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('1')
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('#')
+              mock_execution_environment.input!(:play => string_play, :interruptible => false).should == '1'
+            end
+          end#describe non interruptible play
+
+          describe "speak functionality" do
+            let(:string_speak) { "Thanks for calling" }
+    
+            it "speaks passed text" do
+              mock_execution_environment.should_receive(:interruptible_play!).with(string_speak, {})
+              mock_execution_environment.input!(:speak => {:text => string_speak })
+            end
+
+            it "speaks passed text and collect digits" do
+              mock_execution_environment.should_receive(:interruptible_play!).with(string_speak, {}).and_return('1')
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('#')
+              mock_execution_environment.input!(:speak => {:text => string_speak }).should == '1'
+            end
           end
         end#describe input!
 
