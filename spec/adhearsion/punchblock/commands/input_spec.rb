@@ -233,7 +233,7 @@ module Adhearsion
             it "plays an array of mixed arguments, stops playing when a key is pressed, and returns the input" do
               mock_execution_environment.should_receive(:interruptible_play!).with(string_play).and_return(nil)
               mock_execution_environment.should_receive(:interruptible_play!).with(ssml_play).and_return('1')
-              # mock_execution_environment.should_not_receive(:interruptible_play!).with([hash_value, hash_options])
+              mock_execution_environment.should_not_receive(:interruptible_play!).with([hash_value, hash_options])
               mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('#')
               mock_execution_environment.input!(:play => [string_play, ssml_play, hash_play]).should == '1'
             end
