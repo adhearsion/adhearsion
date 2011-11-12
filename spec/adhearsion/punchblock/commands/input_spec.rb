@@ -133,7 +133,76 @@ module Adhearsion
         end#wait_for_digit
 
         describe "#input!" do
+          
+          describe "simple usage" do
+            let(:timeout) { 3000 }
+            
+            it "can be called with no arguments" do
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('1')
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('#')
+              mock_execution_environment.input!()
+            end
 
+            it "can be called with 1 digit as an argument" do
+              mock_execution_environment.should_receive(:wait_for_digit).with(nil)
+              mock_execution_environment.input!(1)
+            end
+
+            it "accepts a timeout argument" do
+              mock_execution_environment.should_receive(:wait_for_digit).with(3000)
+              mock_execution_environment.input!(:timeout => timeout)
+            end
+          end
+
+          describe "any number of digits with an accept key" do
+            let(:accept_key) { '9' }
+            
+            it "called with no arguments, it returns any number of digits taking a accept key" do
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('1')
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('#')
+              mock_execution_environment.input!().should == '1'
+            end
+            
+            it "allows to set a different accept key" do
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('1')
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return(accept_key)
+              mock_execution_environment.input!(:accept_key => accept_key).should == '1'
+            end
+          end
+
+          describe "with a fixed number or digits" do
+            it "accepts and returns three digits without an accept key" do
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('1')
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('2')
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('3')
+              mock_execution_environment.input!(3).should == '123'
+            end
+          end
+
+          describe "with play arguments" do
+            let(:string_play) { "Thanks for calling" }
+            let(:ssml_play) { RubySpeech::SSML.draw { string "Please stand by" } }
+            let(:hash_play) { {:value => Time.parse("24/10/2011"), :strftime => "%H:%M"} } 
+
+            it "plays a string argument" do
+              mock_execution_environment.should_receive(:interruptible_play!).with(string_play)
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('#')
+              mock_execution_environment.input!(:play => string_play)
+            end
+
+            it "plays a SSML argument" do
+              mock_execution_environment.should_receive(:interruptible_play!).with(ssml_play)
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('#')
+              mock_execution_environment.input!(:play => ssml_play)
+            end
+
+            it "plays a Hash argument" do
+              mock_execution_environment.should_receive(:interruptible_play!).with(hash_play)
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('#')
+              mock_execution_environment.input!(:play => hash_play)
+            end
+
+          end
         end#describe input!
 
 
