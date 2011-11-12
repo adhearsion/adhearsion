@@ -147,7 +147,7 @@ module Adhearsion
                 raise ArgumentError, ':value has to be specified for each :play argument that is a Hash' if argument.nil?
                 key = send play_command, [argument, output]
               else
-                key = send play_command, *output
+                key = send play_command, output
               end
               key = nil if play_command == :play!
               break if key

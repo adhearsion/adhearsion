@@ -253,8 +253,35 @@ module Adhearsion
             end
           end
 
+          describe "with an SSML document" do
+            let(:ssml) { RubySpeech::SSML.draw { string "Hello world" } }
+
+            it "plays the SSML without generating" do
+              mock_execution_environment.should_receive(:play_ssml).with(ssml).and_return(true)
+              mock_execution_environment.play(ssml).should be true
+            end
+          end
+
           it 'If a string matching dollars and (optionally) cents is passed to play(), a series of command will be executed to read the dollar amount', :ignore => true do
             pending "I think we should not have this be part of #play. Too much functionality in one method. Too much overloading. When we want to support multiple currencies, it'll be completely unwieldy. I'd suggest play_currency as a separate method. - Chad"
+          end
+        end
+
+        describe "#play!" do
+          let(:prompt) {
+            "Press any button." 
+          }
+          let(:second_prompt) {
+            "Or press nothing."
+          }
+
+          it "calls play a single time" do
+            mock_execution_environment.should_receive(:play).once.with(prompt).and_return(true)
+            mock_execution_environment.play!(prompt)
+          end
+          it "calls play two times" do
+            mock_execution_environment.should_receive(:play).once.with(prompt, second_prompt).and_return(true)
+            mock_execution_environment.play!(prompt, second_prompt)
           end
         end
 

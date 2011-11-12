@@ -34,33 +34,25 @@ module Adhearsion
         def play(*arguments)
           result = true
           arguments.each do |argument|
-            if argument.is_a? Hash
-              value = argument.delete(:value)
-              result = play_ssml_for(value, argument)
-            elsif argument.is_a? RubySpeech::SSML::Speak
-              result = play_ssml argument
-            else
-              result = play_ssml_for(argument)
+            case argument
+              when Hash
+                value = argument.delete(:value)
+                result = play_ssml_for(value, argument)
+              when RubySpeech::SSML::Speak
+                result = play_ssml argument
+              else
+                result = play_ssml_for(argument)
             end
           end
           result
         end
 
+        # Plays the specified input arguments, raising an exception if any can't be played.
+        # @see play
+        #
         def play!(*arguments)
-          result = true
-          arguments.each do |argument|
-            p argument.class
-            if argument.is_a? Hash
-              value = argument.delete(:value)
-              result = play_ssml_for(value, argument)
-            elsif argument.is_a? RubySpeech::SSML::Speak
-              result = play_ssml argument
-            else
-              result = play_ssml_for(argument)
-            end
-            if result == false
-              raise Adhearsion::PlaybackError, "One of the passed outputs is invalid"
-            end
+          if !play(*arguments)
+            raise Adhearsion::PlaybackError, "One of the passed outputs is invalid"
           end
         end
 
