@@ -8,7 +8,7 @@ module DialplanTestingHelper
     def string_io.path
       "dialplan.rb"
     end
-    flexstub(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).with("paths", "dialplan").and_return ["dialplan.rb"]
+    flexstub(Adhearsion.config).should_receive(:files_from_setting).with("paths", "dialplan").and_return ["dialplan.rb"]
     flexstub(File).should_receive(:new).with("dialplan.rb").and_return string_io
     flexstub(File).should_receive(:read).with('dialplan.rb').and_return string
   end

@@ -8,7 +8,9 @@ describe "The database initializer" do
   end
 
   def start_database_initializer_with_options(options)
-    Adhearsion::Configuration.configure { |config| config.enable_database(options) }
+    Adhearsion.config do |config| 
+      config.load_database_configuration(options)
+    end
     Adhearsion::Initializer::Database.start
   end
 
@@ -28,8 +30,8 @@ describe "The database initializer" do
   end
 
   after :each do
-    Adhearsion.send(:remove_const, :AHN_CONFIG) if Adhearsion.const_defined? :AHN_CONFIG
-    Adhearsion::AHN_CONFIG = Adhearsion::Configuration.new
+    Adhearsion.config = nil
+    Adhearsion.config
   end
 
   it "starts a connection through ActiveRecord" do
@@ -43,7 +45,7 @@ describe "The database initializer" do
   it "should make any required models available in the main namespace" do
     pending
     bogus_model = tempfile_with_contents sample_user_model
-    flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.
+    flexmock(Adhearsion.config).should_receive(:files_from_setting).once.
         with("paths", "models").and_return [bogus_model.path]
     start_database_initializer
     User.superclass.should be ActiveRecord::Base

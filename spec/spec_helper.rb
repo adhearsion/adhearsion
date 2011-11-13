@@ -38,7 +38,7 @@ RSpec.configure do |config|
   config.color_enabled = true
 end
 
-Adhearsion::Initializer.ahn_root = File.dirname(__FILE__) + '/fixtures'
+Adhearsion.ahn_root = File.dirname(__FILE__) + '/fixtures'
 Adhearsion::Logging.silence!
 
 class Foo

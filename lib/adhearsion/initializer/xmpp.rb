@@ -8,7 +8,7 @@ module Adhearsion
         def start
           require_dependencies
           XMPP::Connection.extend Blather::DSL
-          ahn_config    = Adhearsion::AHN_CONFIG
+          ahn_config    = Adhearsion.config
           self.config   = ahn_config.xmpp
           self.jid      = config.jid
           self.password = config.password

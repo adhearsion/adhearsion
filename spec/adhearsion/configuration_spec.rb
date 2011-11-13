@@ -1,292 +1,278 @@
 require 'spec_helper'
 
-module ConfigurationTestHelper
-  def default_config(&block)
-    Adhearsion::Configuration.new do |config|
-      config.enable_asterisk
-      yield config if block_given?
+describe Adhearsion::AhnConfiguration do
+
+  context "when initializing the config instance" do
+    subject do 
+      Adhearsion::AhnConfiguration.new
+    end
+
+    its(:automatically_accept_incoming_calls) { should == true}
+
+    its(:end_call_on_hangup) { should == true }
+
+    its(:end_call_on_error) { should == true }    
+
+    its(:asterisk_enabled?) { should == true }
+
+    its(:asterisk) { should be_kind_of OpenStruct }
+
+    its(:database_enabled?) { should == false }
+
+    its(:ldap_enabled?) { should == false }
+
+    it "should not enable AMI by default" do
+      subject.asterisk.ami_enabled?.should == false
+    end
+
+    it "should assign propertly the default AMI values" do
+      subject.asterisk.default_ami.port.should == 5038
+      subject.asterisk.default_ami.events.should == false
+      subject.asterisk.default_ami.host.should == "localhost"
+      subject.asterisk.default_ami.auto_reconnect.should == true
+    end
+
+    its(:drb_enabled?) { should == false }
+
+    its(:xmpp_enabled?) { should == false }
+  end
+
+  context "when accessing asterisk configuration" do
+    subject do 
+      Adhearsion::AhnConfiguration.new.asterisk
+    end
+
+    it "sets default listening port" do
+      subject.listening_port.should == 4573
+    end
+
+    it "sets default listening host" do
+      subject.listening_host.should == "localhost"
+    end
+
+    it "sets default delimiter" do
+      subject.argument_delimiter.should == "|"
     end
   end
-end
 
-describe "Configuration defaults" do
-  include ConfigurationTestHelper
-  attr_reader :config
+  context 'Logging configuration' do
+    subject do 
+      Adhearsion::AhnConfiguration.new
+    end
 
-  before(:each) do
-    @config = default_config
-  end
+    before do
+      Adhearsion::Logging.reset
+      Adhearsion::Logging.start
+    end
 
-  it "incoming calls are accepted by default" do
-    config.automatically_accept_incoming_calls.should be true
-  end
+    it 'the logging level should translate from symbols into Logging constants' do
+      Adhearsion::Logging.logging_level.should_not be Adhearsion::Logging::WARN
+      subject.logging :level => :warn
+      Adhearsion::Logging.logging_level.should be Adhearsion::Logging::WARN
+    end
 
-  it "calls are ended when hung up" do
-    config.end_call_on_hangup.should be true
-  end
+    it 'outputters should be settable' do
+      Adhearsion::Logging.outputters.length.should eql(1)
+      subject.logging :outputters => ::Logging.appenders.stdout
+      Adhearsion::Logging.outputters.should == [::Logging.appenders.stdout]
+    end
 
-  it "if an error occurs, a call is hungup" do
-    config.end_call_on_error.should be true
-  end
+    it 'formatter should be settable' do
+      Adhearsion::Logging.formatter.class.should == ::Logging::Layouts::Basic
+      subject.logging :formatter => ::Logging::Layouts.pattern({:pattern => '[%d] %-5l %c: %m\n'})
+      Adhearsion::Logging.formatter.class.should == ::Logging::Layouts.pattern
+    end
 
-  it "asterisk is enabled by default" do
-    config.asterisk_enabled?.should be true
-  end
-
-  it "default asterisk configuration is available" do
-    config.asterisk.kind_of?(Adhearsion::Configuration::AsteriskConfiguration).should be true
-  end
-
-  it "database access is NOT enabled by default" do
-    config.database_enabled?.should be false
-  end
-
-  it "ldap access is NOT enabled by default" do
-    config.ldap_enabled?.should be false
-  end
-
-  it "AMI is NOT enabled by default" do
-    config.asterisk.ami_enabled?.should be false
-  end
-
-  it "Drb is NOT enabled by default" do
-    config.drb_enabled?.should be false
-  end
-
-  it "XMPP is NOT enabled by default" do
-    config.xmpp_enabled?.should be false
-  end
-end
-
-describe "Asterisk AGI configuration defaults" do
-  attr_reader :config
-
-  before(:each) do
-    @config = Adhearsion::Configuration::AsteriskConfiguration.new
-  end
-
-  it "asterisk configuration sets default listening port" do
-    config.listening_port.should be Adhearsion::Configuration::AsteriskConfiguration.default_listening_port
-  end
-
-  it "asterisk configuration sets default listening host" do
-    config.listening_host.should == Adhearsion::Configuration::AsteriskConfiguration.default_listening_host
-  end
-end
-
-describe 'Logging configuration' do
-
-  attr_reader :config
-
-  before :each do
-    @config = Adhearsion::Configuration.new
-    Adhearsion::Logging.start
-  end
-
-  after :each do
-    Adhearsion::Logging.reset
-  end
-
-  it 'the logging level should translate from symbols into Logging constants' do
-    Adhearsion::Logging.logging_level.should_not be Adhearsion::Logging::WARN
-    config.logging :level => :warn
-    Adhearsion::Logging.logging_level.should be Adhearsion::Logging::WARN
-  end
-
-  it 'outputters should be settable' do
-    Adhearsion::Logging.outputters.length.should eql(1)
-    config.logging :outputters => ::Logging.appenders.stdout
-    Adhearsion::Logging.outputters.should == [::Logging.appenders.stdout]
-  end
-
-  it 'formatter should be settable' do
-    Adhearsion::Logging.formatter.class.should == ::Logging::Layouts::Basic
-    config.logging :formatter => ::Logging::Layouts.pattern({:pattern => '[%d] %-5l %c: %m\n'})
-    Adhearsion::Logging.formatter.class.should == ::Logging::Layouts.pattern
-  end
-
-  it 'a global formatter should be settable' do
-    Adhearsion::Logging.formatter.class.should == ::Logging::Layouts::Basic
-    config.logging :formatter => ::Logging::Layouts.pattern({:pattern => '[%d] %-5l %c: %m\n'})
-    Adhearsion::Logging.formatter.class.should == ::Logging::Layouts.pattern
-  end
-
-end
-
-describe "AMI configuration defaults" do
-  attr_reader :config
-
-  before(:each) do
-    @config = Adhearsion::Configuration::AsteriskConfiguration::AMIConfiguration.new
-  end
-
-  it "ami configuration sets default port" do
-    config.port.should be Adhearsion::Configuration::AsteriskConfiguration::AMIConfiguration.default_port
-  end
-
-  it "ami allows you to configure a username and a password, both of which default to nil" do
-    config.username.should be nil
-    config.password.should be nil
-  end
-end
-
-describe "Rails configuration defaults" do
-  it "should require the path to the Rails app in the constructor" do
-    config = Adhearsion::Configuration::RailsConfiguration.new :path => "path here doesn't matter right now", :env => :development
-    config.rails_root.should_not be nil
-  end
-
-  it "should expand_path() the first constructor parameter" do
-    rails_root = "gui"
-    flexmock(File).should_receive(:expand_path).once.with(rails_root)
-    config = Adhearsion::Configuration::RailsConfiguration.new :path => rails_root, :env => :development
-  end
-end
-
-describe "Database configuration defaults" do
-
-  before(:each) do
-    Adhearsion.send(:remove_const, :AHN_CONFIG) if Adhearsion.const_defined?(:AHN_CONFIG)
-    Adhearsion::Configuration.configure {}
-  end
-
-  it "should store the constructor's argument in connection_options()" do
-    sample_options = { :adapter => "sqlite3", :dbfile => "foo.sqlite3" }
-    config = Adhearsion::Configuration::DatabaseConfiguration.new(sample_options)
-    config.connection_options.should be sample_options
-  end
-  it "should remove the :orm key from the connection options" do
-    sample_options = { :orm => :active_record, :adapter => "mysql", :host => "::1",
-                       :user => "a", :pass => "b", :database => "ahn" }
-    config = Adhearsion::Configuration::DatabaseConfiguration.new(sample_options.clone)
-    config.orm.should be sample_options.delete(:orm)
-    config.connection_options.should == sample_options
-  end
-end
-
-describe "XMPP configuration defaults" do
-  attr_reader :config
-
-  it "xmpp configuration sets default port when server is set, but no port" do
-    config = Adhearsion::Configuration::XMPPConfiguration.new :jid => "test@example.com", :password => "somepassword", :server => "example.com"
-    config.port.should be Adhearsion::Configuration::XMPPConfiguration.default_port
-  end
-
-  it "should raise when port is specified, but no server" do
-    begin
-      config = Adhearsion::Configuration::XMPPConfiguration.new :jid => "test@example.com", :password => "somepassword", :port => "5223"
-    rescue ArgumentError => e
-      e.message.should == "Must supply a :server argument as well as :port to the XMPP initializer!"
+    it 'a global formatter should be settable' do
+      Adhearsion::Logging.formatter.class.should == ::Logging::Layouts::Basic
+      subject.logging :formatter => ::Logging::Layouts.pattern({:pattern => '[%d] %-5l %c: %m\n'})
+      Adhearsion::Logging.formatter.class.should == ::Logging::Layouts.pattern
     end
   end
-end
 
-describe "Punchblock configuration" do
-  describe "with config specified" do
+  context "AMI configuration defaults" do
+    subject do 
+      Adhearsion::AhnConfiguration.new.asterisk.default_ami
+    end
+
+    it "ami configuration sets default port" do
+      subject.port.should == 5038
+    end
+
+    it "ami allows you to configure a username and a password, both of which default to nil" do
+      subject.username.should be_nil
+      subject.password.should be_nil
+    end
+  end
+
+  context "Rails configuration defaults" do
+    let(:rails_root) do
+      "/foo/bar"
+    end
+
+    subject do 
+      Adhearsion::AhnConfiguration.new.tap{|config| config.load_rails_configuration({:path => rails_root, :env => "production"})}.rails
+    end
+
+    it "should require the path to the Rails app in the constructor" do
+      subject.rails_root.should == rails_root
+    end
+
+    it "should raise an exception when no env is specified" do
+      lambda { 
+        Adhearsion::AhnConfiguration.new.tap{|config| config.load_rails_configuration({:path => rails_root})}
+        }.should raise_error ArgumentError, "Must supply an :env argument to the Rails initializer!"
+    end
+  end
+
+  context "Database configuration defaults" do
+
+    let(:base_options) do
+      { :adapter  => "mysql",
+        :host     => "localhost",
+        :port     => "3306",
+        :user     => "foo",
+        :pass     => "bar",
+        :database => "adhearsion_app"}
+    end
+
+    subject do 
+      Adhearsion::AhnConfiguration.new.tap{ |config| config.load_database_configuration(base_options)}.database
+    end
+
+    its (:connection_options) { should == base_options}
+
+    its (:orm) { should == :active_record}
+
+    it "should remove the :orm key from the connection options" do
+      sample_options = base_options.merge({ :orm => :active_record })
+      config = Adhearsion::AhnConfiguration.new.tap{ |config| config.load_database_configuration(sample_options)}.database
+      config.orm.should == sample_options.delete(:orm)
+
+      config.connection_options.should == sample_options
+    end
+  end
+
+  context "XMPP configuration defaults" do
+
+    let :base_options do
+      { :jid => "test@example.com", :password => "somepassword", :server => "example.com" }
+    end
+
+    subject do 
+      Adhearsion::AhnConfiguration.new.tap{ |config| config.load_xmpp_configuration(base_options)}.xmpp
+    end
+
+    its(:port) { should == 5222}
+
+    its(:jid) { should == "test@example.com"}
+
+    its(:password) { should == "somepassword"}
+
+    its(:server) { should == "example.com"}
+
+    it "should raise an exception when no server is specified" do
+      lambda {
+        Adhearsion::AhnConfiguration.new.tap{ |config| config.load_xmpp_configuration({:jid => "test@example.com", :password => "somepassword"})}
+      }.should raise_error ArgumentError, "Must supply a :server argument to the XMPP initializer!"
+    end
+  end
+
+  context "Punchblock configuration" do
+    describe "with config specified" do
+      subject do
+        Adhearsion::AhnConfiguration.new.tap do |config| 
+          config.load_punchblock_configuration(:username => 'userb@127.0.0.1', :password => 'abc123', :auto_reconnect => false)
+        end.punchblock.connection_options
+      end
+
+      its([:username]) { should == 'userb@127.0.0.1' }
+      its([:password]) { should == 'abc123' }
+      its([:auto_reconnect]) {should == false }
+    end
+
+    describe "with defaults" do
+      subject do
+        Adhearsion::AhnConfiguration.new.tap do |config| 
+          config.load_punchblock_configuration
+        end.punchblock.connection_options
+      end
+
+      its([:username]) { should == 'usera@127.0.0.1' }
+      its([:password]) { should == '1' }
+      its([:auto_reconnect]) {should == true }
+    end
+  end
+
+  context "Configuration scenarios" do
     subject do
-      Adhearsion::Configuration::PunchblockConfiguration.new(:username => 'userb@127.0.0.1', :password => 'abc123', :auto_reconnect => false).connection_options
-    end
-
-    it { subject[:username].should == 'userb@127.0.0.1' }
-    it { subject[:password].should == 'abc123' }
-    it { subject[:auto_reconnect].should == false }
-  end
-
-  describe "with defaults" do
-    subject do
-      Adhearsion::Configuration::PunchblockConfiguration.new.connection_options
-    end
-
-    it { subject[:username].should == 'usera@127.0.0.1' }
-    it { subject[:password].should == '1' }
-    it { subject[:auto_reconnect].should == true }
-  end
-end
-
-describe "Configuration scenarios" do
-  include ConfigurationTestHelper
-
-  it "enabling AMI using all its defaults" do
-    config = enable_ami
-
-    config.asterisk.ami_enabled?.should be true
-    config.asterisk.ami.should be_a_kind_of Adhearsion::Configuration::AsteriskConfiguration::AMIConfiguration
-  end
-
-  it "enabling AMI with custom configuration overrides the defaults" do
-    overridden_port = 911
-    config = enable_ami :port => overridden_port
-    config.asterisk.ami.port.should be overridden_port
-  end
-
-  it "enabling Drb without any configuration" do
-    config = enable_drb
-    config.drb.should_not be nil
-    config.drb.should be_a_kind_of Adhearsion::Configuration::DrbConfiguration
-  end
-
-  it "enabling Drb with a port specified sets the port" do
-    target_port = 911
-    config = enable_drb :port => target_port
-    config.drb.port.should == target_port
-  end
-
-  private
-    def enable_ami(*overrides)
-      default_config do |config|
-        config.asterisk.enable_ami(*overrides)
+      Adhearsion::AhnConfiguration.new.tap do |config| 
+        config.load_punchblock_configuration(:username => 'userb@127.0.0.1', :password => 'abc123', :auto_reconnect => false)
+      end.tap do |config|
+        config.asterisk.enable_ami
+      end.tap do |config|
+        config.load_drb_configuration
       end
     end
-
-    def enable_drb(*overrides)
-      default_config do |config|
-        config.enable_drb *overrides
+    
+    it "should enable ami with the default values" do
+      subject.asterisk.ami_enabled?.should == true
+      [:port, :events, :host, :auto_reconnect].each do |value|
+        subject.asterisk.ami.send(value).should == subject.asterisk.default_ami.send(value)
       end
-    end
-end
-
-describe "AHN_CONFIG" do
-  before(:each) do
-    Adhearsion.send(:remove_const, :AHN_CONFIG) if Adhearsion.const_defined?(:AHN_CONFIG)
-  end
-
-  it "Running configure sets configuration to Adhearsion::AHN_CONFIG" do
-    Adhearsion.const_defined?(:AHN_CONFIG).should be false
-    Adhearsion::Configuration.configure do |config|
-      # Nothing needs to happen here
+      subject.asterisk.ami.should be_a_kind_of Adhearsion::Configuration
+      subject.asterisk.default_ami.should be_a_kind_of Adhearsion::Configuration
     end
 
-    Adhearsion.const_defined?(:AHN_CONFIG).should be true
-    Adhearsion::AHN_CONFIG.should be_a_kind_of(Adhearsion::Configuration)
-  end
-end
+    it "should enable ami with custom configuration and overrides the defaults" do
+      subject.asterisk.enable_ami({:port => 911, :events => true, :host => "127.0.0.1", :auto_reconnect => false})
+      subject.asterisk.ami.port.should == 911
+      subject.asterisk.ami.events.should == true
+      subject.asterisk.ami.host.should == "127.0.0.1"
+      subject.asterisk.ami.auto_reconnect.should == false
+    end
 
-describe "DRb configuration" do
-  it "should not add any ACL rules when :raw_acl is passed in" do
-    config = Adhearsion::Configuration::DrbConfiguration.new :raw_acl => :this_is_an_acl
-    config.acl.should be :this_is_an_acl
+    it "should enable drb with the default values" do
+      subject.drb.should_not == nil
+      subject.drb.should be_a_kind_of Adhearsion::Configuration
+      subject.drb.port.should == 9050
+      subject.drb.host.should == "localhost"
+      subject.drb.acl.should == %w[allow 127.0.0.1]
+    end
+
+    it "should enable drb with custom configuration and overrides the defaults" do
+      subject.load_drb_configuration({:port => 9051, :host => "127.0.0.1", :raw_acl => :this_is_an_acl})
+      subject.drb.should be_a_kind_of Adhearsion::Configuration
+      subject.drb.port.should == 9051
+      subject.drb.host.should == "127.0.0.1"
+      subject.drb.acl.should  == :this_is_an_acl
+    end
+
+    it "should enable drb with custom configuration and overrides the defaults with arrays of allow and deny as acl" do
+      subject.load_drb_configuration({:port => 9051, :host => "127.0.0.1", :allow => %w[1.1.1.1  2.2.2.2], :deny  => %w[9.9.9.9]})
+      subject.drb.should be_a_kind_of Adhearsion::Configuration
+      subject.drb.port.should == 9051
+      subject.drb.host.should == "127.0.0.1"
+      subject.drb.acl.should  == %w[deny 9.9.9.9 allow 1.1.1.1 allow 2.2.2.2]
+    end
+    it "should enable drb with custom configuration and overrides the defaults with a String of allow and deny as acl" do
+      subject.load_drb_configuration({:port => 9051, :host => "127.0.0.1", :allow => "1.1.1.1", :deny  => "9.9.9.9"})
+      subject.drb.should be_a_kind_of Adhearsion::Configuration
+      subject.drb.port.should == 9051
+      subject.drb.host.should == "127.0.0.1"
+      subject.drb.acl.should  == %w[deny 9.9.9.9 allow 1.1.1.1]
+    end
+
   end
 
-  it "should, by default, allow only localhost connections" do
-    config = Adhearsion::Configuration::DrbConfiguration.new
-    config.acl.should == %w[allow 127.0.0.1]
-  end
+  context "Adhearsion.config" do
+    before do
+      Adhearsion.config = nil
+    end
 
-  it "should add ACL 'deny' rules before 'allow' rules" do
-    config = Adhearsion::Configuration::DrbConfiguration.new :allow => %w[1.1.1.1  2.2.2.2],
-                                                             :deny  => %w[9.9.9.9]
-    config.acl.should == %w[deny 9.9.9.9 allow 1.1.1.1 allow 2.2.2.2]
-  end
+    it "should initialize to Adhearsion::AhnConfiguration" do
+      Adhearsion.config.should be_a_kind_of(Adhearsion::AhnConfiguration)
+    end
 
-  it "should allow both an Array and a String to be passed as an allow/deny ACL rule" do
-    config = Adhearsion::Configuration::DrbConfiguration.new :allow => "1.1.1.1", :deny => "9.9.9.9"
-    config.acl.should == %w[deny 9.9.9.9 allow 1.1.1.1]
   end
-
-  it "should have a default host and port" do
-    config = Adhearsion::Configuration::DrbConfiguration.new
-    config.host.should_not be nil
-    config.port.should_not be nil
-  end
-
 end

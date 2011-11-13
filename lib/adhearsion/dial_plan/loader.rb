@@ -13,7 +13,7 @@ module Adhearsion
         end
 
         def load_dialplans(*files)
-          files = Adhearsion::AHN_CONFIG.files_from_setting("paths", "dialplan") if files.empty?
+          files = Adhearsion.config.files_from_setting("paths", "dialplan") if files.empty?
           files = Array files
           files.map! do |file|
             case file

@@ -4,7 +4,7 @@ describe "The Adhearsion VoIP dialplan parser" do
 
   it "should return a list of dialplans properly from dialplan code" do
     file = "foobar.rb"
-    flexstub(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return [file]
+    flexstub(Adhearsion.config).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return [file]
 
     flexmock(File).should_receive(:exists?).with(file).and_return true
     flexmock(File).should_receive(:read).once.with(file).and_return <<-DIALPLAN
@@ -28,7 +28,7 @@ describe "The Adhearsion VoIP dialplan parser" do
   end
 
   it "should warn when no dialplan paths were in the .ahnrc file" do
-    flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return []
+    flexmock(Adhearsion.config).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return []
     flexmock(Adhearsion::Logging.get_logger(Adhearsion::DSL::Dialplan::DialplanParser)).should_receive(:warn).once.with(String)
 
     # Not loading it here is the same as it not existing in the "paths" sub-Hash
@@ -41,7 +41,7 @@ describe "The Adhearsion VoIP dialplan interpreter" do
 
   it "should make dialplan contexts available within the context's block" do
     file = "contexts_from_code_helper_pseudo_dialplan.rb"
-    flexstub(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return [file]
+    flexstub(Adhearsion.config).should_receive(:files_from_setting).once.with("paths", "dialplan").and_return [file]
 
     flexmock(File).should_receive(:exists?).with(file).and_return true
     flexmock(File).should_receive(:read).with(file).and_return "foo { cool_method }"

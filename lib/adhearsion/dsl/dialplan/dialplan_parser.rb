@@ -13,7 +13,7 @@ module Adhearsion
         def self.get_contexts
           envelope = ContextsEnvelope.new
 
-          dialplans = AHN_CONFIG.files_from_setting "paths", "dialplan"
+          dialplans = Adhearsion.config.files_from_setting "paths", "dialplan"
           logger.warn "No dialplan files were found!" if dialplans.empty?
 
           {}.tap do |contexts|

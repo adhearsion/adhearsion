@@ -5,7 +5,7 @@ describe "The Rails initializer" do
 
   def initialize_rails_with_options(options)
     rails_options = flexmock "Rails options mock", options
-    flexstub(Adhearsion::AHN_CONFIG).should_receive(:rails).once.and_return(rails_options)
+    flexstub(Adhearsion.config).should_receive(:rails).once.and_return(rails_options)
     Adhearsion::Initializer::Rails.start
   end
 
@@ -23,7 +23,7 @@ describe "The Rails initializer" do
   end
 
   it "should raise an exception if the database is initialized at the same time" do
-    flexstub(Adhearsion::AHN_CONFIG).should_receive(:database_enabled?).and_return true
+    flexstub(Adhearsion.config).should_receive(:database_enabled?).and_return true
     flexmock(Adhearsion::Initializer::Rails).should_receive(:require).and_return
     stub_file_checking_methods!
     the_following_code {

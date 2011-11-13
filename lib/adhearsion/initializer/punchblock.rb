@@ -7,7 +7,7 @@ module Adhearsion
 
       class << self
         def start
-          self.config = AHN_CONFIG.punchblock
+          self.config = Adhearsion.config.punchblock
           connection_class = case (self.config.connection_options.delete(:platform) || :xmpp)
           when :xmpp
             ::Punchblock::Connection::XMPP

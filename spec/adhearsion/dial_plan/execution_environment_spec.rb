@@ -23,7 +23,7 @@ module Adhearsion
         e.should respond_to(:foo)
       end
 
-      before { flexmock(Adhearsion::AHN_CONFIG).should_receive(:automatically_accept_incoming_calls).and_return false }
+      before { flexmock(Adhearsion.config).should_receive(:automatically_accept_incoming_calls).and_return false }
 
       it "should define variables accessor methods" do
         call.variables.empty?.should be false

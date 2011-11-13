@@ -97,12 +97,12 @@ describe Adhearsion::Plugin do
     it "should add a new method to Console" do
       FooBar = Class.new Adhearsion::Plugin do
         console :config do
-          Adhearsion::AHN_CONFIG
+          Adhearsion.config
         end
       end
       Adhearsion::Plugin.load
       Adhearsion::Console.should respond_to(:config)
-      Adhearsion::Console.config.should == Adhearsion::AHN_CONFIG
+      Adhearsion::Console.config.should == Adhearsion.config
     end
   end
 

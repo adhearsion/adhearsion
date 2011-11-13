@@ -28,7 +28,7 @@ module Adhearsion
   autoload :Call
   autoload :Calls
   autoload :Commands
-  autoload :Configuration
+  autoload :AhnConfiguration
   autoload :Console
   autoload :Constants
   autoload :Conveniences
@@ -45,7 +45,6 @@ module Adhearsion
 
   # Sets up the Gem require path.
   AHN_INSTALL_DIR = File.expand_path(File.dirname(__FILE__) + "/..")
-  AHN_CONFIG = Configuration.new
 
   ##
   # This Array holds all the Threads whose life matters. Adhearsion will not exit until all of these have died.
@@ -54,7 +53,23 @@ module Adhearsion
 
   mattr_accessor :status
 
+  mattr_accessor :config
+
   class << self
+
+    def config
+      @config ||= AhnConfiguration.new
+      yield @config if block_given?
+      @config
+    end
+
+    def config=(value)
+      @config=value
+    end
+
+    def ahn_root=(path)
+      Adhearsion.config.root = path.nil? ? nil : PathString.new(File.expand_path(path))
+    end
 
     ##
     # Shuts down the framework.

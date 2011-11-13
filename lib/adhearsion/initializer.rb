@@ -17,14 +17,6 @@ module Adhearsion
         File.exists?(location) ? YAML.load_file(location) : nil
       end
 
-      def ahn_root=(path)
-        if Object.constants.map(&:to_sym).include?(:AHN_ROOT)
-          Object.const_get(:AHN_ROOT).base_path = File.expand_path(path)
-        else
-          Object.const_set(:AHN_ROOT, PathString.new(File.expand_path(path)))
-        end
-      end
-
       def start(*args, &block)
         new(*args, &block).start
       end
@@ -55,7 +47,7 @@ module Adhearsion
       @mode     = options[:mode]
       @pid_file = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
       @loaded_init_files  = options[:loaded_init_files]
-      self.class.ahn_root = path
+      Adhearsion.ahn_root = path
     end
 
     def start
@@ -88,7 +80,7 @@ module Adhearsion
     end
 
     def default_pid_path
-      File.join AHN_ROOT, 'adhearsion.pid'
+      File.join Adhearsion.config.root, 'adhearsion.pid'
     end
 
     def resolve_pid_file_path
@@ -101,12 +93,12 @@ module Adhearsion
     end
 
     def resolve_log_file_path
-      @ahn_app_log_directory = AHN_ROOT + '/log'
+      @ahn_app_log_directory = "#{Adhearsion.config.root}/log"
       @log_file = File.expand_path(ahn_app_log_directory + "/adhearsion.log")
     end
 
     def switch_to_root_directory
-      Dir.chdir AHN_ROOT
+      Dir.chdir Adhearsion.config.root
     end
 
     def catch_termination_signal
@@ -122,9 +114,9 @@ module Adhearsion
     # can continue the initialization knowing where certain files are specifically.
     #
     def bootstrap_rc
-      rules = self.class.get_rules_from AHN_ROOT
+      rules = self.class.get_rules_from Adhearsion.config.root
 
-      AHN_CONFIG.ahnrc = rules
+      Adhearsion.config.ahnrc = rules
 
       # DEPRECATION: Check if the old paths format is being used. If so, abort and notify.
       if rules.has_key?("paths") && rules["paths"].kind_of?(Hash)
@@ -193,21 +185,21 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
 
     def load_all_init_files
-      init_files_from_rc = AHN_CONFIG.files_from_setting("paths", "init").map { |file| File.expand_path(file) }
+      init_files_from_rc = Adhearsion.config.files_from_setting("paths", "init").map { |file| File.expand_path(file) }
       already_loaded_init_files = Array(@loaded_init_files).map { |file| File.expand_path(file) }
       (init_files_from_rc - already_loaded_init_files).each { |init| load init }
     end
 
     def init_datasources
-      Database.start if AHN_CONFIG.database_enabled?
-      Ldap.start     if AHN_CONFIG.ldap_enabled?
+      Database.start if Adhearsion.config.database_enabled?
+      Ldap.start     if Adhearsion.config.ldap_enabled?
     end
 
     def init_modules
-      Punchblock.start if AHN_CONFIG.punchblock_enabled?
-      Drb.start        if AHN_CONFIG.drb_enabled?
-      Rails.start      if AHN_CONFIG.rails_enabled?
-      XMPP.start       if AHN_CONFIG.xmpp_enabled?
+      Punchblock.start if Adhearsion.config.punchblock_enabled?
+      Drb.start        if Adhearsion.config.drb_enabled?
+      Rails.start      if Adhearsion.config.rails_enabled?
+      XMPP.start       if Adhearsion.config.xmpp_enabled?
     end
 
     def init_get_logging_appenders
@@ -233,7 +225,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
 
     def init_events_file
-      AHN_CONFIG.files_from_setting("paths", "events").each do |file|
+      Adhearsion.config.files_from_setting("paths", "events").each do |file|
         require file
       end
     end

@@ -10,7 +10,7 @@ module Adhearsion
         def start
           require_dependencies
           require_models
-          @@config = Adhearsion::AHN_CONFIG.database
+          @@config = Adhearsion.config.database
           # You may need to uncomment the following line for older versions of ActiveRecord
           # ActiveRecord::Base.allow_concurrency = true
           establish_connection
@@ -44,7 +44,7 @@ module Adhearsion
         end
 
         def require_models
-          AHN_CONFIG.files_from_setting("paths", "models").each do |model|
+          Adhearsion.config.files_from_setting("paths", "models").each do |model|
             load model
           end
         end

@@ -1,20 +1,24 @@
 require 'spec_helper'
 
-describe "Adhearsion::Initializer" do
+describe Adhearsion::Initializer do
 
   include InitializerStubs
   # TODO: create a specification for aliases
 
-  before :each do
+  let :path do
+    '/any/ole/path'
+  end
+
+
+  before do
     Adhearsion::Logging.reset
     flexmock(Adhearsion::Initializer::Logging).should_receive(:start).once.and_return('')
     flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
     flexmock(::Logging::Appenders).should_receive(:file).and_return(nil)
-    Adhearsion.send(:remove_const, 'AHN_CONFIG') if Adhearsion.const_defined? 'AHN_CONFIG'
-    Adhearsion::AHN_CONFIG = Adhearsion::Configuration.new
+    Adhearsion.config = nil
   end
 
-  after :each do
+  after do
     Adhearsion::Events.reinitialize_queue!
   end
 
@@ -102,41 +106,35 @@ describe "Adhearsion::Initializer" do
       File.delete random_file
     end
   end
-
-  private
-    def path
-      '/any/ole/path'
-    end
 end
 
 describe "Adhearsion::Initializer" do
   it "should initialize events properly" do
     events_rb = Tempfile.new "events.rb"
     initializer = Adhearsion::Initializer.new("/does/not/matter")
-    flexmock(Adhearsion::AHN_CONFIG).should_receive(:files_from_setting).at_least.once.with("paths", "events").
-        and_return([events_rb.path])
+    flexmock(Adhearsion.config).should_receive(:files_from_setting).at_least.once.with("paths", "events").and_return([events_rb.path])
     flexmock(initializer).should_receive(:require).once.with events_rb.path
 
     initializer.send :init_events_file
   end
 end
 
-describe "AHN_ROOT" do
+describe "Adhearsion.ahn_root" do
   
   include InitializerStubs
 
-  before(:each) do
-    Object.send(:remove_const, :AHN_ROOT) if defined? AHN_ROOT
+  before do
+    Adhearsion.ahn_root = nil
   end
 
-  it "initializing will create the AHN_ROOT" do
+  it "initializing will create the ahn_root" do
     flexmock(Adhearsion::Initializer::Logging).should_receive(:start).once.and_return('')
     flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
     flexmock(::Logging::Appenders).should_receive(:file).and_return(nil)
 
     stub_behavior_for_initializer_with_no_path_changing_behavior do
       ahn = Adhearsion::Initializer.start path
-      Object.constants.map(&:to_s).include?("AHN_ROOT").should be true
+      Adhearsion.config.root.should_not be_nil
     end
   end
 
@@ -153,7 +151,7 @@ describe "AHN_ROOT" do
     path.should == original_base_path
   end
 
-  it "creating the AHN_ROOT will set defaults" do
+  it "creating the Adhearsion.config.root will set defaults" do
     flexmock(Adhearsion::Initializer::Logging).should_receive(:start).once.and_return('')
     flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
     flexmock(::Logging::Appenders).should_receive(:file).and_return(nil)
@@ -162,10 +160,10 @@ describe "AHN_ROOT" do
       flexstub(Adhearsion::Initializer).new_instances.should_receive(:load).and_return
       ahn = Adhearsion::Initializer.start path
       full_path = File.expand_path(path)
-      AHN_ROOT.to_s.should == full_path
-      AHN_ROOT.component_path.should == File.join(full_path, "components")
-      AHN_ROOT.log_path.should == File.join(full_path, "logs")
-      AHN_ROOT.dialplan_path.should == full_path
+      Adhearsion.config.root.to_s.should == full_path
+      Adhearsion.config.root.component_path.should == File.join(full_path, "components")
+      Adhearsion.config.root.log_path.should == File.join(full_path, "logs")
+      Adhearsion.config.root.dialplan_path.should == full_path
     end
   end
   private

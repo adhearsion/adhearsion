@@ -10,7 +10,7 @@ module Adhearsion
       class << self
 
         def start
-          config = Adhearsion::AHN_CONFIG.drb
+          config = Adhearsion.config.drb
           DRb.install_acl ACL.new(config.acl) if config.acl
 
           drb_door = Object.new

@@ -172,7 +172,7 @@ module Adhearsion
       # @see http://www.voip-info.org/wiki/view/Asterisk+-+documentation+of+application+commands Asterisk Dialplan Commands
       def execute(application, *arguments)
         command = "EXEC #{application}"
-        arguments = arguments.map { |arg| quote_arg(arg) }.join(AHN_CONFIG.asterisk.argument_delimiter)
+        arguments = arguments.map { |arg| quote_arg(arg) }.join(Adhearsion.config.asterisk.argument_delimiter)
         result = raw_response("#{command} #{arguments}")
         return false if error?(result)
         result
@@ -861,7 +861,7 @@ module Adhearsion
       # @param options [String] :barge_in_digits digits to allow the TTS to be interrupted with
       #
       def speak(text, options = {})
-        engine = options.delete(:engine) || AHN_CONFIG.asterisk.speech_engine || :none
+        engine = options.delete(:engine) || Adhearsion.config.asterisk.speech_engine || :none
         options[:interruptible] = false unless options.has_key?(:interruptible)
         SpeechEngines.send(engine, self, text.to_s, options)
       end

@@ -6,7 +6,7 @@ module Adhearsion
       class << self
 
         def start
-          ahn_config       = AHN_CONFIG
+          ahn_config       = Adhearsion.config
           self.config      = ahn_config.rails
           self.rails_root  = config.rails_root
           self.environment = config.environment

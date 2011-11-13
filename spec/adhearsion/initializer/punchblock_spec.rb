@@ -9,7 +9,7 @@ module Adhearsion
 
       def initialize_punchblock_with_options(options)
         flexmock(Punchblock).should_receive(:connect)
-        Configuration.configure { |config| config.enable_punchblock options }
+        Adhearsion.config.load_punchblock_configuration(options)
         Punchblock.start
       end
 
