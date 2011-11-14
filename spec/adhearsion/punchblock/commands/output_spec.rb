@@ -305,7 +305,7 @@ module Adhearsion
         end
 
         describe "#ssml_for" do
-          let(:prompt) { "Please stand by"}
+          let(:prompt) { "Please stand by" }
 
           let(:ssml) do
             RubySpeech::SSML.draw do
@@ -448,7 +448,7 @@ module Adhearsion
             mock_execution_environment.should_receive(:interruptible_play!).once.and_return(2)
             mock_execution_environment.interruptible_play output1, output2
           end
-        end # describe interruptible_play!
+        end # describe interruptible_play
 
         describe "#raw_output" do
           pending

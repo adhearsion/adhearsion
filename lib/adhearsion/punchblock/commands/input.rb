@@ -14,7 +14,7 @@ module Adhearsion
             self.root = 'inputdigits'
             rule id: 'digits' do
               one_of do
-                0.upto(9) {|d| item { d.to_s } }
+                0.upto(9) { |d| item { d.to_s } }
               end
             end
 
@@ -42,17 +42,15 @@ module Adhearsion
             self.root = 'inputdigits'
             rule id: 'acceptdigits' do
               one_of do
-                gram_digits.each {|d| item { d.to_s}}
+                gram_digits.each { |d| item { d.to_s } }
               end
             end
-
 
             rule id: 'inputdigits', scope: 'public' do
               item repeat: '1' do
                 ruleref uri: '#acceptdigits'
               end
             end
-
           end
           grammar
         end
@@ -131,7 +129,6 @@ module Adhearsion
             if options.has_key?(:speak) && options.has_key?(:play) && options[:play].size > 0
               raise ArgumentError, 'Must specify only one of :play or :speak'
             end
-            # options[:speak][:interruptible] = options[:interruptible]
           end
 
           timeout     = options[:timeout]
@@ -157,10 +154,9 @@ module Adhearsion
               if output.class == Hash
                 argument = output.delete(:value)
                 raise ArgumentError, ':value has to be specified for each :play argument that is a Hash' if argument.nil?
-                key = send play_command, [argument, output]
-              else
-                key = send play_command, output
+                output = [argument, output]
               end
+              key = send play_command, output
               key = nil if play_command == :play!
               break if key
             end
