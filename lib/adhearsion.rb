@@ -28,7 +28,7 @@ module Adhearsion
   autoload :Call
   autoload :Calls
   autoload :Commands
-  autoload :AhnConfiguration
+  autoload :Configuration
   autoload :Console
   autoload :Constants
   autoload :Conveniences
@@ -58,7 +58,7 @@ module Adhearsion
   class << self
 
     def config
-      @config ||= AhnConfiguration.new
+      @config ||= Configuration.new
       yield @config if block_given?
       @config
     end

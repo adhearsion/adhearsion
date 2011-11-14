@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe Adhearsion::AhnConfiguration do
+describe Adhearsion::Configuration do
 
   context "when initializing the config instance" do
     subject do 
-      Adhearsion::AhnConfiguration.new
+      Adhearsion::Configuration.new
     end
 
     its(:automatically_accept_incoming_calls) { should == true}
@@ -39,7 +39,7 @@ describe Adhearsion::AhnConfiguration do
 
   context "when accessing asterisk configuration" do
     subject do 
-      Adhearsion::AhnConfiguration.new.asterisk
+      Adhearsion::Configuration.new.asterisk
     end
 
     it "sets default listening port" do
@@ -57,7 +57,7 @@ describe Adhearsion::AhnConfiguration do
 
   context 'Logging configuration' do
     subject do 
-      Adhearsion::AhnConfiguration.new
+      Adhearsion::Configuration.new
     end
 
     before do
@@ -92,7 +92,7 @@ describe Adhearsion::AhnConfiguration do
 
   context "AMI configuration defaults" do
     subject do 
-      Adhearsion::AhnConfiguration.new.asterisk.default_ami
+      Adhearsion::Configuration.new.asterisk.default_ami
     end
 
     it "ami configuration sets default port" do
@@ -111,7 +111,7 @@ describe Adhearsion::AhnConfiguration do
     end
 
     subject do 
-      Adhearsion::AhnConfiguration.new.tap{|config| config.load_rails_configuration({:path => rails_root, :env => "production"})}.rails
+      Adhearsion::Configuration.new.tap{|config| config.load_rails_configuration({:path => rails_root, :env => "production"})}.rails
     end
 
     it "should require the path to the Rails app in the constructor" do
@@ -120,7 +120,7 @@ describe Adhearsion::AhnConfiguration do
 
     it "should raise an exception when no env is specified" do
       lambda { 
-        Adhearsion::AhnConfiguration.new.tap{|config| config.load_rails_configuration({:path => rails_root})}
+        Adhearsion::Configuration.new.tap{|config| config.load_rails_configuration({:path => rails_root})}
         }.should raise_error ArgumentError, "Must supply an :env argument to the Rails initializer!"
     end
   end
@@ -137,7 +137,7 @@ describe Adhearsion::AhnConfiguration do
     end
 
     subject do 
-      Adhearsion::AhnConfiguration.new.tap{ |config| config.load_database_configuration(base_options)}.database
+      Adhearsion::Configuration.new.tap{ |config| config.load_database_configuration(base_options)}.database
     end
 
     its (:connection_options) { should == base_options}
@@ -146,7 +146,7 @@ describe Adhearsion::AhnConfiguration do
 
     it "should remove the :orm key from the connection options" do
       sample_options = base_options.merge({ :orm => :active_record })
-      config = Adhearsion::AhnConfiguration.new.tap{ |config| config.load_database_configuration(sample_options)}.database
+      config = Adhearsion::Configuration.new.tap{ |config| config.load_database_configuration(sample_options)}.database
       config.orm.should == sample_options.delete(:orm)
 
       config.connection_options.should == sample_options
@@ -160,7 +160,7 @@ describe Adhearsion::AhnConfiguration do
     end
 
     subject do 
-      Adhearsion::AhnConfiguration.new.tap{ |config| config.load_xmpp_configuration(base_options)}.xmpp
+      Adhearsion::Configuration.new.tap{ |config| config.load_xmpp_configuration(base_options)}.xmpp
     end
 
     its(:port) { should == 5222}
@@ -173,7 +173,7 @@ describe Adhearsion::AhnConfiguration do
 
     it "should raise an exception when no server is specified" do
       lambda {
-        Adhearsion::AhnConfiguration.new.tap{ |config| config.load_xmpp_configuration({:jid => "test@example.com", :password => "somepassword"})}
+        Adhearsion::Configuration.new.tap{ |config| config.load_xmpp_configuration({:jid => "test@example.com", :password => "somepassword"})}
       }.should raise_error ArgumentError, "Must supply a :server argument to the XMPP initializer!"
     end
   end
@@ -181,7 +181,7 @@ describe Adhearsion::AhnConfiguration do
   context "Punchblock configuration" do
     describe "with config specified" do
       subject do
-        Adhearsion::AhnConfiguration.new.tap do |config| 
+        Adhearsion::Configuration.new.tap do |config| 
           config.load_punchblock_configuration(:username => 'userb@127.0.0.1', :password => 'abc123', :auto_reconnect => false)
         end.punchblock.connection_options
       end
@@ -193,7 +193,7 @@ describe Adhearsion::AhnConfiguration do
 
     describe "with defaults" do
       subject do
-        Adhearsion::AhnConfiguration.new.tap do |config| 
+        Adhearsion::Configuration.new.tap do |config| 
           config.load_punchblock_configuration
         end.punchblock.connection_options
       end
@@ -206,7 +206,7 @@ describe Adhearsion::AhnConfiguration do
 
   context "Configuration scenarios" do
     subject do
-      Adhearsion::AhnConfiguration.new.tap do |config| 
+      Adhearsion::Configuration.new.tap do |config| 
         config.load_punchblock_configuration(:username => 'userb@127.0.0.1', :password => 'abc123', :auto_reconnect => false)
       end.tap do |config|
         config.asterisk.enable_ami
@@ -220,8 +220,8 @@ describe Adhearsion::AhnConfiguration do
       [:port, :events, :host, :auto_reconnect].each do |value|
         subject.asterisk.ami.send(value).should == subject.asterisk.default_ami.send(value)
       end
-      subject.asterisk.ami.should be_a_kind_of Adhearsion::Configuration
-      subject.asterisk.default_ami.should be_a_kind_of Adhearsion::Configuration
+      subject.asterisk.ami.should be_a_kind_of Adhearsion::BasicConfiguration
+      subject.asterisk.default_ami.should be_a_kind_of Adhearsion::BasicConfiguration
     end
 
     it "should enable ami with custom configuration and overrides the defaults" do
@@ -234,7 +234,7 @@ describe Adhearsion::AhnConfiguration do
 
     it "should enable drb with the default values" do
       subject.drb.should_not == nil
-      subject.drb.should be_a_kind_of Adhearsion::Configuration
+      subject.drb.should be_a_kind_of Adhearsion::BasicConfiguration
       subject.drb.port.should == 9050
       subject.drb.host.should == "localhost"
       subject.drb.acl.should == %w[allow 127.0.0.1]
@@ -242,7 +242,7 @@ describe Adhearsion::AhnConfiguration do
 
     it "should enable drb with custom configuration and overrides the defaults" do
       subject.load_drb_configuration({:port => 9051, :host => "127.0.0.1", :raw_acl => :this_is_an_acl})
-      subject.drb.should be_a_kind_of Adhearsion::Configuration
+      subject.drb.should be_a_kind_of Adhearsion::BasicConfiguration
       subject.drb.port.should == 9051
       subject.drb.host.should == "127.0.0.1"
       subject.drb.acl.should  == :this_is_an_acl
@@ -250,14 +250,14 @@ describe Adhearsion::AhnConfiguration do
 
     it "should enable drb with custom configuration and overrides the defaults with arrays of allow and deny as acl" do
       subject.load_drb_configuration({:port => 9051, :host => "127.0.0.1", :allow => %w[1.1.1.1  2.2.2.2], :deny  => %w[9.9.9.9]})
-      subject.drb.should be_a_kind_of Adhearsion::Configuration
+      subject.drb.should be_a_kind_of Adhearsion::BasicConfiguration
       subject.drb.port.should == 9051
       subject.drb.host.should == "127.0.0.1"
       subject.drb.acl.should  == %w[deny 9.9.9.9 allow 1.1.1.1 allow 2.2.2.2]
     end
     it "should enable drb with custom configuration and overrides the defaults with a String of allow and deny as acl" do
       subject.load_drb_configuration({:port => 9051, :host => "127.0.0.1", :allow => "1.1.1.1", :deny  => "9.9.9.9"})
-      subject.drb.should be_a_kind_of Adhearsion::Configuration
+      subject.drb.should be_a_kind_of Adhearsion::BasicConfiguration
       subject.drb.port.should == 9051
       subject.drb.host.should == "127.0.0.1"
       subject.drb.acl.should  == %w[deny 9.9.9.9 allow 1.1.1.1]
@@ -270,8 +270,8 @@ describe Adhearsion::AhnConfiguration do
       Adhearsion.config = nil
     end
 
-    it "should initialize to Adhearsion::AhnConfiguration" do
-      Adhearsion.config.should be_a_kind_of(Adhearsion::AhnConfiguration)
+    it "should initialize to Adhearsion::Configuration" do
+      Adhearsion.config.should be_a_kind_of(Adhearsion::Configuration)
     end
 
   end
