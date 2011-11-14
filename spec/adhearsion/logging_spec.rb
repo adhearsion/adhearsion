@@ -2,7 +2,8 @@ require 'spec_helper'
 
 describe Adhearsion::Logging do
 
-  before(:each) do
+  before do
+    defined?(Logging) and Logging.reset
     Adhearsion::Initializer::Logging.start
     Adhearsion::Logging.silence!
   end
@@ -45,11 +46,12 @@ end
 # Essential for running the tests
 describe 'Logger level changing' do
 
-  before(:each) do
+  before do
+    defined?(Logging) and Logging.reset
     Adhearsion::Initializer::Logging.start
   end
 
-  after :each do
+  after do
     Adhearsion::Logging.logging_level = :info
   end
 
@@ -58,7 +60,7 @@ describe 'Logger level changing' do
   end
 
   it 'changing the logging level should affect all loggers' do
-    loggers = [Foo.logger, Foo::Bar.logger]
+    loggers = [::Foo.logger, ::Foo::Bar.logger]
     loggers.map(&:level).should_not == [::Logging::LEVELS["debug"]] * 2
     loggers.map(&:level).should == [::Logging::LEVELS["info"]] * 2
     Adhearsion::Logging.logging_level = :warn
@@ -66,7 +68,7 @@ describe 'Logger level changing' do
   end
 
   it 'changing the logging level, using level=, should affect all loggers' do
-    loggers = [Foo.logger, Foo::Bar.logger]
+    loggers = [Foo.logger, ::Foo::Bar.logger]
     loggers.map(&:level).should_not == [::Logging::LEVELS["debug"]] * 2
     loggers.map(&:level).should == [::Logging::LEVELS["info"]] * 2
     Adhearsion::Logging.level = :warn
