@@ -34,8 +34,7 @@ module Adhearsion
         #
         def grammar_accept(digits = '0123456789#*')
           allowed_digits = '0123456789#*'
-          gram_digits = digits.chars.map {|x| x if allowed_digits.include? x}
-          gram_digits.compact!
+          gram_digits = digits.chars.select { |x| allowed_digits.include? x }
 
           grammar = RubySpeech::GRXML.draw do
             self.mode = 'dtmf'
