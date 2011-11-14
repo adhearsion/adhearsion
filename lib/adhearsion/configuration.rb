@@ -19,9 +19,10 @@ module Adhearsion
       define_method("load_#{type}_configuration".to_sym) do |params = {}|
         self.class.send("load_#{type}_configuration".to_sym, self, params)
       end
-      self.class_eval do
-        "alias enable_#{type}, load_#{type}_configuration.to_sym)"
-      end
+      
+      # deprecated behaviour
+      module_eval 'alias :"enable_#{type}" :"load_#{type}_configuration"'
+
     end
 
     def logging(options)
@@ -73,6 +74,11 @@ module Adhearsion
     end
 
     class << self
+
+      # deprecated way to get Adhearsion configuration
+      def configure
+        yield Adhearsion.config
+      end
 
       def load_default_config(config)
         config.automatically_accept_incoming_calls = true
