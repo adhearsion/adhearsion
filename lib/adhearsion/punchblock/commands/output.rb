@@ -262,7 +262,7 @@ module Adhearsion
             }
           end
           write_and_await_response input_stopper_component
-          execute_component_and_await_completion output_component
+          execute_component_and_await_completion output_component # FIXME: Race condition on completion of the event handler. Should just use the event handler to stop the output and read the result from the blocking complete event accessor
           input_stopper_component.stop! if input_stopper_component.executing?
           return parse_single_dtmf result unless result.nil?
           result

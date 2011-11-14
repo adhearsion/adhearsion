@@ -280,6 +280,8 @@ module Adhearsion
             mock_execution_environment.should_receive(:play).once.with(prompt, second_prompt).and_return(true)
             mock_execution_environment.play!(prompt, second_prompt)
           end
+
+          it "raises an exception if play returns false"
         end
 
         describe "#speak" do
@@ -429,6 +431,8 @@ module Adhearsion
             mock_execution_environment.should_receive(:stream_file).once.and_return(2)
             mock_execution_environment.interruptible_play! output1, output2
           end
+
+          it 'raises an exception when output is unsuccessful'
         end # describe interruptible_play!
 
         describe "#interruptible_play" do

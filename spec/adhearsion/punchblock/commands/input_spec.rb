@@ -269,6 +269,8 @@ module Adhearsion
               mock_execution_environment.input!(:speak => {:text => string_speak }).should == '1'
             end
           end
+
+          it 'throws an exception when playback fails'
         end # describe input!
 
         describe "#input" do
@@ -278,6 +280,8 @@ module Adhearsion
             mock_execution_environment.should_receive(:input!).with(:play => string_play).and_return(nil)
             mock_execution_environment.input! :play => string_play
           end
+
+          it 'does not throw exceptions when playback fails'
         end # describe input
       end # describe Input
     end
