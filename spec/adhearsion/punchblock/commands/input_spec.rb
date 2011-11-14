@@ -155,24 +155,24 @@ module Adhearsion
             end
           end
 
-          describe "any number of digits with an accept key" do
-            let(:accept_key) { '9' }
+          describe "any number of digits with a terminator" do
+            let(:terminator) { '9' }
 
-            it "called with no arguments, it returns any number of digits taking a accept key" do
+            it "called with no arguments, it returns any number of digits taking a terminating digit" do
               mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('1')
               mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-              mock_execution_environment.input!().should == '1'
+              mock_execution_environment.input!.should == '1'
             end
 
-            it "allows to set a different accept key" do
+            it "allows to set a different terminator" do
               mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('1')
-              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return(accept_key)
-              mock_execution_environment.input!(:accept_key => accept_key).should == '1'
+              mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return(terminator)
+              mock_execution_environment.input!(:terminator => terminator).should == '1'
             end
           end
 
           describe "with a fixed number or digits" do
-            it "accepts and returns three digits without an accept key" do
+            it "accepts and returns three digits without a terminator" do
               mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('1')
               mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('2')
               mock_execution_environment.should_receive(:wait_for_digit).once.with(nil).and_return('3')

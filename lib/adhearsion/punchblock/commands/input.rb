@@ -134,13 +134,13 @@ module Adhearsion
             # options[:speak][:interruptible] = options[:interruptible]
           end
 
-          timeout         = options[:timeout]
-          terminating_key = options[:accept_key]
+          timeout     = options[:timeout]
+          terminator  = options[:terminator]
 
-          if terminating_key
-            terminating_key = terminating_key.to_s
-          elsif number_of_digits.nil? && !terminating_key.equal?(false)
-            terminating_key = '#'
+          terminator = if terminator
+            terminator.to_s
+          elsif number_of_digits.nil? && !terminator.equal?(false)
+            '#'
           end
 
           if number_of_digits && number_of_digits < 0
@@ -176,8 +176,8 @@ module Adhearsion
 
           loop do
             return buffer if key.nil?
-            if terminating_key
-              if key == terminating_key
+            if terminator
+              if key == terminator
                 return buffer
               else
                 buffer << key
