@@ -26,6 +26,10 @@ module Adhearsion
     end
 
     def method_missing(name, *args, &blk)
+      # Validate if there is configuration for a specific var
+      # Adhearsion.config.foo_enabled? => false
+      # Adhearsion.config.foo = "bar"
+      # Adhearsion.config.foo_enabled? => true
       if name.to_s =~ /^(.*)_enabled\?$/
         self.send($1) ? true : false
       else
