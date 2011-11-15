@@ -9,20 +9,51 @@ describe Adhearsion::Configuration do
 
     its(:automatically_accept_incoming_calls) { should == true}
 
+    its([:automatically_accept_incoming_calls]) { should == true}
+
     its(:end_call_on_hangup) { should == true }
 
-    its(:end_call_on_error) { should == true }    
+    its([:end_call_on_hangup]) { should == true }
 
-    its(:asterisk_enabled?) { should == true }
+    its(:end_call_on_error) { should == true }  
+
+    its([:end_call_on_error]) { should == true }
 
     its(:asterisk) { should be_kind_of OpenStruct }
+
+    its([:asterisk]) { should be_kind_of OpenStruct }
+
+    its(:asterisk_enabled?) { should == true }
 
     its(:database_enabled?) { should == false }
 
     its(:ldap_enabled?) { should == false }
 
+    its(:rails_enabled?) { should == false }
+
     it "should not enable AMI by default" do
       subject.asterisk.ami_enabled?.should == false
+    end
+
+    its(:values) {should be_instance_of(Array)}
+
+    it "should return the list of predefined values" do
+      subject.values.length.should == 4
+    end
+
+    it "should return the list of updated predefined values" do
+      subject.foo = "bar"
+      subject.values.length.should == 5
+    end
+
+    it "should update properly the value using the Hash syntax" do
+      subject[:foo] = "bar"
+      subject.foo.should == "bar"
+    end
+
+    it "should retrieve properly the value using the Hash syntax" do
+      subject.foo = "bar"
+      subject[:foo].should == "bar"
     end
 
     it "should assign propertly the default AMI values" do

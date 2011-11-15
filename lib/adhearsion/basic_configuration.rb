@@ -25,6 +25,25 @@ module Adhearsion
       yield config_var if block_given? 
     end
 
+    # Return the defined configuration keys
+    def values
+      self.instance_variable_get(:@table).keys.dup
+    end
+
+    # Get a configuration value using a Hash syntax
+    # Adhearsion.config.foo = "bar"
+    # Adhearsion.config[:foo] => "bar"
+    def [](value)
+      self.send(value)
+    end
+
+    # Set a configuration value using a Hash syntax
+    # Adhearsion.config[:foo] = "bar"
+    # Adhearsion.config.foo => "bar"
+    def []=(key, value)
+      self.send("#{key.to_sym}=", value)
+    end
+
     def method_missing(name, *args, &blk)
       # Validate if there is configuration for a specific var
       # Adhearsion.config.foo_enabled? => false

@@ -141,7 +141,6 @@ module Adhearsion
       end
 
       def load_punchblock_configuration(config, params = {})
-        puts "RNTRO"
         params = params.dup
         config.add_configuration_for(:punchblock)
         config.punchblock.connection_options = {
