@@ -86,13 +86,54 @@ module Adhearsion
           end
         end
 
-
-        # Reworking of input
-        # - Raise an exception if both :play and :speak are specified - DONE
-        # - Allow :play arguments to be automatic, hashes, or SSML (is_a RubySpeech::SSML::Speak)
-        # - :speak stays as a quick TTS option
-        #
         
+        # Used to receive keypad input from the user. Digits are collected
+        # via DTMF (keypad) input until one of three things happens:
+        #
+        #  1. The number of digits you specify as the first argument is collected
+        #  2. The timeout you specify with the :timeout option elapses, in milliseconds.
+        #  3. The "#" key (or the key you specify with :accept_key) is pressed
+        #
+        # Usage examples
+        #
+        #   input   # Receives digits until the caller presses the "#" key
+        #   input 3 # Receives three digits. Can be 0-9, * or #
+        #   input 5, :accept_key => "*"   # Receive at most 5 digits, stopping if '*' is pressed
+        #   input 1, :timeout => 60000 # Receive a single digit, returning an empty
+        #                                   string if the timeout is encountered
+        #   input 9, :timeout => 7000, :accept_key => "0" # Receives nine digits, returning
+        #                                              # when the timeout is encountered
+        #                                              # or when the "0" key is pressed.
+        #   input 3, :play => "you-sound-cute"
+        #   input :play => ["if-this-is-correct-press", 1, "otherwise-press", 2]
+        #   input :interruptible => false, :play => ["you-cannot-interrupt-this-message"] # Disallow DTMF (keypad) interruption
+        #                                                                                 # until after all files are played.
+        #
+        # When specifying outputs to play, the playback of the sequence of files will stop
+        # immediately when the user presses the first digit.
+        #
+        # Accepted output types are:
+        #   1. Any object supported by detect_type (@see detect_type)
+        #   2. Any valid SSML document
+        #   3. An Hash with at least the :value key set to a supported object type, and other keys as options to the specific output
+        #
+        # :play usage examples
+        #   input 1, :play => RubySpeech::SSML.draw { string "hello there" } # 1 digit, SSML document
+        #   input 2, :play => "hello there" # 2 digits, string
+        #   input 2, :play => {:value => Time.now, :strftime => "%H:%M"} # 2 digits, Hash with :value
+        #   input :play => [ "the time is", {:value => Time.now, :strftime => "%H:%M"} ] # no digit limit, two mixed outputs
+        #
+        # The :timeout option works like a digit timeout, therefore each digit pressed
+        # causes the timer to reset. This is a much more user-friendly approach than an
+        # absolute timeout.
+        #
+        # Note that when the digit limit is not specified the :accept_key becomes "#".
+        # Otherwise there would be no way to end the collection of digits. You can
+        # obviously override this by passing in a new key with :accept_key.
+        #
+        # @return [String] The keypad input received. An empty string is returned in the
+        #                  absense of input. If the :accept_key argument was pressed, it
+        #                  will not appear in the output.
         def input(*args, &block)
           begin
             input! *args, &block
@@ -103,6 +144,10 @@ module Adhearsion
         end
         
 
+        # Same as {#input}, but immediately raises an exception if sound playback fails
+        #
+        # @return (see #input)
+        # @raise [Adhearsion::PlaybackError] If a sound file cannot be played
         def input!(*args, &block)
           options = args.last.kind_of?(Hash) ? args.pop : {}
           number_of_digits = args.shift
