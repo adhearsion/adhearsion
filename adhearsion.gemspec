@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   # Runtime dependencies
   s.add_runtime_dependency "bundler", [">= 1.0.10"]
   s.add_runtime_dependency 'punchblock', [">= 0.6.2"]
-  s.add_runtime_dependency "logging", [">= 1.6.1"]
+  s.add_runtime_dependency "logging", ["~> 1.6.1"]
   s.add_runtime_dependency "activesupport", [">= 3.0.10"]
   # i18n is only strictly a dependency for ActiveSupport >= 3.0.0
   # Since it doesn't conflict with <3.0.0 we'll require it to be

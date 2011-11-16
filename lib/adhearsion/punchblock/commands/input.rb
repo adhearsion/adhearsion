@@ -2,17 +2,19 @@ module Adhearsion
   module Punchblock
     module Commands
       module Input
+        #
         # Utility method for DTMF GRXML grammars
         #
         # @param [Integer] Number of digits to accept in the grammar.
-        # @return [RubySpeech::GRXML::Grammar] A grammar suitable for use in SSML prompts.
+        # @return [RubySpeech::GRXML::Grammar] A grammar suitable for use in SSML prompts
+        #
         def grammar_digits(digits = 1)
           grammar = RubySpeech::GRXML.draw do
             self.mode = 'dtmf'
             self.root = 'inputdigits'
             rule id: 'digits' do
               one_of do
-                0.upto(9) {|d| item { d.to_s } }
+                0.upto(9) { |d| item { d.to_s } }
               end
             end
 
@@ -22,41 +24,42 @@ module Adhearsion
               end
             end
           end
-        end#grammar_digits
+        end # grammar_digits
 
+        #
         # Utility method to create a single-digit grammar to accept only some digits
         #
         # @param [String] String representing the digits to accept
-        # @return [RubySpeech::GRXML::Grammar] A grammar suitable for use in SSML prompts.
+        # @return [RubySpeech::GRXML::Grammar] A grammar suitable for use in SSML prompts
+        #
         def grammar_accept(digits = '0123456789#*')
           allowed_digits = '0123456789#*'
-          gram_digits = digits.chars.map {|x| x if allowed_digits.include? x}
-          gram_digits.compact!
+          gram_digits = digits.chars.select { |x| allowed_digits.include? x }
 
           grammar = RubySpeech::GRXML.draw do
             self.mode = 'dtmf'
             self.root = 'inputdigits'
             rule id: 'acceptdigits' do
               one_of do
-                gram_digits.each {|d| item { d.to_s}}
+                gram_digits.each { |d| item { d.to_s } }
               end
             end
-
 
             rule id: 'inputdigits', scope: 'public' do
               item repeat: '1' do
                 ruleref uri: '#acceptdigits'
               end
             end
-
           end
           grammar
         end
 
+        #
         # Waits for a single digit and returns it, or returns nil if nothing was pressed
         #
         # @param [Integer] the timeout to wait before returning, in milliseconds
         # @return [String|nil] the pressed key, or nil if timeout was reached
+        #
         def wait_for_digit(timeout = 1000)
           input_component = execute_component_and_await_completion ::Punchblock::Component::Input.new :mode => :dtmf,
             :initial_timeout => timeout,
@@ -70,10 +73,12 @@ module Adhearsion
           parse_single_dtmf result
         end
 
+        #
         # Parses a single DTMF tone in the format dtmf-*
         #
         # @param [String] the tone string to be parsed
         # @return [String] the digit in case input was 0-9, * or # if star or pound respectively
+        #
         def parse_single_dtmf(result)
           return if result.nil?
           case tone = result.split('-')[1]
@@ -86,7 +91,6 @@ module Adhearsion
           end
         end
 
-        
         # Used to receive keypad input from the user. Digits are collected
         # via DTMF (keypad) input until one of three things happens:
         #
@@ -142,7 +146,6 @@ module Adhearsion
             retry # If sound playback fails, play the remaining sound files and wait for digits
           end
         end
-        
 
         # Same as {#input}, but immediately raises an exception if sound playback fails
         #
@@ -163,11 +166,11 @@ module Adhearsion
               [options[:play]]
           end)
 
-          if options.has_key?(:interruptible) && options[:interruptible] == false
-            play_command = :play!
+          play_command = if options.has_key?(:interruptible) && options[:interruptible] == false
+            :play!
           else
             options[:interruptible] = true
-            play_command = :interruptible_play!
+            :interruptible_play!
           end
 
           if options.has_key? :speak
@@ -176,21 +179,23 @@ module Adhearsion
             if options.has_key?(:speak) && options.has_key?(:play) && options[:play].size > 0
               raise ArgumentError, 'Must specify only one of :play or :speak'
             end
-            # options[:speak][:interruptible] = options[:interruptible]
           end
 
-          timeout         = options[:timeout]
-          terminating_key = options[:accept_key]
-          if terminating_key
-            terminating_key = terminating_key.to_s
-          elsif number_of_digits.nil? && !terminating_key.equal?(false)
-            terminating_key = '#'
+          timeout     = options[:timeout]
+          terminator  = options[:terminator]
+
+          terminator = if terminator
+            terminator.to_s
+          elsif number_of_digits.nil? && !terminator.equal?(false)
+            '#'
           end
+
           if number_of_digits && number_of_digits < 0
             ahn_log.warn "Giving -1 to #input is now deprecated. Do not specify a first " +
                              "argument to allow unlimited digits." if number_of_digits == -1
             raise ArgumentError, "The number of digits must be positive!"
           end
+
           buffer = ''
           if options[:play].any?
             # Consume the sound files one at a time. In the event of playback
@@ -199,10 +204,9 @@ module Adhearsion
               if output.class == Hash
                 argument = output.delete(:value)
                 raise ArgumentError, ':value has to be specified for each :play argument that is a Hash' if argument.nil?
-                key = send play_command, [argument, output]
-              else
-                key = send play_command, output
+                output = [argument, output]
               end
+              key = send play_command, output
               key = nil if play_command == :play!
               break if key
             end
@@ -215,10 +219,11 @@ module Adhearsion
           else
             key = wait_for_digit timeout || nil
           end
+
           loop do
             return buffer if key.nil?
-            if terminating_key
-              if key == terminating_key
+            if terminator
+              if key == terminator
                 return buffer
               else
                 buffer << key
@@ -231,9 +236,8 @@ module Adhearsion
             return buffer if block_given? && yield(buffer)
             key = wait_for_digit(timeout || nil)
           end
-        end#input!
-
-      end#module
+        end # #input!
+      end # Input
     end
   end
 end

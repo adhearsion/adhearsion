@@ -63,6 +63,7 @@ module Adhearsion
 
       resolve_pid_file_path
       resolve_log_file_path
+      init_plugins
       daemonize! if should_daemonize?
       launch_console if need_console?
       switch_to_root_directory
@@ -76,7 +77,6 @@ module Adhearsion
       init_datasources
       init_modules
       init_events_file
-      init_plugins
 
       logger.info "Adhearsion v#{Adhearsion::VERSION} initialized!"
       Adhearsion.status = :running

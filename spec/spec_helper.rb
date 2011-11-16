@@ -41,6 +41,8 @@ end
 Adhearsion::Initializer.ahn_root = File.dirname(__FILE__) + '/fixtures'
 Adhearsion::Logging.silence!
 
-Foo = Class.new
+class Foo
+  class Bar
+  end
+end
 
-Bar = Class.new Foo

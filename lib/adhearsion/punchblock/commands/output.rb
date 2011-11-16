@@ -6,6 +6,7 @@ module Adhearsion
           play_ssml(text, options) || output(:text, text, options)
         end
 
+        #
         # Plays the specified sound file names. This method will handle Time/DateTime objects (e.g. Time.now),
         # Fixnums (e.g. 1000), Strings which are valid Fixnums (e.g "123"), and direct sound files. To specify how the Date/Time objects are said
         # pass in as an array with the first parameter as the Date/Time/DateTime object along with a hash with the
@@ -31,27 +32,29 @@ module Adhearsion
         # @see play_time
         # @see play_numeric
         # @see play_audio
+        #
         def play(*arguments)
           arguments.inject(true) do |value, argument|
-            case argument
-              when Hash
-                value = argument.delete(:value)
-                value = play_ssml_for(value, argument)
-              when RubySpeech::SSML::Speak
-                value = play_ssml argument
-              else
-                value = play_ssml_for(argument)
+            value = case argument
+            when Hash
+              play_ssml_for argument.delete(:value), argument
+            when RubySpeech::SSML::Speak
+              play_ssml argument
+            else
+              play_ssml_for argument
             end
           end
         end
 
+        #
         # Plays the specified input arguments, raising an exception if any can't be played.
         # @see play
         #
         def play!(*arguments)
-          play(*arguments) or raise Adhearsion::PlaybackError, "One of the passed outputs is invalid"
+          play *arguments or raise Adhearsion::PlaybackError, "One of the passed outputs is invalid"
         end
 
+        #
         # Plays the given Date, Time, or Integer (seconds since epoch)
         # using the given timezone and format.
         #
@@ -73,9 +76,10 @@ module Adhearsion
 
           options ||= {}
           return false unless options.is_a? Hash
-          play_ssml(ssml_for_time(argument, options))
+          play_ssml ssml_for_time(argument, options)
         end
 
+        #
         # Plays the given Numeric argument or string representing a decimal number.
         # When playing numbers, Adhearsion assumes you're saying the number, not the digits. For example, play("100")
         # is pronounced as "one hundred" instead of "one zero zero".
@@ -87,10 +91,11 @@ module Adhearsion
         def play_numeric(*args)
           argument, options = args.flatten
           if argument.kind_of?(Numeric) || argument =~ /^\d+$/
-            play_ssml(ssml_for_numeric(argument, options))
+            play_ssml ssml_for_numeric(argument, options)
           end
         end
 
+        #
         # Plays the given audio file.
         # SSML supports http:// paths and full disk paths.
         # The Punchblock backend will have to handle cases like Asterisk where there is a fixed sounds directory.
@@ -119,26 +124,27 @@ module Adhearsion
           rescue StandardError => e
             false
           end
-        end#output
+        end
 
         def output!(type, content, options = {})
           options.merge! type => content
           execute_component_and_await_completion ::Punchblock::Component::Output.new(options)
-        end#output
+        end
 
+        #
         # Same as interruptible_play, but throws an error if unable to play the output
         # @see interruptible_play
         #
         def interruptible_play!(*outputs)
           result = nil
           outputs.each do |output|
-            result = stream_file(output,  "1234567890*#")
-            break if !result.nil?
+            result = stream_file output, "1234567890*#"
+            break unless result.nil?
           end
           result
         end
 
-        
+        #
         # Plays the given output, allowing for DTMF input of a single digit from the user
         # At the end of the played file it returns nil
         #
@@ -161,7 +167,7 @@ module Adhearsion
           result = nil
           outputs.each do |output|
             begin
-              result = interruptible_play!(output)
+              result = interruptible_play! output
             rescue PlaybackError => e
               # Ignore this exception and play the next output
               logger.warn e.message
@@ -174,50 +180,39 @@ module Adhearsion
 
         def detect_type(output)
           result = nil
-          if [Date, Time, DateTime].include? output.class
-            result = :time
-          end
-          if output.kind_of?(Numeric) || output =~ /^\d+$/
-            result = :numeric
-          end
-          if !result && URI::regexp(%w(http https)).match(output.to_s)
-            result = :audio
-          end
-          if !result && /\//.match(output.to_s)
-            result = :audio
-          end
+          result = :time if [Date, Time, DateTime].include? output.class
+          result = :numeric if output.kind_of?(Numeric) || output =~ /^\d+$/
+          result = :audio if !result && (/\//.match(output.to_s) || URI::regexp(%w(http https)).match(output.to_s))
           result ||= :text
-        end#detect_type
-        
+        end
+
         def play_ssml_for(*args)
           play_ssml ssml_for(args)
         end
 
+        #
         # Generates SSML for the argument and options passed, using automatic detection
         # Directly returns the argument if it is already an SSML document
         #
         # @param [String|Hash|RubySpeech::SSML::Speak] the argument with options as accepted by the play_ methods, or an SSML document
         # @return [RubySpeech::SSML::Speak] an SSML document
+        #
         def ssml_for(*args)
-          if args.size == 1 && args[0].class == RubySpeech::SSML::Speak
-            return args[0]
-          end
+          return args[0] if args.size == 1 && args[0].is_a?(RubySpeech::SSML::Speak)
           argument, options = args.flatten
           options ||= {}
           type = detect_type(argument)
-          send("ssml_for_#{type}", argument, options)
-        end#ssml_for
+          send "ssml_for_#{type}", argument, options
+        end
 
         def ssml_for_text(argument, options = {})
-          RubySpeech::SSML.draw do
-            argument
-          end
-        end#ssml_for_text
+          RubySpeech::SSML.draw { argument }
+        end
 
         def ssml_for_time(argument, options = {})
           interpretation = case argument
-            when Date then 'date'
-            when Time then 'time'
+          when Date then 'date'
+          when Time then 'time'
           end
 
           format = options.delete :format
@@ -227,8 +222,8 @@ module Adhearsion
 
           RubySpeech::SSML.draw do
             say_as(:interpret_as => interpretation, :format => format) { time_to_say }
-          end 
-        end#ssml_for_time
+          end
+        end
 
         def ssml_for_numeric(argument, options = {})
           RubySpeech::SSML.draw do
@@ -237,21 +232,20 @@ module Adhearsion
         end
 
         def ssml_for_audio(argument, options = {})
-          options ||= {}
-          fallback = options.delete :fallback
-          RubySpeech::SSML.draw {
-            audio :src => argument do
-              fallback
-            end
-          }
+          fallback = (options || {}).delete :fallback
+          RubySpeech::SSML.draw do
+            audio(:src => argument) { fallback }
+          end
         end
 
+        #
         # Plays a single output, not only files, accepting interruption by one of the digits specified
         # Currently still stops execution, will be fixed soon in Punchblock
         #
         # @param [Object] String or Hash specifying output and options
         # @param [String] String with the digits that are allowed to interrupt output
         # @return [String|nil] The pressed digit, or nil if nothing was pressed
+        #
         def stream_file(argument, digits = '0123456789#*')
           result = nil
           ssml = ssml_for argument
@@ -259,7 +253,7 @@ module Adhearsion
           input_stopper_component = ::Punchblock::Component::Input.new :mode => :dtmf,
             :grammar => {
               :value => grammar_accept(digits).to_s
-          }
+            }
           input_stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
             Thread.new {
               output_component.stop! unless output_component.complete?
@@ -268,13 +262,12 @@ module Adhearsion
             }
           end
           write_and_await_response input_stopper_component
-          execute_component_and_await_completion output_component
+          execute_component_and_await_completion output_component # FIXME: Race condition on completion of the event handler. Should just use the event handler to stop the output and read the result from the blocking complete event accessor
           input_stopper_component.stop! if input_stopper_component.executing?
-          return parse_single_dtmf result if !result.nil?
+          return parse_single_dtmf result unless result.nil?
           result
         end
-
-      end#module
-    end#module
-  end#module
-end#module
+      end # Output
+    end # Commands
+  end # Punchblock
+end # Adhearsion

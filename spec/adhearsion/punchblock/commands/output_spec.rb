@@ -4,11 +4,11 @@ module Punchblock
   module Component
     class Input
       def register_event_handler(method, &block)
-        @input_handler = block 
+        @input_handler = block
       end
- 
+
       def execute_handler
-        possible_thread = @input_handler.call(Punchblock::Event::Complete.new)
+        possible_thread = @input_handler.call Punchblock::Event::Complete.new
         possible_thread.join if possible_thread.respond_to? :join
       end
     end
@@ -26,7 +26,7 @@ module Adhearsion
 
           it 'executes an Output with the correct ssml' do
             expect_component_execution Punchblock::Component::Output.new(:ssml => ssml.to_s)
-            mock_execution_environment.play_ssml(ssml)
+            mock_execution_environment.play_ssml ssml
           end
 
           describe "if an error is returned" do
@@ -41,19 +41,19 @@ module Adhearsion
         end
 
         describe "#play_audio" do
-          let(:audio_file) { "/sounds/boo.wav" }
-          let(:fallback) { "text for tts" }
+          let(:audio_file)  { "/sounds/boo.wav" }
+          let(:fallback)    { "text for tts" }
+
           let(:ssml) do
             file = audio_file
             RubySpeech::SSML.draw { audio :src => file }
           end
+
           let(:ssml_with_fallback) do
             file = audio_file
             fallback_text = fallback
-            RubySpeech::SSML.draw { 
-              audio :src => file do
-                fallback_text
-              end
+            RubySpeech::SSML.draw {
+              audio(:src => file) { fallback_text }
             }
           end
 
@@ -105,7 +105,7 @@ module Adhearsion
         describe "#play_time" do
           let :expected_doc do
             content = input.to_s
-            opts = expected_say_as_options
+            opts    = expected_say_as_options
             RubySpeech::SSML.draw do
               say_as(opts) { content }
             end
@@ -132,8 +132,8 @@ module Adhearsion
           end
 
           describe "with a date and a say_as format" do
-            let(:input) { Date.parse('2011-01-23') }
-            let(:format) { "d-m-y" }
+            let(:input)   { Date.parse('2011-01-23') }
+            let(:format)  { "d-m-y" }
             let(:expected_say_as_options) { {:interpret_as => 'date', :format => format} }
 
             it 'plays the correct SSML' do
@@ -143,9 +143,9 @@ module Adhearsion
           end
 
           describe "with a date and a strftime option" do
-            let(:strftime) { "%d-%m-%Y" }
-            let(:base_input) { Date.parse('2011-01-23') }
-            let(:input) { base_input.strftime(strftime) }
+            let(:strftime)    { "%d-%m-%Y" }
+            let(:base_input)  { Date.parse('2011-01-23') }
+            let(:input)       { base_input.strftime(strftime) }
             let(:expected_say_as_options) { {:interpret_as => 'date'} }
 
             it 'plays the correct SSML' do
@@ -155,10 +155,10 @@ module Adhearsion
           end
 
           describe "with a date, a format option and a strftime option" do
-            let(:strftime) { "%d-%m-%Y" }
-            let(:format) { "d-m-y" }
-            let(:base_input) { Date.parse('2011-01-23') }
-            let(:input) { base_input.strftime(strftime) }
+            let(:strftime)    { "%d-%m-%Y" }
+            let(:format)      { "d-m-y" }
+            let(:base_input)  { Date.parse('2011-01-23') }
+            let(:input)       { base_input.strftime(strftime) }
             let(:expected_say_as_options) { {:interpret_as => 'date', :format => format} }
 
             it 'plays the correct SSML' do
@@ -174,7 +174,6 @@ module Adhearsion
               mock_execution_environment.play_time(input).should be false
             end
           end
-
         end
 
         describe '#play' do
@@ -194,6 +193,7 @@ module Adhearsion
               args.each do |file|
                 mock_execution_environment.should_receive(:play_ssml_for).once.with(file).and_return true
               end
+
               mock_execution_environment.play(*args).should be true
             end
 
@@ -243,9 +243,9 @@ module Adhearsion
           end
 
           describe "with an array containing a Date/DateTime/Time object and a hash" do
-            let(:date) { Date.parse('2011-01-23') }
-            let(:format) { "d-m-y" }
-            let(:strftime) { "%d-%m%Y" }
+            let(:date)      { Date.parse('2011-01-23') }
+            let(:format)    { "d-m-y" }
+            let(:strftime)  { "%d-%m%Y" }
 
             it 'plays the time with the specified format and strftime' do
               mock_execution_environment.should_receive(:play_ssml_for).with(date, {:format => format, :strftime => strftime}).and_return(true)
@@ -268,21 +268,20 @@ module Adhearsion
         end
 
         describe "#play!" do
-          let(:prompt) {
-            "Press any button." 
-          }
-          let(:second_prompt) {
-            "Or press nothing."
-          }
+          let(:prompt)        { "Press any button." }
+          let(:second_prompt) { "Or press nothing." }
 
           it "calls play a single time" do
             mock_execution_environment.should_receive(:play).once.with(prompt).and_return(true)
             mock_execution_environment.play!(prompt)
           end
+
           it "calls play two times" do
             mock_execution_environment.should_receive(:play).once.with(prompt, second_prompt).and_return(true)
             mock_execution_environment.play!(prompt, second_prompt)
           end
+
+          it "raises an exception if play returns false"
         end
 
         describe "#speak" do
@@ -306,13 +305,14 @@ module Adhearsion
         end
 
         describe "#ssml_for" do
-          let(:prompt) { "Please stand by"}
-          let(:ssml) {
+          let(:prompt) { "Please stand by" }
+
+          let(:ssml) do
             RubySpeech::SSML.draw do
               string 'Please stand by'
             end
-          }
-          
+          end
+
           it 'returns SSML for a text argument' do
             mock_execution_environment.ssml_for(prompt).should == ssml
           end
@@ -320,7 +320,6 @@ module Adhearsion
           it 'returns the same SSML passed in if it is SSML' do
             mock_execution_environment.ssml_for(ssml) == ssml
           end
-
         end
 
         describe "#detect_type" do
@@ -328,26 +327,32 @@ module Adhearsion
             http_path = "http://adhearsion.com/sounds/hello.mp3"
             mock_execution_environment.detect_type(http_path).should be :audio
           end
+
           it "detects a file path" do
             http_path = "/usr/shared/sounds/hello.mp3"
             mock_execution_environment.detect_type(http_path).should be :audio
           end
+
           it "detects a Date object" do
             today = Date.today
             mock_execution_environment.detect_type(today).should be :time
           end
+
           it "detects a Time object" do
             now = Time.now
             mock_execution_environment.detect_type(now).should be :time
           end
+
           it "detects a DateTime object" do
             today = DateTime.now
             mock_execution_environment.detect_type(today).should be :time
           end
+
           it "detects a Numeric object" do
             number = 123
             mock_execution_environment.detect_type(number).should be :numeric
           end
+
           it "returns text as a fallback" do
             output = "Hello"
             mock_execution_environment.detect_type(output).should be :text
@@ -355,34 +360,34 @@ module Adhearsion
         end
 
         describe "#stream_file" do
-          let (:allowed_digits) { '35' }
-          let(:prompt) { "Press 3 or 5 to make something happen." }
+          let(:allowed_digits)  { '35' }
+          let(:prompt)          { "Press 3 or 5 to make something happen." }
 
           let(:ssml) {
             RubySpeech::SSML.draw do
               string "Press 3 or 5 to make something happen."
             end
           }
+
           let(:grammar) {
            RubySpeech::GRXML.draw do
               self.mode = 'dtmf'
               self.root = 'acceptdigits'
               rule id: 'acceptdigits' do
                 one_of do
-                  allowed_digits.each {|d| item { d.to_s}}
+                  allowed_digits.each { |d| item { d.to_s } }
                 end
               end
-            end 
+            end
           }
 
           let(:output_component) {
             Punchblock::Component::Output.new :ssml => ssml.to_s
           }
+
           let(:input_component) {
-            Punchblock::Component::Input.new(
-              {:mode => :dtmf,
-               :grammar => { :value => grammar.to_s }
-            })
+            Punchblock::Component::Input.new :mode => :dtmf,
+                                             :grammar => { :value => grammar.to_s }
           }
 
           #test does pass and method works, but not sure if the empty method is a good idea
@@ -390,59 +395,64 @@ module Adhearsion
             def mock_execution_environment.write_and_await_response(input_component)
               # it is actually a no-op here
             end
+
             expect_component_execution Punchblock::Component::Output.new(:ssml => ssml.to_s)
-            mock_execution_environment.stream_file(prompt, allowed_digits)
+            mock_execution_environment.stream_file prompt, allowed_digits
           end
 
           it "returns a single digit amongst the allowed when pressed" do
             flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
+
             def mock_execution_environment.write_and_await_response(input_component)
               input_component.execute_handler
             end
+
             flexmock(Punchblock::Component::Input).new_instances do |input|
               input.should_receive(:complete?).and_return(false)
             end
+
             flexmock(Punchblock::Component::Output).new_instances.should_receive(:stop!)
             mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(output_component)
             mock_execution_environment.stream_file(prompt, allowed_digits).should == '5'
           end
+        end # describe #stream_file
 
-        end#describe #stream_file
 
-        
         describe "#interruptible_play!" do
-          let(:output1) {"one two"}
-          let(:output2) {"three four"}
+          let(:output1) { "one two" }
+          let(:output2) { "three four" }
 
           it "plays two outputs in succession" do
             mock_execution_environment.should_receive(:stream_file).twice
-            mock_execution_environment.interruptible_play!(output1, output2)
+            mock_execution_environment.interruptible_play! output1, output2
           end
 
           it "stops at the first play when input is received" do
             mock_execution_environment.should_receive(:stream_file).once.and_return(2)
-            mock_execution_environment.interruptible_play!(output1, output2)
+            mock_execution_environment.interruptible_play! output1, output2
           end
-        end#describe interruptible_play!
+
+          it 'raises an exception when output is unsuccessful'
+        end # describe interruptible_play!
 
         describe "#interruptible_play" do
-          let(:output1) {"one two"}
-          let(:output2) {"three four"}
+          let(:output1) { "one two" }
+          let(:output2) { "three four" }
 
           it "plays two outputs in succession" do
             mock_execution_environment.should_receive(:interruptible_play!).twice
-            mock_execution_environment.interruptible_play(output1, output2)
+            mock_execution_environment.interruptible_play output1, output2
           end
 
           it "stops at the first play when input is received" do
             mock_execution_environment.should_receive(:interruptible_play!).once.and_return(2)
-            mock_execution_environment.interruptible_play(output1, output2)
+            mock_execution_environment.interruptible_play output1, output2
           end
-        end#describe interruptible_play!
+        end # describe interruptible_play
 
-        # describe "#raw_output" do
-        #   pending
-        # end
+        describe "#raw_output" do
+          pending
+        end
       end
     end
   end

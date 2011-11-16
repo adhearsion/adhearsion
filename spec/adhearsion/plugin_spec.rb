@@ -40,7 +40,7 @@ describe Adhearsion::Plugin do
     end
   end
 
-  [:rpc, :dialplan].each do |method|
+  [:rpc, :dialplan, :console].each do |method|
 
     describe "extending an object with #{method.to_s} scope methods" do
       
@@ -63,7 +63,7 @@ describe Adhearsion::Plugin do
 
         end
         Adhearsion::Plugin.load
-        Adhearsion::Plugin.send("#{method.to_s}_module".to_sym).instance_methods.include?(:foo).should be true
+        Adhearsion::Plugin.send("#{method.to_s}_module".to_sym).instance_methods.map{|x| x.to_s}.include?("foo").should == true
       end
       
       after  do
@@ -89,6 +89,20 @@ describe Adhearsion::Plugin do
           a.foo.should == "foobar"
         end
       end
+    end
+  end
+
+  describe "While adding console methods" do
+
+    it "should add a new method to Console" do
+      FooBar = Class.new Adhearsion::Plugin do
+        console :config do
+          Adhearsion::AHN_CONFIG
+        end
+      end
+      Adhearsion::Plugin.load
+      Adhearsion::Console.should respond_to(:config)
+      Adhearsion::Console.config.should == Adhearsion::AHN_CONFIG
     end
   end
 
@@ -288,7 +302,7 @@ describe Adhearsion::Plugin do
           end
 
           Adhearsion::Plugin.load
-          Adhearsion::Plugin.methods_scope[method].instance_methods.include?(:foo).should be true
+          Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
         end
 
         it "should add a method defined using #{method.to_s} method with a block" do
@@ -298,7 +312,7 @@ describe Adhearsion::Plugin do
           end
 
           Adhearsion::Plugin.load
-          Adhearsion::Plugin.methods_scope[method].instance_methods.include?(:foo).should be true
+          Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
         end
 
         it "should add an instance method defined using #{method.to_s} method" do
@@ -310,7 +324,7 @@ describe Adhearsion::Plugin do
           end
 
           Adhearsion::Plugin.load
-          Adhearsion::Plugin.methods_scope[method].instance_methods.include?(:foo).should be true
+          Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
         end
 
         it "should add an array of methods defined using #{method.to_s} method" do
@@ -328,7 +342,7 @@ describe Adhearsion::Plugin do
 
           Adhearsion::Plugin.load
           [:foo, :bar].each do |_method|
-            Adhearsion::Plugin.methods_scope[method].instance_methods.include?(_method).should be true
+            Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(_method.to_s).should be true
           end
           Adhearsion::Plugin.methods_scope[method].instance_methods.length.should eql 2
         end
@@ -347,7 +361,7 @@ describe Adhearsion::Plugin do
 
           Adhearsion::Plugin.load
           [:foo, :bar].each do |_method|
-            Adhearsion::Plugin.methods_scope[method].instance_methods.include?(_method).should be true
+            Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(_method.to_s).should be true
           end
         end
 
@@ -365,20 +379,20 @@ describe Adhearsion::Plugin do
 
           Adhearsion::Plugin.load
           [:foo, :bar].each do |_method|
-            Adhearsion::Plugin.methods_scope[method].instance_methods.include?(_method).should be true
+            Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(_method.to_s).should be true
           end
         end
 
         it "should add a method defined using #{method.to_s} method with a specific block" do
           FooBar = Class.new Adhearsion::Plugin do
-            self.method(method).call(:foo) do |call|
-              puts call
+            self.method(method).call(:foo) do
+              "foo"
             end
           end
 
           Adhearsion::Plugin.load
-          Adhearsion::Plugin.methods_scope[method].instance_methods.include?(:foo).should be true
-          Adhearsion::Plugin.send("#{method.to_s}_module".to_sym).instance_methods.include?(:foo).should be true
+          Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
+          Adhearsion::Plugin.send("#{method.to_s}_module".to_sym).instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
         end
       end
     end
@@ -396,7 +410,7 @@ describe Adhearsion::Plugin do
 
         Adhearsion::Plugin.load
         [:dialplan_module, :rpc_module].each do |_module|
-          Adhearsion::Plugin.send(_module).instance_methods.include?(:foo).should be true
+          Adhearsion::Plugin.send(_module).instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
         end
       end
     end

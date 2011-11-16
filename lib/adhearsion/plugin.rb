@@ -65,7 +65,7 @@ module Adhearsion
 
     METHODS_OPTIONS = {:load => true, :scope => false}
 
-    SCOPE_NAMES = [:dialplan, :rpc, :events]
+    SCOPE_NAMES = [:dialplan, :rpc, :events, :console]
 
     autoload :Configuration
     autoload :Collection
@@ -105,12 +105,16 @@ module Adhearsion
         #
         # end
         #
-        define_method name do |method_name, args = nil, &block|
-          if method_name.is_a?(Array)
+        define_method name do |method_name, &block|
+          case method_name
+          when Array
             method_name.each do |method|
-              send name, method, args
+              send name, method
             end
             return
+          when Hash
+            args = method_name
+            method_name = method_name[:name]
           end
 
           options = args.nil? ? METHODS_OPTIONS : METHODS_OPTIONS.merge(args)
@@ -196,6 +200,8 @@ module Adhearsion
             end
           end
         end
+
+        Adhearsion::Console.extend(self.console_module) unless self.console_module.instance_methods.empty?
       end
 
       # Recursively initialization of all the loaded plugins
