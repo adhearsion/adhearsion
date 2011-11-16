@@ -279,6 +279,7 @@ module Adhearsion
           end
 
           it "raises an exception if play fails" do
+            mock_execution_environment.should_receive(:play).once.and_return false
             expect { mock_execution_environment.play!(non_existing) }.to raise_error(Adhearsion::PlaybackError)
           end
         end
@@ -434,9 +435,9 @@ module Adhearsion
 
 
         describe "#interruptible_play!" do
-          let(:output1) { "one two" }
-          let(:output2) { "three four" }
-          let(:non_existing) { "http://adhearsion.com/nonexistingfile.mp3" }
+          let(:output1)       { "one two" }
+          let(:output2)       { "three four" }
+          let(:non_existing)  { "http://adhearsion.com/nonexistingfile.mp3" }
 
           it "plays two outputs in succession" do
             mock_execution_environment.should_receive(:stream_file).twice
@@ -449,14 +450,15 @@ module Adhearsion
           end
 
           it 'raises an exception when output is unsuccessful' do
-            pending
-            # expect { mock_execution_environment.interruptible_play!(non_existing) }.to raise_error(Adhearsion::PlaybackError)
+            mock_execution_environment.should_receive(:stream_file).once.and_raise PlaybackError, "Output failed"
+            expect { mock_execution_environment.interruptible_play!(non_existing) }.to raise_error(Adhearsion::PlaybackError)
           end
         end # describe interruptible_play!
 
         describe "#interruptible_play" do
-          let(:output1) { "one two" }
-          let(:output2) { "three four" }
+          let(:output1)       { "one two" }
+          let(:output2)       { "three four" }
+          let(:non_existing)  { "http://adhearsion.com/nonexistingfile.mp3" }
 
           it "plays two outputs in succession" do
             mock_execution_environment.should_receive(:interruptible_play!).twice
@@ -466,6 +468,11 @@ module Adhearsion
           it "stops at the first play when input is received" do
             mock_execution_environment.should_receive(:interruptible_play!).once.and_return(2)
             mock_execution_environment.interruptible_play output1, output2
+          end
+
+          it "should not raise an exception when output is unsuccessful" do
+            mock_execution_environment.should_receive(:stream_file).once.and_raise PlaybackError, "Output failed"
+            lambda { mock_execution_environment.interruptible_play non_existing }.should_not raise_error(Adhearsion::PlaybackError)
           end
         end # describe interruptible_play
 
