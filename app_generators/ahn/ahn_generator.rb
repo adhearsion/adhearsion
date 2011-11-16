@@ -29,6 +29,9 @@ class AhnGenerator < RubiGen::Base
       m.file  *["README"]*2
       m.file  *["Rakefile"]*2
       m.file  *["Gemfile"]*2
+      m.file  *["lib/README.stomp_gateway.markdown"]*2
+      m.file  *["lib/simon_game.rb"]*2
+      m.file  *["lib/stomp_gateway.rb"]*2
       m.file  *["script/ahn"]*2
 
       # m.dependency "install_rubigen_scripts", [destination_root, 'ahn', 'adhearsion', 'test_spec'],

@@ -8,7 +8,7 @@ module Adhearsion
 
     include HasGuardedHandlers
 
-    attr_accessor :offer, :originating_voip_platform, :context, :client, :end_reason, :commands
+    attr_accessor :offer, :context, :client, :end_reason, :commands
 
     def initialize(offer = nil)
       if offer
@@ -22,7 +22,6 @@ module Adhearsion
       @end_reason_mutex = Mutex.new
       end_reason        = nil
       @commands         = CommandRegistry.new
-      set_originating_voip_platform!
 
       register_initial_handlers
     end
@@ -153,11 +152,6 @@ module Adhearsion
       recipient.metaclass.send :attr_accessor, key unless recipient.class.respond_to?("#{key}=")
       recipient.metaclass.send :public, key, "#{key}=".to_sym
       recipient.send "#{key}=", value
-    end
-
-    def set_originating_voip_platform!
-      # TODO: Determine this from the headers somehow
-      self.originating_voip_platform = :punchblock
     end
 
     class CommandRegistry
