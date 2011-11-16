@@ -257,13 +257,17 @@ module Adhearsion
           input_stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
             Thread.new {
               output_component.stop! unless output_component.complete?
-              reason = event.reason
-              result = reason.interpretation if reason.respond_to? :interpretation
             }
           end
           write_and_await_response input_stopper_component
-          execute_component_and_await_completion output_component # FIXME: Race condition on completion of the event handler. Should just use the event handler to stop the output and read the result from the blocking complete event accessor
+          begin
+            execute_component_and_await_completion output_component
+          rescue StandardError => e
+            throw Adhearsion::PlaybackError, "Output failed for argument #{argument.inspect}"
+          end
           input_stopper_component.stop! if input_stopper_component.executing?
+          reason = input_stopper_component.complete_event.resource.reason
+          result = reason.interpretation if reason.respond_to? :interpretation
           return parse_single_dtmf result unless result.nil?
           result
         end

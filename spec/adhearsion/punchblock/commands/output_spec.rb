@@ -261,15 +261,12 @@ module Adhearsion
               mock_execution_environment.play(ssml).should be true
             end
           end
-
-          it 'If a string matching dollars and (optionally) cents is passed to play(), a series of command will be executed to read the dollar amount', :ignore => true do
-            pending "I think we should not have this be part of #play. Too much functionality in one method. Too much overloading. When we want to support multiple currencies, it'll be completely unwieldy. I'd suggest play_currency as a separate method. - Chad"
-          end
         end
 
         describe "#play!" do
           let(:prompt)        { "Press any button." }
           let(:second_prompt) { "Or press nothing." }
+          let(:non_existing) { "http://adhearsion.com/nonexistingfile.mp3" }
 
           it "calls play a single time" do
             mock_execution_environment.should_receive(:play).once.with(prompt).and_return(true)
@@ -281,7 +278,9 @@ module Adhearsion
             mock_execution_environment.play!(prompt, second_prompt)
           end
 
-          it "raises an exception if play returns false"
+          it "raises an exception if play fails" do
+            expect { mock_execution_environment.play!(non_existing) }.to raise_error(Adhearsion::PlaybackError)
+          end
         end
 
         describe "#speak" do
@@ -396,6 +395,16 @@ module Adhearsion
               # it is actually a no-op here
             end
 
+            def expect_component_complete_event
+              complete_event = Punchblock::Event::Complete.new
+              flexmock(complete_event).should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
+              flexmock(Punchblock::Component::Input).new_instances do |input|
+                input.should_receive(:complete?).and_return(false)
+                input.should_receive(:complete_event).and_return(flexmock('FutureResource', :resource => complete_event))
+              end
+            end
+
+            expect_component_complete_event
             expect_component_execution Punchblock::Component::Output.new(:ssml => ssml.to_s)
             mock_execution_environment.stream_file prompt, allowed_digits
           end
@@ -407,10 +416,16 @@ module Adhearsion
               input_component.execute_handler
             end
 
-            flexmock(Punchblock::Component::Input).new_instances do |input|
-              input.should_receive(:complete?).and_return(false)
+            def expect_component_complete_event
+              complete_event = Punchblock::Event::Complete.new
+              flexmock(complete_event).should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
+              flexmock(Punchblock::Component::Input).new_instances do |input|
+                input.should_receive(:complete?).and_return(false)
+                input.should_receive(:complete_event).and_return(flexmock('FutureResource', :resource => complete_event))
+              end
             end
 
+            expect_component_complete_event
             flexmock(Punchblock::Component::Output).new_instances.should_receive(:stop!)
             mock_execution_environment.should_receive(:execute_component_and_await_completion).once.with(output_component)
             mock_execution_environment.stream_file(prompt, allowed_digits).should == '5'
@@ -421,6 +436,7 @@ module Adhearsion
         describe "#interruptible_play!" do
           let(:output1) { "one two" }
           let(:output2) { "three four" }
+          let(:non_existing) { "http://adhearsion.com/nonexistingfile.mp3" }
 
           it "plays two outputs in succession" do
             mock_execution_environment.should_receive(:stream_file).twice
@@ -432,7 +448,10 @@ module Adhearsion
             mock_execution_environment.interruptible_play! output1, output2
           end
 
-          it 'raises an exception when output is unsuccessful'
+          it 'raises an exception when output is unsuccessful' do
+            pending
+            # expect { mock_execution_environment.interruptible_play!(non_existing) }.to raise_error(Adhearsion::PlaybackError)
+          end
         end # describe interruptible_play!
 
         describe "#interruptible_play" do
@@ -450,9 +469,6 @@ module Adhearsion
           end
         end # describe interruptible_play
 
-        describe "#raw_output" do
-          pending
-        end
       end
     end
   end
