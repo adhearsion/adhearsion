@@ -349,7 +349,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       file_logger = Log4r::FileOutputter.new("Main Adhearsion log file", :filename => log_file, :trunc => false)
 
       if should_daemonize?
-        Logging::AdhearsionLogger.outputters  = file_logger
+        Logging::AdhearsionLogger.outputters  = [file_logger]
       else
         Logging::AdhearsionLogger.outputters << file_logger
       end
