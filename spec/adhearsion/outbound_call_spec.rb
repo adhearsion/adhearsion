@@ -10,7 +10,7 @@ module Adhearsion
     let(:mock_client) { flexmock 'Punchblock Client' }
 
     before do
-      Initializer::Punchblock.client = mock_client
+      PunchblockPlugin::Initializer.client = mock_client
     end
 
     its(:connection) { should be mock_client }

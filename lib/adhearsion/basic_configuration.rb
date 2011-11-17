@@ -2,8 +2,8 @@ module Adhearsion
 
   class BasicConfiguration < OpenStruct
 
-    def initialize
-      super
+    def initialize params = {}
+      super params
       block_given? and yield self
     end
 
@@ -12,7 +12,7 @@ module Adhearsion
     end
 
     def [] value
-      self.value if self.respond_to? value.to_sym
+      return self.value if self.respond_to? value.to_sym
     end
 
     def configure(name = nil, &block)
@@ -28,6 +28,10 @@ module Adhearsion
     # Return the defined configuration keys
     def values
       self.instance_variable_get(:@table).keys.dup
+    end
+
+    def length
+      values.length
     end
 
     # Get a configuration value using a Hash syntax

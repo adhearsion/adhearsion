@@ -9,19 +9,11 @@ describe Adhearsion::Configuration do
 
     its(:automatically_accept_incoming_calls) { should == true}
 
-    its([:automatically_accept_incoming_calls]) { should == true}
-
     its(:end_call_on_hangup) { should == true }
-
-    its([:end_call_on_hangup]) { should == true }
 
     its(:end_call_on_error) { should == true }  
 
-    its([:end_call_on_error]) { should == true }
-
     its(:asterisk) { should be_kind_of OpenStruct }
-
-    its([:asterisk]) { should be_kind_of OpenStruct }
 
     its(:asterisk_enabled?) { should == true }
 
@@ -30,6 +22,8 @@ describe Adhearsion::Configuration do
     its(:ldap_enabled?) { should == false }
 
     its(:rails_enabled?) { should == false }
+
+    its(:plugins) { should be_instance_of Adhearsion::BasicConfiguration }
 
     it "should not enable AMI by default" do
       subject.asterisk.ami_enabled?.should == false
@@ -52,7 +46,7 @@ describe Adhearsion::Configuration do
     end
 
     it "should retrieve properly the value using the Hash syntax" do
-      subject.foo = "bar"
+      subject.plugins.foo = "bar"
       subject[:foo].should == "bar"
     end
 
@@ -209,37 +203,9 @@ describe Adhearsion::Configuration do
     end
   end
 
-  context "Punchblock configuration" do
-    describe "with config specified" do
-      subject do
-        Adhearsion::Configuration.new.tap do |config| 
-          config.load_punchblock_configuration(:username => 'userb@127.0.0.1', :password => 'abc123', :auto_reconnect => false)
-        end.punchblock.connection_options
-      end
-
-      its([:username]) { should == 'userb@127.0.0.1' }
-      its([:password]) { should == 'abc123' }
-      its([:auto_reconnect]) {should == false }
-    end
-
-    describe "with defaults" do
-      subject do
-        Adhearsion::Configuration.new.tap do |config| 
-          config.load_punchblock_configuration
-        end.punchblock.connection_options
-      end
-
-      its([:username]) { should == 'usera@127.0.0.1' }
-      its([:password]) { should == '1' }
-      its([:auto_reconnect]) {should == true }
-    end
-  end
-
   context "Configuration scenarios" do
     subject do
       Adhearsion::Configuration.new.tap do |config| 
-        config.load_punchblock_configuration(:username => 'userb@127.0.0.1', :password => 'abc123', :auto_reconnect => false)
-      end.tap do |config|
         config.asterisk.enable_ami
       end.tap do |config|
         config.load_drb_configuration

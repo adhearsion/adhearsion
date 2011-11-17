@@ -1,3 +1,5 @@
+require 'adhearsion/punchblock_plugin'
+
 module Adhearsion
   class Initializer
 
@@ -6,7 +8,6 @@ module Adhearsion
     autoload :Database
     autoload :DRb
     autoload :LDAP
-    autoload :Punchblock
     autoload :Rails
     autoload :XMPP
     autoload :Logging
@@ -55,7 +56,7 @@ module Adhearsion
 
       resolve_pid_file_path
       resolve_log_file_path
-      init_plugins
+      load_plugins_methods
       daemonize! if should_daemonize?
       launch_console if need_console?
       switch_to_root_directory
@@ -69,13 +70,13 @@ module Adhearsion
       init_datasources
       init_modules
       init_events_file
+      init_plugins
 
       logger.info "Adhearsion v#{Adhearsion::VERSION} initialized!"
       Adhearsion.status = :running
 
       trigger_after_initialized_hooks
       join_important_threads
-
       self
     end
 
@@ -187,6 +188,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     def load_all_init_files
       init_files_from_rc = Adhearsion.config.files_from_setting("paths", "init").map { |file| File.expand_path(file) }
       already_loaded_init_files = Array(@loaded_init_files).map { |file| File.expand_path(file) }
+      puts init_files_from_rc - already_loaded_init_files
       (init_files_from_rc - already_loaded_init_files).each { |init| load init }
     end
 
@@ -196,7 +198,6 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
 
     def init_modules
-      Punchblock.start if Adhearsion.config.punchblock_enabled?
       Drb.start        if Adhearsion.config.drb_enabled?
       Rails.start      if Adhearsion.config.rails_enabled?
       XMPP.start       if Adhearsion.config.xmpp_enabled?
@@ -230,8 +231,11 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       end
     end
 
+    def load_plugins_methods
+      Plugin.load_methods
+    end
     def init_plugins
-      Plugin.load
+      Plugin.init_plugins
     end
 
     def should_daemonize?

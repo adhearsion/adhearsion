@@ -25,7 +25,7 @@ module Adhearsion
     end
 
     def connection
-      Initializer::Punchblock.client
+      PunchblockPlugin::Initializer.client
     end
 
     def accept(*args)

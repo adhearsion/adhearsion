@@ -15,14 +15,19 @@ module Adhearsion
       self.class.load_default_config(self)
     end
 
-    [:rails, :database, :xmpp, :punchblock, :drb].each do |type|
+    [:rails, :database, :xmpp, :drb].each do |type|
       define_method("load_#{type}_configuration".to_sym) do |params = {}|
         self.class.send("load_#{type}_configuration".to_sym, self, params)
       end
       
       # deprecated behaviour
       module_eval 'alias :"enable_#{type}" :"load_#{type}_configuration"'
+    end
 
+
+    # Direct access to a specific plugin configuration values
+    def [] value
+      return self.plugins.send(value.to_sym)
     end
 
     def logging(options)
@@ -31,6 +36,34 @@ module Adhearsion
       Adhearsion::Logging.formatter     = options[:formatter]         if options.has_key? :formatter
       #Adhearsion::Logging::AdhearsionLogger.formatters = Array(options[:formatter]) * Adhearsion::Logging::AdhearsionLogger.outputters.count if options.has_key? :formatter
     end
+
+    def plugins
+      @plugins ||= BasicConfiguration.new
+    end
+
+    def plugins_definitions
+      @plugins_definitions ||= {}
+    end
+
+    def show_configuration element = :core, opts = {}
+      case element
+      when :core
+        return self.values.inject([]) do |_values, elem|
+          unless self.send(elem).kind_of? Adhearsion::BasicConfiguration
+            _values << "#{elem} => #{self.send(elem)}"
+          end
+          _values
+        end
+      else
+        if opts[:description]
+          
+        else
+          self[element]
+        end
+      end
+    end
+
+
 
     ##
     # Load the contents of an .ahnrc file into this Configuration.
@@ -80,7 +113,7 @@ module Adhearsion
         yield Adhearsion.config
       end
 
-      def load_default_config(config)
+      def load_default_config config
         config.automatically_accept_incoming_calls = true
         config.end_call_on_hangup                  = true
         config.end_call_on_error                   = true
@@ -138,17 +171,6 @@ module Adhearsion
         config.xmpp.password = params[:password] or raise ArgumentError, "Must supply a :password argument to the XMPP initializer!"
         config.xmpp.server   = params[:server] or raise ArgumentError, "Must supply a :server argument to the XMPP initializer!"
         config.xmpp.port     = params[:port] || 5222
-      end
-
-      def load_punchblock_configuration(config, params = {})
-        params = params.dup
-        config.add_configuration_for(:punchblock)
-        config.punchblock.connection_options = {
-          :platform => params[:platform] || :xmpp,
-          :username => params[:username] || "usera@127.0.0.1",
-          :password => params[:password] || "1",
-          :auto_reconnect => params[:auto_reconnect].nil? ? true : params[:auto_reconnect]
-          }.merge params
       end
 
       def load_drb_configuration(config, params = {})

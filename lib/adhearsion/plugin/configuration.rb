@@ -10,19 +10,50 @@ module Adhearsion
     # config.bar = "foo"
     # puts config[:bar] => "foo"
     #
-    class ConfigurationBase < OpenStruct
-      def [](name)
-        self.send(name)
+
+    class Configuration < Adhearsion::BasicConfiguration
+      
+      def length
+        values.length
       end
-      def []=(name, value)
-        self.send(name.to_s.concat("=").to_sym, value)
+
+      def method_missing(method_name, *args)
+        config_name = method_name
+        values = case args.length
+          when 0
+            [nil, ""]
+          when 1
+            [args[0], ""]
+          when 2
+            [args[0], args[1]]
+          else
+            [args[0], args[1]]
+          end  
+        self.values << Definition.new(config_name, values[0], values[1])
+        self.values
+      end      
+
+      def values
+        @values ||= []
       end
+
     end
 
+    class Definition
+      attr_accessor :name
+      attr_accessor :value
+      attr_accessor :default_value
+      attr_accessor :description
 
-    class Configuration < ConfigurationBase
-      def length
-        self.methods(false).length / 2 # setter and getter
+      def initialize name, default_value, description
+        @name = name
+        @default_value = default_value
+        @description = description
+        @value = nil
+      end
+
+      def to_s
+        "Config param <#{name}>: #{description} (default value <#{default_value.to_s}>)"
       end
     end
   end

@@ -111,37 +111,44 @@ describe Adhearsion::Plugin do
       defined?(FooBar) and Object.send(:remove_const, :"FooBar")
     end
 
-    it "should provide access to a config mechanism" do
-      FooBar = Class.new Adhearsion::Plugin
-      FooBar.config.should be_kind_of Adhearsion::Plugin::Configuration
-    end
-
-    it "should provide a config empty variable" do
-      FooBar = Class.new Adhearsion::Plugin
-      FooBar.config.length.should be 0
-    end
-
-    it "should allow to set a new config value" do
-      FooBar = Class.new Adhearsion::Plugin do
-        config.foo = "bar"
+    subject {
+      Class.new Adhearsion::Plugin do
+        config :bar_foo do
+          name     "user"     , "name to authenticate user"
+          password "password" , "authentication password"
+          host     "localhost", "valid IP or hostname"
+        end
       end
-      FooBar.config.foo.should eql "bar"
+    }
+
+    its(:plugin_name) { should == :bar_foo }
+
+    its(:config) { should be_kind_of Adhearsion::BasicConfiguration }
+
+    it "should keep a default configuration and a description" do
+      [:name, :password, :host].each do |value|
+        subject.show_configuration.values.index(value).should_not be_nil
+      end
     end
 
-    it "should allow to get a config value using []" do
-      FooBar = Class.new Adhearsion::Plugin do
-        config.foo = "bar"
+    it "should return a description of configuration options" do
+      subject.show_description.should be_kind_of Adhearsion::BasicConfiguration
+      [:name, :password, :host].each do |value|
+        subject.show_description.values.index(value).should_not be_nil
+        subject.show_description.send(value).name.should == value
       end
-      FooBar.config[:foo].should eql "bar"
     end
 
-    it "should allow to set a config value using [:name] = value" do
-      FooBar = Class.new Adhearsion::Plugin do
-        config[:foo] = "bar"
+    it "should include configuration options in Adhearsion config class" do
+      Adhearsion.config.plugins.bar_foo.should be_instance_of Adhearsion::BasicConfiguration
+
+      Adhearsion.config.plugins.bar_foo.instance_eval do |c|
+        c.name.should     == "user"
+        c.password.should == "password"
+        c.host.should     == "localhost"
       end
-      FooBar.config.foo.should eql "bar"
-      FooBar.config.length.should eql 1
     end
+
   end
 
   describe "add and delete on the air" do
@@ -199,7 +206,8 @@ describe Adhearsion::Plugin do
       it "should do nothing with a Plugin that has no init method call" do
         FooBar = Class.new Adhearsion::Plugin
 
-        Adhearsion::Plugin.initializers.should be_empty
+        # 1 => Punchblock. Must be empty once punchblock initializer is an external Plugin
+        Adhearsion::Plugin.initializers.should have(1).initializers
         Adhearsion::Plugin.load
       end
 

@@ -1,3 +1,5 @@
+require 'adhearsion/basic_configuration'
+
 module Adhearsion
 
   # Plugin is the core of extension of Adhearsion framework and provides the easiest
@@ -168,16 +170,53 @@ module Adhearsion
         @plugin_name = name
       end
 
-      def config
-        @config ||= Configuration.new
+      def config name = nil
+        if name.nil?
+          name = self.plugin_name
+        else
+          self.plugin_name = name
+        end
+        if block_given?
+          config = Configuration.new
+          definitions = config.instance_exec &Proc.new
+          clean_config = Adhearsion::BasicConfiguration.new
+
+          definitions.each do |d|
+            plugin_config.send("#{d.name}=".to_sym, d)
+            clean_config.send("#{d.name}=".to_sym, d.default_value)
+          end
+
+          # Include configuration in Adhearion.config.plugins.<plugin_name>
+          Adhearsion.config.plugins.send("#{plugin_name}=".to_sym, clean_config)
+          # Include config description in Adhearion.config.plugins_definition[<plugin_name>]
+          Adhearsion.config.plugins_definitions.store(plugin_name, definitions)
+        end
+        show_configuration
+      end
+
+      def show_configuration
+        Adhearsion.config.plugins.send plugin_name.to_sym
+      end
+
+      def show_description
+        plugin_config
+      end
+
+      def plugin_config
+        @plugin_config ||= Adhearsion::BasicConfiguration.new
       end
 
       def load
-        init_plugin
+        load_methods
+        init_plugins
+      end
 
-        # load plugins dialplan methods
+      # Load plugins scope methods (scope = dialplan, console, etc)
+      def load_methods        
         unless @@methods_container.empty?
+          
           @@methods_container.each_pair do |scope, methods|
+          
             logger.debug "Loading #{methods.length} #{scope} methods"
 
             methods.each_pair do |class_method, block|
@@ -199,13 +238,14 @@ module Adhearsion
               end
             end
           end
+          
+          # We need to extend Console class with the plugin defined methods
+          Adhearsion::Console.extend(self.console_module) unless self.console_module.instance_methods.empty?
         end
-
-        Adhearsion::Console.extend(self.console_module) unless self.console_module.instance_methods.empty?
       end
 
       # Recursively initialization of all the loaded plugins
-      def init_plugin(*args)
+      def init_plugins *args
         initializers.tsort.each do |initializer|
           initializer.run *args
         end

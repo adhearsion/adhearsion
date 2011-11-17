@@ -1,20 +1,28 @@
 require 'timeout'
 
 module Adhearsion
-  class Initializer
-    class Punchblock
+  class PunchblockPlugin
+    class Initializer
       cattr_accessor :config, :client, :dispatcher
 
       class << self
         def start
-          self.config = Adhearsion.config.punchblock
-          connection_class = case (self.config.connection_options.delete(:platform) || :xmpp)
+          self.config = Adhearsion.config[:punchblock]
+          connection_class = case (self.config.platform || :xmpp)
           when :xmpp
             ::Punchblock::Connection::XMPP
           when :asterisk
             ::Punchblock::Connection::Asterisk
           end
-          connection = connection_class.new self.config.connection_options
+          connection_options = {
+            :username         => self.config.username,
+            :password         => self.config.password,
+            :auto_reconnect   => self.config.auto_reconnect,
+            :wire_logger      => self.config.wire_logger,
+            :transport_logger => Adhearsion::Logging.get_logger(Punchblock)
+          }
+
+          connection = connection_class.new connection_options
           self.client = ::Punchblock::Client.new :connection => connection
 
           # Make sure we stop everything when we shutdown
@@ -75,6 +83,6 @@ module Adhearsion
           end
         end
       end
-    end # PunchblockInitializer
-  end # Initializer
+    end # Punchblock
+  end # Plugin
 end # Adhearsion
