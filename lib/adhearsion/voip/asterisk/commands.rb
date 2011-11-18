@@ -378,7 +378,7 @@ module Adhearsion
         #
         # Silence and maxduration is specified in seconds.
         # 
-        # @return [Hash] With the following..... :status => {one of:hangup, :write_error, :success_dtmf, :success_timeout} :dtmf => {dtmf interruped key if :success_dtmf} 
+        # @return [Symbol] One of the follwing..... :hangup, :write_error, :success_dtmf, :success_timeout  
         #        
         # A sound file will be recorded to the specifed file unless a :write_error is returned.  A :success_dtmf is
         # for when a call was ended with a DTMF tone.  A :success_timeout is returned when a call times out due to 
@@ -392,7 +392,7 @@ module Adhearsion
         #   record 'my-file.gsm', :silence => 5, :maxduration => 120
         #
         def record_to_file(*args)
-          base_record_to_file(*args)
+          base_record_to_file(*args).last
         end
 
         # This works the same record_to_file except is throws an exception if a playback or write error occurs.
@@ -400,12 +400,12 @@ module Adhearsion
         def record_to_file!(*args)
            # raise PlaybackError, "Playback failed with PLAYBACKSTATUS: #{playback.inspect}.  The raw response was #{response.inspect}."
           return_values = base_record_to_file(*args)
-          if return_values[:error] == :playback_error
-            raise PlaybackError, "Playback failed with PLAYBACKSTATUS: #{return_values[:raw_response].inspect}."
-          elsif return_values[:status] == :write_error
+          if return_values.first == :playback_error
+            raise PlaybackError, "Playback failed with PLAYBACKSTATUS: #{return_values.second.inspect}."
+          elsif return_values.first == :write_error
             raise RecordError, "Record failed on write."
           end
-          return_values
+          return_values.first
         end
 
         # this is a base methor record_to_file and record_to_file! and should only be used via those methods
@@ -442,7 +442,7 @@ module Adhearsion
           silence     = options.delete(:silence) || 0
 
           response_params = filename, format, escapedigits, maxduration, 0          
-          response_values = {}
+          response_values = []
  
           if !options.has_key? :beep 
             response_params << 'BEEP'
@@ -450,8 +450,8 @@ module Adhearsion
             play_soundfile options[:beep]
             playback_response = get_variable('PLAYBACKSTATUS')
             if playback_response != PLAYBACK_SUCCESS 
-              response_values[:error] = :playback_error
-              response_values[:raw_response] = playback_response
+              response_values << :playback_error
+              response_values << playback_response
             end
           end
 
@@ -463,16 +463,15 @@ module Adhearsion
           # If the user hangs up before the recording is entered, -1 is returned by asterisk and RECORDED_FILE
           # will not contain the name of the file, even though it IS in fact recorded.
           if resp.match /hangup/
-            response_values[:status] = :hangup
+            response_values << :hangup
           elsif resp.match /writefile/
-            response_values[:status] = :write_error 
+            response_values << :write_error 
           elsif resp.match /dtmf/
-            response_values[:status] = :success_dtmf
+            response_values << :success_dtmf
           elsif resp.match /timeout/
-            response_values[:status] = :success_timeout
+            response_values << :success_timeout
           end
 
-          response_values[:dtmf] = result_digit_from(resp) 
           response_values
         end
 
