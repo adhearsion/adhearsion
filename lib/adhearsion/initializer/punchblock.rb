@@ -44,11 +44,11 @@ module Adhearsion
           Events.register_callback(:after_initialized) do
             begin
               logger.info "Waiting for connection via Punchblock"
+              Events.register_handler :punchblock, ::Punchblock::Connection::Connected do
+                logger.info "Connected via Punchblock"
+              end
               IMPORTANT_THREADS << Thread.new do
                 catching_standard_errors { client.run }
-              end
-              Events.register_callback :punchblock, ::Punchblock::Connection::Connected do
-                logger.info "Connected via Punchblock"
               end
             rescue => e
               logger.fatal "Failed to start Punchblock client! #{e.inspect}"
