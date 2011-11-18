@@ -29,11 +29,11 @@ module Adhearsion
             Events.trigger :punchblock, event
           end
 
-          Events.register_callback :punchblock, ::Punchblock::Event::Offer do |offer|
+          Events.punchblock ::Punchblock::Event::Offer do |offer|
             dispatch_offer offer
           end
 
-          Events.register_callback :punchblock, proc { |e| e.respond_to?(:call_id) }, :call_id do |event|
+          Events.punchblock proc { |e| e.respond_to?(:call_id) }, :call_id do |event|
             dispatch_call_event event
           end
 
@@ -44,7 +44,7 @@ module Adhearsion
           Events.register_callback(:after_initialized) do
             begin
               logger.info "Waiting for connection via Punchblock"
-              Events.register_handler :punchblock, ::Punchblock::Connection::Connected do
+              Events.punchblock ::Punchblock::Connection::Connected do
                 logger.info "Connected via Punchblock"
               end
               IMPORTANT_THREADS << Thread.new do
