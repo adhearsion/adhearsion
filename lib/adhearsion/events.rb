@@ -68,6 +68,12 @@ module Adhearsion
 
     alias :register_callback :register_handler
 
+    private
+
+    def call_handler(handler, guards, event)
+      super && throw(:pass)
+    end
+
     class ErrorHandler
       def handle(exception)
         Events.trigger :exception, exception
