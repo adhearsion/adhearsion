@@ -14,6 +14,10 @@ describe "The database initializer" do
     Adhearsion::Initializer::Database.start
   end
 
+  def expect_establish_connection
+    flexmock(ActiveRecord::Base).should_receive :establish_connection
+  end
+
   def tempfile_with_contents(contents)
     Tempfile.new("bogus_model").tap do |file|
       file.puts contents
@@ -37,16 +41,16 @@ describe "The database initializer" do
   it "starts a connection through ActiveRecord" do
     connection_options = { :adapter => "sqlite3", :dbfile => "foo.sqlite3" }
     flexmock(Adhearsion::Initializer::Database).should_receive(:require_models).once
-    flexmock(ActiveRecord::Base).should_receive(:establish_connection).with(connection_options)
+    expect_establish_connection.with connection_options
 
     start_database_initializer_with_options connection_options
   end
 
   it "should make any required models available in the main namespace" do
-    pending
     bogus_model = tempfile_with_contents sample_user_model
     flexmock(Adhearsion.config).should_receive(:files_from_setting).once.
         with("paths", "models").and_return [bogus_model.path]
+    expect_establish_connection
     start_database_initializer
     User.superclass.should be ActiveRecord::Base
   end

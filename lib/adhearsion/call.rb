@@ -8,7 +8,7 @@ module Adhearsion
 
     include HasGuardedHandlers
 
-    attr_accessor :offer, :originating_voip_platform, :context, :client, :end_reason, :commands
+    attr_accessor :offer, :context, :client, :end_reason, :commands
 
     def initialize(offer = nil)
       if offer
@@ -22,7 +22,6 @@ module Adhearsion
       @end_reason_mutex = Mutex.new
       end_reason        = nil
       @commands         = CommandRegistry.new
-      set_originating_voip_platform!
 
       register_initial_handlers
     end
@@ -155,11 +154,6 @@ module Adhearsion
       recipient.send "#{key}=", value
     end
 
-    def set_originating_voip_platform!
-      # TODO: Determine this from the headers somehow
-      self.originating_voip_platform = :punchblock
-    end
-
     class CommandRegistry
       include Enumerable
 
@@ -184,5 +178,23 @@ module Adhearsion
         each { |command| command.response = hangup if command.requested? }
       end
     end
-  end
-end
+
+    class Registry
+      @registry = Hash.new
+      @mutex = Mutex.new
+
+      def self.[](k)
+        @mutex.synchronize do
+          @registry[k]
+        end
+      end
+
+      def self.[]=(k, value)
+        @mutex.synchronize do
+          @registry[k] = value
+        end
+      end
+    end#Registry
+
+  end#Call
+end#Adhearsion

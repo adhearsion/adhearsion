@@ -1,7 +1,0 @@
-Type "ahn enable component COMPONENT_NAME_FROM_DISABLED_FOLDER
-
-For example:
-
-~/Desktop $ ahn create myapp
-~/Desktop $ cd myapp
-~/Desktop/myapp $ ahn enable component stomp_gateway

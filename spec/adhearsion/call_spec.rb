@@ -11,8 +11,6 @@ module Adhearsion
 
     it { should respond_to :<< }
 
-    its(:originating_voip_platform) { should == :punchblock }
-
     its(:end_reason) { should == nil }
     it { should be_active }
 
@@ -405,6 +403,13 @@ module Adhearsion
           end
           finished_command.response.should == :foo
         end
+      end
+    end
+
+    describe Call::Registry do
+      it "should set a value and retrieve it" do
+        Adhearsion::Call::Registry[:test_value] = '123'
+        Adhearsion::Call::Registry[:test_value].should == '123'
       end
     end
   end

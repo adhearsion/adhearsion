@@ -30,7 +30,7 @@ module Adhearsion
       return self.plugins.send(value.to_sym)
     end
 
-    def logging(options)
+    def logging options
       Adhearsion::Logging.logging_level = options[:level]             if options.has_key? :level
       Adhearsion::Logging.outputters    = Array(options[:outputters]) if options.has_key? :outputters
       Adhearsion::Logging.formatter     = options[:formatter]         if options.has_key? :formatter
@@ -62,8 +62,6 @@ module Adhearsion
         end
       end
     end
-
-
 
     ##
     # Load the contents of an .ahnrc file into this Configuration.

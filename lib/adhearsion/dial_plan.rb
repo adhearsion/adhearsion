@@ -22,7 +22,6 @@ module Adhearsion
   class DialPlan
     extend ActiveSupport::Autoload
 
-    autoload :ConfirmationManager
     autoload :ExecutionEnvironment
     autoload :Loader
     autoload :Manager

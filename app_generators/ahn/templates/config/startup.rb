@@ -1,6 +1,14 @@
 require File.join(File.dirname(__FILE__), 'environment')
 
-Adhearsion::Configuration.configure do |config|
+Adhearsion.config do |config|
+
+
+  # Adhearsion core configuration
+  config.automatically_accept_incoming_calls = true
+
+  config.end_call_on_hangup = true
+  config.end_call_on_error  = true
+
 
   # Log configuration
   # :level : Supported levels (in increasing severity) -- :debug < :info < :warn < :error < :fatal
@@ -17,12 +25,6 @@ Adhearsion::Configuration.configure do |config|
 
   # Whether to end the call immediately if an unrescued exception is caught. Defaults to true.
   # config.end_call_on_error = false
-
-  # Here you can specify the :username, :password and :rayo_domain as keys in a hash.
-  # eg. config.enable_punchblock :username => 'me@jabber.org', :password => 'foobar', :rayo_domain => 'go.rayo.org'
-  # The defaults are suitable for a stock local Rayo installation. To use with Asterisk, do something like:
-  # config.enable_punchblock :platform => :asterisk, :username => 'admin', :password => 'foo', :host => 'localhost', :port => 5038
-  config.enable_punchblock
 
   # Adhearsion supports two possible speech engines with Asterisk: UniMRCP and Cepstral.
   # Uncomment one of the below if you have it available.

@@ -38,6 +38,8 @@ describe Adhearsion::CLI::AhnCommand do
     execute_ahn_command
   end
 
+  before { pending }
+
   it "args are simulated properly" do
     before = ARGV.clone
     simulate_args "create", "/tmp/blah"

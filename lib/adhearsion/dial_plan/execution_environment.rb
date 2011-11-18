@@ -53,7 +53,7 @@ module Adhearsion
 
       def extend_with_voip_commands!
         extend Adhearsion::Conveniences
-        extend Adhearsion::Commands.for call.originating_voip_platform
+        extend Adhearsion::Punchblock::Commands
       end
 
       def extend_with_dialplan_methods!

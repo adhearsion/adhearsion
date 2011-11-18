@@ -24,10 +24,8 @@ RUBY_VERSION < "1.9" and require 'rubygems'
 module Adhearsion
   extend ActiveSupport::Autoload
 
-  autoload :Asterisk
   autoload :Call
   autoload :Calls
-  autoload :Commands
   autoload :Configuration
   autoload :Console
   autoload :Constants

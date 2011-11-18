@@ -82,7 +82,7 @@ module Adhearsion
         # This block will create the relevant methods to handle how to add new methods
         # to Adhearsion scopes via an Adhearsion Plugin.
         # The scope method should have a name and a lambda block that will be executed in the
-        # call ExecutionEnvironment context. 
+        # call ExecutionEnvironment context.
         #
         # class AhnPluginDemo < Adhearsion::Plugin
         #   dialplan :adh_plugin_demo do
@@ -232,10 +232,8 @@ module Adhearsion
               end
 
               logger.debug "Defining method #{method}"
-              self.send("#{scope}_module").send(:define_method, method) do
-                block.nil? and raise NoMethodError.new "Invalid #{scope} method: <#{method}>"
-                instance_exec &block
-              end
+              block.nil? and raise NoMethodError.new "Invalid #{scope} method: <#{method}>"
+              self.send("#{scope}_module").send(:define_method, method, &block)
             end
           end
           
