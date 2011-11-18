@@ -24,8 +24,6 @@ describe Adhearsion::Configuration do
     before do
       Adhearsion.config do |config|
         config.automatically_accept_incoming_calls = true
-        config.end_call_on_hangup = true
-        config.end_call_on_error  = true
         config.add_configuration_for(:asterisk)
         config.asterisk.speech_engine = nil
         config.asterisk.argument_delimiter = '|' # This setting only applies to AGI.  AMI delimiters are always auto-detected.
@@ -61,10 +59,6 @@ describe Adhearsion::Configuration do
 
     its(:automatically_accept_incoming_calls) { should == true}
 
-    its(:end_call_on_hangup) { should == true }
-
-    its(:end_call_on_error) { should == true }  
-
     its(:asterisk) { should be_kind_of OpenStruct }
 
     its(:asterisk_enabled?) { should == true }
@@ -82,12 +76,12 @@ describe Adhearsion::Configuration do
     end
 
     it "should return the list of predefined values" do
-      subject.values.should have(5).values
+      subject.values.should have(3).values
     end
 
     it "should return the list of updated predefined values" do
       subject.foo = "bar"
-      subject.values.should have(6).values
+      subject.values.should have(4).values
     end
 
     it "should assign propertly the default AMI values" do

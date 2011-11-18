@@ -6,10 +6,6 @@ Adhearsion.config do |config|
   # Adhearsion core configuration
   config.automatically_accept_incoming_calls = true
 
-  config.end_call_on_hangup = true
-  config.end_call_on_error  = true
-
-
   config.add_configuration_for(:asterisk)
 
   config.asterisk.speech_engine = nil
@@ -48,12 +44,6 @@ Adhearsion.config do |config|
 
   # Whether incoming calls be automatically accepted. Defaults to true.
   # config.automatically_accept_incoming_calls = false
-
-  # Whether the other end hanging up should end the call immediately. Defaults to true.
-  # config.end_call_on_hangup = false
-
-  # Whether to end the call immediately if an unrescued exception is caught. Defaults to true.
-  # config.end_call_on_error = false
 
   # Adhearsion supports two possible speech engines with Asterisk: UniMRCP and Cepstral.
   # Uncomment one of the below if you have it available.
