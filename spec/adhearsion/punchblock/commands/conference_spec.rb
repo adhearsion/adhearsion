@@ -19,7 +19,8 @@ module Adhearsion
             @conf = nil
             component = Punchblock::Component::Tropo::Conference.new(options.merge(:name => conference_id))
             expect_message_waiting_for_response component
-            component.complete_event.resource = Punchblock::Event::Complete.new
+            component.execute!
+            component.complete_event = Punchblock::Event::Complete.new
             flexmock(Punchblock::Component::Tropo::Conference).should_receive(:new).and_return component
             mock_execution_environment.conference(conference_id, options) { |conf| @conf = conf }.should == component
             @conf.should == component
@@ -48,7 +49,6 @@ module Adhearsion
                 @conference_thread = Thread.new do
                   mock_execution_environment.conference conference_id, options
                 end
-                @component.request!
                 @component.execute!
               end
 

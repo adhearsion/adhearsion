@@ -34,7 +34,7 @@ module Adhearsion
             end
           else
             execute_component_and_await_completion(component).tap do |result|
-              yield result.complete_event.resource if block_given?
+              yield result.complete_event if block_given?
             end
           end
         end

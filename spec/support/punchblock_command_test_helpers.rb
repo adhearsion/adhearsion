@@ -14,7 +14,8 @@ module PunchblockCommandTestHelpers
   end
 
   def expect_message_waiting_for_response(message)
-    mock_execution_environment.should_receive(:write_and_await_response).once.with(message).and_return(message)
+    mock_execution_environment.should_receive(:write_and_await_response).once.with(message).and_return message
+    message.request!
   end
 
   def expect_component_execution(component)

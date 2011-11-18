@@ -80,7 +80,8 @@ module Adhearsion
 
           before do
             expect_message_waiting_for_response component
-            component.complete_event.resource = response
+            component.execute!
+            component.complete_event = response
           end
 
           it 'executes a #record with the correct options' do

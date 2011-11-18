@@ -20,7 +20,8 @@ module Adhearsion
 
         before do
           expect_message_waiting_for_response component
-          component.complete_event.resource = response
+          component.execute!
+          component.complete_event = response
         end
 
         it "writes component to the server and waits on response" do
@@ -63,7 +64,7 @@ module Adhearsion
           slow_component = Punchblock::Component::Output.new
           Thread.new do
             sleep 0.5
-            slow_component.complete_event.resource = response
+            slow_component.complete_event = response
           end
           starting_time = Time.now
           mock_execution_environment.execute_component_and_await_completion slow_component
