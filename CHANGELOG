@@ -1,4 +1,7 @@
-1.2.2
+1.2.3
+ - Changes from 1.2.2, without an accidental API change which slipped in
+
+1.2.2 - yanked
  - Fixed a console bug related to recent versions of Pry passing extra arguments. Thanks to Alvaro Parres
  - Introducing new :initial_timeout and :interdigit_timeout options to #input in order to control the wait delay for the 1st and subsequent digits, respectively. Maintains support for the existing :timeout option. (https://github.com/adhearsion/adhearsion/pull/41)
  - Updated #input documentation for new features in Adhearsion 1.2.x
