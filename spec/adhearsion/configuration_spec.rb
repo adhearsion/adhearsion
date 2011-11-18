@@ -18,7 +18,6 @@ describe Adhearsion::Configuration do
       subject.plugins.foo = "bar"
       subject[:foo].should == "bar"
     end
-
   end
 
   context "when initializing with the startup configuration" do
@@ -300,6 +299,50 @@ describe Adhearsion::Configuration do
         subject.drb.host.should == "127.0.0.1"
         subject.drb.acl.should  == %w[deny 9.9.9.9 allow 1.1.1.1]
       end
+    end
+  end
+
+  describe "while retrieving configuration values and description" do
+    before do
+      FooBar = Class.new Adhearsion::Plugin do
+        config :foo_bar do
+          input          :value           , "A good value for input"
+          username       "my-awesome-user", "User to be used"
+          password       "1"              , "Valid credentials are required"
+        end
+      end
+    end
+    after do
+      defined?(FooBar) and Object.send(:remove_const, :"FooBar")
+    end
+
+    subject {
+      Adhearsion.config
+    }
+
+    describe "adhearsion platform configuration values" do
+      it "returns a text block with the Adhearsion platform configuration values" do
+        subject.show_configuration.should =~ /\Acore configuration\n-------------------\n.*$/
+      end
+    end
+
+    describe "adhearsion plugin configuration values" do
+      it "returns a text block with an Adhearsion plugin configuration values" do
+        Adhearsion.config.show_configuration(:foo_bar).should == "foo_bar configuration\n\
+----------------------\n\
+input: value\n\
+username: my-awesome-user\n\
+password: 1"
+      end
+
+      it "returns plugin configuration description" do
+        Adhearsion.config.show_configuration(:foo_bar, :description => true).should == "foo_bar configuration info\n\
+---------------------------\n\
+\tinput: A good value for input (default value <value>)\n\
+\tusername: User to be used (default value <my-awesome-user>)\n\
+\tpassword: Valid credentials are required (default value <1>)"
+      end
+      
     end
   end
 

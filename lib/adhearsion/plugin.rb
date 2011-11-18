@@ -188,6 +188,7 @@ module Adhearsion
 
           # Include configuration in Adhearion.config.plugins.<plugin_name>
           Adhearsion.config.plugins.send("#{plugin_name}=".to_sym, clean_config)
+          
           # Include config description in Adhearion.config.plugins_definition[<plugin_name>]
           Adhearsion.config.plugins_definitions.store(plugin_name, definitions)
         end

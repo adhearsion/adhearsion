@@ -53,7 +53,7 @@ module Adhearsion
       end
 
       def to_s
-        "Config param <#{name}>: #{description} (default value <#{default_value.to_s}>)"
+        "\t#{name}: #{description} (default value <#{default_value.to_s}>)"
       end
     end
   end

@@ -2,7 +2,7 @@ require 'adhearsion/basic_configuration'
 
 module Adhearsion
 
-  class Configuration < BasicConfiguration
+  class Configuration
 
     attr_accessor :ahnrc
 
@@ -36,20 +36,41 @@ module Adhearsion
       @plugins_definitions ||= {}
     end
 
+    def method_missing method_name, *args
+      platform.send method_name, *args
+    end
+
+    def platform
+      @platforms ||= BasicConfiguration.new
+    end
+
     def show_configuration element = :core, opts = {}
       case element
       when :core
-        return self.values.inject([]) do |_values, elem|
-          unless self.send(elem).kind_of? Adhearsion::BasicConfiguration
-            _values << "#{elem} => #{self.send(elem)}"
-          end
-          _values
-        end
+        title = element.to_s.dup.concat(" configuration")
+        title.
+            concat("\n").
+            concat("-"*title.to_s.length).
+            concat("\n").
+            concat platform.to_s
+      when :all
+        show_configuration :core
       else
         if opts[:description]
-          
+          title = element.to_s.dup.concat(" configuration info")
+          title.
+              concat("\n").
+              concat("-"*title.to_s.length).
+              concat("\n").
+              concat self.plugins_definitions[element].join("\n")
         else
-          self[element]
+          title = element.to_s.dup.concat(" configuration")
+          title.
+              concat("\n").
+              concat("-"*title.to_s.length).
+              concat("\n").
+              concat self[element].to_s
+          
         end
       end
     end

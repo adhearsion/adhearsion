@@ -48,6 +48,12 @@ module Adhearsion
       self.send("#{key.to_sym}=", value)
     end
 
+    def to_s
+      values.inject([]) do|k,v|
+        k << "#{v}: #{self.send(v)}"
+      end.join("\n")
+    end
+
     def method_missing(name, *args, &blk)
       # Validate if there is configuration for a specific var
       # Adhearsion.config.foo_enabled? => false
