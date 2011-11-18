@@ -10,6 +10,35 @@ Adhearsion.config do |config|
   config.end_call_on_error  = true
 
 
+  config.add_configuration_for(:asterisk)
+
+  config.asterisk.speech_engine = nil
+  config.asterisk.argument_delimiter = '|' # This setting only applies to AGI.  AMI delimiters are always auto-detected.
+  config.asterisk.listening_port = 4573
+  config.asterisk.listening_host = "localhost"
+
+  config.asterisk.add_configuration_for(:default_ami) do |ami|
+    ami.port = 5038
+    ami.events = false
+    ami.host = "localhost"
+    ami.auto_reconnect = true
+  end
+
+  # define enable_ami method, that loads the default values
+  config.asterisk.instance_eval do
+    def enable_ami(params = {})
+      values = self.default_ami.methods(false).select{|m| m[-1] != "="}
+      self.add_configuration_for(:ami) do |ami|
+        (values - params.keys).each do |value|
+          ami.send("#{value.to_s}=".to_sym, self.default_ami.send(value))
+        end
+        params.each_pair do |k,v|
+          ami.send("#{k.to_s}=".to_sym, v)
+        end
+      end
+    end
+  end
+
   # Log configuration
   # :level : Supported levels (in increasing severity) -- :debug < :info < :warn < :error < :fatal
   # :outputters : An array of log outputters to use. The default is to log to stdout and log/adhearsion.log

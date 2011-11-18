@@ -6,15 +6,6 @@ module Adhearsion
 
     attr_accessor :ahnrc
 
-    def initialize
-      super
-      load_default_config
-    end
-
-    def load_default_config
-      self.class.load_default_config(self)
-    end
-
     [:rails, :database, :xmpp, :drb].each do |type|
       define_method("load_#{type}_configuration".to_sym) do |params = {}|
         self.class.send("load_#{type}_configuration".to_sym, self, params)
@@ -105,47 +96,6 @@ module Adhearsion
     end
 
     class << self
-
-      # deprecated way to get Adhearsion configuration
-      def configure
-        yield Adhearsion.config
-      end
-
-      def load_default_config config
-        config.automatically_accept_incoming_calls = true
-        config.end_call_on_hangup                  = true
-        config.end_call_on_error                   = true
-
-        config.add_configuration_for(:asterisk)
-
-        config.asterisk.speech_engine = nil
-        config.asterisk.argument_delimiter = '|' # This setting only applies to AGI.  AMI delimiters are always auto-detected.
-        config.asterisk.listening_port = 4573
-        config.asterisk.listening_host = "localhost"
-
-        config.asterisk.add_configuration_for(:default_ami) do |ami|
-          ami.port = 5038
-          ami.events = false
-          ami.host = "localhost"
-          ami.auto_reconnect = true
-        end
-
-        # define enable_ami method, that loads the default values
-        config.asterisk.instance_eval do
-          def enable_ami(params = {})
-            values = self.default_ami.methods(false).select{|m| m[-1] != "="}
-            self.add_configuration_for(:ami) do |ami|
-              (values - params.keys).each do |value|
-                ami.send("#{value.to_s}=".to_sym, self.default_ami.send(value))
-              end
-              params.each_pair do |k,v|
-                ami.send("#{k.to_s}=".to_sym, v)
-              end
-            end
-          end
-        end
-        config
-      end
 
       def load_rails_configuration(config, params = {})
         config.add_configuration_for(:rails)
