@@ -14,7 +14,7 @@
     end
   * Dialplan DSL changes:
 
-# 1.2.1
+# 1.2.1 - 2011-09-21
   * Removed the restful_rpc component since it is now in a gem.
   * Allow overriding the path to a component in the testing framework so as to support new style components (lib/)
   * Added a GUID to the default recording filename to ensure uniqueness
@@ -22,7 +22,7 @@
   * Fixed escaping of TTS strings containing commas when used with Cepstral via #speak
   * Made logging exceptions the responsibility of the framework rather than the app, so that this may not be disabled
 
-# 1.2.0
+# 1.2.0 - 2011-08-14
   * New method: #play_or_speak allows playback of an audio file with TTS fallback
   * #input now takes :speak as a hash for TTS prompt or fallback
   * New method: #speak provides abstracted TTS rendering for UniMRCP and Cepstral
@@ -34,11 +34,11 @@
   * Using ahn_log in a dialplan context or on a call object logs to the call's context, named after its unique identifier
   * New method: #record_to_file with more useful return values
 
-# 1.1.1
+# 1.1.1 - 2011-06-13
   * Command#play now returns false if audio failed to play
   * Added new commands (#play!, #interruptible_play!, #input!) which raise PlaybackError if audio fails to play
 
-# 1.1.0
+# 1.1.0 - 2011-05-29
   * Added interactive call control console: ahn start console <path>
   * Added centralized exception handler through eventing system
   * Support for using ahn_hoptoad to send Adhearsion exceptions to Hoptoad
@@ -46,17 +46,17 @@
   * Added Adhearsion::Calls#to_h
   * Add a Monitor to synchronize access to an AGI connection
 
-# 1.0.3
+# 1.0.3 - 2011-05-05
   * Fix the play() command regression when passing an array of strings. This was breaking the SimonGame
   * Deprecate ManagerInterface#send_action_asynchronously
 
-# 1.0.2
+# 1.0.2 - 2011-04-09
   * Fix rcov Rake task
   * Add Ben Langfeld as an author (Thanks, Ben!)
   * Add "rake" as a runtime dependency
   * Remove usage of BEGIN blocks (for Rubinius; CS)
 
-# 1.0.1
+# 1.0.1 - 2010-02-22
  NOTE for Ruby 1.9 users: The behavior of Ruby 1.9 and case statements has changed
       in a way that renders NumericalString objects incompatible with
       case statements.  The suggested workaround is to cast the NumericalString
@@ -89,7 +89,7 @@
   * Generate new apps with Bundler support, including auto-requiring of all gems
   * Update component testing framework to RSpec 2.x and mock with rspec
 
-# 1.0.0
+# 1.0.0 - 2010-10-28
   * Fall back to using Asterisk's context if the AGI URI context is not found
   * Enable configuration of :auto_reconnect parameter for AMI
   * Replace all uses of Object#returning with Object#tap
@@ -97,12 +97,12 @@
   * Fix long-running AMI session parser failure bug (#72)
   * Support for Rails 3 (and ActiveSupport 3.0)
 
-# 0.8.6
+# 0.8.6 - 2010-09-03
   * Fix packaging problem so all files are publicly readable
   * Improve AMI reconnecting logic; add "connection refused" retry timer
   * AGI protocol improvements: parse the status code and response text
 
-# 0.8.5
+# 0.8.5 - 2010-08-24
   NOTE: If you are upgrading an Adhearsion application to 0.8.5, note the change
   to how request URIs are handled.  With 0.8.4, the context name in Asterisk was
   required to match the Adhearsion context in dialplan.rb.  Starting in 0.8.5 if
@@ -130,7 +130,7 @@
   * Improved support for Ruby 1.9
   * Numerous smaller bugs fixed. See: https://adhearsion.lighthouseapp.com/projects/5871-adhearsion/milestones/76510-085
 
-# 0.8.4
+# 0.8.4 - 2010-06-24
   * Add configurable argument delimiter for talking to Asterisk.  This enables Adhearsion to support Asterisk versions 1.4 (and prior) as well as 1.6 (and later).
   * Fixed using ActiveRecord in Adhearsion components
   * Daemonizing no longer truncates the Adhearsion log file
@@ -139,18 +139,18 @@
   * Escape commands sent to Asterisk via AGI
   * Manager Events now work when daemonized
 
-# 0.8.3
+# 0.8.3 -
   * The "uniqueid" call channel variable available in dialplan.rb is now *always* a String
   * Renamed interruptable_play to interruptible_play and made interruptible_play() public instead of protected.
   * Fixed an Asterisk Manager Interface parsing issue in which colons sometimes got stuck into the key name.
   * AGI "request" variable coercer will not blow up if no request is given. (Helps in testing with netcat/telnet)
 
-# 0.8.2
+# 0.8.2 -
   * When a call hangs up, Adhearsion will no longer show random exceptions (that were okay) and instead allows the user to rescue a Hangup exception.
   * ManagerInterfaceResponse now include()s DRbUndumped, allowing send_action() to be called directly over DRb.
   * Fixes an inconsequential bug when CTL-C'ing Adhearsion.
 
-# 0.8.1
+# 0.8.1 - 2009-01-29
   * The sandbox component now comes
   * Minor bug fixes
 
