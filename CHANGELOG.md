@@ -1,18 +1,89 @@
-# develop
-  * Migrated to Punchblock
-  * Removed all Asterisk specific functionality
-  * Removed LDAP, XMPP, Rails and ActiveRecord functionality and replaced them with plugins
-  * Deprecated the components architecture in favour of the new style Plugins
-  * Extend Console via Plugins mechanism
-  * Removed Theatre in favour of girl_friday. Event namespaces no longer need to be registered, and events with any name may be triggered and handled. The DSL has been simplified. For example, AMI events may now be handled like:
-    asterisk_manager_interface do |event|
-      ...
-    end
+# develop (2.0.0.head)
+  ## Major architectural changes
+    * Adhearsion is no longer a framework for creating Asterisk applications, and it does not know anything about the specifics of Asterisk. Adhearsion now makes use of the Punchblock library which abstracts features from common telephony engines. Supported engines are now:
+      * Asterisk 1.8+
+      * Voxeo Prism 11 w/ rayo-server
+    * Adhearsion now makes use of libraries for advanced concurrency primitives such as Actors, meaning Adhearsion is no longer compatible with Ruby 1.8. Officially supported Ruby platforms are:
+      * Ruby 1.9.2+ (YARV)
+      * JRuby 1.6.5+ (in 1.9 mode)
+      * Rubinius 2.0 (on release, in 1.9 mode)
+    * The old components architecture has been deprecated in favour of Adhearsion::Plugin (further details below).
+    * Theatre has been replaced in favour of a girl_friday and has-guarded-handlers based event queueing/handling system (further details below).
 
-    asterisk_manager_interface :name => /NewChannel/ do |event|
-      ...
-    end
-  * Dialplan DSL changes:
+  ## Plugin system
+    * Translate STOMP gateway component to a plugin and remove the component generators entirely
+    * Move ami_remote component to ahn-asterisk plugin
+    * Remove XMPP gateway component
+    * Translate simon_game component to plugin
+    * added support to create a new Adhearsion::Console method via plugin
+    * Update generated app Gemfile for components -> plugins, remove gem component loading config, stop including components in generated app, remove component create/enable/disable CLI commands, fix some component related documentation
+    * Remove the component spec framework (unused)
+    * delete initializer for components. This should be done by ahn-components
+    * update method name. components dialplans now are loaded in the ahn-components plugin
+    * moved deprecate Adhearsion::Components to the dedicated gem ahn-components
+    * FEATURE Adhearsion plugins first commit
+
+  ## Dialplan changes
+    ### Media output
+
+
+    ### Input (DTMF and ASR)
+
+
+    ### Menu system
+
+
+    ### Recording
+
+
+    ### Conferencing
+
+
+    ### Bridging
+
+
+    ### Call routing
+
+
+  ## Eventing system
+    * Removed Theatre
+    * Event namespaces no longer need to be registered, and events with any name may be triggered and handled.
+    * The DSL has been simplified. For example, AMI events may now be handled like:
+
+      asterisk_manager_interface do |event|
+        ...
+      end
+
+      asterisk_manager_interface :name => /NewChannel/ do |event|
+        ...
+      end
+
+  ## Logging
+    * MINOR added call_id to call logs
+    * MINOR added trace level
+    * MINOR logging config outside initializer
+    * MINOR use a predefined logger method name. This must be done in a config initializer once we are using plugins
+    * [FEATURE] switch logging mechanism from log4r to logging
+
+  ## Removal of non-core-critical functionality
+    * Removed all asterisk specific functionality
+      FIXME: What functionality?
+      * ConfirmationManager
+      * Asterisk AGI/AMI connection/protocol related code
+      * Asterisk `h` extension handling
+    * Removed LDAP, XMPP, Rails, ActiveRecord and DRb functionality and replaced them with plugins.
+    * Extracted some generic code to dependencies:
+      * future-resource
+
+  ## Miscelaneous
+    * automatically_answer_incoming_calls has been replaced with automatically_accept_incoming_calls, which when set to true (as is the default), will automatically indicate call progress to the 3rd party, causing ringing. `answer` must now be used explicitly in the dialplan.
+    * Removed a lot of unused or unecessary code, including:
+      * Call routing DSL
+      * FreeSWITCH support. This will be added to Punchblock at a later date).
+    * TODO: Defined an Adhearsion code style guide and implemented it across the codebase (see http://adhearsion.com/style-guide).
+    * TODO: Defined some project management guidelines for Adhearsion core (see http://adhearsion.com/contribute).
+    * TODO: Transferred copyright in the Adhearsion codebase from individual contributors to Adhearsion Foundation Inc, the non-profit organisation responsible for supporting the Adhearsion project.
+    * TODO: Dual-licensed as LGPL and MIT.
 
 # 1.2.1 - 2011-09-21
   * Removed the restful_rpc component since it is now in a gem.
