@@ -255,9 +255,7 @@ module Adhearsion
               :value => grammar_accept(digits).to_s
             }
           input_stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
-            Thread.new {
-              output_component.stop! unless output_component.complete?
-            }
+            output_component.stop! unless output_component.complete?
           end
           write_and_await_response input_stopper_component
           begin
