@@ -62,7 +62,7 @@ module Adhearsion
                 end
 
                 it "calls the on_speaking callback with the speaking call ID string" do
-                  @component.add_event event
+                  @component.trigger_event_handler event
                 end
               end
 
@@ -76,7 +76,7 @@ module Adhearsion
                 end
 
                 it "calls the on_finished_speaking callback with the speaking call ID string" do
-                  @component.add_event event
+                  @component.trigger_event_handler event
                 end
               end
 
