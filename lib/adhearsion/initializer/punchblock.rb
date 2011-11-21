@@ -1,5 +1,3 @@
-require 'timeout'
-
 module Adhearsion
   class Initializer
     class Punchblock
