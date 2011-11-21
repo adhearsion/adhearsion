@@ -33,6 +33,10 @@ module Adhearsion
             dispatch_offer offer
           end
 
+          Events.punchblock proc { |e| e.respond_to?(:source) }, :source do |event|
+            event.source.trigger_event_handler event
+          end
+
           Events.punchblock proc { |e| e.respond_to?(:call_id) }, :call_id do |event|
             dispatch_call_event event
           end

@@ -60,6 +60,20 @@ module Adhearsion
         end
       end
 
+      describe "dispatching a component event" do
+        let(:component)   { flexmock 'ComponentNode' }
+        let(:mock_event)  { flexmock 'Event', :call_id => call_id, :source => component }
+
+        before do
+          initialize_punchblock_with_defaults
+        end
+
+        it "should place the event in the call's inbox" do
+          component.should_receive(:trigger_event_handler).once.with mock_event
+          Events.trigger_immediately :punchblock, mock_event
+        end
+      end
+
       describe "dispatching a call event" do
         let(:mock_event)  { flexmock 'Event', :call_id => call_id }
         let(:latch)       { CountDownLatch.new 1 }
