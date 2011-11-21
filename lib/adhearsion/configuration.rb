@@ -44,7 +44,26 @@ module Adhearsion
       @platforms ||= BasicConfiguration.new
     end
 
+    # return Adhearsion or plugins current configuration or config description
+    #
+    # show_configuration :core          => shows the Adhearsion platform configuration values
+    # show_configuration :<plugin_name> => shows the plugin_name configuration values
+    # show_configuration :<plugin_name> => description => true: describes the valid values for a plugin configuration
+    # show_configuration :all           => shows all the configuration values (platform and plugins)
+    #
+    # @param element symbol identifing:
+    #     - :core          => the Adhearsion platform
+    #     - :<plugin_name> => a specific plugin name
+    #     - :all           => core and every plugins config values
+    #
+    # @param opts Hash of possible options
+    #     - :description (true|false): either retrieve current config values (by default or false value) or the description
+    #
+    # @return string
     def show_configuration element = :core, opts = {}
+      if element.kind_of? Array
+        return element.map { |elem| show_configuration elem, opts }.join("")
+      end
       case element
       when :core
         title = element.to_s.dup.concat(" configuration")
@@ -52,9 +71,11 @@ module Adhearsion
             concat("\n").
             concat("-"*title.to_s.length).
             concat("\n").
-            concat platform.to_s
+            concat platform.to_s.
+            concat("\n"*2)
       when :all
-        show_configuration :core
+        return show_configuration self.plugins.values.dup.unshift(:core), opts
+        #show_configuration :core
       else
         if opts[:description]
           title = element.to_s.dup.concat(" configuration info")
@@ -62,14 +83,16 @@ module Adhearsion
               concat("\n").
               concat("-"*title.to_s.length).
               concat("\n").
-              concat self.plugins_definitions[element].join("\n")
+              concat(self.plugins_definitions[element].join("\n")).
+              concat("\n"*2)
         else
           title = element.to_s.dup.concat(" configuration")
           title.
               concat("\n").
               concat("-"*title.to_s.length).
               concat("\n").
-              concat self[element].to_s
+              concat(self[element].to_s).
+              concat("\n"*2)
           
         end
       end

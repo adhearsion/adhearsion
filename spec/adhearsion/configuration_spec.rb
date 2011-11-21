@@ -305,14 +305,47 @@ describe Adhearsion::Configuration do
           password       "1"              , "Valid credentials are required"
         end
       end
+
+      FooBarBazz = Class.new Adhearsion::Plugin do
+        config :foo_bar_bazz do
+          host    "localhost" , "destination host"
+          port    "3000"      , "destination port"
+        end
+      end
     end
+    
     after do
       defined?(FooBar) and Object.send(:remove_const, :"FooBar")
+      defined?(FooBarBazz) and Object.send(:remove_const, :"FooBarBazz")
     end
 
     subject {
       Adhearsion.config
     }
+
+    let :foo_bar_config do
+      "foo_bar configuration\n\
+----------------------\n\
+input: value\n\
+username: my-awesome-user\n\
+password: 1\n\n"
+    end
+    
+
+    let :foo_bar_config_description do
+      "foo_bar configuration info\n\
+---------------------------\n\
+input: A good value for input (default value <value>)\n\
+username: User to be used (default value <my-awesome-user>)\n\
+password: Valid credentials are required (default value <1>)\n\n"
+    end
+
+    let :foo_bar_bazz_config do
+      "foo_bar_bazz configuration\n\
+---------------------------\n\
+host: localhost\n\
+port: 3000\n\n"
+    end
 
     describe "adhearsion platform configuration values" do
       it "returns a text block with the Adhearsion platform configuration values" do
@@ -322,19 +355,24 @@ describe Adhearsion::Configuration do
 
     describe "adhearsion plugin configuration values" do
       it "returns a text block with an Adhearsion plugin configuration values" do
-        Adhearsion.config.show_configuration(:foo_bar).should == "foo_bar configuration\n\
-----------------------\n\
-input: value\n\
-username: my-awesome-user\n\
-password: 1"
+        Adhearsion.config.show_configuration(:foo_bar).should == foo_bar_config
       end
 
       it "returns plugin configuration description" do
-        Adhearsion.config.show_configuration(:foo_bar, :description => true).should == "foo_bar configuration info\n\
----------------------------\n\
-\tinput: A good value for input (default value <value>)\n\
-\tusername: User to be used (default value <my-awesome-user>)\n\
-\tpassword: Valid credentials are required (default value <1>)"
+        Adhearsion.config.show_configuration(:foo_bar, :description => true).should == foo_bar_config_description
+      end
+
+      it "returns a list of plugins configuration" do
+        Adhearsion.config.show_configuration([:foo_bar, :foo_bar_bazz]).should == foo_bar_config+foo_bar_bazz_config
+      end
+      
+      it "returns a list of core and plugins configuration when :all is received as parameter" do
+        config = Adhearsion.config.show_configuration(:all)
+        config.should =~ /\Acore configuration\n-------------------/
+        config.split("\n")
+        (foo_bar_config+foo_bar_bazz_config).each_line do |line|
+          config.index(line).should_not be_nil
+        end
       end
       
     end
