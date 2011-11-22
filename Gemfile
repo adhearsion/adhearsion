@@ -1,7 +1,5 @@
 source "http://rubygems.org"
 
-gem 'punchblock', :git => 'git://github.com/adhearsion/punchblock.git', :branch => :develop
-
 gemspec
 
 group :test do
