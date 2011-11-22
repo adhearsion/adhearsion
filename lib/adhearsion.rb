@@ -24,6 +24,7 @@ RUBY_VERSION < "1.9" and require 'rubygems'
 module Adhearsion
   extend ActiveSupport::Autoload
 
+  autoload :Process
   autoload :Call
   autoload :Calls
   autoload :Configuration
@@ -58,7 +59,7 @@ module Adhearsion
     # Shuts down the framework.
     #
     def shutdown!
-      if self.status == :stopping
+      if Adhearsion::Process.state_name == :stopping
         # This is the second shutdown request we've received while attempting
         # to shut down gracefully.  At this point, let's pull the plug...
         logger.warn "Shutting down immediately at #{Time.now}"

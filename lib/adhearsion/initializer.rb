@@ -59,8 +59,6 @@ module Adhearsion
     end
 
     def start
-      Adhearsion.status = :starting
-
       resolve_pid_file_path
       resolve_log_file_path
       init_plugins
@@ -79,7 +77,7 @@ module Adhearsion
       init_events_file
 
       logger.info "Adhearsion v#{Adhearsion::VERSION} initialized!"
-      Adhearsion.status = :running
+      Adhearsion::Process.booted
 
       trigger_after_initialized_hooks
       join_important_threads
@@ -261,7 +259,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
         begin
           puts "Starting console"
           Adhearsion::Console.run
-          Adhearsion.shutdown!
+          Adhearsion::Process.shutdown
         rescue Exception => e
           puts e.message
           puts e.backtrace.join("\n")
