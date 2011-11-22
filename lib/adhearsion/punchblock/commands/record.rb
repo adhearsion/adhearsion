@@ -29,12 +29,12 @@ module Adhearsion
             execute_component(component).tap do |result|
               # FIXME: Setting the callback after we begin execution constitutes a race condition. We need to mock the component creation here, since the tests assume we're using whatever is returned by component exection, and that's what we pass the complete event to
               result.register_event_handler Punchblock::Event::Complete do |event|
-                catching_standard_errors { on_complete.call event } if event.is_a? Punchblock::Event::Complete
+                catching_standard_errors { on_complete.call event }
               end
             end
           else
             execute_component_and_await_completion(component).tap do |result|
-              yield result.complete_event.resource if block_given?
+              yield result.complete_event if block_given?
             end
           end
         end

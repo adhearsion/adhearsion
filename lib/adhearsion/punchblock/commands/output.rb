@@ -255,9 +255,7 @@ module Adhearsion
               :value => grammar_accept(digits).to_s
             }
           input_stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
-            Thread.new {
-              output_component.stop! unless output_component.complete?
-            }
+            output_component.stop! unless output_component.complete?
           end
           write_and_await_response input_stopper_component
           begin
@@ -266,7 +264,7 @@ module Adhearsion
             raise Adhearsion::PlaybackError, "Output failed for argument #{argument.inspect}"
           end
           input_stopper_component.stop! if input_stopper_component.executing?
-          reason = input_stopper_component.complete_event.resource.reason
+          reason = input_stopper_component.complete_event.reason
           result = reason.interpretation if reason.respond_to? :interpretation
           return parse_single_dtmf result unless result.nil?
           result

@@ -29,7 +29,7 @@ module Adhearsion
             end
 
             it "should execute the callback" do
-              component.add_event response
+              component.trigger_event_handler response
               Timeout::timeout 5 do
                 @rec.pop.should == response
               end
@@ -41,7 +41,7 @@ module Adhearsion
 
               it "should pass the exception to the events system" do
                 flexmock(Events).should_receive(:trigger).once.with(:exception, TestException)
-                component.add_event response
+                component.trigger_event_handler response
               end
             end
           end
@@ -80,7 +80,8 @@ module Adhearsion
 
           before do
             expect_message_waiting_for_response component
-            component.complete_event.resource = response
+            component.execute!
+            component.complete_event = response
           end
 
           it 'executes a #record with the correct options' do

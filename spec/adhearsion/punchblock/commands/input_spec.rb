@@ -117,7 +117,7 @@ module Adhearsion
             flexmock(complete_event).should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
             flexmock(Punchblock::Component::Input).new_instances do |input|
               input.should_receive(:complete?).and_return(false)
-              input.should_receive(:complete_event).and_return(flexmock('FutureResource', :resource => complete_event))
+              input.should_receive(:complete_event).and_return(complete_event)
             end
           end
 

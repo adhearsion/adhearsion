@@ -1,5 +1,3 @@
-require 'timeout'
-
 module Adhearsion
   class Initializer
     class Punchblock
@@ -29,11 +27,15 @@ module Adhearsion
             Events.trigger :punchblock, event
           end
 
-          Events.register_callback :punchblock, ::Punchblock::Event::Offer do |offer|
+          Events.punchblock ::Punchblock::Event::Offer do |offer|
             dispatch_offer offer
           end
 
-          Events.register_callback :punchblock, proc { |e| e.respond_to?(:call_id) }, :call_id do |event|
+          Events.punchblock proc { |e| e.respond_to?(:source) }, :source do |event|
+            event.source.trigger_event_handler event
+          end
+
+          Events.punchblock proc { |e| e.respond_to?(:call_id) }, :call_id do |event|
             dispatch_call_event event
           end
 
@@ -44,11 +46,11 @@ module Adhearsion
           Events.register_callback(:after_initialized) do
             begin
               logger.info "Waiting for connection via Punchblock"
+              Events.punchblock ::Punchblock::Connection::Connected do
+                logger.info "Connected via Punchblock"
+              end
               IMPORTANT_THREADS << Thread.new do
                 catching_standard_errors { client.run }
-              end
-              Events.register_callback :punchblock, ::Punchblock::Connection::Connected do
-                logger.info "Connected via Punchblock"
               end
             rescue => e
               logger.fatal "Failed to start Punchblock client! #{e.inspect}"
