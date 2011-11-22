@@ -284,7 +284,7 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     def create_pid_file
       if pid_file
         File.open pid_file, 'w' do |file|
-          file.puts Process.pid
+          file.puts ::Process.pid
         end
 
         Events.register_callback :shutdown do
