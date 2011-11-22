@@ -13,6 +13,17 @@
       ...
     end
   * Dialplan DSL changes:
+  * Input and output functions reworked to to take advantage of
+    Punchblock features, though method signatures have been kept
+    similar.
+  * Output now allows for usage of String, Numeric, Time/Date, files on
+    disk, files served via HTTP, and direct SSML. All non-file types are
+    played via TTS.
+  * Output types are automatically detected and played
+  * The same argument types are valid for usage in input prompts via
+    #input and #stream_file.
+  * Input is handled using single-digit waiting, not the full Punchblock
+    Input component.
 
 # 1.2.1
   * Removed the restful_rpc component since it is now in a gem.
