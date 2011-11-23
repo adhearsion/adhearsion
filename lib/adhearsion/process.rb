@@ -8,7 +8,7 @@ module Adhearsion
     state_machine :initial => :booting do
       before_transition :log_state_change
       after_transition :on => :shutdown, :do => :request_stop
-      after_transition :on => :stopped, :do => :final_shutdown
+      after_transition any => :stopped, :do => :final_shutdown
 
       event :booted do
         transition :booting => :running
