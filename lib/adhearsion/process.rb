@@ -7,6 +7,7 @@ module Adhearsion
     
     state_machine :initial => :booting do
       before_transition :log_state_change
+      after_transition :on => :shutdown, :do => :trigger_shutdown_events
       
       event :booted do
         transition :booting => :running
@@ -26,6 +27,10 @@ module Adhearsion
       
       event :stop! do
         transition all => :stopped
+      end
+      
+      def trigger_shutdown_events
+        Events.trigger_immediately :shutdown
       end
     end
     

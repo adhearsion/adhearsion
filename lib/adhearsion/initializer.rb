@@ -110,7 +110,7 @@ module Adhearsion
     def catch_termination_signal
       %w'INT TERM'.each do |process_signal|
         trap process_signal do
-          Adhearsion.shutdown!
+          Adhearsion::Process.shutdown
         end
       end
     end

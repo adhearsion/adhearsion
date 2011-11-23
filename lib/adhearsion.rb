@@ -54,23 +54,6 @@ module Adhearsion
   mattr_accessor :status
 
   class << self
-
-    ##
-    # Shuts down the framework.
-    #
-    def shutdown!
-      if Adhearsion::Process.state_name == :stopping
-        # This is the second shutdown request we've received while attempting
-        # to shut down gracefully.  At this point, let's pull the plug...
-        logger.warn "Shutting down immediately at #{Time.now}"
-        exit
-      end
-      logger.info "Shutting down gracefully at #{Time.now}."
-      self.status = :stopping
-      Events.trigger_immediately :shutdown
-      exit
-    end
-
     def active_calls
       @calls ||= Calls.new
     end
