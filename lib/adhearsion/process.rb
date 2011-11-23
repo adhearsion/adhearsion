@@ -59,6 +59,13 @@ module Adhearsion
 
     def request_stop
       Events.trigger_immediately :stop_requested
+      IMPORTANT_THREADS << Thread.new do
+        until Adhearsion.active_calls.count == 0
+          logger.trace "Stop requested but we still have #{Adhearsion.active_calls.count} active calls."
+          sleep 0.2
+        end
+        force_stop
+      end
     end
 
     def final_shutdown
