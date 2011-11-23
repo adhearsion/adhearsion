@@ -53,7 +53,7 @@ module Adhearsion
 
     def log_state_change(transition)
       event, from, to = transition.event, transition.from_name, transition.to_name
-      logger.info "Adhearsion transitioning from #{from} to #{to} with #{Adhearsion.active_calls.size} active calls."
+      logger.info "Transitioning from #{from} to #{to} with #{Adhearsion.active_calls.size} active calls."
     end
 
     def request_stop
