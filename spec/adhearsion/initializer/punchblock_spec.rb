@@ -85,7 +85,7 @@ module Adhearsion
           end
 
           it "should log an error" do
-            flexmock(Adhearsion::Logging.get_logger(Punchblock)).should_receive(:info).once.with("Event received for call #{call_id}: #{mock_event.inspect}")
+            flexmock(Adhearsion::Logging.get_logger(Punchblock)).should_receive(:debug).once.with("Event received for call #{call_id}: #{mock_event.inspect}")
             Events.trigger_immediately :punchblock, mock_event
           end
 

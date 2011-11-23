@@ -23,7 +23,6 @@ module Adhearsion
 
           # Handle events from Punchblock via events system
           self.client.register_event_handler do |event|
-            logger.debug "Received event from Punchblock: #{event.inspect}"
             Events.trigger :punchblock, event
           end
 
@@ -67,7 +66,7 @@ module Adhearsion
 
         def dispatch_call_event(event, latch = nil)
           if call = Adhearsion.active_calls.find(event.call_id)
-            logger.info "Event received for call #{call.id}: #{event.inspect}"
+            logger.debug "Event received for call #{call.id}: #{event.inspect}"
             Thread.new do
               call << event
               latch.countdown! if latch
