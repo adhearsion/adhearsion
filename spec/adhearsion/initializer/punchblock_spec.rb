@@ -60,7 +60,7 @@ module Adhearsion
           Events.trigger_immediately :punchblock, offer
         end
         
-        it 'should hand the call off to a new Manager when Adherasion::Process is in :running' do
+        it 'should hand the call off to a new Manager when Adhearsion::Process is in :running' do
           initialize_punchblock_with_defaults
           flexmock(Adhearsion::Process).should_receive(:state_name).once.and_return :running
           flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return mock_call
