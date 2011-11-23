@@ -113,6 +113,14 @@ module Adhearsion
           Adhearsion::Process.shutdown
         end
       end
+
+      trap 'QUIT' do
+        Adhearsion::Process.hard_shutdown
+      end
+
+      trap 'ABRT' do
+        Adhearsion::Process.force_stop
+      end
     end
 
     ##
