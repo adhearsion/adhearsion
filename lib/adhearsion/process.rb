@@ -24,11 +24,15 @@ module Adhearsion
       event :stop do
         transition :rejecting => :stopped
       end
-      
-      event :stop! do
+
+      event :hard_stop do
         transition all => :stopped
       end
-      
+
+      event :reset do
+        transition all => :booting
+      end
+
       def trigger_shutdown_events
         Events.trigger_immediately :shutdown
       end
