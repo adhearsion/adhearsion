@@ -48,19 +48,24 @@ module Adhearsion
         end
 
         def connect
-          Events.register_callback(:after_initialized) do
-            begin
-              logger.info "Waiting for connection via Punchblock"
-              Events.punchblock ::Punchblock::Connection::Connected do
-                logger.info "Connected via Punchblock"
-              end
-              IMPORTANT_THREADS << Thread.new do
-                catching_standard_errors { client.run }
-              end
-            rescue => e
-              logger.fatal "Failed to start Punchblock client! #{e.inspect}"
-              abort
+          begin
+            logger.info "Starting connection to server"
+
+            m = Mutex.new
+            blocker = ConditionVariable.new
+            Events.punchblock ::Punchblock::Connection::Connected do
+              logger.info "Connected to server."
+              m.synchronize { blocker.broadcast }
             end
+            IMPORTANT_THREADS << Thread.new do
+              catching_standard_errors { client.run }
+            end
+
+            # Wait for the connection to establish
+            m.synchronize { blocker.wait(m) }
+          rescue => e
+            logger.fatal "Failed to start Punchblock client! #{e.inspect}"
+            abort
           end
         end
 
