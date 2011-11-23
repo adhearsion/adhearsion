@@ -14,6 +14,7 @@ module Adhearsion
         transition :booting => :running
       end
 
+      # On first shutdown request, flag our state but continue otherwise normally.
       event :shutdown do
         transition :running => :stopping
       end
@@ -64,6 +65,9 @@ module Adhearsion
       Adhearsion.active_calls.each do |call|
         call.hangup rescue nil
       end
+      # This should shut down any remaining threads.  Once those threads have
+      # stopped, IMPORTANT_THREADS will be empty and the process will exit
+      # normally.
       Events.trigger_immediately :shutdown
     end
 
