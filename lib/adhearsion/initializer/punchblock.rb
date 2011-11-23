@@ -15,10 +15,15 @@ module Adhearsion
           connection = connection_class.new self.config.connection_options
           self.client = ::Punchblock::Client.new :connection => connection
 
+          # When a stop is requested, change our status to "Do Not Disturb"
+          # This should prevent the telephony engine from sending us any new calls.
+          Events.register_callback(:stop_requested) do
+            client.not_ready!
+          end
+
           # Make sure we stop everything when we shutdown
           Events.register_callback(:shutdown) do
-            logger.info "Shutting down with #{Adhearsion.active_calls.size} active calls"
-            client.stop
+            client.stop!
           end
 
           # Handle events from Punchblock via events system
