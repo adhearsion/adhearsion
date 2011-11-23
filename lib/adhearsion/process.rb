@@ -32,11 +32,6 @@ module Adhearsion
       event :reset do
         transition all => :booting
       end
-
-      def trigger_shutdown_events
-        Events.trigger_immediately :shutdown
-      end
-
     end
 
     def initialize
@@ -46,6 +41,10 @@ module Adhearsion
     def log_state_change(transition)
       event, from, to = transition.event, transition.from_name, transition.to_name
       puts "Adhearsion transitioning from #{from} to #{to}."
+    end
+
+    def trigger_shutdown_events
+      Events.trigger_immediately :shutdown
     end
 
     def self.method_missing(method_name, *args, &block)
