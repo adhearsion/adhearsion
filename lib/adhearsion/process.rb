@@ -7,7 +7,8 @@ module Adhearsion
 
     state_machine :initial => :booting do
       before_transition :log_state_change
-      after_transition :on => :shutdown, :do => :trigger_shutdown_events
+      after_transition :on => :shutdown, :do => :request_stop
+      after_transition :on => :stopped, :do => :final_shutdown
 
       event :booted do
         transition :booting => :running
@@ -17,11 +18,19 @@ module Adhearsion
         transition :running => :stopping
       end
 
+      # On second shutdown request, start rejecting new calls.
+      # This corresponds to the admin pressing CTRL+C twice.
       event :shutdown do
         transition :stopping => :rejecting
       end
 
-      event :final_shutdown do
+      # On third shutdown request, hang up all active calls.
+      # This corresponds to the admin pressing CTRL+C three times.
+      event :shutdown do
+        transition :rejecting => :stopped
+      end
+
+      event :hard_shutdown do
         transition [:running, :stopping] => :rejecting
       end
 
@@ -29,7 +38,7 @@ module Adhearsion
         transition :rejecting => :stopped
       end
 
-      event :hard_stop do
+      event :force_stop do
         transition all => :stopped
       end
 
@@ -44,10 +53,17 @@ module Adhearsion
 
     def log_state_change(transition)
       event, from, to = transition.event, transition.from_name, transition.to_name
-      puts "Adhearsion transitioning from #{from} to #{to}."
+      logger.info "Adhearsion transitioning from #{from} to #{to} with #{Adhearsion.active_calls.size} active calls."
     end
 
-    def trigger_shutdown_events
+    def request_stop
+      Events.trigger_immediately :stop_requested
+    end
+
+    def final_shutdown
+      Adhearsion.active_calls.each do |call|
+        call.hangup rescue nil
+      end
       Events.trigger_immediately :shutdown
     end
 
