@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Adhearsion::Process, :focus => true do
+describe Adhearsion::Process do
   before :each do
     Adhearsion::Process.reset
   end
