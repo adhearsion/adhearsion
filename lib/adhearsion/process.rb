@@ -17,6 +17,10 @@ module Adhearsion
         transition :running => :stopping
       end
 
+      event :shutdown do
+        transition :stopping => :rejecting
+      end
+
       event :final_shutdown do
         transition [:running, :stopping] => :rejecting
       end
