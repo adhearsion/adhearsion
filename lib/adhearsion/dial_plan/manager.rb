@@ -6,7 +6,7 @@ module Adhearsion
 
       class << self
         def handle(call)
-          IMPORTANT_THREADS << Thread.new do
+          Adhearsion::Process.important_threads << Thread.new do
             new.handle call
           end
         end

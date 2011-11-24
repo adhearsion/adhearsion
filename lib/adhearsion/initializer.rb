@@ -306,16 +306,16 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
     end
 
     ##
-    # This method will block Thread.main() until calling join() has returned for all Threads in IMPORTANT_THREADS.
-    # Note: IMPORTANT_THREADS won't always contain Thread instances. It simply requires the objects respond to join().
+    # This method will block Thread.main() until calling join() has returned for all Threads in Adhearsion::Process.important_threads.
+    # Note: important_threads won't always contain Thread instances. It simply requires the objects respond to join().
     #
     def join_important_threads
       # Note: we're using this ugly accumulator to ensure that all threads have ended since IMPORTANT_THREADS will almost
       # certainly change sizes after this method is called.
       index = 0
-      until index == IMPORTANT_THREADS.size
+      until index == Adhearsion::Process.important_threads.size
         begin
-          IMPORTANT_THREADS[index].join
+          Adhearsion::Process.important_threads[index].join
         rescue => e
           logger.error "Error after join()ing Thread #{Thread.inspect}. #{e.message}"
         ensure

@@ -48,7 +48,10 @@ module Adhearsion
       end
     end
 
+    attr_accessor :important_threads
+
     def initialize
+      @important_threads = ThreadSafeArray.new
       super
     end
 
@@ -59,7 +62,7 @@ module Adhearsion
 
     def request_stop
       Events.trigger_immediately :stop_requested
-      IMPORTANT_THREADS << Thread.new do
+      important_threads << Thread.new do
         until Adhearsion.active_calls.count == 0
           logger.trace "Stop requested but we still have #{Adhearsion.active_calls.count} active calls."
           sleep 0.2
@@ -73,7 +76,7 @@ module Adhearsion
         call.hangup rescue nil
       end
       # This should shut down any remaining threads.  Once those threads have
-      # stopped, IMPORTANT_THREADS will be empty and the process will exit
+      # stopped, important_threads will be empty and the process will exit
       # normally.
       Events.trigger_immediately :shutdown
     end

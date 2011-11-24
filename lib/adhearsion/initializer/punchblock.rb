@@ -62,7 +62,7 @@ module Adhearsion
               logger.info "Connected to server."
               m.synchronize { blocker.broadcast }
             end
-            IMPORTANT_THREADS << Thread.new do
+            Adhearsion::Process.important_threads << Thread.new do
               catching_standard_errors { client.run }
             end
 
