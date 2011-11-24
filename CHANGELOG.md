@@ -87,6 +87,14 @@
   * Removed a lot of unused or unecessary code, including:
     * Call routing DSL
     * FreeSWITCH support. This will be added to Punchblock at a later date.
+  * Advanced shutdown routine:
+    * On first :shutdown, we flag the state internally. The intent is to shut down when the active calls count reaches 0, but otherwise operate normally.
+
+    * On second :shutdown, we start rejecting new incoming calls. Existing calls will continue to process until completion. Shut down when active call count reaches 0.
+
+    * On third :shutdown, send a Hangup to all active calls. Shut down when active call count reaches 0.
+
+    * In addition, the process can be force-stopped, which simply closes the connection to the server (and any component connections as well).
   * TODO: Defined an Adhearsion code style guide and implemented it across the codebase (see http://adhearsion.com/style-guide).
   * TODO: Defined some project management guidelines for Adhearsion core (see http://adhearsion.com/contribute).
   * TODO: Transferred copyright in the Adhearsion codebase from individual contributors to Adhearsion Foundation Inc, the non-profit organisation responsible for supporting the Adhearsion project.
