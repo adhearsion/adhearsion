@@ -57,6 +57,7 @@ Author
 Original author: [Jay Phillips](https://github.com/jicksta)
 
 Core team:
+
 * [Ben Klang](https://github.com/bklang)
 * [Ben Langfeld](https://github.com/blangfeld)
 * [Jason Goecke](https://github.com/jsgoecke)
