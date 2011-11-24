@@ -82,11 +82,11 @@
   * Extracted some generic code to dependencies:
     * future-resource
 
-## Miscelaneous
-  * automatically_answer_incoming_calls has been replaced with automatically_accept_incoming_calls, which when set to true (as is the default), will automatically indicate call progress to the 3rd party, causing ringing. `answer` must now be used explicitly in the dialplan.
+## Miscellaneous
+  * `automatically_answer_incoming_calls` has been replaced with `automatically_accept_incoming_calls`, which when set to `true` (as is the default), will automatically indicate call progress to the 3rd party, causing ringing. `answer` must now be used explicitly in the dialplan.
   * Removed a lot of unused or unecessary code, including:
     * Call routing DSL
-    * FreeSWITCH support. This will be added to Punchblock at a later date).
+    * FreeSWITCH support. This will be added to Punchblock at a later date.
   * TODO: Defined an Adhearsion code style guide and implemented it across the codebase (see http://adhearsion.com/style-guide).
   * TODO: Defined some project management guidelines for Adhearsion core (see http://adhearsion.com/contribute).
   * TODO: Transferred copyright in the Adhearsion codebase from individual contributors to Adhearsion Foundation Inc, the non-profit organisation responsible for supporting the Adhearsion project.
