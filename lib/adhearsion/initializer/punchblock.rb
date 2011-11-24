@@ -63,7 +63,14 @@ module Adhearsion
               m.synchronize { blocker.broadcast }
             end
             Adhearsion::Process.important_threads << Thread.new do
-              catching_standard_errors { client.run }
+              catching_standard_errors do
+                begin
+                  client.run
+                rescue ::Punchblock::ProtocolError => e
+                  logger.fatal "The connection failed due to a protocol error: #{e.name}."
+                  m.synchronize { blocker.broadcast }
+                end
+              end
             end
 
             # Wait for the connection to establish
