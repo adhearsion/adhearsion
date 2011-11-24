@@ -56,13 +56,13 @@
   * The DSL has been simplified. For example, AMI events may now be handled like:
 
   ```ruby
-    asterisk_manager_interface do |event|
-      ...
-    end
+  asterisk_manager_interface do |event|
+    ...
+  end
 
-    asterisk_manager_interface :name => /NewChannel/ do |event|
-      ...
-    end
+  asterisk_manager_interface :name => /NewChannel/ do |event|
+    ...
+  end
   ```
 
 ## Logging
@@ -140,21 +140,21 @@
       case statements. The suggested workaround is to cast the NumericalString
       to a string and then compare. Example:
 
-      ```ruby
-        obj = NumericalString.new("0987")
-        case obj.to_s
-        when "0987" then true
-        else false
-        end
+  ```ruby
+    obj = NumericalString.new("0987")
+    case obj.to_s
+    when "0987" then true
+    else false
+    end
 
-        Or, if you need to ignore the leading zero:
-        case obj.to_i
-        when 987 then true
-        else false
-        end
-      ```
+    # Or, if you need to ignore the leading zero:
+    case obj.to_i
+    when 987 then true
+    else false
+    end
+  ```
 
-      See https://adhearsion.lighthouseapp.com/projects/5871/tickets/127-ruby-19-and-numericalstring-comparisons-in-case-statements
+  See https://adhearsion.lighthouseapp.com/projects/5871/tickets/127-ruby-19-and-numericalstring-comparisons-in-case-statements
   * Add `say_chars` command.
   * Add `say_phonetic` command.
   * Update `play_time` to accept format and timezone paramenters. This allows you to read back any particular section of the Time object. (i.e. Using `:format => 'IMp'` would result in "eleven twenty-three" being said.)
