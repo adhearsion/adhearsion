@@ -13,6 +13,9 @@ unless Object.respond_to?(:tap)
 end
 
 class Object
+  def pb_logger
+    logger
+  end
 
 	def method_missing(method_id, *arguments, &block)
     if method_id == Adhearsion::Logging::METHOD
