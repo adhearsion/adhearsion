@@ -54,7 +54,6 @@
   * Removed Theatre
   * Event namespaces no longer need to be registered, and events with any name may be triggered and handled.
   * The DSL has been simplified. For example, AMI events may now be handled like:
-
   ```ruby
     asterisk_manager_interface do |event|
       ...
@@ -137,9 +136,8 @@
 # 1.0.1 - 2010-02-22
  NOTE for Ruby 1.9 users: The behavior of Ruby 1.9 and case statements has changed
       in a way that renders NumericalString objects incompatible with
-      case statements.  The suggested workaround is to cast the NumericalString
-      to a string and then compare.  Example:
-
+      case statements. The suggested workaround is to cast the NumericalString
+      to a string and then compare. Example:
       ```ruby
         obj = NumericalString.new("0987")
         case obj.to_s
@@ -184,10 +182,10 @@
 
 # 0.8.5 - 2010-08-24
   NOTE: If you are upgrading an Adhearsion application to 0.8.5, note the change
-  to how request URIs are handled.  With 0.8.4, the context name in Asterisk was
-  required to match the Adhearsion context in dialplan.rb.  Starting in 0.8.5 if
+  to how request URIs are handled. With 0.8.4, the context name in Asterisk was
+  required to match the Adhearsion context in dialplan.rb. Starting in 0.8.5 if
   an application path is passed in on the AGI URI, it will be preferred over the
-  context name.  For example:
+  context name. For example:
 
   ```
   [stuff]
@@ -213,7 +211,7 @@
   * Numerous smaller bugs fixed. See: https://adhearsion.lighthouseapp.com/projects/5871-adhearsion/milestones/76510-085
 
 # 0.8.4 - 2010-06-24
-  * Add configurable argument delimiter for talking to Asterisk.  This enables Adhearsion to support Asterisk versions 1.4 (and prior) as well as 1.6 (and later).
+  * Add configurable argument delimiter for talking to Asterisk. This enables Adhearsion to support Asterisk versions 1.4 (and prior) as well as 1.6 (and later).
   * Fixed using ActiveRecord in Adhearsion components
   * Daemonizing no longer truncates the Adhearsion log file
   * Add support for using ActiveLdap
