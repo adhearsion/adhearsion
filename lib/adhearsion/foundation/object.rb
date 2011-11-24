@@ -1,4 +1,3 @@
-
 require 'adhearsion/logging'
 
 # Monkey patch Object to support the #tap method.
@@ -17,7 +16,7 @@ class Object
     logger
   end
 
-	def method_missing(method_id, *arguments, &block)
+  def method_missing(method_id, *arguments, &block)
     if method_id == Adhearsion::Logging::METHOD
       self.class.send :define_method, method_id do
         Logging.logger[self]
@@ -33,6 +32,6 @@ class Object
       true
     else
       super
-    end 
-  end 
+    end
+  end
 end
