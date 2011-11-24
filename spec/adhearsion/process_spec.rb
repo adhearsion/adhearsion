@@ -12,12 +12,18 @@ describe Adhearsion::Process do
   end
 
   it 'should trigger :shutdown events on force_stop' do
-    pending 'How to test after_transition events?'
     flexmock(Adhearsion::Events).should_receive(:trigger_immediately).once.with(:shutdown)
     Adhearsion::Process.force_stop
   end
 
   it 'should send a hangup to all active calls on force_stop' do
-    pending
+    calls = []
+    3.times do
+      fake_call = Object.new
+      flexmock(fake_call).should_receive(:hangup).once
+      calls << fake_call
+    end
+    flexmock(Adhearsion).should_receive(:active_calls).and_return calls
+    Adhearsion::Process.force_stop
   end
 end
