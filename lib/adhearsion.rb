@@ -59,6 +59,10 @@ module Adhearsion
       end
     end
 
+    def status
+      Adhearsion::Process.state_name
+    end
+
     def remove_inactive_call(call)
       active_calls.remove_inactive_call(call)
     end
