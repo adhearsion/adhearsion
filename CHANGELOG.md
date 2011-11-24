@@ -54,6 +54,7 @@
   * Removed Theatre
   * Event namespaces no longer need to be registered, and events with any name may be triggered and handled.
   * The DSL has been simplified. For example, AMI events may now be handled like:
+
   ```ruby
     asterisk_manager_interface do |event|
       ...
@@ -138,6 +139,7 @@
       in a way that renders NumericalString objects incompatible with
       case statements. The suggested workaround is to cast the NumericalString
       to a string and then compare. Example:
+
       ```ruby
         obj = NumericalString.new("0987")
         case obj.to_s
