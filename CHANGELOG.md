@@ -25,28 +25,29 @@
   * FEATURE Adhearsion plugins first commit
 
 ## Dialplan changes
-  ### Media output
-    * Output functions reworked to to take advantage of Punchblock features, though method signatures have been kept similar.
-    * Output now allows for usage of String, Numeric, Time/Date, files on disk, files served via HTTP, and direct SSML. All non-file types are played via TTS.
-    * Output types are automatically detected and played accordingly
 
-  ### Input (DTMF and ASR)
-    * The same output types and recognition are now used in the input prompts too
-    * Input currently is DTMF-only using the #input, #wait_for_digit and #stream_file methods compatibly with preceding versions
+### Media output
+  * Output functions reworked to to take advantage of Punchblock features, though method signatures have been kept similar.
+  * Output now allows for usage of String, Numeric, Time/Date, files on disk, files served via HTTP, and direct SSML. All non-file types are played via TTS.
+  * Output types are automatically detected and played accordingly
 
-  ### Menu system
+### Input (DTMF and ASR)
+  * The same output types and recognition are now used in the input prompts too
+  * Input currently is DTMF-only using the #input, #wait_for_digit and #stream_file methods compatibly with preceding versions
 
-
-  ### Recording
+### Menu system
 
 
-  ### Conferencing
+### Recording
 
 
-  ### Bridging
+### Conferencing
 
 
-  ### Call routing
+### Bridging
+
+
+### Call routing
 
 
 ## Eventing system
