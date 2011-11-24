@@ -46,8 +46,6 @@ module Adhearsion
   AHN_INSTALL_DIR = File.expand_path(File.dirname(__FILE__) + "/..")
   AHN_CONFIG = Configuration.new
 
-  mattr_accessor :status
-
   class << self
     def active_calls
       @calls ||= Calls.new
