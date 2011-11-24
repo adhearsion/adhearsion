@@ -15,9 +15,19 @@ module Adhearsion
           connection = connection_class.new self.config.connection_options
           self.client = ::Punchblock::Client.new :connection => connection
 
+          # Tell the Punchblock connection that we are ready to process calls.
+          Events.register_callback(:after_initialization) do
+            connection.ready!
+          end
+
+          # When a stop is requested, change our status to "Do Not Disturb"
+          # This should prevent the telephony engine from sending us any new calls.
+          Events.register_callback(:stop_requested) do
+            connection.not_ready!
+          end
+
           # Make sure we stop everything when we shutdown
           Events.register_callback(:shutdown) do
-            logger.info "Shutting down with #{Adhearsion.active_calls.size} active calls"
             client.stop
           end
 
@@ -42,25 +52,45 @@ module Adhearsion
         end
 
         def connect
-          Events.register_callback(:after_initialized) do
-            begin
-              logger.info "Waiting for connection via Punchblock"
-              Events.punchblock ::Punchblock::Connection::Connected do
-                logger.info "Connected via Punchblock"
-              end
-              IMPORTANT_THREADS << Thread.new do
-                catching_standard_errors { client.run }
-              end
-            rescue => e
-              logger.fatal "Failed to start Punchblock client! #{e.inspect}"
-              abort
+          begin
+            logger.info "Starting connection to server"
+
+            m = Mutex.new
+            blocker = ConditionVariable.new
+            Events.punchblock ::Punchblock::Connection::Connected do
+              logger.info "Connected to server."
+              m.synchronize { blocker.broadcast }
             end
+            Adhearsion::Process.important_threads << Thread.new do
+              catching_standard_errors do
+                begin
+                  client.run
+                rescue ::Punchblock::ProtocolError => e
+                  logger.fatal "The connection failed due to a protocol error: #{e.name}."
+                  m.synchronize { blocker.broadcast }
+                end
+              end
+            end
+
+            # Wait for the connection to establish
+            m.synchronize { blocker.wait(m) }
+          rescue => e
+            logger.fatal "Failed to start Punchblock client! #{e.inspect}"
+            abort
           end
         end
 
         def dispatch_offer(offer)
           catching_standard_errors do
-            DialPlan::Manager.handle Adhearsion.receive_call_from(offer)
+            call = Adhearsion.receive_call_from(offer)
+            case Adhearsion::Process.state_name
+            when :booting, :rejecting
+              call.reject :declined
+            when :running
+              DialPlan::Manager.handle call
+            else
+              call.reject :error
+            end
           end
         end
 

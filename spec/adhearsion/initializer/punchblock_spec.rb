@@ -52,10 +52,35 @@ module Adhearsion
       end
 
       describe "dispatching an offer" do
-        it 'should hand the call off to a new Manager' do
+        it 'should reject a call with cause :declined if the Adhearsion::Process is in :booting' do
           initialize_punchblock_with_defaults
+          flexmock(Adhearsion::Process).should_receive(:state_name).once.and_return :booting
+          flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return mock_call
+          mock_call.should_receive(:reject).once.with(:declined)
+          Events.trigger_immediately :punchblock, offer
+        end
+        
+        it 'should hand the call off to a new Manager when Adhearsion::Process is in :running' do
+          initialize_punchblock_with_defaults
+          flexmock(Adhearsion::Process).should_receive(:state_name).once.and_return :running
           flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return mock_call
           flexmock(DialPlan::Manager).should_receive(:handle).once.with(mock_call)
+          Events.trigger_immediately :punchblock, offer
+        end
+        
+        it 'should reject a call with cause :declined if the Adhearsion::Process is in :rejecting' do
+          initialize_punchblock_with_defaults
+          flexmock(Adhearsion::Process).should_receive(:state_name).once.and_return :rejecting
+          flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return mock_call
+          mock_call.should_receive(:reject).once.with(:declined)
+          Events.trigger_immediately :punchblock, offer
+        end
+        
+        it 'should reject a call with cause :error if the Adhearsion::Process is not :running, :stopping or :rejecting' do
+          initialize_punchblock_with_defaults
+          flexmock(Adhearsion::Process).should_receive(:state_name).once.and_return :not_a_real_valid_state
+          flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return mock_call
+          mock_call.should_receive(:reject).once.with(:error)
           Events.trigger_immediately :punchblock, offer
         end
       end
