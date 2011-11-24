@@ -11,6 +11,15 @@ describe Adhearsion::Process do
     Adhearsion::Process.shutdown
   end
 
+  it '#stop_when_zero_calls should wait until the list of active calls reaches 0' do
+    calls = ThreadSafeArray.new
+    3.times { calls << Object.new }
+    flexmock(Adhearsion).should_receive(:active_calls).and_return calls
+    flexmock(Adhearsion::Process.instance).should_receive(:force_stop).once
+    Thread.new { sleep 1; calls.pop }
+    Adhearsion::Process.stop_when_zero_calls
+  end
+
   it 'should trigger :shutdown events on force_stop' do
     flexmock(Adhearsion::Events).should_receive(:trigger_immediately).once.with(:shutdown)
     Adhearsion::Process.force_stop

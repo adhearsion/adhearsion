@@ -62,13 +62,7 @@ module Adhearsion
 
     def request_stop
       Events.trigger_immediately :stop_requested
-      important_threads << Thread.new do
-        until Adhearsion.active_calls.count == 0
-          logger.trace "Stop requested but we still have #{Adhearsion.active_calls.count} active calls."
-          sleep 0.2
-        end
-        force_stop
-      end
+      important_threads << Thread.new { stop_when_zero_calls }
     end
 
     def final_shutdown
@@ -83,6 +77,14 @@ module Adhearsion
 
     def self.method_missing(method_name, *args, &block)
       instance.send method_name, *args, &block
+    end
+
+    def stop_when_zero_calls
+      until Adhearsion.active_calls.count == 0
+        logger.trace "Stop requested but we still have #{Adhearsion.active_calls.count} active calls."
+        sleep 0.2
+      end
+      force_stop
     end
   end
 end
