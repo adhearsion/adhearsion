@@ -14,6 +14,11 @@ module Adhearsion
         let(:mock_end) { flexmock Punchblock::Event::End.new, :reason => :hangup }
         let(:mock_answered) { Punchblock::Event::Answered.new }
 
+        #added for multiple dial testing
+        let(:second_to) { 'sip:baz@bar.com' }
+        let(:second_other_call_id) { rand }
+        let(:second_other_mock_call) { flexmock OutboundCall.new, :id => second_other_call_id }
+
         def mock_dial
           flexmock(OutboundCall).new_instances.should_receive(:dial).and_return true
         end
@@ -84,7 +89,32 @@ module Adhearsion
           end
 
           describe "with multiple third parties specified" do
-            it "dials all parties and joins the first one to answer, hanging up the rest"
+            it "dials all parties and joins the first one to answer, hanging up the rest" do
+              other_mock_call
+              second_other_mock_call
+
+              flexmock(other_mock_call).should_receive(:dial).once
+              flexmock(other_mock_call).should_receive(:join).once.with(call_id)
+              
+              flexmock(second_other_mock_call).should_receive(:dial).once
+              flexmock(second_other_mock_call).should_receive(:hangup!).once
+
+
+              flexmock(OutboundCall).should_receive(:new).and_return other_mock_call, second_other_mock_call
+              latch = CountDownLatch.new 1
+
+              Thread.new do
+                mock_execution_environment.dial [to, second_to]
+                latch.countdown!
+              end
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_answered
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+            end
           end
 
           describe "with a timeout specified" do
@@ -102,7 +132,7 @@ module Adhearsion
 
             it "does not try to join the calls if the new call is hungup when the block returns"
           end
-        end
+        end#describe #dial
       end
     end
   end

@@ -5,10 +5,12 @@ module Adhearsion
         #
         # Dial a third party and join to this call
         #
-        # @param [String] number represents the extension or "number" that asterisk should dial.
+        # @param [String|Enumerable] number represents the extension or "number" that asterisk should dial.
         # Be careful to not just specify a number like 5001, 9095551001
         # You must specify a properly formatted string as Asterisk would expect to use in order to understand
         # whether the call should be dialed using SIP, IAX, or some other means.
+        # You can also specify an array of destinations: each will be called with the same options simultaneously.
+        # The first call answered is joined, the others are hung up.
         #
         # @param [Hash] options
         #
@@ -39,15 +41,36 @@ module Adhearsion
         #   dial "IAX2/my.id@voipjet/19095551234", :name => "John Doe", :caller_id => "9095551234"
         #
         def dial(to, options = {})
-          OutboundCall.new(options).tap do |new_call|
+          if to.respond_to? :each
+            call_list = []
             latch = CountDownLatch.new 1
-            new_call.on_answer { |event| new_call.join call.id }
-            new_call.on_end    { |event| latch.countdown! }
-            new_call.dial to, options
+            to.each do |e|
+              call_list << OutboundCall.new(options).tap do |new_call|
+                new_call.on_answer do |event| 
+                  call_list.each do |call_to_hangup|
+                    p "#{call_to_hangup.id} #{new_call.id}"
+                    call_to_hangup.hangup! if call_to_hangup.id != new_call.id
+                  end
+                  new_call.join call.id
+                end
+                new_call.on_end do |event|
+                  latch.countdown!
+                end
+                new_call.dial e, options
+              end
+            end
             latch.wait
+          else
+            OutboundCall.new(options).tap do |new_call|
+              latch = CountDownLatch.new 1
+              new_call.on_answer { |event| new_call.join call.id }
+              new_call.on_end    { |event| latch.countdown! }
+              new_call.dial to, options
+              latch.wait
+            end
           end
         end
-      end
+      end#module Dial
     end
   end
 end
