@@ -48,7 +48,6 @@ module Adhearsion
               call_list << OutboundCall.new(options).tap do |new_call|
                 new_call.on_answer do |event| 
                   call_list.each do |call_to_hangup|
-                    p "#{call_to_hangup.id} #{new_call.id}"
                     call_to_hangup.hangup! if call_to_hangup.id != new_call.id
                   end
                   new_call.join call.id

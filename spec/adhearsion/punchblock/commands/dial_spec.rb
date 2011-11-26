@@ -95,6 +95,7 @@ module Adhearsion
 
               flexmock(other_mock_call).should_receive(:dial).once
               flexmock(other_mock_call).should_receive(:join).once.with(call_id)
+              flexmock(other_mock_call).should_receive(:hangup!).never
               
               flexmock(second_other_mock_call).should_receive(:dial).once
               flexmock(second_other_mock_call).should_receive(:hangup!).once
