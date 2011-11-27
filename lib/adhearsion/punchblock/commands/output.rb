@@ -118,12 +118,8 @@ module Adhearsion
         end
 
         def output(type, content, options = {})
-          begin
-            options.merge! type => content
-            execute_component_and_await_completion ::Punchblock::Component::Output.new(options)
-          rescue StandardError => e
-            false
-          end
+          options.merge! type => content
+          execute_component_and_await_completion ::Punchblock::Component::Output.new(options)
         end
 
         def output!(type, content, options = {})

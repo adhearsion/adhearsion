@@ -20,6 +20,7 @@ module Adhearsion
             end
 
             it 'should return false' do
+              pending
               mock_execution_environment.play_ssml(ssml).should be false
             end
           end
