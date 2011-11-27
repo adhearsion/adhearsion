@@ -14,20 +14,16 @@ module Adhearsion
         transition :booting => :running
       end
 
-      # On first shutdown request, flag our state but continue otherwise normally.
       event :shutdown do
+        # On first shutdown request, flag our state but continue otherwise normally.
         transition :running => :stopping
-      end
 
-      # On second shutdown request, start rejecting new calls.
-      # This corresponds to the admin pressing CTRL+C twice.
-      event :shutdown do
+        # On second shutdown request, start rejecting new calls.
+        # This corresponds to the admin pressing CTRL+C twice.
         transition :stopping => :rejecting
-      end
 
-      # On third shutdown request, hang up all active calls.
-      # This corresponds to the admin pressing CTRL+C three times.
-      event :shutdown do
+        # On third shutdown request, hang up all active calls.
+        # This corresponds to the admin pressing CTRL+C three times.
         transition :rejecting => :stopped
       end
 
