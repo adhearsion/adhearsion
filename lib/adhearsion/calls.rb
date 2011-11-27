@@ -45,7 +45,11 @@ module Adhearsion
       end
     end
 
-    def each
+    def each(&block)
+      atomically { calls.values.each &block }
+    end
+
+    def each_pair
       calls.each_pair { |id, call| yield id, call }
     end
 
