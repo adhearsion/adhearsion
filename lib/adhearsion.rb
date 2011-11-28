@@ -17,6 +17,7 @@ RUBY_VERSION < "1.9" and require 'rubygems'
   countdownlatch
   has_guarded_handlers
   girl_friday
+  loquacious
 
   adhearsion/foundation/all
 }.each { |f| require f }
@@ -55,10 +56,8 @@ module Adhearsion
 
   class << self
 
-    def config
-      @config ||= Configuration.new
-      yield @config if block_given?
-      @config
+    def config &block
+      @config ||= Configuration.new &block
     end
 
     def config=(value)
@@ -66,7 +65,7 @@ module Adhearsion
     end
 
     def ahn_root=(path)
-      Adhearsion.config.root = path.nil? ? nil : PathString.new(File.expand_path(path))
+      Adhearsion.config.platform.root = path.nil? ? nil : PathString.new(File.expand_path(path))
     end
 
     ##

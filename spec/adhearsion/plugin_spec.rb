@@ -114,38 +114,35 @@ describe Adhearsion::Plugin do
     subject {
       Class.new Adhearsion::Plugin do
         config :bar_foo do
-          name     "user"     , "name to authenticate user"
-          password "password" , "authentication password"
-          host     "localhost", "valid IP or hostname"
+          name     "user"     , :desc => "name to authenticate user"
+          password "password" , :desc => "authentication password"
+          host     "localhost", :desc => "valid IP or hostname"
         end
       end
     }
 
     its(:plugin_name) { should == :bar_foo }
 
-    its(:config) { should be_kind_of Adhearsion::BasicConfiguration }
+    its(:config) { should be_instance_of Loquacious::Configuration }
 
     it "should keep a default configuration and a description" do
       [:name, :password, :host].each do |value|
-        subject.show_configuration.values.index(value).should_not be_nil
+        subject.config.should respond_to value
       end
+
+      subject.config.name.should     == "user"
+      subject.config.password.should == "password"
+      subject.config.host.should     == "localhost"
     end
 
     it "should return a description of configuration options" do
-      subject.show_description.should be_kind_of Adhearsion::BasicConfiguration
-      [:name, :password, :host].each do |value|
-        subject.show_description.values.index(value).should_not be_nil
-        subject.show_description.send(value).name.should == value
-      end
+      subject.show_description.should be_kind_of Loquacious::Configuration::Help
     end
 
-    it "should include configuration options in Adhearsion config class" do
-      Adhearsion.config.plugins.bar_foo.should be_instance_of Adhearsion::BasicConfiguration
-
-      Adhearsion.config.plugins.bar_foo.instance_eval do |c|
-        c.name.should     == "user"
-        c.password.should == "password"
-        c.host.should     == "localhost"
+    describe "while updating config values" do
+      it "should return the updated value" do
+        subject.config.name = "usera"
+        subject.config.name.should == "usera"
       end
     end
 

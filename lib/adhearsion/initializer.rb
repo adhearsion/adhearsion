@@ -5,11 +5,6 @@ module Adhearsion
 
     extend ActiveSupport::Autoload
 
-    autoload :Database
-    autoload :DRb
-    autoload :LDAP
-    autoload :Rails
-    autoload :XMPP
     autoload :Logging
 
     class << self
@@ -67,8 +62,6 @@ module Adhearsion
       start_logging
       initialize_exception_logger
       load_all_init_files
-      init_datasources
-      init_modules
       init_events_file
       init_plugins
 
@@ -190,17 +183,6 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
       already_loaded_init_files = Array(@loaded_init_files).map { |file| File.expand_path(file) }
       puts init_files_from_rc - already_loaded_init_files
       (init_files_from_rc - already_loaded_init_files).each { |init| load init }
-    end
-
-    def init_datasources
-      Database.start if Adhearsion.config.database_enabled?
-      Ldap.start     if Adhearsion.config.ldap_enabled?
-    end
-
-    def init_modules
-      Drb.start        if Adhearsion.config.drb_enabled?
-      Rails.start      if Adhearsion.config.rails_enabled?
-      XMPP.start       if Adhearsion.config.xmpp_enabled?
     end
 
     def init_get_logging_appenders

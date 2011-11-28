@@ -1,4 +1,3 @@
-require 'adhearsion/basic_configuration'
 
 module Adhearsion
 
@@ -171,40 +170,20 @@ module Adhearsion
       end
 
       def config name = nil
-        if name.nil?
-          name = self.plugin_name
-        else
-          self.plugin_name = name
-        end
         if block_given?
-          config = Configuration.new
-          definitions = config.instance_exec &Proc.new
-          clean_config = Adhearsion::BasicConfiguration.new
-
-          definitions.each do |d|
-            plugin_config.send("#{d.name}=".to_sym, d)
-            clean_config.send("#{d.name}=".to_sym, d.default_value)
+          if name.nil?
+            name = self.plugin_name
+          else
+            self.plugin_name = name
           end
-
-          # Include configuration in Adhearion.config.plugins.<plugin_name>
-          Adhearsion.config.plugins.send("#{plugin_name}=".to_sym, clean_config)
-          
-          # Include config description in Adhearion.config.plugins_definition[<plugin_name>]
-          Adhearsion.config.plugins_definitions.store(plugin_name, definitions)
+          ::Loquacious::Configuration.defaults_for(name, &Proc.new)
         end
-        show_configuration
-      end
 
-      def show_configuration
-        Adhearsion.config.plugins.send plugin_name.to_sym
+        ::Loquacious.configuration_for plugin_name
       end
 
       def show_description
-        plugin_config
-      end
-
-      def plugin_config
-        @plugin_config ||= Adhearsion::BasicConfiguration.new
+        ::Loquacious::Configuration.help_for(plugin_name)
       end
 
       def load
