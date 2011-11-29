@@ -25,6 +25,7 @@ RUBY_VERSION < "1.9" and require 'rubygems'
 module Adhearsion
   extend ActiveSupport::Autoload
 
+  autoload :Process
   autoload :Call
   autoload :Calls
   autoload :Configuration
@@ -45,16 +46,11 @@ module Adhearsion
   # Sets up the Gem require path.
   AHN_INSTALL_DIR = File.expand_path(File.dirname(__FILE__) + "/..")
 
-  ##
-  # This Array holds all the Threads whose life matters. Adhearsion will not exit until all of these have died.
-  #
-  IMPORTANT_THREADS = []
-
-  mattr_accessor :status
-
-  mattr_accessor :config
-
   class << self
+
+    def ahn_root=(path)
+      Adhearsion.config[:platform].root = path.nil? ? nil : PathString.new(File.expand_path(path))
+    end
 
     def config &block
       @config ||= Configuration.new &block
@@ -62,26 +58,6 @@ module Adhearsion
 
     def config=(value)
       @config=value
-    end
-
-    def ahn_root=(path)
-      Adhearsion.config.platform.root = path.nil? ? nil : PathString.new(File.expand_path(path))
-    end
-
-    ##
-    # Shuts down the framework.
-    #
-    def shutdown!
-      if self.status == :stopping
-        # This is the second shutdown request we've received while attempting
-        # to shut down gracefully.  At this point, let's pull the plug...
-        logger.warn "Shutting down immediately at #{Time.now}"
-        exit
-      end
-      logger.info "Shutting down gracefully at #{Time.now}."
-      self.status = :stopping
-      Events.trigger_immediately :shutdown
-      exit
     end
 
     def active_calls
@@ -92,6 +68,10 @@ module Adhearsion
       Call.new(offer).tap do |call|
         active_calls << call
       end
+    end
+
+    def status
+      Adhearsion::Process.state_name
     end
 
     def remove_inactive_call(call)

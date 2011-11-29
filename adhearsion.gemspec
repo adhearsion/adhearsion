@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
 
   # Runtime dependencies
   s.add_runtime_dependency "bundler", [">= 1.0.10"]
-  s.add_runtime_dependency 'punchblock', [">= 0.6.2"]
+  s.add_runtime_dependency 'punchblock', [">= 0.7.1"]
   s.add_runtime_dependency "logging", ["~> 1.6.1"]
   s.add_runtime_dependency "loquacious", ["~> 1.9.0"]
   s.add_runtime_dependency "activesupport", [">= 3.0.10"]

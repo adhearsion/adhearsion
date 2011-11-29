@@ -73,6 +73,24 @@ module Adhearsion
       Events.clear_handlers :event, EventClass
     end
 
+    it "should implicitly pass on all handlers" do
+      result = nil
+
+      Events.register_handler :event, EventClass do |event|
+        result = :foo
+      end
+
+      Events.register_handler :event, EventClass do |event|
+        result = :bar
+      end
+
+      Events.trigger_immediately :event, EventClass.new
+
+      result.should == :bar
+
+      Events.clear_handlers :event, EventClass
+    end
+
     describe '#draw' do
       it "should allow registering handlers by type" do
         result = nil

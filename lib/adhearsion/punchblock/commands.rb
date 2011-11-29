@@ -52,7 +52,7 @@ module Adhearsion
 
         yield component if block_given?
 
-        complete_event = component.complete_event.resource
+        complete_event = component.complete_event
         raise StandardError, complete_event.reason.details if complete_event.reason.is_a? Punchblock::Event::Complete::Error
         component
       end

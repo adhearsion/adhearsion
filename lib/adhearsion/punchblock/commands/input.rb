@@ -68,7 +68,7 @@ module Adhearsion
                 :value => grammar_accept.to_s
             }
 
-          reason = input_component.complete_event.resource.reason
+          reason = input_component.complete_event.reason
           result = reason.respond_to?(:interpretation) ? reason.interpretation : nil
           parse_single_dtmf result
         end
