@@ -39,7 +39,7 @@ module Adhearsion
 
     def reinitialize_queue!
       GirlFriday.shutdown! if @queue
-      # TODO: Extract number of threads to use from AHN_CONFIG
+      # TODO: Extract number of threads to use from Adhearsion.config
       @queue = GirlFriday::WorkQueue.new 'main_queue', :error_handler => ErrorHandler do |message|
         begin
           handle_message message

@@ -83,6 +83,8 @@
     * future-resource
 
 ## Miscellaneous
+  * New configuration mechanism based on Loquacious that allows to configure both Adhearsion platform and plugins
+  * Added rake tasks to check the config options (rake adhearsion:config:desc) and config values (rake adhearsion:config:values)
   * `automatically_answer_incoming_calls` has been replaced with `automatically_accept_incoming_calls`, which when set to `true` (as is the default), will automatically indicate call progress to the 3rd party, causing ringing. `answer` must now be used explicitly in the dialplan.
   * Removed a lot of unused or unecessary code, including:
     * Call routing DSL

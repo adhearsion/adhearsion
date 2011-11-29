@@ -1,11 +1,17 @@
 require 'rake/testtask'
 require 'adhearsion'
-require 'adhearsion/tasks/components'
-require 'adhearsion/tasks/database'
-require 'adhearsion/tasks/testing'
-require 'adhearsion/tasks/generating'
-require 'adhearsion/tasks/lint'
-require 'adhearsion/tasks/deprecations'
+
+%w<components 
+configuration
+database 
+testing 
+generating 
+lint
+plugins
+deprecations>.each do |file|
+  require "adhearsion/tasks/#{file}"
+end
+
 
 namespace :adhearsion do
   desc "Dump useful information about this application's adhearsion environment"

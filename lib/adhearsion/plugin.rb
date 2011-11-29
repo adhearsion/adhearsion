@@ -152,7 +152,7 @@ module Adhearsion
       end
 
       def inherited(base)
-        logger.debug "Detected new plugin: #{base.name}"
+        logger.trace "Detected new plugin: #{base.name}"
         subclasses << base
       end
 
@@ -168,16 +168,34 @@ module Adhearsion
         @plugin_name = name
       end
 
-      def config
-        @config ||= Configuration.new
+      def config name = nil
+        if block_given?
+          if name.nil?
+            name = self.plugin_name
+          else
+            self.plugin_name = name
+          end
+          ::Loquacious::Configuration.defaults_for(name, &Proc.new)
+        end
+
+        ::Loquacious.configuration_for plugin_name
+      end
+
+      def show_description
+        ::Loquacious::Configuration.help_for(plugin_name)
       end
 
       def load
-        init_plugin
+        load_methods
+        init_plugins
+      end
 
-        # load plugins dialplan methods
+      # Load plugins scope methods (scope = dialplan, console, etc)
+      def load_methods
         unless @@methods_container.empty?
+
           @@methods_container.each_pair do |scope, methods|
+
             logger.debug "Loading #{methods.length} #{scope} methods"
 
             methods.each_pair do |class_method, block|
@@ -197,13 +215,14 @@ module Adhearsion
               self.send("#{scope}_module").send(:define_method, method, &block)
             end
           end
-        end
 
-        Adhearsion::Console.extend(self.console_module) unless self.console_module.instance_methods.empty?
+          # We need to extend Console class with the plugin defined methods
+          Adhearsion::Console.extend(self.console_module) unless self.console_module.instance_methods.empty?
+        end
       end
 
       # Recursively initialization of all the loaded plugins
-      def init_plugin(*args)
+      def init_plugins *args
         initializers.tsort.each do |initializer|
           initializer.run *args
         end
