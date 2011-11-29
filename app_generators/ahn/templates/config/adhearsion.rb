@@ -1,5 +1,3 @@
-require File.join(File.dirname(__FILE__), 'environment')
-
 
 # Centralized way to overwrite any Adhearsion platform or plugin configuration
 # - Execute rake adhearsion:config:desc to get the configuration options
@@ -16,6 +14,7 @@ require File.join(File.dirname(__FILE__), 'environment')
 #        Adhearsion.config do |config|
 #          config.<plugin-name>.<key> = <value>
 #        end
+
 Adhearsion.config do |config|
   
   # Overwrite default punchblock credentials
