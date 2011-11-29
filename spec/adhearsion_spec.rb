@@ -2,21 +2,21 @@ require 'spec_helper'
 
 describe Adhearsion do
   subject {Adhearsion}
-  
-  describe "while accessing the config method" do    
+
+  describe "while accessing the config method" do
     it "should return a Configuration instance" do
       subject.config.should be_instance_of Adhearsion::Configuration
     end
-    
+
     it "should execute a block" do
       foo = Object.new
       flexmock(foo).should_receive(:bar).once
       Adhearsion.config do |config|
         foo.bar
       end
-    end    
+    end
   end
-  
+
   describe "while accessing the ahn_root= method" do
     it "should update properly the config root variable" do
       Adhearsion.ahn_root = "./"

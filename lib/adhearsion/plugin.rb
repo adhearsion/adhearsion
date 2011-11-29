@@ -1,4 +1,3 @@
-
 module Adhearsion
 
   # Plugin is the core of extension of Adhearsion framework and provides the easiest
@@ -192,11 +191,11 @@ module Adhearsion
       end
 
       # Load plugins scope methods (scope = dialplan, console, etc)
-      def load_methods        
+      def load_methods
         unless @@methods_container.empty?
-          
+
           @@methods_container.each_pair do |scope, methods|
-          
+
             logger.debug "Loading #{methods.length} #{scope} methods"
 
             methods.each_pair do |class_method, block|
@@ -216,7 +215,7 @@ module Adhearsion
               self.send("#{scope}_module").send(:define_method, method, &block)
             end
           end
-          
+
           # We need to extend Console class with the plugin defined methods
           Adhearsion::Console.extend(self.console_module) unless self.console_module.instance_methods.empty?
         end
