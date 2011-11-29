@@ -38,7 +38,8 @@ module Adhearsion
       end
 
       def start
-        ::Logging.init(LOG_LEVELS) 
+        ::Logging.init(LOG_LEVELS)
+        ::Logging::Logger[:root].level = :info
         ::Logging.logger.root.appenders = [::Logging.appenders.stdout('stdout')]
         self.send(:_set_formatter, ::Logging::Layouts.basic({:format_as => :string, :backtrace => true}))
         
