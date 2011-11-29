@@ -16,8 +16,8 @@ module Adhearsion
             :username         => self.config.username,
             :password         => self.config.password,
             :auto_reconnect   => self.config.auto_reconnect,
-            :wire_logger      => Adhearsion::Logging.get_logger(Punchblock),
-            :transport_logger => Adhearsion::Logging.get_logger(Punchblock)
+            :host             => self.config.host,
+            :port             => self.config.port
           }
 
           connection = connection_class.new connection_options

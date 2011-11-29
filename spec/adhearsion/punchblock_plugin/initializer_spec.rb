@@ -60,7 +60,7 @@ module Adhearsion
       end
 
       it "starts the client with any overridden settings" do
-        overrides = {:username => 'userb@127.0.0.1', :password => '123', :wire_logger => Adhearsion::Logging.get_logger(Punchblock), :transport_logger => Adhearsion::Logging.get_logger(Punchblock), :auto_reconnect => false}
+        overrides = {:username => 'userb@127.0.0.1', :password => '123', :auto_reconnect => false, :host=>nil, :port=>nil}
 
         flexmock(::Punchblock::Connection::XMPP).should_receive(:new).once.with(overrides).and_return do
           flexmock 'Client', :event_handler= => true
@@ -69,7 +69,7 @@ module Adhearsion
       end
 
       describe 'using Asterisk' do
-        let(:overrides) { {:username => 'test', :password => '123', :wire_logger => Adhearsion::Logging.get_logger(Punchblock), :transport_logger => Adhearsion::Logging.get_logger(Punchblock), :auto_reconnect => false} }
+        let(:overrides) { {:username => 'test', :password => '123', :auto_reconnect => false, :host=>nil, :port=>nil} }
 
         it 'should start an Asterisk PB connection' do
           flexmock(::Punchblock::Connection::Asterisk).should_receive(:new).once.with(overrides).and_return do
