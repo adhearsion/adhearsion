@@ -54,10 +54,12 @@ module Adhearsion
 
     def config &block
       @config ||= Configuration.new &block
+      block_given? and yield @config
+      @config
     end
-
-    def config=(value)
-      @config=value
+    
+    def config=(config)
+      @config=config
     end
 
     def active_calls

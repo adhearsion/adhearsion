@@ -13,31 +13,30 @@ module Adhearsion
     #
     # @return [Adhearsion::Configuration]
     def initialize &block
+      Loquacious::Configuration.for(:platform) do
+        root nil, :desc => "Adhearsion application root folder"
+        automatically_accept_incoming_calls true, :desc => "Adhearsion will accept automatically any inbound call"
+
+        desc "Log configuration"
+        logging {
+          level :info, :desc => <<-__
+            Supported levels (in increasing severity) -- :trace < :debug < :info < :warn < :error < :fatal
+          __
+          outputters nil, :desc => <<-__
+            An array of log outputters to use. The default is to log to stdout and log/adhearsion.log
+          __
+          formatters ::Logging::Layouts.basic({:format_as => :string, :backtrace => true}), :desc => <<-__
+            An array of log formatters to apply to the outputters in use
+          __
+          formatter nil, :desc => <<-__
+            A log formatter to apply to all active outputters
+          __
+        }
+      end
       if block_given?
         Loquacious::Configuration.for(:platform, &block)
-      else
-        Loquacious::Configuration.for(:platform) do
-          root nil, :desc => "Adhearsion application root folder"
-          automatically_accept_incoming_calls true, :desc => "Adhearsion will accept automatically any inbound call"
-          
-          desc "Log configuration"
-          logging {          
-            level :info, :desc => <<-__
-              Supported levels (in increasing severity) -- :trace < :debug < :info < :warn < :error < :fatal
-            __
-            outputters nil, :desc => <<-__
-              An array of log outputters to use. The default is to log to stdout and log/adhearsion.log
-            __
-            formatters ::Logging::Layouts.basic({:format_as => :string, :backtrace => true}), :desc => <<-__
-              An array of log formatters to apply to the outputters in use
-            __
-            formatter nil, :desc => <<-__
-              A log formatter to apply to all active outputters
-            __
-          }
-          
-        end
       end
+      self
     end
 
 
@@ -110,7 +109,6 @@ module Adhearsion
       if name.eql? :all
         value = ""
         Loquacious::Configuration.instance_variable_get("@table").keys.map do |config|
-          value.concat "******* Configuration for #{config} **************\n"
           value.concat description config, args
         end
         return value
@@ -124,7 +122,7 @@ module Adhearsion
                                 :colorize    => true,
                                 :io          => desc
         config.show :values => args[:show_values]
-        desc.string
+        "\n******* Configuration for #{name} **************\n\n#{desc.string}"
       end
     end
 
