@@ -16,7 +16,7 @@ Adhearsion::Events.draw do
   #   logger.info event.inspect
   # end
   #
-  # This assumes you gave :events => true to the config.asterisk.enable_ami method in config/startup.rb
+  # This assumes you gave :events => true to the config.asterisk.enable_ami method in config/config.rb
   #
   ##
   # Here is a list of the events included by default:
