@@ -1,7 +1,7 @@
 require 'adhearsion/punchblock_plugin'
 
 begin
-  require "#{Dir.pwd}/config/config.rb"
+  require "#{Dir.pwd}/config/adhearsion.rb"
 rescue Exception => ex
   STDERR.puts "\nCannot find the Adhearsion application startup file: #{ex}"
 end

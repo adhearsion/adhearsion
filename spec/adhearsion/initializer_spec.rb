@@ -66,7 +66,7 @@ describe Adhearsion::Initializer do
           "twitter" => nil
         },
         # Paths are unnecessary except to make the other part of bootstrap_rc happy.
-        "paths"=>{"dialplan"=>"dialplan.rb", "init"=>"config/config.rb", "events"=>"events.rb",
+        "paths"=>{"dialplan"=>"dialplan.rb", "init"=>"config/adhearsion.rb", "events"=>"events.rb",
             "models"=> "models/*.rb"}
       }
       ahn = Adhearsion::Initializer.new path
@@ -86,7 +86,7 @@ describe Adhearsion::Initializer do
           }
         },
         # Paths are unnecessary except to make the other part of bootstrap_rc happy.
-        "paths"=>{"dialplan"=>"dialplan.rb", "init"=>"config/config.rb", "events"=>"events.rb",
+        "paths"=>{"dialplan"=>"dialplan.rb", "init"=>"config/adhearsion.rb", "events"=>"events.rb",
             "models"=>"models/*.rb"}
       }
       ahn = Adhearsion::Initializer.new path

@@ -25,7 +25,7 @@ gems:
 paths:
 
   # All paths are relative to this file's directory
-  init: config/config.rb
+  init: config/adhearsion.rb
 
   dialplan: dialplan.rb
 
