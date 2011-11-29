@@ -10,7 +10,7 @@ describe "DialPlan loader" do
   end
 
   it "loading a single context" do
-    loader = load(<<-DIAL_PLAN)
+    loader = load <<-DIAL_PLAN
       one {
         raise 'this block should not be evaluated'
       }
@@ -21,7 +21,7 @@ describe "DialPlan loader" do
   end
 
   it "loading multiple contexts loads all contexts" do
-    loader = load(<<-DIAL_PLAN)
+    loader = load <<-DIAL_PLAN
       one {
         raise 'this block should not be evaluated'
       }
@@ -43,11 +43,8 @@ describe "DialPlan loader" do
 
   it "loading a dial plan from a file" do
     loader = nil
-    Adhearsion::AHN_CONFIG.ahnrc = {"paths" => {"dialplan" => "dialplan.rb"}}
     the_following_code {
-      AHN_ROOT.using_base_path(File.expand_path(File.dirname(__FILE__) + '/../fixtures')) do
-        loader = Adhearsion::DialPlan::Loader.load_dialplans
-      end
+      loader = Adhearsion::DialPlan::Loader.load_dialplans
     }.should_not raise_error
 
     loader.contexts.keys.size.should be 1

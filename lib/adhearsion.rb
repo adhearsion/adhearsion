@@ -17,6 +17,7 @@ RUBY_VERSION < "1.9" and require 'rubygems'
   countdownlatch
   has_guarded_handlers
   girl_friday
+  loquacious
 
   adhearsion/foundation/all
 }.each { |f| require f }
@@ -44,9 +45,23 @@ module Adhearsion
 
   # Sets up the Gem require path.
   AHN_INSTALL_DIR = File.expand_path(File.dirname(__FILE__) + "/..")
-  AHN_CONFIG = Configuration.new
 
   class << self
+
+    def ahn_root=(path)
+      Adhearsion.config[:platform].root = path.nil? ? nil : PathString.new(File.expand_path(path))
+    end
+
+    def config &block
+      @config ||= Configuration.new &block
+      block_given? and yield @config
+      @config
+    end
+    
+    def config=(config)
+      @config=config
+    end
+
     def active_calls
       @calls ||= Calls.new
     end

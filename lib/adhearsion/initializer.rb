@@ -1,28 +1,16 @@
+require 'adhearsion/punchblock_plugin'
+
 module Adhearsion
   class Initializer
 
     extend ActiveSupport::Autoload
 
-    autoload :Database
-    autoload :DRb
-    autoload :LDAP
-    autoload :Punchblock
-    autoload :Rails
-    autoload :XMPP
     autoload :Logging
 
     class << self
       def get_rules_from(location)
         location = File.join location, ".ahnrc" if File.directory? location
         File.exists?(location) ? YAML.load_file(location) : nil
-      end
-
-      def ahn_root=(path)
-        if Object.constants.map(&:to_sym).include?(:AHN_ROOT)
-          Object.const_get(:AHN_ROOT).base_path = File.expand_path(path)
-        else
-          Object.const_set(:AHN_ROOT, PathString.new(File.expand_path(path)))
-        end
       end
 
       def start(*args, &block)
@@ -55,38 +43,34 @@ module Adhearsion
       @mode     = options[:mode]
       @pid_file = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
       @loaded_init_files  = options[:loaded_init_files]
-      self.class.ahn_root = path
+      Adhearsion.ahn_root = path
     end
 
     def start
       resolve_pid_file_path
       resolve_log_file_path
-      init_plugins
+      load_plugins_methods
       daemonize! if should_daemonize?
       launch_console if need_console?
       switch_to_root_directory
       catch_termination_signal
       create_pid_file if pid_file
-      bootstrap_rc
       initialize_log_file
       start_logging
       initialize_exception_logger
-      load_all_init_files
-      init_datasources
-      init_modules
-      init_events_file
+      load_config
+      init_plugins
 
       logger.info "Adhearsion v#{Adhearsion::VERSION} initialized!"
       Adhearsion::Process.booted
 
       trigger_after_initialized_hooks
       join_important_threads
-
       self
     end
 
     def default_pid_path
-      File.join AHN_ROOT, 'adhearsion.pid'
+      File.join Adhearsion.config.root, 'adhearsion.pid'
     end
 
     def resolve_pid_file_path
@@ -99,12 +83,12 @@ module Adhearsion
     end
 
     def resolve_log_file_path
-      @ahn_app_log_directory = AHN_ROOT + '/log'
+      @ahn_app_log_directory = "#{Adhearsion.config.root}/log"
       @log_file = File.expand_path(ahn_app_log_directory + "/adhearsion.log")
     end
 
     def switch_to_root_directory
-      Dir.chdir AHN_ROOT
+      Dir.chdir Adhearsion.config.root
     end
 
     def catch_termination_signal
@@ -123,97 +107,8 @@ module Adhearsion
       end
     end
 
-    ##
-    # This step in the initialization process loads the .ahnrc in the given app folder. With the information in .ahnrc, we
-    # can continue the initialization knowing where certain files are specifically.
-    #
-    def bootstrap_rc
-      rules = self.class.get_rules_from AHN_ROOT
-
-      AHN_CONFIG.ahnrc = rules
-
-      # DEPRECATION: Check if the old paths format is being used. If so, abort and notify.
-      if rules.has_key?("paths") && rules["paths"].kind_of?(Hash)
-        paths = rules["paths"].each_pair do |key,value|
-          if value.kind_of?(Hash)
-            if value.has_key?("directory") || value.has_key?("pattern")
-              puts
-              puts *caller
-              puts
-
-              abort <<-WARNING
-Deprecation Warning
--------------------
-The (hidden) .ahnrc file in this app is of an older format and needs to be fixed.
-
-There is a rake task to automatically fix it or you can do it manually. Note: it's
-best if you do it manually so you can retain the YAML comments in your .ahnrc file.
-
-The rake task is called "deprecations:fix_ahnrc_path_format".
-
-To do it manually, find all entries in the "paths" section of your ".ahnrc" file
-which look like the following:
-
-paths:
-  key_name_could_be_anything:
-    directory: some_folder
-    pattern: *.rb
-
-Note: the "models" section had this syntax before:
-
-models:
-  directory: models
-  pattern: "*.rb"
-
-The NEW syntax is as follows (using models as an example):
-
-models: models/*.rb
-
-This new format is much cleaner.
-
-Adhearsion will abort until you fix this. Sorry for the incovenience.
-              WARNING
-            end
-          end
-        end
-      end
-
-      gems = rules['gems']
-      if gems.kind_of?(Hash) && gems.any? && respond_to?(:gem)
-        gems.each_pair do |gem_name,properties_hash|
-          if properties_hash && properties_hash["version"]
-            gem gem_name, properties_hash["version"]
-          else
-            gem gem_name
-          end
-          if properties_hash
-            case properties_hash["require"]
-              when Array
-                properties_hash["require"].each { |lib| require lib }
-              when String
-                require properties_hash["require"]
-            end
-          end
-        end
-      end
-    end
-
-    def load_all_init_files
-      init_files_from_rc = AHN_CONFIG.files_from_setting("paths", "init").map { |file| File.expand_path(file) }
-      already_loaded_init_files = Array(@loaded_init_files).map { |file| File.expand_path(file) }
-      (init_files_from_rc - already_loaded_init_files).each { |init| load init }
-    end
-
-    def init_datasources
-      Database.start if AHN_CONFIG.database_enabled?
-      Ldap.start     if AHN_CONFIG.ldap_enabled?
-    end
-
-    def init_modules
-      Punchblock.start if AHN_CONFIG.punchblock_enabled?
-      Drb.start        if AHN_CONFIG.drb_enabled?
-      Rails.start      if AHN_CONFIG.rails_enabled?
-      XMPP.start       if AHN_CONFIG.xmpp_enabled?
+    def load_config
+      require "#{Adhearsion.config.root}/config/adhearsion.rb"
     end
 
     def init_get_logging_appenders
@@ -238,14 +133,12 @@ Adhearsion will abort until you fix this. Sorry for the incovenience.
 
     end
 
-    def init_events_file
-      AHN_CONFIG.files_from_setting("paths", "events").each do |file|
-        require file
-      end
+    def load_plugins_methods
+      Plugin.load_methods
     end
 
     def init_plugins
-      Plugin.load
+      Plugin.init_plugins
     end
 
     def should_daemonize?

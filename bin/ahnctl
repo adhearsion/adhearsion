@@ -39,7 +39,7 @@ pid_file &&= File.expand_path pid_file[pid_file_path_regexp,1]
 # If there was no third argument and pid_file is still nil, let's use the default.
 pid_file ||= app_dir + '/adhearsion.pid'
 
-abort "Directory is not an Adhearsion application!" unless File.exists?(app_dir + "/.ahnrc")
+abort "Directory is not an Adhearsion application!" unless ScriptAhnLoader.in_ahn_application?
 
 def terminate(pid) `kill -s TERM #{pid} 2> /dev/null` end
 def      kill(pid) `kill -s KILL #{pid} 2> /dev/null` end

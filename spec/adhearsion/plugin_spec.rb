@@ -51,6 +51,7 @@ describe Adhearsion::Plugin do
           end
         end
       end
+
       after(:all) do
         defined?(A) and Object.send(:remove_const, :"A")
       end
@@ -62,6 +63,7 @@ describe Adhearsion::Plugin do
           end
 
         end
+        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
         Adhearsion::Plugin.load
         Adhearsion::Plugin.send("#{method.to_s}_module".to_sym).instance_methods.map{|x| x.to_s}.include?("foo").should == true
       end
@@ -97,12 +99,13 @@ describe Adhearsion::Plugin do
     it "should add a new method to Console" do
       FooBar = Class.new Adhearsion::Plugin do
         console :config do
-          Adhearsion::AHN_CONFIG
+          Adhearsion.config
         end
       end
+      flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
       Adhearsion::Plugin.load
       Adhearsion::Console.should respond_to(:config)
-      Adhearsion::Console.config.should == Adhearsion::AHN_CONFIG
+      Adhearsion::Console.config.should == Adhearsion.config
     end
   end
 
@@ -111,37 +114,41 @@ describe Adhearsion::Plugin do
       defined?(FooBar) and Object.send(:remove_const, :"FooBar")
     end
 
-    it "should provide access to a config mechanism" do
-      FooBar = Class.new Adhearsion::Plugin
-      FooBar.config.should be_kind_of Adhearsion::Plugin::Configuration
-    end
-
-    it "should provide a config empty variable" do
-      FooBar = Class.new Adhearsion::Plugin
-      FooBar.config.length.should be 0
-    end
-
-    it "should allow to set a new config value" do
-      FooBar = Class.new Adhearsion::Plugin do
-        config.foo = "bar"
+    subject {
+      Class.new Adhearsion::Plugin do
+        config :bar_foo do
+          name     "user"     , :desc => "name to authenticate user"
+          password "password" , :desc => "authentication password"
+          host     "localhost", :desc => "valid IP or hostname"
+        end
       end
-      FooBar.config.foo.should eql "bar"
+    }
+
+    its(:plugin_name) { should == :bar_foo }
+
+    its(:config) { should be_instance_of Loquacious::Configuration }
+
+    it "should keep a default configuration and a description" do
+      [:name, :password, :host].each do |value|
+        subject.config.should respond_to value
+      end
+
+      subject.config.name.should     == "user"
+      subject.config.password.should == "password"
+      subject.config.host.should     == "localhost"
     end
 
-    it "should allow to get a config value using []" do
-      FooBar = Class.new Adhearsion::Plugin do
-        config.foo = "bar"
-      end
-      FooBar.config[:foo].should eql "bar"
+    it "should return a description of configuration options" do
+      subject.show_description.should be_kind_of Loquacious::Configuration::Help
     end
 
-    it "should allow to set a config value using [:name] = value" do
-      FooBar = Class.new Adhearsion::Plugin do
-        config[:foo] = "bar"
+    describe "while updating config values" do
+      it "should return the updated value" do
+        subject.config.name = "usera"
+        subject.config.name.should == "usera"
       end
-      FooBar.config.foo.should eql "bar"
-      FooBar.config.length.should eql 1
     end
+
   end
 
   describe "add and delete on the air" do
@@ -199,7 +206,9 @@ describe Adhearsion::Plugin do
       it "should do nothing with a Plugin that has no init method call" do
         FooBar = Class.new Adhearsion::Plugin
 
-        Adhearsion::Plugin.initializers.should be_empty
+        # 1 => Punchblock. Must be empty once punchblock initializer is an external Plugin
+        Adhearsion::Plugin.initializers.should have(1).initializers
+        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
         Adhearsion::Plugin.load
       end
 
@@ -214,6 +223,7 @@ describe Adhearsion::Plugin do
 
         flexmock(FooBar).should_receive(:log).once
         Adhearsion::Plugin.initializers.length.should be 1
+        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
         Adhearsion::Plugin.load
       end
 
@@ -239,6 +249,7 @@ describe Adhearsion::Plugin do
         end
 
         flexmock(FooBar).should_receive(:log).times(3)
+        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
         Adhearsion::Plugin.load
       end
 
@@ -301,6 +312,7 @@ describe Adhearsion::Plugin do
             end
           end
 
+          flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
           Adhearsion::Plugin.load
           Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
         end
@@ -311,6 +323,7 @@ describe Adhearsion::Plugin do
             self.method(method).call(:foo, &block)
           end
 
+          flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
           Adhearsion::Plugin.load
           Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
         end
@@ -323,6 +336,7 @@ describe Adhearsion::Plugin do
             end
           end
 
+          flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
           Adhearsion::Plugin.load
           Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
         end
@@ -340,6 +354,7 @@ describe Adhearsion::Plugin do
             end
           end
 
+          flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
           Adhearsion::Plugin.load
           [:foo, :bar].each do |_method|
             Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(_method.to_s).should be true
@@ -359,6 +374,7 @@ describe Adhearsion::Plugin do
             end
           end
 
+          flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
           Adhearsion::Plugin.load
           [:foo, :bar].each do |_method|
             Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(_method.to_s).should be true
@@ -377,6 +393,7 @@ describe Adhearsion::Plugin do
             end
           end
 
+          flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
           Adhearsion::Plugin.load
           [:foo, :bar].each do |_method|
             Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(_method.to_s).should be true
@@ -390,6 +407,7 @@ describe Adhearsion::Plugin do
             end
           end
 
+          flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
           Adhearsion::Plugin.load
           Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
           Adhearsion::Plugin.send("#{method.to_s}_module".to_sym).instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
@@ -408,6 +426,7 @@ describe Adhearsion::Plugin do
           end
         end
 
+        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
         Adhearsion::Plugin.load
         [:dialplan_module, :rpc_module].each do |_module|
           Adhearsion::Plugin.send(_module).instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true

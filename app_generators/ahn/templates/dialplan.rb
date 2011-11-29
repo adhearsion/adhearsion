@@ -1,3 +1,4 @@
 adhearsion {
-  simon_game
+  #simon_game
+  speak "hello world"
 }

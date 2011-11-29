@@ -4,14 +4,14 @@ namespace:components do
     init = Adhearsion::Initializer.new(Rake.original_dir)
     init.bootstrap_rc
     init.load_all_init_files
-    Adhearsion::AHN_CONFIG.components_to_load.each do |component|
+    Adhearsion.config.components_to_load.each do |component|
       spec = Gem.searcher.find(component)
       if spec.nil?
         abort "ERROR: Required gem component #{component} not found."
       end
 
       yml = File.join(spec.full_gem_path, 'config', "#{component}.yml")
-      target = File.join(AHN_ROOT, 'config', 'components', "#{component}.yml")
+      target = File.join(Adhearsion.config.root, 'config', 'components', "#{component}.yml")
       Dir.mkdir(File.dirname(target)) if !File.exists?(File.dirname(target))
       if File.exists?(target)
         puts "Skipping existing configuration for component #{component}"

@@ -3,8 +3,8 @@ unless ENV['SKIP_RCOV']
   require 'simplecov-rcov'
   class SimpleCov::Formatter::MergedFormatter
     def format(result)
-       SimpleCov::Formatter::HTMLFormatter.new.format(result)
-       SimpleCov::Formatter::RcovFormatter.new.format(result)
+      SimpleCov::Formatter::HTMLFormatter.new.format(result)
+      SimpleCov::Formatter::RcovFormatter.new.format(result)
     end
   end
   SimpleCov.formatter = SimpleCov::Formatter::MergedFormatter
@@ -36,9 +36,13 @@ RSpec.configure do |config|
   config.filter_run :focus => true
   config.run_all_when_everything_filtered = true
   config.color_enabled = true
+
+  config.before(:each) do
+    Adhearsion.ahn_root = File.dirname(__FILE__) + '/adhearsion/fixtures'
+  end
 end
 
-Adhearsion::Initializer.ahn_root = File.dirname(__FILE__) + '/fixtures'
+
 Adhearsion::Logging.silence!
 
 class Foo
