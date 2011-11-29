@@ -16,11 +16,11 @@ module Adhearsion
 
           describe "if an error is returned" do
             before do
+              pending
               mock_execution_environment.should_receive(:execute_component_and_await_completion).once.and_raise(StandardError)
             end
 
             it 'should return false' do
-              pending
               mock_execution_environment.play_ssml(ssml).should be false
             end
           end
