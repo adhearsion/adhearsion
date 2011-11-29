@@ -6,7 +6,8 @@ configuration
 database 
 testing 
 generating 
-lint 
+lint
+plugins
 deprecations>.each do |file|
   require "adhearsion/tasks/#{file}"
 end
