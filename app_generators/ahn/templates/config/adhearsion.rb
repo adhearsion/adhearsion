@@ -16,7 +16,7 @@
 #        end
 
 Adhearsion.config do |config|
-  
+
   # Overwrite default punchblock credentials
   #config.punchblock.username = ""
   #config.punchblock.password = ""

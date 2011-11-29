@@ -15,21 +15,21 @@ module Adhearsion
 
           files = Array(files).map do |file|
             case file
-              when File, StringIO
-                file
-              when String
-                File.new file
-              else
-                raise ArgumentError, "Unrecognized type of file #{file.inspect}"
+            when File, StringIO
+              file
+            when String
+              File.new file
+            else
+              raise ArgumentError, "Unrecognized type of file #{file.inspect}"
             end
           end
+
           new.tap do |loader|
             files.each do |file|
               loader.load file
             end
           end
         end
-
       end
 
       def initialize

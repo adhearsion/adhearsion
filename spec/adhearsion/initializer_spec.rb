@@ -9,7 +9,6 @@ describe Adhearsion::Initializer do
     '/any/ole/path'
   end
 
-
   before do
     Adhearsion::Logging.reset
     flexmock(Adhearsion::Initializer::Logging).should_receive(:start).once.and_return('')
@@ -70,7 +69,7 @@ describe Adhearsion::Initializer do
 end
 
 describe "Adhearsion.ahn_root" do
-  
+
   include InitializerStubs
 
   before do

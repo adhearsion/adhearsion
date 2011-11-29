@@ -114,9 +114,9 @@ module Adhearsion
         if Loquacious::Configuration.for(name).nil?
           return ""
         end
-        config = Loquacious::Configuration.help_for name, 
-                                :name_leader => "| * ", 
-                                :desc_leader => "| ", 
+        config = Loquacious::Configuration.help_for name,
+                                :name_leader => "| * ",
+                                :desc_leader => "| ",
                                 :colorize    => true,
                                 :io          => desc
         config.show :values => args[:show_values]

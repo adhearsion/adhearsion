@@ -10,7 +10,7 @@ describe "DialPlan loader" do
   end
 
   it "loading a single context" do
-    loader = load(<<-DIAL_PLAN)
+    loader = load <<-DIAL_PLAN
       one {
         raise 'this block should not be evaluated'
       }
@@ -21,7 +21,7 @@ describe "DialPlan loader" do
   end
 
   it "loading multiple contexts loads all contexts" do
-    loader = load(<<-DIAL_PLAN)
+    loader = load <<-DIAL_PLAN
       one {
         raise 'this block should not be evaluated'
       }

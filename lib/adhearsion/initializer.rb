@@ -136,6 +136,7 @@ module Adhearsion
     def load_plugins_methods
       Plugin.load_methods
     end
+
     def init_plugins
       Plugin.init_plugins
     end
