@@ -24,7 +24,6 @@ class AhnGenerator < RubiGen::Base
       m.file  *["config/environment.rb"]*2
       m.file  *["config/adhearsion.rb"]*2
       m.file  *["dialplan.rb"]*2
-      m.file  *["events.rb"]*2
       m.file  *["README"]*2
       m.file  *["Rakefile"]*2
       m.file  *["Gemfile"]*2
