@@ -8,9 +8,8 @@ module DialplanTestingHelper
     def string_io.path
       "dialplan.rb"
     end
-    flexstub(Adhearsion.config).should_receive(:files_from_setting).with("paths", "dialplan").and_return ["dialplan.rb"]
-    flexstub(File).should_receive(:new).with("dialplan.rb").and_return string_io
-    flexstub(File).should_receive(:read).with('dialplan.rb').and_return string
+    flexstub(File).should_receive(:new).and_return string_io
+    flexstub(File).should_receive(:read).and_return string
   end
 
   def new_manager_with_entry_points_loaded_from_dialplan_contexts

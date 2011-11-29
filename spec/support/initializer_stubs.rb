@@ -1,11 +1,6 @@
 module InitializerStubs
-  DEFAULT_AHNRC_DATA_STRUCTURE = YAML.load_file(
-    File.dirname(__FILE__) + "/../../app_generators/ahn/templates/.ahnrc"
-  ) unless defined? DEFAULT_AHNRC_DATA_STRUCTURE
-
   UNWANTED_BEHAVIOR = {
-    Adhearsion::Initializer => [:initialize_log_file, :switch_to_root_directory, :daemonize!, :load, :init_plugins],
-    Adhearsion::Initializer.metaclass => { :get_rules_from => DEFAULT_AHNRC_DATA_STRUCTURE },
+    Adhearsion::Initializer => [:initialize_log_file, :switch_to_root_directory, :daemonize!, :require, :init_plugins]
   } unless defined? UNWANTED_BEHAVIOR
 
   def stub_behavior_for_initializer_with_no_path_changing_behavior

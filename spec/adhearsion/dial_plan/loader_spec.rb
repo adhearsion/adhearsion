@@ -43,12 +43,8 @@ describe "DialPlan loader" do
 
   it "loading a dial plan from a file" do
     loader = nil
-    Adhearsion.ahn_root = "./"
-    Adhearsion.config.ahnrc = {"paths" => {"dialplan" => "dialplan.rb"}}
     the_following_code {
-      Adhearsion.config.root.using_base_path(File.expand_path(File.dirname(__FILE__) + '/../fixtures')) do
-        loader = Adhearsion::DialPlan::Loader.load_dialplans
-      end
+      loader = Adhearsion::DialPlan::Loader.load_dialplans
     }.should_not raise_error
 
     loader.contexts.keys.size.should be 1

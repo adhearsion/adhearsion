@@ -6,7 +6,6 @@ module Adhearsion
 
       autoload :CommandDispatcher
       autoload :ContextsEnvelope
-      autoload :DialplanParser
       autoload :EventCommand
       autoload :ThreadMixin
 

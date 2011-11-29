@@ -24,7 +24,6 @@ describe Adhearsion::CLI::AhnCommand do
   def create_component_sandbox
     new_tmp_dir.tap do |dir|
       Dir.mkdir dir
-      FileUtils.touch dir + "/.ahnrc"
       Dir.mkdir dir + "/components"
     end
   end
@@ -157,7 +156,6 @@ describe Adhearsion::CLI::AhnCommand do
         RubiGen::Base.default_options.merge! :quiet => true
         # capture_stdout { Adhearsion::CLI::AhnCommand.execute! }
         execute_ahn_command
-        File.exists?(File.join(tmp_path, ".ahnrc")).should be true
       }.should_not raise_error
     end
 

@@ -94,7 +94,7 @@ USAGE
           end
 
           def start(path, mode = :foreground, pid_file = nil)
-            raise PathInvalid, path unless File.exists? path + "/.ahnrc"
+            raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?
             Adhearsion::Initializer.start path, :mode => mode, :pid_file => pid_file
           end
 

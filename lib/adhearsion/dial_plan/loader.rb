@@ -2,8 +2,6 @@ module Adhearsion
   class DialPlan
     class Loader
       class << self
-        attr_accessor :default_dial_plan_file_name
-
         def load(dial_plan_as_string)
           string_io = StringIO.new dial_plan_as_string
           def string_io.path
@@ -13,9 +11,9 @@ module Adhearsion
         end
 
         def load_dialplans(*files)
-          files = Adhearsion.config.files_from_setting("paths", "dialplan") if files.empty?
-          files = Array files
-          files.map! do |file|
+          files = "#{Adhearsion.config.root}/dialplan.rb" if files.empty?
+
+          files = Array(files).map do |file|
             case file
               when File, StringIO
                 file
@@ -33,8 +31,6 @@ module Adhearsion
         end
 
       end
-
-      self.default_dial_plan_file_name ||= 'dialplan.rb'
 
       def initialize
         @context_collector = ContextNameCollector.new

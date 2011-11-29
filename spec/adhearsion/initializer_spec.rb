@@ -58,45 +58,6 @@ describe Adhearsion::Initializer do
     end
   end
 
-  it "should execute gem when .ahnrc contains gem names" do
-    stub_behavior_for_initializer_with_no_path_changing_behavior do
-      ahn_rc = {
-        "gems" => {
-          "activerecord" => { "version" => ">= 1.2.0" },
-          "twitter" => nil
-        },
-        # Paths are unnecessary except to make the other part of bootstrap_rc happy.
-        "paths"=>{"dialplan"=>"dialplan.rb", "init"=>"config/adhearsion.rb", "events"=>"events.rb",
-            "models"=> "models/*.rb"}
-      }
-      ahn = Adhearsion::Initializer.new path
-      flexmock(Adhearsion::Initializer).should_receive(:get_rules_from).once.and_return ahn_rc
-      flexmock(ahn).should_receive(:gem).once.with("activerecord", ">= 1.2.0")
-      flexmock(ahn).should_receive(:gem).once.with("twitter")
-      ahn.start
-    end
-  end
-
-  it "should require() the lib when .ahnrc contains a require section with one name" do
-    stub_behavior_for_initializer_with_no_path_changing_behavior do
-      ahn_rc = {
-        "gems" => {
-          "twitter" => {
-            "require" => "sometwitterstuffs"
-          }
-        },
-        # Paths are unnecessary except to make the other part of bootstrap_rc happy.
-        "paths"=>{"dialplan"=>"dialplan.rb", "init"=>"config/adhearsion.rb", "events"=>"events.rb",
-            "models"=>"models/*.rb"}
-      }
-      ahn = Adhearsion::Initializer.new path
-      flexmock(Adhearsion::Initializer).should_receive(:get_rules_from).once.and_return ahn_rc
-      flexstub(ahn).should_receive(:gem).once.with("twitter")
-      flexmock(ahn).should_receive(:require).once.with("sometwitterstuffs")
-      ahn.start
-    end
-  end
-
   it "should create a designated pid file when supplied a String path as :pid_file" do
     random_file = "/tmp/AHN_TEST_#{rand 100000}.pid"
     stub_behavior_for_initializer_with_no_path_changing_behavior do
@@ -105,17 +66,6 @@ describe Adhearsion::Initializer do
       File.exists?(random_file).should be true
       File.delete random_file
     end
-  end
-end
-
-describe "Adhearsion::Initializer" do
-  it "should initialize events properly" do
-    events_rb = Tempfile.new "events.rb"
-    initializer = Adhearsion::Initializer.new("/does/not/matter")
-    flexmock(Adhearsion.config).should_receive(:files_from_setting).at_least.once.with("paths", "events").and_return([events_rb.path])
-    flexmock(initializer).should_receive(:require).once.with events_rb.path
-
-    initializer.send :init_events_file
   end
 end
 

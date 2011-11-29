@@ -94,6 +94,30 @@ module Adhearsion
         end
       end
 
+      it "should define accessors for other contexts in the dialplan" do
+        call = new_call_for_context :am_not_for_kokoa!
+        bogus_dialplan = <<-DIALPLAN
+          am_not_for_kokoa! {}
+          icanhascheezburger? {}
+          these_context_names_do_not_really_matter {}
+        DIALPLAN
+
+        mock_dialplan_with bogus_dialplan
+
+        flexmock(call).should_receive :write_and_await_response
+
+        manager = Adhearsion::DialPlan::Manager.new
+        manager.dial_plan.entry_points.empty?.should_not be true
+
+        flexmock(call).should_receive(:hangup!).once
+
+        manager.handle call
+
+        %w(these_context_names_do_not_really_matter icanhascheezburger? am_not_for_kokoa!).each do |context_name|
+          manager.context.respond_to?(context_name).should be true
+        end
+      end
+
       it "with_next_message should execute its block with the message from the inbox" do
         pending
         [:one, :two, :three].each { |message| call.inbox << message }

@@ -21,7 +21,6 @@ class AhnGenerator < RubiGen::Base
       m.directory ''
       BASEDIRS.each { |path| m.directory path }
 
-      m.file  *[".ahnrc"]*2
       m.file  *["config/environment.rb"]*2
       m.file  *["config/adhearsion.rb"]*2
       m.file  *["dialplan.rb"]*2
