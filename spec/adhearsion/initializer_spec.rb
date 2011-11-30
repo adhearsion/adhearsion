@@ -74,15 +74,28 @@ describe "Adhearsion::Initializer#load_lib_folder" do
     '/any/ole/path'
   end
 
-  it "should load the contents of lib directory" do
+  before do
     Adhearsion.ahn_root = path
+  end
+
+  it "should load the contents of lib directory" do    
     flexmock(Dir).should_receive(:chdir).with("/any/ole/path/lib", Proc).and_return []
     Adhearsion::Initializer.new(path).load_lib_folder
   end
 
   it "should return false if folder does not exist" do
-    Adhearsion.ahn_root = path
     Adhearsion::Initializer.new(path).load_lib_folder.should == false
+  end
+
+  it "should return false and not load any file if config folder is set to nil" do
+    Adhearsion.config.platform.lib = nil
+    Adhearsion::Initializer.new(path).load_lib_folder.should == false
+  end
+
+  it "should load the contents of the preconfigured directory" do
+    Adhearsion.config.platform.lib = "foo"
+    flexmock(Dir).should_receive(:chdir).with("/any/ole/path/foo", Proc).and_return []
+    Adhearsion::Initializer.new(path).load_lib_folder
   end
 end
 

@@ -110,16 +110,21 @@ module Adhearsion
 
     ##
     # Loads files in application lib folder
-    # @return [Boolean] if folder exists or not
+    # @return [Boolean] if files have been loaded (lib folder is configured to not nil and actually exists)
     def load_lib_folder
-      if File.directory? "#{Adhearsion.config.platform.root}/lib"
-        Dir.chdir "#{Adhearsion.config.platform.root}/lib" do
-          rbfiles = File.join "**", "*.rb"
-          Dir.glob(rbfiles).each do |file|
-            require "#{Adhearsion.config.root}/lib/#{file}"
+      unless Adhearsion.config.platform.lib.nil?
+        lib_folder = "#{Adhearsion.config.platform.root}/#{Adhearsion.config.platform.lib}"
+        if File.directory? lib_folder
+          Dir.chdir lib_folder do
+            rbfiles = File.join "**", "*.rb"
+            Dir.glob(rbfiles).each do |file|
+              require "#{lib_folder}/#{file}"
+            end
           end
+          true
+        else
+          false
         end
-        true
       else
         false
       end
