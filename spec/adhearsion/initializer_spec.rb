@@ -68,6 +68,24 @@ describe Adhearsion::Initializer do
   end
 end
 
+describe "Adhearsion::Initializer#load_lib_folder" do
+
+  let :path do
+    '/any/ole/path'
+  end
+
+  it "should load the contents of lib directory" do
+    Adhearsion.ahn_root = path
+    flexmock(Dir).should_receive(:chdir).with("/any/ole/path/lib", Proc).and_return []
+    Adhearsion::Initializer.new(path).load_lib_folder
+  end
+
+  it "should return false if folder does not exist" do
+    Adhearsion.ahn_root = path
+    Adhearsion::Initializer.new(path).load_lib_folder.should == false
+  end
+end
+
 describe "Adhearsion.ahn_root" do
 
   include InitializerStubs
