@@ -93,7 +93,7 @@ module Adhearsion
             call = Adhearsion.receive_call_from(offer)
             case Adhearsion::Process.state_name
             when :booting, :rejecting
-              call.reject :declined
+              call.reject :decline
             when :running
               DialPlan::Manager.handle call
             else

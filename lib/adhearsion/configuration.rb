@@ -25,9 +25,6 @@ module Adhearsion
           outputters nil, :desc => <<-__
             An array of log outputters to use. The default is to log to stdout and log/adhearsion.log
           __
-          formatters ::Logging::Layouts.basic({:format_as => :string, :backtrace => true}), :desc => <<-__
-            An array of log formatters to apply to the outputters in use
-          __
           formatter nil, :desc => <<-__
             A log formatter to apply to all active outputters
           __
@@ -48,13 +45,6 @@ module Adhearsion
     # @return [Loquacious::Configuration] configuration object or nil if the plugin does not exist
     def [] value
       self.send value.to_sym
-    end
-
-    def logging options
-      Adhearsion::Logging.logging_level = options[:level]             if options.has_key? :level
-      Adhearsion::Logging.outputters    = Array(options[:outputters]) if options.has_key? :outputters
-      Adhearsion::Logging.formatter     = options[:formatter]         if options.has_key? :formatter
-      #Adhearsion::Logging::AdhearsionLogger.formatters = Array(options[:formatter]) * Adhearsion::Logging::AdhearsionLogger.outputters.count if options.has_key? :formatter
     end
 
     ##
