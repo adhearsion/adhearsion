@@ -50,6 +50,7 @@ module Adhearsion
       resolve_pid_file_path
       resolve_log_file_path
       load_plugins_methods
+      load_config
       daemonize! if should_daemonize?
       launch_console if need_console?
       switch_to_root_directory
@@ -58,7 +59,6 @@ module Adhearsion
       initialize_log_file
       start_logging
       initialize_exception_logger
-      load_config
       init_plugins
 
       logger.info "Adhearsion v#{Adhearsion::VERSION} initialized!"
@@ -173,7 +173,8 @@ module Adhearsion
     end
 
     def start_logging
-      Logging.start init_get_logging_appenders
+      outputters = Adhearsion.config.platform.logging.outputters.nil? ? init_get_logging_appenders : Adhearsion.config.platform.logging.outputters
+      Logging.start outputters, Adhearsion.config.platform.logging.level, Adhearsion.config.platform.logging.formatter
     end
 
     def initialize_exception_logger
