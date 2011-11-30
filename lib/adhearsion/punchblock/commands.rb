@@ -63,8 +63,6 @@ module Adhearsion
 
         menu_instance = Punchblock::MenuDSL::Menu.new(options, &block)
 
-        initial_digit_prompt = sound_files.any?
-
         begin
           if menu_instance.should_continue?
             menu_instance.continue
@@ -98,6 +96,14 @@ module Adhearsion
 
           retry
         end
+      end
+
+      def play_sound_files_for_menu(menu_instance, sound_files)
+        digit = nil
+        if sound_files.any? && menu_instance.digit_buffer_empty?
+          digit = interruptible_play(*sound_files)
+        end
+        digit || wait_for_digit(menu_instance.timeout)
       end
 
     end

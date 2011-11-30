@@ -151,11 +151,8 @@ module Adhearsion
         #   input = interruptible_play ssml
         #   play input unless input.nil?
         #
-        # @param [RubySpeech::SSML::Speak] The SSML to play to the user
+        # @param [String|Numeric|Date|Time|RubySpeech::SSML::Speak|Array|Hash] The argument to play to the user, or an array of arguments.
         # @param [Hash] Additional options.
-        # +:digits+ - How many digits to expect from the user
-        # +:initial_timeout+ - Time in ms to wait for the first digit before time-out
-        # +:inter_digit_timeout+ - Milliseconds to wait between every digit before timeout
         #
         # @return [String|Nil] The single DTMF character entered by the user, or nil if nothing was entered
         #

@@ -79,7 +79,8 @@ module Adhearsion
         end # describe #grammar_accept
 
         describe "#wait_for_digit" do
-          let(:timeout) { 2000 }
+          let(:timeout) { 2 }
+          let(:timeout_ms) { 2000 }
 
           let(:grxml) {
             RubySpeech::GRXML.draw do
@@ -103,8 +104,8 @@ module Adhearsion
           let(:input_component) {
             Punchblock::Component::Input.new(
               { :mode => :dtmf,
-                :initial_timeout => timeout,
-                :inter_digit_timeout => timeout,
+                :initial_timeout => timeout_ms,
+                :inter_digit_timeout => timeout_ms,
                 :grammar => {
                   :value => grxml.to_s
                 }
