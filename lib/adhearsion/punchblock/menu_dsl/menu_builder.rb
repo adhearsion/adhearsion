@@ -29,7 +29,7 @@ module Adhearsion
           callback.call input if callback
         end
 
-        def on_valid(&block)
+        def on_invalid(&block)
           raise LocalJumpError, "Must supply a block!" unless block_given?
           @menu_callbacks[:invalid] = block
         end

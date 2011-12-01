@@ -57,10 +57,12 @@ module Adhearsion
         #
         # Waits for a single digit and returns it, or returns nil if nothing was pressed
         #
-        # @param [Integer] the timeout to wait before returning, in milliseconds
-        # @return [String|nil] the pressed key, or nil if timeout was reached
+        # @param [Integer] the timeout to wait before returning, in seconds. nil or -1 mean no timeout.
+        # @return [String|nil] the pressed key, or nil if timeout was reached.
         #
-        def wait_for_digit(timeout = 1000)
+        def wait_for_digit(timeout = 1)
+          timeout = nil if timeout == -1
+          timeout *= 1_000
           input_component = execute_component_and_await_completion ::Punchblock::Component::Input.new :mode => :dtmf,
             :initial_timeout => timeout,
             :inter_digit_timeout => timeout,
@@ -95,7 +97,7 @@ module Adhearsion
         # via DTMF (keypad) input until one of three things happens:
         #
         #  1. The number of digits you specify as the first argument is collected
-        #  2. The timeout you specify with the :timeout option elapses, in milliseconds.
+        #  2. The timeout you specify with the :timeout option elapses, in seconds.
         #  3. The "#" key (or the key you specify with :accept_key) is pressed
         #
         # Usage examples
