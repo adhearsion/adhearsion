@@ -90,7 +90,7 @@ module Adhearsion
           initialize_punchblock
           flexmock(Adhearsion::Process).should_receive(:state_name).once.and_return :booting
           flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return mock_call
-          mock_call.should_receive(:reject).once.with(:declined)
+          mock_call.should_receive(:reject).once.with(:decline)
           Events.trigger_immediately :punchblock, offer
         end
         
@@ -106,7 +106,7 @@ module Adhearsion
           initialize_punchblock
           flexmock(Adhearsion::Process).should_receive(:state_name).once.and_return :rejecting
           flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return mock_call
-          mock_call.should_receive(:reject).once.with(:declined)
+          mock_call.should_receive(:reject).once.with(:decline)
           Events.trigger_immediately :punchblock, offer
         end
         

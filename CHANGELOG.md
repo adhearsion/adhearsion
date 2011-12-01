@@ -12,17 +12,18 @@
   * Theatre has been replaced in favour of a girl_friday and has-guarded-handlers based event queueing/handling system (further details below).
 
 ## Plugin system
+  * Plugin system is the way to extend Adhearsion framework and provides the easiest path to add new functionality, configuration or modify the initialization process.
+  * Created Plugin infrastructure. Adhearsion::Plugin class allows to create dialplan, rpc, event and console methods, add initializers
+  and create or update any configuration
+  * Moved deprecated Adhearsion::Components behaviour to the dedicated gem adhearsion-components
+  * Moved ami_remote component to adhearsion-asterisk plugin
+  * Moved Rails integration to adhearsion-rails plugin as it is not an Adhearsion core feature
+  * Moved Active Record integration to adhearsion-rails plugin
+  * Moved XMPP integration to adhearsion-xmpp plugin
+  * Moved DRb integration to adhearsion-drb plugin
+  * Moved LDAP integration to adhearsion-ldap plugin
   * Translate STOMP gateway component to a plugin and remove the component generators entirely
-  * Move ami_remote component to ahn-asterisk plugin
-  * Remove XMPP gateway component
   * Translate simon_game component to plugin
-  * added support to create a new Adhearsion::Console method via plugin
-  * Update generated app Gemfile for components -> plugins, remove gem component loading config, stop including components in generated app, remove component create/enable/disable CLI commands, fix some component related documentation
-  * Remove the component spec framework (unused)
-  * delete initializer for components. This should be done by ahn-components
-  * update method name. components dialplans now are loaded in the ahn-components plugin
-  * moved deprecate Adhearsion::Components to the dedicated gem ahn-components
-  * FEATURE Adhearsion plugins first commit
 
 ## Dialplan changes
 
@@ -66,11 +67,11 @@
   ```
 
 ## Logging
-  * MINOR added call_id to call logs
-  * MINOR added trace level
-  * MINOR logging config outside initializer
-  * MINOR use a predefined logger method name. This must be done in a config initializer once we are using plugins
-  * [FEATURE] switch logging mechanism from log4r to logging
+  * Switched logging mechanism from log4r to logging
+  * Any logging config value can be updated via the centralized configuration object
+  * 6 logging levels are supported by default: TRACE < DEBUG < INFO < WARN < ERROR < FATAL
+  * The default logging pattern outputs the class name in any log message, using a colorized pattern in STDOUT to improve readability
+  * Any log message from an Adhearsion::Call object outputs the call unique id to distinguish messages from any call
 
 ## Removal of non-core-critical functionality
   * Removed all asterisk specific functionality

@@ -82,38 +82,6 @@ describe Adhearsion::Configuration do
       subject.automatically_accept_incoming_calls.should == true
     end
 
-    context "Logging configuration" do
-      subject { Adhearsion.config }
-
-      before do
-        Adhearsion::Logging.reset
-        Adhearsion::Logging.start
-      end
-
-      it 'the logging level should translate from symbols into Logging constants' do
-        Adhearsion::Logging.logging_level.should_not be Adhearsion::Logging::WARN
-        subject.logging :level => :warn
-        Adhearsion::Logging.logging_level.should be Adhearsion::Logging::WARN
-      end
-
-      it 'outputters should be settable' do
-        Adhearsion::Logging.outputters.length.should eql(1)
-        subject.logging :outputters => ::Logging.appenders.stdout
-        Adhearsion::Logging.outputters.should == [::Logging.appenders.stdout]
-      end
-
-      it 'formatter should be settable' do
-        Adhearsion::Logging.formatter.class.should == ::Logging::Layouts::Basic
-        subject.logging :formatter => ::Logging::Layouts.pattern({:pattern => '[%d] %-5l %c: %m\n'})
-        Adhearsion::Logging.formatter.class.should == ::Logging::Layouts.pattern
-      end
-
-      it 'a global formatter should be settable' do
-        Adhearsion::Logging.formatter.class.should == ::Logging::Layouts::Basic
-        subject.logging :formatter => ::Logging::Layouts.pattern({:pattern => '[%d] %-5l %c: %m\n'})
-        Adhearsion::Logging.formatter.class.should == ::Logging::Layouts.pattern
-      end
-    end
   end
 
   describe "while retrieving configuration descriptions" do
