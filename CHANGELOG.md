@@ -37,7 +37,7 @@
   * Input currently is DTMF-only using the `#input`, `#wait_for_digit` and `#stream_file` methods compatibly with preceding versions
 
 ### Menu system
-
+  * Old-style menu system working on develop
 
 ### Recording
 
