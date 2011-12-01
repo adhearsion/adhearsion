@@ -59,6 +59,7 @@ module Adhearsion
       initialize_log_file
       start_logging
       initialize_exception_logger
+      load_lib_folder
       init_plugins
 
       logger.info "Adhearsion v#{Adhearsion::VERSION} initialized!"
@@ -104,6 +105,28 @@ module Adhearsion
 
       trap 'ABRT' do
         Adhearsion::Process.force_stop
+      end
+    end
+
+    ##
+    # Loads files in application lib folder
+    # @return [Boolean] if files have been loaded (lib folder is configured to not nil and actually exists)
+    def load_lib_folder
+      unless Adhearsion.config.platform.lib.nil?
+        lib_folder = "#{Adhearsion.config.platform.root}/#{Adhearsion.config.platform.lib}"
+        if File.directory? lib_folder
+          Dir.chdir lib_folder do
+            rbfiles = File.join "**", "*.rb"
+            Dir.glob(rbfiles).each do |file|
+              require "#{lib_folder}/#{file}"
+            end
+          end
+          true
+        else
+          false
+        end
+      else
+        false
       end
     end
 
