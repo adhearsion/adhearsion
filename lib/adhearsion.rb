@@ -81,7 +81,8 @@ module Adhearsion
     end
   end
 
-  Hangup = Class.new StandardError # At the moment, we'll just use this to end a call-handling Thread
-  PlaybackError = Class.new StandardError # Represents failure to play audio, such as when the sound file cannot be found
-  RecordError = Class.new StandardError # Represents failure to record such as when a file cannot be written.
+  Hangup             = Class.new StandardError # At the moment, we'll just use this to end a call-handling Thread
+  PlaybackError      = Class.new StandardError # Represents failure to play audio, such as when the sound file cannot be found
+  RecordError        = Class.new StandardError # Represents failure to record such as when a file cannot be written.
+  ConfigurationError = Class.new StandardError # Error raised while trying to configura a non existent pluginend
 end
