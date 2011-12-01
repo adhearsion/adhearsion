@@ -67,6 +67,14 @@ describe Adhearsion::Configuration do
     end
   end
 
+  describe "when configuring a non existing object" do
+    it "should raise a ConfigurationError" do
+      lambda {
+        Adhearsion.config.foo.bar = "bazz"
+      }.should raise_error Adhearsion::ConfigurationError, "Invalid plugin foo"
+    end
+  end
+
   describe "when accessing the platform configuration" do
     after do
       Adhearsion.config = nil

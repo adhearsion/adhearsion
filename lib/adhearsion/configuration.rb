@@ -52,7 +52,9 @@ module Adhearsion
     #
     # Adhearsion.config.foo => returns the configuration object associated to the foo plugin
     def method_missing method_name, *args, &block
-      Loquacious::Configuration.for(method_name, &block)
+      config = Loquacious::Configuration.for(method_name, &block)
+      raise Adhearsion::ConfigurationError.new "Invalid plugin #{method_name}" if config.nil?
+      config
     end
 
     # root accessor
