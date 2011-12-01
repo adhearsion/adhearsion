@@ -41,7 +41,7 @@ module Adhearsion
         def continue
           raise MenuGetAnotherDigitOrTimeout if digit_buffer_empty?
 
-          calculated_matches = builder.calculated_matches_for digit_buffer_string
+          calculated_matches = builder.calculate_matches_for digit_buffer_string
 
           if calculated_matches.exact_match_count >= 1
             first_exact_match = calculated_matches.exact_matches.first

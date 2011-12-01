@@ -106,6 +106,47 @@ module Adhearsion
         digit || wait_for_digit(menu_instance.timeout)
       end
 
+      # Jumps to a context. An alternative to DialplanContextProc#+@. When jumping to a context, it will *not* resume executing
+      # the former context when the jumped-to context has finished executing. Make sure you don't have any
+      # +ensure+ closures which you expect to execute when the call has finished, as they will run when
+      # this method is called.
+      #
+      # You can optionally override certain dialplan variables when jumping to the context. A popular use of
+      # this is to redefine +extension+ (which this method automatically boxes with a PhoneNumber object) so
+      # you can effectively "restart" a call (from the perspective of the jumped-to context). When you override
+      # variables here, you're effectively blowing away the old variables. If you need them for some reason,
+      # you should assign the important ones to an instance variable first before calling this method.
+      def jump_to(context, overrides={})
+        context = lookup_context_with_name(context) if context.kind_of?(Symbol) || (context.kind_of?(String) && context =~ /^[\w_]+$/)
+
+        # JRuby has a bug that prevents us from correctly determining the class name.
+        # See: http://jira.codehaus.org/browse/JRUBY-5026
+        if !(context.kind_of?(Adhearsion::DialPlan::DialplanContextProc) || context.kind_of?(Proc))
+          raise Adhearsion::DSL::Dialplan::ContextNotFoundException
+        end
+
+        if overrides.any?
+          overrides = overrides.symbolize_keys
+          if overrides.has_key?(:extension) && !overrides[:extension].kind_of?(Adhearsion::DSL::PhoneNumber)
+            overrides[:extension] = Adhearsion::DSL::PhoneNumber.new overrides[:extension]
+          end
+
+          overrides.each_pair do |key, value|
+            meta_def(key) { value }
+          end
+        end
+
+        raise Adhearsion::DSL::Dialplan::ControlPassingException.new(context)
+      end
+
+      def lookup_context_with_name(context_name)
+        begin
+          send context_name
+        rescue NameError
+          raise Adhearsion::DSL::Dialplan::ContextNotFoundException
+        end
+      end
+
     end
   end
 end
