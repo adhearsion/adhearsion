@@ -49,6 +49,7 @@ module Adhearsion
     def start
       resolve_pid_file_path
       resolve_log_file_path
+      load_lib_folder
       load_plugins_methods
       load_config
       daemonize! if should_daemonize?
@@ -59,7 +60,6 @@ module Adhearsion
       initialize_log_file
       start_logging
       initialize_exception_logger
-      load_lib_folder
       init_plugins
 
       logger.info "Adhearsion v#{Adhearsion::VERSION} initialized!"
