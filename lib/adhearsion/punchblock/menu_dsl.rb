@@ -3,6 +3,7 @@ module Adhearsion
     module MenuDSL
       extend ActiveSupport::Autoload
 
+      autoload :Exceptions
       autoload :CalculatedMatch
       autoload :CalculatedMatchCollection
       autoload :MatchCalculator
