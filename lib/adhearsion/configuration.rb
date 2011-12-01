@@ -15,6 +15,10 @@ module Adhearsion
     def initialize &block
       Loquacious::Configuration.for(:platform) do
         root nil, :desc => "Adhearsion application root folder"
+        lib "lib", :desc => <<-__
+          Folder to include the own libraries to be used. Adhearsion loads any ruby file located into this folder during the bootstrap
+          process. Set to nil if you do not want these files to be loaded. This folder is relative to the application root folder.
+        __
         automatically_accept_incoming_calls true, :desc => "Adhearsion will accept automatically any inbound call"
 
         desc "Log configuration"
@@ -26,7 +30,7 @@ module Adhearsion
             An array of log outputters to use. The default is to log to stdout and log/adhearsion.log
           __
           formatter nil, :desc => <<-__
-            A log formatter to apply to all active outputters
+            A log formatter to apply to all active outputters. If nil, the Adhearsion default formatter will be used.
           __
         }
       end

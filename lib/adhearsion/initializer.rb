@@ -49,6 +49,7 @@ module Adhearsion
     def start
       resolve_pid_file_path
       resolve_log_file_path
+      load_lib_folder
       load_plugins_methods
       load_config
       daemonize! if should_daemonize?
@@ -104,6 +105,28 @@ module Adhearsion
 
       trap 'ABRT' do
         Adhearsion::Process.force_stop
+      end
+    end
+
+    ##
+    # Loads files in application lib folder
+    # @return [Boolean] if files have been loaded (lib folder is configured to not nil and actually exists)
+    def load_lib_folder
+      unless Adhearsion.config.platform.lib.nil?
+        lib_folder = "#{Adhearsion.config.platform.root}/#{Adhearsion.config.platform.lib}"
+        if File.directory? lib_folder
+          Dir.chdir lib_folder do
+            rbfiles = File.join "**", "*.rb"
+            Dir.glob(rbfiles).each do |file|
+              require "#{lib_folder}/#{file}"
+            end
+          end
+          true
+        else
+          false
+        end
+      else
+        false
       end
     end
 
