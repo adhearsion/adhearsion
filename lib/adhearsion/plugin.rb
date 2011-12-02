@@ -185,7 +185,7 @@ module Adhearsion
         ::Loquacious::Configuration.help_for(plugin_name)
       end
 
-      def load
+      def load_plugins
         load_methods
         init_plugins
       end

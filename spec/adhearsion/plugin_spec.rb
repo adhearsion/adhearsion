@@ -64,7 +64,7 @@ describe Adhearsion::Plugin do
 
         end
         flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-        Adhearsion::Plugin.load
+        Adhearsion::Plugin.load_plugins
         Adhearsion::Plugin.send("#{method.to_s}_module".to_sym).instance_methods.map{|x| x.to_s}.include?("foo").should == true
       end
       
@@ -103,7 +103,7 @@ describe Adhearsion::Plugin do
         end
       end
       flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-      Adhearsion::Plugin.load
+      Adhearsion::Plugin.load_plugins
       Adhearsion::Console.should respond_to(:config)
       Adhearsion::Console.config.should == Adhearsion.config
     end
@@ -179,7 +179,7 @@ describe Adhearsion::Plugin do
     end
   end
 
-  describe "Adhearsion::Plugin.load" do
+  describe "Adhearsion::Plugin.load_plugins" do
     before do
       Adhearsion::Plugin.class_eval do
         def self.reset_methods_scope
@@ -209,7 +209,7 @@ describe Adhearsion::Plugin do
         # 1 => Punchblock. Must be empty once punchblock initializer is an external Plugin
         Adhearsion::Plugin.initializers.should have(1).initializers
         flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-        Adhearsion::Plugin.load
+        Adhearsion::Plugin.load_plugins
       end
 
       it "should add a initializer when Plugin defines it" do
@@ -224,7 +224,7 @@ describe Adhearsion::Plugin do
         flexmock(FooBar).should_receive(:log).once
         Adhearsion::Plugin.initializers.length.should be 1
         flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-        Adhearsion::Plugin.load
+        Adhearsion::Plugin.load_plugins
       end
 
       it "should initialize all Plugin childs, including deep childs" do
@@ -250,7 +250,7 @@ describe Adhearsion::Plugin do
 
         flexmock(FooBar).should_receive(:log).times(3)
         flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-        Adhearsion::Plugin.load
+        Adhearsion::Plugin.load_plugins
       end
 
       it "should allow to include an initializer before another one" do
@@ -313,7 +313,7 @@ describe Adhearsion::Plugin do
           end
 
           flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-          Adhearsion::Plugin.load
+          Adhearsion::Plugin.load_plugins
           Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
         end
 
@@ -324,7 +324,7 @@ describe Adhearsion::Plugin do
           end
 
           flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-          Adhearsion::Plugin.load
+          Adhearsion::Plugin.load_plugins
           Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
         end
 
@@ -337,7 +337,7 @@ describe Adhearsion::Plugin do
           end
 
           flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-          Adhearsion::Plugin.load
+          Adhearsion::Plugin.load_plugins
           Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
         end
 
@@ -355,7 +355,7 @@ describe Adhearsion::Plugin do
           end
 
           flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-          Adhearsion::Plugin.load
+          Adhearsion::Plugin.load_plugins
           [:foo, :bar].each do |_method|
             Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(_method.to_s).should be true
           end
@@ -375,7 +375,7 @@ describe Adhearsion::Plugin do
           end
 
           flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-          Adhearsion::Plugin.load
+          Adhearsion::Plugin.load_plugins
           [:foo, :bar].each do |_method|
             Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(_method.to_s).should be true
           end
@@ -394,7 +394,7 @@ describe Adhearsion::Plugin do
           end
 
           flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-          Adhearsion::Plugin.load
+          Adhearsion::Plugin.load_plugins
           [:foo, :bar].each do |_method|
             Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(_method.to_s).should be true
           end
@@ -408,7 +408,7 @@ describe Adhearsion::Plugin do
           end
 
           flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-          Adhearsion::Plugin.load
+          Adhearsion::Plugin.load_plugins
           Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
           Adhearsion::Plugin.send("#{method.to_s}_module".to_sym).instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
         end
@@ -427,11 +427,54 @@ describe Adhearsion::Plugin do
         end
 
         flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-        Adhearsion::Plugin.load
+        Adhearsion::Plugin.load_plugins
         [:dialplan_module, :rpc_module].each do |_module|
           Adhearsion::Plugin.send(_module).instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
         end
       end
     end
   end  
+
+  describe "while loading rake tasks" do
+
+    after do
+      Adhearsion::Plugin.class_variable_set(:"@@rake_tasks", nil)
+      defined?(FooBar) and Object.send(:remove_const, :"FooBar")
+    end
+
+    subject{ Adhearsion::Plugin.tasks }
+    
+    it "should respond to method tasks" do
+      Adhearsion::Plugin.should respond_to :tasks
+    end
+
+    it "should return an Array" do
+      subject.should be_instance_of Array
+    end
+
+    its(:length){should == 0}
+
+    it "should not load a new task when there is no block in the method call" do
+
+      subject.length.should == 0
+      FooBar = Class.new Adhearsion::Plugin do
+        tasks
+      end
+
+      subject.length.should == 0
+    end
+
+    it "should load a new task when there is a block in the method call" do
+      subject.length.should == 0
+      FooBar = Class.new Adhearsion::Plugin do
+        tasks do
+          puts "foo bar"
+        end
+      end
+      Adhearsion::Plugin.tasks.length.should == 1
+    end
+
+
+  end
+
 end
