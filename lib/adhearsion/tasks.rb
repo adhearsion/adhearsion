@@ -15,7 +15,7 @@ end
 namespace :adhearsion do
   desc "Dump useful information about this application's adhearsion environment"
   task :about do
-    puts "Adhearsion version: #{Adhearsion::VERSION::STRING}"
+    puts "Adhearsion version: #{Adhearsion::VERSION}"
   end
 end
 
