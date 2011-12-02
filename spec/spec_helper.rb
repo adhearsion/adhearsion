@@ -17,7 +17,6 @@ end
 %w{
   rubygems
   bundler/setup
-  flexmock
   flexmock/rspec
   active_support
   rubigen
