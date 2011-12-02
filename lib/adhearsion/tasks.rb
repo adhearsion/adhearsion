@@ -1,4 +1,3 @@
-require 'rake/testtask'
 require 'adhearsion'
 
 %w<components 
