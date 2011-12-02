@@ -1,11 +1,5 @@
 require 'adhearsion/punchblock_plugin'
 
-begin
-  require "#{Dir.pwd}/config/adhearsion.rb"
-rescue Exception => ex
-  STDERR.puts "\nCannot find the Adhearsion application startup file: #{ex}"
-end
-
 namespace :adhearsion do
 
   desc "List the configured plugins"

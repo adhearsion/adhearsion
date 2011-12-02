@@ -1,9 +1,10 @@
 require 'adhearsion/punchblock_plugin'
 
 begin
+  Adhearsion.config # load default config vlaues
   require "#{Dir.pwd}/config/adhearsion.rb"
 rescue Exception => ex
-  STDERR.puts "\nCannot find the Adhearsion application startup file: #{ex}"
+  STDERR.puts "\nError while loading application configuration file: #{ex}"
 end
 
 namespace :adhearsion do
