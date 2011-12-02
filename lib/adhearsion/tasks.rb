@@ -11,6 +11,7 @@ plugins>.each do |file|
   require "adhearsion/tasks/#{file}"
 end
 
+Adhearsion::Plugin.load_tasks
 
 namespace :adhearsion do
   desc "Dump useful information about this application's adhearsion environment"

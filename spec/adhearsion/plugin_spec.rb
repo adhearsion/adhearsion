@@ -474,7 +474,19 @@ describe Adhearsion::Plugin do
       Adhearsion::Plugin.tasks.length.should == 1
     end
 
-
+    it "should execute the tasks blocks while loading rake tasks" do
+      subject.length.should == 0
+      FooBar = Class.new Adhearsion::Plugin do
+        tasks do
+          FooBar.foo
+        end
+        def self.foo
+        end
+      end
+      flexmock(FooBar).should_receive(:foo).once
+      Adhearsion::Plugin.load_tasks
+    end
+    
   end
 
 end
