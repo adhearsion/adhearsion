@@ -179,7 +179,7 @@ module Adhearsion
     end
 
     def launch_console
-      Thread.new do
+      Adhearsion::Process.important_threads << Thread.new do
         begin
           puts "Starting console"
           Adhearsion::Console.run
