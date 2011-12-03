@@ -21,6 +21,12 @@ describe Adhearsion::Initializer do
     Adhearsion::Events.reinitialize_queue!
   end
 
+  after :all do
+    Adhearsion::Logging.reset
+    Adhearsion::Initializer::Logging.start
+    Adhearsion::Logging.silence!
+  end
+
   it "initialization will start with only a path given" do
     stub_behavior_for_initializer_with_no_path_changing_behavior do
       Adhearsion::Initializer.start path
