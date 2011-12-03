@@ -84,7 +84,7 @@ describe "Adhearsion::Initializer#load_lib_folder" do
     Adhearsion.ahn_root = path
   end
 
-  it "should load the contents of lib directory" do    
+  it "should load the contents of lib directory" do
     flexmock(Dir).should_receive(:chdir).with("/any/ole/path/lib", Proc).and_return []
     Adhearsion::Initializer.new(path).load_lib_folder
   end
