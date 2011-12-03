@@ -10,7 +10,12 @@ describe Adhearsion::Initializer::Logging do
 	  Adhearsion::Logging.reset
   end
 
-  it "initializes properly a Logging object" do    
+  after(:all) do
+    Adhearsion::Initializer::Logging.start
+    Adhearsion::Logging.silence!
+  end
+
+  it "initializes properly a Logging object" do
     ::Logging.logger.root.appenders.length.should eql(1)
     ::Logging.logger.root.appenders.select{|a| a.is_a?(::Logging::Appenders::Stdout)}.length.should eql(1)
   end
