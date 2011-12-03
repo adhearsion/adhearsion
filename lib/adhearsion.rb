@@ -41,6 +41,7 @@ module Adhearsion
   autoload :OutboundCall
   autoload :Plugin
   autoload :Punchblock
+  autoload :Router
   autoload :Version
 
   # Sets up the Gem require path.
@@ -57,9 +58,17 @@ module Adhearsion
       block_given? and yield @config
       @config
     end
-    
+
     def config=(config)
       @config=config
+    end
+
+    def router(&block)
+      @router || @router = Router.new(&block || Proc.new {})
+    end
+
+    def router=(other)
+      @router = nil
     end
 
     def active_calls
