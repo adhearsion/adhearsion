@@ -43,7 +43,7 @@ describe Adhearsion::Plugin do
   [:rpc, :dialplan, :console].each do |method|
 
     describe "extending an object with #{method.to_s} scope methods" do
-      
+
       before(:all) do
         A = Class.new do
           def bar
@@ -67,21 +67,21 @@ describe Adhearsion::Plugin do
         Adhearsion::Plugin.load_plugins
         Adhearsion::Plugin.send("#{method.to_s}_module".to_sym).instance_methods.map{|x| x.to_s}.include?("foo").should == true
       end
-      
+
       after  do
         defined?(FooBar) and Object.send(:remove_const, :"FooBar")
       end
 
       describe "when extending a Class" do
         it "should respond to any of the #{method.to_s} scope methods and have visibility to the own instance methods" do
-          
+
           Adhearsion::Plugin.send("add_#{method}_methods".to_sym, A)
           a = A.new
           a.should respond_to :foo
           a.foo.should == "foobar"
         end
       end
-      
+
       describe "when extending an instance" do
         it "should respond to any of the scope methods and have visibility to the own instance methods" do
 
@@ -433,17 +433,17 @@ describe Adhearsion::Plugin do
         end
       end
     end
-  end  
+  end
 
   describe "while loading rake tasks" do
 
     after do
-      Adhearsion::Plugin.class_variable_set(:"@@rake_tasks", nil)
+      Adhearsion::Plugin.reset_rake_tasks
       defined?(FooBar) and Object.send(:remove_const, :"FooBar")
     end
 
     subject{ Adhearsion::Plugin.tasks }
-    
+
     it "should respond to method tasks" do
       Adhearsion::Plugin.should respond_to :tasks
     end
@@ -486,7 +486,7 @@ describe Adhearsion::Plugin do
       flexmock(FooBar).should_receive(:foo).once
       Adhearsion::Plugin.load_tasks
     end
-    
+
   end
 
 end

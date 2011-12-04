@@ -173,9 +173,13 @@ module Adhearsion
       #    end
       #
       def tasks
-        @@rake_tasks ||= []
+        @@rake_tasks or reset_rake_tasks
         @@rake_tasks << Proc.new if block_given?
         @@rake_tasks
+      end
+
+      def reset_rake_tasks
+        @@rake_tasks = []
       end
 
       def load_tasks
