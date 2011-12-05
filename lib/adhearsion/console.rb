@@ -11,6 +11,7 @@ module Adhearsion
       def run
         Pry.prompt = [ proc {|obj, nest_level| "AHN#{'  ' * nest_level}> " },
                        proc {|obj, nest_level| "AHN#{'  ' * nest_level}? " } ]
+        Pry.config.command_prefix = "%"
         pry
       end
 
