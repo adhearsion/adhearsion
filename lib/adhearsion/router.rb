@@ -11,8 +11,10 @@ module Adhearsion
       instance_exec &block
     end
 
-    def route
-      @routes << Route.new
+    def route(*args, &block)
+      Route.new(*args, &block).tap do |route|
+        @routes << route
+      end
     end
   end
 end

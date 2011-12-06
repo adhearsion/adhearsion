@@ -1,5 +1,7 @@
 require 'spec_helper'
 
+FooBarController = Class.new
+
 module Adhearsion
   describe Router do
     describe 'a new router' do
@@ -13,15 +15,41 @@ module Adhearsion
         foo.should be_a Router
       end
 
-      it "should allow defining routes in the block" do
-        router = Router.new do
-          route
-          route
+      describe "defining routes in the block" do
+        let(:router) do
+          Router.new do
+            route 'calls from fred', FooBarController, :from => 'fred'
+            route 'calls from paul', :from => 'paul' do
+              :bar
+            end
+            route 'catchall' do
+              :foo
+            end
+          end
         end
 
-        router.routes.should have(2).routes
-        router.routes.each do |route|
-          route.should be_a Router::Route
+        subject { router.routes }
+
+        it { should have(3).elements }
+
+        it "should contain Routes" do
+          subject.each do |route|
+            route.should be_a Router::Route
+          end
+        end
+
+        it "should build up the routes with the correct data" do
+          subject[0].name.should == 'calls from fred'
+          subject[0].guards.should == {:from => 'fred'}
+          subject[0].target.should == FooBarController
+
+          subject[1].name.should == 'calls from paul'
+          subject[1].guards.should == {:from => 'paul'}
+          subject[1].target.should be_a Proc
+
+          subject[2].name.should == 'catchall'
+          subject[2].guards.should == nil
+          subject[2].target.should be_a Proc
         end
       end
     end
