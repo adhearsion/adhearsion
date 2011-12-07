@@ -59,7 +59,7 @@ Original author: [Jay Phillips](https://github.com/jicksta)
 Core team:
 
 * [Ben Klang](https://github.com/bklang)
-* [Ben Langfeld](https://github.com/blangfeld)
+* [Ben Langfeld](https://github.com/benlangfeld)
 * [Jason Goecke](https://github.com/jsgoecke)
 
 Contributors: https://github.com/adhearsion/adhearsion/contributors
