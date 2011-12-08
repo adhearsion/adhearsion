@@ -16,5 +16,9 @@ module Adhearsion
         @routes << route
       end
     end
+
+    def match(call)
+      @routes.find { |route| route.match? call }
+    end
   end
 end

@@ -32,6 +32,41 @@ module Adhearsion
           its(:guards)  { should == guards }
         end
       end
+
+      describe "a guarded route" do
+        subject { Route.new 'foobar', Class.new, *guards}
+
+        def should_match_the_call
+          subject.match?(call).should be true
+        end
+
+        def should_not_match_the_call
+          subject.match?(call).should be false
+        end
+
+        describe "matching calls from fred to paul" do
+          let :guards do
+            [
+              {:from => 'fred', :to => 'paul'}
+            ]
+          end
+
+          context "with a call from fred to paul" do
+            let(:call) { flexmock 'Adhearsion::Call', :from => 'fred', :to => 'paul' }
+            it { should_match_the_call }
+          end
+
+          context "with a call from fred to frank" do
+            let(:call) { flexmock 'Adhearsion::Call', :from => 'fred', :to => 'frank' }
+            it { should_not_match_the_call }
+          end
+
+          context "with a call from frank to paul" do
+            let(:call) { flexmock 'Adhearsion::Call', :from => 'frank', :to => 'paul' }
+            it { should_not_match_the_call }
+          end
+        end
+      end
     end
   end
 end

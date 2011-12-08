@@ -52,6 +52,40 @@ module Adhearsion
           subject[2].target.should be_a Proc
         end
       end
+
+      describe "matching a call" do
+        let(:router) do
+          Router.new do
+            route 'calls from fred', FooBarController, :from => 'fred'
+            route 'calls from fred2', :from => 'fred' do
+              :car
+            end
+            route 'calls from paul', :from => 'paul' do
+              :bar
+            end
+            route 'catchall' do
+              :foo
+            end
+          end
+        end
+
+        subject { router.match call }
+
+        context 'with a call from fred' do
+          let(:call) { flexmock 'Adhearsion::Call', :from => 'fred' }
+          its(:name) { should == 'calls from fred' }
+        end
+
+        context 'with a call from paul' do
+          let(:call) { flexmock 'Adhearsion::Call', :from => 'paul' }
+          its(:name) { should == 'calls from paul' }
+        end
+
+        context 'with a call from frank' do
+          let(:call) { flexmock 'Adhearsion::Call', :from => 'frank' }
+          its(:name) { should == 'catchall' }
+        end
+      end
     end
   end
 end
