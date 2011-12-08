@@ -40,15 +40,15 @@ module Adhearsion
 
         it "should build up the routes with the correct data" do
           subject[0].name.should == 'calls from fred'
-          subject[0].guards.should == {:from => 'fred'}
+          subject[0].guards.should == [{:from => 'fred'}]
           subject[0].target.should == FooBarController
 
           subject[1].name.should == 'calls from paul'
-          subject[1].guards.should == {:from => 'paul'}
+          subject[1].guards.should == [{:from => 'paul'}]
           subject[1].target.should be_a Proc
 
           subject[2].name.should == 'catchall'
-          subject[2].guards.should == nil
+          subject[2].guards.should == []
           subject[2].target.should be_a Proc
         end
       end

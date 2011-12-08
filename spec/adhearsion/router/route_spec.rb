@@ -15,7 +15,7 @@ module Adhearsion
         describe "with a class target and guards" do
           let(:target) { Class.new }
 
-          subject { Route.new name, target, guards }
+          subject { Route.new name, target, *guards }
 
           its(:name)    { should == name }
           its(:target)  { should == target }
@@ -25,7 +25,7 @@ module Adhearsion
         describe "with a block target and guards" do
           let(:target) { Class.new }
 
-          subject { Route.new(name, guards) { :foo } }
+          subject { Route.new(name, *guards) { :foo } }
 
           its(:name)    { should == name }
           its(:target)  { should be_a Proc }
