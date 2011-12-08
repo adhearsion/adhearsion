@@ -21,6 +21,13 @@ module Adhearsion
       end
     end
 
+    it 'can create a call and add it to the active calls' do
+      Adhearsion.active_calls.any?.should == false
+      call = Adhearsion.active_calls.from_offer mock_offer
+      call.should be_a_kind_of(Adhearsion::Call)
+      Adhearsion.active_calls.size.should == 1
+    end
+
     it 'the #<< method should add a Call to the Hash with its id' do
       id = rand
       call = Adhearsion::Call.new mock_offer(id)

@@ -12,7 +12,7 @@ module Adhearsion
 
     def initialize(offer = nil)
       if offer
-        @offer      = offer
+        @offer  = offer
         @client = offer.client
       end
 
@@ -99,7 +99,7 @@ module Adhearsion
     end
 
     def hangup
-      Adhearsion.remove_inactive_call self
+      Adhearsion.active_calls.remove_inactive_call self
     end
 
     def join(other_call_id)
@@ -147,7 +147,7 @@ module Adhearsion
     end
 
     def execute_controller(controller)
-
+      controller.run
     end
 
     private

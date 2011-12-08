@@ -41,17 +41,10 @@ module Adhearsion
       Adhearsion::Call.new(offer).client.should == client
     end
 
-    it 'can create a call and add it via a top-level method on the Adhearsion module' do
-      Adhearsion.active_calls.any?.should == false
-      call = Adhearsion.receive_call_from mock_offer
-      call.should be_a_kind_of(Adhearsion::Call)
-      Adhearsion.active_calls.size.should == 1
-    end
-
     it 'a hungup call removes itself from the active calls' do
       size_before = Adhearsion.active_calls.size
 
-      call = Adhearsion.receive_call_from mock_offer
+      call = Adhearsion.active_calls.from_offer mock_offer
       Adhearsion.active_calls.size.should > size_before
       call.hangup
       Adhearsion.active_calls.size.should == size_before
@@ -359,7 +352,11 @@ module Adhearsion
       end
 
       describe "#execute_controller" do
-        pending
+        it "should call #run on the controller instance" do
+          mock_controller = flexmock 'CallController'
+          mock_controller.should_receive(:run).once
+          subject.execute_controller mock_controller
+        end
       end
     end
 

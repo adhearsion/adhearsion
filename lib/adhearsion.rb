@@ -76,18 +76,8 @@ module Adhearsion
       @calls ||= Calls.new
     end
 
-    def receive_call_from(offer)
-      Call.new(offer).tap do |call|
-        active_calls << call
-      end
-    end
-
     def status
       Adhearsion::Process.state_name
-    end
-
-    def remove_inactive_call(call)
-      active_calls.remove_inactive_call(call)
     end
   end
 

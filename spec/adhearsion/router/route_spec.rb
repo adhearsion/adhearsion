@@ -13,7 +13,7 @@ module Adhearsion
         end
 
         describe "with a class target and guards" do
-          let(:target) { Class.new }
+          let(:target) { CallController }
 
           subject { Route.new name, target, *guards }
 
@@ -23,8 +23,6 @@ module Adhearsion
         end
 
         describe "with a block target and guards" do
-          let(:target) { Class.new }
-
           subject { Route.new(name, *guards) { :foo } }
 
           its(:name)    { should == name }
@@ -34,7 +32,7 @@ module Adhearsion
       end
 
       describe "a guarded route" do
-        subject { Route.new 'foobar', Class.new, *guards}
+        subject { Route.new 'foobar', CallController, *guards }
 
         def should_match_the_call
           subject.match?(call).should be true
@@ -72,7 +70,7 @@ module Adhearsion
         let(:call) { Call.new }
 
         context "via a call controller" do
-          let(:controller)  { Class.new }
+          let(:controller)  { CallController }
           let(:route)       { Route.new 'foobar', controller }
 
           it "should instruct the call to use an instance of the controller" do
