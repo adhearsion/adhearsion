@@ -27,6 +27,7 @@ module Adhearsion
 
   autoload :Process
   autoload :Call
+  autoload :CallController
   autoload :Calls
   autoload :Configuration
   autoload :Console

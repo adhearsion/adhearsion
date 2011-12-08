@@ -5,7 +5,7 @@ module Adhearsion
     module MenuDSL
 
       describe CalculatedMatch do
-        include PunchblockCommandTestHelpers
+        include CallControllerTestHelpers
 
         let (:calculated_match) { Adhearsion::Punchblock::MenuDSL::CalculatedMatch }
 

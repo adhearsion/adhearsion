@@ -5,7 +5,7 @@ module Adhearsion
     module MenuDSL
 
       describe CalculatedMatchCollection do
-        include PunchblockCommandTestHelpers
+        include CallControllerTestHelpers
 
         attr_reader :collection
         before(:each) do

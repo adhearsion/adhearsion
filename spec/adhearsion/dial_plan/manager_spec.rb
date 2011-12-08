@@ -84,7 +84,7 @@ module Adhearsion
           entry_point = DialplanContextProc.new(:does_not_matter) { "Do nothing" }
           flexmock(subject).should_receive(:entry_point_for).once.with(call).and_return(entry_point)
 
-          execution_env = ExecutionEnvironment.create(call, nil)
+          execution_env = ExecutionEnvironment.new(call, nil)
           flexmock(execution_env).should_receive(:entry_point).and_return entry_point
           flexmock(execution_env).should_receive(:accept).never
 

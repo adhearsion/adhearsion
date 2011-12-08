@@ -8,18 +8,15 @@ module Adhearsion
       let(:call)        { Adhearsion::Call.new mock_offer(nil, headers) }
       let(:entry_point) { lambda {} }
 
-      subject { ExecutionEnvironment.create call, entry_point }
+      subject { ExecutionEnvironment.new call, entry_point }
 
       include DialplanTestingHelper
 
-      it "should extend itself with behavior specific to the voip platform which originated the call" do
-        ExecutionEnvironment.included_modules.should_not include(Adhearsion::Punchblock::Commands)
-        subject.metaclass.included_modules.should include(Adhearsion::Punchblock::Commands)
-      end
+      it { should be_a CallController }
 
       it "should add plugin dialplan methods" do
         flexmock(Adhearsion::Plugin).should_receive(:methods_scope).once.and_return({:dialplan => Module.new { def foo; end}})
-        e = ExecutionEnvironment.create call, entry_point
+        e = ExecutionEnvironment.new call, entry_point
         e.should respond_to(:foo)
       end
 

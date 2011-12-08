@@ -24,7 +24,7 @@ module Adhearsion
 
         starting_entry_point = entry_point_for call
         raise NoContextError, "No dialplan entry point for call context '#{call.context}' -- Ignoring call!" unless starting_entry_point
-        @context = ExecutionEnvironment.create call, starting_entry_point
+        @context = ExecutionEnvironment.new call, starting_entry_point
         inject_context_names_into_environment @context
         @context.run
       rescue Hangup

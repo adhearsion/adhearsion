@@ -5,7 +5,7 @@ module Adhearsion
     module MenuDSL
 
       describe "StringMatchCalculator" do
-        include PunchblockCommandTestHelpers
+        include CallControllerTestHelpers
 
         attr_reader :match_payload
         before(:each) do
