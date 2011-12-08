@@ -357,6 +357,10 @@ module Adhearsion
           subject.join other_call_id
         end
       end
+
+      describe "#execute_controller" do
+        pending
+      end
     end
 
     describe Call::CommandRegistry do

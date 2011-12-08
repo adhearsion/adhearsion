@@ -20,5 +20,10 @@ module Adhearsion
     def match(call)
       @routes.find { |route| route.match? call }
     end
+
+    def handle(call)
+      return unless route = match(call)
+      route.dispatcher
+    end
   end
 end

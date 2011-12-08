@@ -67,6 +67,20 @@ module Adhearsion
           end
         end
       end
+
+      describe "dispatching a call" do
+        let(:call) { Call.new }
+
+        context "via a call controller" do
+          let(:controller)  { Class.new }
+          let(:route)       { Route.new 'foobar', controller }
+
+          it "should instruct the call to use an instance of the controller" do
+            flexmock(call).should_receive(:execute_controller).once.with controller
+            route.dispatcher.call call
+          end
+        end
+      end
     end
   end
 end

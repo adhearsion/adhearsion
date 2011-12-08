@@ -18,6 +18,9 @@ module Adhearsion
       def match?(call)
         !guarded? guards, call
       end
+
+      def dispatcher
+        @dispatcher ||= lambda { |call| call.execute_controller target.new }
     end
   end
 end

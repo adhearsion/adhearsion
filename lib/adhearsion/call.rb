@@ -146,6 +146,10 @@ module Adhearsion
       end
     end
 
+    def execute_controller(controller)
+
+    end
+
     private
 
     def define_singleton_accessor_with_pair(key, value, recipient = self)

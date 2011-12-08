@@ -86,6 +86,21 @@ module Adhearsion
           its(:name) { should == 'catchall' }
         end
       end
+
+      describe "handling a call" do
+        subject do
+          Router.new do
+            route 'catchall', FooBarController
+          end
+        end
+
+        let(:call) { flexmock 'Adhearsion::Call' }
+        let(:route) { subject.routes.first }
+
+        it "should return the route's dispatcher" do
+          subject.handle(call).should be route.dispatcher
+        end
+      end
     end
   end
 end
