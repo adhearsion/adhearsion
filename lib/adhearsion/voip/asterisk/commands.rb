@@ -826,12 +826,13 @@ module Adhearsion
         # variables here, you're effectively blowing away the old variables. If you need them for some reason,
         # you should assign the important ones to an instance variable first before calling this method.
         def jump_to(context, overrides={})
+          requested_context = context
           context = lookup_context_with_name(context) if context.kind_of?(Symbol) || (context.kind_of?(String) && context =~ /^[\w_]+$/)
 
           # JRuby has a bug that prevents us from correctly determining the class name.
           # See: http://jira.codehaus.org/browse/JRUBY-5026
           if !(context.kind_of?(Adhearsion::DialPlan::DialplanContextProc) || context.kind_of?(Proc))
-            raise Adhearsion::VoIP::DSL::Dialplan::ContextNotFoundException
+            raise Adhearsion::VoIP::DSL::Dialplan::ContextNotFoundException "Context not found: #{requested_context}"
           end
 
           if overrides.any?
