@@ -832,7 +832,7 @@ module Adhearsion
           # JRuby has a bug that prevents us from correctly determining the class name.
           # See: http://jira.codehaus.org/browse/JRUBY-5026
           if !(context.kind_of?(Adhearsion::DialPlan::DialplanContextProc) || context.kind_of?(Proc))
-            raise Adhearsion::VoIP::DSL::Dialplan::ContextNotFoundException "Context not found: #{requested_context}"
+            raise Adhearsion::VoIP::DSL::Dialplan::ContextNotFoundException, "Context not found: #{requested_context.inspect}"
           end
 
           if overrides.any?
