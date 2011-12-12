@@ -4,7 +4,50 @@ module Adhearsion
   describe CallController do
     include CallControllerTestHelpers
 
+    let(:call) { Adhearsion::Call.new mock_offer(nil, :x_foo => 'bar') }
+
     its(:call) { should be call }
+
+    it "should add plugin dialplan methods" do
+      subject.should respond_to :foo
+    end
+
+    it "should add accessor methods for call variables" do
+      subject.x_foo == 'bar'
+    end
+
+    its(:logger)    { should be call.logger }
+    its(:variables) { should be call.variables }
+
+    describe "execution on a call" do
+      before do
+        flexmock subject, :write_and_await_response => nil, :execute_component_and_await_completion => nil
+      end
+
+      context "when auto-accept is enabled" do
+        before do
+          Adhearsion.config.platform.automatically_accept_incoming_calls = true
+        end
+
+        it "should accept the call" do
+          subject.should_receive(:accept).once.ordered
+          subject.should_receive(:run).once.ordered
+          subject.execute
+        end
+      end
+
+      context "when auto-accept is disabled" do
+        before do
+          Adhearsion.config.platform.automatically_accept_incoming_calls = false
+        end
+
+        it "should not accept the call" do
+          subject.should_receive(:accept).never
+          subject.should_receive(:run).once
+          subject.execute
+        end
+      end
+    end
 
     describe '#write_and_await_response' do
       let(:message) { Punchblock::Command::Accept.new }

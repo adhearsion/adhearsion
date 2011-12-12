@@ -147,7 +147,7 @@ module Adhearsion
     end
 
     def execute_controller(controller)
-      controller.run
+      controller.execute
     end
 
     private

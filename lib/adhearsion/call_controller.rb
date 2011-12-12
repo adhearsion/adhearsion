@@ -22,6 +22,27 @@ module Adhearsion
       @call = call
     end
 
+    def setup
+      Plugin.add_dialplan_methods self if Plugin
+      call.define_variable_accessors self
+    end
+
+    def execute
+      accept if Adhearsion.config.platform.automatically_accept_incoming_calls
+      run
+    end
+
+    def run
+    end
+
+    def variables
+      call.variables
+    end
+
+    def logger
+      call.logger
+    end
+
     def accept(headers = nil)
       call.accept headers
     end

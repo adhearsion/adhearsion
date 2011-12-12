@@ -352,9 +352,9 @@ module Adhearsion
       end
 
       describe "#execute_controller" do
-        it "should call #run on the controller instance" do
+        it "should call #execute on the controller instance" do
           mock_controller = flexmock 'CallController'
-          mock_controller.should_receive(:run).once
+          mock_controller.should_receive(:execute).once
           subject.execute_controller mock_controller
         end
       end
