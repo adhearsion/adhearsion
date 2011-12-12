@@ -49,7 +49,7 @@ module Adhearsion
         end
 
         def ami_options
-          %w(host port username password events auto_reconnect).inject({}) do |options, property|
+          %w(host port username password events auto_reconnect event_callback).inject({}) do |options, property|
             options[property.to_sym] = config.ami.send property
             options
           end

@@ -167,7 +167,7 @@ module Adhearsion
       end
 
       class AMIConfiguration < AbstractConfiguration
-        attr_accessor :port, :username, :password, :events, :host, :auto_reconnect
+        attr_accessor :port, :username, :password, :events, :host, :auto_reconnect, :event_callback
 
         class << self
           def default_port
@@ -185,6 +185,10 @@ module Adhearsion
           def default_auto_reconnect
             true
           end
+
+          def default_event_callback
+            proc { |event| Events.trigger(%w[asterisk manager_interface], event) }
+          end
         end
 
         def initialize(overrides = {})
@@ -192,6 +196,7 @@ module Adhearsion
           self.port           = self.class.default_port
           self.events         = self.class.default_events
           self.auto_reconnect = self.class.default_auto_reconnect
+          self.event_callback = self.class.default_event_callback
           super
         end
       end
