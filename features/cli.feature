@@ -5,14 +5,7 @@ Feature: Adhearsion Ahn CLI
 
   Scenario: No arguments given
     When I run `ahn`
-    Then the output should match:
-    """
-    Usage:
-       ahn create /path/to/directory
-       ahn start [console|daemon] [/path/to/directory]
-       ahn version|-v|--v|-version|--version
-       ahn help|-h|--h|--help|-help
-    """
+    Then I should see the usage message
     And the exit status should be 0
 
   Scenario: Unrecoginized commands
@@ -97,12 +90,5 @@ Feature: Adhearsion Ahn CLI
 
   Scenario: Command help
     When I run `ahn help`
-    Then the output should match:
-    """
-    Usage:
-       ahn create /path/to/directory
-       ahn start [console|daemon] [/path/to/directory]
-       ahn version|-v|--v|-version|--version
-       ahn help|-h|--h|--help|-help
-    """
+    Then I should see the usage message
     And the exit status should be 0
