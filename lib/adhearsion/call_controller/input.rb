@@ -148,7 +148,7 @@ module Adhearsion
           key = send play_command, speak_output, options[:speak]
           key = nil if play_command == :play!
         else
-          key = wait_for_digit timeout || nil
+          key = wait_for_digit timeout
         end
 
         loop do
@@ -165,7 +165,7 @@ module Adhearsion
             return buffer if number_of_digits && number_of_digits == buffer.length
           end
           return buffer if block_given? && yield(buffer)
-          key = wait_for_digit(timeout || nil)
+          key = wait_for_digit timeout
         end
       end # #input!
     end # Input
