@@ -13,6 +13,4 @@ end
 
 require 'cucumber'
 require 'aruba/cucumber'
-require 'rspec'
 require 'adhearsion'
-#ENV['PATH'] = "#{File.expand_path(File.dirname(__FILE__) + '/../../bin')}#{File::PATH_SEPARATOR}#{ENV['PATH']}"

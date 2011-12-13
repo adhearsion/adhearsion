@@ -24,7 +24,7 @@ Cucumber::Rake::Task.new(:features) do |t|
 end
 
 Cucumber::Rake::Task.new(:wip) do |t|
-  t.cucumber_opts = %w{-p wip}
+  t.cucumber_opts = %w{-p wip -q}
 end
 
 begin

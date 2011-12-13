@@ -1,2 +1,3 @@
 default: --tags ~@wip
 wip: --wip --tags @wip
+cli: --tags @cli

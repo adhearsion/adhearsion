@@ -48,13 +48,13 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'ci_reporter'
   s.add_development_dependency 'yard'
   s.add_development_dependency 'guard-rspec'
-  s.add_development_dependency 'guard-cucumber'
+  #s.add_development_dependency 'guard-cucumber'
   s.add_development_dependency 'cucumber'
   s.add_development_dependency 'aruba'
   if RUBY_PLATFORM =~ /darwin/
-    s.add_development_dependency %q<growl_notify>
-    s.add_development_dependency %q<rb-fsevent>
+    s.add_development_dependency 'growl_notify'
+    s.add_development_dependency 'rb-fsevent'
   elsif RUBY_PLATFORM =~ /linux/
-    gem 'rb-inotify', :require => false
+    s.add_development_dependency 'rb-inotify'
   end
 end
