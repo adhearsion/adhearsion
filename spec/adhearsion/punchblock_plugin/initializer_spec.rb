@@ -7,7 +7,7 @@ module Adhearsion
       def initialize_punchblock options = nil
 
         flexmock(Initializer).should_receive(:connect)
-        
+
         unless options.nil?
           Adhearsion.config.punchblock do |config|
             config.platform = options[:platform] if options.include? :platform
@@ -45,7 +45,7 @@ module Adhearsion
         subject {
           initialize_punchblock
         }
-        
+
         it "should set properly the username value" do
           subject.username.should == 'usera@127.0.0.1'
         end
@@ -86,37 +86,50 @@ module Adhearsion
       end
 
       describe "dispatching an offer" do
-        it 'should reject a call with cause :declined if the Adhearsion::Process is in :booting' do
+        before do
           initialize_punchblock
-          flexmock(Adhearsion::Process).should_receive(:state_name).once.and_return :booting
-          flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return mock_call
-          mock_call.should_receive(:reject).once.with(:decline)
-          Events.trigger_immediately :punchblock, offer
+          flexmock(Adhearsion::Process).should_receive(:state_name).once.and_return process_state
+          flexmock(Adhearsion.active_calls).should_receive(:from_offer).once.and_return mock_call
         end
-        
-        it 'should hand the call off to a new Manager when Adhearsion::Process is in :running' do
-          initialize_punchblock
-          flexmock(Adhearsion::Process).should_receive(:state_name).once.and_return :running
-          flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return mock_call
-          flexmock(DialPlan::Manager).should_receive(:handle).once.with(mock_call)
-          Events.trigger_immediately :punchblock, offer
+
+        context "when the Adhearsion::Process is :booting" do
+          let(:process_state) { :booting }
+
+          it 'should reject a call with cause :declined' do
+            mock_call.should_receive(:reject).once.with(:decline)
+          end
         end
-        
-        it 'should reject a call with cause :declined if the Adhearsion::Process is in :rejecting' do
-          initialize_punchblock
-          flexmock(Adhearsion::Process).should_receive(:state_name).once.and_return :rejecting
-          flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return mock_call
-          mock_call.should_receive(:reject).once.with(:decline)
-          Events.trigger_immediately :punchblock, offer
+
+        context "when when Adhearsion::Process is in :running" do
+          let(:process_state) { :running }
+
+          it "should execute the dispatcher provided by the router" do
+            controller = Class.new
+            Adhearsion.router do
+              route 'foobar', controller
+            end
+            first_route = Adhearsion.router.routes.first
+            flexmock(first_route.dispatcher).should_receive(:call).once.with mock_call
+          end
         end
-        
-        it 'should reject a call with cause :error if the Adhearsion::Process is not :running, :stopping or :rejecting' do
-          initialize_punchblock
-          flexmock(Adhearsion::Process).should_receive(:state_name).once.and_return :not_a_real_valid_state
-          flexmock(Adhearsion).should_receive(:receive_call_from).once.and_return mock_call
-          mock_call.should_receive(:reject).once.with(:error)
-          Events.trigger_immediately :punchblock, offer
+
+        context "when when Adhearsion::Process is in :rejecting" do
+          let(:process_state) { :rejecting }
+
+          it 'should reject a call with cause :declined' do
+            mock_call.should_receive(:reject).once.with(:decline)
+          end
         end
+
+        context "when when Adhearsion::Process is not :running, :stopping or :rejecting" do
+          let(:process_state) { :foobar }
+
+          it 'should reject a call with cause :error' do
+            mock_call.should_receive(:reject).once.with(:error)
+          end
+        end
+
+        after { Events.trigger_immediately :punchblock, offer }
       end
 
       describe "dispatching a component event" do
@@ -172,7 +185,7 @@ module Adhearsion
               config.username = 'userb@127.0.0.1'
               config.password = 'abc123'
               config.auto_reconnect = false
-            end            
+            end
           end
 
           subject do

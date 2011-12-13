@@ -5,7 +5,7 @@ module Adhearsion
     module MenuDSL
 
       describe "FixnumMatchCalculator" do
-        include PunchblockCommandTestHelpers
+        include CallControllerTestHelpers
 
         attr_reader :match_payload
         before(:each) do

@@ -2,8 +2,9 @@ require 'spec_helper'
 
 module Adhearsion
   describe Call do
-    let(:headers) { {:x_foo => 'bar'} }
-    subject { Adhearsion::Call.new mock_offer(nil, headers) }
+    let(:headers) { nil }
+    let(:offer)   { mock_offer nil, headers }
+    subject { Adhearsion::Call.new offer }
 
     after do
       Adhearsion.active_calls.clear!
@@ -14,9 +15,25 @@ module Adhearsion
     its(:end_reason) { should == nil }
     it { should be_active }
 
-    its(:variables) { should == headers }
     its(:commands) { should be_a Call::CommandRegistry }
     its(:commands) { should be_empty }
+
+    describe "its variables" do
+      context "with an offer with headers" do
+        let(:headers)   { {:x_foo => 'bar'} }
+        its(:variables) { should == headers }
+      end
+
+      context "with an offer without headers" do
+        let(:headers)   { nil }
+        its(:variables) { should == {} }
+      end
+
+      context "without an offer" do
+        let(:offer)     { nil }
+        its(:variables) { should == {} }
+      end
+    end
 
     it '#id should return the ID from the Offer' do
       offer = mock_offer
@@ -41,17 +58,10 @@ module Adhearsion
       Adhearsion::Call.new(offer).client.should == client
     end
 
-    it 'can create a call and add it via a top-level method on the Adhearsion module' do
-      Adhearsion.active_calls.any?.should == false
-      call = Adhearsion.receive_call_from mock_offer
-      call.should be_a_kind_of(Adhearsion::Call)
-      Adhearsion.active_calls.size.should == 1
-    end
-
     it 'a hungup call removes itself from the active calls' do
       size_before = Adhearsion.active_calls.size
 
-      call = Adhearsion.receive_call_from mock_offer
+      call = Adhearsion.active_calls.from_offer mock_offer
       Adhearsion.active_calls.size.should > size_before
       call.hangup
       Adhearsion.active_calls.size.should == size_before
@@ -355,6 +365,14 @@ module Adhearsion
         it "should mark the call inactive" do
           expect_message_waiting_for_response Punchblock::Command::Join.new :other_call_id => other_call_id
           subject.join other_call_id
+        end
+      end
+
+      describe "#execute_controller" do
+        it "should call #execute on the controller instance" do
+          mock_controller = flexmock 'CallController'
+          mock_controller.should_receive(:execute).once
+          subject.execute_controller mock_controller
         end
       end
     end

@@ -5,7 +5,7 @@ module Adhearsion
     module MenuDSL
 
       describe "MatchCalculator" do
-        include PunchblockCommandTestHelpers
+        include CallControllerTestHelpers
 
         it "the build_with_pattern() method should return an appropriate subclass instance based on the pattern's class" do
           MatchCalculator.build_with_pattern(1..2, :main).should be_an_instance_of RangeMatchCalculator

@@ -11,6 +11,12 @@ module Adhearsion
       @calls     = {}
     end
 
+    def from_offer(offer)
+      Call.new(offer).tap do |call|
+        self << call
+      end
+    end
+
     def <<(call)
       atomically { calls[call.id] = call }
     end

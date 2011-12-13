@@ -3,7 +3,7 @@ require 'spec_helper'
 module Adhearsion
   module Punchblock
     describe MenuDSL do
-      include PunchblockCommandTestHelpers
+      include CallControllerTestHelpers
 
       it "should accept hash options"
 

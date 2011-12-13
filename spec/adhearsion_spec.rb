@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Adhearsion do
-  subject {Adhearsion}
+  subject { Adhearsion }
 
   describe "while accessing the config method" do
     it "should return a Configuration instance" do
@@ -14,6 +14,23 @@ describe Adhearsion do
       Adhearsion.config do |config|
         foo.bar
       end
+    end
+  end
+
+  describe "#router" do
+    its(:router) { should be_a Adhearsion::Router }
+
+    it "should always use the same router" do
+      Adhearsion.router.should be Adhearsion.router
+    end
+
+    it "should pass a block along to the router" do
+      foo = nil
+      Adhearsion.router do
+        foo = self
+      end
+
+      foo.should be Adhearsion.router
     end
   end
 
