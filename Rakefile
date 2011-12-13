@@ -16,6 +16,17 @@ RSpec::Core::RakeTask.new
 require 'ci/reporter/rake/rspec'
 task :ci => ['ci:setup:rspec', :spec]
 
+require 'cucumber'
+require 'cucumber/rake/task'
+require 'ci/reporter/rake/cucumber'
+Cucumber::Rake::Task.new(:features) do |t|
+  t.cucumber_opts = %w{--tags ~@jruby} unless defined?(JRUBY_VERSION)
+end
+
+Cucumber::Rake::Task.new(:wip) do |t|
+  t.cucumber_opts = %w{-p wip}
+end
+
 begin
   require 'yard'
   YARD::Rake::YardocTask.new do |t|
