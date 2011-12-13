@@ -122,7 +122,7 @@ module Adhearsion
         end
 
         if number_of_digits && number_of_digits < 0
-          ahn_log.warn "Giving -1 to #input is now deprecated. Do not specify a first " +
+          logger.warn "Giving -1 to #input is now deprecated. Do not specify a first " +
                            "argument to allow unlimited digits." if number_of_digits == -1
           raise ArgumentError, "The number of digits must be positive!"
         end
