@@ -2,8 +2,9 @@ require 'spec_helper'
 
 module Adhearsion
   describe Call do
-    let(:headers) { {:x_foo => 'bar'} }
-    subject { Adhearsion::Call.new mock_offer(nil, headers) }
+    let(:headers) { nil }
+    let(:offer)   { mock_offer nil, headers }
+    subject { Adhearsion::Call.new offer }
 
     after do
       Adhearsion.active_calls.clear!
@@ -14,9 +15,25 @@ module Adhearsion
     its(:end_reason) { should == nil }
     it { should be_active }
 
-    its(:variables) { should == headers }
     its(:commands) { should be_a Call::CommandRegistry }
     its(:commands) { should be_empty }
+
+    describe "its variables" do
+      context "with an offer with headers" do
+        let(:headers)   { {:x_foo => 'bar'} }
+        its(:variables) { should == headers }
+      end
+
+      context "with an offer without headers" do
+        let(:headers)   { nil }
+        its(:variables) { should == {} }
+      end
+
+      context "without an offer" do
+        let(:offer)     { nil }
+        its(:variables) { should == {} }
+      end
+    end
 
     it '#id should return the ID from the Offer' do
       offer = mock_offer

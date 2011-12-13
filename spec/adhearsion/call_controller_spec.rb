@@ -21,7 +21,8 @@ module Adhearsion
 
     describe "execution on a call" do
       before do
-        flexmock subject, :write_and_await_response => nil, :execute_component_and_await_completion => nil
+        flexmock subject, :execute_component_and_await_completion => nil
+        flexmock call, :write_and_await_response => nil
       end
 
       context "when auto-accept is enabled" do
@@ -46,6 +47,24 @@ module Adhearsion
           subject.should_receive(:run).once
           subject.execute
         end
+      end
+
+      it "catches Hangup exceptions and logs the hangup" do
+        subject.should_receive(:run).once.and_raise(Hangup).ordered
+        flexmock(subject.logger).should_receive(:info).once.with(/Call was hung up/).ordered
+        subject.execute
+      end
+
+      it "catches standard errors, triggering an exception event" do
+        subject.should_receive(:run).once.and_raise(StandardError).ordered
+        flexmock(Events).should_receive(:trigger).once.with(:exception, StandardError).ordered
+        subject.execute
+      end
+
+      it "hangs up the call" do
+        subject.should_receive(:run).once.and_raise(StandardError).ordered
+        subject.should_receive(:hangup).once.ordered
+        subject.execute
       end
     end
 

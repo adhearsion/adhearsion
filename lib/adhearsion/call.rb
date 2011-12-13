@@ -137,7 +137,7 @@ module Adhearsion
     end
 
     def variables
-      offer.headers_hash
+      offer ? offer.headers_hash : nil or {}
     end
 
     def define_variable_accessors(recipient = self)

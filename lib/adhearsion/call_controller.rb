@@ -30,6 +30,12 @@ module Adhearsion
     def execute
       accept if Adhearsion.config.platform.automatically_accept_incoming_calls
       run
+    rescue Hangup
+      logger.info "Call was hung up"
+    rescue SyntaxError, StandardError => e
+      Events.trigger :exception, e
+    ensure
+      hangup
     end
 
     def run
