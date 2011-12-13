@@ -128,6 +128,17 @@ module Adhearsion
           subject.should_receive(:execute_component_and_await_completion).once.with(Punchblock::Component::Input).and_return input_component
           subject.wait_for_digit(timeout).should == '5'
         end
+
+        context "with a nil timeout" do
+          let(:timeout)     { nil }
+          let(:timeout_ms)  { nil }
+
+          it "does not set a timeout on the component" do
+            expect_component_complete_event
+            subject.should_receive(:execute_component_and_await_completion).once.with(input_component).and_return input_component
+            subject.wait_for_digit timeout
+          end
+        end
       end # wait_for_digit
 
       describe "#input!" do
