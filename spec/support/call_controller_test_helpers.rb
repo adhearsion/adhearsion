@@ -5,7 +5,7 @@ module CallControllerTestHelpers
     test_case.let(:call_id) { rand }
     test_case.let(:call)    { Adhearsion::Call.new }
 
-    test_case.subject { Adhearsion::CallController.new call }
+    test_case.subject { test_case.describes.new call }
 
     test_case.before do
       flexmock(Adhearsion::Plugin).should_receive(:methods_scope).once.and_return({:dialplan => Module.new { def foo; end}})

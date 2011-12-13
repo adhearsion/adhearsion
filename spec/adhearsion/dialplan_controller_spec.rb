@@ -4,8 +4,7 @@ module Adhearsion
   describe DialplanController do
     include CallControllerTestHelpers
 
-    subject { Adhearsion::DialplanController.new call }
-
+    it { should be_a DialplanController }
     it { should be_a CallController }
 
     let :dialplan do
