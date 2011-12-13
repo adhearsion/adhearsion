@@ -20,3 +20,7 @@ Adhearsion.config do |config|
   #config.punchblock.username = ""
   #config.punchblock.password = ""
 end
+
+Adhearsion.router do
+  route 'default', SimonGame
+end
