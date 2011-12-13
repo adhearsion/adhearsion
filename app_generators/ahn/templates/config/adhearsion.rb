@@ -16,6 +16,8 @@
 
 Adhearsion.config do |config|
 
+  # config.platform.logging.level = :debug
+
   # Overwrite default punchblock credentials
   #config.punchblock.username = ""
   #config.punchblock.password = ""
