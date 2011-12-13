@@ -21,6 +21,12 @@ describe Adhearsion::Initializer do
     Adhearsion::Events.reinitialize_queue!
   end
 
+  after :all do
+    Adhearsion::Logging.reset
+    Adhearsion::Initializer::Logging.start
+    Adhearsion::Logging.silence!
+  end
+
   it "initialization will start with only a path given" do
     stub_behavior_for_initializer_with_no_path_changing_behavior do
       Adhearsion::Initializer.start path
@@ -78,7 +84,7 @@ describe "Adhearsion::Initializer#load_lib_folder" do
     Adhearsion.ahn_root = path
   end
 
-  it "should load the contents of lib directory" do    
+  it "should load the contents of lib directory" do
     flexmock(Dir).should_receive(:chdir).with("/any/ole/path/lib", Proc).and_return []
     Adhearsion::Initializer.new(path).load_lib_folder
   end

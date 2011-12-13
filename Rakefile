@@ -25,6 +25,10 @@ rescue LoadError
   STDERR.puts "\nCould not require() YARD! Install with 'gem install yard' to get the 'yardoc' task\n\n"
 end
 
+task :stats do
+  system 'doc/cloc-1.55.pl . --exclude-dir=.git,vendor,coverage,doc'
+end
+
 desc "Check Ragel version"
 task :check_ragel_version do
   ragel_version_match = `ragel --version`.match /(\d)\.(\d)+/

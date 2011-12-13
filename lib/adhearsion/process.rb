@@ -9,6 +9,7 @@ module Adhearsion
       before_transition :log_state_change
       after_transition :on => :shutdown, :do => :request_stop
       after_transition any => :stopped, :do => :final_shutdown
+      after_transition :on => :force_stop, :do => :die_now!
 
       event :booted do
         transition :booting => :running
@@ -36,7 +37,7 @@ module Adhearsion
       end
 
       event :force_stop do
-        transition all => :stopped
+        transition all => :force_stopped
       end
 
       event :reset do
@@ -71,16 +72,20 @@ module Adhearsion
       Events.trigger_immediately :shutdown
     end
 
-    def self.method_missing(method_name, *args, &block)
-      instance.send method_name, *args, &block
-    end
-
     def stop_when_zero_calls
       until Adhearsion.active_calls.count == 0
         logger.trace "Stop requested but we still have #{Adhearsion.active_calls.count} active calls."
         sleep 0.2
       end
-      force_stop
+      final_shutdown
+    end
+
+    def die_now!
+      ::Process.exit(1)
+    end
+
+    def self.method_missing(method_name, *args, &block)
+      instance.send method_name, *args, &block
     end
   end
 end

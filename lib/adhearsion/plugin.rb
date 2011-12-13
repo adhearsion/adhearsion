@@ -88,7 +88,7 @@ module Adhearsion
         #   end
         # end
         #
-        # You could also defined a dialplan or other scope method as above, but you cannot acces
+        # You could also defined a dialplan or other scope method as above, but you cannot access
         # the ExecutionEnvironment methods from your specific method due to ruby restrictions
         # when defining methods (the above lambda version should fit any requirement)
         #
@@ -140,6 +140,55 @@ module Adhearsion
         end
       end
 
+      ##
+      # Class method that allows any subclass (any Adhearsion plugin) to register rake tasks.
+      #
+      # * Example 1:
+      #
+      #    FooBar = Class.new Adhearsion::Plugin do
+      #      tasks do
+      #        namespace :foo_bar do
+      #        desc "Prints the FooBar plugin version"
+      #        task :version do
+      #          STDOUT.puts "FooBar plugin v0.1"
+      #        end
+      #      end
+      #    end
+      #
+      # * Example 2:
+      #
+      #    FooBar = Class.new Adhearsion::Plugin do
+      #      tasks do
+      #        load "tasks/foo_bar.rake"
+      #      end
+      #    end
+      #
+      #    = tasks/foo_bar.rake
+      #
+      #    namespace :foo_bar do
+      #       desc "Prints the FooBar plugin version"
+      #       task :version do
+      #         STDOUT.puts "FooBar plugin v0.1"
+      #       end
+      #    end
+      #
+      def tasks
+        @@rake_tasks or reset_rake_tasks
+        @@rake_tasks << Proc.new if block_given?
+        @@rake_tasks
+      end
+
+      def reset_rake_tasks
+        @@rake_tasks = []
+      end
+
+      def load_tasks
+        o = Object.new.tap { |o| o.extend Rake::DSL if defined? Rake::DSL }
+        tasks.each do |block|
+          o.instance_eval &block
+        end
+      end
+
       def methods_scope
         @methods_scope ||= Hash.new { |hash, key| hash[key] = Module.new }
       end
@@ -152,7 +201,7 @@ module Adhearsion
       end
 
       def inherited(base)
-        logger.trace "Detected new plugin: #{base.name}"
+        logger.debug "Detected new plugin: #{base.name}"
         subclasses << base
       end
 
@@ -185,7 +234,7 @@ module Adhearsion
         ::Loquacious::Configuration.help_for(plugin_name)
       end
 
-      def load
+      def load_plugins
         load_methods
         init_plugins
       end
