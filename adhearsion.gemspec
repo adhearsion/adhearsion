@@ -48,4 +48,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'ci_reporter'
   s.add_development_dependency 'yard'
   s.add_development_dependency 'guard-rspec'
+  if RUBY_PLATFORM =~ /darwin/
+    s.add_development_dependency 'growl_notify'
+    s.add_development_dependency 'rb-fsevent'
+  end
 end
