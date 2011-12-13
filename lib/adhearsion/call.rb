@@ -92,7 +92,7 @@ module Adhearsion
     end
 
     def hangup!(headers = nil)
-      return unless active?
+      return false unless active?
       @end_reason_mutex.synchronize { @end_reason = true }
       write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
     end

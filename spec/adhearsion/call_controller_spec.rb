@@ -184,3 +184,60 @@ module Adhearsion
     it_should_behave_like "record commands"
   end
 end
+
+class ExampleCallController < Adhearsion::CallController
+  before_call { setup_models }
+  before_call :setup_models
+
+  after_call { clean_up_models }
+  after_call :clean_up_models
+
+  def setup_models
+  end
+
+  def clean_up_models
+  end
+
+  def run
+    join_to_conference
+    hangup
+    foobar
+  end
+
+  def join_to_conference
+  end
+
+  def foobar
+  end
+end
+
+describe ExampleCallController do
+  include CallControllerTestHelpers
+
+  before do
+    flexmock subject, :execute_component_and_await_completion => nil
+    flexmock call, :write_and_await_response => nil
+    Adhearsion.config.platform.automatically_accept_incoming_calls = true
+  end
+
+  it "should execute the before_call callbacks before accepting the call" do
+    subject.should_receive(:setup_models).twice.ordered
+    subject.should_receive(:accept).once.ordered
+    subject.should_receive(:join_to_conference).once.ordered
+    subject.execute
+  end
+
+  it "should execute the after_call callbacks after the call is hung up" do
+    subject.should_receive(:join_to_conference).once.ordered
+    subject.should_receive(:clean_up_models).twice.ordered
+    subject.should_receive(:foobar).once.ordered
+    subject.execute
+  end
+
+  it "should capture errors in callbacks" do
+    subject.should_receive(:setup_models).and_raise StandardError
+    subject.should_receive(:clean_up_models).and_raise StandardError
+    flexmock(Adhearsion::Events).should_receive(:trigger).times(4).with :exception, StandardError
+    subject.execute
+  end
+end

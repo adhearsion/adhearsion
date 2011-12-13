@@ -16,6 +16,23 @@ module Adhearsion
     include Output
     include Record
 
+    class_attribute :callbacks
+
+    self.callbacks = {:before_call => [], :after_call => []}
+
+    self.callbacks.keys.each do |name|
+      class_eval <<-STOP
+        def self.#{name}(method_name = nil, &block)
+          callback = if method_name
+            lambda { send method_name }
+          elsif block
+            block
+          end
+          self.callbacks = self.callbacks.dup.tap { |cb| cb[:#{name}] += Array(callback) }
+        end
+      STOP
+    end
+
     attr_reader :call
 
     def initialize(call)
@@ -28,6 +45,7 @@ module Adhearsion
     end
 
     def execute
+      execute_callbacks :before_call
       accept if Adhearsion.config.platform.automatically_accept_incoming_calls
       run
     rescue Hangup
@@ -39,6 +57,14 @@ module Adhearsion
     end
 
     def run
+    end
+
+    def execute_callbacks(type)
+      self.class.callbacks[type].each do |callback|
+        catching_standard_errors do
+          instance_exec &callback
+        end
+      end
     end
 
     def variables
@@ -62,7 +88,8 @@ module Adhearsion
     end
 
     def hangup(headers = nil)
-      call.hangup! headers
+      hangup_response = call.hangup! headers
+      execute_callbacks :after_call unless hangup_response == false
     end
 
     def mute

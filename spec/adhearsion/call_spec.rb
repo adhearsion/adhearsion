@@ -329,9 +329,9 @@ module Adhearsion
             flexmock(subject).should_receive(:active?).and_return false
           end
 
-          it "should do nothing" do
+          it "should do nothing and return false" do
             flexmock(subject).should_receive(:write_and_await_response).never
-            subject.hangup!
+            subject.hangup!.should be false
           end
         end
 
