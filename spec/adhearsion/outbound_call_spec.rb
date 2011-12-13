@@ -18,7 +18,6 @@ module Adhearsion
     describe ".originate" do
       let(:to) { 'sip:foo@bar.com' }
 
-      let(:mock_manager)  { flexmock 'DialPlan::Manager' }
       let(:mock_call)     { OutboundCall.new }
 
       def mock_dial
