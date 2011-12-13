@@ -18,8 +18,6 @@ describe Adhearsion do
   end
 
   describe "#router" do
-    before { Adhearsion.router = nil }
-
     its(:router) { should be_a Adhearsion::Router }
 
     it "should always use the same router" do

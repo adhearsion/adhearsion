@@ -33,7 +33,7 @@ module Adhearsion
   autoload :Console
   autoload :Constants
   autoload :Conveniences
-  autoload :DialPlan
+  autoload :DialplanController
   autoload :Dispatcher
   autoload :DSL
   autoload :Events
@@ -69,7 +69,7 @@ module Adhearsion
     end
 
     def router=(other)
-      @router = nil
+      @router = other
     end
 
     def active_calls

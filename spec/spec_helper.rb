@@ -36,7 +36,7 @@ RSpec.configure do |config|
   config.color_enabled = true
 
   config.before(:each) do
-    Adhearsion.ahn_root = File.dirname(__FILE__) + '/adhearsion/fixtures'
+    Adhearsion.router = nil
   end
 end
 

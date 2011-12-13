@@ -8,7 +8,7 @@ module Adhearsion
 
     include HasGuardedHandlers
 
-    attr_accessor :offer, :context, :client, :end_reason, :commands
+    attr_accessor :offer, :client, :end_reason, :commands
 
     def initialize(offer = nil)
       if offer
@@ -18,7 +18,6 @@ module Adhearsion
 
       @tag_mutex        = Mutex.new
       @tags             = []
-      @context          = :adhearsion
       @end_reason_mutex = Mutex.new
       end_reason        = nil
       @commands         = CommandRegistry.new

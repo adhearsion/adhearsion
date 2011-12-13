@@ -4,16 +4,11 @@ module Adhearsion
 
     class << self
       def originate(to, opts = {})
-        new(opts).tap do |call|
-          call.run_dialplan_on_answer
+        new.tap do |call|
+          call.run_router_on_answer
           call.dial to, opts
         end
       end
-    end
-
-    def initialize(opts = {})
-      super()
-      @context = opts.delete(:context) if opts.has_key?(:context)
     end
 
     def id
@@ -45,15 +40,16 @@ module Adhearsion
       end
     end
 
-    def run_dialplan
+    def run_router
       catching_standard_errors do
-        DialPlan::Manager.handle self
+        dispatcher = Adhearsion.router.handle self
+        dispatcher.call self
       end
     end
 
-    def run_dialplan_on_answer
+    def run_router_on_answer
       register_event_handler :class => Punchblock::Event::Answered do |event|
-        run_dialplan
+        run_router
         throw :pass
       end
     end
