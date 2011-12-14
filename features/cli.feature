@@ -47,7 +47,7 @@ Feature: Adhearsion Ahn CLI
     
   @announce
   Scenario: Command start with only path works properly
-    Given PENDING: Need to stop the ahn process
+    Given PENDING: Need to stop the ahn process otherwise it timesout with error
     Given I run `ahn create path/somewhere`
     When I run `ahn start path/somewhere` interactively
     Then the output should not contain "FATAL"
@@ -86,21 +86,23 @@ Feature: Adhearsion Ahn CLI
     """
     Then the exit status should be 1
 
+  #TODO: change ahnctl to ahn
   @daemon
   Scenario: Command start with daemon and pid option
-    Given PENDING: This gives an error "Unrecognized final argument"
+    Given PENDING: Error -- uninitialized constant ScriptAhnLoader from ahnctl
     Given PENDING: Kill daemon using pid
     Given I run `ahn create path/somewhere`
-    When I run `ahn start daemon path/somewhere --pid-file=ahn.pid`
+    When I run `ahnctl start daemon path/somewhere --pid-file=ahn.pid`
     Then the output should contain:
     """
     Transitioning from booting to running
     """
 
+  #TODO: change ahnctl to ahn
   Scenario: Command start with valid path and pid option
-    Given PENDING: This gives an error "Unrecognized final argument"
+    Given PENDING: Error -- uninitialized constant ScriptAhnLoader from ahnctl
     Given I run `ahn create path/somewhere`
-    When I run `ahn start path/somewhere --pid-file=ahn.pid`
+    When I run `ahnctl start path/somewhere --pid-file=ahn.pid`
     Then the output should contain:
     """
     Transitioning from booting to running
@@ -118,3 +120,10 @@ Feature: Adhearsion Ahn CLI
     When I run `ahn help`
     Then I should see the usage message
     And the exit status should be 0
+
+  Scenario: Ahnctl with no arguments
+    When I run `ahnctl`
+    Then the output should contain:
+    """
+    Usage: ahnctl start|stop|restart /path/to/adhearsion/app [--pid-file=/path/to/pid_file.pid]
+    """
