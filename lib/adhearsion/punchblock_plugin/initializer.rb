@@ -90,12 +90,13 @@ module Adhearsion
 
         def dispatch_offer(offer)
           catching_standard_errors do
-            call = Adhearsion.receive_call_from(offer)
+            call = Adhearsion.active_calls.from_offer offer
             case Adhearsion::Process.state_name
             when :booting, :rejecting
               call.reject :decline
             when :running
-              DialPlan::Manager.handle call
+              dispatcher = Adhearsion.router.handle call
+              dispatcher.call call
             else
               call.reject :error
             end

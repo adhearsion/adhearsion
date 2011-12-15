@@ -10,6 +10,7 @@
     * Rubinius 2.0 (on release, in 1.9 mode)
   * The old components architecture has been deprecated in favour of `Adhearsion::Plugin` (further details below).
   * Theatre has been replaced in favour of a girl_friday and has-guarded-handlers based event queueing/handling system (further details below).
+  * The dialplan.rb file has been removed and is replaced by the routing DSL.
 
 ## Plugin system
   * Plugin system is the way to extend Adhearsion framework and provides the easiest path to add new functionality, configuration or modify the initialization process.
@@ -48,8 +49,10 @@
 ### Bridging
 
 
-### Call routing
-
+### Call routing & controllers
+  * To be platform agnostic, inbound calls are no longer routed by Asterisk context. There is now an inbound call routing DSL defined in config/adhearsion.rb which routes calls based on their parameters to either a controller class or specifies a dialplan in a block.
+  * Call controllers (classes which inherit from Adhearsion::CallController) are the mechanism by which complex applications should be written. A controller is instantiated per call, and must respond to #run. Controllers have many "dialplan" methods, the same as dialplan.rb did.
+  * dialplan.rb is removed and no longer used. These should be moved to the router.
 
 ## Eventing system
   * Removed Theatre

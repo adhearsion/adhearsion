@@ -18,7 +18,6 @@ module Adhearsion
     describe ".originate" do
       let(:to) { 'sip:foo@bar.com' }
 
-      let(:mock_manager)  { flexmock 'DialPlan::Manager' }
       let(:mock_call)     { OutboundCall.new }
 
       def mock_dial
@@ -30,18 +29,6 @@ module Adhearsion
         OutboundCall.originate(to).should be_a OutboundCall
       end
 
-      it "should allow setting the call's dialplan context" do
-        mock_dial
-        call = OutboundCall.originate to, :context => :foo
-        call.context.should == :foo
-      end
-
-      it "uses the default context if none is provided" do
-        mock_dial
-        call = OutboundCall.originate to
-        call.context.should == Call.new.context
-      end
-
       it "should dial the call to the correct endpoint" do
         mock_call
         flexmock(OutboundCall).should_receive(:new).and_return mock_call
@@ -49,13 +36,15 @@ module Adhearsion
         OutboundCall.originate to, :from => 'foo'
       end
 
-      it "should run the dialplan when the call is answered" do
+      it "should run through the router when the call is answered" do
         mock_call
 
         flexmock(OutboundCall).should_receive(:new).and_return mock_call
         flexmock(mock_call).should_receive(:dial).once
 
-        flexmock(DialPlan::Manager).should_receive(:handle).once.with(mock_call)
+        mock_dispatcher = flexmock 'dispatcher'
+        mock_dispatcher.should_receive(:call).once.with mock_call
+        flexmock(Adhearsion.router).should_receive(:handle).once.with(mock_call).and_return mock_dispatcher
 
         OutboundCall.originate(to).deliver_message Punchblock::Event::Answered.new
       end

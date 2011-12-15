@@ -152,6 +152,8 @@ describe Adhearsion::Plugin do
   end
 
   describe "add and delete on the air" do
+    AhnPluginDemo = Class.new Adhearsion::Plugin
+
     it "should add plugins on the air" do
       Adhearsion::Plugin.delete_all
       Adhearsion::Plugin.add AhnPluginDemo

@@ -5,7 +5,7 @@ module Adhearsion
     module MenuDSL
 
       describe MenuBuilder do
-        include PunchblockCommandTestHelpers
+        include CallControllerTestHelpers
       end
 
     end

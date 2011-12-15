@@ -1,15 +1,6 @@
-class SimonGame < Adhearsion::Plugin
-
-  dialplan :simon_game do
-    SimonGame.new(self).start
-  end
-
-  def initialize(call)
-    @call = call
+class SimonGame < Adhearsion::CallController
+  def run
     reset
-  end
-
-  def start
     loop do
       say_number
       collect_attempt
@@ -27,18 +18,18 @@ class SimonGame < Adhearsion::Plugin
 
   def say_number
     update_number
-    @call.speak @number
+    speak @number
   end
 
   def collect_attempt
-    @attempt = @call.input @number.length
+    @attempt = input @number.length
   end
 
   def verify_attempt
     if attempt_correct?
-      @call.speak 'good'
+      speak 'good'
     else
-      @call.speak %W[#{@number.length - 1} times wrong-try-again-smarty]
+      speak "#{@number.length - 1} times wrong, try again smarty"
       reset
     end
   end
@@ -50,5 +41,4 @@ class SimonGame < Adhearsion::Plugin
   def reset
     @attempt, @number = '', ''
   end
-
 end

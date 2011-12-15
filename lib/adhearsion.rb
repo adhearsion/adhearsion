@@ -27,12 +27,13 @@ module Adhearsion
 
   autoload :Process
   autoload :Call
+  autoload :CallController
   autoload :Calls
   autoload :Configuration
   autoload :Console
   autoload :Constants
   autoload :Conveniences
-  autoload :DialPlan
+  autoload :DialplanController
   autoload :Dispatcher
   autoload :DSL
   autoload :Events
@@ -41,6 +42,7 @@ module Adhearsion
   autoload :OutboundCall
   autoload :Plugin
   autoload :Punchblock
+  autoload :Router
   autoload :Version
 
   # Sets up the Gem require path.
@@ -57,27 +59,25 @@ module Adhearsion
       block_given? and yield @config
       @config
     end
-    
+
     def config=(config)
       @config=config
+    end
+
+    def router(&block)
+      @router || @router = Router.new(&block || Proc.new {})
+    end
+
+    def router=(other)
+      @router = other
     end
 
     def active_calls
       @calls ||= Calls.new
     end
 
-    def receive_call_from(offer)
-      Call.new(offer).tap do |call|
-        active_calls << call
-      end
-    end
-
     def status
       Adhearsion::Process.state_name
-    end
-
-    def remove_inactive_call(call)
-      active_calls.remove_inactive_call(call)
     end
   end
 

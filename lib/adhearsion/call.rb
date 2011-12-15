@@ -8,17 +8,16 @@ module Adhearsion
 
     include HasGuardedHandlers
 
-    attr_accessor :offer, :context, :client, :end_reason, :commands
+    attr_accessor :offer, :client, :end_reason, :commands
 
     def initialize(offer = nil)
       if offer
-        @offer      = offer
+        @offer  = offer
         @client = offer.client
       end
 
       @tag_mutex        = Mutex.new
       @tags             = []
-      @context          = :adhearsion
       @end_reason_mutex = Mutex.new
       end_reason        = nil
       @commands         = CommandRegistry.new
@@ -93,13 +92,13 @@ module Adhearsion
     end
 
     def hangup!(headers = nil)
-      return unless active?
+      return false unless active?
       @end_reason_mutex.synchronize { @end_reason = true }
       write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
     end
 
     def hangup
-      Adhearsion.remove_inactive_call self
+      Adhearsion.active_calls.remove_inactive_call self
     end
 
     def join(other_call_id)
@@ -137,13 +136,17 @@ module Adhearsion
     end
 
     def variables
-      offer.headers_hash
+      offer ? offer.headers_hash : nil or {}
     end
 
     def define_variable_accessors(recipient = self)
       variables.each do |key, value|
         define_singleton_accessor_with_pair key, value, recipient
       end
+    end
+
+    def execute_controller(controller)
+      controller.execute
     end
 
     private
