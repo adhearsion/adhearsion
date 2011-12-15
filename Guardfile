@@ -36,12 +36,12 @@ group 'punchblock:menu' do
     watch(%r{/.+_spec\.rb$})
     watch(%r{^lib/adhearsion/punchblock/menu/(.+)\.rb$}) { |m| "spec/adhearsion/punchblock/menu_dsl/#{m[1]}_spec.rb"}
   end
-
 end
 
-# cucumber
-#guard 'features' do
-#  watch(%r{^features/.+\.feature$})
-#  watch(%r{^features/support/.+$})          { 'features' }
-#  watch(%r{^features/step_definitions/(.+)_steps\.rb$}) { |m| Dir[File.join("**/#{m[1]}.feature")][0] || 'features' }
-#end
+group 'cuke' do
+  guard 'cucumber', :cli => '--profile guard' do
+    watch(%r{^features/.+\.feature$})
+    watch(%r{^features/support/.+$})          { 'features' }
+    watch(%r{^features/step_definitions/(.+)_steps\.rb$}) { |m| Dir[File.join("**/#{m[1]}.feature")][0] || 'features' }
+  end
+end
