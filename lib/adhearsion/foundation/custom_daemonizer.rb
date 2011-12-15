@@ -23,7 +23,7 @@ module Adhearsion
       safefork and exit # Fork and exit from the parent
 
       # Detach from the controlling terminal
-      raise 'Cannot detach from controlled terminal' unless sess_id = Process.setsid
+      raise 'Cannot detach from controlled terminal' unless sess_id = ::Process.setsid
 
       # Prevent the possibility of acquiring a controlling terminal
       if oldmode.zero?
