@@ -19,6 +19,7 @@ USAGE
             Dir.chdir args[1] do
               args = args.compact.map(&:to_s)
               args[1], args[2] = args[2], '.'
+              args[3] = "--pid-file=#{args[3]}" if args.size > 3
               ScriptAhnLoader.exec_script_ahn! args
             end
           end
