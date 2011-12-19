@@ -19,6 +19,12 @@ Before do
     @aruba_timeout_seconds = 10
 end
 
+# TODO: check for name space / run issues
+# NOTE: this will not stop a forked process (eg. daemon mode)
+After do
+  terminate_processes!
+end
+
 #Aruba.configure do |config|
 #  config.before_cmd do |cmd|
 #    puts "About to run '#{cmd}'"
