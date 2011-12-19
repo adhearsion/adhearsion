@@ -14,3 +14,13 @@ end
 require 'cucumber'
 require 'aruba/cucumber'
 require 'adhearsion'
+
+Before do
+    @aruba_timeout_seconds = 10
+end
+
+#Aruba.configure do |config|
+#  config.before_cmd do |cmd|
+#    puts "About to run '#{cmd}'"
+#  end
+#end
