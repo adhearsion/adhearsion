@@ -100,14 +100,13 @@ Feature: Adhearsion Ahn CLI
     And I terminate the process using the pid file "ahn.pid"
     Then the output should contain "Daemonizing now"
 
-#  #TODO: change ahnctl to ahn
-#  #BUG FIXME: ahnctl drops pid in current path
+ #TODO: change ahnctl to ahn
+ #FIXME: ahnctl used current path while ahn uses relative (to app) path
  Scenario: Command start with valid path and pid option
-   Given PENDING: ahnctl drops pid in current path (BUG FIX NEEDED)
    Given that I create a valid app under "path/somewhere"
-   When I run `ahnctl start path/somewhere --pid-file=ahn.pid`
+   When I run `ahnctl start path/somewhere --pid-file=path/somewhere/ahn.pid`
    And I cd to "path/somewhere"
-   And I terminate the process using the pid file "ahn.pid"
+   And I terminate the process using the pid file "ahn.pid
    Then the output should contain:
    """
    Starting Adhearsion app at
