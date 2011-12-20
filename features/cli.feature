@@ -21,10 +21,10 @@ Feature: Adhearsion Ahn CLI
     When I run `ahn create path/somewhere`
     And I cd to "path/somewhere"
     Then the following files should exist:
-      | Gemfile |
-      | README |
-      | Rakefile |
-      | config/adhearsion.rb |
+      | Gemfile               |
+      | README                |
+      | Rakefile              |
+      | config/adhearsion.rb  |
       | config/environment.rb |
     And the file "config/adhearsion.rb" should contain "Adhearsion.router"
     Then the exit status should be 0
