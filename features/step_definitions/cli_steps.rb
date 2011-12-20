@@ -23,17 +23,27 @@ When /^I wait for (?:output|stdout) to contain "([^"]*)"$/ do |expected|
   end
 end
 
-Given /^that "([^"]*)" is valid$/ do |path|
+Given /^that I create a valid app under "([^"]*)"$/ do |path|
+  steps %Q{
+    When I run `ahn create #{path}`
+    Then there should be a valid adhearsion directory named "#{path}"
+  }
+end
+Then /^there should be a valid adhearsion directory named "([^"]*)"$/ do |path|
+  steps %Q{
+    Then a directory named "#{path}" should exist
+  }
+  ## TODO: allow chdir to the path then back out again
+  cd
   steps %Q{
     Then the following directories should exist:
-      | log |
-      | lib |
-      | config |
+      | #{path}/lib |
+      | #{path}/config |
     Then the following files should exist:
-      | Gemfile |
-      | README |
-      | Rakefile |
-      | config/adhearsion.rb |
-      | config/environment.rb |
+      | #{path}/Gemfile |
+      | #{path}/README |
+      | #{path}/Rakefile |
+      | #{path}/config/adhearsion.rb |
+      | #{path}/config/environment.rb |
   }
 end

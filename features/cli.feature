@@ -71,12 +71,15 @@ Feature: Adhearsion Ahn CLI
   Scenario: Command start with daemon option
     #Given PENDING: Error -- undefined method `setsid'
     #Given PENDING: Kill daemon using pid
-    Given I run `ahn create path/somewhere`
-    Given that "path/somewhere" is valid
+    #Given I run `ahn create path/somewhere`
+    #Given that "path/somewhere" is valid
+    Given that I create a valid app under "path/somewhere"
     When I run `ahn start daemon path/somewhere`
     And I cd to "path/somewhere"
+    And I terminate the process using the pid file "adhearsion.pid"
     Then the output should contain "Daemonizing now"
-    Then a file named "adhearsion.pid" should exist
+    #And the process should seen in the pid file should not be running
+    #    Then a file named "adhearsion.pid" should exist
 #
 #  Scenario: Command start with console option
 #    Given PENDING: Need to stop the console and ahn process completly
