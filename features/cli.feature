@@ -106,7 +106,7 @@ Feature: Adhearsion Ahn CLI
    Given that I create a valid app under "path/somewhere"
    When I run `ahnctl start path/somewhere --pid-file=path/somewhere/ahn.pid`
    And I cd to "path/somewhere"
-   And I terminate the process using the pid file "ahn.pid
+   And I terminate the process using the pid file "ahn.pid"
    Then the output should contain:
    """
    Starting Adhearsion app at
