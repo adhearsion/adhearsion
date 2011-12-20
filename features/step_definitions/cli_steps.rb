@@ -34,16 +34,19 @@ Then /^there should be a valid adhearsion directory named "([^"]*)"$/ do |path|
     Then a directory named "#{path}" should exist
   }
   ## TODO: allow chdir to the path then back out again
-  cd
+  cd(path)
   steps %Q{
     Then the following directories should exist:
-      | #{path}/lib |
-      | #{path}/config |
+      | lib |
+      | config |
     Then the following files should exist:
-      | #{path}/Gemfile |
-      | #{path}/README |
-      | #{path}/Rakefile |
-      | #{path}/config/adhearsion.rb |
-      | #{path}/config/environment.rb |
+      | Gemfile |
+      | README |
+      | Rakefile |
+      | config/adhearsion.rb |
+      | config/environment.rb |
   }
+  dotsback=1.upto(path.split(File::SEPARATOR)[0..-1].count).collect {|x| ".."}.join(File::SEPARATOR)
+  dotsback.shift if dotsback[0].empty?
+  cd(dotsback)
 end
