@@ -7,7 +7,7 @@ require 'bundler/setup'
 require 'date'
 require 'adhearsion/version'
 
-task :default => :spec
+task :default => [:spec, :features]
 task :gem => :build
 
 require 'rspec/core/rake_task'
