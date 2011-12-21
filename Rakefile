@@ -14,7 +14,8 @@ require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new
 
 require 'ci/reporter/rake/rspec'
-task :ci => ['ci:setup:rspec', :spec]
+require 'ci/reporter/rake/cucumber'
+task :ci => ['ci:setup:rspec', :spec, 'ci:setup:rspec', :features]
 
 require 'cucumber'
 require 'cucumber/rake/task'
