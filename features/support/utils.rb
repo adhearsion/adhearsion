@@ -1,3 +1,3 @@
 Given /^PENDING/ do
-    pending
+  pending
 end
