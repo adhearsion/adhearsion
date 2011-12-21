@@ -52,12 +52,12 @@ module Adhearsion
       load_lib_folder
       load_plugins_methods
       load_config
+      initialize_log_file
       daemonize! if should_daemonize?
       launch_console if need_console?
       switch_to_root_directory
       catch_termination_signal
       create_pid_file if pid_file
-      initialize_log_file
       start_logging
       initialize_exception_logger
       init_plugins
