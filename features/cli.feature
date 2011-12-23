@@ -106,7 +106,7 @@ Feature: Adhearsion Ahn CLI
  #TODO: change ahnctl to ahn
  #FIXME: ahnctl used current path while ahn uses relative (to app) path
   Scenario: Command start with valid path and pid option
-    Given pending
+    Given PENDING
     Given that I create a valid app under "path/somewhere"
     When I run `ahnctl start path/somewhere --pid-file=path/somewhere/ahn.pid`
     And I cd to "path/somewhere"
