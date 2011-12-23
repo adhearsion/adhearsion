@@ -145,15 +145,16 @@ module Adhearsion
       #
       # * Example 1:
       #
-      #    FooBar = Class.new Adhearsion::Plugin do
-      #      tasks do
-      #        namespace :foo_bar do
-      #        desc "Prints the FooBar plugin version"
-      #        task :version do
-      #          STDOUT.puts "FooBar plugin v0.1"
-      #        end
-      #      end
-      #    end
+      #     FooBar = Class.new Adhearsion::Plugin do
+      #       tasks do
+      #         namespace :foo_bar do
+      #           desc "Prints the FooBar plugin version"
+      #           task :version do
+      #             STDOUT.puts "FooBar plugin v0.1"
+      #           end
+      #         end
+      #       end
+      #     end
       #
       # * Example 2:
       #
@@ -165,12 +166,12 @@ module Adhearsion
       #
       #    = tasks/foo_bar.rake
       #
-      #    namespace :foo_bar do
+      #     namespace :foo_bar do
       #       desc "Prints the FooBar plugin version"
       #       task :version do
       #         STDOUT.puts "FooBar plugin v0.1"
       #       end
-      #    end
+      #     end
       #
       def tasks
         @@rake_tasks << Proc.new if block_given?
