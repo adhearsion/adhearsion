@@ -44,11 +44,11 @@ Feature: Adhearsion Ahn CLI
     Invalid format for the start CLI command!
     """
     And the exit status should be 1
-   
+
 
 #  TODO: extend Aruba to support monitoring ouput of interative process
 #  Scenario: Cucumber should support checking output on interative commands while they still run
-#    Given PENDING: need to finish the 
+#    Given PENDING: need to finish the
 #    Given that I create a valid app under "path/somewhere"
 #    When I run `ahn start path/somewhere` interactively
 #    And I wait for output to contain "Transitioning"
@@ -105,15 +105,15 @@ Feature: Adhearsion Ahn CLI
 
  #TODO: change ahnctl to ahn
  #FIXME: ahnctl used current path while ahn uses relative (to app) path
- Scenario: Command start with valid path and pid option
-   Given that I create a valid app under "path/somewhere"
-   When I run `ahnctl start path/somewhere --pid-file=path/somewhere/ahn.pid`
-   And I cd to "path/somewhere"
-   And I terminate the process using the pid file "ahn.pid"
-   Then the output should contain:
-   """
-   Starting Adhearsion app at
-   """
+  Scenario: Command start with valid path and pid option
+    Given that I create a valid app under "path/somewhere"
+    When I run `ahnctl start path/somewhere --pid-file=path/somewhere/ahn.pid`
+    And I cd to "path/somewhere"
+    And I terminate the process using the pid file "ahn.pid"
+    Then the output should contain:
+    """
+    Starting Adhearsion app at
+    """
 
   Scenario: Command version should print the version
     When I run `ahn version`
