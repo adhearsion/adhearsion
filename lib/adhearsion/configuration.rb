@@ -1,4 +1,3 @@
-
 module Adhearsion
 
   class Configuration
@@ -111,12 +110,12 @@ module Adhearsion
           return ""
         end
         config = Loquacious::Configuration.help_for name,
-                                :name_leader => "| * ",
-                                :desc_leader => "| ",
+                                :name_leader => "",
+                                :desc_leader => "# ",
                                 :colorize    => true,
                                 :io          => desc
         config.show :values => args[:show_values]
-        "\n******* Configuration for #{name} **************\n\n#{desc.string}"
+        "\n# ******* Configuration for #{name} **************\n\n#{desc.string}"
       end
     end
   end
