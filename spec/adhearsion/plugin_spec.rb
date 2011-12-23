@@ -446,10 +446,6 @@ describe Adhearsion::Plugin do
 
     subject{ Adhearsion::Plugin.tasks }
 
-    it "should respond to method tasks" do
-      Adhearsion::Plugin.should respond_to :tasks
-    end
-
     it "should return an Array" do
       subject.should be_instance_of Array
     end
