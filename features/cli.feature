@@ -62,7 +62,7 @@ Feature: Adhearsion Ahn CLI
   Scenario: Command start with only path works properly
     Given that I create a valid app under "path/somewhere"
     And I run `ahn start path/somewhere` interactively
-    And I wait 10 seconds
+    And I wait 20 seconds
     And I terminate the interactive process
     Then the output should contain:
     """
@@ -81,7 +81,7 @@ Feature: Adhearsion Ahn CLI
   Scenario: Command start with console option
     Given that I create a valid app under "path/somewhere"
     When I run `ahn start console path/somewhere` interactively
-    And I wait 10 seconds
+    And I wait 20 seconds
     #And I tell the console to stop
     And I terminate the interactive process
     Then the output should contain "Starting console"
