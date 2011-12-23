@@ -9,7 +9,7 @@ Feature: Adhearsion Ahn CLI
     Then I should see the usage message
     And the exit status should be 0
 
-  Scenario: Unrecoginized commands
+  Scenario: Unrecognized commands
     When I run `ahn alpha beta`
     Then the output should contain:
     """
