@@ -9,6 +9,11 @@ module Adhearsion
           @menu_callbacks = {}
         end
 
+        def build(&block)
+          @context = eval("self", block.binding)
+          instance_eval(&block)
+        end
+
         def match(patterns, payload, &block)
           patterns = [patterns] if patterns != Array
           if patterns.any?
@@ -26,7 +31,7 @@ module Adhearsion
 
         def execute_hook_for(symbol, input)
           callback = @menu_callbacks[symbol]
-          callback.call input if callback
+          @context.instance_exec input, &callback
         end
         def invalid(&block)
           raise LocalJumpError, "Must supply a block!" unless block_given?

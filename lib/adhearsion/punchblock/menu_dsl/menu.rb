@@ -9,7 +9,7 @@ module Adhearsion
 
         relationships :menu_builder => Punchblock::MenuDSL::MenuBuilder
 
-        attr_reader :builder, :timeout, :tries_count, :max_number_of_tries, :current_state
+        attr_reader :builder, :timeout, :tries_count, :max_number_of_tries
 
         def initialize(options={}, &block)
           @tries_count          = 0 # Counts the number of tries the menu's been executed
@@ -17,7 +17,7 @@ module Adhearsion
           @max_number_of_tries  = options[:tries]   || DEFAULT_MAX_NUMBER_OF_TRIES
           @builder = menu_builder.new
 
-          @builder.instance_eval(&block)
+          @builder.build(&block)
 
           initialize_digit_buffer
         end
