@@ -7,6 +7,7 @@ module Adhearsion
     autoload :Input
     autoload :Output
     autoload :Record
+    autoload :Menu
 
     include Punchblock::Command
     include Punchblock::Component
@@ -15,6 +16,7 @@ module Adhearsion
     include Input
     include Output
     include Record
+    include Menu
 
     class_attribute :callbacks
 

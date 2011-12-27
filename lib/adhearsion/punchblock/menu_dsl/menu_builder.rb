@@ -9,15 +9,15 @@ module Adhearsion
           @menu_callbacks = {}
         end
 
-        def method_missing(match_payload, *patterns, &block)
+        def match(patterns, payload, &block)
+          patterns = [patterns] if patterns != Array
           if patterns.any?
             patterns.each do |pattern|
-              @patterns << MatchCalculator.build_with_pattern(pattern, match_payload)
+              @patterns << MatchCalculator.build_with_pattern(pattern, payload)
             end
           else
             raise ArgumentError, "You cannot call this method without patterns."
           end
-          nil
         end
 
         def weighted_match_calculators
@@ -28,18 +28,17 @@ module Adhearsion
           callback = @menu_callbacks[symbol]
           callback.call input if callback
         end
-
-        def on_invalid(&block)
+        def invalid(&block)
           raise LocalJumpError, "Must supply a block!" unless block_given?
           @menu_callbacks[:invalid] = block
         end
 
-        def on_premature_timeout(&block)
+        def timeout(&block)
           raise LocalJumpError, "Must supply a block!" unless block_given?
-          @menu_callbacks[:premature_timeout] = block
+          @menu_callbacks[:timeout] = block
         end
 
-        def on_failure(&block)
+        def failure(&block)
           raise LocalJumpError, "Must supply a block!" unless block_given?
           @menu_callbacks[:failure] = block
         end

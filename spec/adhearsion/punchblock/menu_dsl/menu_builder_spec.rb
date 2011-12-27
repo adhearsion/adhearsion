@@ -6,8 +6,9 @@ module Adhearsion
 
       describe MenuBuilder do
         include CallControllerTestHelpers
-      end
 
-    end
+      end# describe MenuBuilder
+
+    end# module MenuDSL
   end
 end
