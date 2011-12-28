@@ -8,10 +8,10 @@ module Adhearsion
           new :pattern => pattern, :query => query, :match_payload => match_payload
         end
 
-        attr_reader :match_payload, :potential_matches, :exact_matches, :pattern, :query
+        attr_reader :match_payload, :potential_matches, :exact_matches, :pattern, :query, :block
 
         def initialize(options={})
-          @pattern, @query, @match_payload = options.values_at :pattern, :query, :match_payload
+          @pattern, @query, @match_payload, @block = options.values_at :pattern, :query, :match_payload, :block
           @potential_matches  = options[:potential_matches] ? Array(options[:potential_matches]) : []
           @exact_matches      = options[:exact_matches] ? Array(options[:exact_matches]) : []
         end

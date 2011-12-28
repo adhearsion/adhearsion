@@ -47,7 +47,7 @@ module Adhearsion
             first_exact_match = calculated_matches.exact_matches.first
             if calculated_matches.potential_match_count.zero?
               # Match found with no extenuating ambiguities! Go with the first exact match
-              menu_result_found! first_exact_match.match_payload, digit_buffer_string
+              menu_result_found! first_exact_match, digit_buffer_string
             else
               get_another_digit_or_finish!(first_exact_match.match_payload, first_exact_match.query)
             end
@@ -91,8 +91,8 @@ module Adhearsion
           raise MenuResultInvalid
         end
 
-        def menu_result_found!(match_payload, new_extension)
-          raise MenuResultFound.new(match_payload, new_extension)
+        def menu_result_found!(match_object, new_extension)
+          raise MenuResultFound.new(match_object, new_extension)
         end
 
         def get_another_digit_or_finish!(match_payload, new_extension)
@@ -110,11 +110,11 @@ module Adhearsion
         # Raise when the user's input matches
         class MenuResultFound < MenuResult
 
-          attr_reader :match_payload, :new_extension
+          attr_reader :match_object, :new_extension
 
-          def initialize(match_payload, new_extension)
+          def initialize(match_object, new_extension)
             super()
-            @match_payload = match_payload
+            @match_object = match_object
             @new_extension = new_extension
           end
 

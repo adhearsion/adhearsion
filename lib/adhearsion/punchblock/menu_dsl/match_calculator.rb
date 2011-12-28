@@ -27,16 +27,17 @@ module Adhearsion
 
         end
 
-        attr_reader :pattern, :match_payload
+        attr_reader :pattern, :match_payload, :block
 
-        def initialize(pattern, match_payload)
+        def initialize(pattern, match_payload, &block)
           @pattern, @match_payload = pattern, match_payload
+          @block = block
         end
 
         protected
 
         def new_calculated_match(options)
-          CalculatedMatch.new({:pattern => pattern, :match_payload => match_payload}.merge(options))
+          CalculatedMatch.new({:pattern => pattern, :match_payload => match_payload, :block => block}.merge(options))
         end
 
         def coerce_to_numeric(victim)

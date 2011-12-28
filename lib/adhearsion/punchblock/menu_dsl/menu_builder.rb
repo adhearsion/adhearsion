@@ -14,11 +14,21 @@ module Adhearsion
           instance_eval(&block)
         end
 
-        def match(patterns, payload, &block)
+        def match(*args, &block)
+          if args.size == 1
+            if !block_given?
+              raise ArgumentError, "You must provide a block or a controller name."
+            end
+            patterns = args[0]
+            payload = nil
+          elsif args.size == 2
+            patterns = args[0]
+            payload = args[1]
+          end
           patterns = [patterns] if patterns != Array
           if patterns.any?
             patterns.each do |pattern|
-              @patterns << MatchCalculator.build_with_pattern(pattern, payload)
+              @patterns << MatchCalculator.build_with_pattern(pattern, payload, &block)
             end
           else
             raise ArgumentError, "You cannot call this method without patterns."
