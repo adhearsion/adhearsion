@@ -5,26 +5,31 @@ module Adhearsion
     describe Initializer do
 
       def initialize_punchblock options = nil
-
         flexmock(Initializer).should_receive(:connect)
 
-        unless options.nil?
-          Adhearsion.config.punchblock do |config|
-            config.platform = options[:platform] if options.include? :platform
-            config.username = options[:username] if options.include? :username
-            config.password = options[:password] if options.include? :password
-            config.auto_reconnect   = options[:auto_reconnect] if options.include? :auto_reconnect
-            config.wire_logger      = options[:wire_logger] if options.include? :wire_logger
-            config.transport_logger = options[:transport_logger] if options.include? :transport_logger
-          end
-        else
+        if options.nil?
           Adhearsion.config.punchblock do |config|
             config.platform         = :xmpp
             config.username         = "usera@127.0.0.1"
             config.password         = "1"
             config.auto_reconnect   = true
-            config.wire_logger      = nil
-            config.transport_logger = nil
+            config.host             = nil
+            config.port             = nil
+            config.root_domain      = nil
+            config.calls_domain     = nil
+            config.mixers_domain    = nil
+          end
+        else
+          Adhearsion.config.punchblock do |config|
+            config.platform       = options[:platform]        if options.include? :platform
+            config.username       = options[:username]        if options.include? :username
+            config.password       = options[:password]        if options.include? :password
+            config.auto_reconnect = options[:auto_reconnect]  if options.include? :auto_reconnect
+            config.host           = options[:host]            if options.include? :host
+            config.port           = options[:port]            if options.include? :port
+            config.root_domain    = options[:root_domain]     if options.include? :root_domain
+            config.calls_domain   = options[:calls_domain]    if options.include? :calls_domain
+            config.mixers_domain  = options[:mixers_domain]   if options.include? :mixers_domain
           end
         end
 
@@ -42,9 +47,7 @@ module Adhearsion
       let(:mock_manager)  { flexmock 'a mock dialplan manager' }
 
       describe "starts the client with the default values" do
-        subject {
-          initialize_punchblock
-        }
+        subject { initialize_punchblock }
 
         it "should set properly the username value" do
           subject.username.should == 'usera@127.0.0.1'
@@ -57,10 +60,30 @@ module Adhearsion
         it "should set properly the auto_reconnect value" do
           subject.auto_reconnect.should == true
         end
+
+        it "should set properly the host value" do
+          subject.host.should be_nil
+        end
+
+        it "should set properly the port value" do
+          subject.port.should be_nil
+        end
+
+        it "should set properly the root_domain value" do
+          subject.root_domain.should be_nil
+        end
+
+        it "should set properly the calls_domain value" do
+          subject.calls_domain.should be_nil
+        end
+
+        it "should set properly the mixers_domain value" do
+          subject.mixers_domain.should be_nil
+        end
       end
 
       it "starts the client with any overridden settings" do
-        overrides = {:username => 'userb@127.0.0.1', :password => '123', :auto_reconnect => false, :host=>nil, :port=>nil}
+        overrides = {:username => 'userb@127.0.0.1', :password => '123', :auto_reconnect => false, :host => 'foo.bar.com', :port => 200, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com'}
 
         flexmock(::Punchblock::Connection::XMPP).should_receive(:new).once.with(overrides).and_return do
           flexmock 'Client', :event_handler= => true
@@ -69,7 +92,7 @@ module Adhearsion
       end
 
       describe 'using Asterisk' do
-        let(:overrides) { {:username => 'test', :password => '123', :auto_reconnect => false, :host=>nil, :port=>nil} }
+        let(:overrides) { {:username => 'test', :password => '123', :auto_reconnect => false, :host => 'foo.bar.com', :port => 200, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com'} }
 
         it 'should start an Asterisk PB connection' do
           flexmock(::Punchblock::Connection::Asterisk).should_receive(:new).once.with(overrides).and_return do

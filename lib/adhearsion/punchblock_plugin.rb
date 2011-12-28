@@ -17,6 +17,9 @@ module Adhearsion
       auto_reconnect   true             , :desc => "Autoreconnect in case of failure"
       host             nil              , :desc => "Host punchblock needs to connect (where rayo or asterisk are located)"
       port             nil              , :desc => "Port punchblock needs to connect (by default 5038 for Asterisk, 5222 for Rayo)"
+      root_domain      nil              , :desc => "The root domain at which to address the server"
+      calls_domain     nil              , :desc => "The domain at which to address calls"
+      mixers_domain    nil              , :desc => "The domain at which to address mixers"
     end
 
     init :punchblock do
