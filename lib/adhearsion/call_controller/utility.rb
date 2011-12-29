@@ -8,9 +8,7 @@ module Adhearsion
       # @return [RubySpeech::GRXML::Grammar] A grammar suitable for use in SSML prompts
       #
       def grammar_digits(digits = 1)
-        RubySpeech::GRXML.draw do
-          self.mode = 'dtmf'
-          self.root = 'inputdigits'
+        RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
           rule id: 'digits' do
             one_of do
               0.upto(9) { |d| item { d.to_s } }
@@ -34,9 +32,7 @@ module Adhearsion
         allowed_digits = '0123456789#*'
         gram_digits = digits.chars.select { |x| allowed_digits.include? x }
 
-        RubySpeech::GRXML.draw do
-          self.mode = 'dtmf'
-          self.root = 'inputdigits'
+        RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
           rule id: 'acceptdigits' do
             one_of do
               gram_digits.each { |d| item { d.to_s } }
