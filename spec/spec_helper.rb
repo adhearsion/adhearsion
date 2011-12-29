@@ -40,11 +40,4 @@ RSpec.configure do |config|
   end
 end
 
-
 Adhearsion::Logging.silence!
-
-class Foo
-  class Bar
-  end
-end
-

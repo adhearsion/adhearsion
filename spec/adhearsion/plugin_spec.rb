@@ -444,20 +444,15 @@ describe Adhearsion::Plugin do
       defined?(FooBar) and Object.send(:remove_const, :"FooBar")
     end
 
-    subject{ Adhearsion::Plugin.tasks }
-
-    it "should respond to method tasks" do
-      Adhearsion::Plugin.should respond_to :tasks
-    end
+    subject { Adhearsion::Plugin.tasks }
 
     it "should return an Array" do
       subject.should be_instance_of Array
     end
 
-    its(:length){should == 0}
+    its(:length) { should == 0 }
 
     it "should not load a new task when there is no block in the method call" do
-
       subject.length.should == 0
       FooBar = Class.new Adhearsion::Plugin do
         tasks

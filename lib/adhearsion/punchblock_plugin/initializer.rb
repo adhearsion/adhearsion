@@ -17,7 +17,10 @@ module Adhearsion
             :password         => self.config.password,
             :auto_reconnect   => self.config.auto_reconnect,
             :host             => self.config.host,
-            :port             => self.config.port
+            :port             => self.config.port,
+            :root_domain      => self.config.root_domain,
+            :calls_domain     => self.config.calls_domain,
+            :mixers_domain    => self.config.mixers_domain
           }
 
           connection = connection_class.new connection_options
