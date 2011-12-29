@@ -8,10 +8,9 @@ module CallControllerTestHelpers
     test_case.subject { test_case.describes.new call }
 
     test_case.before do
-      flexmock(Adhearsion::Plugin).should_receive(:methods_scope).once.and_return({:dialplan => Module.new { def foo; end}})
+      flexmock Adhearsion::Plugin, :methods_scope => {:dialplan => Module.new { def foo; end}}
       flexmock subject
       flexmock call, :write_command => true, :id => call_id
-      subject.setup
     end
   end
 

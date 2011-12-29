@@ -146,7 +146,9 @@ module Adhearsion
     end
 
     def execute_controller(controller)
-      controller.execute
+      CallController.exec controller
+    ensure
+      hangup!
     end
 
     private
