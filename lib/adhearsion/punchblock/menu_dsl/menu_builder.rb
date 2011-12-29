@@ -22,6 +22,9 @@ module Adhearsion
             patterns = args[0]
             payload = nil
           elsif args.size == 2
+            if block_given?
+              raise ArgumentError, "You cannot specify both a block and a controller name."
+            end
             patterns = args[0]
             payload = args[1]
           end

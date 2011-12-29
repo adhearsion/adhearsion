@@ -7,41 +7,41 @@ module Adhearsion
         sound_files = args.flatten
 
         menu_instance = Punchblock::MenuDSL::Menu.new(options, &block)
+        result_of_menu = nil
 
-         begin
+         while result_of_menu != Punchblock::MenuDSL::Menu::MenuResultDone
            if menu_instance.should_continue?
-             menu_instance.continue
+             result_of_menu = menu_instance.continue
            else
              menu_instance.execute_failure_hook
              return :failed
            end
-         rescue Punchblock::MenuDSL::Menu::MenuResult => result_of_menu
-           case result_of_menu
-           when Punchblock::MenuDSL::Menu::MenuResultInvalid
-             menu_instance.execute_invalid_hook
-             menu_instance.restart!
-           when Punchblock::MenuDSL::Menu::MenuGetAnotherDigit
-             next_digit = play_sound_files_for_menu(menu_instance, sound_files)
-             if next_digit
-               menu_instance << next_digit
-             else
-               case result_of_menu
-               when Punchblock::MenuDSL::Menu::MenuGetAnotherDigitOrFinish
-                 jump_to result_of_menu.match_payload, :extension => result_of_menu.new_extension
-               when Punchblock::MenuDSL::Menu::MenuGetAnotherDigitOrTimeout
-                 menu_instance.execute_timeout_hook
-                 menu_instance.restart!
-               end
-           end
-           when Punchblock::MenuDSL::Menu::MenuResultFound
-             jump_to result_of_menu.match_object, :extension => result_of_menu.new_extension
-             return false
-           else
-             raise "Unrecognized MenuResult! This may be a bug!"
-           end
 
-           retry
-         end
+           case result_of_menu
+             when Punchblock::MenuDSL::Menu::MenuResultInvalid
+               menu_instance.execute_invalid_hook
+               menu_instance.restart!
+               result_of_menu = nil
+             when Punchblock::MenuDSL::Menu::MenuGetAnotherDigit
+               next_digit = play_sound_files_for_menu(menu_instance, sound_files)
+               if next_digit
+                 menu_instance << next_digit
+               else
+                 case result_of_menu
+                 when Punchblock::MenuDSL::Menu::MenuGetAnotherDigitOrFinish
+                   jump_to result_of_menu.match_object, :extension => result_of_menu.new_extension
+                   return true
+                 when Punchblock::MenuDSL::Menu::MenuGetAnotherDigitOrTimeout
+                   menu_instance.execute_timeout_hook
+                   menu_instance.restart!
+                   result_of_menu = nil
+                 end
+             end
+             when Punchblock::MenuDSL::Menu::MenuResultFound
+               jump_to result_of_menu.match_object, :extension => result_of_menu.new_extension
+               return false
+           end#case
+         end#while
       end
 
       def play_sound_files_for_menu(menu_instance, sound_files)
@@ -54,19 +54,13 @@ module Adhearsion
 
       def jump_to(match_object, overrides={})
       if match_object.block
-        instance_eval &match_object.block
+        instance_exec overrides[:extension], &match_object.block
       else
         controller = match_object.match_payload
-        controller.new(call).run
+        controller_instance = controller.new(call)
+        controller_instance.options = overrides
+        controller_instance.run
       end
-      end
-
-      def lookup_context_with_name(context_name)
-        begin
-          send context_name
-        rescue NameError
-          raise Adhearsion::DSL::Dialplan::ContextNotFoundException
-        end
       end
 
     end#module

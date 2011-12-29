@@ -39,14 +39,13 @@ module Adhearsion
         end
 
         def continue
-          raise MenuGetAnotherDigitOrTimeout if digit_buffer_empty?
+          return MenuGetAnotherDigitOrTimeout.new if digit_buffer_empty?
 
           calculated_matches = builder.calculate_matches_for digit_buffer_string
 
           if calculated_matches.exact_match_count >= 1
             first_exact_match = calculated_matches.exact_matches.first
             if calculated_matches.potential_match_count.zero?
-              # Match found with no extenuating ambiguities! Go with the first exact match
               menu_result_found! first_exact_match, digit_buffer_string
             else
               get_another_digit_or_finish!(first_exact_match.match_payload, first_exact_match.query)
@@ -88,26 +87,26 @@ module Adhearsion
         end
 
         def invalid!
-          raise MenuResultInvalid
+          return MenuResultInvalid.new
         end
 
         def menu_result_found!(match_object, new_extension)
-          raise MenuResultFound.new(match_object, new_extension)
+          return MenuResultFound.new(match_object, new_extension)
         end
 
         def get_another_digit_or_finish!(match_payload, new_extension)
-          raise MenuGetAnotherDigitOrFinish.new(match_payload, new_extension)
+          return MenuGetAnotherDigitOrFinish.new(match_payload, new_extension)
         end
 
         def get_another_digit_or_timeout!
-          raise MenuGetAnotherDigitOrTimeout
+          return MenuGetAnotherDigitOrTimeout.new
         end
 
         # The superclass from which all message-like exceptions descend. It should never
         # be instantiated directly.
-        class MenuResult < StandardError; end
+        class MenuResult; end
+        class MenuResultDone < MenuResult; end
 
-        # Raise when the user's input matches
         class MenuResultFound < MenuResult
 
           attr_reader :match_object, :new_extension
@@ -130,7 +129,6 @@ module Adhearsion
           include MenuGetAnotherDigit
         end
 
-        # Raised when the use's input matches no patterns
         class MenuResultInvalid < MenuResult; end
 
         # For our default purpose, we need the digit_buffer to behave much like a normal String except that it should
