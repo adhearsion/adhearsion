@@ -5,7 +5,7 @@ module Adhearsion
       class << self
 
         def build_with_pattern(pattern, match_payload, &block)
-          class_for_pattern(pattern).new(pattern, match_payload, &block)
+          class_for_pattern(pattern).new pattern, match_payload, &block
         end
 
         private
@@ -18,8 +18,7 @@ module Adhearsion
       attr_reader :pattern, :match_payload, :block
 
       def initialize(pattern, match_payload, &block)
-        @pattern, @match_payload = pattern, match_payload
-        @block = block
+        @pattern, @match_payload, @block = pattern, match_payload, block
       end
 
       protected

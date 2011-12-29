@@ -18,7 +18,7 @@ module Adhearsion
           new_calculated_match :query => query, :exact_matches => exact_match,
             :potential_matches => potential_matches
         else
-          CalculatedMatch.failed_match!(pattern, query, match_payload)
+          CalculatedMatch.failed_match! pattern, query, match_payload
         end
       end
 
@@ -42,7 +42,7 @@ module Adhearsion
           power = 0
           while num < last
             ones_count = 10**power - 1
-            matches.concat((([num, first].max)..[(num+ones_count), last].min).to_a)
+            matches.concat ([num, first].max..[num + ones_count, last].min).to_a
             num *= 10
             power += 1
           end

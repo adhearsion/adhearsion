@@ -29,6 +29,10 @@ module Adhearsion
         CalculatedMatch.new(:potential_matches => [88,99,77]).potential_match?.should be true
       end
 
+      it "#failed_match? should return false if the match was exact" do
+        CalculatedMatch.new(:potential_matches => [88,99,77]).failed_match?.should be false
+      end
+
       it "#exact_matches should return an array of exact matches" do
         CalculatedMatch.new(:exact_matches => [0,3,5]).exact_matches.should == [0,3,5]
       end
@@ -41,6 +45,7 @@ module Adhearsion
         failure = CalculatedMatch.failed_match! 10..20, 30, :match_payload_does_not_matter
         failure.exact_match?.should_not be true
         failure.potential_match?.should_not be true
+        failure.failed_match?.should be true
         failure.type_of_match.should be nil
 
         failure.match_payload.should be :match_payload_does_not_matter

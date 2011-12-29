@@ -23,7 +23,7 @@ module Adhearsion
       end
 
       def failed_match?
-        !potential_match? && !exact_match?
+        !(potential_match? || exact_match?)
       end
 
       def type_of_match

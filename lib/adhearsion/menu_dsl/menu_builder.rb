@@ -9,25 +9,22 @@ module Adhearsion
       end
 
       def build(&block)
-        @context = eval("self", block.binding)
-        instance_eval(&block)
+        @context = eval "self", block.binding
+        instance_eval &block
       end
 
       def match(*args, &block)
         if args.size == 1
-          if !block_given?
-            raise ArgumentError, "You must provide a block or a controller name."
-          end
+          raise ArgumentError, "You must provide a block or a controller name." unless block_given?
           patterns = args[0]
           payload = nil
         elsif args.size == 2
-          if block_given?
-            raise ArgumentError, "You cannot specify both a block and a controller name."
-          end
+          raise ArgumentError, "You cannot specify both a block and a controller name." if block_given?
           patterns = args[0]
           payload = args[1]
         end
-        patterns = [patterns] if patterns != Array
+
+        patterns = Array(patterns)
         if patterns.any?
           patterns.each do |pattern|
             @patterns << MatchCalculator.build_with_pattern(pattern, payload, &block)
@@ -45,6 +42,7 @@ module Adhearsion
         callback = @menu_callbacks[symbol]
         @context.instance_exec input, &callback
       end
+
       def invalid(&block)
         raise LocalJumpError, "Must supply a block!" unless block_given?
         @menu_callbacks[:invalid] = block

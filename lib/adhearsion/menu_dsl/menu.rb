@@ -10,13 +10,13 @@ module Adhearsion
 
       attr_reader :builder, :timeout, :tries_count, :max_number_of_tries
 
-      def initialize(options={}, &block)
+      def initialize(options = {}, &block)
         @tries_count          = 0 # Counts the number of tries the menu's been executed
         @timeout              = options[:timeout] || DEFAULT_TIMEOUT
         @max_number_of_tries  = options[:tries]   || DEFAULT_MAX_NUMBER_OF_TRIES
-        @builder = menu_builder.new
+        @builder              = menu_builder.new
 
-        @builder.build(&block)
+        @builder.build &block
 
         initialize_digit_buffer
       end
@@ -47,7 +47,7 @@ module Adhearsion
           if calculated_matches.potential_match_count.zero?
             menu_result_found! first_exact_match, digit_buffer_string
           else
-            get_another_digit_or_finish!(first_exact_match.match_payload, first_exact_match.query)
+            get_another_digit_or_finish! first_exact_match.match_payload, first_exact_match.query
           end
         elsif calculated_matches.potential_match_count >= 1
           get_another_digit_or_timeout!
@@ -66,15 +66,15 @@ module Adhearsion
       end
 
       def execute_invalid_hook
-        builder.execute_hook_for(:invalid, digit_buffer_string)
+        builder.execute_hook_for :invalid, digit_buffer_string
       end
 
       def execute_timeout_hook
-        builder.execute_hook_for(:timeout, digit_buffer_string)
+        builder.execute_hook_for :timeout, digit_buffer_string
       end
 
       def execute_failure_hook
-        builder.execute_hook_for(:failure, digit_buffer_string)
+        builder.execute_hook_for :failure, digit_buffer_string
       end
 
       protected
@@ -103,8 +103,8 @@ module Adhearsion
 
       # The superclass from which all message-like exceptions descend. It should never
       # be instantiated directly.
-      class MenuResult; end
-      class MenuResultDone < MenuResult; end
+      MenuResult      = Class.new
+      MenuResultDone  = Class.new MenuResult
 
       class MenuResultFound < MenuResult
 
@@ -118,7 +118,7 @@ module Adhearsion
 
       end #class MenuResultFound < MenuResult
 
-      module MenuGetAnotherDigit; end
+      MenuGetAnotherDigit = Module.new
 
       class MenuGetAnotherDigitOrFinish < MenuResultFound
         include MenuGetAnotherDigit
@@ -128,7 +128,7 @@ module Adhearsion
         include MenuGetAnotherDigit
       end
 
-      class MenuResultInvalid < MenuResult; end
+      MenuResultInvalid = Class.new MenuResult
 
       # For our default purpose, we need the digit_buffer to behave much like a normal String except that it should
       # handle its own resetting (clearing)
