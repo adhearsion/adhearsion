@@ -5,24 +5,14 @@ module Adhearsion
       class << self
 
         def build_with_pattern(pattern, match_payload, &block)
-          class_for_pattern_type(pattern.class.name).new(pattern, match_payload, &block)
-        end
-
-        def inherited(klass)
-          subclasses << klass
+          class_for_pattern(pattern).new(pattern, match_payload, &block)
         end
 
         private
 
-        def class_for_pattern_type(pattern_type)
-          sought_class_name = "Adhearsion::MenuDSL::#{pattern_type.camelize}MatchCalculator"
-          subclasses.find { |klass| klass.name == sought_class_name }
+        def class_for_pattern(pattern)
+          MenuDSL.const_get "#{pattern.class.name.camelize}MatchCalculator"
         end
-
-        def subclasses
-          @@subclasses ||= []
-        end
-
       end
 
       attr_reader :pattern, :match_payload, :block
@@ -43,9 +33,5 @@ module Adhearsion
       end
 
     end # class MatchCalculator
-
-    class RangeMatchCalculator < MatchCalculator; end
-    class FixnumMatchCalculator < MatchCalculator; end
-    class StringMatchCalculator < MatchCalculator; end
   end
 end
