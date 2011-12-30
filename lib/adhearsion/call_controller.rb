@@ -52,9 +52,8 @@ module Adhearsion
 
     delegate :[], :[]=, :to => :@metadata
 
-    def initialize(call)
-      @call = call
-      @metadata = {}
+    def initialize(call, metadata = nil)
+      @call, @metadata = call, metadata || {}
       setup
     end
 
@@ -78,13 +77,13 @@ module Adhearsion
     def run
     end
 
-    def invoke(controller_class)
-      controller = controller_class.new call
+    def invoke(controller_class, metadata = nil)
+      controller = controller_class.new call, metadata
       controller.run
     end
 
-    def pass(controller_class)
-      throw :pass_controller, controller_class.new(call)
+    def pass(controller_class, metadata = nil)
+      throw :pass_controller, controller_class.new(call, metadata)
     end
 
     def execute_callbacks(type)
