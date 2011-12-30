@@ -94,7 +94,7 @@ module Adhearsion
           end
         end
 
-        let(:call) { flexmock 'Adhearsion::Call' }
+        let(:call) { flexmock 'Adhearsion::Call', :id => 'abc123' }
         let(:route) { subject.routes.first }
 
         it "should return the route's dispatcher" do
