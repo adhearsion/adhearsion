@@ -37,11 +37,25 @@ module Adhearsion
       STOP
     end
 
-    attr_reader :call
-    attr_accessor :options
+    def self.exec(controller, fresh_call = true)
+      return unless controller
+
+      new_controller = catch :pass_controller do
+        controller.skip_accept! unless fresh_call
+        controller.execute
+      end
+
+      exec new_controller, false
+    end
+
+    attr_reader :call, :metadata
+
+    delegate :[], :[]=, :to => :@metadata
 
     def initialize(call)
       @call = call
+      @metadata = {}
+      setup
     end
 
     def setup
@@ -51,17 +65,26 @@ module Adhearsion
 
     def execute(*options)
       execute_callbacks :before_call
-      accept if Adhearsion.config.platform.automatically_accept_incoming_calls
+      accept if auto_accept?
       run
     rescue Hangup
       logger.info "Call was hung up"
     rescue SyntaxError, StandardError => e
       Events.trigger :exception, e
     ensure
-      hangup
+      after_call
     end
 
     def run
+    end
+
+    def invoke(controller_class)
+      controller = controller_class.new call
+      controller.run
+    end
+
+    def pass(controller_class)
+      throw :pass_controller, controller_class.new(call)
     end
 
     def execute_callbacks(type)
@@ -70,6 +93,22 @@ module Adhearsion
           instance_exec &callback
         end
       end
+    end
+
+    def skip_accept!
+      @skip_accept = true
+    end
+
+    def skip_accept?
+      @skip_accept || false
+    end
+
+    def auto_accept?
+      Adhearsion.config.platform.automatically_accept_incoming_calls && !skip_accept?
+    end
+
+    def after_call
+      @after_call ||= execute_callbacks :after_call
     end
 
     def variables
@@ -94,7 +133,7 @@ module Adhearsion
 
     def hangup(headers = nil)
       hangup_response = call.hangup! headers
-      execute_callbacks :after_call unless hangup_response == false
+      after_call unless hangup_response == false
     end
 
     def mute
@@ -119,7 +158,5 @@ module Adhearsion
       raise StandardError, complete_event.reason.details if complete_event.reason.is_a? Punchblock::Event::Complete::Error
       component
     end
-
-
   end#class
 end

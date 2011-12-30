@@ -32,6 +32,11 @@ module Adhearsion
           call.execute_controller controller
         end
       end
+
+      def inspect
+        "#<#{self.class}:#{object_id} name=#{name} target=#{target} guards=#{guards}>"
+      end
+      alias :to_s :inspect
     end
   end
 end

@@ -6,7 +6,19 @@ module Adhearsion
 
     let(:call) { Adhearsion::Call.new mock_offer(nil, :x_foo => 'bar') }
 
-    its(:call) { should be call }
+    its(:call)      { should be call }
+    its(:metadata)  { should == {} }
+
+    describe "setting meta-data" do
+      it "should preserve data correctly" do
+        subject[:foo].should be nil
+        subject[:foo] = 7
+        subject[:foo].should == 7
+        subject[:bar] = 10
+        subject[:bar].should == 10
+        subject[:foo].should == 7
+      end
+    end
 
     it "should add plugin dialplan methods" do
       subject.should respond_to :foo
@@ -35,6 +47,16 @@ module Adhearsion
           subject.should_receive(:run).once.ordered
           subject.execute
         end
+
+        context "and accept is skipped" do
+          before { subject.skip_accept! }
+
+          it "should not accept the call" do
+            subject.should_receive(:accept).never
+            subject.should_receive(:run).once
+            subject.execute
+          end
+        end
       end
 
       context "when auto-accept is disabled" do
@@ -60,11 +82,124 @@ module Adhearsion
         flexmock(Events).should_receive(:trigger).once.with(:exception, StandardError).ordered
         subject.execute
       end
+    end
 
-      it "hangs up the call" do
-        subject.should_receive(:run).once.and_raise(StandardError).ordered
-        subject.should_receive(:hangup).once.ordered
+    class SecondController < CallController
+      def run
+        answer
+      end
+    end
+
+    class SecondControllerWithRemoteHangup < SecondController
+      def run
+        super
+        simulate_remote_hangup
+      end
+
+      def simulate_remote_hangup
+        raise Hangup
+      end
+    end
+
+    describe "#invoke" do
+      class InvokeController < CallController
+        def run
+          before
+          invoke metadata[:second_controller] || SecondController
+          after
+        end
+
+        def before
+        end
+
+        def after
+        end
+      end
+
+      subject { InvokeController.new call }
+
+      before do
+        flexmock subject, :execute_component_and_await_completion => nil
+        flexmock call, :write_and_await_response => nil
+        flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
+        Adhearsion.config.platform.automatically_accept_incoming_calls = true
+      end
+
+      it "should invoke another controller before returning to the current controller" do
+        subject.should_receive(:before).once.ordered
+        call.should_receive(:answer).once.ordered
+        subject.should_receive(:after).once.ordered
+
         subject.execute
+      end
+
+      it "should not attempt to accept the call again" do
+        call.should_receive(:accept).once
+
+        subject.execute
+      end
+
+      it "should allow the outer controller to cease execution and handle remote hangups" do
+        subject[:second_controller] = SecondControllerWithRemoteHangup
+
+        subject.should_receive(:before).once.ordered
+        call.should_receive(:answer).once.ordered
+        subject.should_receive(:after).never.ordered
+
+        subject.execute
+      end
+    end
+
+    describe "#pass" do
+      class PassController < CallController
+        after_call :foobar
+
+        def run
+          before
+          pass SecondController
+          after
+        end
+
+        def before
+        end
+
+        def after
+        end
+
+        def foobar
+        end
+      end
+
+      subject { PassController.new call }
+
+      before do
+        flexmock subject, :execute_component_and_await_completion => nil
+        flexmock call, :write_and_await_response => nil
+        flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
+        Adhearsion.config.platform.automatically_accept_incoming_calls = true
+      end
+
+      it "should cease execution of the current controller, and instruct the call to execute another" do
+        subject.should_receive(:before).once.ordered
+        call.should_receive(:answer).once.ordered
+        subject.should_receive(:after).never.ordered
+        call.should_receive(:hangup!).once.ordered
+
+        call.execute_controller subject
+      end
+
+      it "should not attempt to accept the call again" do
+        call.should_receive(:accept).once
+
+        call.execute_controller subject
+      end
+
+      it "should execute after_call callbacks before passing control" do
+        subject.should_receive(:before).once.ordered
+        subject.should_receive(:foobar).once.ordered
+        call.should_receive(:answer).once.ordered
+
+        call.execute_controller subject
       end
     end
 
@@ -200,7 +335,7 @@ class ExampleCallController < Adhearsion::CallController
 
   def run
     join_to_conference
-    hangup
+    hangup unless metadata[:skip_hangup]
     foobar
   end
 
@@ -239,5 +374,15 @@ describe ExampleCallController do
     subject.should_receive(:clean_up_models).and_raise StandardError
     flexmock(Adhearsion::Events).should_receive(:trigger).times(4).with :exception, StandardError
     subject.execute
+  end
+
+  context "when the controller finishes without a hangup" do
+    it "should execute the after_call callbacks" do
+      subject[:skip_hangup] = true
+      subject.should_receive(:join_to_conference).once.ordered
+      subject.should_receive(:foobar).once.ordered
+      subject.should_receive(:clean_up_models).twice.ordered
+      subject.execute
+    end
   end
 end
