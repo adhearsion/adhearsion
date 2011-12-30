@@ -47,16 +47,10 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'simplecov-rcov'
   s.add_development_dependency 'ci_reporter'
   s.add_development_dependency 'yard'
-  s.add_development_dependency 'guard', ["~> 0.8.0"]
   s.add_development_dependency 'guard-rspec'
   s.add_development_dependency 'guard-cucumber'
+  s.add_development_dependency 'ruby_gntp'
   s.add_development_dependency 'cucumber'
   s.add_development_dependency 'aruba', ["=0.4.8"]
   s.add_runtime_dependency('jruby-openssl') if RUBY_PLATFORM == 'java'
-  if RUBY_PLATFORM =~ /darwin/
-    s.add_development_dependency 'growl_notify'
-    s.add_development_dependency 'rb-fsevent'
-  elsif RUBY_PLATFORM =~ /linux/
-    s.add_development_dependency 'rb-inotify'
-  end
 end
