@@ -51,14 +51,11 @@ module Adhearsion
         digit || wait_for_digit(menu_instance.timeout)
       end
 
-      def jump_to(match_object, overrides = {})
+      def jump_to(match_object, overrides = nil)
         if match_object.block
           instance_exec overrides[:extension], &match_object.block
         else
-          controller = match_object.match_payload
-          controller_instance = controller.new call
-          controller_instance.options = overrides
-          controller_instance.run
+          invoke match_object.match_payload, overrides
         end
       end
 
