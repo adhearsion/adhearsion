@@ -23,6 +23,7 @@ module Adhearsion
 
     def handle(call)
       return unless route = match(call)
+      logger.debug "Call #{call.id} passing through router matched route #{route}"
       route.dispatcher
     end
   end
