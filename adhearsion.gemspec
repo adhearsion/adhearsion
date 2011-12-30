@@ -38,6 +38,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'countdownlatch'
   s.add_runtime_dependency 'has-guarded-handlers', [">= 0.1.1"]
   s.add_runtime_dependency 'girl_friday'
+  s.add_runtime_dependency 'jruby-openssl' if RUBY_PLATFORM == 'java'
 
   # Development dependencies
   s.add_development_dependency 'rspec', [">= 2.7.0"]
@@ -52,5 +53,4 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'ruby_gntp'
   s.add_development_dependency 'cucumber'
   s.add_development_dependency 'aruba', ["=0.4.8"]
-  s.add_runtime_dependency('jruby-openssl') if RUBY_PLATFORM == 'java'
 end
