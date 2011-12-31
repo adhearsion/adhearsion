@@ -331,6 +331,7 @@ module Adhearsion
     it_should_behave_like "conference commands"
     it_should_behave_like "dial commands"
     it_should_behave_like "record commands"
+    it_should_behave_like "menu commands"
   end
 end
 
