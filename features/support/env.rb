@@ -31,7 +31,7 @@ end
 # Aruba upstream overwrites these variables so set them here until it is fixed.
 Aruba.configure do |config|
   config.before_cmd do |cmd|
-    set_env('JRUBY_OPTS', "#{JRUBY_OPTS} #{JRUBY_OPTS_SAVED}") # disable JIT since these processes are so short lived
-    set_env('JAVA_OPTS', "#{JAVA_OPTS} #{JAVA_OPTS_SAVED}") # force jRuby to use client JVM for faster startup times
+    set_env('JRUBY_OPTS', "#{ENV['JRUBY_OPTS']} #{JRUBY_OPTS_SAVED}") # disable JIT since these processes are so short lived
+    set_env('JAVA_OPTS', "#{ENV['JAVA_OPTS']} #{JAVA_OPTS_SAVED}") # force jRuby to use client JVM for faster startup times
   end
 end if RUBY_PLATFORM == 'java'
