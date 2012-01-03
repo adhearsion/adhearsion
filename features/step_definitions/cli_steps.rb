@@ -1,3 +1,5 @@
+require 'timeout'
+
 Then /^I should see the usage message$/ do
   steps %Q{
     Then the output should contain "Usage:"
@@ -8,6 +10,7 @@ Then /^I should see the usage message$/ do
   }
 end
 
+# TODO: send pull request for cucumber.rb
 When /^I terminate the interactive process$/ do
   terminate_processes!
 end
@@ -16,10 +19,13 @@ When /^I wait (\d+) seconds?$/ do |arg1|
   sleep arg1.to_i
 end
 
+# TODO: send pull request for cucumber.rb
 When /^I wait for (?:output|stdout) to contain "([^"]*)"$/ do |expected|
-  loop do
-    break if assert_partial_output_interactive(expected)
-    sleep 0.5
+  Timeout::timeout(@aruba_io_wait_seconds) do
+    loop do
+      break if assert_partial_output_interactive(expected)
+      sleep 0.1
+    end
   end
 end
 
