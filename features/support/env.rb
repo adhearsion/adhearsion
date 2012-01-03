@@ -19,7 +19,7 @@ require 'aruba/cucumber'
 require 'adhearsion'
 
 Before do
-  @aruba_timeout_seconds = RUBY_PLATFORM == 'java' ? 60 : 15
+  @aruba_timeout_seconds = ENV['ARUBA_TIMEOUT'] || RUBY_PLATFORM == 'java' ? 60 : 30
 end
 
 # TODO: check for name space / run issues
