@@ -12,15 +12,11 @@ module Aruba
 
   class Process
     def read_stdout(keep_ansi)
-      syncsave = @process.io.stdout.sync
-      content = nil
-      @process.io.stdout.sync = true
       wait_for_io do
         @process.io.stdout.flush
         content = filter_ansi(open(@out.path).read, keep_ansi)
       end
-      @process.io.stdout.sync = syncsave
-      content
     end
   end
 end
+
