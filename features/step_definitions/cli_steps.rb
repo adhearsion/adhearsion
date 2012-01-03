@@ -58,7 +58,7 @@ Then /^there should be a valid adhearsion directory named "([^"]*)"$/ do |path|
   ## Either we use cd or we need absolute path... could not figure out cleaner
   ## way to get back to previous dir.
   dotsback=1.upto(path.split(File::SEPARATOR)[0..-1].count).collect {|x| ".."}.join(File::SEPARATOR)
-  dotsback.shift if dotsback[0].class == String and dotsback[0].empty?
+  dotsback.shift if dotsback[0].is_a?(String) and dotsback[0].empty?
   cd(dotsback)
 end
 
