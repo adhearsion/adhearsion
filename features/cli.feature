@@ -46,18 +46,16 @@ Feature: Adhearsion Ahn CLI
     And the exit status should be 1
 
 
-#  TODO: extend Aruba to support monitoring ouput of interative process
-#  Scenario: Cucumber should support checking output on interative commands while they still run
-#    Given PENDING: need to finish the
-#    Given that I create a valid app under "path/somewhere"
-#    When I run `ahn start path/somewhere` interactively
-#    And I wait for output to contain "Transitioning"
-#    And I terminate the interactive process
-#    Then the output should contain:
-#    """
-#    Transitioning from booting to running
-#    """
-#    And the exit status should be 0
+  Scenario: Cucumber should support checking output on interative commands while they still run
+    Given that I create a valid app under "path/somewhere"
+    When I run `ahn start path/somewhere` interactively
+    And I wait for output to contain "Transitioning"
+    And I terminate the interactive process
+    Then the output should contain:
+    """
+    Transitioning from booting to running
+    """
+    And the exit status should be 0
 
   Scenario: Command start with only path works properly
     Given that I create a valid app under "path/somewhere"

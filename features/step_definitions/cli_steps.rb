@@ -18,7 +18,7 @@ end
 
 When /^I wait for (?:output|stdout) to contain "([^"]*)"$/ do |expected|
   loop do
-    break if interactive_stdout_contains(expected, all_output)
+    break if assert_partial_output_interactive(expected)
     sleep 0.5
   end
 end
