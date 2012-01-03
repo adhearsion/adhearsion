@@ -55,7 +55,7 @@ Then /^there should be a valid adhearsion directory named "([^"]*)"$/ do |path|
       | config/environment.rb |
   }
   dotsback=1.upto(path.split(File::SEPARATOR)[0..-1].count).collect {|x| ".."}.join(File::SEPARATOR)
-  dotsback.shift if dotsback[0].empty?
+  dotsback.shift if dotsback[0].class == String and dotsback[0].empty?
   cd(dotsback)
 end
 
