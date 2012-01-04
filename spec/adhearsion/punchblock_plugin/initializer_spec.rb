@@ -18,18 +18,16 @@ module Adhearsion
             config.root_domain      = nil
             config.calls_domain     = nil
             config.mixers_domain    = nil
+            config.retry_attempts   = 1.0/0.0
+            config.retry_timer      = 5
           end
         else
           Adhearsion.config.punchblock do |config|
-            config.platform       = options[:platform]        if options.include? :platform
-            config.username       = options[:username]        if options.include? :username
-            config.password       = options[:password]        if options.include? :password
-            config.auto_reconnect = options[:auto_reconnect]  if options.include? :auto_reconnect
-            config.host           = options[:host]            if options.include? :host
-            config.port           = options[:port]            if options.include? :port
-            config.root_domain    = options[:root_domain]     if options.include? :root_domain
-            config.calls_domain   = options[:calls_domain]    if options.include? :calls_domain
-            config.mixers_domain  = options[:mixers_domain]   if options.include? :mixers_domain
+            [:platform, :username, :password, :auto_reconnect, :host, :port,
+             :root_domain, :calls_domain, :mixers_domain, :retry_attempts,
+             :retry_timer].each do |option|
+              config.send "#{option.to_s}=".to_sym, options[option] if options.include? option
+            end
           end
         end
 

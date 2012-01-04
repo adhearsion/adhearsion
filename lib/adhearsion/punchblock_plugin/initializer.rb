@@ -1,7 +1,7 @@
 module Adhearsion
   class PunchblockPlugin
     class Initializer
-      cattr_accessor :config, :client, :dispatcher
+      cattr_accessor :config, :client, :dispatcher, :attempts
 
       class << self
         def start
@@ -47,6 +47,11 @@ module Adhearsion
             Events.trigger :punchblock, event
           end
 
+          Events.punchblock ::Punchblock::Connection::Connected do |event|
+            logger.info "Connected to Punchblock server"
+            self.attempts = 0
+          end
+
           Events.punchblock ::Punchblock::Event::Offer do |offer|
             dispatch_offer offer
           end
@@ -69,13 +74,20 @@ module Adhearsion
             m = Mutex.new
             blocker = ConditionVariable.new
             Events.punchblock ::Punchblock::Connection::Connected do
-              logger.info "Connected to server."
               m.synchronize { blocker.broadcast }
             end
             Adhearsion::Process.important_threads << Thread.new do
               catching_standard_errors do
                 begin
                   client.run
+                rescue ::Punchblock::DisconnectedError => e
+                  self.attempts += 1
+                  Adhearsion::Process.reset
+                  logger.error "Punchblock connection lost. Attempt #{self.attempts} of #{self.config.retry_attempts}"
+                  sleep self.config.retry_timer
+                  retry unless self.attempts >= self.config.retry_attempts
+                  logger.fatal "Punchblock connection retry attempts exceeded"
+                  raise e
                 rescue ::Punchblock::ProtocolError => e
                   logger.fatal "The connection failed due to a protocol error: #{e.name}."
                   m.synchronize { blocker.broadcast }

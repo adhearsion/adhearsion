@@ -20,6 +20,8 @@ module Adhearsion
       root_domain      nil              , :desc => "The root domain at which to address the server"
       calls_domain     nil              , :desc => "The domain at which to address calls"
       mixers_domain    nil              , :desc => "The domain at which to address mixers"
+      retry_attempts   1.0/0.0          , :desc => "The number of times to (re)attempt connection to the server"
+      retry_timer      5                , :desc => "Delay between connection attempts"
     end
 
     init :punchblock do
