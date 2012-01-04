@@ -69,8 +69,6 @@ module Adhearsion
 
         def connect
           begin
-            logger.info "Starting connection to server"
-
             m = Mutex.new
             blocker = ConditionVariable.new
             Events.punchblock ::Punchblock::Connection::Connected do
@@ -79,14 +77,15 @@ module Adhearsion
             Adhearsion::Process.important_threads << Thread.new do
               catching_standard_errors do
                 begin
+                  logger.info "Starting connection to server"
                   client.run
                 rescue ::Punchblock::DisconnectedError => e
                   self.attempts += 1
                   Adhearsion::Process.reset
-                  logger.error "Punchblock connection lost. Attempt #{self.attempts} of #{self.config.retry_attempts}"
+                  logger.error "Connection lost. Attempt #{self.attempts} of #{self.config.retry_attempts}"
                   sleep self.config.retry_timer
                   retry unless self.attempts >= self.config.retry_attempts
-                  logger.fatal "Punchblock connection retry attempts exceeded"
+                  logger.fatal "Connection retry attempts exceeded"
                   raise e
                 rescue ::Punchblock::ProtocolError => e
                   logger.fatal "The connection failed due to a protocol error: #{e.name}."
