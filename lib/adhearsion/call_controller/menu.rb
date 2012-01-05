@@ -2,13 +2,15 @@ module Adhearsion
   class CallController
     module Menu
       def menu(*args, &block)
+        raise ArgumentError, "You must provide a block to the #menu method." unless block_given?
+        
         options = args.last.kind_of?(Hash) ? args.pop : {}
         sound_files = args.flatten
 
         menu_instance = MenuDSL::Menu.new options, &block
         result_of_menu = nil
 
-        until result_of_menu == MenuDSL::Menu::MenuResultDone
+        until MenuDSL::Menu::MenuResultDone === result_of_menu
           if menu_instance.should_continue?
             result_of_menu = menu_instance.continue
           else
@@ -38,9 +40,10 @@ module Adhearsion
             end
           when MenuDSL::Menu::MenuResultFound
             jump_to result_of_menu.match_object, :extension => result_of_menu.new_extension
-            return false
+            return true
           end # case
          end # while
+        return :done
       end
 
       def play_sound_files_for_menu(menu_instance, sound_files)
