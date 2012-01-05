@@ -38,7 +38,7 @@ module Adhearsion
       end
 
       def continue
-        return MenuGetAnotherDigitOrTimeout.new if digit_buffer_empty?
+        return get_another_digit_or_timeout! if digit_buffer_empty?
 
         calculated_matches = builder.calculate_matches_for digit_buffer_string
 
@@ -86,19 +86,19 @@ module Adhearsion
       end
 
       def invalid!
-        return MenuResultInvalid.new
+        MenuResultInvalid.new
       end
 
       def menu_result_found!(match_object, new_extension)
-        return MenuResultFound.new(match_object, new_extension)
+        MenuResultFound.new(match_object, new_extension)
       end
 
       def get_another_digit_or_finish!(match_payload, new_extension)
-        return MenuGetAnotherDigitOrFinish.new(match_payload, new_extension)
+        MenuGetAnotherDigitOrFinish.new(match_payload, new_extension)
       end
 
       def get_another_digit_or_timeout!
-        return MenuGetAnotherDigitOrTimeout.new
+        MenuGetAnotherDigitOrTimeout.new
       end
 
       # The superclass from which all message-like exceptions descend. It should never

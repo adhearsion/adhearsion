@@ -3,6 +3,8 @@ module Adhearsion
 
     class MenuBuilder
 
+      attr_accessor :patterns, :menu_callbacks
+
       def initialize
         @patterns = []
         @menu_callbacks = {}
@@ -16,17 +18,17 @@ module Adhearsion
       def match(*args, &block)
         if args.size == 1
           raise ArgumentError, "You must provide a block or a controller name." unless block_given?
-          patterns = args[0]
+          patterns_in = args[0]
           payload = nil
         elsif args.size == 2
           raise ArgumentError, "You cannot specify both a block and a controller name." if block_given?
-          patterns = args[0]
+          patterns_in = args[0]
           payload = args[1]
         end
 
-        patterns = Array(patterns)
-        if patterns.any?
-          patterns.each do |pattern|
+        patterns_in = Array(patterns_in)
+        if patterns_in.any?
+          patterns_in.each do |pattern|
             @patterns << MatchCalculator.build_with_pattern(pattern, payload, &block)
           end
         else

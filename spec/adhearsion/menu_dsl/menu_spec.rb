@@ -43,12 +43,12 @@ module Adhearsion
           context 'menu builder setup' do
             its(:builder) { should be_a MenuBuilder }
 
-            #it "should evaluate the block on the builder object" do
-              #mock_menu_builder = flexmock(MenuBuilder.new)
-              #flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
-              #mock_menu_builder.should_receive(:match).once.with(1)
-              #menu = Menu.new {match 1}
-            #end
+            it "should evaluate the block on the builder object" do
+              mock_menu_builder = flexmock(MenuBuilder.new)
+              flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
+              mock_menu_builder.should_receive(:match).once.with(1)
+              Menu.new {match 1}
+            end
           end
 
         end # describe #initialize
@@ -64,6 +64,74 @@ module Adhearsion
             subject.digit_buffer.should == 'a'
           end
         end
+
+        describe "#digit_buffer_empty?" do
+          it "returns true if buffer is empty" do
+            subject.digit_buffer_empty?.should == true
+          end
+          it "returns false if buffer is not empty" do
+            subject << 1
+            subject.digit_buffer_empty?.should == false
+          end
+        end
+
+        describe "#digit_buffer_string" do
+          it "returns the digit buffer as a string" do
+            subject << 1
+            subject.digit_buffer_string.should == "1"
+          end
+        end
+
+        describe "#should_continue?" do
+          it "returns true if the number of tries is less than the maximum" do
+            subject.max_number_of_tries.should == 1
+            subject.tries_count.should == 0
+            subject.should_continue?.should == true
+          end
+        end
+
+        describe "#restart!" do
+          it "increments tries and clears the digit buffer" do
+            subject << 1
+            subject.restart!
+            subject.tries_count.should == 1
+            subject.digit_buffer_empty?.should == true
+          end
+        end
+
+        describe "#execute_invalid_hook" do
+          it "calls the builder's execute_hook_for with :invalid" do
+            mock_menu_builder = flexmock(MenuBuilder.new)
+            flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
+            mock_menu_builder.should_receive(:execute_hook_for).with(:invalid, "")
+            menu_instance = Menu.new() {}
+            menu_instance.execute_invalid_hook
+          end
+        end
+
+        describe "#execute_timeout_hook" do
+          it "calls the builder's execute_hook_for with :timeout" do
+            mock_menu_builder = flexmock(MenuBuilder.new)
+            flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
+            mock_menu_builder.should_receive(:execute_hook_for).with(:timeout, "")
+            menu_instance = Menu.new() {}
+            menu_instance.execute_timeout_hook
+          end
+        end
+
+        describe "#execute_failure_hook" do
+          it "calls the builder's execute_hook_for with :failure" do
+            mock_menu_builder = flexmock(MenuBuilder.new)
+            flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
+            mock_menu_builder.should_receive(:execute_hook_for).with(:failure, "")
+            menu_instance = Menu.new() {}
+            menu_instance.execute_failure_hook
+          end
+        end
+
+        describe "#continue" do
+
+        end#continue
 
         describe Menu::ClearableStringBuffer do
           subject { Menu::ClearableStringBuffer.new }
