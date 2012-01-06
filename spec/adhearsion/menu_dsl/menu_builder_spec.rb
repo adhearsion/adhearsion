@@ -17,7 +17,7 @@ module Adhearsion
 
       describe "#match" do
         let(:match_block) { Proc.new() {} }
-        it "raises an exception if called with one argument and no block" do
+        it "raises an exception if called without a CallController and no block" do
           expect { subject.match 1 }.to raise_error(ArgumentError)
         end
 
@@ -26,7 +26,7 @@ module Adhearsion
         end
 
         it "raises an exception if given no patterns" do
-          expect { subject.match([]) {} }.to raise_error(ArgumentError, "You cannot call this method without patterns.")
+          expect { subject.match() {} }.to raise_error(ArgumentError, "You cannot call this method without patterns.")
         end
 
         it "creates a pattern based on a payload" do
@@ -37,6 +37,11 @@ module Adhearsion
         it "creates a pattern based on a block" do
           flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with("1", nil, match_block)
           subject.match("1", &match_block)
+        end
+        it "creates multiple patterns if multiple arguments are passed in" do
+          flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with(1, Object)
+          flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with(2, Object)
+          subject.match(1, 2, Object)
         end
       end#match
 

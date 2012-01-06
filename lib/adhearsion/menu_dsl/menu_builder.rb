@@ -16,14 +16,14 @@ module Adhearsion
       end
 
       def match(*args, &block)
-        if args.size == 1
-          raise ArgumentError, "You must provide a block or a controller name." unless block_given?
-          patterns_in = args[0]
+        if block_given?
+          raise ArgumentError, "You cannot specify both a block and a controller name." if args.last.is_a? Class
+          patterns_in = args
           payload = nil
-        elsif args.size == 2
-          raise ArgumentError, "You cannot specify both a block and a controller name." if block_given?
-          patterns_in = args[0]
-          payload = args[1]
+        else
+          raise ArgumentError, "You need to provide a block or a controller name." unless args.last.is_a? Class
+          payload = args.pop
+          patterns_in = args
         end
 
         patterns_in = Array(patterns_in)

@@ -11,7 +11,7 @@ module Adhearsion
       #     match 10..19 do 
       #       pass DirectController
       #     end
-      #     match [5, 6, 9] do |exten|
+      #     match 5, 6, 9 do |exten|
       #      play "The #{exten} extension is currently not active"
       #     end
       #     match "7" OfficeController
@@ -27,7 +27,7 @@ module Adhearsion
       # The most important part is the following block, which specifies how the menu will be constructed and handled.
       #
       # #match handles connecting an input pattern to a payload.
-      # The pattern can be an integer, a Range, a string or an Array of the possible single types.
+      # The pattern can be one or more of: an integer, a Range, a string, an Array of the possible single types.
       # Input is matched against patterns, and the first exact match has it's payload executed.
       # Matched input is passed in to the associated block, or to the controller through #options.
       #
