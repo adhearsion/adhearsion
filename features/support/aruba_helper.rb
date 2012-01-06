@@ -1,32 +1,22 @@
 module Aruba
   module Api
-    def terminate_processes!
-      processes.each do |_, process|
-        terminate_process(process)
-        stop_process(process)
-      end
-    end
-
-    def terminate_process(process)
-      process.terminate(@aruba_keep_ansi)
-    end
-
     # output() blocks for stderr and stdout it seems
-    def interactive_stdout_contains(expected, actual)
-      if @interactive
-        @interactive.stdout(@aruba_keep_ansi)
-        unescape(actual).include?(unescape(expected)) ? true : false
-      end
+    def assert_partial_output_interactive(expected)
+      unescape(_read_interactive).include?(unescape(expected)) ? true : false
+    end
+
+    def _read_interactive
+      @interactive.read_stdout(@aruba_keep_ansi)
     end
   end
 
   class Process
-    def terminate(keep_ansi)
-      if @process
-        stdout(keep_ansi) && stderr(keep_ansi) # flush output
-        @process.stop
-        stdout(keep_ansi) && stderr(keep_ansi) # flush output
+    def read_stdout(keep_ansi)
+      wait_for_io do
+        @process.io.stdout.flush
+        content = filter_ansi(open(@out.path).read, keep_ansi)
       end
     end
   end
 end
+
