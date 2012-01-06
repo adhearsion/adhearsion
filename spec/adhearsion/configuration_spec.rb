@@ -114,10 +114,6 @@ describe Adhearsion::Configuration do
     end
 
     describe "if there are plugins installed" do
-      after do
-        defined?(FooBar) and Object.send(:remove_const, :"FooBar")
-      end
-      
       before do
         Adhearsion::Logging.silence!
 
