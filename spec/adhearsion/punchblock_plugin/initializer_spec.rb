@@ -39,10 +39,6 @@ module Adhearsion
           subject.password.should == '1'
         end
 
-        it "should set properly the auto_reconnect value" do
-          subject.auto_reconnect.should == true
-        end
-
         it "should set properly the host value" do
           subject.host.should be_nil
         end
@@ -61,6 +57,18 @@ module Adhearsion
 
         it "should set properly the mixers_domain value" do
           subject.mixers_domain.should be_nil
+        end
+
+        it "should set properly the auto_reconnect value" do
+          subject.auto_reconnect.should == true
+        end
+
+        it "should properly set the reconnect_attempts value" do
+          subject.reconnect_attempts.should == 1.0/0.0
+        end
+        
+        it "should properly set the reconnect_timer value" do
+          subject.reconnect_timer.should == 5
         end
       end
 
