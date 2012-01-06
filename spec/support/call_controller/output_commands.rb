@@ -353,9 +353,7 @@ module Adhearsion
         }
 
         let(:grammar) {
-         RubySpeech::GRXML.draw do
-            self.mode = 'dtmf'
-            self.root = 'acceptdigits'
+         RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'acceptdigits' do
             rule id: 'acceptdigits' do
               one_of do
                 allowed_digits.each { |d| item { d.to_s } }
