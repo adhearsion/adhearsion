@@ -9,12 +9,12 @@ module Adhearsion
           config.platform           = :xmpp
           config.username           = "usera@127.0.0.1"
           config.password           = "1"
-          config.auto_reconnect     =   true
           config.host               = nil
           config.port               = nil
           config.root_domain        = nil
           config.calls_domain       = nil
           config.mixers_domain      = nil
+          config.connection_timeout = 60
           config.reconnect_attempts = 1.0/0.0
           config.reconnect_timer    = 5
         end
@@ -32,7 +32,7 @@ module Adhearsion
           config.root_domain        = options[:root_domain] if options.has_key?(:root_domain)
           config.calls_domain       = options[:calls_domain] if options.has_key?(:calls_domain)
           config.mixers_domain      = options[:mixers_domain] if options.has_key?(:mixers_domain)
-          config.auto_reconnect     = options[:auto_reconnect] if options.has_key?(:auto_reconnect)
+          config.connection_timeout = options[:connection_timeout] if options.has_key?(:connection_timeout)
           config.reconnect_attempts = options[:reconnect_attempts] if options.has_key?(:reconnect_attempts)
           config.reconnect_timer    = options[:reconnect_timer] if options.has_key?(:reconnect_timer)
         end
@@ -81,10 +81,6 @@ module Adhearsion
           subject.mixers_domain.should be_nil
         end
 
-        it "should set properly the auto_reconnect value" do
-          subject.auto_reconnect.should == true
-        end
-
         it "should properly set the reconnect_attempts value" do
           subject.reconnect_attempts.should == 1.0/0.0
         end
@@ -95,7 +91,7 @@ module Adhearsion
       end
 
       it "starts the client with any overridden settings" do
-        overrides = {:username => 'userb@127.0.0.1', :password => '123', :auto_reconnect => false, :host => 'foo.bar.com', :port => 200, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com'}
+        overrides = {:username => 'userb@127.0.0.1', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com'}
 
         flexmock(::Punchblock::Connection::XMPP).should_receive(:new).once.with(overrides).and_return do
           flexmock 'Client', :event_handler= => true
@@ -104,7 +100,7 @@ module Adhearsion
       end
 
       describe 'using Asterisk' do
-        let(:overrides) { {:username => 'test', :password => '123', :auto_reconnect => false, :host => 'foo.bar.com', :port => 200, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com'} }
+        let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com'} }
 
         it 'should start an Asterisk PB connection' do
           flexmock(::Punchblock::Connection::Asterisk).should_receive(:new).once.with(overrides).and_return do

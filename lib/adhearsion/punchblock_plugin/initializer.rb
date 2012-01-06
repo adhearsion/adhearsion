@@ -13,14 +13,14 @@ module Adhearsion
             ::Punchblock::Connection::Asterisk
           end
           connection_options = {
-            :username         => self.config.username,
-            :password         => self.config.password,
-            :auto_reconnect   => self.config.auto_reconnect,
-            :host             => self.config.host,
-            :port             => self.config.port,
-            :root_domain      => self.config.root_domain,
-            :calls_domain     => self.config.calls_domain,
-            :mixers_domain    => self.config.mixers_domain
+            :username           => self.config.username,
+            :password           => self.config.password,
+            :connection_timeout => self.config.connection_timeout,
+            :host               => self.config.host,
+            :port               => self.config.port,
+            :root_domain        => self.config.root_domain,
+            :calls_domain       => self.config.calls_domain,
+            :mixers_domain      => self.config.mixers_domain
           }
 
           connection = connection_class.new connection_options
