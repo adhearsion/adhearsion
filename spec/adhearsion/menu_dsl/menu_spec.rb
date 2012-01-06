@@ -130,6 +130,62 @@ module Adhearsion
         end
 
         describe "#continue" do
+          class MockControllerA; end
+          class MockControllerB; end
+          class MockControllerC; end
+          let(:menu_instance) {
+            Menu.new do
+              match 1, MockControllerA
+              match 21, MockControllerA
+              match 23, MockControllerA
+              match 3, MockControllerB
+              match 3..5, MockControllerC
+              match 33, MockControllerA
+              match 6, MockControllerC
+              match 6..8, MockControllerA
+            end
+          }
+          it "returns a MenuGetAnotherDigitOrTimeout if the digit buffer is empty" do
+            subject.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout
+          end
+
+          it "asks for another digit if it has potential matches" do
+            menu_instance << 2
+            menu_instance.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout 
+          end
+
+          it "returns a MenuResultInvalid if there are no matches" do
+            menu_instance << 9
+            menu_instance.continue.should be_a Menu::MenuResultInvalid
+          end
+
+          it "returns a MenuGetAnotherDigitOrFinish if it has exact and potential matches" do
+            menu_instance << 3
+            menu_result = menu_instance.continue
+            menu_result.should be_a Menu::MenuGetAnotherDigitOrFinish
+          end
+
+          it "returns the first exact match when it has exact and potentials" do
+            menu_instance << 3
+            menu_result = menu_instance.continue
+            menu_result.should be_a Menu::MenuGetAnotherDigitOrFinish
+            menu_result.match_object.should == MockControllerB
+            menu_result.new_extension.should == "3"
+          end
+
+          it "returns a MenuResultFound if it has exact matches" do
+            menu_instance << 6
+            menu_result = menu_instance.continue
+            menu_result.should be_a Menu::MenuResultFound
+          end
+
+          it "returns the first exact match when it has only exact matches" do
+            menu_instance << 6
+            menu_result = menu_instance.continue
+            menu_result.should be_a Menu::MenuResultFound
+            menu_result.match_object.match_payload.should == MockControllerC
+            menu_result.match_object.pattern.to_s.should == "6"
+          end
 
         end#continue
 

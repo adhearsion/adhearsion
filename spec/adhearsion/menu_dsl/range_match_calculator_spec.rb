@@ -17,6 +17,11 @@ module Adhearsion
         calculator.match(0).should be_an_instance_of CalculatedMatch
         calculator.match(1000).should be_an_instance_of CalculatedMatch
       end
+
+      it "returns a failed match if the query is not numeric or coercible to numeric" do
+        calculator = RangeMatchCalculator.new 1..9, :match_payload_doesnt_matter
+        calculator.match("ABC").should be_an_instance_of CalculatedMatch
+      end
     end
 
   end
