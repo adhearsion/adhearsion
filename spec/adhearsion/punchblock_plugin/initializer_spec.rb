@@ -12,20 +12,20 @@ module Adhearsion
             config.platform         = :xmpp
             config.username         = "usera@127.0.0.1"
             config.password         = "1"
-            config.auto_reconnect   = true
             config.host             = nil
             config.port             = nil
             config.root_domain      = nil
             config.calls_domain     = nil
             config.mixers_domain    = nil
-            config.retry_attempts   = 1.0/0.0
-            config.retry_timer      = 5
+            config.auto_reconnect   = true
+            config.reconnect_attempts = 1.0/0.0
+            config.reconnect_timer    = 5
           end
         else
           Adhearsion.config.punchblock do |config|
             [:platform, :username, :password, :auto_reconnect, :host, :port,
-             :root_domain, :calls_domain, :mixers_domain, :retry_attempts,
-             :retry_timer].each do |option|
+             :root_domain, :calls_domain, :mixers_domain, :reconnect_attempts,
+             :reconnect_timer].each do |option|
               config.send "#{option.to_s}=".to_sym, options[option] if options.include? option
             end
           end

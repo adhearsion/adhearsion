@@ -81,10 +81,10 @@ module Adhearsion
                   client.run
                 rescue ::Punchblock::DisconnectedError => e
                   self.attempts += 1
-                  Adhearsion::Process.reset
-                  logger.error "Connection lost. Attempt #{self.attempts} of #{self.config.retry_attempts}"
-                  sleep self.config.retry_timer
-                  retry unless self.attempts >= self.config.retry_attempts
+                  Adhearsion::Process.reset unless Adhearsion::Process.state_name == :booting
+                  logger.error "Connection lost. Attempting reconnect #{self.attempts} of #{self.config.reconnect_attempts}"
+                  sleep self.config.reconnect_timer
+                  retry unless self.attempts >= self.config.reconnect_attempts
                   logger.fatal "Connection retry attempts exceeded"
                   raise e
                 rescue ::Punchblock::ProtocolError => e
