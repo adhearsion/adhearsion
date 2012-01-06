@@ -4,22 +4,24 @@ module Adhearsion
 
       # Creates and manages a multiple choice menu driven by DTMF, handling playback of prompts,
       # invalid input, retries and timeouts, and final failures.
-      # 
+      #
       # @example A complete example of the method is as follows:
       #   menu "Welcome, ", "/opt/sounds/menu-prompt.mp3", :tries => 2, :timeout => 10 do
       #     match 1, OperatorController
-      #     match 10..19 do 
+      #
+      #     match 10..19 do
       #       pass DirectController
       #     end
+      #
       #     match [5, 6, 9] do |exten|
-      #      play "The #{exten} extension is currently not active"
+      #       play "The #{exten} extension is currently not active"
       #     end
-      #     match "7" OfficeController
+      #
+      #     match '7', OfficeController
       #
       #     invalid { play "Please choose a valid extension" }
       #     timeout { play "Input timed out, try again." }
       #     failure { pass OperatorController }
-      #
       #   end
       #
       # The first arguments to #menu will be a list of sounds to play, as accepted by #play, including strings for TTS, Date and Time objects, and file paths.
