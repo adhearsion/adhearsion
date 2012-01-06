@@ -4,31 +4,37 @@ module Adhearsion
   class PunchblockPlugin
     describe Initializer do
 
-      def initialize_punchblock options = nil
-        flexmock(Initializer).should_receive(:connect)
+      def reset_default_config
+        Adhearsion.config.punchblock do |config|
+          config.platform = :xmpp
+          config.username = "usera@127.0.0.1"
+          config.password = "1"
+          config.host   =         nil
+          config.port   =       nil
+          config.root_domain  =   nil
+          config.calls_domain   =    nil
+          config.mixers_domain  =    nil
+          config.auto_reconnect  =   true
+          config.reconnect_attempts = 1.0/0.0
+          config.reconnect_timer   = 5
+        end
+      end
 
-        if options.nil?
-          Adhearsion.config.punchblock do |config|
-            config.platform         = :xmpp
-            config.username         = "usera@127.0.0.1"
-            config.password         = "1"
-            config.host             = nil
-            config.port             = nil
-            config.root_domain      = nil
-            config.calls_domain     = nil
-            config.mixers_domain    = nil
-            config.auto_reconnect   = true
-            config.reconnect_attempts = 1.0/0.0
-            config.reconnect_timer    = 5
-          end
-        else
-          Adhearsion.config.punchblock do |config|
-            [:platform, :username, :password, :auto_reconnect, :host, :port,
-             :root_domain, :calls_domain, :mixers_domain, :reconnect_attempts,
-             :reconnect_timer].each do |option|
-              config.send "#{option.to_s}=".to_sym, options[option] if options.include? option
-            end
-          end
+      def initialize_punchblock(options = {})
+        reset_default_config
+        flexmock(Initializer).should_receive(:connect)
+        Adhearsion.config.punchblock do |config|
+          config.platform         = options[:platform] if options.has_key?(:platform)
+          config.username         = options[:username] if options.has_key?(:username)
+          config.password         = options[:password] if options.has_key?(:password)
+          config.host             = options[:host] if options.has_key?(:host)
+          config.port             = options[:port] if options.has_key?(:port)
+          config.root_domain      = options[:root_domain] if options.has_key?(:root_domain)
+          config.calls_domain     = options[:calls_domain] if options.has_key?(:calls_domain)
+          config.mixers_domain    = options[:mixers_domain] if options.has_key?(:mixers_domain)
+          config.auto_reconnect   = options[:auto_reconnect] if options.has_key?(:auto_reconnect)
+          config.reconnect_attempts = options[:reconnect_attempts] if options.has_key?(:reconnect_attempts)
+          config.reconnect_timer    = options[:reconnect_timer] if options.has_key?(:reconnect_timer)
         end
 
         Initializer.start
