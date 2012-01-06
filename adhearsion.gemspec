@@ -34,10 +34,11 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "pry"
   s.add_runtime_dependency "uuid"
   s.add_runtime_dependency "future-resource", [">= 0.0.2"]
-  s.add_runtime_dependency "ruby_speech", [">= 0.2.0"]
+  s.add_runtime_dependency "ruby_speech", [">= 0.4.0"]
   s.add_runtime_dependency 'countdownlatch'
   s.add_runtime_dependency 'has-guarded-handlers', [">= 0.1.1"]
   s.add_runtime_dependency 'girl_friday'
+  s.add_runtime_dependency 'jruby-openssl' if RUBY_PLATFORM == 'java'
 
   # Development dependencies
   s.add_development_dependency 'rspec', [">= 2.7.0"]
@@ -47,16 +48,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'simplecov-rcov'
   s.add_development_dependency 'ci_reporter'
   s.add_development_dependency 'yard'
-  s.add_development_dependency 'guard', ["~> 0.8.0"]
   s.add_development_dependency 'guard-rspec'
   s.add_development_dependency 'guard-cucumber'
+  s.add_development_dependency 'ruby_gntp'
   s.add_development_dependency 'cucumber'
-  s.add_development_dependency 'aruba', ["=0.4.8"]
-  s.add_runtime_dependency('jruby-openssl') if RUBY_PLATFORM == 'java'
-  if RUBY_PLATFORM =~ /darwin/
-    s.add_development_dependency 'growl_notify'
-    s.add_development_dependency 'rb-fsevent'
-  elsif RUBY_PLATFORM =~ /linux/
-    s.add_development_dependency 'rb-inotify'
-  end
+  s.add_development_dependency 'aruba'
 end

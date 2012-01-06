@@ -9,8 +9,16 @@ module Adhearsion
       # Start the Adhearsion console
       #
       def run
-        Pry.prompt = [ proc { |obj, nest_level, pry_instance = nil| "AHN#{'  ' * nest_level}> " },
-                       proc { |obj, nest_level, pry_instance = nil| "AHN#{'  ' * nest_level}? " } ]
+        Pry.prompt = [
+                        proc do |*args|
+                          obj, nest_level, pry_instance = args
+                          "AHN#{'  ' * nest_level}> "
+                        end,
+                        proc do |*args|
+                          obj, nest_level, pry_instance = args
+                          "AHN#{'  ' * nest_level}? "
+                        end
+                      ]
         Pry.config.command_prefix = "%"
         pry
       end
