@@ -130,12 +130,26 @@ describe Adhearsion::Configuration do
         end
       end
 
-      it "should retrieve a valid configuration object" do
-        subject[:my_plugin].should be_instance_of Loquacious::Configuration
-      end
+      describe "retrieving configuration for the plugin" do
+        context "via a method" do
+          subject { Adhearsion.config.my_plugin }
 
-      it "should retrieve a valid configuration object using the method way" do
-        subject[:my_plugin].should == Adhearsion.config.my_plugin
+          it "should have the correct values" do
+            subject[:name].should == 'user'
+            subject[:password].should == 'password'
+            subject[:host].should == 'localhost'
+          end
+        end
+
+        context "using the hash accessor syntax" do
+          subject { Adhearsion.config[:my_plugin] }
+
+          it "should have the correct values" do
+            subject[:name].should == 'user'
+            subject[:password].should == 'password'
+            subject[:host].should == 'localhost'
+          end
+        end
       end
 
       it "should retrieve a valid plugin description" do
