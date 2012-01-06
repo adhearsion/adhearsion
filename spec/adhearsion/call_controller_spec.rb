@@ -7,7 +7,7 @@ module Adhearsion
     let(:call) { Adhearsion::Call.new mock_offer(nil, :x_foo => 'bar') }
 
     its(:call)      { should be call }
-    its(:metadata)  { should == {} }
+    its(:metadata)  { should == {:doo => :dah} }
 
     describe "setting meta-data" do
       it "should preserve data correctly" do
@@ -86,7 +86,11 @@ module Adhearsion
 
     class SecondController < CallController
       def run
+        md_check metadata
         answer
+      end
+
+      def md_check(md)
       end
     end
 
@@ -105,7 +109,7 @@ module Adhearsion
       class InvokeController < CallController
         def run
           before
-          invoke metadata[:second_controller] || SecondController
+          invoke second_controller, :foo => 'bar'
           after
         end
 
@@ -113,6 +117,10 @@ module Adhearsion
         end
 
         def after
+        end
+
+        def second_controller
+          metadata[:second_controller] || SecondController
         end
       end
 
@@ -130,6 +138,11 @@ module Adhearsion
         call.should_receive(:answer).once.ordered
         subject.should_receive(:after).once.ordered
 
+        subject.execute
+      end
+
+      it "should invoke the new controller with metadata" do
+        flexmock(SecondController).new_instances.should_receive(:md_check).once.with :foo => 'bar'
         subject.execute
       end
 
@@ -156,7 +169,7 @@ module Adhearsion
 
         def run
           before
-          pass SecondController
+          pass SecondController, :foo => 'bar'
           after
         end
 
@@ -173,6 +186,7 @@ module Adhearsion
       subject { PassController.new call }
 
       before do
+        flexmock(SecondController).new_instances.should_receive(:md_check).once.with :foo => 'bar'
         flexmock subject, :execute_component_and_await_completion => nil
         flexmock call, :write_and_await_response => nil
         flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
@@ -317,6 +331,7 @@ module Adhearsion
     it_should_behave_like "conference commands"
     it_should_behave_like "dial commands"
     it_should_behave_like "record commands"
+    it_should_behave_like "menu commands"
   end
 end
 

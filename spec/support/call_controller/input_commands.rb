@@ -3,9 +3,7 @@ module Adhearsion
     shared_examples_for "input commands" do
       describe "#grammar_digits" do
         let(:grxml) {
-          RubySpeech::GRXML.draw do
-            self.mode = 'dtmf'
-            self.root = 'inputdigits'
+          RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
             rule id: 'digits' do
               one_of do
                 0.upto(9) { |d| item { d.to_s } }
@@ -28,9 +26,7 @@ module Adhearsion
 
       describe "#grammar_accept" do
         let(:grxml) {
-          RubySpeech::GRXML.draw do
-            self.mode = 'dtmf'
-            self.root = 'inputdigits'
+          RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
             rule id: 'acceptdigits' do
               one_of do
                 item { '3' }
@@ -78,9 +74,7 @@ module Adhearsion
         let(:timeout_ms) { 2000 }
 
         let(:grxml) {
-          RubySpeech::GRXML.draw do
-            self.mode = 'dtmf'
-            self.root = 'inputdigits'
+          RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
             rule id: 'acceptdigits' do
               one_of do
                 0.upto(9) { |d| item { d.to_s } }
