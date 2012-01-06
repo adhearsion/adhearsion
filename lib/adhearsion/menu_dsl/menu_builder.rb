@@ -16,23 +16,18 @@ module Adhearsion
       end
 
       def match(*args, &block)
-        if args.size == 1
-          raise ArgumentError, "You must provide a block or a controller name." unless block_given?
-          patterns_in = args[0]
-          payload = nil
-        elsif args.size == 2
-          raise ArgumentError, "You cannot specify both a block and a controller name." if block_given?
-          patterns_in = args[0]
-          payload = args[1]
+        payload = if block_given?
+          raise ArgumentError, "You cannot specify both a block and a controller name." if args.last.is_a? Class
+          nil
+        else
+          raise ArgumentError, "You need to provide a block or a controller name." unless args.last.is_a? Class
+          args.pop
         end
 
-        patterns_in = Array(patterns_in)
-        if patterns_in.any?
-          patterns_in.each do |pattern|
-            @patterns << MatchCalculator.build_with_pattern(pattern, payload, &block)
-          end
-        else
-          raise ArgumentError, "You cannot call this method without patterns."
+        raise ArgumentError, "You cannot call this method without patterns." if args.empty?
+
+        args.each do |pattern|
+          @patterns << MatchCalculator.build_with_pattern(pattern, payload, &block)
         end
       end
 
