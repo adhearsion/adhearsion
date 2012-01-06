@@ -9,12 +9,12 @@ module Adhearsion
           config.platform           = :xmpp
           config.username           = "usera@127.0.0.1"
           config.password           = "1"
-          config.host               =         nil
-          config.port               =       nil
-          config.root_domain        =   nil
-          config.calls_domain       =    nil
-          config.mixers_domain      =    nil
           config.auto_reconnect     =   true
+          config.host               = nil
+          config.port               = nil
+          config.root_domain        = nil
+          config.calls_domain       = nil
+          config.mixers_domain      = nil
           config.reconnect_attempts = 1.0/0.0
           config.reconnect_timer    = 5
         end
@@ -88,7 +88,7 @@ module Adhearsion
         it "should properly set the reconnect_attempts value" do
           subject.reconnect_attempts.should == 1.0/0.0
         end
-        
+
         it "should properly set the reconnect_timer value" do
           subject.reconnect_timer.should == 5
         end
