@@ -4,32 +4,16 @@ module Adhearsion
   class PunchblockPlugin
     describe Initializer do
 
-      def initialize_punchblock options = nil
+      def initialize_punchblock(options = nil)
         flexmock(Initializer).should_receive(:connect)
 
-        if options.nil?
-          Adhearsion.config.punchblock do |config|
-            config.platform         = :xmpp
-            config.username         = "usera@127.0.0.1"
-            config.password         = "1"
-            config.host             = nil
-            config.port             = nil
-            config.root_domain      = nil
-            config.calls_domain     = nil
-            config.mixers_domain    = nil
-            config.auto_reconnect   = true
-            config.reconnect_attempts = 1.0/0.0
-            config.reconnect_timer    = 5
+        Adhearsion.config.punchblock do |config|
+          [:platform, :username, :password, :auto_reconnect, :host, :port,
+           :root_domain, :calls_domain, :mixers_domain, :reconnect_attempts,
+           :reconnect_timer].each do |option|
+            config.send "#{option.to_s}=".to_sym, options[option] if options.include? option
           end
-        else
-          Adhearsion.config.punchblock do |config|
-            [:platform, :username, :password, :auto_reconnect, :host, :port,
-             :root_domain, :calls_domain, :mixers_domain, :reconnect_attempts,
-             :reconnect_timer].each do |option|
-              config.send "#{option.to_s}=".to_sym, options[option] if options.include? option
-            end
-          end
-        end
+        end unless options.nil?
 
         Initializer.start
         Adhearsion.config[:punchblock]
