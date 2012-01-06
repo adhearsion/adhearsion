@@ -38,7 +38,9 @@
   * Input currently is DTMF-only using the `#input`, `#wait_for_digit` and `#stream_file` methods compatibly with preceding versions
 
 ### Menu system
-  * Old-style menu system working on develop
+  * #menu method and related code completely rewritten to take advantage of the new controller functionality and streamline the DSL.
+  * The #menu block now uses #match instead of #link, and allows for blocks as match actions
+  * #menu now resumes execution inside the current controller after completion
 
 ### Recording
 
