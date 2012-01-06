@@ -46,7 +46,7 @@ describe Adhearsion::Configuration do
     it "should return the root value" do
       subject.platform.root.should == "foo"
     end
-    
+
     it "should return the automatically_accept_incoming_calls value" do
       subject.platform.automatically_accept_incoming_calls.should == false
     end
@@ -57,7 +57,7 @@ describe Adhearsion::Configuration do
 
     it "should allow to update a config value" do
       subject.platform.automatically_accept_incoming_calls.should == false
-      subject.platform.automatically_accept_incoming_calls = true      
+      subject.platform.automatically_accept_incoming_calls = true
       subject.platform.automatically_accept_incoming_calls.should == true
     end
 
@@ -98,7 +98,7 @@ describe Adhearsion::Configuration do
     end
 
     subject { Adhearsion.config }
-    
+
     it "should retrieve a string with the platform configuration" do
       desc = subject.description :platform, :show_values => false
       desc.length.should > 0
@@ -107,7 +107,7 @@ describe Adhearsion::Configuration do
     end
 
     it "should retrieve a string with the platform configuration and values" do
-      desc = subject.description :platform      
+      desc = subject.description :platform
       desc.length.should > 0
       desc.should match /^.*automatically_accept_incoming_calls.*true.*$/
       desc.should match /^.*root.*$/
@@ -157,7 +157,7 @@ describe Adhearsion::Configuration do
       end
 
       it "should retrieve a valid plugin description with no values" do
-        desc = subject.description :my_plugin, :show_values => false 
+        desc = subject.description :my_plugin, :show_values => false
         desc.length.should > 0
         desc.should match /^.*name.*$/
         desc.should match /^.*password.*$/
