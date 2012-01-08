@@ -10,8 +10,6 @@ module Adhearsion
     autoload :Menu
     autoload :Utility
 
-    include Punchblock::Command
-    include Punchblock::Component
     include Conference
     include Dial
     include Input
