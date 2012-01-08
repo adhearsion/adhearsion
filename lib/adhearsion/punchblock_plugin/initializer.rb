@@ -70,37 +70,35 @@ module Adhearsion
         end
 
         def connect
-          begin
-            m = Mutex.new
-            blocker = ConditionVariable.new
-            Events.punchblock ::Punchblock::Connection::Connected do
-              m.synchronize { blocker.broadcast }
-            end
-            Adhearsion::Process.important_threads << Thread.new do
-              catching_standard_errors do
-                begin
-                  logger.info "Starting connection to server"
-                  client.run
-                rescue ::Punchblock::DisconnectedError => e
-                  self.attempts += 1
-                  Adhearsion::Process.reset unless Adhearsion::Process.state_name == :booting
-                  logger.error "Connection lost. Attempting reconnect #{self.attempts} of #{self.config.reconnect_attempts}"
-                  sleep self.config.reconnect_timer
-                  retry unless self.attempts >= self.config.reconnect_attempts || !self.config.auto_reconnect
-                  logger.fatal "Connection retry attempts exceeded"
-                  raise e
-                rescue ::Punchblock::ProtocolError => e
-                  logger.fatal "The connection failed due to a protocol error: #{e.name}."
-                  m.synchronize { blocker.broadcast }
-                end
-              end
-            end
+          m = Mutex.new
+          blocker = ConditionVariable.new
+          Events.punchblock ::Punchblock::Connection::Connected do
+            m.synchronize { blocker.broadcast }
+          end
 
-            # Wait for the connection to establish
-            m.synchronize { blocker.wait(m) }
-          rescue => e
-            logger.fatal "Failed to start Punchblock client! #{e.inspect}"
-            abort
+          Adhearsion::Process.important_threads << Thread.new do
+            catching_standard_errors { connect_to_server }
+          end
+
+          # Wait for the connection to establish
+          m.synchronize { blocker.wait(m) }
+        end
+
+        def connect_to_server
+          begin
+            logger.info "Starting connection to server"
+            client.run
+          rescue ::Punchblock::DisconnectedError => e
+            self.attempts += 1
+            Adhearsion::Process.reset unless Adhearsion::Process.state_name == :booting
+            logger.error "Connection lost. Attempting reconnect #{self.attempts} of #{self.config.reconnect_attempts}"
+            sleep self.config.reconnect_timer
+            retry unless self.attempts >= self.config.reconnect_attempts || !self.config.auto_reconnect
+            logger.fatal "Connection retry attempts exceeded"
+            raise e
+          rescue ::Punchblock::ProtocolError => e
+            logger.fatal "The connection failed due to a protocol error: #{e.name}."
+            raise e
           end
         end
 
