@@ -3,6 +3,8 @@ module Adhearsion
     class Initializer
       cattr_accessor :config, :client, :dispatcher, :attempts
 
+      self.attempts = 0
+
       class << self
         def start
           self.config = Adhearsion.config[:punchblock]
