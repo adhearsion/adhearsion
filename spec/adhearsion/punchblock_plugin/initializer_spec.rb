@@ -261,7 +261,6 @@ module Adhearsion
             Adhearsion.config.punchblock do |config|
               config.username = 'userb@127.0.0.1'
               config.password = 'abc123'
-              config.auto_reconnect = false
             end
           end
 
@@ -275,10 +274,6 @@ module Adhearsion
 
           it "should set properly the password value" do
             subject.password.should == 'abc123'
-          end
-
-          it "should set properly the auto_reconnect value" do
-            subject.auto_reconnect.should == false
           end
         end
 
