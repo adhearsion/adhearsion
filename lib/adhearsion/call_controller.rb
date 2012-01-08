@@ -57,7 +57,6 @@ module Adhearsion
 
     def setup
       Plugin.add_dialplan_methods self if Plugin
-      call.define_variable_accessors self
     end
 
     def execute(*options)

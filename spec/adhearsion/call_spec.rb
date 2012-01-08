@@ -167,16 +167,6 @@ module Adhearsion
       end
     end
 
-    describe "#define_singleton_accessor_with_pair" do
-      it "should define a singleton method, not a class method" do
-        subject.should_not respond_to "ohai"
-
-        subject.send(:define_singleton_accessor_with_pair, "ohai", 123)
-        subject.should respond_to "ohai"
-        subject.ohai.should == 123
-      end
-    end
-
     describe "#write_command" do
       let(:mock_command) { flexmock('Command') }
 

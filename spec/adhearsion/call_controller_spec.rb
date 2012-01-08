@@ -24,10 +24,6 @@ module Adhearsion
       subject.should respond_to :foo
     end
 
-    it "should add accessor methods for call variables" do
-      subject.x_foo == 'bar'
-    end
-
     its(:logger)    { should be call.logger }
     its(:variables) { should be call.variables }
 
