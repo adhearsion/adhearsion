@@ -102,14 +102,12 @@ module Adhearsion
       describe "#connect" do
         it 'should block until the connection is established' do
           reset_default_config
-          mock_connection = flexmock(:mock_connection)
-          mock_connection.should_receive(:register_event_handler)
+          mock_connection = flexmock :mock_connection
+          mock_connection.should_receive(:register_event_handler).once
           flexmock(::Punchblock::Client).should_receive(:new).once.and_return mock_connection
           flexmock(mock_connection).should_receive(:run).once
-          t = Thread.new do
-            Initializer.start
-          end
-          t.join(5)
+          t = Thread.new { Initializer.start }
+          t.join 5
           t.status.should == "sleep"
           Events.trigger_immediately :punchblock, ::Punchblock::Connection::Connected.new
           t.join
@@ -117,32 +115,33 @@ module Adhearsion
       end
 
       describe '#connect_to_server' do
-        before :each do
+        let(:mock_client) { flexmock :client }
+
+        before do
           Initializer.config = reset_default_config
           Initializer.config.reconnect_attempts = 1
-          @mock_client = flexmock(:client)
           flexmock(Adhearsion::Logging.get_logger(Initializer)).should_receive(:fatal).once
-          flexmock(Initializer).should_receive(:client).and_return @mock_client
+          flexmock(Initializer).should_receive(:client).and_return mock_client
         end
 
         it 'should reset the Adhearsion process state to "booting"' do
           Adhearsion::Process.reset
           Adhearsion::Process.booted
           Adhearsion::Process.state_name.should == :running
-          @mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
+          mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
           expect { Initializer.connect_to_server }.should raise_error ::Punchblock::DisconnectedError
           Adhearsion::Process.state_name.should == :booting
         end
 
         it 'should retry the connection the specified number of times' do
           Initializer.config.reconnect_attempts = 3
-          @mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
+          mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
           expect { Initializer.connect_to_server }.should raise_error ::Punchblock::DisconnectedError
           Initializer.attempts.should == 3
         end
 
         it 'should preserve a Punchblock::ProtocolError exception and give up' do
-          @mock_client.should_receive(:run).and_raise ::Punchblock::ProtocolError
+          mock_client.should_receive(:run).and_raise ::Punchblock::ProtocolError
           expect { Initializer.connect_to_server }.should raise_error ::Punchblock::ProtocolError
         end
       end
@@ -278,10 +277,7 @@ module Adhearsion
             subject.password.should == 'abc123'
           end
         end
-
       end
-
-
     end
   end
 end
