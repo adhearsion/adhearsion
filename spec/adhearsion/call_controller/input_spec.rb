@@ -1,6 +1,10 @@
+require 'spec_helper'
+
 module Adhearsion
   class CallController
-    shared_examples_for "input commands" do
+    describe Input do
+      include CallControllerTestHelpers
+
       describe "#grammar_digits" do
         let(:grxml) {
           RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do

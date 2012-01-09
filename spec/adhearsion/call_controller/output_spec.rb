@@ -1,6 +1,10 @@
+require 'spec_helper'
+
 module Adhearsion
   class CallController
-    shared_examples_for "output commands" do
+    describe Output do
+      include CallControllerTestHelpers
+
       describe "#play_ssml" do
         let(:ssml) { RubySpeech::SSML.draw { string "BOO" } }
 

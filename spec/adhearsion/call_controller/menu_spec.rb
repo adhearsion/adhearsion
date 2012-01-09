@@ -1,6 +1,10 @@
+require 'spec_helper'
+
 module Adhearsion
   class CallController
-    shared_examples_for "menu commands" do
+    describe Menu do
+      include CallControllerTestHelpers
+
       describe "#play_sound_files_for_menu" do
         let(:options) { Hash.new }
         let(:menu_instance) { Adhearsion::MenuDSL::Menu.new(options) {} }
@@ -29,7 +33,7 @@ module Adhearsion
           subject.should_receive(:instance_exec).with(overrides[:extension], block)
           subject.jump_to(match_object, overrides)
         end
-        
+
         it "calls invoke if the match object does not have a block" do
           match_object.should_receive(:block).and_return(false)
           match_object.should_receive(:match_payload).and_return(:payload)
@@ -53,7 +57,7 @@ module Adhearsion
          before(:each) do
             flexmock(MenuDSL::Menu).should_receive(:new).and_return(menu_instance)
           end
-          
+
           it "exits the function if MenuResultDone" do
             menu_instance.should_receive(:should_continue?).and_return(true)
             menu_instance.should_receive(:continue).and_return(result_done)
@@ -108,7 +112,7 @@ module Adhearsion
             subject.menu(sound_files) {}
           end
         end#context
-        
+
       end#describe
 
     end#shared

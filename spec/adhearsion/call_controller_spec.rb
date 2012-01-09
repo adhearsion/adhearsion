@@ -321,13 +321,6 @@ module Adhearsion
         subject.unmute
       end
     end
-
-    it_should_behave_like "output commands"
-    it_should_behave_like "input commands"
-    it_should_behave_like "conference commands"
-    it_should_behave_like "dial commands"
-    it_should_behave_like "record commands"
-    it_should_behave_like "menu commands"
   end
 end
 

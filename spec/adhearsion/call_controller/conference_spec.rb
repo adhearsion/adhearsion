@@ -1,6 +1,10 @@
+require 'spec_helper'
+
 module Adhearsion
   class CallController
-    shared_examples_for "conference commands" do
+    describe Conference do
+      include CallControllerTestHelpers
+
       describe "#conference" do
         let(:conference_id) { 'abc123' }
         let(:options)       { { :mute => true } }
