@@ -366,12 +366,12 @@ module Adhearsion
         end
 
         it "should call #execute on the controller instance" do
-          mock_controller.should_receive(:execute).once
+          mock_controller.should_receive(:execute!).once
           subject.execute_controller mock_controller
         end
 
         it "should hangup the call after all controllers have executed" do
-          mock_controller.should_receive(:execute).once
+          mock_controller.should_receive(:execute!).once
           subject.should_receive(:hangup!).once
           subject.execute_controller mock_controller
         end

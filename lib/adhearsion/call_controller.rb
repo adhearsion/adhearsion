@@ -40,7 +40,7 @@ module Adhearsion
 
       new_controller = catch :pass_controller do
         controller.skip_accept! unless fresh_call
-        controller.execute
+        controller.execute!
       end
 
       exec new_controller, false
@@ -61,7 +61,7 @@ module Adhearsion
       Plugin.add_dialplan_methods self if Plugin
     end
 
-    def execute(*options)
+    def execute!(*options)
       execute_callbacks :before_call
       accept if auto_accept?
       run
