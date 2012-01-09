@@ -113,6 +113,7 @@ module Adhearsion
     end
 
     def write_and_await_response(command, timeout = 60)
+      logger.trace "Executing command #{command.inspect}"
       commands << command
       write_command command
       response = command.response timeout
