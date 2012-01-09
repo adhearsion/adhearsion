@@ -125,6 +125,7 @@ module Adhearsion
         end
 
         it 'should reset the Adhearsion process state to "booting"' do
+          Adhearsion::Process.reset
           Adhearsion::Process.booted
           Adhearsion::Process.state_name.should == :running
           @mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
