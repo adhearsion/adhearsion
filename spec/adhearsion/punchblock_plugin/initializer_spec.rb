@@ -121,6 +121,7 @@ module Adhearsion
           Initializer.config = reset_default_config
           Initializer.config.reconnect_attempts = 1
           @mock_client = flexmock(:client)
+          flexmock(Adhearsion::Logging.get_logger(Initializer)).should_receive(:fatal).once
           flexmock(Initializer).should_receive(:client).and_return @mock_client
         end
 
