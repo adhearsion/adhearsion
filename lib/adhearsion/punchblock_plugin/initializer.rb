@@ -1,7 +1,9 @@
 module Adhearsion
   class PunchblockPlugin
     class Initializer
-      cattr_accessor :config, :client, :dispatcher
+      cattr_accessor :config, :client, :dispatcher, :attempts
+
+      self.attempts = 0
 
       class << self
         def start
@@ -13,14 +15,14 @@ module Adhearsion
             ::Punchblock::Connection::Asterisk
           end
           connection_options = {
-            :username         => self.config.username,
-            :password         => self.config.password,
-            :auto_reconnect   => self.config.auto_reconnect,
-            :host             => self.config.host,
-            :port             => self.config.port,
-            :root_domain      => self.config.root_domain,
-            :calls_domain     => self.config.calls_domain,
-            :mixers_domain    => self.config.mixers_domain
+            :username           => self.config.username,
+            :password           => self.config.password,
+            :connection_timeout => self.config.connection_timeout,
+            :host               => self.config.host,
+            :port               => self.config.port,
+            :root_domain        => self.config.root_domain,
+            :calls_domain       => self.config.calls_domain,
+            :mixers_domain      => self.config.mixers_domain
           }
 
           connection = connection_class.new connection_options
@@ -47,6 +49,11 @@ module Adhearsion
             Events.trigger :punchblock, event
           end
 
+          Events.punchblock ::Punchblock::Connection::Connected do |event|
+            logger.info "Connected to Punchblock server"
+            self.attempts = 0
+          end
+
           Events.punchblock ::Punchblock::Event::Offer do |offer|
             dispatch_offer offer
           end
@@ -63,31 +70,35 @@ module Adhearsion
         end
 
         def connect
+          m = Mutex.new
+          blocker = ConditionVariable.new
+          Events.punchblock ::Punchblock::Connection::Connected do
+            m.synchronize { blocker.broadcast }
+          end
+
+          Adhearsion::Process.important_threads << Thread.new do
+            catching_standard_errors { connect_to_server }
+          end
+
+          # Wait for the connection to establish
+          m.synchronize { blocker.wait(m) }
+        end
+
+        def connect_to_server
           begin
             logger.info "Starting connection to server"
-
-            m = Mutex.new
-            blocker = ConditionVariable.new
-            Events.punchblock ::Punchblock::Connection::Connected do
-              logger.info "Connected to server."
-              m.synchronize { blocker.broadcast }
-            end
-            Adhearsion::Process.important_threads << Thread.new do
-              catching_standard_errors do
-                begin
-                  client.run
-                rescue ::Punchblock::ProtocolError => e
-                  logger.fatal "The connection failed due to a protocol error: #{e.name}."
-                  m.synchronize { blocker.broadcast }
-                end
-              end
-            end
-
-            # Wait for the connection to establish
-            m.synchronize { blocker.wait(m) }
-          rescue => e
-            logger.fatal "Failed to start Punchblock client! #{e.inspect}"
-            abort
+            client.run
+          rescue ::Punchblock::DisconnectedError => e
+            self.attempts += 1
+            Adhearsion::Process.reset unless Adhearsion::Process.state_name == :booting
+            logger.error "Connection lost. Attempting reconnect #{self.attempts} of #{self.config.reconnect_attempts}"
+            sleep self.config.reconnect_timer
+            retry unless self.attempts >= self.config.reconnect_attempts
+            logger.fatal "Connection retry attempts exceeded"
+            raise e
+          rescue ::Punchblock::ProtocolError => e
+            logger.fatal "The connection failed due to a protocol error: #{e.name}."
+            raise e
           end
         end
 
