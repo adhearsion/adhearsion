@@ -27,6 +27,7 @@
   * Translate simon_game component to plugin
 
 ## Dialplan changes
+  * The dialplan no longer responds to methods for retrieval of call variables. This is because variables are aggregated from several sources, including SIP headers, which could result in collisions with methods that are required in the dialplan/controllers.
 
 ### Media output
   * Output functions reworked to to take advantage of Punchblock features, though method signatures have been kept similar.
