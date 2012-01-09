@@ -45,8 +45,8 @@ Feature: Adhearsion Ahn CLI
     """
     And the exit status should be 1
 
-
   Scenario: Cucumber should support checking output on interative commands while they still run
+    Given PENDING
     Given that I create a valid app under "path/somewhere"
     When I run `ahn start path/somewhere` interactively
     And I wait for output to contain "Transitioning"
@@ -58,6 +58,7 @@ Feature: Adhearsion Ahn CLI
     And the exit status should be 0
 
   Scenario: Command start with only path works properly
+    Given PENDING
     Given that I create a valid app under "path/somewhere"
     And I run `ahn start path/somewhere` interactively
     And I wait for output to contain "Transitioning"
