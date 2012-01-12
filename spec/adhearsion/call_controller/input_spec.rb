@@ -8,15 +8,11 @@ module Adhearsion
       describe "#grammar_digits" do
         let(:grxml) {
           RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
-            rule id: 'digits' do
-              one_of do
-                0.upto(9) { |d| item { d.to_s } }
-              end
-            end
-
             rule id: 'inputdigits', scope: 'public' do
               item repeat: '2' do
-                ruleref uri: '#digits'
+                one_of do
+                  0.upto(9) { |d| item { d.to_s } }
+                end
               end
             end
           end
@@ -31,16 +27,10 @@ module Adhearsion
       describe "#grammar_accept" do
         let(:grxml) {
           RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
-            rule id: 'acceptdigits' do
+            rule id: 'inputdigits', scope: 'public' do
               one_of do
                 item { '3' }
                 item { '5' }
-              end
-            end
-
-            rule id: 'inputdigits', scope: 'public' do
-              item repeat: '1' do
-                ruleref uri: '#acceptdigits'
               end
             end
           end
@@ -79,16 +69,11 @@ module Adhearsion
 
         let(:grxml) {
           RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
-            rule id: 'acceptdigits' do
+            rule id: 'inputdigits', scope: 'public' do
               one_of do
                 0.upto(9) { |d| item { d.to_s } }
                 item { "#" }
                 item { "*" }
-              end
-            end
-            rule id: 'inputdigits', scope: 'public' do
-              item repeat: '1' do
-                ruleref uri: '#acceptdigits'
               end
             end
           end

@@ -9,15 +9,11 @@ module Adhearsion
       #
       def grammar_digits(digits = 1)
         RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
-          rule id: 'digits' do
-            one_of do
-              0.upto(9) { |d| item { d.to_s } }
-            end
-          end
-
           rule id: 'inputdigits', scope: 'public' do
             item repeat: digits.to_s do
-              ruleref uri: '#digits'
+              one_of do
+                0.upto(9) { |d| item { d.to_s } }
+              end
             end
           end
         end
@@ -33,15 +29,9 @@ module Adhearsion
         gram_digits = digits.chars.select { |x| allowed_digits.include? x }
 
         RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
-          rule id: 'acceptdigits' do
+          rule id: 'inputdigits', scope: 'public' do
             one_of do
               gram_digits.each { |d| item { d.to_s } }
-            end
-          end
-
-          rule id: 'inputdigits', scope: 'public' do
-            item repeat: '1' do
-              ruleref uri: '#acceptdigits'
             end
           end
         end
@@ -68,4 +58,3 @@ module Adhearsion
     end#module
   end
 end
-

@@ -19,7 +19,7 @@ module Adhearsion
       {}
     end
 
-    def connection
+    def client
       PunchblockPlugin::Initializer.client
     end
 
