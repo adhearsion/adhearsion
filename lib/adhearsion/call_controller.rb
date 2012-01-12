@@ -10,8 +10,6 @@ module Adhearsion
     autoload :Menu
     autoload :Utility
 
-    include Punchblock::Command
-    include Punchblock::Component
     include Conference
     include Dial
     include Input
@@ -42,7 +40,7 @@ module Adhearsion
 
       new_controller = catch :pass_controller do
         controller.skip_accept! unless fresh_call
-        controller.execute
+        controller.execute!
       end
 
       exec new_controller, false
@@ -51,6 +49,8 @@ module Adhearsion
     attr_reader :call, :metadata
 
     delegate :[], :[]=, :to => :@metadata
+    delegate :variables, :logger, :to => :call
+    delegate :write_and_await_response, :accept, :answer, :reject, :to => :call
 
     def initialize(call, metadata = nil)
       @call, @metadata = call, metadata || {}
@@ -59,10 +59,9 @@ module Adhearsion
 
     def setup
       Plugin.add_dialplan_methods self if Plugin
-      call.define_variable_accessors self
     end
 
-    def execute(*options)
+    def execute!(*options)
       execute_callbacks :before_call
       accept if auto_accept?
       run
@@ -110,26 +109,6 @@ module Adhearsion
       @after_call ||= execute_callbacks :after_call
     end
 
-    def variables
-      call.variables
-    end
-
-    def logger
-      call.logger
-    end
-
-    def accept(headers = nil)
-      call.accept headers
-    end
-
-    def answer(headers = nil)
-      call.answer headers
-    end
-
-    def reject(reason = :busy, headers = nil)
-      call.reject reason, headers
-    end
-
     def hangup(headers = nil)
       hangup_response = call.hangup! headers
       after_call unless hangup_response == false
@@ -142,11 +121,6 @@ module Adhearsion
     def unmute
       write_and_await_response ::Punchblock::Command::Unmute.new
     end
-
-    def write_and_await_response(command, timeout = nil)
-      call.write_and_await_response command, timeout
-    end
-    alias :execute_component :write_and_await_response
 
     def execute_component_and_await_completion(component)
       write_and_await_response component

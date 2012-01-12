@@ -2,44 +2,20 @@ require 'spec_helper'
 
 module Adhearsion
   describe Calls do
-    describe "Active Calls" do
-      let(:typical_call) { Adhearsion::Call.new mock_offer }
+    before { Adhearsion.active_calls.clear! }
 
-      after do
-        Adhearsion.active_calls.clear!
-      end
-
-      it 'can add a call to the active calls list' do
-        Adhearsion.active_calls.any?.should == false
-        Adhearsion.active_calls << typical_call
-        Adhearsion.active_calls.size.should == 1
-      end
-
-      it 'Can find active call by unique ID' do
-        Adhearsion.active_calls << typical_call
-        Adhearsion.active_calls.find(typical_call.id).should_not == nil
-      end
-    end
+    let(:call) { Adhearsion::Call.new mock_offer }
 
     it 'can create a call and add it to the active calls' do
       Adhearsion.active_calls.any?.should == false
       call = Adhearsion.active_calls.from_offer mock_offer
-      call.should be_a_kind_of(Adhearsion::Call)
+      call.should be_a Adhearsion::Call
       Adhearsion.active_calls.size.should == 1
     end
 
-    it 'the #<< method should add a Call to the Hash with its id' do
-      id = rand
-      call = Adhearsion::Call.new mock_offer(id)
-      subject << call
-      hash = subject.instance_variable_get("@calls")
-      hash.empty?.should_not == true
-      hash[id].should be call
-    end
-
-    it '#size should return the size of the Hash' do
+    it '#size should return the size of the collection' do
       subject.size.should == 0
-      subject << Adhearsion::Call.new(mock_offer)
+      subject << call
       subject.size.should == 1
     end
 
@@ -54,17 +30,12 @@ module Adhearsion
     end
 
     it '#find should pull the Call from the Hash using the id' do
-      id = rand
-      call_database = flexmock "a mock Hash in which calls are stored"
-      call_database.should_receive(:[]).once.with(id)
-      flexmock(subject).should_receive(:calls).once.and_return(call_database)
-      subject.find id
+      subject << call
+      subject.find(call.id).should be call
     end
 
     it "finding calls by a tag" do
-      Adhearsion.active_calls.clear!
-
-      calls = Array.new(5) { Adhearsion::Call.new mock_offer }
+      calls = Array.new(3) { Adhearsion::Call.new mock_offer }
       calls.each { |call| subject << call }
 
       tagged_call = calls.last

@@ -24,10 +24,6 @@ module Adhearsion
       subject.should respond_to :foo
     end
 
-    it "should add accessor methods for call variables" do
-      subject.x_foo == 'bar'
-    end
-
     its(:logger)    { should be call.logger }
     its(:variables) { should be call.variables }
 
@@ -45,7 +41,7 @@ module Adhearsion
         it "should accept the call" do
           subject.should_receive(:accept).once.ordered
           subject.should_receive(:run).once.ordered
-          subject.execute
+          subject.execute!
         end
 
         context "and accept is skipped" do
@@ -54,7 +50,7 @@ module Adhearsion
           it "should not accept the call" do
             subject.should_receive(:accept).never
             subject.should_receive(:run).once
-            subject.execute
+            subject.execute!
           end
         end
       end
@@ -67,20 +63,20 @@ module Adhearsion
         it "should not accept the call" do
           subject.should_receive(:accept).never
           subject.should_receive(:run).once
-          subject.execute
+          subject.execute!
         end
       end
 
       it "catches Hangup exceptions and logs the hangup" do
         subject.should_receive(:run).once.and_raise(Hangup).ordered
         flexmock(subject.logger).should_receive(:info).once.with(/Call was hung up/).ordered
-        subject.execute
+        subject.execute!
       end
 
       it "catches standard errors, triggering an exception event" do
         subject.should_receive(:run).once.and_raise(StandardError).ordered
         flexmock(Events).should_receive(:trigger).once.with(:exception, StandardError).ordered
-        subject.execute
+        subject.execute!
       end
     end
 
@@ -138,18 +134,18 @@ module Adhearsion
         call.should_receive(:answer).once.ordered
         subject.should_receive(:after).once.ordered
 
-        subject.execute
+        subject.execute!
       end
 
       it "should invoke the new controller with metadata" do
         flexmock(SecondController).new_instances.should_receive(:md_check).once.with :foo => 'bar'
-        subject.execute
+        subject.execute!
       end
 
       it "should not attempt to accept the call again" do
         call.should_receive(:accept).once
 
-        subject.execute
+        subject.execute!
       end
 
       it "should allow the outer controller to cease execution and handle remote hangups" do
@@ -159,7 +155,7 @@ module Adhearsion
         call.should_receive(:answer).once.ordered
         subject.should_receive(:after).never.ordered
 
-        subject.execute
+        subject.execute!
       end
     end
 
@@ -221,8 +217,8 @@ module Adhearsion
       let(:message) { Punchblock::Command::Accept.new }
 
       it "delegates to the call" do
-        flexmock(subject.call).should_receive(:write_and_await_response).once.with(message, nil)
-        subject.write_and_await_response message
+        flexmock(subject.call).should_receive(:write_and_await_response).once.with(message, 20)
+        subject.write_and_await_response message, 20
       end
     end
 
@@ -325,13 +321,6 @@ module Adhearsion
         subject.unmute
       end
     end
-
-    it_should_behave_like "output commands"
-    it_should_behave_like "input commands"
-    it_should_behave_like "conference commands"
-    it_should_behave_like "dial commands"
-    it_should_behave_like "record commands"
-    it_should_behave_like "menu commands"
   end
 end
 
@@ -374,21 +363,21 @@ describe ExampleCallController do
     subject.should_receive(:setup_models).twice.ordered
     subject.should_receive(:accept).once.ordered
     subject.should_receive(:join_to_conference).once.ordered
-    subject.execute
+    subject.execute!
   end
 
   it "should execute the after_call callbacks after the call is hung up" do
     subject.should_receive(:join_to_conference).once.ordered
     subject.should_receive(:clean_up_models).twice.ordered
     subject.should_receive(:foobar).once.ordered
-    subject.execute
+    subject.execute!
   end
 
   it "should capture errors in callbacks" do
     subject.should_receive(:setup_models).and_raise StandardError
     subject.should_receive(:clean_up_models).and_raise StandardError
     flexmock(Adhearsion::Events).should_receive(:trigger).times(4).with :exception, StandardError
-    subject.execute
+    subject.execute!
   end
 
   context "when the controller finishes without a hangup" do
@@ -397,7 +386,7 @@ describe ExampleCallController do
       subject.should_receive(:join_to_conference).once.ordered
       subject.should_receive(:foobar).once.ordered
       subject.should_receive(:clean_up_models).twice.ordered
-      subject.execute
+      subject.execute!
     end
   end
 end

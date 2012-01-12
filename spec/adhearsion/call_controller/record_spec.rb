@@ -1,6 +1,10 @@
+require 'spec_helper'
+
 module Adhearsion
   class CallController
-    shared_examples_for "record commands" do
+    describe Record do
+      include CallControllerTestHelpers
+
       describe "#record" do
         let(:options) do
           {

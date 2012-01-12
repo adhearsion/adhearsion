@@ -167,16 +167,6 @@ module Adhearsion
       end
     end
 
-    describe "#define_singleton_accessor_with_pair" do
-      it "should define a singleton method, not a class method" do
-        subject.should_not respond_to "ohai"
-
-        subject.send(:define_singleton_accessor_with_pair, "ohai", 123)
-        subject.should respond_to "ohai"
-        subject.ohai.should == 123
-      end
-    end
-
     describe "#write_command" do
       let(:mock_command) { flexmock('Command') }
 
@@ -376,12 +366,12 @@ module Adhearsion
         end
 
         it "should call #execute on the controller instance" do
-          mock_controller.should_receive(:execute).once
+          mock_controller.should_receive(:execute!).once
           subject.execute_controller mock_controller
         end
 
         it "should hangup the call after all controllers have executed" do
-          mock_controller.should_receive(:execute).once
+          mock_controller.should_receive(:execute!).once
           subject.should_receive(:hangup!).once
           subject.execute_controller mock_controller
         end

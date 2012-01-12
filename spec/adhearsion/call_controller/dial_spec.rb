@@ -1,6 +1,10 @@
+require 'spec_helper'
+
 module Adhearsion
   class CallController
-    shared_examples_for "dial commands" do
+    describe Dial do
+      include CallControllerTestHelpers
+
       let(:to) { 'sip:foo@bar.com' }
 
       let(:other_call_id) { rand }

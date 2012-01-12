@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
 
   # Runtime dependencies
   s.add_runtime_dependency "bundler", [">= 1.0.10"]
-  s.add_runtime_dependency 'punchblock', [">= 0.7.1"]
+  s.add_runtime_dependency 'punchblock', [">= 0.8.1"]
   s.add_runtime_dependency "logging", [">= 1.6.1"]
   s.add_runtime_dependency "loquacious", [">= 1.9.0"]
   s.add_runtime_dependency "activesupport", [">= 3.0.10"]
@@ -41,7 +41,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'jruby-openssl' if RUBY_PLATFORM == 'java'
 
   # Development dependencies
-  s.add_development_dependency 'rspec', [">= 2.7.0"]
+  s.add_development_dependency 'rspec', ["~> 2.7.0"]
   s.add_development_dependency 'flexmock'
   s.add_development_dependency 'activerecord', [">= 3.0.10"]
   s.add_development_dependency 'simplecov'

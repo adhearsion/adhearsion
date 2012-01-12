@@ -113,6 +113,7 @@ module Adhearsion
     end
 
     def write_and_await_response(command, timeout = 60)
+      logger.trace "Executing command #{command.inspect}"
       commands << command
       write_command command
       response = command.response timeout
@@ -139,24 +140,10 @@ module Adhearsion
       offer ? offer.headers_hash : nil or {}
     end
 
-    def define_variable_accessors(recipient = self)
-      variables.each do |key, value|
-        define_singleton_accessor_with_pair key, value, recipient
-      end
-    end
-
     def execute_controller(controller)
       CallController.exec controller
     ensure
       hangup!
-    end
-
-    private
-
-    def define_singleton_accessor_with_pair(key, value, recipient = self)
-      recipient.metaclass.send :attr_accessor, key unless recipient.class.respond_to?("#{key}=")
-      recipient.metaclass.send :public, key, "#{key}=".to_sym
-      recipient.send "#{key}=", value
     end
 
     class CommandRegistry
