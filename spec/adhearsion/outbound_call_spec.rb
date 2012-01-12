@@ -13,7 +13,7 @@ module Adhearsion
       PunchblockPlugin::Initializer.client = mock_client
     end
 
-    its(:connection) { should be mock_client }
+    its(:client) { should be mock_client }
 
     describe ".originate" do
       let(:to) { 'sip:foo@bar.com' }
