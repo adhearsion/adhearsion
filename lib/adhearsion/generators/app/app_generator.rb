@@ -26,14 +26,6 @@ module Adhearsion
         File.dirname(__FILE__)
       end
 
-#      def self.destination_root(*paths)
-#        File.expand_path(File.join(@destination_stack.last, paths))
-#      end
-#
-#      def self.in_app_root?
-#        File.exist?(destination_root('config/adhearsion.rb'))
-#      end
-
       def setup_project
         self.destination_root = @app_path
         BASEDIRS.each { |dir| directory dir }
