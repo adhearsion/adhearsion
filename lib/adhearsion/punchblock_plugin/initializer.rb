@@ -89,13 +89,16 @@ module Adhearsion
             logger.info "Starting connection to server"
             client.run
           rescue ::Punchblock::DisconnectedError => e
-            self.attempts += 1
-            Adhearsion::Process.reset unless Adhearsion::Process.state_name == :booting
-            logger.error "Connection lost. Attempting reconnect #{self.attempts} of #{self.config.reconnect_attempts}"
-            sleep self.config.reconnect_timer
-            retry unless self.attempts >= self.config.reconnect_attempts
-            logger.fatal "Connection retry attempts exceeded"
-            raise e
+            # We only care about disconnects if the process is up or booting
+            if [:booting, :running].include? Adhearsion::Process.state_name
+              self.attempts += 1
+              Adhearsion::Process.reset unless Adhearsion::Process.state_name == :booting
+              logger.error "Connection lost. Attempting reconnect #{self.attempts} of #{self.config.reconnect_attempts}"
+              sleep self.config.reconnect_timer
+              retry unless self.attempts >= self.config.reconnect_attempts
+              logger.fatal "Connection retry attempts exceeded"
+              raise e
+            end
           rescue ::Punchblock::ProtocolError => e
             logger.fatal "The connection failed due to a protocol error: #{e.name}."
             raise e

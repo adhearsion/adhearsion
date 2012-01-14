@@ -117,15 +117,19 @@ module Adhearsion
       describe '#connect_to_server' do
         let(:mock_client) { flexmock :client }
 
-        before do
+        before :each do
+          Adhearsion::Process.reset
           Initializer.config = reset_default_config
           Initializer.config.reconnect_attempts = 1
-          flexmock(Adhearsion::Logging.get_logger(Initializer)).should_receive(:fatal).once
+          flexmock(Adhearsion::Logging.get_logger(Initializer)).should_receive(:fatal).at_most.once
           flexmock(Initializer).should_receive(:client).and_return mock_client
         end
 
-        it 'should reset the Adhearsion process state to "booting"' do
+        after :each do
           Adhearsion::Process.reset
+        end
+
+        it 'should reset the Adhearsion process state to "booting"' do
           Adhearsion::Process.booted
           Adhearsion::Process.state_name.should == :running
           mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
@@ -143,6 +147,13 @@ module Adhearsion
         it 'should preserve a Punchblock::ProtocolError exception and give up' do
           mock_client.should_receive(:run).and_raise ::Punchblock::ProtocolError
           expect { Initializer.connect_to_server }.should raise_error ::Punchblock::ProtocolError
+        end
+
+        it 'should not attempt to reconnect if Adhearsion is shutting down' do
+          Adhearsion::Process.booted
+          Adhearsion::Process.shutdown
+          mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
+          Initializer.should_not raise_error ::Punchblock::DisconnectedError
         end
       end
 
