@@ -81,14 +81,10 @@ USAGE
             when 0
               raise CommandHandler::UnknownCommand.new("Must specify something to create!")
             when 1
-              # We're creating a project
-              path = args.first
-              require 'rubigen'
-              require 'rubigen/scripts/generate'
-              source = RubiGen::PathSource.new :application, File.join(File.dirname(__FILE__), "../../app_generators")
-              RubiGen::Base.reset_sources
-              RubiGen::Base.append_sources source
-              RubiGen::Scripts::Generate.new.run [path], :generator => 'ahn'
+              #path = args.first
+              require 'adhearsion/generators'
+              require 'adhearsion/generators/app/app_generator.rb'
+              Adhearsion::Generators::AppGenerator.start
             else
               raise CommandHandler::UnknownCommand.new("Provided too many arguments to 'create'")
             end
