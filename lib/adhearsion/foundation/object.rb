@@ -5,12 +5,16 @@ class Object
     logger
   end
 
+  def logger_id
+    self
+  end
+
   def method_missing(method_id, *arguments, &block)
     if method_id == Adhearsion::Logging::METHOD
       self.class.send :define_method, method_id do
-        Logging.logger[self]
+        Logging.logger[logger_id]
       end
-      Logging.logger[self]
+      Logging.logger[logger_id]
     else
       super
     end

@@ -126,14 +126,9 @@ module Adhearsion
       client.execute_command command, :call_id => id
     end
 
-    # Logger per instance to log the call_id
-    def logger
-      @logger ||= Adhearsion::Logging::get_logger(self.class.to_s.concat(" ").concat(logger_id))
-    end
-
     # Sanitize the offer id
     def logger_id
-      Adhearsion::Logging.sanitized_logger_name(id)
+      id
     end
 
     def variables
