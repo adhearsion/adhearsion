@@ -57,6 +57,11 @@ module Adhearsion
     def config &block
       @config ||= Configuration.new &block
       block_given? and yield @config
+      env = ENV['AHN_ENV']
+      unless env.nil?
+        env = nil unless Configuration.valid_environments.include?(env.to_sym)
+      end
+      @config.platform.environment = env if env
       @config
     end
 

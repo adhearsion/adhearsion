@@ -59,7 +59,9 @@ module Adhearsion
       catch_termination_signal
       create_pid_file if pid_file
       start_logging
+      logger.info "Loaded config in <#{Adhearsion.config.platform.environment}> environment"
       initialize_exception_logger
+      update_rails_env_var
       init_plugins
 
       logger.info "Adhearsion v#{Adhearsion::VERSION} initialized!"
@@ -68,6 +70,28 @@ module Adhearsion
       trigger_after_initialized_hooks
       join_important_threads
       self
+    end
+
+    def update_rails_env_var
+      env = ENV['AHN_ENV']
+      if env && Configuration.valid_environments.include?(env.to_sym)
+        if ENV['RAILS_ENV'] != env
+          logger.warn "Updating AHN_RAILS variable to <#{env}>"
+          ENV['RAILS_ENV'] = env
+        else
+          logger.info "Using the configured value for RAILS_ENV : <#{env}>"
+        end
+      else
+        env = ENV['RAILS_ENV']
+        unless env
+          env = Adhearsion.config.platform.environment.to_s
+          logger.info "Defining AHN_RAILS variable to <#{env}>"
+          ENV['RAILS_ENV'] = env
+        else
+          logger.info "Using the configured value for RAILS_ENV : <#{env}>"
+        end
+      end
+      env
     end
 
     def default_pid_path

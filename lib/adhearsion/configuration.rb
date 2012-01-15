@@ -20,6 +20,8 @@ module Adhearsion
         __
         automatically_accept_incoming_calls true, :desc => "Adhearsion will accept automatically any inbound call"
 
+        environment :development, :desc => "Active environment. Supported values: development, production, staging, test"
+
         desc "Log configuration"
         logging {
           level :info, :desc => <<-__
@@ -39,6 +41,20 @@ module Adhearsion
       self
     end
 
+    def self.valid_environments
+      [:production, :development, :staging, :test]
+    end
+
+    # Create a method per each valid environment that, when invoked, may execute 
+    # the block received if the environment is active
+    self.valid_environments.each do |enviro|
+      define_method enviro do |*args, &block|
+        unless block.nil? || enviro != self.platform.environment.to_sym
+          self.instance_eval &block
+        end
+        self
+      end
+    end
 
     ##
     # Direct access to a specific configuration object

@@ -90,6 +90,73 @@ describe Adhearsion::Configuration do
       subject.automatically_accept_incoming_calls.should == true
     end
 
+    describe "if configuration has a named environment" do
+      let :env_values do
+        Adhearsion::Configuration.valid_environments.inject({}) do |hash, k|
+          hash[k] = hash.keys.length
+          hash
+        end
+      end
+
+      let :config_object do
+        config = Adhearsion::Configuration.new do
+          my_level -1, :desc => "An index to check the environment value is being retrieved"
+        end
+      end
+
+      subject do
+        config_object.production do |env|
+          env.platform.my_level = 0
+        end
+        config_object.development do |env|
+          env.platform.my_level = 1
+        end
+        config_object.staging do |env|
+          env.platform.my_level = 2
+        end
+        config_object.test do |env|
+          env.platform.my_level = 3
+        end
+        config_object
+      end
+
+      it "should return by default the development value" do
+        subject.platform.my_level.should == 1
+      end
+
+      [:staging, :production, :test].each do |env|
+        it "should return the #{env.to_s} value when environment set to #{env.to_s}" do
+          config_object.platform.environment = env
+          subject.platform.my_level.should == env_values[env]
+        end
+      end
+    end
+  end
+
+  describe "while defining the environment" do
+
+    after do
+      ENV['AHN_ENV'] = nil
+    end
+
+    it "should return 'development' by default" do
+      Adhearsion.config.platform.environment.should == :development
+    end
+
+    context "when the ENV value is valid" do
+      [:production, :staging, :test].each do |env|
+        it "should override the environment value with #{env.to_s} when set in ENV value" do
+          ENV['AHN_ENV'] = env.to_s
+          Adhearsion.config.platform.environment.should == env.to_s
+        end
+      end
+    end
+
+    it "should not override the default environment with the ENV value if valid" do
+      ENV['AHN_ENV'] = "invalid_value"
+      Adhearsion.config.platform.environment.should == :development
+    end
+
   end
 
   describe "while retrieving configuration descriptions" do
@@ -144,6 +211,38 @@ describe Adhearsion::Configuration do
             subject[:name].should == 'user'
             subject[:password].should == 'password'
             subject[:host].should == 'localhost'
+          end
+        end
+
+        context "when config has named environments" do
+          subject do
+            Adhearsion.config do |c|
+              c.production do |env|
+                env.my_plugin.name = "production"
+              end
+              c.development do |env|
+                env.my_plugin.name = "development"
+              end
+              c.staging do |env|
+                env.my_plugin.name = "staging"
+              end
+              c.test do |env|
+                env.my_plugin.name = "test"
+              end
+            end
+            Adhearsion.config[:my_plugin]
+          end
+
+          it "should return the development value by default" do
+            Adhearsion.config # initialize
+            subject.name.should == "development"
+          end
+
+          [:development, :staging, :production, :test].each do |env|
+            it "should return the #{env.to_s} value when environment is set to #{env.to_s}" do
+              Adhearsion.config.platform.environment = env
+              subject.name.should == env.to_s
+            end
           end
         end
       end
