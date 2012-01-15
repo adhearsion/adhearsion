@@ -153,7 +153,6 @@ describe Adhearsion::CLI::AhnCommand do
       the_following_code {
         tmp_path = new_tmp_dir
         simulate_args "create", tmp_path
-        RubiGen::Base.default_options.merge! :quiet => true
         # capture_stdout { Adhearsion::CLI::AhnCommand.execute! }
         execute_ahn_command
       }.should_not raise_error

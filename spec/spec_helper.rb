@@ -19,7 +19,6 @@ end
   bundler/setup
   flexmock/rspec
   active_support
-  rubigen
   stringio
   countdownlatch
   adhearsion
