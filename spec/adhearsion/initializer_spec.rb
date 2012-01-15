@@ -77,7 +77,7 @@ describe Adhearsion::Initializer do
     stub_behavior_for_initializer_with_no_path_changing_behavior do
        flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
        ahn = Adhearsion::Initializer.start path, :pid_file => true
-       ahn.resolve_log_file_path.should == path + Adhearsion.config.platform.logging.outputters
+       ahn.resolve_log_file_path.should == path + Adhearsion.config.platform.logging.outputters[0]
     end
   end
 
