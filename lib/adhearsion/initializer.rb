@@ -59,6 +59,7 @@ module Adhearsion
       catch_termination_signal
       create_pid_file if pid_file
       start_logging
+      logger.info "Loaded config in <#{Adhearsion.config.platform.environment}> environment"
       initialize_exception_logger
       init_plugins
 
