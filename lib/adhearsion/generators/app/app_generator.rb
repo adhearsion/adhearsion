@@ -14,10 +14,10 @@ module Adhearsion
 
       BASEDIRS = %w( config lib script )
 
-      argument :app_action,               :type => :string
-      argument :app_path,               :type => :string
+      argument :app_action, :type => :string
+      argument :app_path,   :type => :string
 
-      def self.source_root(path=nil)
+      def self.source_root(path = nil)
         path = File.join(base_root, 'templates')
         path if File.exists?(path)
       end

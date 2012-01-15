@@ -81,7 +81,6 @@ USAGE
             when 0
               raise CommandHandler::UnknownCommand.new("Must specify something to create!")
             when 1
-              #path = args.first
               require 'adhearsion/generators'
               require 'adhearsion/generators/app/app_generator.rb'
               Adhearsion::Generators::AppGenerator.start
