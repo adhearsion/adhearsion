@@ -140,18 +140,24 @@ module Adhearsion
     end
 
     def memoize_logging_appenders
-      file_loggers = Array(Adhearsion.config.platform.logging.outputters.dup)
-      file_loggers.map! do |f|
-        f = File.expand_path(Adhearsion.config.root.dup.concat("/").concat(f)) unless f.start_with?("/")
-        ::Logging.appenders.file(f,
-          :layout => ::Logging.layouts.pattern(
-            :pattern => Adhearsion::Logging.adhearsion_pattern
+      appenders = Array(Adhearsion.config.platform.logging.outputters.dup)
+      # Any filename in the outputters array is mapped to a ::Logging::Appenders::File instance
+      appenders.map! do |a|
+        case a
+        when String
+          f = File.expand_path(Adhearsion.config.root.dup.concat("/").concat(a)) unless a.start_with?("/")
+          ::Logging.appenders.file(f,
+            :layout => ::Logging.layouts.pattern(
+              :pattern => Adhearsion::Logging.adhearsion_pattern
+            )
           )
-        )
+        else
+         a
+        end
       end
 
       if should_daemonize?
-        file_loggers
+        appenders
       else
         stdout = ::Logging.appenders.stdout(
                             'stdout',
@@ -160,7 +166,7 @@ module Adhearsion
                               :color_scheme => 'bright'
                             )
                           )
-        file_loggers << stdout
+        appenders << stdout
       end
     end
 
@@ -205,7 +211,7 @@ module Adhearsion
     # - log_file = "log/test/adhearsion.log" => creates 'log' and 'log/test' folders
     def initialize_log_paths
       outputters = Array(Adhearsion.config.platform.logging.outputters)
-      outputters.each do |o|
+      outputters.select{|o| o.is_a?(String)}.each do |o|
         o = o.split("/")
         unless o[0].empty? # only if relative path
           o.pop # not consider filename
