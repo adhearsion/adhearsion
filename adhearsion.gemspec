@@ -29,7 +29,7 @@ Gem::Specification.new do |s|
   # on the safe side.
   s.add_runtime_dependency "i18n", ">= 0.5.0"
   s.add_runtime_dependency "json"
-  s.add_runtime_dependency "rubigen", [">= 1.5.6"]
+  s.add_runtime_dependency "thor"
   s.add_runtime_dependency "rake"
   s.add_runtime_dependency "pry"
   s.add_runtime_dependency "uuid"
