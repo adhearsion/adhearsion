@@ -133,7 +133,7 @@ module Adhearsion
       def interruptible_play!(*outputs)
         result = nil
         outputs.each do |output|
-          result = stream_file output, "1234567890*#"
+          result = stream_file output
           break unless result.nil?
         end
         result
