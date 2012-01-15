@@ -25,5 +25,3 @@ require 'rubygems'
 require 'bundler/setup'
 require 'adhearsion'
 require 'adhearsion/cli'
-
-Adhearsion::CLI::AhnCommand.execute!
