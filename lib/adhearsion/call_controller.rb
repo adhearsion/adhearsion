@@ -41,6 +41,7 @@ module Adhearsion
       new_controller = catch :pass_controller do
         controller.skip_accept! unless fresh_call
         controller.execute!
+        nil
       end
 
       exec new_controller, false
