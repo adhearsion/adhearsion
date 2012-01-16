@@ -91,15 +91,20 @@ describe Adhearsion::Configuration do
     end
 
     describe "if configuration has a named environment" do
+
+      let :config_obj do
+        Adhearsion::Configuration.new
+      end
+
       let :env_values do
-        Adhearsion::Configuration.valid_environments.inject({}) do |hash, k|
+        config_obj.valid_environments.inject({}) do |hash, k|
           hash[k] = hash.keys.length
           hash
         end
       end
 
       let :config_object do
-        config = Adhearsion::Configuration.new do
+        config = config_obj do
           my_level -1, :desc => "An index to check the environment value is being retrieved"
         end
       end
@@ -137,10 +142,17 @@ describe Adhearsion::Configuration do
 
     after do
       ENV['AHN_ENV'] = nil
+      Adhearsion.config = nil
     end
 
     it "should return 'development' by default" do
       Adhearsion.config.platform.environment.should == :development
+    end
+
+    [:development, :production, :staging, :test].each do |env|
+      it "should respond to #{env.to_s}" do
+        Adhearsion.config.should respond_to(env)
+      end
     end
 
     context "when the ENV value is valid" do
@@ -155,6 +167,12 @@ describe Adhearsion::Configuration do
     it "should not override the default environment with the ENV value if valid" do
       ENV['AHN_ENV'] = "invalid_value"
       Adhearsion.config.platform.environment.should == :development
+    end
+
+    it "should allow to add a new environment" do
+      Adhearsion.config.valid_environment?(:another_environment).should == false
+      Adhearsion.environments << :another_environment
+      Adhearsion.config.valid_environment?(:another_environment).should == true
     end
 
   end

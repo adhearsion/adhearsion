@@ -12,6 +12,8 @@ module Adhearsion
     #
     # @return [Adhearsion::Configuration]
     def initialize &block
+      initialize_environments
+
       Loquacious::Configuration.for(:platform) do
         root nil, :desc => "Adhearsion application root folder"
         lib "lib", :desc => <<-__
@@ -41,19 +43,31 @@ module Adhearsion
       self
     end
 
-    def self.valid_environments
-      [:production, :development, :staging, :test]
+    def initialize_environments
+      # Create a method per each valid environment that, when invoked, may execute 
+      # the block received if the environment is active
+      valid_environments.each do |enviro|
+        add_environment enviro
+      end
     end
 
-    # Create a method per each valid environment that, when invoked, may execute 
-    # the block received if the environment is active
-    self.valid_environments.each do |enviro|
-      define_method enviro do |*args, &block|
-        unless block.nil? || enviro != self.platform.environment.to_sym
+    def valid_environment? env
+      self.valid_environments.include?(env.to_sym)
+    end
+
+    def valid_environments
+      @valid_environments ||= [:production, :development, :staging, :test]
+    end
+
+    def add_environment(env)
+
+      self.class.send(:define_method, env.to_sym) do |*args, &block|
+        unless block.nil? || env != self.platform.environment.to_sym
           self.instance_eval &block
         end
         self
       end
+
     end
 
     ##
