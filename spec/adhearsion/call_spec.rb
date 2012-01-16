@@ -122,13 +122,13 @@ module Adhearsion
 
     describe "tagging a call" do
       it 'with a single Symbol' do
-        the_following_code {
+        lambda {
           subject.tag :moderator
         }.should_not raise_error
       end
 
       it 'with multiple Symbols' do
-        the_following_code {
+        lambda {
           subject.tag :moderator
           subject.tag :female
         }.should_not raise_error
@@ -137,7 +137,7 @@ module Adhearsion
       it 'with a non-Symbol, non-String object' do
         bad_objects = [123, Object.new, 888.88, nil, true, false, StringIO.new]
         bad_objects.each do |bad_object|
-          the_following_code {
+          lambda {
             subject.tag bad_object
           }.should raise_error ArgumentError
         end

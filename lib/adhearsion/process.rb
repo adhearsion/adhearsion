@@ -81,7 +81,7 @@ module Adhearsion
     end
 
     def die_now!
-      ::Process.exit(1)
+      ::Process.exit 1
     end
 
     def self.method_missing(method_name, *args, &block)

@@ -107,7 +107,7 @@ module Adhearsion
       #
       def play_audio(*args)
         argument, options = args.flatten
-        play_ssml(ssml_for_audio(argument, options))
+        play_ssml ssml_for_audio(argument, options)
       end
 
       def play_ssml(ssml, options = {})
@@ -193,7 +193,7 @@ module Adhearsion
         return args[0] if args.size == 1 && args[0].is_a?(RubySpeech::SSML::Speak)
         argument, options = args.flatten
         options ||= {}
-        type = detect_type(argument)
+        type = detect_type argument
         send "ssml_for_#{type}", argument, options
       end
 

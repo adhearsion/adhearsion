@@ -21,10 +21,8 @@ class Object
   end
 
   def respond_to?(method_id, include_private = false)
-    if method_id == Adhearsion::Logging::METHOD
-      true
-    else
-      super
-    end
+    return true if method_id == Adhearsion::Logging::METHOD
+
+    super
   end
 end

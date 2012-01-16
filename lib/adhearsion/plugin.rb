@@ -224,14 +224,14 @@ module Adhearsion
           else
             self.plugin_name = name
           end
-          ::Loquacious::Configuration.defaults_for(name, &Proc.new)
+          ::Loquacious::Configuration.defaults_for name, &Proc.new
         end
 
         ::Loquacious.configuration_for plugin_name
       end
 
       def show_description
-        ::Loquacious::Configuration.help_for(plugin_name)
+        ::Loquacious::Configuration.help_for plugin_name
       end
 
       def load_plugins

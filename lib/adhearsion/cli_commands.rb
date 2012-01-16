@@ -115,14 +115,6 @@ USAGE
           end
         end
 
-        class ComponentError < CLIException; end
-
-        class UnknownProject < CLIException
-          def initialize(project)
-            super "Application #{project} does not exist! Have you installed it?"
-          end
-        end
-
         class PathInvalid < CLIException
           def initialize(path)
             super "Directory #{path} does not belong to an Adhearsion project!"

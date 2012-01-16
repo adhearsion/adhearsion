@@ -148,25 +148,7 @@ module Adhearsion
       end
     end
 
-    class CommandRegistry
-      include Enumerable
-
-      def initialize
-        @commands = []
-      end
-
-      def self.synchronized_delegate(*args)
-        args.each do |method_name|
-          class_eval <<-EOS
-            def #{method_name}(*args, &block)
-              synchronize { @commands.__send__ #{method_name.inspect}, *args, &block }
-            end
-          EOS
-        end
-      end
-
-      synchronized_delegate :empty?, :<<, :delete, :each
-
+    class CommandRegistry < ThreadSafeArray
       def terminate
         hangup = Hangup.new
         each { |command| command.response = hangup if command.requested? }

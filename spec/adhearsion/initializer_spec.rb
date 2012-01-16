@@ -124,19 +124,6 @@ describe "Adhearsion.ahn_root" do
     end
   end
 
-  it "swapping out the base_path for the duration of the block" do
-    original_base_path = '.'
-    temporary_base     = '/foo'
-
-    path = Adhearsion::PathString.new(original_base_path)
-    path.should == original_base_path
-
-    path.using_base_path temporary_base do
-      path.should == temporary_base
-    end
-    path.should == original_base_path
-  end
-
   it "creating the Adhearsion.config.root will set defaults" do
     flexmock(Adhearsion::Initializer::Logging).should_receive(:start).once.and_return('')
     flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
@@ -147,9 +134,6 @@ describe "Adhearsion.ahn_root" do
       ahn = Adhearsion::Initializer.start path
       full_path = File.expand_path(path)
       Adhearsion.config.root.to_s.should == full_path
-      Adhearsion.config.root.component_path.should == File.join(full_path, "components")
-      Adhearsion.config.root.log_path.should == File.join(full_path, "logs")
-      Adhearsion.config.root.dialplan_path.should == full_path
     end
   end
   private

@@ -150,7 +150,7 @@ describe Adhearsion::CLI::AhnCommand do
 
   describe 'The "create" command' do
     it "creating a project" do
-      the_following_code {
+      lambda {
         tmp_path = new_tmp_dir
         simulate_args "create", tmp_path
         # capture_stdout { Adhearsion::CLI::AhnCommand.execute! }
