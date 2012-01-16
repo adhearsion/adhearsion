@@ -182,12 +182,14 @@ module Adhearsion
       subject { PassController.new call }
 
       before do
-        flexmock(SecondController).new_instances.should_receive(:md_check).once.with :foo => 'bar'
+        flexmock(call).should_receive(:write_and_await_response).and_return nil
         flexmock subject, :execute_component_and_await_completion => nil
-        flexmock call, :write_and_await_response => nil
+        flexmock(SecondController).new_instances.should_receive(:md_check).once.with :foo => 'bar'
         flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
         Adhearsion.config.platform.automatically_accept_incoming_calls = true
       end
+
+      let(:latch) { CountDownLatch.new 1 }
 
       it "should cease execution of the current controller, and instruct the call to execute another" do
         subject.should_receive(:before).once.ordered
@@ -195,13 +197,14 @@ module Adhearsion
         subject.should_receive(:after).never.ordered
         call.should_receive(:hangup!).once.ordered
 
-        call.execute_controller subject
+        call.execute_controller subject, latch
+        latch.wait(1).should be_true
       end
 
       it "should not attempt to accept the call again" do
         call.should_receive(:accept).once
 
-        call.execute_controller subject
+        CallController.exec subject
       end
 
       it "should execute after_call callbacks before passing control" do
@@ -209,7 +212,7 @@ module Adhearsion
         subject.should_receive(:foobar).once.ordered
         call.should_receive(:answer).once.ordered
 
-        call.execute_controller subject
+        CallController.exec subject
       end
     end
 

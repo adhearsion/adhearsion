@@ -135,10 +135,17 @@ module Adhearsion
       offer ? offer.headers_hash : nil or {}
     end
 
-    def execute_controller(controller)
-      CallController.exec controller
-    ensure
-      hangup!
+    def execute_controller(controller, latch = nil)
+      Adhearsion::Process.important_threads << Thread.new do
+        catching_standard_errors do
+          begin
+            CallController.exec controller
+          ensure
+            hangup!
+          end
+          latch.countdown! if latch
+        end
+      end
     end
 
     class CommandRegistry
