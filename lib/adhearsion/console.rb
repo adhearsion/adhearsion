@@ -36,8 +36,8 @@ module Adhearsion
           raise ArgumentError unless Adhearsion.active_calls[call]
           call = Adhearsion.active_calls[call]
         end
-        Pry.prompt = [ proc { "AHN<#{call.channel}> "},
-                       proc { "AHN<#{call.channel}? "}  ]
+        Pry.prompt = [ proc { "AHN<#{call.channel}> " },
+                       proc { "AHN<#{call.channel}? " }  ]
 
         # Pause execution of the thread currently controlling the call
         call.with_command_lock do

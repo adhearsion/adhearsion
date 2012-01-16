@@ -6,15 +6,13 @@ module Adhearsion
       DEFAULT_MAX_NUMBER_OF_TRIES = 1
       DEFAULT_TIMEOUT             = 5
 
-      relationships :menu_builder => MenuDSL::MenuBuilder
-
       attr_reader :builder, :timeout, :tries_count, :max_number_of_tries
 
       def initialize(options = {}, &block)
         @tries_count          = 0 # Counts the number of tries the menu's been executed
         @timeout              = options[:timeout] || DEFAULT_TIMEOUT
         @max_number_of_tries  = options[:tries]   || DEFAULT_MAX_NUMBER_OF_TRIES
-        @builder              = menu_builder.new
+        @builder              = MenuDSL::MenuBuilder.new
 
         @builder.build &block
 

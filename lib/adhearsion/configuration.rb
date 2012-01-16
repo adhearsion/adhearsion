@@ -11,10 +11,10 @@ module Adhearsion
     # end
     #
     # @return [Adhearsion::Configuration]
-    def initialize &block
+    def initialize(&block)
       initialize_environments
 
-      Loquacious::Configuration.for(:platform) do
+      Loquacious::Configuration.for :platform do
         root nil, :desc => "Adhearsion application root folder"
         lib "lib", :desc => <<-__
           Folder to include the own libraries to be used. Adhearsion loads any ruby file located into this folder during the bootstrap
@@ -29,7 +29,7 @@ module Adhearsion
           level :info, :desc => <<-__
             Supported levels (in increasing severity) -- :trace < :debug < :info < :warn < :error < :fatal
           __
-          outputters nil, :desc => <<-__
+          outputters ["log/adhearsion.log"], :desc => <<-__
             An array of log outputters to use. The default is to log to stdout and log/adhearsion.log
           __
           formatter nil, :desc => <<-__
@@ -37,22 +37,22 @@ module Adhearsion
           __
         }
       end
-      if block_given?
-        Loquacious::Configuration.for(:platform, &block)
-      end
+
+      Loquacious::Configuration.for :platform, &block if block_given?
+
       self
     end
 
     def initialize_environments
-      # Create a method per each valid environment that, when invoked, may execute 
+      # Create a method per each valid environment that, when invoked, may execute
       # the block received if the environment is active
       valid_environments.each do |enviro|
         add_environment enviro
       end
     end
 
-    def valid_environment? env
-      self.valid_environments.include?(env.to_sym)
+    def valid_environment?(env)
+      env && self.valid_environments.include?(env.to_sym)
     end
 
     def valid_environments
@@ -60,14 +60,12 @@ module Adhearsion
     end
 
     def add_environment(env)
-
       self.class.send(:define_method, env.to_sym) do |*args, &block|
         unless block.nil? || env != self.platform.environment.to_sym
           self.instance_eval &block
         end
         self
       end
-
     end
 
     ##
@@ -76,7 +74,7 @@ module Adhearsion
     # Adhearsion.config[:platform] => returns the configuration object associated to the Adhearsion platform
     #
     # @return [Loquacious::Configuration] configuration object or nil if the plugin does not exist
-    def [] value
+    def [](value)
       self.send value.to_sym
     end
 
@@ -84,8 +82,8 @@ module Adhearsion
     # Wrapper to access to a specific configuration object
     #
     # Adhearsion.config.foo => returns the configuration object associated to the foo plugin
-    def method_missing method_name, *args, &block
-      config = Loquacious::Configuration.for(method_name, &block)
+    def method_missing(method_name, *args, &block)
+      config = Loquacious::Configuration.for method_name, &block
       raise Adhearsion::ConfigurationError.new "Invalid plugin #{method_name}" if config.nil?
       config
     end
@@ -109,8 +107,8 @@ module Adhearsion
     # values.foo => "bar"
     #
     # @return [Loquacious::Configuration] configuration object or nil if the plugin does not exist
-    def platform &block
-      Loquacious::Configuration.for(:platform, &block)
+    def platform(&block)
+      Loquacious::Configuration.for :platform, &block
     end
 
     ##
@@ -125,7 +123,7 @@ module Adhearsion
     #     - @option :show_values [Boolean] true | false to return the current values or just the description
     #
     # @return string with the configuration description/values
-    def description name, args = {:show_values => true}
+    def description(name, args = {:show_values => true})
       desc = StringIO.new
 
       name.nil? and name = :platform
@@ -136,9 +134,8 @@ module Adhearsion
         end
         return value
       else
-        if Loquacious::Configuration.for(name).nil?
-          return ""
-        end
+        return "" if Loquacious::Configuration.for(name).nil?
+
         config = Loquacious::Configuration.help_for name,
                                 :name_leader => "",
                                 :desc_leader => "# ",

@@ -122,13 +122,13 @@ module Adhearsion
 
     describe "tagging a call" do
       it 'with a single Symbol' do
-        the_following_code {
+        lambda {
           subject.tag :moderator
         }.should_not raise_error
       end
 
       it 'with multiple Symbols' do
-        the_following_code {
+        lambda {
           subject.tag :moderator
           subject.tag :female
         }.should_not raise_error
@@ -137,7 +137,7 @@ module Adhearsion
       it 'with a non-Symbol, non-String object' do
         bad_objects = [123, Object.new, 888.88, nil, true, false, StringIO.new]
         bad_objects.each do |bad_object|
-          the_following_code {
+          lambda {
             subject.tag bad_object
           }.should raise_error ArgumentError
         end
@@ -359,6 +359,7 @@ module Adhearsion
       end
 
       describe "#execute_controller" do
+        let(:latch)           { CountDownLatch.new 1 }
         let(:mock_controller) { flexmock 'CallController' }
 
         before do
@@ -366,14 +367,16 @@ module Adhearsion
         end
 
         it "should call #execute on the controller instance" do
-          mock_controller.should_receive(:execute!).once
-          subject.execute_controller mock_controller
+          flexmock(CallController).should_receive(:exec).once.with mock_controller
+          subject.execute_controller mock_controller, latch
+          latch.wait(3).should be_true
         end
 
         it "should hangup the call after all controllers have executed" do
-          mock_controller.should_receive(:execute!).once
+          flexmock(CallController).should_receive(:exec).once.with mock_controller
           subject.should_receive(:hangup!).once
-          subject.execute_controller mock_controller
+          subject.execute_controller mock_controller, latch
+          latch.wait(3).should be_true
         end
       end
     end

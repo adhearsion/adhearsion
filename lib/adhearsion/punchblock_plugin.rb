@@ -1,7 +1,5 @@
 module Adhearsion
-
   class PunchblockPlugin < Plugin
-
     extend ActiveSupport::Autoload
 
     autoload :Initializer
@@ -27,7 +25,5 @@ module Adhearsion
     init :punchblock do
       Initializer.start
     end
-
   end
-
 end

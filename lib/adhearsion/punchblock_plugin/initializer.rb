@@ -29,18 +29,18 @@ module Adhearsion
           self.client = ::Punchblock::Client.new :connection => connection
 
           # Tell the Punchblock connection that we are ready to process calls.
-          Events.register_callback(:after_initialization) do
+          Events.register_callback :after_initialization do
             connection.ready!
           end
 
           # When a stop is requested, change our status to "Do Not Disturb"
           # This should prevent the telephony engine from sending us any new calls.
-          Events.register_callback(:stop_requested) do
+          Events.register_callback :stop_requested do
             connection.not_ready!
           end
 
           # Make sure we stop everything when we shutdown
-          Events.register_callback(:shutdown) do
+          Events.register_callback :shutdown do
             client.stop
           end
 
@@ -81,7 +81,7 @@ module Adhearsion
           end
 
           # Wait for the connection to establish
-          m.synchronize { blocker.wait(m) }
+          m.synchronize { blocker.wait m }
         end
 
         def connect_to_server

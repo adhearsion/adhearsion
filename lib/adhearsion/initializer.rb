@@ -8,23 +8,12 @@ module Adhearsion
     autoload :Logging
 
     class << self
-      def get_rules_from(location)
-        location = File.join location, ".ahnrc" if File.directory? location
-        File.exists?(location) ? YAML.load_file(location) : nil
-      end
-
       def start(*args, &block)
         new(*args, &block).start
       end
-
-      def start_from_init_file(file, ahn_app_path)
-        return if defined?(@@started) && @@started
-        start ahn_app_path, :loaded_init_files => file
-      end
-
     end
 
-    attr_reader :path, :daemon, :pid_file, :log_file, :ahn_app_log_directory
+    attr_reader :path, :daemon, :pid_file
 
     # Creation of pid_files
     #
@@ -37,7 +26,7 @@ module Adhearsion
     #    one is not created UNLESS it is running in daemon mode, in which
     #    case one is created. You can force Adhearsion to not create one
     #    even in daemon mode by supplying "false".
-    def initialize(path=nil, options={})
+    def initialize(path = nil, options = {})
       @@started = true
       @path     = path
       @mode     = options[:mode]
@@ -48,11 +37,10 @@ module Adhearsion
 
     def start
       resolve_pid_file_path
-      resolve_log_file_path
       load_lib_folder
       load_plugins_methods
       load_config
-      initialize_log_file
+      initialize_log_paths
       daemonize! if should_daemonize?
       launch_console if need_console?
       switch_to_root_directory
@@ -99,17 +87,22 @@ module Adhearsion
     end
 
     def resolve_pid_file_path
-      @pid_file = if pid_file.equal?(true) then default_pid_path
-      elsif pid_file then pid_file
-      elsif pid_file.equal?(false) then nil
-      # FIXME @pid_file = @daemon? Assignment or equality? I'm assuming equality.
-      else @pid_file = (@mode == :daemon) ? default_pid_path : nil
+      @pid_file = if pid_file.equal?(true)
+        default_pid_path
+      elsif pid_file
+        pid_file
+      elsif pid_file.equal?(false)
+        nil
+      else
+        should_daemonize? ? default_pid_path : nil
       end
     end
 
     def resolve_log_file_path
-      @ahn_app_log_directory = "#{Adhearsion.config.root}/log"
-      @log_file = File.expand_path(ahn_app_log_directory + "/adhearsion.log")
+      _log_file = Adhearsion.config.platform.logging.outputters
+      _log_file = _log_file[0] if _log_file.is_a?(Array)
+      _log_file = File.expand_path(Adhearsion.config.root.dup.concat("/").concat(_log_file)) unless _log_file.start_with?("/")
+      _log_file
     end
 
     def switch_to_root_directory
@@ -136,22 +129,18 @@ module Adhearsion
     # Loads files in application lib folder
     # @return [Boolean] if files have been loaded (lib folder is configured to not nil and actually exists)
     def load_lib_folder
-      unless Adhearsion.config.platform.lib.nil?
-        lib_folder = "#{Adhearsion.config.platform.root}/#{Adhearsion.config.platform.lib}"
-        if File.directory? lib_folder
-          Dir.chdir lib_folder do
-            rbfiles = File.join "**", "*.rb"
-            Dir.glob(rbfiles).each do |file|
-              require "#{lib_folder}/#{file}"
-            end
-          end
-          true
-        else
-          false
+      return false if Adhearsion.config.platform.lib.nil?
+
+      lib_folder = [Adhearsion.config.platform.root, Adhearsion.config.platform.lib].join '/'
+      return false unless File.directory? lib_folder
+
+      Dir.chdir lib_folder do
+        rbfiles = File.join "**", "*.rb"
+        Dir.glob(rbfiles).each do |file|
+          require "#{lib_folder}/#{file}"
         end
-      else
-        false
       end
+      true
     end
 
     def load_config
@@ -159,14 +148,28 @@ module Adhearsion
     end
 
     def init_get_logging_appenders
-      file_logger = ::Logging.appenders.file(log_file,
-                                              :layout => ::Logging.layouts.pattern(
-                                                :pattern => Adhearsion::Logging.adhearsion_pattern
-                                              )
-                                            )
+      @file_loggers ||= memoize_logging_appenders
+    end
+
+    def memoize_logging_appenders
+      appenders = Array(Adhearsion.config.platform.logging.outputters.dup)
+      # Any filename in the outputters array is mapped to a ::Logging::Appenders::File instance
+      appenders.map! do |a|
+        case a
+        when String
+          f = File.expand_path(Adhearsion.config.root.dup.concat("/").concat(a)) unless a.start_with?("/")
+          ::Logging.appenders.file(f,
+            :layout => ::Logging.layouts.pattern(
+              :pattern => Adhearsion::Logging.adhearsion_pattern
+            )
+          )
+        else
+         a
+        end
+      end
 
       if should_daemonize?
-        file_logger
+        appenders
       else
         stdout = ::Logging.appenders.stdout(
                             'stdout',
@@ -175,9 +178,8 @@ module Adhearsion
                               :color_scheme => 'bright'
                             )
                           )
-        [file_logger, stdout]
+        appenders << stdout
       end
-
     end
 
     def load_plugins_methods
@@ -199,28 +201,40 @@ module Adhearsion
     def daemonize!
       logger.info "Daemonizing now! Creating #{pid_file}."
       extend Adhearsion::CustomDaemonizer
-      daemonize log_file
+      daemonize resolve_log_file_path
     end
 
     def launch_console
       Adhearsion::Process.important_threads << Thread.new do
-        begin
+        catching_standard_errors do
           puts "Starting console"
           Adhearsion::Console.run
           Adhearsion::Process.shutdown
-        rescue Exception => e
-          puts e.message
-          puts e.backtrace.join("\n")
         end
       end
     end
 
-    def initialize_log_file
-      Dir.mkdir(ahn_app_log_directory) unless File.directory? ahn_app_log_directory
+    # Creates the relative paths associated to log files
+    # i.e.
+    # - log_file = "log/adhearsion.log"      => creates 'log' folder
+    # - log_file = "log/test/adhearsion.log" => creates 'log' and 'log/test' folders
+    def initialize_log_paths
+      outputters = Array(Adhearsion.config.platform.logging.outputters)
+      outputters.select{|o| o.is_a?(String)}.each do |o|
+        o = o.split("/")
+        unless o[0].empty? # only if relative path
+          o.pop # not consider filename
+          o.inject("") do |path, folder|
+            path = path.concat(folder).concat("/")
+            Dir.mkdir(path) unless File.directory? path
+            path
+          end
+        end
+      end
     end
 
     def start_logging
-      outputters = Adhearsion.config.platform.logging.outputters.nil? ? init_get_logging_appenders : Adhearsion.config.platform.logging.outputters
+      outputters = init_get_logging_appenders
       Logging.start outputters, Adhearsion.config.platform.logging.level, Adhearsion.config.platform.logging.formatter
     end
 
@@ -231,14 +245,14 @@ module Adhearsion
     end
 
     def create_pid_file
-      if pid_file
-        File.open pid_file, 'w' do |file|
-          file.puts ::Process.pid
-        end
+      return unless pid_file
 
-        Events.register_callback :shutdown do
-          File.delete(pid_file) if File.exists?(pid_file)
-        end
+      File.open pid_file, 'w' do |file|
+        file.puts ::Process.pid
+      end
+
+      Events.register_callback :shutdown do
+        File.delete(pid_file) if File.exists?(pid_file)
       end
     end
 
@@ -258,7 +272,7 @@ module Adhearsion
         begin
           Adhearsion::Process.important_threads[index].join
         rescue => e
-          logger.error "Error after join()ing Thread #{Thread.inspect}. #{e.message}"
+          logger.error "Error after joining Thread #{Thread.inspect}. #{e.message}"
         ensure
           index = index + 1
         end

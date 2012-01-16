@@ -135,31 +135,20 @@ module Adhearsion
       offer ? offer.headers_hash : nil or {}
     end
 
-    def execute_controller(controller)
-      CallController.exec controller
-    ensure
-      hangup!
-    end
-
-    class CommandRegistry
-      include Enumerable
-
-      def initialize
-        @commands = []
-      end
-
-      def self.synchronized_delegate(*args)
-        args.each do |method_name|
-          class_eval <<-EOS
-            def #{method_name}(*args, &block)
-              synchronize { @commands.__send__ #{method_name.inspect}, *args, &block }
-            end
-          EOS
+    def execute_controller(controller, latch = nil)
+      Adhearsion::Process.important_threads << Thread.new do
+        catching_standard_errors do
+          begin
+            CallController.exec controller
+          ensure
+            hangup!
+          end
+          latch.countdown! if latch
         end
       end
+    end
 
-      synchronized_delegate :empty?, :<<, :delete, :each
-
+    class CommandRegistry < ThreadSafeArray
       def terminate
         hangup = Hangup.new
         each { |command| command.response = hangup if command.requested? }

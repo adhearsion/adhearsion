@@ -9,17 +9,16 @@ module Adhearsion
 
     class << self
 
-      ::Logging.color_scheme( 'bright',
+      ::Logging.color_scheme 'bright',
         :levels => {
           :info  => :green,
           :warn  => :yellow,
           :error => :red,
           :fatal => [:white, :on_red]
         },
-        :date => :blue,
-        :logger => :cyan,
-        :message => :magenta
-      )
+        :date     => :blue,
+        :logger   => :cyan,
+        :message  => :magenta
 
       def adhearsion_pattern
         '[%d] %-5l %c: %m\n'
@@ -38,14 +37,14 @@ module Adhearsion
       end
 
       def start
-        ::Logging.init(LOG_LEVELS)
+        ::Logging.init LOG_LEVELS
         ::Logging::Logger[:root].level = :info
         ::Logging.logger.root.appenders = [::Logging.appenders.stdout('stdout')]
-        self.send(:_set_formatter, ::Logging::Layouts.basic({:format_as => :string, :backtrace => true}))
-        
-        LOG_LEVELS.each{|level|
+        self.send :_set_formatter, ::Logging::Layouts.basic(:format_as => :string, :backtrace => true)
+
+        LOG_LEVELS.each do |level|
           Adhearsion::Logging.const_defined?(level) or Adhearsion::Logging.const_set(level, ::Logging::LEVELS[::Logging.levelify(level)])
-        }
+        end
       end
 
       def logging_level=(new_logging_level)
@@ -102,9 +101,6 @@ module Adhearsion
 
     end
 
-    unless ::Logging.const_defined? :MAX_LEVEL_LENGTH
-      start
-    end
-
+    start unless ::Logging.const_defined? :MAX_LEVEL_LENGTH
   end
 end
