@@ -47,9 +47,21 @@ module Adhearsion
     end
 
     def config(&block)
-      @config ||= Configuration.new &block
+      @config ||= initialize_config
       block_given? and yield @config
       @config
+    end
+
+    def initialize_config
+      _config = Configuration.new
+      env = ENV['AHN_ENV']
+      env = nil unless _config.valid_environment? env
+      _config.platform.environment = env if env
+      _config
+    end
+
+    def environments
+      config.valid_environments
     end
 
     def config=(config)

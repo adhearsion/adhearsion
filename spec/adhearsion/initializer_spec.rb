@@ -203,3 +203,80 @@ describe Adhearsion::Initializer do
     end
   end
 end
+
+describe "Updating RAILS_ENV variable" do
+  include InitializerStubs
+
+  before do
+    Adhearsion::Logging.reset
+    flexmock(Adhearsion::Initializer::Logging).should_receive(:start).once.and_return('')
+    flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
+    flexmock(::Logging::Appenders).should_receive(:file).and_return(nil)
+    Adhearsion.config = nil
+  end
+
+  after do
+    ENV['RAILS_ENV'] = nil
+  end
+
+  describe "when neither RAILS_ENV nor AHN_ENV are set" do
+    [:development, :production, :staging, :test].each do |env|
+      it "should set the RAILS_ENV to #{env.to_s} when Adhearsion environment is set to #{env.to_s}" do
+        ahn = nil
+        stub_behavior_for_initializer_with_no_path_changing_behavior do
+          Adhearsion.config.platform.environment = env
+          ahn = Adhearsion::Initializer.start '/any/ole/path'
+        end
+        ahn.update_rails_env_var
+        ENV['RAILS_ENV'].should == env.to_s
+      end
+    end
+
+    context "when RAILS_ENV is set" do
+
+      after do
+        ENV['RAILS_ENV'] = nil
+        ENV['AHN_ENV'] = nil
+      end
+
+      it "should preserve the RAILS_ENV value if AHN_ENV is unset" do
+        ENV['RAILS_ENV'] = "test"
+        ahn = nil
+        stub_behavior_for_initializer_with_no_path_changing_behavior do
+          ahn = Adhearsion::Initializer.start '/any/ole/path'
+        end
+        ahn.update_rails_env_var
+        ENV['RAILS_ENV'].should == "test"
+      end
+
+      it "should update the RAILS_ENV value with the AHN_ENV value" do
+        ENV['RAILS_ENV'] = "test"
+        ENV['AHN_ENV'] = "production"
+        ahn = nil
+        stub_behavior_for_initializer_with_no_path_changing_behavior do
+          ahn = Adhearsion::Initializer.start '/any/ole/path'
+        end
+        ahn.update_rails_env_var
+        ENV['RAILS_ENV'].should == "production"
+      end
+    end
+
+    context "when RAILS_ENV is unset and AHN_ENV is set" do
+      after do
+        ENV['RAILS_ENV'] = nil
+        ENV['AHN_ENV'] = nil
+      end
+
+      it "should define the RAILS_ENV value with the AHN_ENV value" do
+        ENV['AHN_ENV'] = "production"
+        ahn = nil
+        stub_behavior_for_initializer_with_no_path_changing_behavior do
+          ahn = Adhearsion::Initializer.start '/any/ole/path'
+        end
+        ahn.update_rails_env_var
+        ENV['RAILS_ENV'].should == "production"
+      end
+    end
+  end
+
+end

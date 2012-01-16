@@ -12,6 +12,8 @@ module Adhearsion
     #
     # @return [Adhearsion::Configuration]
     def initialize(&block)
+      initialize_environments
+
       Loquacious::Configuration.for :platform do
         root nil, :desc => "Adhearsion application root folder"
         lib "lib", :desc => <<-__
@@ -19,6 +21,8 @@ module Adhearsion
           process. Set to nil if you do not want these files to be loaded. This folder is relative to the application root folder.
         __
         automatically_accept_incoming_calls true, :desc => "Adhearsion will accept automatically any inbound call"
+
+        environment :development, :desc => "Active environment. Supported values: development, production, staging, test"
 
         desc "Log configuration"
         logging {
@@ -39,6 +43,30 @@ module Adhearsion
       self
     end
 
+    def initialize_environments
+      # Create a method per each valid environment that, when invoked, may execute
+      # the block received if the environment is active
+      valid_environments.each do |enviro|
+        add_environment enviro
+      end
+    end
+
+    def valid_environment?(env)
+      env && self.valid_environments.include?(env.to_sym)
+    end
+
+    def valid_environments
+      @valid_environments ||= [:production, :development, :staging, :test]
+    end
+
+    def add_environment(env)
+      self.class.send(:define_method, env.to_sym) do |*args, &block|
+        unless block.nil? || env != self.platform.environment.to_sym
+          self.instance_eval &block
+        end
+        self
+      end
+    end
 
     ##
     # Direct access to a specific configuration object
