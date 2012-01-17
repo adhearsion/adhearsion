@@ -86,7 +86,12 @@ module Adhearsion
       desc "restart </path/to/directory>", "Restart the Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def restart(path)
-        say "invoke :stop"
+        #invoke :stop
+        #invoke :stop, [], path, :pidfile => options[:pidfile]
+        #args = ARGV[1..ARGV.size]
+        #stop args
+        args = ARGV[1..ARGV.size]
+        stop *args
         say "why is this called twice"
         invoke :daemon
       end
