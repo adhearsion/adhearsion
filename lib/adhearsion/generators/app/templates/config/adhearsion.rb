@@ -16,11 +16,24 @@
 
 Adhearsion.config do |config|
 
-  # config.platform.logging.level = :debug
+  config.development do |dev|
+    dev.platform.logging.level = :debug
+  end
 
-  # Overwrite default punchblock credentials
-  #config.punchblock.username = ""
-  #config.punchblock.password = ""
+  ##
+  # Use with Voxeo PRISM or other Rayo installation
+  #
+  # config.punchblock.username = "" # Your XMPP JID for use with Rayo
+  # config.punchblock.password = "" # Your XMPP password
+
+  ##
+  # Use with Asterisk
+  #
+  # config.punchblock.platform = :asterisk # Your AMI username
+  # config.punchblock.username = "" # Your AMI username
+  # config.punchblock.password = "" # Your AMI password
+  # config.punchblock.host = "127.0.0.1" # Your AMI host
+  # config.punchblock.port = 5038 # Your AMI port
 end
 
 Adhearsion.router do
