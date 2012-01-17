@@ -21,7 +21,7 @@ Feature: Adhearsion Ahn CLI
     And I cd to "path/somewhere"
     Then the following files should exist:
       | Gemfile               |
-      | README                |
+      | README.md             |
       | Rakefile              |
       | config/adhearsion.rb  |
       | config/environment.rb |

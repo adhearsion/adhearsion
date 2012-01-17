@@ -49,7 +49,7 @@ Then /^there should be a valid adhearsion directory named "([^"]*)"$/ do |path|
       | config |
     Then the following files should exist:
       | Gemfile |
-      | README |
+      | README.md |
       | Rakefile |
       | config/adhearsion.rb |
       | config/environment.rb |
