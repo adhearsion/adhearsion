@@ -59,6 +59,8 @@ Feature: Adhearsion Ahn CLI
     And I wait for output to contain "Transitioning from booting to running"
     And I terminate the interactive process
     Then the output should contain "Loaded config"
+    And the output should contain "Adhearsion::Console: Starting up..."
+    And the output should contain "AHN>"
     And the output should contain "Starting connection"
     And the output should contain "Transitioning from running to stopping"
 
