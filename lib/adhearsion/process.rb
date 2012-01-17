@@ -26,6 +26,9 @@ module Adhearsion
         # On third shutdown request, hang up all active calls.
         # This corresponds to the admin pressing CTRL+C three times.
         transition :rejecting => :stopped
+
+        # If we are still booting, transition directly to stopped
+        transition :booting => :force_stop
       end
 
       event :hard_shutdown do
