@@ -128,7 +128,7 @@ module Adhearsion
 
     # Sanitize the offer id
     def logger_id
-      id
+      "#{self.class}: #{id}"
     end
 
     def variables
