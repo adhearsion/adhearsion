@@ -5,6 +5,8 @@ require 'thor'
 module Adhearsion
   module CLI
     class AhnCommand < Thor
+      attr_accessor :app_stopped
+
       map %w(-h --h -help --help) => :help
       map %w(-v --v -version --version) => :version
       map %w(-) => :start
@@ -31,12 +33,14 @@ module Adhearsion
       desc "start </path/to/directory>", "Start the Adhearsion server in the foreground with a console"
       def start(*args)
         start_app args.first, :console
+        @app_stopped = false
       end
 
       desc "daemon </path/to/directory>", "Start the Adhearsion server in the background"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def daemon(*args)
         start_app args.first, :daemon, options[:pidfile]
+        @app_stopped = false
       end
 
       desc "stop </path/to/directory>", "Stop a running Adhearsion server"
@@ -76,22 +80,23 @@ module Adhearsion
           waiting_timeout = Time.now + 15
           begin
             ::Process.kill("TERM", pid)
+            STDERR.puts "TERM sent"
             sleep 0.25 until !process_exists?(pid) || Time.now > waiting_timeout
             ::Process.kill("KILL", pid)
+            STDERR.puts "KILL sent"
           rescue Errno::ESRCH
           end
         end
+        @app_stopped = true
       end
 
       desc "restart </path/to/directory>", "Restart the Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def restart(path)
-        #invoke :stop
-        #invoke :stop, [], path, :pidfile => options[:pidfile]
-        #args = ARGV[1..ARGV.size]
-        #stop args
-        args = ARGV[1..ARGV.size]
-        stop *args
+        unless @app_stopped
+          invoke :stop
+          say "this should only happen once"
+        end
         say "why is this called twice"
         invoke :daemon
       end
