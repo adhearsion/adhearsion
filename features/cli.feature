@@ -56,13 +56,11 @@ Feature: Adhearsion Ahn CLI
   Scenario: Command start with only path works properly
     Given that I create a valid app under "path/somewhere"
     When I run `ahn start path/somewhere` interactively
-    And I wait for output to contain "Defining AHN_RAILS"
-    And I wait for output to contain "AHN>"
+    And I wait for output to contain "Transitioning from booting to running"
     And I terminate the interactive process
-    Then the output should contain "Adhearsion::Console: Starting up..."
-    And the output should contain "Defining AHN_RAILS"
-    And the output should contain "Transitioning from booting to running"
-    And the output should contain "AHN>"
+    Then the output should contain "Loaded config"
+    And the output should contain "Starting connection"
+    And the output should contain "Transitioning from running to stopping"
 
   Scenario: Command start with daemon and pid option
     Given JRuby skip test
