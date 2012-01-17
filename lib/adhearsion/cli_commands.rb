@@ -97,7 +97,7 @@ module Adhearsion
         Dir.chdir path do
           args.flatten!
           args[1] = '.'
-          ScriptAhnLoader.exec_script_ahn! [*args]
+          ScriptAhnLoader.exec_script_ahn! args
         end
       end
 
