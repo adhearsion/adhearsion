@@ -57,9 +57,9 @@ module Adhearsion
         unless pid.nil?
           say "Stopping Adhearsion server at #{path}"
           waiting_timeout = Time.now + 15
-          Process.kill("TERM", pid)
+          ::Process.kill("TERM", pid)
           sleep 0.25 until !process_exists?(pid) || Time.now > waiting_timeout
-          Process.kill("KILL", pid)
+          ::Process.kill("KILL", pid)
         end
       end
 
