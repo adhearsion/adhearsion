@@ -31,7 +31,7 @@ module Adhearsion
           level :info, :desc => <<-__
             Supported levels (in increasing severity) -- :trace < :debug < :info < :warn < :error < :fatal
           __
-          outputters ["log/adhearsion.log"], :desc => <<-__
+          outputters ["log/adhearsion.log"], :transform => Proc.new {|val| Array(val)}, :desc => <<-__
             An array of log outputters to use. The default is to log to stdout and log/adhearsion.log
           __
           formatter nil, :desc => <<-__
