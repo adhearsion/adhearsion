@@ -33,9 +33,9 @@ Feature: Adhearsion Ahn CLI
     When I run `ahn create`
     Then the output should contain:
     """
-    Must specify something to create!
+    "create" was called incorrectly. Call as "ahn create PATH".
     """
-    And the exit status should be 1
+    And the exit status should be 0
 
   Scenario: Command start with no path
     When I run `ahn start`
