@@ -203,7 +203,6 @@ module Adhearsion
     def launch_console
       Adhearsion::Process.important_threads << Thread.new do
         catching_standard_errors do
-          puts "Starting console"
           Adhearsion::Console.run
           Adhearsion::Process.shutdown
         end
