@@ -44,18 +44,6 @@ Feature: Adhearsion Ahn CLI
     """
     And the exit status should be 1
 
-  Scenario: Command start with only path works properly
-    #Given PENDING
-    Given that I create a valid app under "path/somewhere"
-    And I run `ahn start path/somewhere` interactively
-    And I wait for output to contain "Transitioning"
-    And I terminate the interactive process
-    Then the output should contain:
-    """
-    Transitioning from booting to running
-    """
-    Then the exit status should be 0
-
   Scenario: Command start with daemon option
     Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
@@ -65,7 +53,7 @@ Feature: Adhearsion Ahn CLI
     Then the output should contain "Daemonizing now"
     And the exit status should be 0
 
-  Scenario: Command start with console option
+  Scenario: Command start with only path works properly
     Given that I create a valid app under "path/somewhere"
     When I run `ahn start path/somewhere` interactively
     And I wait for output to contain "Defining AHN_RAILS"
@@ -73,6 +61,7 @@ Feature: Adhearsion Ahn CLI
     And I terminate the interactive process
     Then the output should contain "Starting console"
     And the output should contain "Defining AHN_RAILS"
+    And the output should contain "Transitioning from booting to running"
     And the output should contain "AHN>"
 
   Scenario: Command start with daemon and pid option
@@ -83,17 +72,15 @@ Feature: Adhearsion Ahn CLI
     And I terminate the process using the pid file "ahn.pid"
     Then the output should contain "Daemonizing now"
 
- #TODO: change ahnctl to ahn
- #FIXME: ahnctl used current path while ahn uses relative (to app) path
-  Scenario: Command start with valid path and pid option
-    Given PENDING
+  Scenario: Command stop with valid path and pid option
     Given that I create a valid app under "path/somewhere"
-    When I run `ahnctl start path/somewhere --pid-file=path/somewhere/ahn.pid`
-    And I cd to "path/somewhere"
-    And I terminate the process using the pid file "ahn.pid"
+    When I run `ahn daemon path/somewhere --pid-file=path/somewhere/ahn.pid`
+    When I check for the process with the pid file "ahn.pid" it should be running
+    When I run `ahn stop path/somewhere --pid-file=path/somewhere/ahn.pid`
+    Then the process identified by the pid file "ahn.pid" should be stopped
     Then the output should contain:
     """
-    Starting Adhearsion app at
+    Stoping Adhearsion app at
     """
 
   Scenario: Command version should print the version
