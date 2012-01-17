@@ -1,8 +1,6 @@
 require 'spec_helper'
 
 describe Adhearsion do
-  subject { Adhearsion }
-
   describe "while accessing the config method" do
     it "should return a Configuration instance" do
       subject.config.should be_instance_of Adhearsion::Configuration

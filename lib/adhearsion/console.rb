@@ -20,11 +20,12 @@ module Adhearsion
                         end
                       ]
         Pry.config.command_prefix = "%"
-        pry
-      end
-
-      def logger
-        Adhearsion::Logging
+        if libedit?
+          logger.error "Cannot start. You are running Adhearsion on Ruby with libedit. You must use readline for the console to work."
+        else
+          logger.info "Starting up..."
+          pry
+        end
       end
 
       def calls
@@ -42,6 +43,16 @@ module Adhearsion
         # Pause execution of the thread currently controlling the call
         call.with_command_lock do
           CallWrapper.new(call).pry
+        end
+      end
+
+      def libedit?
+        begin
+          # If NotImplemented then this might be libedit
+          Readline.emacs_editing_mode
+          false
+        rescue NotImplementedError
+          true
         end
       end
     end

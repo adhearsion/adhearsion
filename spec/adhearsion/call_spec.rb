@@ -223,7 +223,7 @@ module Adhearsion
         end
         starting_time = Time.now
         subject.write_and_await_response slow_command
-        (Time.now - starting_time).should > 0.5
+        (Time.now - starting_time).should >= 0.5
       end
 
       describe "with a successful response" do
