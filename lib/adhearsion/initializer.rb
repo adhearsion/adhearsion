@@ -26,13 +26,13 @@ module Adhearsion
     #    one is not created UNLESS it is running in daemon mode, in which
     #    case one is created. You can force Adhearsion to not create one
     #    even in daemon mode by supplying "false".
-    def initialize(path = nil, options = {})
+    def initialize(options = {})
       @@started = true
       @path     = path
       @mode     = options[:mode]
       @pid_file = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
       @loaded_init_files  = options[:loaded_init_files]
-      Adhearsion.ahn_root = path
+      Adhearsion.ahn_root = '.'
     end
 
     def start
@@ -43,7 +43,6 @@ module Adhearsion
       initialize_log_paths
       daemonize! if should_daemonize?
       launch_console if need_console?
-      switch_to_root_directory
       catch_termination_signal
       create_pid_file if pid_file
       start_logging
@@ -103,10 +102,6 @@ module Adhearsion
       _log_file = _log_file[0] if _log_file.is_a?(Array)
       _log_file = File.expand_path(Adhearsion.config.root.dup.concat("/").concat(_log_file)) unless _log_file.start_with?("/")
       _log_file
-    end
-
-    def switch_to_root_directory
-      Dir.chdir Adhearsion.config.root
     end
 
     def catch_termination_signal

@@ -78,7 +78,7 @@ module Adhearsion
 
         raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?
         say "Starting Adhearsion server at #{path}"
-        Adhearsion::Initializer.start path, :mode => mode, :pid_file => pid_file
+        Adhearsion::Initializer.start :mode => mode, :pid_file => pid_file
       end
 
       def execute_from_app_dir!(app_path, *args)
