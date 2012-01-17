@@ -3,7 +3,6 @@ Feature: Adhearsion Ahn CLI
   I want a cli command (ahn)
   So that I can create and interact with adhearsion apps
 
-
   Scenario: No arguments given
     When I run `ahn`
     Then I should see the usage message
@@ -33,87 +32,66 @@ Feature: Adhearsion Ahn CLI
     When I run `ahn create`
     Then the output should contain:
     """
-    Must specify something to create!
+    "create" was called incorrectly. Call as "ahn create /path/to/directory".
     """
     And the exit status should be 1
 
-  Scenario: Command start with no path
+  Scenario: Command start with no path outside of the app directory
     When I run `ahn start`
     Then the output should contain:
     """
-    Invalid format for the start CLI command!
+    A valid path is required for start, unless run from an Adhearson app directory
     """
     And the exit status should be 1
 
-  Scenario: Cucumber should support checking output on interative commands while they still run
-    Given PENDING
+  Scenario: Command start with no path inside of the app directory
     Given that I create a valid app under "path/somewhere"
-    When I run `ahn start path/somewhere` interactively
-    And I wait for output to contain "Transitioning"
+    When I cd to "path/somewhere"
+    And I run `ahn start` interactively
+    And I wait for output to contain "Transitioning from booting to running"
     And I terminate the interactive process
-    Then the output should contain:
-    """
-    Transitioning from booting to running
-    """
-    And the exit status should be 0
+    Then the output should contain "Loaded config"
+    And the output should contain "Adhearsion::Console: Starting up..."
+    And the output should contain "AHN>"
+    And the output should contain "Starting connection"
+    And the output should contain "Transitioning from running to stopping"
 
   Scenario: Command start with only path works properly
-    Given PENDING
     Given that I create a valid app under "path/somewhere"
-    And I run `ahn start path/somewhere` interactively
-    And I wait for output to contain "Transitioning"
+    When I run `ahn start path/somewhere` interactively
+    And I wait for output to contain "Transitioning from booting to running"
     And I terminate the interactive process
-    Then the output should contain:
-    """
-    Transitioning from booting to running
-    """
-    Then the exit status should be 0
+    Then the output should contain "Loaded config"
+    And the output should contain "Adhearsion::Console: Starting up..."
+    And the output should contain "AHN>"
+    And the output should contain "Starting connection"
+    And the output should contain "Transitioning from running to stopping"
 
-  Scenario: Command start with daemon option
+  Scenario: Command daemon with path works correctly
     Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
-    When I run `ahn start daemon path/somewhere`
+    When I run `ahn daemon path/somewhere`
     And I cd to "path/somewhere"
     And I terminate the process using the pid file "adhearsion.pid"
     Then the output should contain "Daemonizing now"
     And the exit status should be 0
 
-  Scenario: Command start with console option
-    Given that I create a valid app under "path/somewhere"
-    When I run `ahn start console path/somewhere` interactively
-    And I wait for output to contain "AHN>"
-    And I terminate the interactive process
-    Then the output should contain "Starting console"
-    And the output should contain "AHN>"
-
-  Scenario: Command start with both console and daemon options
-    Given I run `ahn create path/somewhere`
-    When I run `ahn start console daemon path/somewhere`
-    Then the output should contain:
-    """
-    Unrecognized final argument
-    """
-    Then the exit status should be 1
-
   Scenario: Command start with daemon and pid option
     Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
-    When I run `ahn start daemon path/somewhere --pid-file=ahn.pid`
+    When I run `ahn daemon path/somewhere --pid-file=ahn.pid`
     And I cd to "path/somewhere"
     And I terminate the process using the pid file "ahn.pid"
     Then the output should contain "Daemonizing now"
 
- #TODO: change ahnctl to ahn
- #FIXME: ahnctl used current path while ahn uses relative (to app) path
-  Scenario: Command start with valid path and pid option
-    Given PENDING
+  Scenario: Command stop with valid path and pid option
+    Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
-    When I run `ahnctl start path/somewhere --pid-file=path/somewhere/ahn.pid`
-    And I cd to "path/somewhere"
-    And I terminate the process using the pid file "ahn.pid"
+    When I run `ahn daemon path/somewhere --pid-file=ahn.pid`
+    And I run `ahn stop path/somewhere --pid-file=ahn.pid`
     Then the output should contain:
     """
-    Starting Adhearsion app at
+    Stopping Adhearsion
     """
 
   Scenario: Command version should print the version
@@ -128,10 +106,3 @@ Feature: Adhearsion Ahn CLI
     When I run `ahn help`
     Then I should see the usage message
     And the exit status should be 0
-
-  Scenario: Ahnctl with no arguments
-    When I run `ahnctl`
-    Then the output should contain:
-    """
-    Usage: ahnctl start|stop|restart /path/to/adhearsion/app [--pid-file=/path/to/pid_file.pid]
-    """

@@ -1,125 +1,141 @@
 require 'fileutils'
 require 'adhearsion/script_ahn_loader'
+require 'thor'
 
 module Adhearsion
   module CLI
-    module AhnCommand
-      USAGE = <<USAGE
-Usage:
-   ahn create /path/to/directory
-   ahn start [console|daemon] [/path/to/directory]
-   ahn version|-v|--v|-version|--version
-   ahn help|-h|--h|--help|-help
-USAGE
-      class << self
+    class AhnCommand < Thor
+      map %w(-h --h -help --help) => :help
+      map %w(-v --v -version --version) => :version
+      map %w(-) => :start
 
-        def execute!
-          if ARGV.first == 'start' && !(ScriptAhnLoader.in_ahn_application? || ScriptAhnLoader.in_ahn_application_subdirectory?)
-            args = parse_arguments
-            Dir.chdir args[1] do
-              args = args.compact.map(&:to_s)
-              args[1], args[2] = args[2], '.'
-              args[3] = "--pid-file=#{args[3]}" if args.size > 3
-              ScriptAhnLoader.exec_script_ahn! args
-            end
-          end
-          CommandHandler.send(*parse_arguments)
-        rescue CommandHandler::CLIException => error
-          fail_and_print_usage error
+      check_unknown_options!
+
+      def self.exit_on_failure?
+        true
+      end
+
+      desc "create /path/to/directory", "Create a new Adhearsion application under the given path"
+      def create(path)
+        require 'adhearsion/generators'
+        require 'adhearsion/generators/app/app_generator'
+        Adhearsion::Generators::AppGenerator.start
+      end
+
+      desc "version", "Shows Adhearsion version"
+      def version
+        say "Adhearsion v#{Adhearsion::VERSION}"
+        exit 0
+      end
+
+      desc "start </path/to/directory>", "Start the Adhearsion server in the foreground with a console"
+      def start(path = nil)
+        start_app path, :console
+      end
+
+      desc "daemon </path/to/directory>", "Start the Adhearsion server in the background"
+      method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
+      def daemon(path = nil)
+        start_app path, :daemon, options[:pidfile]
+      end
+
+      desc "stop </path/to/directory>", "Stop a running Adhearsion server"
+      method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
+      def stop(path = nil)
+        execute_from_app_dir! path, ARGV
+
+        pid_file = if options[:pidfile]
+          File.expand_path File.exists?(File.expand_path(options[:pidfile])) ?
+          options[:pidfile] :
+          File.join(path, options[:pidfile])
+        else
+          path + '/adhearsion.pid'
         end
 
-        ##
-        # Provides a small abstraction of Kernel::abort().
-        #
-        def fail_and_print_usage(error)
-          Kernel.abort "#{error.message}\n\n#{USAGE}"
+        begin
+          pid = File.read(pid_file).to_i
+        rescue
+          raise CLIException, "Could not read pid file #{pid_file}"
         end
 
-        def parse_arguments(args=ARGV.clone)
-          action = args.shift
-          case action
-          when /^-?-?h(elp)?$/, nil   then [:help]
-          when /^-?-?v(ersion)?$/     then [:version]
-          when "create"
-            [:create, *args]
-          when 'start'
-            pid_file_regexp = /^--pid-file=(.+)$/
-            if args.size > 3
-              raise CommandHandler::CLIException, "Too many arguments supplied!" if args.size > 3
-            else
-              pid_file = nil
-              pid_file = args.pop[pid_file_regexp, 1] if args.last =~ pid_file_regexp
-              raise CommandHandler::CLIException, "Unrecognized final argument #{args.last}" unless args.size <= 2
-            end
+        raise CLIException, "Could not read pid" if pid.nil?
 
-            if args.size == 2
-              path   = args.last
-              if args.first =~ /foreground|daemon|console/
-                mode = args.first.to_sym
-              else
-                raise CommandHandler::CLIException, "Invalid start mode requested: #{args.first}"
-              end
-            elsif args.size == 1
-              path, mode = args.first, :foreground
-            else
-              raise CommandHandler::CLIException, "Invalid format for the start CLI command!"
-            end
-            [:start, path, mode, pid_file]
-          when '-'
-            [:start, Dir.pwd]
-          else
-            [action, *args]
-          end
+        say "Stopping Adhearsion server at #{path} with pid #{pid}"
+        waiting_timeout = Time.now + 15
+        begin
+          ::Process.kill "TERM", pid
+          sleep 0.25 while process_exists?(pid) && Time.now < waiting_timeout
+          ::Process.kill "KILL", pid
+        rescue Errno::ESRCH
         end
       end
 
-      module CommandHandler
-        class << self
+      desc "restart </path/to/directory>", "Restart the Adhearsion server"
+      method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
+      def restart(path = nil)
+        execute_from_app_dir! path, ARGV
+        invoke :stop
+        invoke :daemon
+      end
 
-          def create(*args)
-            case args.size
-            when 0
-              raise CommandHandler::UnknownCommand.new("Must specify something to create!")
-            when 1
-              require 'adhearsion/generators'
-              require 'adhearsion/generators/app/app_generator.rb'
-              Adhearsion::Generators::AppGenerator.start
-            else
-              raise CommandHandler::UnknownCommand.new("Provided too many arguments to 'create'")
-            end
-          end
+      protected
 
-          def start(path, mode = :foreground, pid_file = nil)
-            raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?
-            Adhearsion::Initializer.start path, :mode => mode, :pid_file => pid_file
-          end
+      def start_app(path, mode, pid_file = nil)
+        execute_from_app_dir! path, ARGV
+        say "Starting Adhearsion server at #{path}"
+        Adhearsion::Initializer.start :mode => mode, :pid_file => pid_file
+      end
 
-          def version
-            puts "Adhearsion v#{Adhearsion::VERSION}"
-          end
+      def execute_from_app_dir!(path, *args)
+        return if in_app? and running_script_ahn?
 
-          def help
-            puts USAGE
-          end
+        path ||= '.' if in_app?
 
-          def method_missing(action, *args)
-            raise UnknownCommand, [action, *args] * " "
-          end
+        raise PathRequired, ARGV[0] if path.nil? or path.empty?
+        raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?(path)
+
+        Dir.chdir path do
+          args.flatten!
+          args[1] = '.'
+          ScriptAhnLoader.exec_script_ahn! [*args]
         end
+      end
 
-        class CLIException < StandardError; end
+      def running_script_ahn?
+        $0.to_s == "script/ahn"
+      end
 
-        class UnknownCommand < CLIException
-          def initialize(cmd)
-            super "Unknown command: #{cmd}"
-          end
-        end
+      def in_app?
+        ScriptAhnLoader.in_ahn_application? or ScriptAhnLoader.in_ahn_application_subdirectory?
+      end
 
-        class PathInvalid < CLIException
-          def initialize(path)
-            super "Directory #{path} does not belong to an Adhearsion project!"
-          end
-        end
+      def process_exists?(pid = nil)
+        # FIXME: Raise some error here
+        return false if pid.nil?
+        `ps -p #{pid} | sed -e '1d'`.strip.empty?
+      end
+
+      def method_missing(action, *args)
+        help
+        raise UnknownCommand, [action, *args] * " "
+      end
+    end # AhnCommand
+
+    class UnknownCommand < Thor::Error
+      def initialize(cmd)
+        super "Unknown command: #{cmd}"
+      end
+    end
+
+    class PathRequired < Thor::Error
+      def initialize(cmd)
+        super "A valid path is required for #{cmd}, unless run from an Adhearson app directory"
+      end
+    end
+
+    class PathInvalid < Thor::Error
+      def initialize(path)
+        super "Directory #{path} does not belong to an Adhearsion project!"
       end
     end
   end
