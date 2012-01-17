@@ -41,16 +41,30 @@ module Adhearsion
 
       desc "stop </path/to/directory>", "Stop a running Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
-      def stop(path)
+      def stop(*args)
+        path = args.first
         raise CLIException, "Directory is not an Adhearsion application!" unless
-          ScriptAhnLoader.in_ahn_application?(path)
+          ScriptAhnLoader.in_ahn_application?(args.first)
 
-        pid_file = File.expand_path options[:pid_file] || path + '/adhearsion.pid'
+         STDERR.puts options.inspect
+
+        if options[:pidfile]
+          pid_file = File.expand_path File.exists?(File.expand_path(options[:pidfile])) ?
+          options[:pidfile] :
+          File.join(path, options[:pidfile])
+        else
+          pid_file = path + '/adhearsion.pid'
+        end
+
+        STDERR.puts pid_file.inspect
+
+        STDERR.puts File.exists?(pid_file)
 
         begin
           pid = File.read(pid_file).to_i
         rescue
-          logger.warn "Could not read pid file #{pid_file}"
+          STDERR.puts "Could not read pid file #{pid_file}"
+          #logger.warn "Could not read pid file #{pid_file}"
           #raise CLIException, "Could not read pid file #{pid_file}"
         end
 
