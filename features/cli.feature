@@ -84,8 +84,7 @@ Feature: Adhearsion Ahn CLI
     Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
     When I run `ahn daemon path/somewhere --pid-file=ahn.pid`
-    And I cd to "path/somewhere"
-    And I run `ahn stop path/somewhere --pid-file=path/somewhere/ahn.pid`
+    And I run `ahn stop path/somewhere --pid-file=ahn.pid`
     Then the output should contain:
     """
     Stopping Adhearsion
