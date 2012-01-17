@@ -36,13 +36,21 @@ Feature: Adhearsion Ahn CLI
     """
     And the exit status should be 1
 
-  Scenario: Command start with no path
+  Scenario: Command start with no path outside of the app directory
     When I run `ahn start`
     Then the output should contain:
     """
-    Directory . does not belong to an Adhearsion project!
+    A valid path is required for start, unless run from an Adhearson app directory
     """
     And the exit status should be 1
+
+  Scenario: Command start with no path inside of the app directory
+    Given that I create a valid app under "path/somewhere"
+    When I cd to "path/somewhere"
+    And I run `ahn start` interactively
+    And I terminate the interactive process
+    Then the output should contain "Transitioning from booting to running"
+    And the output should contain "Transitioning from running to stopping"
 
   Scenario: Command daemon with path works correctly
     Given JRuby skip test
