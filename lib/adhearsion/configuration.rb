@@ -14,6 +14,8 @@ module Adhearsion
     def initialize(&block)
       initialize_environments
 
+      Loquacious.env_prefix = "AHN"
+
       Loquacious::Configuration.for :platform do
         root nil, :desc => "Adhearsion application root folder"
         lib "lib", :desc => <<-__
