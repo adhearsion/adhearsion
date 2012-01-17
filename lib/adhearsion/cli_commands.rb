@@ -7,6 +7,7 @@ module Adhearsion
     class AhnCommand < Thor
       map %w(-h --h -help --help) => :help
       map %w(-v --v -version --version) => :version
+      map %w(-) => :start
 
       check_unknown_options!
 
