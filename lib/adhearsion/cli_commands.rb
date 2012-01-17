@@ -29,54 +29,51 @@ module Adhearsion
       end
 
       desc "start </path/to/directory>", "Start the Adhearsion server in the foreground with a console"
-      def start(*args)
-        start_app args.first, :console
+      def start(path = nil)
+        start_app path, :console
       end
 
       desc "daemon </path/to/directory>", "Start the Adhearsion server in the background"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
-      def daemon(*args)
-        start_app args.first, :daemon, options[:pidfile]
+      def daemon(path = nil)
+        start_app path, :daemon, options[:pidfile]
       end
 
       desc "stop </path/to/directory>", "Stop a running Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
-      def stop(*args)
-        path = args.first
-        execute_from_app_dir!(path, ARGV)
+      def stop(path = nil)
+        execute_from_app_dir! path, ARGV
 
-        if options[:pidfile]
-          pid_file = File.expand_path File.exists?(File.expand_path(options[:pidfile])) ?
+        pid_file = if options[:pidfile]
+          File.expand_path File.exists?(File.expand_path(options[:pidfile])) ?
           options[:pidfile] :
           File.join(path, options[:pidfile])
         else
-          pid_file = path + '/adhearsion.pid'
+          path + '/adhearsion.pid'
         end
 
         begin
           pid = File.read(pid_file).to_i
         rescue
-          STDERR.puts "Could not read pid file #{pid_file}"
-          #raise CLIException, "Could not read pid file #{pid_file}"
+          raise CLIException, "Could not read pid file #{pid_file}"
         end
 
-        unless pid.nil?
-          say "Stopping Adhearsion server at #{path} with pid #{pid}"
-          waiting_timeout = Time.now + 15
-          begin
-            ::Process.kill("TERM", pid)
-            sleep 0.25 until !process_exists?(pid) || Time.now > waiting_timeout
-            ::Process.kill("KILL", pid)
-          rescue Errno::ESRCH
-          end
+        raise CLIException, "Could not read pid" if pid.nil?
+
+        say "Stopping Adhearsion server at #{path} with pid #{pid}"
+        waiting_timeout = Time.now + 15
+        begin
+          ::Process.kill "TERM", pid
+          sleep 0.25 while process_exists?(pid) && Time.now < waiting_timeout
+          ::Process.kill "KILL", pid
+        rescue Errno::ESRCH
         end
       end
 
-
       desc "restart </path/to/directory>", "Restart the Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
-      def restart(path)
-        execute_from_app_dir!(path, ARGV)
+      def restart(path = nil)
+        execute_from_app_dir! path, ARGV
         invoke :stop
         invoke :daemon
       end
@@ -84,7 +81,7 @@ module Adhearsion
       protected
 
       def start_app(path, mode, pid_file = nil)
-        execute_from_app_dir!(path, ARGV)
+        execute_from_app_dir! path, ARGV
         say "Starting Adhearsion server at #{path}"
         Adhearsion::Initializer.start :mode => mode, :pid_file => pid_file
       end
@@ -109,7 +106,7 @@ module Adhearsion
       end
 
       def in_app?
-          ScriptAhnLoader.in_ahn_application? or ScriptAhnLoader.in_ahn_application_subdirectory?
+        ScriptAhnLoader.in_ahn_application? or ScriptAhnLoader.in_ahn_application_subdirectory?
       end
 
       def process_exists?(pid = nil)
