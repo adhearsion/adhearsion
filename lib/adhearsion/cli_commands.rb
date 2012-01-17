@@ -6,6 +6,7 @@ module Adhearsion
   module CLI
     class AhnCommand < Thor
       attr_accessor :app_stopped
+      attr_accessor :run_once_block
 
       map %w(-h --h -help --help) => :help
       map %w(-v --v -version --version) => :version
@@ -46,12 +47,10 @@ module Adhearsion
       desc "stop </path/to/directory>", "Stop a running Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def stop(*args)
-        STDERR.puts "#stop"
+        STDERR.puts "\n\n======\n#stop -- args=#{args.inspect} options=#{options.inspect}"
         path = args.first
         raise CLIException, "Directory is not an Adhearsion application!" unless
           ScriptAhnLoader.in_ahn_application?(path)
-
-        STDERR.puts options.inspect
 
         if options[:pidfile]
           pid_file = File.expand_path File.exists?(File.expand_path(options[:pidfile])) ?
@@ -61,10 +60,10 @@ module Adhearsion
           pid_file = path + '/adhearsion.pid'
         end
 
-        STDERR.puts `ls -l #{pid_file}`
-        STDERR.puts pid_file.inspect
-
-        STDERR.puts File.exists?(pid_file)
+        STDERR.puts "Looking for pid file:#{pid_file.inspect}, " +
+          "exists?#{File.exists?(pid_file)}"
+        STDERR.puts "\tls output\n" +
+           "\t" + `ls -l #{pid_file}`
 
         begin
           pid = File.read(pid_file).to_i
@@ -74,7 +73,7 @@ module Adhearsion
           #raise CLIException, "Could not read pid file #{pid_file}"
         end
 
-          say "maybe Stopping Adhearsion server at #{path}"
+        say "maybe Stopping Adhearsion server at #{path} with pid #{pid}"
         unless pid.nil?
           say "Stopping Adhearsion server at #{path}"
           waiting_timeout = Time.now + 15
@@ -90,18 +89,27 @@ module Adhearsion
         @app_stopped = true
       end
 
+
       desc "restart </path/to/directory>", "Restart the Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def restart(path)
-        unless @app_stopped
+        run_once :stop do
           invoke :stop
           say "this should only happen once"
         end
-        say "why is this called twice"
+        say "why is this called twice.  NEXT should be daemon\n========\n\n"
         invoke :daemon
       end
 
       protected
+
+      def run_once(name, &block)
+        @run_once_blocks ||= []
+        unless @run_once_blocks.include?(name)
+          @run_once_blocks << name
+          yield
+        end
+      end
 
       def start_app(path, mode, pid_file = nil)
         execute_from_app_dir!(path, ARGV) unless in_app?
