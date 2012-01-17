@@ -59,7 +59,7 @@ Feature: Adhearsion Ahn CLI
     And I wait for output to contain "Defining AHN_RAILS"
     And I wait for output to contain "AHN>"
     And I terminate the interactive process
-    Then the output should contain "Starting console"
+    Then the output should contain "Adhearsion::Console: Starting up..."
     And the output should contain "Defining AHN_RAILS"
     And the output should contain "Transitioning from booting to running"
     And the output should contain "AHN>"
