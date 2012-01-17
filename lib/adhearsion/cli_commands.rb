@@ -83,7 +83,7 @@ module Adhearsion
 
       def execute_from_app_dir!(app_path, *args)
         Dir.chdir app_path do
-          ScriptAhnLoader.exec_script_ahn! args
+          ScriptAhnLoader.exec_script_ahn! *args
         end
       end
 
