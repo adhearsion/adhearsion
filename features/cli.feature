@@ -81,14 +81,14 @@ Feature: Adhearsion Ahn CLI
     Then the output should contain "Daemonizing now"
 
   Scenario: Command stop with valid path and pid option
+    Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
-    And I run `ahn daemon "path/somewhere" --pid-file=ahn.pid`
-    When I check for the process with the pid file "ahn.pid" it should be running
+    When I run `ahn daemon path/somewhere --pid-file=ahn.pid`
+    And I cd to "path/somewhere"
     And I run `ahn stop path/somewhere --pid-file=path/somewhere/ahn.pid`
-    Then the process identified by the pid file "ahn.pid" should be stopped
     Then the output should contain:
     """
-    Stoping Adhearsion app at
+    Stopping Adhearsion
     """
 
   Scenario: Command version should print the version

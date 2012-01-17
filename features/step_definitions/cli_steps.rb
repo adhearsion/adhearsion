@@ -68,14 +68,7 @@ When /^I terminate the process using the pid file "([^"]*)"$/ do |pidfile|
   prep_for_fs_check do
     pid = File.read(pidfile).to_i
     Process.kill("TERM", pid)
+    sleep 1
+    Process.kill("KILL", pid)
   end
-end
-
-When /^I check for the process with the pid file "([^"]*)" it should be running$/ do |pidfile|
-  check_file_presence([pidfile], true)
-  pending # that pid looks awesome where is the process?
-end
-
-Then /^the process identified by the pid file "([^"]*)" should be stopped$/ do |pidfile|
-  steps %Q{When I terminate the process using the pid file "#{pidfile}"}
 end
