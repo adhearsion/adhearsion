@@ -2,7 +2,6 @@ module Adhearsion
   class CallController
     extend ActiveSupport::Autoload
 
-    autoload :Conference
     autoload :Dial
     autoload :Input
     autoload :Output
@@ -10,7 +9,6 @@ module Adhearsion
     autoload :Menu
     autoload :Utility
 
-    include Conference
     include Dial
     include Input
     include Output
