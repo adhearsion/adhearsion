@@ -42,11 +42,12 @@ module Adhearsion
       desc "stop </path/to/directory>", "Stop a running Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def stop(*args)
+        STDERR.puts "#stop"
         path = args.first
         raise CLIException, "Directory is not an Adhearsion application!" unless
-          ScriptAhnLoader.in_ahn_application?(args.first)
+          ScriptAhnLoader.in_ahn_application?(path)
 
-         STDERR.puts options.inspect
+        STDERR.puts options.inspect
 
         if options[:pidfile]
           pid_file = File.expand_path File.exists?(File.expand_path(options[:pidfile])) ?
@@ -56,6 +57,7 @@ module Adhearsion
           pid_file = path + '/adhearsion.pid'
         end
 
+        STDERR.puts `ls -l #{pid_file}`
         STDERR.puts pid_file.inspect
 
         STDERR.puts File.exists?(pid_file)
@@ -68,6 +70,7 @@ module Adhearsion
           #raise CLIException, "Could not read pid file #{pid_file}"
         end
 
+          say "maybe Stopping Adhearsion server at #{path}"
         unless pid.nil?
           say "Stopping Adhearsion server at #{path}"
           waiting_timeout = Time.now + 15
@@ -83,7 +86,8 @@ module Adhearsion
       desc "restart </path/to/directory>", "Restart the Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def restart(path)
-        invoke :stop
+        say "invoke :stop"
+        say "why is this called twice"
         invoke :daemon
       end
 
