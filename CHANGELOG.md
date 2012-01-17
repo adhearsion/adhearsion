@@ -44,13 +44,13 @@
   * #menu now resumes execution inside the current controller after completion
 
 ### Recording
-
+  * TODO
 
 ### Conferencing
-
+  * TODO
 
 ### Bridging
-
+  * TODO
 
 ### Call routing & controllers
   * To be platform agnostic, inbound calls are no longer routed by Asterisk context. There is now an inbound call routing DSL defined in config/adhearsion.rb which routes calls based on their parameters to either a controller class or specifies a dialplan in a block.
@@ -94,7 +94,7 @@
   * Added rake tasks to check the config options (rake adhearsion:config:desc) and config values (rake adhearsion:config:values)
   * `automatically_answer_incoming_calls` has been replaced with `automatically_accept_incoming_calls`, which when set to `true` (as is the default), will automatically indicate call progress to the 3rd party, causing ringing. `answer` must now be used explicitly in the dialplan.
   * Removed a lot of unused or unecessary code, including:
-    * Call routing DSL
+    * Outbound call routing DSL
     * FreeSWITCH support. This will be added to Punchblock at a later date.
   * Advanced shutdown routine:
     * On first :shutdown, we flag the state internally. The intent is to shut down when the active calls count reaches 0, but otherwise operate normally.
@@ -104,6 +104,7 @@
     * On third :shutdown, send a Hangup to all active calls. Shut down when active call count reaches 0.
 
     * In addition, the process can be force-stopped, which simply closes the connection to the server (and any component connections as well).
+  * New CLI command structure. Run `ahn` for details.
   * TODO: Defined an Adhearsion code style guide and implemented it across the codebase (see http://adhearsion.com/style-guide).
   * TODO: Defined some project management guidelines for Adhearsion core (see http://adhearsion.com/contribute).
   * TODO: Transferred copyright in the Adhearsion codebase from individual contributors to Adhearsion Foundation Inc, the non-profit organisation responsible for supporting the Adhearsion project.
