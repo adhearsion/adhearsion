@@ -90,15 +90,17 @@ module Adhearsion
       end
 
       def execute_from_app_dir!(path, *args)
-        path ||= '.'
         return if in_app? and running_script_ahn?
+
+        path ||= '.' if in_app?
 
         raise PathRequired, ARGV[0] if path.nil? or path.empty?
         raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?(path)
 
         Dir.chdir path do
-          args[1] = path
-          ScriptAhnLoader.exec_script_ahn! *args
+          args.flatten!
+          args[1] = '.'
+          ScriptAhnLoader.exec_script_ahn! [*args]
         end
       end
 
@@ -130,7 +132,7 @@ module Adhearsion
 
     class PathRequired < Thor::Error
       def initialize(cmd)
-        super "Path required for #{cmd}"
+        super "A valid path is required for #{cmd}, unless run from an Adhearson app directory"
       end
     end
 
