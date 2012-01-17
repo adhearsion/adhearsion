@@ -14,6 +14,7 @@ module Adhearsion
     def initialize(&block)
       initialize_environments
 
+      Loquacious.env_config = true
       Loquacious.env_prefix = "AHN"
 
       Loquacious::Configuration.for :platform do
