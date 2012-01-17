@@ -90,9 +90,14 @@ module Adhearsion
       end
 
       def execute_from_app_dir!(path, *args)
-        raise PathRequired, ARGV[0] if path.nil? or path.empty?
         return if in_app? and running_script_ahn?
-        raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?(path)
+
+        if in_app?
+          path = args[1] = "."
+        else
+          raise PathRequired, ARGV[0] if path.nil? or path.empty?
+          raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?(path)
+        end
 
         Dir.chdir path do
           ScriptAhnLoader.exec_script_ahn! *args
