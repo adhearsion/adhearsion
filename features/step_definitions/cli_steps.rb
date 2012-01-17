@@ -63,6 +63,14 @@ Then /^there should be a valid adhearsion directory named "([^"]*)"$/ do |path|
   cd(dotsback)
 end
 
+
+Given /^that I start a ahn daemon under "([^"]*)"$/ do |path|
+  steps %Q{
+    Given that I create a valid app under "#{path}"
+    And I run `ahn daemon #{path} --pid-file=ahn.pid`
+  }
+end
+
 When /^I terminate the process using the pid file "([^"]*)"$/ do |pidfile|
   check_file_presence([pidfile], true)
   prep_for_fs_check do
@@ -71,7 +79,11 @@ When /^I terminate the process using the pid file "([^"]*)"$/ do |pidfile|
   end
 end
 
-# FIXME: force_stop does not stop process from starting...
-When /^I tell the console to stop$/ do
-  steps %Q{When I type "Adhearsion::Process.force_stop"}
+When /^I check for the process with the pid file "([^"]*)" it should be running$/ do |pidfile|
+  check_file_presence([pidfile], true)
+  pending # that pid looks awesome where is the process?
+end
+
+Then /^the process identified by the pid file "([^"]*)" should be stopped$/ do |pidfile|
+  steps %Q{When I terminate the process using the pid file "#{pidfile}"}
 end

@@ -44,6 +44,15 @@ Feature: Adhearsion Ahn CLI
     """
     And the exit status should be 1
 
+  Scenario: Command daemon with path works correctly
+    Given JRuby skip test
+    Given that I create a valid app under "path/somewhere"
+    When I run `ahn daemon path/somewhere`
+    And I cd to "path/somewhere"
+    And I terminate the process using the pid file "adhearsion.pid"
+    Then the output should contain "Daemonizing now"
+    And the exit status should be 0
+
   Scenario: Command start with only path works properly
     Given that I create a valid app under "path/somewhere"
     When I run `ahn start path/somewhere` interactively
@@ -55,15 +64,6 @@ Feature: Adhearsion Ahn CLI
     And the output should contain "Transitioning from booting to running"
     And the output should contain "AHN>"
 
-  Scenario: Command start with daemon option
-    Given JRuby skip test
-    Given that I create a valid app under "path/somewhere"
-    When I run `ahn daemon path/somewhere`
-    And I cd to "path/somewhere"
-    And I terminate the process using the pid file "adhearsion.pid"
-    Then the output should contain "Daemonizing now"
-    And the exit status should be 0
-
   Scenario: Command start with daemon and pid option
     Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
@@ -73,8 +73,7 @@ Feature: Adhearsion Ahn CLI
     Then the output should contain "Daemonizing now"
 
   Scenario: Command stop with valid path and pid option
-    Given that I create a valid app under "path/somewhere"
-    When I run `ahn daemon path/somewhere --pid-file=path/somewhere/ahn.pid`
+    Given that I start a ahn daemon under "path/somewhere"
     When I check for the process with the pid file "ahn.pid" it should be running
     When I run `ahn stop path/somewhere --pid-file=path/somewhere/ahn.pid`
     Then the process identified by the pid file "ahn.pid" should be stopped
@@ -95,10 +94,3 @@ Feature: Adhearsion Ahn CLI
     When I run `ahn help`
     Then I should see the usage message
     And the exit status should be 0
-
-  Scenario: Ahnctl with no arguments
-    When I run `ahnctl`
-    Then the output should contain:
-    """
-    Usage: ahnctl start|stop|restart /path/to/adhearsion/app [--pid-file=/path/to/pid_file.pid]
-    """
