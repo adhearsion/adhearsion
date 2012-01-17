@@ -11,6 +11,10 @@ module Adhearsion
 
       check_unknown_options!
 
+      def self.exit_on_failure?
+        true
+      end
+
       desc "create /path/to/directory", "Create a new Adhearsion application under the given path"
       def create(path)
         require 'adhearsion/generators'
@@ -46,15 +50,15 @@ module Adhearsion
         begin
           pid = File.read(pid_file).to_i
         rescue
-          logger.warn "Could not read pid file #{pid_file}" 
-          #raise CLIException, "Could not read pid file #{pid_file}" 
+          logger.warn "Could not read pid file #{pid_file}"
+          #raise CLIException, "Could not read pid file #{pid_file}"
         end
 
         unless pid.nil?
           say "Stopping Adhearsion server at #{path}"
           waiting_timeout = Time.now + 15
           Process.kill("TERM", pid)
-          sleep 0.25 until !process_exists?(pid) || Time.now > waiting_timeout 
+          sleep 0.25 until !process_exists?(pid) || Time.now > waiting_timeout
           Process.kill("KILL", pid)
         end
       end
@@ -84,10 +88,10 @@ module Adhearsion
       end
 
       def in_app?
-        (ScriptAhnLoader.in_ahn_application? or ScriptAhnLoader.in_ahn_application_subdirectory?)
+        ScriptAhnLoader.in_ahn_application? or ScriptAhnLoader.in_ahn_application_subdirectory?
       end
 
-      def process_exists?(pid=nil)
+      def process_exists?(pid = nil)
         # FIXME: Raise some error here
         return if pid.nil?
         `ps -p #{pid} | sed -e '1d'`.strip.empty?
@@ -99,14 +103,13 @@ module Adhearsion
       end
     end # AhnCommand
 
-    class CLIException < Thor::Error; end
-    class UnknownCommand < CLIException
+    class UnknownCommand < Thor::Error
       def initialize(cmd)
         super "Unknown command: #{cmd}"
       end
     end
 
-    class PathInvalid < CLIException
+    class PathInvalid < Thor::Error
       def initialize(path)
         super "Directory #{path} does not belong to an Adhearsion project!"
       end
