@@ -43,8 +43,7 @@ module Adhearsion
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def stop(*args)
         path = args.first
-        raise CLIException, "Directory is not an Adhearsion application!" unless
-          ScriptAhnLoader.in_ahn_application?(path)
+        execute_from_app_dir!(path, ARGV)
 
         if options[:pidfile]
           pid_file = File.expand_path File.exists?(File.expand_path(options[:pidfile])) ?
@@ -77,28 +76,35 @@ module Adhearsion
       desc "restart </path/to/directory>", "Restart the Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def restart(path)
-        execute_from_app_dir!(path, ARGV) unless in_app?
+        execute_from_app_dir!(path, ARGV)
         invoke :stop
-        ARGV[0] = 'daemon'
         invoke :daemon
       end
 
       protected
 
       def start_app(path, mode, pid_file = nil)
-        execute_from_app_dir!(path, ARGV) unless in_app?
+        execute_from_app_dir!(path, ARGV)
         say "Starting Adhearsion server at #{path}"
         Adhearsion::Initializer.start :mode => mode, :pid_file => pid_file
       end
 
-      def execute_from_app_dir!(app_path, *args)
-        Dir.chdir app_path do
+      def execute_from_app_dir!(path, *args)
+        return if in_app? and running_script_ahn?
+        raise CLIException, "Directory is not an Adhearsion application!" unless
+          ScriptAhnLoader.in_ahn_application?(path)
+
+        Dir.chdir path do
           ScriptAhnLoader.exec_script_ahn! *args
         end
       end
 
+      def running_script_ahn?
+        $0.to_s == "script/ahn"
+      end
+
       def in_app?
-        ScriptAhnLoader.in_ahn_application? or ScriptAhnLoader.in_ahn_application_subdirectory?
+          ScriptAhnLoader.in_ahn_application? or ScriptAhnLoader.in_ahn_application_subdirectory?
       end
 
       def process_exists?(pid = nil)
