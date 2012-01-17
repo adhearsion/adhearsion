@@ -67,16 +67,13 @@ module Adhearsion
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def restart(path)
         invoke :stop
-        invoke :start
+        invoke :daemon
       end
 
       protected
 
       def start_app(path, mode, pid_file = nil)
-        path ||= '.'
         execute_from_app_dir!(path, ARGV) unless in_app?
-
-        raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?
         say "Starting Adhearsion server at #{path}"
         Adhearsion::Initializer.start :mode => mode, :pid_file => pid_file
       end
@@ -93,7 +90,7 @@ module Adhearsion
 
       def process_exists?(pid = nil)
         # FIXME: Raise some error here
-        return if pid.nil?
+        return false if pid.nil?
         `ps -p #{pid} | sed -e '1d'`.strip.empty?
       end
 
