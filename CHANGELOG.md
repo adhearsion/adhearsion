@@ -1,5 +1,7 @@
 # develop (2.0.0.head)
 
+# 2.0.0.alpha1 - 2012-01-17
+
 ## Major architectural changes
   * Adhearsion is no longer a framework for creating Asterisk applications, and it does not know anything about the specifics of Asterisk. Adhearsion now makes use of the Punchblock library which abstracts features from common telephony engines. Supported engines are now:
     * Asterisk 1.8+
