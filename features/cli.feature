@@ -3,7 +3,6 @@ Feature: Adhearsion Ahn CLI
   I want a cli command (ahn)
   So that I can create and interact with adhearsion apps
 
-
   Scenario: No arguments given
     When I run `ahn`
     Then I should see the usage message
@@ -33,15 +32,15 @@ Feature: Adhearsion Ahn CLI
     When I run `ahn create`
     Then the output should contain:
     """
-    "create" was called incorrectly. Call as "ahn create PATH".
+    "create" was called incorrectly. Call as "ahn create /path/to/directory".
     """
-    And the exit status should be 0
+    And the exit status should be 1
 
   Scenario: Command start with no path
     When I run `ahn start`
     Then the output should contain:
     """
-    Invalid format for the start CLI command!
+    Directory . does not belong to an Adhearsion project!
     """
     And the exit status should be 1
 
@@ -72,7 +71,7 @@ Feature: Adhearsion Ahn CLI
   Scenario: Command start with daemon option
     Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
-    When I run `ahn start daemon path/somewhere`
+    When I run `ahn daemon path/somewhere`
     And I cd to "path/somewhere"
     And I terminate the process using the pid file "adhearsion.pid"
     Then the output should contain "Daemonizing now"
@@ -80,25 +79,16 @@ Feature: Adhearsion Ahn CLI
 
   Scenario: Command start with console option
     Given that I create a valid app under "path/somewhere"
-    When I run `ahn start console path/somewhere` interactively
+    When I run `ahn start path/somewhere` interactively
     And I wait for output to contain "AHN>"
     And I terminate the interactive process
     Then the output should contain "Starting console"
     And the output should contain "AHN>"
 
-  Scenario: Command start with both console and daemon options
-    Given I run `ahn create path/somewhere`
-    When I run `ahn start console daemon path/somewhere`
-    Then the output should contain:
-    """
-    Unrecognized final argument
-    """
-    Then the exit status should be 1
-
   Scenario: Command start with daemon and pid option
     Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
-    When I run `ahn start daemon path/somewhere --pid-file=ahn.pid`
+    When I run `ahn daemon path/somewhere --pid-file=ahn.pid`
     And I cd to "path/somewhere"
     And I terminate the process using the pid file "ahn.pid"
     Then the output should contain "Daemonizing now"
