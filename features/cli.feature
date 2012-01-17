@@ -52,15 +52,6 @@ Feature: Adhearsion Ahn CLI
     And I terminate the interactive process
     Then the output should contain "Transitioning from running to stopping"
 
-  Scenario: Command daemon with path works correctly
-    Given JRuby skip test
-    Given that I create a valid app under "path/somewhere"
-    When I run `ahn daemon path/somewhere`
-    And I cd to "path/somewhere"
-    And I terminate the process using the pid file "adhearsion.pid"
-    Then the output should contain "Daemonizing now"
-    And the exit status should be 0
-
   Scenario: Command start with only path works properly
     Given that I create a valid app under "path/somewhere"
     When I run `ahn start path/somewhere` interactively
@@ -71,6 +62,15 @@ Feature: Adhearsion Ahn CLI
     And the output should contain "AHN>"
     And the output should contain "Starting connection"
     And the output should contain "Transitioning from running to stopping"
+
+  Scenario: Command daemon with path works correctly
+    Given JRuby skip test
+    Given that I create a valid app under "path/somewhere"
+    When I run `ahn daemon path/somewhere`
+    And I cd to "path/somewhere"
+    And I terminate the process using the pid file "adhearsion.pid"
+    Then the output should contain "Daemonizing now"
+    And the exit status should be 0
 
   Scenario: Command start with daemon and pid option
     Given JRuby skip test
