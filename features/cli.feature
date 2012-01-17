@@ -48,9 +48,9 @@ Feature: Adhearsion Ahn CLI
     Given that I create a valid app under "path/somewhere"
     When I cd to "path/somewhere"
     And I run `ahn start` interactively
+    And I wait for output to contain "Transitioning from booting to running"
     And I terminate the interactive process
-    Then the output should contain "Transitioning from booting to running"
-    And the output should contain "Transitioning from running to stopping"
+    Then the output should contain "Transitioning from running to stopping"
 
   Scenario: Command daemon with path works correctly
     Given JRuby skip test
