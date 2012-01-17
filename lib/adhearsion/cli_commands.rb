@@ -35,21 +35,46 @@ module Adhearsion
         start_app args.first, :daemon, options[:pidfile]
       end
 
+      desc "stop </path/to/directory>", "Stop a running Adhearsion server"
+      method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
+      def stop(path)
+        raise CLIException, "Directory is not an Adhearsion application!" unless
+          ScriptAhnLoader.in_ahn_application?(path)
+
+        pid_file = File.expand_path options[:pid_file] || path + '/adhearsion.pid'
+
+        begin
+          pid = File.read(pid_file).to_i
+        rescue
+          logger.warn "Could not read pid file #{pid_file}" 
+          #raise CLIException, "Could not read pid file #{pid_file}" 
+        end
+
+        unless pid.nil?
+          say "Stopping Adhearsion server at #{path}"
+          waiting_timeout = Time.now + 15
+          Process.kill("TERM", pid)
+          sleep 0.25 until !process_exists?(pid) || Time.now > waiting_timeout 
+          Process.kill("KILL", pid)
+        end
+      end
+
+      desc "restart </path/to/directory>", "Restart the Adhearsion server"
+      method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
+      def restart(path)
+        invoke :stop
+        invoke :start
+      end
+
       protected
 
       def start_app(path, mode, pid_file = nil)
         path ||= '.'
-        execute_from_app_dir!(path, ARGV) unless
-          ScriptAhnLoader.in_ahn_application? or
-          ScriptAhnLoader.in_ahn_application_subdirectory?
+        execute_from_app_dir!(path, ARGV) unless in_app?
 
         raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?
+        say "Starting Adhearsion server at #{path}"
         Adhearsion::Initializer.start path, :mode => mode, :pid_file => pid_file
-      end
-
-      def method_missing(action, *args)
-        help
-        raise UnknownCommand, [action, *args] * " "
       end
 
       def execute_from_app_dir!(app_path, *args)
@@ -58,6 +83,20 @@ module Adhearsion
         end
       end
 
+      def in_app?
+        (ScriptAhnLoader.in_ahn_application? or ScriptAhnLoader.in_ahn_application_subdirectory?)
+      end
+
+      def process_exists?(pid=nil)
+        # FIXME: Raise some error here
+        return if pid.nil?
+        `ps -p #{pid} | sed -e '1d'`.strip.empty?
+      end
+
+      def method_missing(action, *args)
+        help
+        raise UnknownCommand, [action, *args] * " "
+      end
     end # AhnCommand
 
     class CLIException < Thor::Error; end
