@@ -101,6 +101,7 @@
     * Outbound call routing DSL
     * FreeSWITCH support. This will be added to Punchblock at a later date.
   * Replaced the rubigen generators with Thor
+  * New CLI command structure. Run `ahn` for details.
   * Advanced shutdown routine:
     * On first :shutdown, we flag the state internally. The intent is to shut down when the active calls count reaches 0, but otherwise operate normally.
 
@@ -109,9 +110,8 @@
     * On third :shutdown, send a Hangup to all active calls. Shut down when active call count reaches 0.
 
     * In addition, the process can be force-stopped, which simply closes the connection to the server (and any component connections as well).
-  * New CLI command structure. Run `ahn` for details.
+  * Defined some project management guidelines for Adhearsion core (see http://adhearsion.com/contribute).
   * TODO: Defined an Adhearsion code style guide and implemented it across the codebase (see http://adhearsion.com/style-guide).
-  * TODO: Defined some project management guidelines for Adhearsion core (see http://adhearsion.com/contribute).
   * TODO: Transferred copyright in the Adhearsion codebase from individual contributors to Adhearsion Foundation Inc, the non-profit organisation responsible for supporting the Adhearsion project.
   * TODO: Dual-licensed as LGPL and MIT.
 
