@@ -1,28 +1,23 @@
 module InitializerStubs
-  DEFAULT_AHNRC_DATA_STRUCTURE = YAML.load_file(
-    File.dirname(__FILE__) + "/../../app_generators/ahn/templates/.ahnrc"
-  ) unless defined? DEFAULT_AHNRC_DATA_STRUCTURE
-
   UNWANTED_BEHAVIOR = {
-    Adhearsion::Initializer => [:initialize_log_file, :switch_to_root_directory, :daemonize!, :load],
-    Adhearsion::Initializer.metaclass => { :get_rules_from => DEFAULT_AHNRC_DATA_STRUCTURE },
+    Adhearsion::Initializer => [:initialize_log_paths, :update_rails_env_var, :daemonize!, :require, :init_plugins, :load_lib_folder]
   } unless defined? UNWANTED_BEHAVIOR
 
   def stub_behavior_for_initializer_with_no_path_changing_behavior
-      stub_unwanted_behavior
-      yield if block_given?
-    ensure
-      unstub_directory_changing_behavior
+    stub_unwanted_behavior
+    yield if block_given?
+  ensure
+    unstub_directory_changing_behavior
   end
 
   def with_new_initializer_with_no_path_changing_behavior(&block)
     stub_behavior_for_initializer_with_no_path_changing_behavior do
-      block.call Adhearsion::Initializer.start('path does not matter')
+      block.call Adhearsion::Initializer.start
     end
   end
 
-  def stub_unwanted_behavior
-    UNWANTED_BEHAVIOR.each do |stub_victim_class, undesired_methods|
+  def stub_unwanted_behavior(unwanted_behavior = UNWANTED_BEHAVIOR)
+    unwanted_behavior.each do |stub_victim_class, undesired_methods|
       undesired_methods.each do |undesired_method_name_or_key_value_pair|
         undesired_method_name, method_implementation = case undesired_method_name_or_key_value_pair
           when Array

@@ -1,3 +1,0 @@
-adhearsion {
-  simon_game
-}

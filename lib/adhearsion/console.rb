@@ -9,14 +9,23 @@ module Adhearsion
       # Start the Adhearsion console
       #
       def run
-        Pry.prompt = [ proc {|obj, nest_level| "AHN#{'  ' * nest_level}> " },
-                       proc {|obj, nest_level| "AHN#{'  ' * nest_level}? " } ]
+        Pry.prompt = [
+                        proc do |*args|
+                          obj, nest_level, pry_instance = args
+                          "AHN#{'  ' * nest_level}> "
+                        end,
+                        proc do |*args|
+                          obj, nest_level, pry_instance = args
+                          "AHN#{'  ' * nest_level}? "
+                        end
+                      ]
         Pry.config.command_prefix = "%"
-        pry
-      end
-
-      def logger
-        Adhearsion::Logging
+        if libedit?
+          logger.error "Cannot start. You are running Adhearsion on Ruby with libedit. You must use readline for the console to work."
+        else
+          logger.info "Starting up..."
+          pry
+        end
       end
 
       def calls
@@ -28,12 +37,22 @@ module Adhearsion
           raise ArgumentError unless Adhearsion.active_calls[call]
           call = Adhearsion.active_calls[call]
         end
-        Pry.prompt = [ proc { "AHN<#{call.channel}> "},
-                       proc { "AHN<#{call.channel}? "}  ]
+        Pry.prompt = [ proc { "AHN<#{call.channel}> " },
+                       proc { "AHN<#{call.channel}? " }  ]
 
         # Pause execution of the thread currently controlling the call
         call.with_command_lock do
           CallWrapper.new(call).pry
+        end
+      end
+
+      def libedit?
+        begin
+          # If NotImplemented then this might be libedit
+          Readline.emacs_editing_mode
+          false
+        rescue NotImplementedError
+          true
         end
       end
     end
@@ -43,7 +62,7 @@ module Adhearsion
 
       def initialize(call)
         @call = call
-        extend Adhearsion::VoIP::Commands.for('asterisk')
+        extend Adhearsion::Commands.for('asterisk')
       end
     end
   end

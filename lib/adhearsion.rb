@@ -1,46 +1,90 @@
-# Check the Ruby version
-STDERR.puts "WARNING: You are running Adhearsion in an unsupported
-version of Ruby (Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE})!
-Please upgrade to at least Ruby v1.8.5." if RUBY_VERSION < "1.8.5"
+abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE})! Please upgrade to at least Ruby v1.9.2, JRuby 1.6.5 or Rubinius 2.0." if RUBY_VERSION < "1.9.2"
 
-$: << File.expand_path(File.dirname(__FILE__))
+%w{
+  bundler/setup
 
-require 'rubygems'
-require 'bundler/setup'
+  active_support/all
+  uuid
+  future-resource
+  punchblock
+  ostruct
+  ruby_speech
+  countdownlatch
+  has_guarded_handlers
+  girl_friday
+  loquacious
 
-require 'adhearsion/version'
-require 'adhearsion/voip/call'
-require 'adhearsion/voip/dial_plan'
-require 'adhearsion/voip/asterisk/special_dial_plan_managers'
-require 'adhearsion/foundation/all'
-require 'adhearsion/events_support'
-require 'adhearsion/logging'
-require 'adhearsion/component_manager'
-require 'adhearsion/initializer/configuration'
-require 'adhearsion/initializer'
-require 'adhearsion/voip/dsl/numerical_string'
-require 'adhearsion/voip/dsl/dialplan/parser'
-require 'adhearsion/voip/commands'
-require 'adhearsion/voip/asterisk/commands'
-require 'adhearsion/voip/dsl/dialing_dsl'
-require 'adhearsion/voip/call_routing'
-
-begin
-  # Try ActiveSupport >= 2.3.0
-  require 'active_support/all'
-rescue LoadError
-  # Assume ActiveSupport < 2.3.0
-  require 'active_support'
-end
+  adhearsion/foundation/all
+}.each { |f| require f }
 
 module Adhearsion
-  # Sets up the Gem require path.
-  AHN_INSTALL_DIR = File.expand_path(File.dirname(__FILE__) + "/..")
-  AHN_CONFIG = Configuration.new
+  extend ActiveSupport::Autoload
 
-  ##
-  # This Array holds all the Threads whose life matters. Adhearsion will not exit until all of these have died.
-  #
-  IMPORTANT_THREADS = []
+  autoload :Process
+  autoload :Call
+  autoload :CallController
+  autoload :Calls
+  autoload :Configuration
+  autoload :Console
+  autoload :Conveniences
+  autoload :DialplanController
+  autoload :Dispatcher
+  autoload :Events
+  autoload :MenuDSL
+  autoload :Initializer
+  autoload :Logging
+  autoload :OutboundCall
+  autoload :Plugin
+  autoload :Router
+  autoload :Version
 
+  class << self
+
+    def ahn_root=(path)
+      Adhearsion.config[:platform].root = path.nil? ? nil : File.expand_path(path)
+    end
+
+    def config(&block)
+      @config ||= initialize_config
+      block_given? and yield @config
+      @config
+    end
+
+    def initialize_config
+      _config = Configuration.new
+      env = ENV['AHN_ENV']
+      env = nil unless _config.valid_environment? env
+      _config.platform.environment = env if env
+      _config
+    end
+
+    def environments
+      config.valid_environments
+    end
+
+    def config=(config)
+      @config = config
+    end
+
+    def router(&block)
+      @router ||= Router.new(&block || Proc.new {})
+    end
+
+    def router=(other)
+      @router = other
+    end
+
+    def active_calls
+      @calls ||= Calls.new
+    end
+
+    def status
+      Adhearsion::Process.state_name
+    end
+  end
+
+  Hangup             = Class.new StandardError # At the moment, we'll just use this to end a call-handling Thread
+  PlaybackError      = Class.new StandardError # Represents failure to play audio, such as when the sound file cannot be found
+  RecordError        = Class.new StandardError # Represents failure to record such as when a file cannot be written.
+  ConfigurationError = Class.new StandardError # Error raised while trying to configure a non existent plugin
 end
