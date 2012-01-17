@@ -90,9 +90,9 @@ module Adhearsion
       end
 
       def execute_from_app_dir!(path, *args)
+        raise PathRequired, ARGV[0] if path.nil? or path.empty?
         return if in_app? and running_script_ahn?
-        raise CLIException, "Directory is not an Adhearsion application!" unless
-          ScriptAhnLoader.in_ahn_application?(path)
+        raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?(path)
 
         Dir.chdir path do
           ScriptAhnLoader.exec_script_ahn! *args
@@ -122,6 +122,12 @@ module Adhearsion
     class UnknownCommand < Thor::Error
       def initialize(cmd)
         super "Unknown command: #{cmd}"
+      end
+    end
+
+    class PathRequired < Thor::Error
+      def initialize(cmd)
+        super "Path required for #{cmd}"
       end
     end
 
