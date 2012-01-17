@@ -63,14 +63,6 @@ Then /^there should be a valid adhearsion directory named "([^"]*)"$/ do |path|
   cd(dotsback)
 end
 
-
-Given /^that I start a ahn daemon under "([^"]*)"$/ do |path|
-  steps %Q{
-    Given that I create a valid app under "#{path}"
-    And I run `ahn daemon #{path} --pid-file=ahn.pid`
-  }
-end
-
 When /^I terminate the process using the pid file "([^"]*)"$/ do |pidfile|
   check_file_presence([pidfile], true)
   prep_for_fs_check do
