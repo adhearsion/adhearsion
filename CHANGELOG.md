@@ -1,5 +1,6 @@
 # develop (2.0.0.head)
   * Added the ability to override configuration using environment variables. The correct names are given when running `rake adhearsion:config:show`, and are automatically added for all plugins. Plugins may define how the string environment variable is transformed to be useful.
+  * Rake task adhearsion:config:show improved to make the output copy and paste-able in a configuration file.
 
 # 2.0.0.alpha1 - 2012-01-17
 
@@ -34,7 +35,6 @@
   * Added rake tasks to check the config options (rake adhearsion:config:desc) and config values (rake adhearsion:config:values)
   * `automatically_answer_incoming_calls` has been replaced with `automatically_accept_incoming_calls`, which when set to `true` (as is the default), will automatically indicate call progress to the 3rd party, causing ringing. `answer` must now be used explicitly in the dialplan.
   * Adhearsion now has environments. By default these are development, production, staging, test, and the set can be extended. The environment in use is dictated by the value of the AHN_ENV environment variable. Config may be set per environment.
-  * Rake task adhearsion:config:show improved to make the output copy and paste-able in a configuration file.
 
 ## Dialplan changes
   * The dialplan no longer responds to methods for retrieval of call variables. This is because variables are aggregated from several sources, including SIP headers, which could result in collisions with methods that are required in the dialplan/controllers.
