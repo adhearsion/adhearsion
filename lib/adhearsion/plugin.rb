@@ -217,7 +217,7 @@ module Adhearsion
         @plugin_name = name
       end
 
-      def config name = nil
+      def config(name = nil, &block)
         if block_given?
           if name.nil?
             name = self.plugin_name
@@ -225,9 +225,10 @@ module Adhearsion
             self.plugin_name = name
           end
           ::Loquacious::Configuration.defaults_for name, &Proc.new
+          ::Loquacious.configuration_for plugin_name, &block
+        else
+          ::Loquacious.configuration_for plugin_name
         end
-
-        ::Loquacious.configuration_for plugin_name
       end
 
       def show_description
