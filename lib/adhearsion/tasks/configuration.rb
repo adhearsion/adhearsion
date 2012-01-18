@@ -14,7 +14,9 @@ namespace :adhearsion do
     desc "Show configuration values in STDOUT; it accepts a parameter: [nil|platform|<plugin-name>|all]"
     task :show, :name do |t, args|
       name = args.name.nil? ? :all : args.name.to_sym
+      puts "\nAdhearsion.config do |config|\n\n"
       puts Adhearsion.config.description name, :show_values => true
+      puts "end"
     end
 
     desc "Show configuration description in STDOUT; it accepts a parameter: [nil|platform|<plugin-name>|all]"
