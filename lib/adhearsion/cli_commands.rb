@@ -42,7 +42,7 @@ module Adhearsion
       desc "stop </path/to/directory>", "Stop a running Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def stop(path = nil)
-        execute_from_app_dir! path, ARGV
+        execute_from_app_dir! path
 
         pid_file = if options[:pidfile]
           File.expand_path File.exists?(File.expand_path(options[:pidfile])) ?
@@ -73,7 +73,7 @@ module Adhearsion
       desc "restart </path/to/directory>", "Restart the Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def restart(path = nil)
-        execute_from_app_dir! path, ARGV
+        execute_from_app_dir! path
         invoke :stop
         invoke :daemon
       end
@@ -81,12 +81,12 @@ module Adhearsion
       protected
 
       def start_app(path, mode, pid_file = nil)
-        execute_from_app_dir! path, ARGV
+        execute_from_app_dir! path
         say "Starting Adhearsion server at #{path}"
         Adhearsion::Initializer.start :mode => mode, :pid_file => pid_file
       end
 
-      def execute_from_app_dir!(path, *args)
+      def execute_from_app_dir!(path)
         return if in_app? and running_script_ahn?
 
         path ||= '.' if in_app?
@@ -95,8 +95,8 @@ module Adhearsion
         raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?(path)
 
         Dir.chdir path do
-          args.flatten!
-          args[1] = '.'
+          args = ARGV.dup
+          args[1] = File.expand_path path
           ScriptAhnLoader.exec_script_ahn! args
         end
       end
