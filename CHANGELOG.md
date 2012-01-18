@@ -1,6 +1,7 @@
 # develop (2.0.0.head)
   * Added the ability to override configuration using environment variables. The correct names are given when running `rake adhearsion:config:show`, and are automatically added for all plugins. Plugins may define how the string environment variable is transformed to be useful.
   * Rake task adhearsion:config:show improved to make the output copy and paste-able in a configuration file.
+  * Rake tasks cleaned up and some initialization bugs fixed
 
 # 2.0.0.alpha1 - 2012-01-17
 
