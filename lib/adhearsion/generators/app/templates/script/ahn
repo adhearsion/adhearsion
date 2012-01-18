@@ -5,4 +5,4 @@ require File.expand_path('../../config/environment',  __FILE__)
 require 'adhearsion'
 require 'adhearsion/cli_commands'
 
-Adhearsion::CLI::AhnCommand.execute!
+Adhearsion::CLI::AhnCommand.start

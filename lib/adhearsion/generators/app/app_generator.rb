@@ -31,7 +31,7 @@ module Adhearsion
         BASEDIRS.each { |dir| directory dir }
         copy_file "Gemfile"
         copy_file "Rakefile"
-        copy_file "README"
+        copy_file "README.md"
       end
     end
   end

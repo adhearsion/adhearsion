@@ -2,11 +2,12 @@ require 'timeout'
 
 Then /^I should see the usage message$/ do
   steps %Q{
-    Then the output should contain "Usage:"
-    Then the output should contain "ahn create /path/to/directory"
-    Then the output should contain "ahn start [console|daemon] [/path/to/directory]"
-    Then the output should contain "ahn version|-v|--v|-version|--version"
-    Then the output should contain "ahn help|-h|--h|--help|-help"
+    Then the output should contain "Tasks:"
+    Then the output should contain "ahn create"
+    Then the output should contain "ahn start"
+    Then the output should contain "ahn daemon"
+    Then the output should contain "ahn version"
+    Then the output should contain "ahn help"
   }
 end
 
@@ -48,7 +49,7 @@ Then /^there should be a valid adhearsion directory named "([^"]*)"$/ do |path|
       | config |
     Then the following files should exist:
       | Gemfile |
-      | README |
+      | README.md |
       | Rakefile |
       | config/adhearsion.rb |
       | config/environment.rb |
@@ -67,10 +68,7 @@ When /^I terminate the process using the pid file "([^"]*)"$/ do |pidfile|
   prep_for_fs_check do
     pid = File.read(pidfile).to_i
     Process.kill("TERM", pid)
+    sleep 1
+    Process.kill("KILL", pid)
   end
-end
-
-# FIXME: force_stop does not stop process from starting...
-When /^I tell the console to stop$/ do
-  steps %Q{When I type "Adhearsion::Process.force_stop"}
 end

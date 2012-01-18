@@ -1,5 +1,7 @@
 # develop (2.0.0.head)
 
+# 2.0.0.alpha1 - 2012-01-17
+
 ## Major architectural changes
   * Adhearsion is no longer a framework for creating Asterisk applications, and it does not know anything about the specifics of Asterisk. Adhearsion now makes use of the Punchblock library which abstracts features from common telephony engines. Supported engines are now:
     * Asterisk 1.8+
@@ -26,6 +28,12 @@
   * Translate STOMP gateway component to a plugin and remove the component generators entirely
   * Translate simon_game component to plugin
 
+## Configuration
+  * New configuration mechanism based on Loquacious that allows to configure both Adhearsion platform and plugins
+  * Added rake tasks to check the config options (rake adhearsion:config:desc) and config values (rake adhearsion:config:values)
+  * `automatically_answer_incoming_calls` has been replaced with `automatically_accept_incoming_calls`, which when set to `true` (as is the default), will automatically indicate call progress to the 3rd party, causing ringing. `answer` must now be used explicitly in the dialplan.
+  * Adhearsion now has environments. By default these are development, production, staging, test, and the set can be extended. The environment in use is dictated by the value of the AHN_ENV environment variable. Config may be set per environment.
+
 ## Dialplan changes
   * The dialplan no longer responds to methods for retrieval of call variables. This is because variables are aggregated from several sources, including SIP headers, which could result in collisions with methods that are required in the dialplan/controllers.
 
@@ -44,13 +52,13 @@
   * #menu now resumes execution inside the current controller after completion
 
 ### Recording
-
+  * TODO
 
 ### Conferencing
-
+  * TODO
 
 ### Bridging
-
+  * TODO
 
 ### Call routing & controllers
   * To be platform agnostic, inbound calls are no longer routed by Asterisk context. There is now an inbound call routing DSL defined in config/adhearsion.rb which routes calls based on their parameters to either a controller class or specifies a dialplan in a block.
@@ -78,6 +86,7 @@
   * 6 logging levels are supported by default: TRACE < DEBUG < INFO < WARN < ERROR < FATAL
   * The default logging pattern outputs the class name in any log message, using a colorized pattern in STDOUT to improve readability
   * Any log message from an Adhearsion::Call object outputs the call unique id to distinguish messages from any call
+  * Log file location is configurable
 
 ## Removal of non-core-critical functionality
   * Removed all asterisk specific functionality
@@ -90,12 +99,11 @@
     * future-resource
 
 ## Miscellaneous
-  * New configuration mechanism based on Loquacious that allows to configure both Adhearsion platform and plugins
-  * Added rake tasks to check the config options (rake adhearsion:config:desc) and config values (rake adhearsion:config:values)
-  * `automatically_answer_incoming_calls` has been replaced with `automatically_accept_incoming_calls`, which when set to `true` (as is the default), will automatically indicate call progress to the 3rd party, causing ringing. `answer` must now be used explicitly in the dialplan.
   * Removed a lot of unused or unecessary code, including:
-    * Call routing DSL
+    * Outbound call routing DSL
     * FreeSWITCH support. This will be added to Punchblock at a later date.
+  * Replaced the rubigen generators with Thor
+  * New CLI command structure. Run `ahn` for details.
   * Advanced shutdown routine:
     * On first :shutdown, we flag the state internally. The intent is to shut down when the active calls count reaches 0, but otherwise operate normally.
 
@@ -104,8 +112,8 @@
     * On third :shutdown, send a Hangup to all active calls. Shut down when active call count reaches 0.
 
     * In addition, the process can be force-stopped, which simply closes the connection to the server (and any component connections as well).
+  * Defined some project management guidelines for Adhearsion core (see http://adhearsion.com/contribute).
   * TODO: Defined an Adhearsion code style guide and implemented it across the codebase (see http://adhearsion.com/style-guide).
-  * TODO: Defined some project management guidelines for Adhearsion core (see http://adhearsion.com/contribute).
   * TODO: Transferred copyright in the Adhearsion codebase from individual contributors to Adhearsion Foundation Inc, the non-profit organisation responsible for supporting the Adhearsion project.
   * TODO: Dual-licensed as LGPL and MIT.
 

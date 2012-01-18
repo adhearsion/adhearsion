@@ -17,17 +17,17 @@ Feature: Adhearsion App Generator
       | Gemfile               |
       | lib/simon_game.rb     |
       | script/ahn            |
-      | README                |
+      | README.md             |
       | Rakefile              |
 
     And the file "config/adhearsion.rb" should contain each of these content parts:
     """
     Adhearsion.router
     Adhearsion.config
-    config.platform.logging.level
+    logging.level
     config.punchblock
     """
-    And the file "README" should contain each of these content parts:
+    And the file "README.md" should contain each of these content parts:
     """
     Start your new app with
     AGI(agi
