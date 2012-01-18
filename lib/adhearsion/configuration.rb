@@ -139,13 +139,26 @@ module Adhearsion
       else
         return "" if Loquacious::Configuration.for(name).nil?
 
+        if args[:show_values]
+          name_leader = "  config.#{name}."
+          desc_leader = "  # "
+          name_value_sep = " = "
+          title_leader = "  "
+        else
+          name_leader = ""
+          desc_leader = "#"
+          name_value_sep = " => "
+          title_leader = ""
+        end
+
         config = Loquacious::Configuration.help_for name,
-                                :name_leader => "",
-                                :desc_leader => "# ",
+                                :name_leader => name_leader,
+                                :desc_leader => desc_leader,
                                 :colorize    => true,
-                                :io          => desc
+                                :io          => desc,
+                                :name_value_sep => name_value_sep
         config.show :values => args[:show_values]
-        "\n# ******* Configuration for #{name} **************\n\n#{desc.string}"
+        "#{title_leader}# ******* Configuration for #{name} **************\n\n#{desc.string}"
       end
     end
   end
