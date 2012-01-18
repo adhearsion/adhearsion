@@ -227,7 +227,6 @@ module Adhearsion
           ::Loquacious::Configuration.defaults_for name, &Proc.new
           ::Loquacious.configuration_for plugin_name, &block
         else
-
           ::Loquacious.configuration_for plugin_name
         end
       end
