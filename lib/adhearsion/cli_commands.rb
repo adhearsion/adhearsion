@@ -2,6 +2,17 @@ require 'fileutils'
 require 'adhearsion/script_ahn_loader'
 require 'thor'
 
+class Thor
+  class Task
+    protected
+
+    def sans_backtrace(backtrace, caller) #:nodoc:
+      saned  = backtrace.reject { |frame| frame =~ FILE_REGEXP || (frame =~ /\.java:/ && RUBY_PLATFORM =~ /java/) }
+      saned -= caller
+    end
+  end
+end
+
 module Adhearsion
   module CLI
     class AhnCommand < Thor
