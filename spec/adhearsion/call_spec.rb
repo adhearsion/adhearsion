@@ -2,9 +2,17 @@ require 'spec_helper'
 
 module Adhearsion
   describe Call do
+    let(:mock_client) { flexmock('Client').tap &:should_ignore_missing }
+
+    let(:call_id) { rand }
     let(:headers) { nil }
-    let(:offer)   { mock_offer nil, headers }
+    let(:offer)   { Punchblock::Event::Offer.new :call_id => call_id, :headers => headers }
+
     subject { Adhearsion::Call.new offer }
+
+    before do
+      flexmock(offer).should_receive(:client).and_return(mock_client)
+    end
 
     after do
       Adhearsion.active_calls.clear!
@@ -18,10 +26,32 @@ module Adhearsion
     its(:commands) { should be_a Call::CommandRegistry }
     its(:commands) { should be_empty }
 
+    its(:id)      { should == call_id }
+    its(:offer)   { should be offer }
+    its(:client)  { should be mock_client }
+
     describe "its variables" do
       context "with an offer with headers" do
         let(:headers)   { {:x_foo => 'bar'} }
         its(:variables) { should == headers }
+
+        context "when receiving an event with headers" do
+          let(:event) { Punchblock::Event::End.new :headers => {:x_bar => 'foo'} }
+
+          it "should merge later headers" do
+            subject << event
+            subject.variables.should == {:x_foo => 'bar', :x_bar => 'foo'}
+          end
+        end
+
+        context "when sending a command with headers" do
+          let(:command) { Punchblock::Command::Accept.new :headers => {:x_bar => 'foo'} }
+
+          it "should merge later headers" do
+            subject.write_command command
+            subject.variables.should == {:x_foo => 'bar', :x_bar => 'foo'}
+          end
+        end
       end
 
       context "with an offer without headers" do
@@ -35,33 +65,16 @@ module Adhearsion
       end
     end
 
-    it '#id should return the ID from the Offer' do
-      offer = mock_offer
-      Adhearsion::Call.new(offer).id.should == offer.call_id
-    end
-
-    it 'should store the original offer' do
-      offer = mock_offer
-      Adhearsion::Call.new(offer).offer.should == offer
-    end
-
     describe 'without an offer' do
       it 'should not raise an exception' do
         lambda { Adhearsion::Call.new }.should_not raise_error
       end
     end
 
-    it "should store the Punchblock client from the Offer" do
-      offer = mock_offer
-      client = flexmock('Client')
-      offer.should_receive(:client).once.and_return(client)
-      Adhearsion::Call.new(offer).client.should == client
-    end
-
     it 'a hungup call removes itself from the active calls' do
       size_before = Adhearsion.active_calls.size
 
-      call = Adhearsion.active_calls.from_offer mock_offer
+      call = Adhearsion.active_calls.from_offer offer
       Adhearsion.active_calls.size.should > size_before
       call.hangup
       Adhearsion.active_calls.size.should == size_before

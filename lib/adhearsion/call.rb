@@ -8,25 +8,22 @@ module Adhearsion
 
     include HasGuardedHandlers
 
-    attr_accessor :offer, :client, :end_reason, :commands
+    attr_accessor :offer, :client, :end_reason, :commands, :variables
 
     def initialize(offer = nil)
-      if offer
-        @offer  = offer
-        @client = offer.client
-      end
+      register_initial_handlers
 
       @tag_mutex        = Mutex.new
       @tags             = []
       @end_reason_mutex = Mutex.new
-      end_reason        = nil
       @commands         = CommandRegistry.new
+      @variables        = SynchronizedHash.new
 
-      register_initial_handlers
+      self << offer if offer
     end
 
     def id
-      @offer.call_id
+      offer.call_id
     end
 
     def tags
@@ -61,6 +58,17 @@ module Adhearsion
     alias << deliver_message
 
     def register_initial_handlers
+      register_event_handler Punchblock::Event::Offer do |offer|
+        @offer  = offer
+        @client = offer.client
+        throw :pass
+      end
+
+      register_event_handler Punchblock::HasHeaders do |event|
+        variables.merge! event.headers_hash
+        throw :pass
+      end
+
       on_end do |event|
         hangup
         @end_reason_mutex.synchronize { @end_reason = event.reason }
@@ -69,7 +77,7 @@ module Adhearsion
     end
 
     def on_end(&block)
-      register_event_handler :class => Punchblock::Event::End do |event|
+      register_event_handler Punchblock::Event::End do |event|
         block.call event
         throw :pass
       end
@@ -123,16 +131,13 @@ module Adhearsion
 
     def write_command(command)
       raise Hangup unless active? || command.is_a?(Punchblock::Command::Hangup)
+      variables.merge! command.headers_hash if command.respond_to? :headers_hash
       client.execute_command command, :call_id => id
     end
 
     # Sanitize the offer id
     def logger_id
       "#{self.class}: #{id}"
-    end
-
-    def variables
-      offer ? offer.headers_hash : nil or {}
     end
 
     def execute_controller(controller, latch = nil)

@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
 
   # Runtime dependencies
   s.add_runtime_dependency "bundler", [">= 1.0.10"]
-  s.add_runtime_dependency 'punchblock', [">= 0.8.3"]
+  s.add_runtime_dependency 'punchblock', [">= 0.8.4"]
   s.add_runtime_dependency "logging", [">= 1.6.1"]
   s.add_runtime_dependency "adhearsion-loquacious", [">= 1.9.0"]
   s.add_runtime_dependency "activesupport", [">= 3.0.10"]
@@ -36,7 +36,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "future-resource", [">= 0.0.2"]
   s.add_runtime_dependency "ruby_speech", [">= 0.4.0"]
   s.add_runtime_dependency 'countdownlatch'
-  s.add_runtime_dependency 'has-guarded-handlers', [">= 0.1.1"]
+  s.add_runtime_dependency 'has-guarded-handlers', [">= 1.0.0"]
   s.add_runtime_dependency 'girl_friday'
   s.add_runtime_dependency 'jruby-openssl' if RUBY_PLATFORM == 'java'
 

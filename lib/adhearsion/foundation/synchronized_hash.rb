@@ -90,4 +90,22 @@ class SynchronizedHash
   def with_lock(&block)
     @lock.synchronize { yield @delegate }
   end
+
+  def eql?(other)
+    case other
+    when Hash
+      with_lock do |hash|
+        hash == other
+      end
+    when self.class
+      with_lock do |hash|
+        other.with_lock do |other_hash|
+          hash == other_hash
+        end
+      end
+    else
+      super
+    end
+  end
+  alias :== :eql?
 end
