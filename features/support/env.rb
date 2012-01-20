@@ -36,6 +36,7 @@ module ChildProcess
         raise Error, "unsupported OS #{os.inspect}"
       end
     end
+    alias_method :build, :new
 
     def os
       @os ||= (
