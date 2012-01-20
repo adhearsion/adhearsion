@@ -183,8 +183,14 @@ describe "Updating RAILS_ENV variable" do
     Adhearsion.config = nil
   end
 
-  after do
+  before do
     ENV['RAILS_ENV'] = nil
+    ENV['AHN_ENV'] = nil
+  end
+
+  after :all do
+    ENV['RAILS_ENV'] = nil
+    ENV['AHN_ENV'] = nil
   end
 
   describe "when neither RAILS_ENV nor AHN_ENV are set" do
@@ -199,51 +205,45 @@ describe "Updating RAILS_ENV variable" do
         ENV['RAILS_ENV'].should == env.to_s
       end
     end
+  end
 
-    context "when RAILS_ENV is set" do
-
-      after do
-        ENV['RAILS_ENV'] = nil
-        ENV['AHN_ENV'] = nil
-      end
-
-      it "should preserve the RAILS_ENV value if AHN_ENV is unset" do
-        ENV['RAILS_ENV'] = "test"
-        ahn = nil
-        stub_behavior_for_initializer_with_no_path_changing_behavior do
-          ahn = Adhearsion::Initializer.start
-        end
-        ahn.update_rails_env_var
-        ENV['RAILS_ENV'].should == "test"
-      end
-
-      it "should update the RAILS_ENV value with the AHN_ENV value" do
-        ENV['RAILS_ENV'] = "test"
-        ENV['AHN_ENV'] = "production"
-        ahn = nil
-        stub_behavior_for_initializer_with_no_path_changing_behavior do
-          ahn = Adhearsion::Initializer.start
-        end
-        ahn.update_rails_env_var
-        ENV['RAILS_ENV'].should == "production"
-      end
+  context "when RAILS_ENV is set" do
+    before do
+      ENV['RAILS_ENV'] = "test"
     end
 
-    context "when RAILS_ENV is unset and AHN_ENV is set" do
-      after do
-        ENV['RAILS_ENV'] = nil
-        ENV['AHN_ENV'] = nil
+    it "should preserve the RAILS_ENV value if AHN_ENV is unset" do
+      ahn = nil
+      stub_behavior_for_initializer_with_no_path_changing_behavior do
+        ahn = Adhearsion::Initializer.start
       end
+      ahn.update_rails_env_var
+      ENV['RAILS_ENV'].should == "test"
+    end
 
-      it "should define the RAILS_ENV value with the AHN_ENV value" do
-        ENV['AHN_ENV'] = "production"
-        ahn = nil
-        stub_behavior_for_initializer_with_no_path_changing_behavior do
-          ahn = Adhearsion::Initializer.start
-        end
-        ahn.update_rails_env_var
-        ENV['RAILS_ENV'].should == "production"
+    it "should update the RAILS_ENV value with the AHN_ENV value" do
+      ENV['AHN_ENV'] = "production"
+      ahn = nil
+      stub_behavior_for_initializer_with_no_path_changing_behavior do
+        ahn = Adhearsion::Initializer.start
       end
+      ahn.update_rails_env_var
+      ENV['RAILS_ENV'].should == "production"
+    end
+  end
+
+  context "when RAILS_ENV is unset and AHN_ENV is set" do
+    before do
+      ENV['AHN_ENV'] = "production"
+    end
+
+    it "should define the RAILS_ENV value with the AHN_ENV value" do
+      ahn = nil
+      stub_behavior_for_initializer_with_no_path_changing_behavior do
+        ahn = Adhearsion::Initializer.start
+      end
+      ahn.update_rails_env_var
+      ENV['RAILS_ENV'].should == "production"
     end
   end
 
