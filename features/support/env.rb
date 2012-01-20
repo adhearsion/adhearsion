@@ -20,6 +20,23 @@ require 'adhearsion'
 
 module ChildProcess
   class << self
+    def new(*args)
+      case os
+      when :macosx, :linux, :solaris, :bsd, :cygwin
+        if posix_spawn?
+          Unix::PosixSpawnProcess.new(args)
+        elsif jruby?
+          JRuby::Process.new(args)
+        else
+          Unix::ForkExecProcess.new(args)
+        end
+      when :windows
+        Windows::Process.new(args)
+      else
+        raise Error, "unsupported OS #{os.inspect}"
+      end
+    end
+
     def os
       @os ||= (
         require "rbconfig"
