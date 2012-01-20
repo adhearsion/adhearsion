@@ -45,6 +45,7 @@ Feature: Adhearsion Ahn CLI
     And the exit status should be 1
 
   Scenario: Command start with no path inside of the app directory
+    Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
     When I cd to "path/somewhere"
     And I run `ahn start` interactively
@@ -56,6 +57,7 @@ Feature: Adhearsion Ahn CLI
     And the output should contain "Transitioning from booting to force_stop"
 
   Scenario: Command start with only path works properly
+    Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
     When I run `ahn start path/somewhere` interactively
     And I wait for output to contain "Starting connection to server"
