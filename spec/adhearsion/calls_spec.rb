@@ -4,11 +4,15 @@ module Adhearsion
   describe Calls do
     before { Adhearsion.active_calls.clear! }
 
-    let(:call) { Adhearsion::Call.new mock_offer }
+    let(:call) { Adhearsion::Call.new new_offer }
+
+    def new_offer(call_id = nil, headers = {})
+      Punchblock::Event::Offer.new :call_id => call_id || rand, :headers => headers
+    end
 
     it 'can create a call and add it to the active calls' do
       Adhearsion.active_calls.any?.should == false
-      call = Adhearsion.active_calls.from_offer mock_offer
+      call = Adhearsion.active_calls.from_offer new_offer
       call.should be_a Adhearsion::Call
       Adhearsion.active_calls.size.should == 1
     end
@@ -21,7 +25,7 @@ module Adhearsion
 
     it '#remove_inactive_call should delete the call in the Hash' do
       number_of_calls = 10
-      calls = Array.new(number_of_calls) { Adhearsion::Call.new mock_offer }
+      calls = Array.new(number_of_calls) { Adhearsion::Call.new new_offer }
       calls.each { |call| subject << call }
 
       deleted_call = calls[number_of_calls / 2]
@@ -35,7 +39,7 @@ module Adhearsion
     end
 
     it "finding calls by a tag" do
-      calls = Array.new(3) { Adhearsion::Call.new mock_offer }
+      calls = Array.new(3) { Adhearsion::Call.new new_offer }
       calls.each { |call| subject << call }
 
       tagged_call = calls.last
