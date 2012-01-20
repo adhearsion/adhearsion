@@ -22,7 +22,7 @@ module ChildProcess
   class << self
     def new(*args)
       case os
-      when :macosx, :linux, :solaris, :bsd, :cygwin
+      when :unix, :macosx, :linux, :solaris, :bsd, :cygwin
         if posix_spawn?
           Unix::PosixSpawnProcess.new(args)
         elsif jruby?
