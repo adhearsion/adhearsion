@@ -10,6 +10,8 @@ module Adhearsion
 
     attr_accessor :offer, :client, :end_reason, :commands, :variables
 
+    delegate :[], :[]=, :to => :variables
+
     def initialize(offer = nil)
       register_initial_handlers
 

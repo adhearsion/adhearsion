@@ -35,6 +35,15 @@ module Adhearsion
         let(:headers)   { {:x_foo => 'bar'} }
         its(:variables) { should == headers }
 
+        it "should be made available via []" do
+          subject[:x_foo].should == 'bar'
+        end
+
+        it "should be alterable using []=" do
+          subject[:x_foo] = 'baz'
+          subject[:x_foo].should == 'baz'
+        end
+
         context "when receiving an event with headers" do
           let(:event) { Punchblock::Event::End.new :headers => {:x_bar => 'foo'} }
 
