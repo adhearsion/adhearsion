@@ -5,6 +5,6 @@ rvm:
   - jruby-19mode # JRuby in 1.9 mode
   - rbx-19mode # currently in active development, may or may not work for your project
   - ruby-head
-env: ARUBA_TIMEOUT=120
+env: ARUBA_TIMEOUT=120 AHN_PUNCHBLOCK_RECONNECT_ATTEMPTS=0
 notifications:
   irc: "irc.freenode.org#adhearsion"
