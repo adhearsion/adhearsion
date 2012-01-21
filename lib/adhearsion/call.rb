@@ -11,6 +11,7 @@ module Adhearsion
     attr_accessor :offer, :client, :end_reason, :commands, :variables
 
     delegate :[], :[]=, :to => :variables
+    delegate :to, :from, :to => :offer, :allow_nil => true
 
     def initialize(offer = nil)
       register_initial_handlers

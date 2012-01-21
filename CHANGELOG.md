@@ -4,6 +4,7 @@
   * Rake tasks cleaned up and some initialization bugs fixed
   * Call variables are aggregated from the headers sent and received during its existence
   * Call variables are accessible using #[] and #[]= on the call
+  * Bugfix: `Call` and `OutboundCall` now respond to `#to` and `#from` with the correct values from the offer/dial
 
 # 2.0.0.alpha1 - 2012-01-17
 

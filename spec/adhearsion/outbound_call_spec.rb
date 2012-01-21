@@ -18,7 +18,7 @@ module Adhearsion
     describe ".originate" do
       let(:to) { 'sip:foo@bar.com' }
 
-      let(:mock_call)     { OutboundCall.new }
+      let(:mock_call) { OutboundCall.new }
 
       def mock_dial
         flexmock(OutboundCall).new_instances.should_receive(:dial).and_return true
@@ -94,6 +94,16 @@ module Adhearsion
       it "should set the call ID from the dial command" do
         subject.dial to, :from => from
         subject.id.should == call_id
+      end
+
+      it "should set the to from the dial command" do
+        subject.dial to, :from => from
+        subject.to.should == to
+      end
+
+      it "should set the 'from' from the dial command" do
+        subject.dial to, :from => from
+        subject.from.should == from
       end
 
       it "should add the call to the active calls registry" do

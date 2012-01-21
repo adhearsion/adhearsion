@@ -2,6 +2,8 @@ module Adhearsion
   class OutboundCall < Call
     attr_reader :dial_command
 
+    delegate :to, :from, :to => :dial_command, :allow_nil => true
+
     class << self
       def originate(to, opts = {})
         new.tap do |call|

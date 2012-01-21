@@ -6,7 +6,14 @@ module Adhearsion
 
     let(:call_id) { rand }
     let(:headers) { nil }
-    let(:offer)   { Punchblock::Event::Offer.new :call_id => call_id, :headers => headers }
+    let(:to)      { 'sip:you@there.com' }
+    let(:from)    { 'sip:me@here.com' }
+    let :offer do
+      Punchblock::Event::Offer.new :call_id => call_id,
+                                   :to      => to,
+                                   :from    => from,
+                                   :headers => headers
+    end
 
     subject { Adhearsion::Call.new offer }
 
@@ -27,6 +34,8 @@ module Adhearsion
     its(:commands) { should be_empty }
 
     its(:id)      { should == call_id }
+    its(:to)      { should == to }
+    its(:from)    { should == from }
     its(:offer)   { should be offer }
     its(:client)  { should be mock_client }
 
