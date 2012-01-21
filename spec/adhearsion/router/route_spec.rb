@@ -53,7 +53,7 @@ module Adhearsion
             Punchblock::Event::Offer.new :to => to, :from => from
           end
 
-          let(:call)  { Adhearsion::Call.new offer }
+          let(:call) { Adhearsion::Call.new offer }
 
           context "with a call from fred to paul" do
             let(:from)  { 'fred' }
@@ -70,6 +70,28 @@ module Adhearsion
           context "with a call from frank to paul" do
             let(:from)  { 'frank' }
             let(:to)    { 'paul' }
+            it { should_not_match_the_call }
+          end
+        end
+
+        describe "matching calls with the variable :foo=:bar" do
+          let :guards do
+            [[:[], :foo] => :bar]
+          end
+
+          let(:call) { Adhearsion::Call.new }
+
+          context "with :foo=:bar" do
+            before { call[:foo] = :bar }
+            it { should_match_the_call }
+          end
+
+          context "with :foo=:baz" do
+            before { call[:foo] = :baz }
+            it { should_not_match_the_call }
+          end
+
+          context "with :foo unset" do
             it { should_not_match_the_call }
           end
         end
