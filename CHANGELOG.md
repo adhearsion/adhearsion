@@ -1,9 +1,9 @@
 # develop (2.0.0.head)
-  * Added the ability to override configuration using environment variables. The correct names are given when running `rake adhearsion:config:show`, and are automatically added for all plugins. Plugins may define how the string environment variable is transformed to be useful.
-  * Rake task adhearsion:config:show improved to make the output copy and paste-able in a configuration file.
+  * Feature: Added the ability to override configuration using environment variables. The correct names are given when running `rake adhearsion:config:show`, and are automatically added for all plugins. Plugins may define how the string environment variable is transformed to be useful.
+  * Feature: Rake task adhearsion:config:show improved to make the output copy and paste-able in a configuration file.
   * Rake tasks cleaned up and some initialization bugs fixed
-  * Call variables are aggregated from the headers sent and received during its existence
-  * Call variables are accessible using #[] and #[]= on the call
+  * Feature: Call variables are aggregated from the headers sent and received during its existence
+  * Feature: Call variables are accessible using `#[]` and `#[]=` on the call
   * Bugfix: `Call` and `OutboundCall` now respond to `#to` and `#from` with the correct values from the offer/dial
   * Bugfix: An `OutboundCall` allows storing call variables just like a `Call`
   * Feature: Router can match against variables on a call using `#[]`
