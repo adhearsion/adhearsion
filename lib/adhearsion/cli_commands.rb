@@ -66,10 +66,10 @@ module Adhearsion
         begin
           pid = File.read(pid_file).to_i
         rescue
-          raise CLIException, "Could not read pid file #{pid_file}"
+          raise PIDReadError, pid_file
         end
 
-        raise CLIException, "Could not read pid" if pid.nil?
+        raise PIDReadError, pid_file if pid.nil?
 
         say "Stopping Adhearsion server at #{path} with pid #{pid}"
         waiting_timeout = Time.now + 15
@@ -147,6 +147,12 @@ module Adhearsion
     class PathInvalid < Thor::Error
       def initialize(path)
         super "Directory #{path} does not belong to an Adhearsion project!"
+      end
+    end
+
+    class PIDReadError < Thor::Error
+      def initialize(path)
+        super "Could not read pid from the file #{path}"
       end
     end
   end
