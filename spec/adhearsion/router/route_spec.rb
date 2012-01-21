@@ -49,18 +49,27 @@ module Adhearsion
             ]
           end
 
+          let :offer do
+            Punchblock::Event::Offer.new :to => to, :from => from
+          end
+
+          let(:call)  { Adhearsion::Call.new offer }
+
           context "with a call from fred to paul" do
-            let(:call) { flexmock 'Adhearsion::Call', :from => 'fred', :to => 'paul' }
+            let(:from)  { 'fred' }
+            let(:to)    { 'paul' }
             it { should_match_the_call }
           end
 
           context "with a call from fred to frank" do
-            let(:call) { flexmock 'Adhearsion::Call', :from => 'fred', :to => 'frank' }
+            let(:from)  { 'fred' }
+            let(:to)    { 'frank' }
             it { should_not_match_the_call }
           end
 
           context "with a call from frank to paul" do
-            let(:call) { flexmock 'Adhearsion::Call', :from => 'frank', :to => 'paul' }
+            let(:from)  { 'frank' }
+            let(:to)    { 'paul' }
             it { should_not_match_the_call }
           end
         end
