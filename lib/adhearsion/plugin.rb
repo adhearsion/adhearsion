@@ -49,7 +49,7 @@ module Adhearsion
   #   end
   #
   # As Rails::Railtie does, you can define the exact point when you want to load your plugin
-  # during the initilization process
+  # during the initialization process.
   #
   #   module MyPlugin
   #     class Plugin < Adhearsion::Plugin
@@ -83,7 +83,7 @@ module Adhearsion
         # call ExecutionEnvironment context.
         #
         # class AhnPluginDemo < Adhearsion::Plugin
-        #   dialplan :adh_plugin_demo do
+        #   dialplan :ahn_plugin_demo do
         #     speak "hello world"
         #   end
         # end
@@ -93,9 +93,9 @@ module Adhearsion
         # when defining methods (the above lambda version should fit any requirement)
         #
         # class AhnPluginDemo < Adhearsion::Plugin
-        #   dialplan :adh_plugin_demo
+        #   dialplan :ahn_plugin_demo
         #
-        #   def self.adh_plugin_demo
+        #   def self.ahn_plugin_demo
         #     logger.debug "I can do fun stuff here, but I cannot access methods as speak"
         #     logger.debug "I can make an HTTP request"
         #     logger.debug "I can log to a specific logging system"
