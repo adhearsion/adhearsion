@@ -17,10 +17,6 @@ module Adhearsion
       dial_command.call_id if dial_command
     end
 
-    def variables
-      {}
-    end
-
     def client
       PunchblockPlugin::Initializer.client
     end
