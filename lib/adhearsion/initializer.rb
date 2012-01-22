@@ -54,7 +54,11 @@ module Adhearsion
       logger.info "Adhearsion v#{Adhearsion::VERSION} initialized!"
       Adhearsion::Process.booted
 
+      run_plugins
       trigger_after_initialized_hooks
+
+      # This method will block until all important threads have finished.
+      # When it does, the process will exit.
       join_important_threads
       self
     end
@@ -183,6 +187,10 @@ module Adhearsion
 
     def init_plugins
       Plugin.init_plugins
+    end
+
+    def run_plugins
+      Plugin.run_plugins
     end
 
     def should_daemonize?

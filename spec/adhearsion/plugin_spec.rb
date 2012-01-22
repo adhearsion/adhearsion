@@ -199,6 +199,7 @@ describe Adhearsion::Plugin do
 
     after do
       Adhearsion::Plugin.initializers.clear
+      Adhearsion::Plugin.runners.clear
       defined?(FooBar) and Object.send(:remove_const, :"FooBar")
       defined?(FooBarBaz) and Object.send(:remove_const, :"FooBarBaz")
       defined?(FooBarBazz) and Object.send(:remove_const, :"FooBarBazz")
@@ -229,7 +230,7 @@ describe Adhearsion::Plugin do
         Adhearsion::Plugin.load_plugins
       end
 
-      it "should initialize all Plugin childs, including deep childs" do
+      it "should initialize all Plugin children, including deep childs" do
         FooBar = Class.new Adhearsion::Plugin do
           init :foo_bar do
             FooBar.log "foo bar"
@@ -300,6 +301,105 @@ describe Adhearsion::Plugin do
         Adhearsion::Plugin.initializers.length.should eql 3
         Adhearsion::Plugin.initializers.tsort.first.name.should eql :foo_bar
         Adhearsion::Plugin.initializers.tsort.last.name.should eql :foo_bar_baz
+      end
+    end
+
+    describe "while registering plugins runners" do
+      it "should do nothing with a Plugin that has no run method call" do
+        FooBar = Class.new Adhearsion::Plugin
+
+        # May become 1 if Punchblock defines a runner.
+        Adhearsion::Plugin.runners.should have(0).runners
+        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
+        Adhearsion::Plugin.run_plugins
+      end
+
+      it "should add a runner when Plugin defines it" do
+        FooBar = Class.new Adhearsion::Plugin do
+          run :foo_bar do
+            FooBar.log "foo bar"
+          end
+          def self.log
+          end
+        end
+
+        flexmock(FooBar).should_receive(:log).once
+        Adhearsion::Plugin.runners.length.should be 1
+        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
+        Adhearsion::Plugin.run_plugins
+      end
+
+      it "should run all Plugin children, including deep childs" do
+        FooBar = Class.new Adhearsion::Plugin do
+          run :foo_bar do
+            FooBar.log "foo bar"
+          end
+
+          def self.log
+          end
+        end
+
+        FooBarBaz = Class.new FooBar do
+          run :foo_bar_baz do
+            FooBar.log "foo bar baz"
+          end
+        end
+        FooBarBazz = Class.new FooBar do
+          run :foo_bar_bazz do
+            FooBar.log "foo bar bazz"
+          end
+        end
+
+        flexmock(FooBar).should_receive(:log).times(3)
+        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
+        Adhearsion::Plugin.run_plugins
+      end
+
+      it "should allow to execute one runner before another one" do
+        FooBar = Class.new Adhearsion::Plugin do
+          run :foo_bar do
+            FooBar.log "foo bar"
+          end
+
+          def self.log
+          end
+        end
+
+        FooBarBaz = Class.new FooBar do
+          run :foo_bar_baz, :before => :foo_bar do
+            FooBar.log "foo bar baz"
+          end
+        end
+
+        Adhearsion::Plugin.runners.tsort.first.name.should eql :foo_bar_baz
+        Adhearsion::Plugin.runners.tsort.last.name.should eql :foo_bar
+      end
+
+      it "should allow to include an runner after another one" do
+        FooBar = Class.new Adhearsion::Plugin do
+          run :foo_bar do
+            FooBar.log "foo bar"
+          end
+
+          def self.log
+          end
+        end
+
+        FooBarBaz = Class.new FooBar do
+          run :foo_bar_baz, :after => :foo_bar_bazz do
+            FooBar.log "foo bar baz"
+          end
+        end
+
+        FooBarBazz = Class.new FooBar do
+          run :foo_bar_bazz do
+            FooBar.log "foo bar bazz"
+          end
+        end
+
+        Adhearsion::Plugin.runners.length.should eql 3
+        Adhearsion::Plugin.runners.tsort.first.name.should eql :foo_bar
+        Adhearsion::Plugin.runners.tsort.last.name.should eql :foo_bar_baz
       end
     end
 
