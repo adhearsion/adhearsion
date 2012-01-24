@@ -1,5 +1,21 @@
 require 'spec_helper'
 
+# Test modules/classes
+module TestBiscuit
+  def throwadogabone
+    true
+  end
+end
+
+module MarmaladeIsBetterThanJam
+  def sobittersweet
+    true
+  end
+end
+
+class FinancialWizard < Adhearsion::CallController
+end
+
 module Adhearsion
   describe CallController do
     include CallControllerTestHelpers
@@ -18,10 +34,6 @@ module Adhearsion
         subject[:bar].should == 10
         subject[:foo].should == 7
       end
-    end
-
-    it "should add plugin dialplan methods" do
-      subject.should respond_to :foo
     end
 
     its(:logger)    { should be call.logger }
@@ -383,13 +395,28 @@ describe ExampleCallController do
     subject.execute!
   end
 
-  context "when the controller finishes without a hangup" do
+  describe "when the controller finishes without a hangup" do
     it "should execute the after_call callbacks" do
       subject[:skip_hangup] = true
       subject.should_receive(:join_to_conference).once.ordered
       subject.should_receive(:foobar).once.ordered
       subject.should_receive(:clean_up_models).twice.ordered
       subject.execute!
+    end
+  end
+
+  describe "providing hooks to include call functionality" do
+    let(:call) { Adhearsion::Call.new mock_offer(nil, :x_foo => 'bar') }
+
+    it "should allow mixing in a module globally on all CallController classes" do
+      Adhearsion::CallController.mixin TestBiscuit
+      Adhearsion::CallController.new(call).should respond_to :throwadogabone
+    end
+
+    it "should allow mixing in a module on a single CallController class" do
+      FinancialWizard.mixin MarmaladeIsBetterThanJam
+      FinancialWizard.new(call).should respond_to :sobittersweet
+      Adhearsion::CallController.new(call).should_not respond_to :sobittersweet
     end
   end
 end

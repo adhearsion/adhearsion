@@ -38,7 +38,7 @@ module Adhearsion
     def start
       resolve_pid_file_path
       load_lib_folder
-      load_plugins_methods
+      init_plugins
       load_config
       initialize_log_paths
       daemonize! if should_daemonize?
@@ -182,10 +182,6 @@ module Adhearsion
                           )
         appenders << stdout
       end
-    end
-
-    def load_plugins_methods
-      Plugin.load_methods
     end
 
     def init_plugins
