@@ -409,12 +409,10 @@ describe ExampleCallController do
     include CallControllerTestHelpers
     let(:call) { Adhearsion::Call.new mock_offer(nil, :x_foo => 'bar') }
 
-
     it "should allow mixing in a module globally on all CallController classes" do
       Adhearsion::CallController.mixin TestBiscuit
       Adhearsion::CallController.new(call).respond_to?(:throwadogabone).should be true
     end
-
 
     it "should allow mixing in a module on a single CallController class" do
       FinancialWizard.mixin MarmaladeIsBetterThanJam
