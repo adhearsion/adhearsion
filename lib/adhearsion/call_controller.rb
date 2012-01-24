@@ -53,11 +53,6 @@ module Adhearsion
 
     def initialize(call, metadata = nil)
       @call, @metadata = call, metadata || {}
-      setup
-    end
-
-    def setup
-      Plugin.add_dialplan_methods self if Plugin
     end
 
     def execute!(*options)

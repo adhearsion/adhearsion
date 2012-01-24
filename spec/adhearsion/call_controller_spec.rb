@@ -20,10 +20,6 @@ module Adhearsion
       end
     end
 
-    it "should add plugin dialplan methods" do
-      subject.should respond_to :foo
-    end
-
     its(:logger)    { should be call.logger }
     its(:variables) { should be call.variables }
 
