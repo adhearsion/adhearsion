@@ -1,4 +1,5 @@
 require 'adhearsion/punchblock_plugin'
+require 'adhearsion/linux_proc_name'
 
 module Adhearsion
   class Initializer
@@ -46,6 +47,7 @@ module Adhearsion
       catch_termination_signal
       create_pid_file
       start_logging
+      set_ahn_proc_name
       logger.info "Loaded config in <#{Adhearsion.config.platform.environment}> environment"
       initialize_exception_logger
       update_rails_env_var
@@ -260,6 +262,10 @@ module Adhearsion
       Events.register_callback :shutdown do
         File.delete(pid_file) if File.exists?(pid_file)
       end
+    end
+
+    def set_ahn_proc_name
+      Adhearsion::LinuxProcName.set_proc_name Adhearsion.config.platform.process_name
     end
 
     def trigger_after_initialized_hooks

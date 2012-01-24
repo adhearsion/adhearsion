@@ -39,6 +39,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'has-guarded-handlers', [">= 1.1.0"]
   s.add_runtime_dependency 'girl_friday'
   s.add_runtime_dependency 'jruby-openssl' if RUBY_PLATFORM == 'java'
+  s.add_runtime_dependency "ffi", [">= 1.0.11"]
 
   # Development dependencies
   s.add_development_dependency 'rspec', ["~> 2.7.0"]

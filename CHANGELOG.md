@@ -7,6 +7,7 @@
   * Bugfix: `Call` and `OutboundCall` now respond to `#to` and `#from` with the correct values from the offer/dial
   * Bugfix: An `OutboundCall` allows storing call variables just like a `Call`
   * Feature: Router can match against variables on a call using `#[]`
+  * Feature: adhearsion process is named via configuration module
 
 # 2.0.0.alpha1 - 2012-01-17
 
