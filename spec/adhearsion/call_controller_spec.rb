@@ -1,5 +1,21 @@
 require 'spec_helper'
 
+# Test modules/classes
+module TestBiscuit
+  def throwadogabone
+    true
+  end
+end
+
+module MarmaladeIsBetterThanJam
+  def sobittersweet
+    true
+  end
+end
+
+class FinancialWizard < Adhearsion::CallController
+end
+
 module Adhearsion
   describe CallController do
     include CallControllerTestHelpers
@@ -386,6 +402,24 @@ describe ExampleCallController do
       subject.should_receive(:foobar).once.ordered
       subject.should_receive(:clean_up_models).twice.ordered
       subject.execute!
+    end
+  end
+
+  describe "providing hooks to include call functionality" do
+    include CallControllerTestHelpers
+    let(:call) { Adhearsion::Call.new mock_offer(nil, :x_foo => 'bar') }
+
+
+    it "should allow mixing in a module globally on all CallController classes" do
+      Adhearsion::CallController.mixin TestBiscuit
+      Adhearsion::CallController.new(call).respond_to?(:throwadogabone).should be true
+    end
+
+
+    it "should allow mixing in a module on a single CallController class" do
+      FinancialWizard.mixin MarmaladeIsBetterThanJam
+      FinancialWizard.new(call).respond_to?(:sobittersweet).should be true
+      Adhearsion::CallController.new(call).respond_to?(:sobittersweet).should be false
     end
   end
 end

@@ -33,16 +33,24 @@ module Adhearsion
       STOP
     end
 
-    def self.exec(controller, fresh_call = true)
-      return unless controller
+    class << self
+      def exec(controller, fresh_call = true)
+        return unless controller
 
-      new_controller = catch :pass_controller do
-        controller.skip_accept! unless fresh_call
-        controller.execute!
-        nil
+        new_controller = catch :pass_controller do
+          controller.skip_accept! unless fresh_call
+          controller.execute!
+          nil
+        end
+
+        exec new_controller, false
       end
 
-      exec new_controller, false
+      ##
+      # Include another module into all CallController classes
+      def mixin(mod)
+        include mod
+      end
     end
 
     attr_reader :call, :metadata
