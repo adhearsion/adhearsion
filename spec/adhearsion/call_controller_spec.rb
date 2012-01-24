@@ -406,7 +406,6 @@ describe ExampleCallController do
   end
 
   describe "providing hooks to include call functionality" do
-    include CallControllerTestHelpers
     let(:call) { Adhearsion::Call.new mock_offer(nil, :x_foo => 'bar') }
 
     it "should allow mixing in a module globally on all CallController classes" do
