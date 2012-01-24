@@ -19,13 +19,24 @@ module Adhearsion
 
       Loquacious::Configuration.for :platform do
         root nil, :desc => "Adhearsion application root folder"
-        lib "lib", :desc => <<-__
-          Folder to include the own libraries to be used. Adhearsion loads any ruby file located into this folder during the bootstrap
-          process. Set to nil if you do not want these files to be loaded. This folder is relative to the application root folder.
-        __
-        automatically_accept_incoming_calls true, :transform => Proc.new { |v| v == 'true' }, :desc => "Adhearsion will accept automatically any inbound call"
 
-        environment :development, :transform => Proc.new { |v| v.to_sym }, :desc => "Active environment. Supported values: development, production, staging, test"
+        lib "lib", :desc => <<-__
+          Folder to include the own libraries to be used. Adhearsion loads any ruby file 
+          located into this folder during the bootstrap process. Set to nil if you do not 
+          want these files to be loaded. This folder is relative to the application root folder.
+        __
+
+        automatically_accept_incoming_calls true, :transform => Proc.new { |v| v == 'true' }, :desc => <<-__
+          Adhearsion will accept automatically any inbound call
+        __
+
+        environment :development, :transform => Proc.new { |v| v.to_sym }, :desc => <<-__
+          Active environment. Supported values: development, production, staging, test
+        __
+
+        process_name "Adhearsion-#{Adhearsion::VERSION}", :transform => Proc.new { |v| v.to_sym }, :desc => <<-__
+          Adhearsion process name, useful to make it easier to find with linux commands
+        __
 
         desc "Log configuration"
         logging {
