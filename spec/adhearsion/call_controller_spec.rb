@@ -379,7 +379,7 @@ describe ExampleCallController do
     subject.execute!
   end
 
-  context "when the controller finishes without a hangup" do
+  describe "when the controller finishes without a hangup" do
     it "should execute the after_call callbacks" do
       subject[:skip_hangup] = true
       subject.should_receive(:join_to_conference).once.ordered
