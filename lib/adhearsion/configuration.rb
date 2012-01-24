@@ -34,8 +34,10 @@ module Adhearsion
           Active environment. Supported values: development, production, staging, test
         __
 
-        process_name "Adhearsion-#{Adhearsion::VERSION}", :transform => Proc.new { |v| v.to_sym }, :desc => <<-__
-          Adhearsion process name, useful to make it easier to find with linux commands
+        process_name "ahn", :desc => <<-__
+          Adhearsion process name, useful to make it easier to find in the process list
+          Pro tip: set this to your application's name and you can do "killall myapp"
+          Does not work under JRuby.
         __
 
         desc "Log configuration"
