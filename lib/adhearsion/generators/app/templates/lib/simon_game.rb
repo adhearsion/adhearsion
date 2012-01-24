@@ -1,5 +1,6 @@
 class SimonGame < Adhearsion::CallController
   def run
+    answer
     reset
     loop do
       say_number
