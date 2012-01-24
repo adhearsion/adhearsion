@@ -7,4 +7,6 @@ rvm:
   - ruby-head
 env: ARUBA_TIMEOUT=120 AHN_PUNCHBLOCK_RECONNECT_ATTEMPTS=0
 notifications:
-  irc: "irc.freenode.org#adhearsion"
+#  irc: "irc.freenode.org#adhearsion"
+  email:
+    - blangfeld@adhearsion.com
