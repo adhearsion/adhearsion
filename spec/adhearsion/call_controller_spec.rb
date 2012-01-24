@@ -411,13 +411,13 @@ describe ExampleCallController do
 
     it "should allow mixing in a module globally on all CallController classes" do
       Adhearsion::CallController.mixin TestBiscuit
-      Adhearsion::CallController.new(call).respond_to?(:throwadogabone).should be true
+      Adhearsion::CallController.new(call).should respond_to :throwadogabone
     end
 
     it "should allow mixing in a module on a single CallController class" do
       FinancialWizard.mixin MarmaladeIsBetterThanJam
-      FinancialWizard.new(call).respond_to?(:sobittersweet).should be true
-      Adhearsion::CallController.new(call).respond_to?(:sobittersweet).should be false
+      FinancialWizard.new(call).should respond_to :sobittersweet
+      Adhearsion::CallController.new(call).should_not respond_to :sobittersweet
     end
   end
 end
