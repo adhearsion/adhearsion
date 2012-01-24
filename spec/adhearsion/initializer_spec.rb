@@ -118,6 +118,21 @@ describe Adhearsion::Initializer do
       flexmock(Dir).should_receive(:mkdir).with("log/test/").once
       ahn.initialize_log_paths
     end
+
+    it "should set the adhearsion proc name" do
+      ahn = stub_behavior_for_initializer_with_no_path_changing_behavior do
+        flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
+        flexmock(Adhearsion::LinuxProcName).should_receive(:set_proc_name).with(Adhearsion.config.platform.process_name)
+        Adhearsion::Initializer.start :pid_file => true
+      end
+    end
+
+    it "should update the adhearsion proc name" do
+      ahn = stub_behavior_for_initializer_with_no_path_changing_behavior do
+        Adhearsion::Initializer.start :pid_file => true
+      end
+      $0.should == Adhearsion.config.platform.process_name
+    end
   end
 
   describe "Initializing logger" do
