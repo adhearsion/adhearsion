@@ -26,7 +26,6 @@ $: << File.dirname(__FILE__)
   bundler/setup
   flexmock/rspec
   active_support
-  rubigen
   pp
   stringio
   adhearsion
