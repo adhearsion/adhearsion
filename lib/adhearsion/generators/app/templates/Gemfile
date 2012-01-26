@@ -1,6 +1,6 @@
 source "http://rubygems.org"
 
-gem "adhearsion", ">= 1.2.1"
+gem "adhearsion", ">= 1.2.4"
 
 #
 # Here are some example components you might like to use. Simply
