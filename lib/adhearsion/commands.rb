@@ -91,15 +91,9 @@ USAGE
             if args.size.zero?
               raise CommandHandler::UnknownCommand.new("Must specify something to create!")
             elsif args.size == 1
-              # We're creating a project
-              path = args.first
-              require 'rubigen'
-              require 'rubigen/scripts/generate'
-              source = RubiGen::PathSource.new(:application,
-                File.join(File.dirname(__FILE__), "../../app_generators"))
-              RubiGen::Base.reset_sources
-              RubiGen::Base.append_sources source
-              RubiGen::Scripts::Generate.new.run([path], :generator => 'ahn')
+              require 'adhearsion/generators'
+              require 'adhearsion/generators/app/app_generator'
+              Adhearsion::Generators::AppGenerator.start
             elsif args.size == 2
               # We're creating a feature (e.g. a component)
               feature_type, component_name = args

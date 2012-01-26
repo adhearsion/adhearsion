@@ -1,6 +1,6 @@
 module InitializerStubs
   DEFAULT_AHNRC_DATA_STRUCTURE = YAML.load_file(
-    File.dirname(__FILE__) + "/../../app_generators/ahn/templates/.ahnrc"
+    File.dirname(__FILE__) + "/../../lib/adhearsion/generators/app/templates/.ahnrc"
   ) unless defined? DEFAULT_AHNRC_DATA_STRUCTURE
 
   UNWANTED_BEHAVIOR = {
