@@ -1,3 +1,6 @@
+1.2.4
+  - Backported Thor-based generators from Adhearsion 2 in order to escape Rubigen.
+
 1.2.3
  - Changes from 1.2.2, without an accidental API change which slipped in
 
