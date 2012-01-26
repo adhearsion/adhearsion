@@ -32,7 +32,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "pry"
 
   # Development dependencies
-  s.add_development_dependency 'rspec', [">= 2.4.0"]
+  s.add_development_dependency 'rspec', [">= 2.4.0", '< 2.8.0']
   s.add_development_dependency 'flexmock'
   s.add_development_dependency 'activerecord', [">= 2.1.0"]
   s.add_development_dependency 'rake'
