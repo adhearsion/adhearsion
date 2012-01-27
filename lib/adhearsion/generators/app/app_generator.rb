@@ -32,6 +32,7 @@ module Adhearsion
         copy_file "Gemfile"
         copy_file "Rakefile"
         copy_file "README.md"
+        chmod "script/ahn", 0755
       end
     end
   end
