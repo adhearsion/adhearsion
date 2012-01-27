@@ -1,18 +1,5 @@
 require 'spec_helper'
 
-# Test modules/classes
-module TestBiscuit
-  def throwadogabone
-    true
-  end
-end
-
-module MarmaladeIsBetterThanJam
-  def sobittersweet
-    true
-  end
-end
-
 class FinancialWizard < Adhearsion::CallController
 end
 
