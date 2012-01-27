@@ -39,7 +39,6 @@ module Adhearsion
     def start
       resolve_pid_file_path
       load_lib_folder
-      init_plugins
       load_config
       initialize_log_paths
       daemonize! if should_daemonize?
