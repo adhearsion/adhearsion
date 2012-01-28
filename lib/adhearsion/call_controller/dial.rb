@@ -24,6 +24,8 @@ module Adhearsion
       # For example, dial("SIP/jay-desk-650&SIP/jay-desk-601&SIP/jay-desk-601-2", :for => 15.seconds, :caller_id => callerid)
       # this call will timeout after 15 seconds if 1 of the 3 extensions being dialed do not pick prior to the 15 second time limit
       #
+      # +:timeout+ - this is the timeout to wait for destination to answer the call
+      #
       # +:options+ - This is a string of options like "Tr" which are supported by the asterisk DIAL application.
       # for a complete list of these options and their usage please check the link below.
       #
@@ -61,8 +63,7 @@ module Adhearsion
         calls.each do |call, target|
           call.dial target, options
         end
-
-        latch.wait
+        latch.wait options[:timeout]
       end
 
     end#module Dial

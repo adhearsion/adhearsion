@@ -13,6 +13,7 @@ module Adhearsion
       let(:mock_end) { flexmock Punchblock::Event::End.new, :reason => :hangup }
       let(:mock_answered) { Punchblock::Event::Answered.new }
 
+      let(:timeout) { 3 }
       #added for multiple dial testing
       let(:second_to) { 'sip:baz@bar.com' }
       let(:second_other_call_id) { rand }
@@ -118,7 +119,27 @@ module Adhearsion
         end
 
         describe "with a timeout specified" do
-          it "should abort the dial after the specified timeout"
+          it "should abort the dial after the specified timeout" do
+            other_mock_call
+
+            flexmock(other_mock_call).should_receive(:dial).once
+            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+
+            latch = CountDownLatch.new 1
+
+            value = nil
+            time = Time.now
+
+            Thread.new do
+              value = subject.dial to, :timeout => timeout
+              latch.countdown!
+            end
+
+            latch.wait
+            time = Time.now - time
+            time.to_i.should == timeout
+            value.should == false
+          end
         end
 
         describe "with a from specified" do
