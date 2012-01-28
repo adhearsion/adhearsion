@@ -33,6 +33,16 @@ module Adhearsion
         Adhearsion::Generators::AppGenerator.start
       end
 
+      desc "generate [controller] arguments", "Invoke a generator"
+      def generate(gentype, *args)
+        require 'adhearsion/generators'
+        case gentype
+          when 'controller'
+            require 'adhearsion/generators/call_controller/call_controller_generator'
+            Adhearsion::Generators::CallControllerGenerator.start(args)
+          end
+      end
+
       desc "version", "Shows Adhearsion version"
       def version
         say "Adhearsion v#{Adhearsion::VERSION}"
