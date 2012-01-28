@@ -1,6 +1,6 @@
 Feature: Adhearsion App Generator
   In order to do development on new Adhearsion apps
-  As a Adhearsion developer
+  As an Adhearsion developer
   I want to generate an Adhearsion app
 
   Scenario: Generate application with valid layout
