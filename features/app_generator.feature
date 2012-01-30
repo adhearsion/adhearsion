@@ -1,6 +1,6 @@
 Feature: Adhearsion App Generator
   In order to do development on new Adhearsion apps
-  As a Adhearsiohn developer
+  As an Adhearsion developer
   I want to generate an Adhearsion app
 
   Scenario: Generate application with valid layout
@@ -19,6 +19,7 @@ Feature: Adhearsion App Generator
       | script/ahn            |
       | README.md             |
       | Rakefile              |
+      | Procfile              |
 
     And the file "config/adhearsion.rb" should contain each of these content parts:
     """

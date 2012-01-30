@@ -1,5 +1,5 @@
 Feature: Adhearsion Ahn CLI
-  As a Adhearsion user
+  As an Adhearsion user
   I want a cli command (ahn)
   So that I can create and interact with adhearsion apps
 

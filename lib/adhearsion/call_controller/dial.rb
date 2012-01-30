@@ -41,8 +41,8 @@ module Adhearsion
       # @example Make a call using the IAX provider to the PSTN
       #   dial "IAX2/my.id@voipjet/19095551234", :name => "John Doe", :caller_id => "9095551234"
       #
-      def dial(to, options = {})
-        latch = CountDownLatch.new 1
+      def dial(to, options = {}, latch = nil)
+        latch ||= CountDownLatch.new 1
         calls = Array(to).map do |target|
           new_call = OutboundCall.new options
 
@@ -60,10 +60,16 @@ module Adhearsion
           [new_call, target]
         end
 
-        calls.each do |call, target|
+        calls.map! do |call, target|
           call.dial target, options
+          call
         end
-        latch.wait options[:timeout]
+
+        timeout = latch.wait options[:timeout]
+
+        return timeout unless timeout
+
+        calls.size == 1 ? calls.first : calls
       end
 
     end#module Dial

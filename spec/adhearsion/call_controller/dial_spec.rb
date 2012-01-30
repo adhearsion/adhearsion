@@ -6,18 +6,17 @@ module Adhearsion
       include CallControllerTestHelpers
 
       let(:to) { 'sip:foo@bar.com' }
-
-      let(:other_call_id) { rand }
+      let(:other_call_id)   { rand }
       let(:other_mock_call) { flexmock OutboundCall.new, :id => other_call_id }
 
-      let(:mock_end) { flexmock Punchblock::Event::End.new, :reason => :hangup }
+      let(:second_to)               { 'sip:baz@bar.com' }
+      let(:second_other_call_id)    { rand }
+      let(:second_other_mock_call)  { flexmock OutboundCall.new, :id => second_other_call_id }
+
+      let(:mock_end)      { flexmock Punchblock::Event::End.new, :reason => :hangup }
       let(:mock_answered) { Punchblock::Event::Answered.new }
 
-      let(:timeout) { 3 }
-      #added for multiple dial testing
-      let(:second_to) { 'sip:baz@bar.com' }
-      let(:second_other_call_id) { rand }
-      let(:second_other_mock_call) { flexmock OutboundCall.new, :id => second_other_call_id }
+      let(:latch)   { CountDownLatch.new 1 }
 
       def mock_dial
         flexmock(OutboundCall).new_instances.should_receive(:dial).and_return true
@@ -26,10 +25,11 @@ module Adhearsion
       describe "#dial" do
         it "should create a new call and return it" do
           mock_dial
-          Thread.new do
-            subject.dial(to).should be_a OutboundCall
+          t = Thread.new do
+            subject.dial(to, {}, latch).should be_a OutboundCall
           end
-          other_mock_call << mock_end
+          latch.countdown!
+          t.join
         end
 
         it "should dial the call to the correct endpoint" do
@@ -100,13 +100,13 @@ module Adhearsion
             flexmock(second_other_mock_call).should_receive(:dial).once
             flexmock(second_other_mock_call).should_receive(:hangup!).once
 
-
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call, second_other_mock_call
             latch = CountDownLatch.new 1
 
-            Thread.new do
-              subject.dial [to, second_to]
+            t = Thread.new do
+              calls = subject.dial [to, second_to]
               latch.countdown!
+              calls
             end
 
             latch.wait(1).should be_false
@@ -114,11 +114,18 @@ module Adhearsion
             other_mock_call << mock_answered
             other_mock_call << mock_end
 
-            latch.wait(1).should be_true
+            latch.wait(2).should be_true
+
+            t.join
+            calls = t.value
+            calls.should have(2).calls
+            calls.each { |c| c.should be_a OutboundCall }
           end
         end
 
         describe "with a timeout specified" do
+          let(:timeout) { 3 }
+
           it "should abort the dial after the specified timeout" do
             other_mock_call
 
@@ -140,10 +147,6 @@ module Adhearsion
             time.to_i.should == timeout
             value.should == false
           end
-        end
-
-        describe "with a from specified" do
-          it "originates the call from the specified caller ID"
         end
 
       	describe "with a block" do
