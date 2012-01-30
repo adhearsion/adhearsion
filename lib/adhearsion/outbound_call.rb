@@ -32,7 +32,14 @@ module Adhearsion
 
     def dial(to, options = {})
       options.merge! :to => to
-      write_and_await_response(Punchblock::Command::Dial.new(options)).tap do |dial_command|
+      if options[:timeout]
+        wait_timeout = options[:timeout]
+        options[:timeout] = options[:timeout] * 1000
+      else
+        wait_timeout = 60
+      end
+
+      write_and_await_response(Punchblock::Command::Dial.new(options), wait_timeout).tap do |dial_command|
         @dial_command = dial_command
         Adhearsion.active_calls << self
       end

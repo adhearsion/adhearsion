@@ -58,6 +58,7 @@ module Adhearsion
     def deliver_message(message)
       trigger_handler :event, message
     end
+
     alias << deliver_message
 
     def register_initial_handlers
