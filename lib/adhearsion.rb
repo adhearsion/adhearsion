@@ -28,7 +28,6 @@ module Adhearsion
   autoload :Configuration
   autoload :Console
   autoload :Conveniences
-  autoload :DialplanController
   autoload :Dispatcher
   autoload :Events
   autoload :MenuDSL

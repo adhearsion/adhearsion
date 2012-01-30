@@ -117,9 +117,9 @@ module Adhearsion
             end
           end
 
-          it "should instruct the call to use an instance of DialplanController with the correct block" do
-            flexmock(call).should_receive(:execute_controller).once.with(DialplanController).and_return do |controller|
-              controller.dialplan.call.should == :foobar
+          it "should instruct the call to use a CallController with the correct block" do
+            flexmock(call).should_receive(:execute_controller).once.with(CallController).and_return do |controller|
+              controller.block.call.should == :foobar
             end
             route.dispatcher.call call
           end

@@ -117,8 +117,6 @@ module Adhearsion
       write_and_await_response Punchblock::Command::Join.new :other_call_id => other_call_id
     end
 
-    # Lock the socket for a command.  Can be used to allow the console to take
-    # control of the thread in between AGI commands coming from the dialplan.
     def with_command_lock
       @command_monitor ||= Monitor.new
       @command_monitor.synchronize { yield }

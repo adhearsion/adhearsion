@@ -53,14 +53,14 @@ module Adhearsion
       end
     end
 
-    attr_reader :call, :metadata
+    attr_reader :call, :metadata, :block
 
     delegate :[], :[]=, :to => :@metadata
     delegate :variables, :logger, :to => :call
     delegate :write_and_await_response, :accept, :answer, :reject, :to => :call
 
-    def initialize(call, metadata = nil)
-      @call, @metadata = call, metadata || {}
+    def initialize(call, metadata = nil, &block)
+      @call, @metadata, @block = call, metadata || {}, block
     end
 
     def execute!(*options)
@@ -76,6 +76,7 @@ module Adhearsion
     end
 
     def run
+      instance_exec &block if block
     end
 
     def invoke(controller_class, metadata = nil)

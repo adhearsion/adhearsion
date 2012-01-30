@@ -45,7 +45,7 @@ module Adhearsion
         end
 
         describe "without a block" do
-          it "blocks the original dialplan until the new call ends" do
+          it "blocks the original controller until the new call ends" do
             other_mock_call
 
             flexmock(other_mock_call).should_receive(:dial).once
@@ -150,7 +150,7 @@ module Adhearsion
         end
 
       	describe "with a block" do
-          it "uses the block as the dialplan for the new call"
+          it "uses the block as the controller for the new call"
 
           it "joins the new call to the existing call once the block returns"
 

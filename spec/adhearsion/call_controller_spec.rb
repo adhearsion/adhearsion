@@ -77,6 +77,20 @@ module Adhearsion
         flexmock(Events).should_receive(:trigger).once.with(:exception, StandardError).ordered
         subject.execute!
       end
+
+      context "when a block is specified" do
+        let :block do
+          Proc.new { foo value }
+        end
+
+        its(:block) { should be block }
+
+        it "should execute the block in the context of the controller" do
+          flexmock subject, :value => :bar
+          subject.should_receive(:foo).once.with(:bar)
+          subject.run
+        end
+      end
     end
 
     class SecondController < CallController
