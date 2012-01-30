@@ -30,6 +30,7 @@ module Adhearsion
         self.destination_root = @app_path
         BASEDIRS.each { |dir| directory dir }
         template "Gemfile.erb", "Gemfile"
+        copy_file "Procfile"
         copy_file "Rakefile"
         copy_file "README.md"
         chmod "script/ahn", 0755

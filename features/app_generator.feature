@@ -19,6 +19,7 @@ Feature: Adhearsion App Generator
       | script/ahn            |
       | README.md             |
       | Rakefile              |
+      | Procfile              |
 
     And the file "config/adhearsion.rb" should contain each of these content parts:
     """
