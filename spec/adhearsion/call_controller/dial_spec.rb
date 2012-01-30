@@ -6,31 +6,21 @@ module Adhearsion
       include CallControllerTestHelpers
 
       let(:to) { 'sip:foo@bar.com' }
-
-      let(:other_call_id) { rand }
+      let(:other_call_id)   { rand }
       let(:other_mock_call) { flexmock OutboundCall.new, :id => other_call_id }
 
-      let(:mock_end) { flexmock Punchblock::Event::End.new, :reason => :hangup }
-      let(:mock_answered) { Punchblock::Event::Answered.new }
+      let(:second_to)               { 'sip:baz@bar.com' }
+      let(:second_other_call_id)    { rand }
+      let(:second_other_mock_call)  { flexmock OutboundCall.new, :id => second_other_call_id }
 
-      #added for multiple dial testing
-      let(:second_to) { 'sip:baz@bar.com' }
-      let(:second_other_call_id) { rand }
-      let(:second_other_mock_call) { flexmock OutboundCall.new, :id => second_other_call_id }
+      let(:mock_end)      { flexmock Punchblock::Event::End.new, :reason => :hangup }
+      let(:mock_answered) { Punchblock::Event::Answered.new }
 
       def mock_dial
         flexmock(OutboundCall).new_instances.should_receive(:dial).and_return true
       end
 
       describe "#dial" do
-        it "should create a new call and return it" do
-          mock_dial
-          Thread.new do
-            subject.dial(to).should be_a OutboundCall
-          end
-          other_mock_call << mock_end
-        end
-
         it "should dial the call to the correct endpoint" do
           other_mock_call
           flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
@@ -119,10 +109,6 @@ module Adhearsion
 
         describe "with a timeout specified" do
           it "should abort the dial after the specified timeout"
-        end
-
-        describe "with a from specified" do
-          it "originates the call from the specified caller ID"
         end
 
       	describe "with a block" do
