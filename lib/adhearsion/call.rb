@@ -20,7 +20,7 @@ module Adhearsion
       @tags             = []
       @end_reason_mutex = Mutex.new
       @commands         = CommandRegistry.new
-      @variables        = SynchronizedHash.new
+      @variables        = {}
 
       self << offer if offer
     end
