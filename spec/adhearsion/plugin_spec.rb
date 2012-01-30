@@ -4,6 +4,10 @@ include InitializerStubs
 
 describe Adhearsion::Plugin do
 
+  before :all do
+    defined?(FooBar) and Object.send(:remove_const, :"FooBar")
+  end
+
   describe "inheritance" do
     after do
       defined?(FooBar) and Object.send(:remove_const, :"FooBar")
