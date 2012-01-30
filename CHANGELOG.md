@@ -12,6 +12,8 @@
   * Bugfix: The console should be shut down when shutting down the process
   * Feature: Include a sensible `.gitignore` in generated apps
   * Feature: CallController can now perform join operations on calls, and take either a call ID, a call object or a mixer name as the target
+  * Change: Plugins no longer load dialplan/event/rpc/console methods using corresponding class methods
+  * Feature: CallController and Console can have modules of methods mixed in using `CallController.mixin` and `Console.mixin`
 
 # 2.0.0.alpha1 - 2012-01-17
 
