@@ -111,8 +111,8 @@ module Adhearsion
 
     def catch_termination_signal
       %w'INT TERM'.each do |process_signal|
-        logger.info "Received #{process_signal} signal. Shutting down."
         trap process_signal do
+          logger.info "Received #{process_signal} signal. Shutting down."
           Adhearsion::Process.shutdown
         end
       end
