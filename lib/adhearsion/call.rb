@@ -146,7 +146,6 @@ module Adhearsion
       client.execute_command command, :call_id => id
     end
 
-    # Sanitize the offer id
     def logger_id
       "#{self.class}: #{id}"
     end

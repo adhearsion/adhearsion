@@ -383,7 +383,7 @@ module Adhearsion
       describe "#join" do
         let(:other_call_id) { rand }
 
-        it "should mark the call inactive" do
+        it "should send a join command joining to the provided call ID" do
           expect_message_waiting_for_response Punchblock::Command::Join.new :other_call_id => other_call_id
           subject.join other_call_id
         end
