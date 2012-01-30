@@ -16,7 +16,7 @@ module Adhearsion
       let(:mock_end)      { flexmock Punchblock::Event::End.new, :reason => :hangup }
       let(:mock_answered) { Punchblock::Event::Answered.new }
 
-      let(:latch)   { CountDownLatch.new 1 }
+      let(:latch) { CountDownLatch.new 1 }
 
       def mock_dial
         flexmock(OutboundCall).new_instances.should_receive(:dial).and_return true
