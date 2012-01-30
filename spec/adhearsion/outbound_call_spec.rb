@@ -66,7 +66,7 @@ module Adhearsion
 
     describe "#dial" do
       def expect_message_waiting_for_response(message)
-        flexmock(subject).should_receive(:write_and_await_response).once.with(message).and_return do
+        flexmock(subject).should_receive(:write_and_await_response).once.with(message, 60).and_return do
           message.call_id = call_id
           message
         end

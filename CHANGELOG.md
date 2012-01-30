@@ -8,6 +8,7 @@
   * Bugfix: An `OutboundCall` allows storing call variables just like a `Call`
   * Feature: Router can match against variables on a call using `#[]`
   * Feature: adhearsion process is named via configuration module
+  * Feature: CallController#dial now takes a `:for` (or `:timeout`) option to specify a timeout on the dial command
 
 # 2.0.0.alpha1 - 2012-01-17
 
