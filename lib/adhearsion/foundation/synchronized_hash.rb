@@ -3,10 +3,12 @@
 #
 class SynchronizedHash
 
+  @@lock = Mutex.new
+
   def self.atomically_delegate(method_name)
     class_eval(<<-RUBY, __FILE__, __LINE__)
       def #{method_name}(*args, &block)
-        @lock.synchronize do
+        @@lock.synchronize do
           @delegate.send #{method_name.inspect}, *args, &block
         end
       end
@@ -78,7 +80,6 @@ class SynchronizedHash
 
   def initialize(*args, &block)
     @delegate = Hash.new *args, &block
-    @lock     = Mutex.new
   end
 
   ##
@@ -88,7 +89,7 @@ class SynchronizedHash
   # @yield [Hash] the Hash on which you can safely operate during your block.
   #
   def with_lock(&block)
-    @lock.synchronize { yield @delegate }
+    @@lock.synchronize { yield @delegate }
   end
 
   def eql?(other)
@@ -99,13 +100,15 @@ class SynchronizedHash
       end
     when self.class
       with_lock do |hash|
-        other.with_lock do |other_hash|
-          hash == other_hash
-        end
+        hash == other.hash_for_comparison
       end
     else
       super
     end
   end
   alias :== :eql?
+
+  def hash_for_comparison
+    @delegate.dup
+  end
 end
