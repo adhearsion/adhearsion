@@ -21,10 +21,8 @@ module Adhearsion
       # support for caller id information varies from country to country and from one VoIP termination provider to another.
       #
       # +:for+ - this option can be thought of best as a timeout.  i.e. timeout after :for if no one answers the call
-      # For example, dial("SIP/jay-desk-650&SIP/jay-desk-601&SIP/jay-desk-601-2", :for => 15.seconds, :caller_id => callerid)
+      # For example, dial(%w{SIP/jay-desk-650 SIP/jay-desk-601 SIP/jay-desk-601-2}, :for => 15.seconds, :from => callerid)
       # this call will timeout after 15 seconds if 1 of the 3 extensions being dialed do not pick prior to the 15 second time limit
-      #
-      # +:timeout+ - this is the timeout (in seconds) to wait for destination to answer the call
       #
       # +:options+ - This is a string of options like "Tr" which are supported by the asterisk DIAL application.
       # for a complete list of these options and their usage please check the link below.
@@ -43,6 +41,8 @@ module Adhearsion
       #
       def dial(to, options = {}, latch = nil)
         latch ||= CountDownLatch.new 1
+        _for = options.delete :for
+        options[:timeout] ||= _for if _for
         calls = Array(to).map do |target|
           new_call = OutboundCall.new options
 
