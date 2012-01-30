@@ -389,6 +389,20 @@ module Adhearsion
         end
       end
 
+      describe "#mute" do
+        it 'should send a Mute message' do
+          expect_message_waiting_for_response Punchblock::Command::Mute.new
+          subject.mute
+        end
+      end
+
+      describe "#unmute" do
+        it 'should send a Mute message' do
+          expect_message_waiting_for_response Punchblock::Command::Unmute.new
+          subject.unmute
+        end
+      end
+
       describe "#execute_controller" do
         let(:latch)           { CountDownLatch.new 1 }
         let(:mock_controller) { flexmock 'CallController' }

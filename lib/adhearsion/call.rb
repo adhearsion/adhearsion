@@ -117,6 +117,14 @@ module Adhearsion
       write_and_await_response Punchblock::Command::Join.new :other_call_id => other_call_id
     end
 
+    def mute
+      write_and_await_response ::Punchblock::Command::Mute.new
+    end
+
+    def unmute
+      write_and_await_response ::Punchblock::Command::Unmute.new
+    end
+
     def with_command_lock
       @command_monitor ||= Monitor.new
       @command_monitor.synchronize { yield }

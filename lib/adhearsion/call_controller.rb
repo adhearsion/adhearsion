@@ -57,7 +57,7 @@ module Adhearsion
 
     delegate :[], :[]=, :to => :@metadata
     delegate :variables, :logger, :to => :call
-    delegate :write_and_await_response, :accept, :answer, :reject, :to => :call
+    delegate :write_and_await_response, :accept, :answer, :reject, :mute, :unmute, :to => :call
 
     def initialize(call, metadata = nil, &block)
       @call, @metadata, @block = call, metadata || {}, block
@@ -115,14 +115,6 @@ module Adhearsion
     def hangup(headers = nil)
       hangup_response = call.hangup! headers
       after_call unless hangup_response == false
-    end
-
-    def mute
-      write_and_await_response ::Punchblock::Command::Mute.new
-    end
-
-    def unmute
-      write_and_await_response ::Punchblock::Command::Unmute.new
     end
 
     def execute_component_and_await_completion(component)

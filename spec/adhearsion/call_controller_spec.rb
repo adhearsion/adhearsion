@@ -325,15 +325,15 @@ module Adhearsion
     end
 
     describe '#mute' do
-      it 'should send a Mute message' do
-        expect_message_waiting_for_response Punchblock::Command::Mute.new
+      it 'should delegate to the call' do
+        flexmock(call).should_receive(:mute).once
         subject.mute
       end
     end
 
     describe '#unmute' do
-      it 'should send an Unmute message' do
-        expect_message_waiting_for_response Punchblock::Command::Unmute.new
+      it 'should delegate to the call' do
+        flexmock(call).should_receive(:unmute).once
         subject.unmute
       end
     end
