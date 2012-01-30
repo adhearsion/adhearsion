@@ -11,7 +11,7 @@
   * Feature: CallController#dial now takes a `:for` (or `:timeout`) option to specify a timeout on the dial command
   * Bugfix: The console should be shut down when shutting down the process
   * Feature: Include a sensible `.gitignore` in generated apps
-  * Feature: CallController can now perform join operations on calls
+  * Feature: CallController can now perform join operations on calls, and take either a call ID, a call object or a mixer name as the target
 
 # 2.0.0.alpha1 - 2012-01-17
 

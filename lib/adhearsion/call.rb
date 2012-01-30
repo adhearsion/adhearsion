@@ -113,8 +113,33 @@ module Adhearsion
       Adhearsion.active_calls.remove_inactive_call self
     end
 
-    def join(other_call_id)
-      write_and_await_response Punchblock::Command::Join.new :other_call_id => other_call_id
+    ##
+    # Joins this call to another call or a mixer
+    #
+    # @param [Call, String, Hash] target the target to join to. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
+    # @option target [String] call_id The call ID to join to
+    # @option target [String] mixer_name The mixer to join to
+    # @param [Hash, Optional] options further options to be joined with
+    #
+    def join(target, options = {})
+      case target
+      when Call
+        options[:other_call_id] = target.id
+      when String
+        options[:other_call_id] = target
+      when Hash
+        raise ArgumentError, "You cannot specify both a call ID and mixer name" if target.has_key?(:call_id) && target.has_key?(:mixer_name)
+        target.tap do |t|
+          t[:other_call_id] = t[:call_id]
+          t.delete :call_id
+        end
+
+        options.merge! target
+      else
+        raise ArgumentError, "Don't know how to join to #{target.inspect}"
+      end
+      command = Punchblock::Command::Join.new options
+      write_and_await_response command
     end
 
     def mute

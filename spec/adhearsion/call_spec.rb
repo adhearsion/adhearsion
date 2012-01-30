@@ -381,11 +381,87 @@ module Adhearsion
       end
 
       describe "#join" do
-        let(:other_call_id) { rand }
+        def expect_join_with_options(options = {})
+          Punchblock::Command::Join.new(options).tap do |join|
+            expect_message_waiting_for_response join
+          end
+        end
 
-        it "should send a join command joining to the provided call ID" do
-          expect_message_waiting_for_response Punchblock::Command::Join.new :other_call_id => other_call_id
-          subject.join other_call_id
+        context "with a call" do
+          let(:call_id) { rand.to_s }
+          let(:target)  { flexmock Call.new, :id => call_id }
+
+          it "should send a join command joining to the provided call ID" do
+            expect_join_with_options :other_call_id => call_id
+            subject.join target
+          end
+
+          context "and direction/media options" do
+            it "should send a join command with the correct options" do
+              expect_join_with_options :other_call_id => call_id, :media => :bridge, :direction => :recv
+              subject.join target, :media => :bridge, :direction => :recv
+            end
+          end
+        end
+
+        context "with a call ID" do
+          let(:target) { rand.to_s }
+
+          it "should send a join command joining to the provided call ID" do
+            expect_join_with_options :other_call_id => target
+            subject.join target
+          end
+
+          context "and direction/media options" do
+            it "should send a join command with the correct options" do
+              expect_join_with_options :other_call_id => target, :media => :bridge, :direction => :recv
+              subject.join target, :media => :bridge, :direction => :recv
+            end
+          end
+        end
+
+        context "with a call ID as a hash key" do
+          let(:call_id) { rand.to_s }
+          let(:target)  { { :call_id => call_id } }
+
+          it "should send a join command joining to the provided call ID" do
+            expect_join_with_options :other_call_id => call_id
+            subject.join target
+          end
+
+          context "and direction/media options" do
+            it "should send a join command with the correct options" do
+              expect_join_with_options :other_call_id => call_id, :media => :bridge, :direction => :recv
+              subject.join target.merge({:media => :bridge, :direction => :recv})
+            end
+          end
+        end
+
+        context "with a mixer name as a hash key" do
+          let(:mixer_name)  { rand.to_s }
+          let(:target)      { { :mixer_name => mixer_name } }
+
+          it "should send a join command joining to the provided call ID" do
+            expect_join_with_options :mixer_name => mixer_name
+            subject.join target
+          end
+
+          context "and direction/media options" do
+            it "should send a join command with the correct options" do
+              expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+              subject.join target.merge({:media => :bridge, :direction => :recv})
+            end
+          end
+        end
+
+        context "with a call ID and a mixer name as hash keys" do
+          let(:call_id)     { rand.to_s }
+          let(:mixer_name)  { rand.to_s }
+          let(:target)      { { :call_id => call_id, :mixer_name => mixer_name } }
+
+          it "should raise an ArgumentError" do
+            lambda { subject.join target }.should raise_error ArgumentError, /call ID and mixer name/
+          end
         end
       end
 
