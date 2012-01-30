@@ -2,9 +2,24 @@ require 'spec_helper'
 
 module Adhearsion
   describe Call do
+    let(:mock_client) { flexmock('Client').tap &:should_ignore_missing }
+
+    let(:call_id) { rand }
     let(:headers) { nil }
-    let(:offer)   { mock_offer nil, headers }
+    let(:to)      { 'sip:you@there.com' }
+    let(:from)    { 'sip:me@here.com' }
+    let :offer do
+      Punchblock::Event::Offer.new :call_id => call_id,
+                                   :to      => to,
+                                   :from    => from,
+                                   :headers => headers
+    end
+
     subject { Adhearsion::Call.new offer }
+
+    before do
+      flexmock(offer).should_receive(:client).and_return(mock_client)
+    end
 
     after do
       Adhearsion.active_calls.clear!
@@ -18,10 +33,43 @@ module Adhearsion
     its(:commands) { should be_a Call::CommandRegistry }
     its(:commands) { should be_empty }
 
+    its(:id)      { should == call_id }
+    its(:to)      { should == to }
+    its(:from)    { should == from }
+    its(:offer)   { should be offer }
+    its(:client)  { should be mock_client }
+
     describe "its variables" do
       context "with an offer with headers" do
         let(:headers)   { {:x_foo => 'bar'} }
         its(:variables) { should == headers }
+
+        it "should be made available via []" do
+          subject[:x_foo].should == 'bar'
+        end
+
+        it "should be alterable using []=" do
+          subject[:x_foo] = 'baz'
+          subject[:x_foo].should == 'baz'
+        end
+
+        context "when receiving an event with headers" do
+          let(:event) { Punchblock::Event::End.new :headers => {:x_bar => 'foo'} }
+
+          it "should merge later headers" do
+            subject << event
+            subject.variables.should == {:x_foo => 'bar', :x_bar => 'foo'}
+          end
+        end
+
+        context "when sending a command with headers" do
+          let(:command) { Punchblock::Command::Accept.new :headers => {:x_bar => 'foo'} }
+
+          it "should merge later headers" do
+            subject.write_command command
+            subject.variables.should == {:x_foo => 'bar', :x_bar => 'foo'}
+          end
+        end
       end
 
       context "with an offer without headers" do
@@ -35,33 +83,16 @@ module Adhearsion
       end
     end
 
-    it '#id should return the ID from the Offer' do
-      offer = mock_offer
-      Adhearsion::Call.new(offer).id.should == offer.call_id
-    end
-
-    it 'should store the original offer' do
-      offer = mock_offer
-      Adhearsion::Call.new(offer).offer.should == offer
-    end
-
     describe 'without an offer' do
       it 'should not raise an exception' do
         lambda { Adhearsion::Call.new }.should_not raise_error
       end
     end
 
-    it "should store the Punchblock client from the Offer" do
-      offer = mock_offer
-      client = flexmock('Client')
-      offer.should_receive(:client).once.and_return(client)
-      Adhearsion::Call.new(offer).client.should == client
-    end
-
     it 'a hungup call removes itself from the active calls' do
       size_before = Adhearsion.active_calls.size
 
-      call = Adhearsion.active_calls.from_offer mock_offer
+      call = Adhearsion.active_calls.from_offer offer
       Adhearsion.active_calls.size.should > size_before
       call.hangup
       Adhearsion.active_calls.size.should == size_before
@@ -350,11 +381,101 @@ module Adhearsion
       end
 
       describe "#join" do
-        let(:other_call_id) { rand }
+        def expect_join_with_options(options = {})
+          Punchblock::Command::Join.new(options).tap do |join|
+            expect_message_waiting_for_response join
+          end
+        end
 
-        it "should mark the call inactive" do
-          expect_message_waiting_for_response Punchblock::Command::Join.new :other_call_id => other_call_id
-          subject.join other_call_id
+        context "with a call" do
+          let(:call_id) { rand.to_s }
+          let(:target)  { flexmock Call.new, :id => call_id }
+
+          it "should send a join command joining to the provided call ID" do
+            expect_join_with_options :other_call_id => call_id
+            subject.join target
+          end
+
+          context "and direction/media options" do
+            it "should send a join command with the correct options" do
+              expect_join_with_options :other_call_id => call_id, :media => :bridge, :direction => :recv
+              subject.join target, :media => :bridge, :direction => :recv
+            end
+          end
+        end
+
+        context "with a call ID" do
+          let(:target) { rand.to_s }
+
+          it "should send a join command joining to the provided call ID" do
+            expect_join_with_options :other_call_id => target
+            subject.join target
+          end
+
+          context "and direction/media options" do
+            it "should send a join command with the correct options" do
+              expect_join_with_options :other_call_id => target, :media => :bridge, :direction => :recv
+              subject.join target, :media => :bridge, :direction => :recv
+            end
+          end
+        end
+
+        context "with a call ID as a hash key" do
+          let(:call_id) { rand.to_s }
+          let(:target)  { { :call_id => call_id } }
+
+          it "should send a join command joining to the provided call ID" do
+            expect_join_with_options :other_call_id => call_id
+            subject.join target
+          end
+
+          context "and direction/media options" do
+            it "should send a join command with the correct options" do
+              expect_join_with_options :other_call_id => call_id, :media => :bridge, :direction => :recv
+              subject.join target.merge({:media => :bridge, :direction => :recv})
+            end
+          end
+        end
+
+        context "with a mixer name as a hash key" do
+          let(:mixer_name)  { rand.to_s }
+          let(:target)      { { :mixer_name => mixer_name } }
+
+          it "should send a join command joining to the provided call ID" do
+            expect_join_with_options :mixer_name => mixer_name
+            subject.join target
+          end
+
+          context "and direction/media options" do
+            it "should send a join command with the correct options" do
+              expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+              subject.join target.merge({:media => :bridge, :direction => :recv})
+            end
+          end
+        end
+
+        context "with a call ID and a mixer name as hash keys" do
+          let(:call_id)     { rand.to_s }
+          let(:mixer_name)  { rand.to_s }
+          let(:target)      { { :call_id => call_id, :mixer_name => mixer_name } }
+
+          it "should raise an ArgumentError" do
+            lambda { subject.join target }.should raise_error ArgumentError, /call ID and mixer name/
+          end
+        end
+      end
+
+      describe "#mute" do
+        it 'should send a Mute message' do
+          expect_message_waiting_for_response Punchblock::Command::Mute.new
+          subject.mute
+        end
+      end
+
+      describe "#unmute" do
+        it 'should send a Mute message' do
+          expect_message_waiting_for_response Punchblock::Command::Unmute.new
+          subject.unmute
         end
       end
 

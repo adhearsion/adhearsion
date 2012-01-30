@@ -9,6 +9,7 @@ vendor
 coverage
 spec/reports
 example.log
+adhearsion.pid
 
 # RBX stuff
 *~
@@ -21,4 +22,4 @@ nbproject
 .rvmrc
 .yardoc
 doc
-/.rbx/
+tmp

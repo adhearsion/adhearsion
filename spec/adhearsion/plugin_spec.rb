@@ -4,6 +4,10 @@ include InitializerStubs
 
 describe Adhearsion::Plugin do
 
+  before :all do
+    defined?(FooBar) and Object.send(:remove_const, :"FooBar")
+  end
+
   describe "inheritance" do
     after do
       defined?(FooBar) and Object.send(:remove_const, :"FooBar")
@@ -25,87 +29,6 @@ describe Adhearsion::Plugin do
       end
 
       ::FooBar.plugin_name.should == "bar_foo"
-    end
-  end
-
-  describe "metaprogramming" do
-    Adhearsion::Plugin::SCOPE_NAMES.each do |method|
-      it "should respond to #{method.to_s}" do
-        Adhearsion::Plugin.should respond_to method
-      end
-
-      it "should respond to #{method.to_s}_module" do
-        Adhearsion::Plugin.should respond_to "#{method.to_s}_module"
-      end
-    end
-  end
-
-  [:rpc, :dialplan, :console].each do |method|
-
-    describe "extending an object with #{method.to_s} scope methods" do
-
-      before(:all) do
-        A = Class.new do
-          def bar
-            "bar"
-          end
-        end
-      end
-
-      after(:all) do
-        defined?(A) and Object.send(:remove_const, :"A")
-      end
-
-      before do
-        FooBar = Class.new Adhearsion::Plugin do
-          self.method(method).call(:foo) do
-            "foo".concat bar
-          end
-
-        end
-        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-        Adhearsion::Plugin.load_plugins
-        Adhearsion::Plugin.send("#{method.to_s}_module".to_sym).instance_methods.map{|x| x.to_s}.include?("foo").should == true
-      end
-
-      after  do
-        defined?(FooBar) and Object.send(:remove_const, :"FooBar")
-      end
-
-      describe "when extending a Class" do
-        it "should respond to any of the #{method.to_s} scope methods and have visibility to the own instance methods" do
-
-          Adhearsion::Plugin.send("add_#{method}_methods".to_sym, A)
-          a = A.new
-          a.should respond_to :foo
-          a.foo.should == "foobar"
-        end
-      end
-
-      describe "when extending an instance" do
-        it "should respond to any of the scope methods and have visibility to the own instance methods" do
-
-          a = A.new
-          Adhearsion::Plugin.send("add_#{method}_methods".to_sym, a)
-          a.should respond_to :foo
-          a.foo.should == "foobar"
-        end
-      end
-    end
-  end
-
-  describe "While adding console methods" do
-
-    it "should add a new method to Console" do
-      FooBar = Class.new Adhearsion::Plugin do
-        console :config do
-          Adhearsion.config
-        end
-      end
-      flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-      Adhearsion::Plugin.load_plugins
-      Adhearsion::Console.should respond_to(:config)
-      Adhearsion::Console.config.should == Adhearsion.config
     end
   end
 
@@ -181,7 +104,7 @@ describe Adhearsion::Plugin do
     end
   end
 
-  describe "Adhearsion::Plugin.load_plugins" do
+  describe "Adhearsion::Plugin.init_plugins" do
     before do
       Adhearsion::Plugin.class_eval do
         def self.reset_methods_scope
@@ -199,6 +122,7 @@ describe Adhearsion::Plugin do
 
     after do
       Adhearsion::Plugin.initializers.clear
+      Adhearsion::Plugin.runners.clear
       defined?(FooBar) and Object.send(:remove_const, :"FooBar")
       defined?(FooBarBaz) and Object.send(:remove_const, :"FooBarBaz")
       defined?(FooBarBazz) and Object.send(:remove_const, :"FooBarBazz")
@@ -211,7 +135,7 @@ describe Adhearsion::Plugin do
         # 1 => Punchblock. Must be empty once punchblock initializer is an external Plugin
         Adhearsion::Plugin.initializers.should have(1).initializers
         flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-        Adhearsion::Plugin.load_plugins
+        Adhearsion::Plugin.init_plugins
       end
 
       it "should add a initializer when Plugin defines it" do
@@ -226,10 +150,10 @@ describe Adhearsion::Plugin do
         flexmock(FooBar).should_receive(:log).once
         Adhearsion::Plugin.initializers.length.should be 1
         flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-        Adhearsion::Plugin.load_plugins
+        Adhearsion::Plugin.init_plugins
       end
 
-      it "should initialize all Plugin childs, including deep childs" do
+      it "should initialize all Plugin children, including deep childs" do
         FooBar = Class.new Adhearsion::Plugin do
           init :foo_bar do
             FooBar.log "foo bar"
@@ -252,7 +176,7 @@ describe Adhearsion::Plugin do
 
         flexmock(FooBar).should_receive(:log).times(3)
         flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-        Adhearsion::Plugin.load_plugins
+        Adhearsion::Plugin.init_plugins
       end
 
       it "should allow to include an initializer before another one" do
@@ -303,136 +227,102 @@ describe Adhearsion::Plugin do
       end
     end
 
-    [:rpc, :dialplan].each do |method|
-      describe "Plugin subclass with #{method.to_s}_method definition" do
-        it "should add a method defined using #{method.to_s} method" do
-          FooBar = Class.new Adhearsion::Plugin do
-            self.method(method).call(:foo)
+    describe "while registering plugins runners" do
+      it "should do nothing with a Plugin that has no run method call" do
+        FooBar = Class.new Adhearsion::Plugin
 
-            def self.foo(call)
-              "bar"
-            end
-          end
-
-          flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-          Adhearsion::Plugin.load_plugins
-          Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
-        end
-
-        it "should add a method defined using #{method.to_s} method with a block" do
-          FooBar = Class.new Adhearsion::Plugin do
-            block = lambda{|call| "bar"}
-            self.method(method).call(:foo, &block)
-          end
-
-          flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-          Adhearsion::Plugin.load_plugins
-          Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
-        end
-
-        it "should add an instance method defined using #{method.to_s} method" do
-          FooBar = Class.new Adhearsion::Plugin do
-            self.method(method).call(:foo)
-            def foo(call)
-              call
-            end
-          end
-
-          flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-          Adhearsion::Plugin.load_plugins
-          Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
-        end
-
-        it "should add an array of methods defined using #{method.to_s} method" do
-          FooBar = Class.new Adhearsion::Plugin do
-            self.method(method).call([:foo, :bar])
-
-            def self.foo(call)
-              call
-            end
-
-            def self.bar(call)
-              "foo"
-            end
-          end
-
-          flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-          Adhearsion::Plugin.load_plugins
-          [:foo, :bar].each do |_method|
-            Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(_method.to_s).should be true
-          end
-          Adhearsion::Plugin.methods_scope[method].instance_methods.length.should eql 2
-        end
-
-        it "should add an array of instance methods defined using #{method.to_s} method" do
-          FooBar = Class.new Adhearsion::Plugin do
-            self.method(method).call([:foo, :bar])
-            def foo(call)
-              call
-            end
-
-            def bar(call)
-              call
-            end
-          end
-
-          flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-          Adhearsion::Plugin.load_plugins
-          [:foo, :bar].each do |_method|
-            Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(_method.to_s).should be true
-          end
-        end
-
-        it "should add an array of instance and singleton methods defined using #{method.to_s} method" do
-          FooBar = Class.new Adhearsion::Plugin do
-            self.method(method).call([:foo, :bar])
-            def self.foo(call)
-              call
-            end
-
-            def bar(call)
-              call
-            end
-          end
-
-          flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-          Adhearsion::Plugin.load_plugins
-          [:foo, :bar].each do |_method|
-            Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(_method.to_s).should be true
-          end
-        end
-
-        it "should add a method defined using #{method.to_s} method with a specific block" do
-          FooBar = Class.new Adhearsion::Plugin do
-            self.method(method).call(:foo) do
-              "foo"
-            end
-          end
-
-          flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-          Adhearsion::Plugin.load_plugins
-          Adhearsion::Plugin.methods_scope[method].instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
-          Adhearsion::Plugin.send("#{method.to_s}_module".to_sym).instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
-        end
-      end
-    end
-
-    describe "Plugin subclass with rpc_method and dialplan_method definitions" do
-      it "should add a method defined using rpc and a method defined using dialplan" do
-        FooBar = Class.new Adhearsion::Plugin do
-          rpc :foo
-          dialplan :foo
-
-          def self.foo(call)
-            "bar"
-          end
-        end
-
+        # May become 1 if Punchblock defines a runner.
+        Adhearsion::Plugin.runners.should have(0).runners
         flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
-        Adhearsion::Plugin.load_plugins
-        [:dialplan_module, :rpc_module].each do |_module|
-          Adhearsion::Plugin.send(_module).instance_methods.map{|x| x.to_s}.include?(:foo.to_s).should be true
+        Adhearsion::Plugin.run_plugins
+      end
+
+      it "should add a runner when Plugin defines it" do
+        FooBar = Class.new Adhearsion::Plugin do
+          run :foo_bar do
+            FooBar.log "foo bar"
+          end
+          def self.log
+          end
         end
+
+        flexmock(FooBar).should_receive(:log).once
+        Adhearsion::Plugin.runners.length.should be 1
+        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
+        Adhearsion::Plugin.run_plugins
+      end
+
+      it "should run all Plugin children, including deep childs" do
+        FooBar = Class.new Adhearsion::Plugin do
+          run :foo_bar do
+            FooBar.log "foo bar"
+          end
+
+          def self.log
+          end
+        end
+
+        FooBarBaz = Class.new FooBar do
+          run :foo_bar_baz do
+            FooBar.log "foo bar baz"
+          end
+        end
+        FooBarBazz = Class.new FooBar do
+          run :foo_bar_bazz do
+            FooBar.log "foo bar bazz"
+          end
+        end
+
+        flexmock(FooBar).should_receive(:log).times(3)
+        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
+        Adhearsion::Plugin.run_plugins
+      end
+
+      it "should allow to execute one runner before another one" do
+        FooBar = Class.new Adhearsion::Plugin do
+          run :foo_bar do
+            FooBar.log "foo bar"
+          end
+
+          def self.log
+          end
+        end
+
+        FooBarBaz = Class.new FooBar do
+          run :foo_bar_baz, :before => :foo_bar do
+            FooBar.log "foo bar baz"
+          end
+        end
+
+        Adhearsion::Plugin.runners.tsort.first.name.should eql :foo_bar_baz
+        Adhearsion::Plugin.runners.tsort.last.name.should eql :foo_bar
+      end
+
+      it "should allow to include an runner after another one" do
+        FooBar = Class.new Adhearsion::Plugin do
+          run :foo_bar do
+            FooBar.log "foo bar"
+          end
+
+          def self.log
+          end
+        end
+
+        FooBarBaz = Class.new FooBar do
+          run :foo_bar_baz, :after => :foo_bar_bazz do
+            FooBar.log "foo bar baz"
+          end
+        end
+
+        FooBarBazz = Class.new FooBar do
+          run :foo_bar_bazz do
+            FooBar.log "foo bar bazz"
+          end
+        end
+
+        Adhearsion::Plugin.runners.length.should eql 3
+        Adhearsion::Plugin.runners.tsort.first.name.should eql :foo_bar
+        Adhearsion::Plugin.runners.tsort.last.name.should eql :foo_bar_baz
       end
     end
   end

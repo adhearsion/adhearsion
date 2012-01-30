@@ -39,9 +39,6 @@ describe Adhearsion::Initializer::Logging do
     ::Logging.logger.root.level.should eql(::Logging::LEVELS["debug"])
   end
 
-  Foo = Class.new
-  Foo::Bar = Class.new Foo
-
   it "should create only a Logging object per Class (reuse per all the instances)" do
     _logger = Foo.new.logger
     10.times do

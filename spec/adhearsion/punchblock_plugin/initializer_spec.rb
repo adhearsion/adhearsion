@@ -45,10 +45,9 @@ module Adhearsion
         Events.refresh!
       end
 
-      let(:call_id)       { rand }
-      let(:offer)         { ::Punchblock::Event::Offer.new.tap { |o| o.call_id = call_id } }
-      let(:mock_call)     { flexmock('Call', :id => call_id).tap { |call| call.should_ignore_missing } }
-      let(:mock_manager)  { flexmock 'a mock dialplan manager' }
+      let(:call_id)   { rand }
+      let(:offer)     { ::Punchblock::Event::Offer.new.tap { |o| o.call_id = call_id } }
+      let(:mock_call) { flexmock('Call', :id => call_id).tap { |call| call.should_ignore_missing } }
 
       describe "starts the client with the default values" do
         subject { initialize_punchblock }

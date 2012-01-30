@@ -14,22 +14,38 @@ module Adhearsion
     def initialize(&block)
       initialize_environments
 
+      Loquacious.env_config = true
+      Loquacious.env_prefix = "AHN"
+
       Loquacious::Configuration.for :platform do
         root nil, :desc => "Adhearsion application root folder"
-        lib "lib", :desc => <<-__
-          Folder to include the own libraries to be used. Adhearsion loads any ruby file located into this folder during the bootstrap
-          process. Set to nil if you do not want these files to be loaded. This folder is relative to the application root folder.
-        __
-        automatically_accept_incoming_calls true, :desc => "Adhearsion will accept automatically any inbound call"
 
-        environment :development, :desc => "Active environment. Supported values: development, production, staging, test"
+        lib "lib", :desc => <<-__
+          Folder to include the own libraries to be used. Adhearsion loads any ruby file 
+          located into this folder during the bootstrap process. Set to nil if you do not 
+          want these files to be loaded. This folder is relative to the application root folder.
+        __
+
+        automatically_accept_incoming_calls true, :transform => Proc.new { |v| v == 'true' }, :desc => <<-__
+          Adhearsion will accept automatically any inbound call
+        __
+
+        environment :development, :transform => Proc.new { |v| v.to_sym }, :desc => <<-__
+          Active environment. Supported values: development, production, staging, test
+        __
+
+        process_name "ahn", :desc => <<-__
+          Adhearsion process name, useful to make it easier to find in the process list
+          Pro tip: set this to your application's name and you can do "killall myapp"
+          Does not work under JRuby.
+        __
 
         desc "Log configuration"
         logging {
-          level :info, :desc => <<-__
+          level :info, :transform => Proc.new { |v| v.to_sym }, :desc => <<-__
             Supported levels (in increasing severity) -- :trace < :debug < :info < :warn < :error < :fatal
           __
-          outputters ["log/adhearsion.log"], :desc => <<-__
+          outputters ["log/adhearsion.log"], :transform => Proc.new { |val| Array(val) }, :desc => <<-__
             An array of log outputters to use. The default is to log to stdout and log/adhearsion.log
           __
           formatter nil, :desc => <<-__
@@ -136,13 +152,26 @@ module Adhearsion
       else
         return "" if Loquacious::Configuration.for(name).nil?
 
+        if args[:show_values]
+          name_leader = "  config.#{name}."
+          desc_leader = "  # "
+          name_value_sep = " = "
+          title_leader = "  "
+        else
+          name_leader = ""
+          desc_leader = "#"
+          name_value_sep = " => "
+          title_leader = ""
+        end
+
         config = Loquacious::Configuration.help_for name,
-                                :name_leader => "",
-                                :desc_leader => "# ",
+                                :name_leader => name_leader,
+                                :desc_leader => desc_leader,
                                 :colorize    => true,
-                                :io          => desc
+                                :io          => desc,
+                                :name_value_sep => name_value_sep
         config.show :values => args[:show_values]
-        "\n# ******* Configuration for #{name} **************\n\n#{desc.string}"
+        "#{title_leader}# ******* Configuration for #{name} **************\n\n#{desc.string}"
       end
     end
   end

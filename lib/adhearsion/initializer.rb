@@ -1,4 +1,5 @@
 require 'adhearsion/punchblock_plugin'
+require 'adhearsion/linux_proc_name'
 
 module Adhearsion
   class Initializer
@@ -38,14 +39,14 @@ module Adhearsion
     def start
       resolve_pid_file_path
       load_lib_folder
-      load_plugins_methods
       load_config
       initialize_log_paths
       daemonize! if should_daemonize?
+      start_logging
       launch_console if need_console?
       catch_termination_signal
       create_pid_file
-      start_logging
+      set_ahn_proc_name
       logger.info "Loaded config in <#{Adhearsion.config.platform.environment}> environment"
       initialize_exception_logger
       update_rails_env_var
@@ -54,7 +55,11 @@ module Adhearsion
       logger.info "Adhearsion v#{Adhearsion::VERSION} initialized!"
       Adhearsion::Process.booted
 
+      run_plugins
       trigger_after_initialized_hooks
+
+      # This method will block until all important threads have finished.
+      # When it does, the process will exit.
       join_important_threads
       self
     end
@@ -62,20 +67,20 @@ module Adhearsion
     def update_rails_env_var
       env = ENV['AHN_ENV']
       if env && Adhearsion.config.valid_environment?(env.to_sym)
-        if ENV['RAILS_ENV'] != env
+        if ENV['RAILS_ENV'] == env
+          logger.info "Using the configured value for RAILS_ENV : <#{env}>"
+        else
           logger.warn "Updating AHN_RAILS variable to <#{env}>"
           ENV['RAILS_ENV'] = env
-        else
-          logger.info "Using the configured value for RAILS_ENV : <#{env}>"
         end
       else
         env = ENV['RAILS_ENV']
-        unless env
+        if env
+          logger.info "Using the configured value for RAILS_ENV : <#{env}>"
+        else
           env = Adhearsion.config.platform.environment.to_s
           logger.info "Defining AHN_RAILS variable to <#{env}>"
           ENV['RAILS_ENV'] = env
-        else
-          logger.info "Using the configured value for RAILS_ENV : <#{env}>"
         end
       end
       env
@@ -107,15 +112,18 @@ module Adhearsion
     def catch_termination_signal
       %w'INT TERM'.each do |process_signal|
         trap process_signal do
+          logger.info "Received #{process_signal} signal. Shutting down."
           Adhearsion::Process.shutdown
         end
       end
 
       trap 'QUIT' do
+        logger.info "Received QUIT signal. Hard shutting down."
         Adhearsion::Process.hard_shutdown
       end
 
       trap 'ABRT' do
+        logger.info "Received ABRT signal. Forcing stop."
         Adhearsion::Process.force_stop
       end
     end
@@ -177,12 +185,12 @@ module Adhearsion
       end
     end
 
-    def load_plugins_methods
-      Plugin.load_methods
-    end
-
     def init_plugins
       Plugin.init_plugins
+    end
+
+    def run_plugins
+      Plugin.run_plugins
     end
 
     def should_daemonize?
@@ -249,6 +257,10 @@ module Adhearsion
       Events.register_callback :shutdown do
         File.delete(pid_file) if File.exists?(pid_file)
       end
+    end
+
+    def set_ahn_proc_name
+      Adhearsion::LinuxProcName.set_proc_name Adhearsion.config.platform.process_name
     end
 
     def trigger_after_initialized_hooks

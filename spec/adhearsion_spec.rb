@@ -1,7 +1,19 @@
 require 'spec_helper'
 
 describe Adhearsion do
-  describe "while accessing the config method" do
+  describe "#ahn_root=" do
+    it "should update properly the config root variable" do
+      Adhearsion.ahn_root = "./"
+      Adhearsion.config[:platform].root.should == Dir.getwd
+    end
+
+    it "should update properly the config root variable when path is nil" do
+      Adhearsion.ahn_root = nil
+      Adhearsion.config[:platform].root.should be_nil
+    end
+  end
+
+  describe "#config" do
     it "should return a Configuration instance" do
       subject.config.should be_instance_of Adhearsion::Configuration
     end
@@ -12,6 +24,13 @@ describe Adhearsion do
       Adhearsion.config do |config|
         foo.bar
       end
+    end
+  end
+
+  describe "#environments" do
+    it "should be the collection of valid environments" do
+      Adhearsion.config.valid_environments << :foo
+      Adhearsion.environments.should include :foo
     end
   end
 
@@ -32,15 +51,19 @@ describe Adhearsion do
     end
   end
 
-  describe "while accessing the ahn_root= method" do
-    it "should update properly the config root variable" do
-      Adhearsion.ahn_root = "./"
-      Adhearsion.config[:platform].root.should == Dir.getwd
+  describe "#active_calls" do
+    it "should be a calls collection" do
+      Adhearsion.active_calls.should be_a Adhearsion::Calls
     end
 
-    it "should update properly the config root variable when path is nil" do
-      Adhearsion.ahn_root = nil
-      Adhearsion.config[:platform].root.should be_nil
+    it "should return the same instance each time" do
+      Adhearsion.active_calls.should be Adhearsion.active_calls
+    end
+  end
+
+  describe "#status" do
+    it "should be the process status name" do
+      Adhearsion.status.should == :booting
     end
   end
 end

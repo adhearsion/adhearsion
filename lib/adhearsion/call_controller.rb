@@ -33,31 +33,34 @@ module Adhearsion
       STOP
     end
 
-    def self.exec(controller, fresh_call = true)
-      return unless controller
+    class << self
+      def exec(controller, fresh_call = true)
+        return unless controller
 
-      new_controller = catch :pass_controller do
-        controller.skip_accept! unless fresh_call
-        controller.execute!
-        nil
+        new_controller = catch :pass_controller do
+          controller.skip_accept! unless fresh_call
+          controller.execute!
+          nil
+        end
+
+        exec new_controller, false
       end
 
-      exec new_controller, false
+      ##
+      # Include another module into all CallController classes
+      def mixin(mod)
+        include mod
+      end
     end
 
-    attr_reader :call, :metadata
+    attr_reader :call, :metadata, :block
 
     delegate :[], :[]=, :to => :@metadata
     delegate :variables, :logger, :to => :call
-    delegate :write_and_await_response, :accept, :answer, :reject, :to => :call
+    delegate :write_and_await_response, :accept, :answer, :reject, :mute, :unmute, :join, :to => :call
 
-    def initialize(call, metadata = nil)
-      @call, @metadata = call, metadata || {}
-      setup
-    end
-
-    def setup
-      Plugin.add_dialplan_methods self if Plugin
+    def initialize(call, metadata = nil, &block)
+      @call, @metadata, @block = call, metadata || {}, block
     end
 
     def execute!(*options)
@@ -73,6 +76,7 @@ module Adhearsion
     end
 
     def run
+      instance_exec &block if block
     end
 
     def invoke(controller_class, metadata = nil)
@@ -111,14 +115,6 @@ module Adhearsion
     def hangup(headers = nil)
       hangup_response = call.hangup! headers
       after_call unless hangup_response == false
-    end
-
-    def mute
-      write_and_await_response ::Punchblock::Command::Mute.new
-    end
-
-    def unmute
-      write_and_await_response ::Punchblock::Command::Unmute.new
     end
 
     def execute_component_and_await_completion(component)

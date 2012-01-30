@@ -22,9 +22,7 @@ module Adhearsion
       def dispatcher
         @dispatcher ||= lambda do |call|
           controller = if target.respond_to?(:call)
-            DialplanController.new(call).tap do |controller|
-              controller.dialplan = target
-            end
+            CallController.new call, &target
           else
             target.new call
           end

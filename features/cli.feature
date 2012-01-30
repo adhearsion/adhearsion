@@ -1,5 +1,5 @@
 Feature: Adhearsion Ahn CLI
-  As a Adhearsion user
+  As an Adhearsion user
   I want a cli command (ahn)
   So that I can create and interact with adhearsion apps
 
@@ -45,27 +45,27 @@ Feature: Adhearsion Ahn CLI
     And the exit status should be 1
 
   Scenario: Command start with no path inside of the app directory
+    Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
     When I cd to "path/somewhere"
     And I run `ahn start` interactively
-    And I wait for output to contain "Transitioning from booting to running"
+    And I wait for output to contain "Starting connection to server"
     And I terminate the interactive process
     Then the output should contain "Loaded config"
     And the output should contain "Adhearsion::Console: Starting up..."
     And the output should contain "AHN>"
-    And the output should contain "Starting connection"
-    And the output should contain "Transitioning from running to stopping"
+    And the output should contain "Transitioning from booting to force_stop"
 
   Scenario: Command start with only path works properly
+    Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
     When I run `ahn start path/somewhere` interactively
-    And I wait for output to contain "Transitioning from booting to running"
+    And I wait for output to contain "Starting connection to server"
     And I terminate the interactive process
     Then the output should contain "Loaded config"
     And the output should contain "Adhearsion::Console: Starting up..."
     And the output should contain "AHN>"
-    And the output should contain "Starting connection"
-    And the output should contain "Transitioning from running to stopping"
+    And the output should contain "Transitioning from booting to force_stop"
 
   Scenario: Command daemon with path works correctly
     Given JRuby skip test

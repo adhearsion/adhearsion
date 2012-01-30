@@ -8,25 +8,25 @@ module Adhearsion
 
     include HasGuardedHandlers
 
-    attr_accessor :offer, :client, :end_reason, :commands
+    attr_accessor :offer, :client, :end_reason, :commands, :variables
+
+    delegate :[], :[]=, :to => :variables
+    delegate :to, :from, :to => :offer, :allow_nil => true
 
     def initialize(offer = nil)
-      if offer
-        @offer  = offer
-        @client = offer.client
-      end
+      register_initial_handlers
 
       @tag_mutex        = Mutex.new
       @tags             = []
       @end_reason_mutex = Mutex.new
-      end_reason        = nil
       @commands         = CommandRegistry.new
+      @variables        = {}
 
-      register_initial_handlers
+      self << offer if offer
     end
 
     def id
-      @offer.call_id
+      offer.call_id
     end
 
     def tags
@@ -58,9 +58,21 @@ module Adhearsion
     def deliver_message(message)
       trigger_handler :event, message
     end
+
     alias << deliver_message
 
     def register_initial_handlers
+      register_event_handler Punchblock::Event::Offer do |offer|
+        @offer  = offer
+        @client = offer.client
+        throw :pass
+      end
+
+      register_event_handler Punchblock::HasHeaders do |event|
+        variables.merge! event.headers_hash
+        throw :pass
+      end
+
       on_end do |event|
         hangup
         @end_reason_mutex.synchronize { @end_reason = event.reason }
@@ -69,7 +81,7 @@ module Adhearsion
     end
 
     def on_end(&block)
-      register_event_handler :class => Punchblock::Event::End do |event|
+      register_event_handler Punchblock::Event::End do |event|
         block.call event
         throw :pass
       end
@@ -101,19 +113,51 @@ module Adhearsion
       Adhearsion.active_calls.remove_inactive_call self
     end
 
-    def join(other_call_id)
-      write_and_await_response Punchblock::Command::Join.new :other_call_id => other_call_id
+    ##
+    # Joins this call to another call or a mixer
+    #
+    # @param [Call, String, Hash] target the target to join to. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
+    # @option target [String] call_id The call ID to join to
+    # @option target [String] mixer_name The mixer to join to
+    # @param [Hash, Optional] options further options to be joined with
+    #
+    def join(target, options = {})
+      case target
+      when Call
+        options[:other_call_id] = target.id
+      when String
+        options[:other_call_id] = target
+      when Hash
+        raise ArgumentError, "You cannot specify both a call ID and mixer name" if target.has_key?(:call_id) && target.has_key?(:mixer_name)
+        target.tap do |t|
+          t[:other_call_id] = t[:call_id]
+          t.delete :call_id
+        end
+
+        options.merge! target
+      else
+        raise ArgumentError, "Don't know how to join to #{target.inspect}"
+      end
+      command = Punchblock::Command::Join.new options
+      write_and_await_response command
     end
 
-    # Lock the socket for a command.  Can be used to allow the console to take
-    # control of the thread in between AGI commands coming from the dialplan.
+    def mute
+      write_and_await_response ::Punchblock::Command::Mute.new
+    end
+
+    def unmute
+      write_and_await_response ::Punchblock::Command::Unmute.new
+    end
+
     def with_command_lock
       @command_monitor ||= Monitor.new
       @command_monitor.synchronize { yield }
     end
 
     def write_and_await_response(command, timeout = 60)
-      logger.trace "Executing command #{command.inspect}"
+      # TODO: Put this back once we figure out why it's causing CI to fail
+      # logger.trace "Executing command #{command.inspect}"
       commands << command
       write_command command
       response = command.response timeout
@@ -123,16 +167,12 @@ module Adhearsion
 
     def write_command(command)
       raise Hangup unless active? || command.is_a?(Punchblock::Command::Hangup)
+      variables.merge! command.headers_hash if command.respond_to? :headers_hash
       client.execute_command command, :call_id => id
     end
 
-    # Sanitize the offer id
     def logger_id
       "#{self.class}: #{id}"
-    end
-
-    def variables
-      offer ? offer.headers_hash : nil or {}
     end
 
     def execute_controller(controller, latch = nil)

@@ -49,18 +49,49 @@ module Adhearsion
             ]
           end
 
+          let :offer do
+            Punchblock::Event::Offer.new :to => to, :from => from
+          end
+
+          let(:call) { Adhearsion::Call.new offer }
+
           context "with a call from fred to paul" do
-            let(:call) { flexmock 'Adhearsion::Call', :from => 'fred', :to => 'paul' }
+            let(:from)  { 'fred' }
+            let(:to)    { 'paul' }
             it { should_match_the_call }
           end
 
           context "with a call from fred to frank" do
-            let(:call) { flexmock 'Adhearsion::Call', :from => 'fred', :to => 'frank' }
+            let(:from)  { 'fred' }
+            let(:to)    { 'frank' }
             it { should_not_match_the_call }
           end
 
           context "with a call from frank to paul" do
-            let(:call) { flexmock 'Adhearsion::Call', :from => 'frank', :to => 'paul' }
+            let(:from)  { 'frank' }
+            let(:to)    { 'paul' }
+            it { should_not_match_the_call }
+          end
+        end
+
+        describe "matching calls with the variable :foo=:bar" do
+          let :guards do
+            [[:[], :foo] => :bar]
+          end
+
+          let(:call) { Adhearsion::Call.new }
+
+          context "with :foo=:bar" do
+            before { call[:foo] = :bar }
+            it { should_match_the_call }
+          end
+
+          context "with :foo=:baz" do
+            before { call[:foo] = :baz }
+            it { should_not_match_the_call }
+          end
+
+          context "with :foo unset" do
             it { should_not_match_the_call }
           end
         end
@@ -86,9 +117,9 @@ module Adhearsion
             end
           end
 
-          it "should instruct the call to use an instance of DialplanController with the correct block" do
-            flexmock(call).should_receive(:execute_controller).once.with(DialplanController).and_return do |controller|
-              controller.dialplan.call.should == :foobar
+          it "should instruct the call to use a CallController with the correct block" do
+            flexmock(call).should_receive(:execute_controller).once.with(CallController).and_return do |controller|
+              controller.block.call.should == :foobar
             end
             route.dispatcher.call call
           end

@@ -57,7 +57,7 @@ module Adhearsion
 
     def log_state_change(transition)
       event, from, to = transition.event, transition.from_name, transition.to_name
-      logger.info "Transitioning from #{from} to #{to} with #{Adhearsion.active_calls.size} active calls."
+      logger.info "Transitioning from #{from} to #{to} with #{Adhearsion.active_calls.size} active calls due to #{event} event."
     end
 
     def request_stop
@@ -69,10 +69,13 @@ module Adhearsion
       Adhearsion.active_calls.each do |call|
         call.hangup
       end
+
       # This should shut down any remaining threads.  Once those threads have
       # stopped, important_threads will be empty and the process will exit
       # normally.
       Events.trigger_immediately :shutdown
+
+      Console.stop
     end
 
     def stop_when_zero_calls

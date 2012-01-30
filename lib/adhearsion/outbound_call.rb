@@ -2,6 +2,8 @@ module Adhearsion
   class OutboundCall < Call
     attr_reader :dial_command
 
+    delegate :to, :from, :to => :dial_command, :allow_nil => true
+
     class << self
       def originate(to, opts = {})
         new.tap do |call|
@@ -13,10 +15,6 @@ module Adhearsion
 
     def id
       dial_command.call_id if dial_command
-    end
-
-    def variables
-      {}
     end
 
     def client
@@ -34,7 +32,14 @@ module Adhearsion
 
     def dial(to, options = {})
       options.merge! :to => to
-      write_and_await_response(Punchblock::Command::Dial.new(options)).tap do |dial_command|
+      if options[:timeout]
+        wait_timeout = options[:timeout]
+        options[:timeout] = options[:timeout] * 1000
+      else
+        wait_timeout = 60
+      end
+
+      write_and_await_response(Punchblock::Command::Dial.new(options), wait_timeout).tap do |dial_command|
         @dial_command = dial_command
         Adhearsion.active_calls << self
       end

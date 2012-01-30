@@ -2,6 +2,17 @@ require 'fileutils'
 require 'adhearsion/script_ahn_loader'
 require 'thor'
 
+class Thor
+  class Task
+    protected
+
+    def sans_backtrace(backtrace, caller) #:nodoc:
+      saned  = backtrace.reject { |frame| frame =~ FILE_REGEXP || (frame =~ /\.java:/ && RUBY_PLATFORM =~ /java/) }
+      saned -= caller
+    end
+  end
+end
+
 module Adhearsion
   module CLI
     class AhnCommand < Thor
@@ -42,7 +53,7 @@ module Adhearsion
       desc "stop </path/to/directory>", "Stop a running Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def stop(path = nil)
-        execute_from_app_dir! path, ARGV
+        execute_from_app_dir! path
 
         pid_file = if options[:pidfile]
           File.expand_path File.exists?(File.expand_path(options[:pidfile])) ?
@@ -55,10 +66,10 @@ module Adhearsion
         begin
           pid = File.read(pid_file).to_i
         rescue
-          raise CLIException, "Could not read pid file #{pid_file}"
+          raise PIDReadError, pid_file
         end
 
-        raise CLIException, "Could not read pid" if pid.nil?
+        raise PIDReadError, pid_file if pid.nil?
 
         say "Stopping Adhearsion server at #{path} with pid #{pid}"
         waiting_timeout = Time.now + 15
@@ -73,7 +84,7 @@ module Adhearsion
       desc "restart </path/to/directory>", "Restart the Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def restart(path = nil)
-        execute_from_app_dir! path, ARGV
+        execute_from_app_dir! path
         invoke :stop
         invoke :daemon
       end
@@ -81,12 +92,12 @@ module Adhearsion
       protected
 
       def start_app(path, mode, pid_file = nil)
-        execute_from_app_dir! path, ARGV
-        say "Starting Adhearsion server at #{path}"
+        execute_from_app_dir! path
+        say "Starting Adhearsion server at #{Dir.pwd}"
         Adhearsion::Initializer.start :mode => mode, :pid_file => pid_file
       end
 
-      def execute_from_app_dir!(path, *args)
+      def execute_from_app_dir!(path)
         return if in_app? and running_script_ahn?
 
         path ||= '.' if in_app?
@@ -95,8 +106,8 @@ module Adhearsion
         raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?(path)
 
         Dir.chdir path do
-          args.flatten!
-          args[1] = '.'
+          args = ARGV.dup
+          args[1] = File.expand_path path
           ScriptAhnLoader.exec_script_ahn! args
         end
       end
@@ -136,6 +147,12 @@ module Adhearsion
     class PathInvalid < Thor::Error
       def initialize(path)
         super "Directory #{path} does not belong to an Adhearsion project!"
+      end
+    end
+
+    class PIDReadError < Thor::Error
+      def initialize(path)
+        super "Could not read pid from the file #{path}"
       end
     end
   end

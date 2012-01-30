@@ -1,8 +1,5 @@
 require 'spec_helper'
 
-Foo       = Class.new
-Foo::Bar  = Class.new
-
 describe Adhearsion::Logging do
 
   before do

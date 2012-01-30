@@ -1,5 +1,8 @@
 require 'spec_helper'
 
+class FinancialWizard < Adhearsion::CallController
+end
+
 module Adhearsion
   describe CallController do
     include CallControllerTestHelpers
@@ -18,10 +21,6 @@ module Adhearsion
         subject[:bar].should == 10
         subject[:foo].should == 7
       end
-    end
-
-    it "should add plugin dialplan methods" do
-      subject.should respond_to :foo
     end
 
     its(:logger)    { should be call.logger }
@@ -77,6 +76,20 @@ module Adhearsion
         subject.should_receive(:run).once.and_raise(StandardError).ordered
         flexmock(Events).should_receive(:trigger).once.with(:exception, StandardError).ordered
         subject.execute!
+      end
+
+      context "when a block is specified" do
+        let :block do
+          Proc.new { foo value }
+        end
+
+        its(:block) { should be block }
+
+        it "should execute the block in the context of the controller" do
+          flexmock subject, :value => :bar
+          subject.should_receive(:foo).once.with(:bar)
+          subject.run
+        end
       end
     end
 
@@ -285,43 +298,50 @@ module Adhearsion
 
     describe '#accept' do
       it "should delegate to the call" do
-        flexmock(subject.call).should_receive(:accept).once.with(:foo)
+        flexmock(call).should_receive(:accept).once.with(:foo)
         subject.accept :foo
       end
     end
 
     describe '#answer' do
       it "should delegate to the call" do
-        flexmock(subject.call).should_receive(:answer).once.with(:foo)
+        flexmock(call).should_receive(:answer).once.with(:foo)
         subject.answer :foo
       end
     end
 
     describe '#reject' do
       it "should delegate to the call" do
-        flexmock(subject.call).should_receive(:reject).once.with(:foo, :bar)
+        flexmock(call).should_receive(:reject).once.with(:foo, :bar)
         subject.reject :foo, :bar
       end
     end
 
     describe '#hangup' do
       it "should delegate to the call" do
-        flexmock(subject.call).should_receive(:hangup!).once.with(:foo)
+        flexmock(call).should_receive(:hangup!).once.with(:foo)
         subject.hangup :foo
       end
     end
 
     describe '#mute' do
-      it 'should send a Mute message' do
-        expect_message_waiting_for_response Punchblock::Command::Mute.new
+      it 'should delegate to the call' do
+        flexmock(call).should_receive(:mute).once
         subject.mute
       end
     end
 
     describe '#unmute' do
-      it 'should send an Unmute message' do
-        expect_message_waiting_for_response Punchblock::Command::Unmute.new
+      it 'should delegate to the call' do
+        flexmock(call).should_receive(:unmute).once
         subject.unmute
+      end
+    end
+
+    describe '#join' do
+      it 'should delegate to the call' do
+        flexmock(call).should_receive(:join).once.with(:foo)
+        subject.join :foo
       end
     end
   end
@@ -383,13 +403,28 @@ describe ExampleCallController do
     subject.execute!
   end
 
-  context "when the controller finishes without a hangup" do
+  describe "when the controller finishes without a hangup" do
     it "should execute the after_call callbacks" do
       subject[:skip_hangup] = true
       subject.should_receive(:join_to_conference).once.ordered
       subject.should_receive(:foobar).once.ordered
       subject.should_receive(:clean_up_models).twice.ordered
       subject.execute!
+    end
+  end
+
+  describe "providing hooks to include call functionality" do
+    let(:call) { Adhearsion::Call.new mock_offer(nil, :x_foo => 'bar') }
+
+    it "should allow mixing in a module globally on all CallController classes" do
+      Adhearsion::CallController.mixin TestBiscuit
+      Adhearsion::CallController.new(call).should respond_to :throwadogabone
+    end
+
+    it "should allow mixing in a module on a single CallController class" do
+      FinancialWizard.mixin MarmaladeIsBetterThanJam
+      FinancialWizard.new(call).should respond_to :sobittersweet
+      Adhearsion::CallController.new(call).should_not respond_to :sobittersweet
     end
   end
 end
