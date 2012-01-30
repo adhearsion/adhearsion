@@ -337,6 +337,13 @@ module Adhearsion
         subject.unmute
       end
     end
+
+    describe '#join' do
+      it 'should delegate to the call' do
+        flexmock(call).should_receive(:join).once.with(:foo)
+        subject.join :foo
+      end
+    end
   end
 end
 

@@ -57,7 +57,7 @@ module Adhearsion
 
     delegate :[], :[]=, :to => :@metadata
     delegate :variables, :logger, :to => :call
-    delegate :write_and_await_response, :accept, :answer, :reject, :mute, :unmute, :to => :call
+    delegate :write_and_await_response, :accept, :answer, :reject, :mute, :unmute, :join, :to => :call
 
     def initialize(call, metadata = nil, &block)
       @call, @metadata, @block = call, metadata || {}, block
