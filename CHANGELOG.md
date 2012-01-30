@@ -9,6 +9,7 @@
   * Feature: Router can match against variables on a call using `#[]`
   * Feature: adhearsion process is named via configuration module
   * Feature: CallController#dial now takes a `:for` (or `:timeout`) option to specify a timeout on the dial command
+  * Bugfix: The console should be shut down when shutting down the process
 
 # 2.0.0.alpha1 - 2012-01-17
 

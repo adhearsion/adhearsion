@@ -36,8 +36,16 @@ module Adhearsion
         logger.error "Cannot start. You are running Adhearsion on Ruby with libedit. You must use readline for the console to work."
       else
         logger.info "Starting up..."
+        @pry_thread = Thread.current
         binding.pry
       end
+    end
+
+    def stop
+      return unless @pry_thread
+      @pry_thread.kill
+      @pry_thread = nil
+      logger.info "Shutting down"
     end
 
     def calls

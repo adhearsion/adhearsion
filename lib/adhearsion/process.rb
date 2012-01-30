@@ -73,6 +73,8 @@ module Adhearsion
       # stopped, important_threads will be empty and the process will exit
       # normally.
       Events.trigger_immediately :shutdown
+
+      Console.stop
     end
 
     def stop_when_zero_calls
