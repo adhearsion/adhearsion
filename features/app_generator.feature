@@ -12,6 +12,7 @@ Feature: Adhearsion App Generator
       | script                |
 
     And the following files should exist:
+      | .gitignore            |
       | config/adhearsion.rb  |
       | config/environment.rb |
       | Gemfile               |
