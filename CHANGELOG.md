@@ -1,19 +1,21 @@
 # develop (2.0.0.head)
+
+# 2.0.0.alpha2 - 2012-01-30
+  * Change: Plugins no longer load dialplan/event/rpc/console methods using corresponding class methods
+  * Feature: CallController and Console can have modules of methods mixed in using `CallController.mixin` and `Console.mixin`
   * Feature: Added the ability to override configuration using environment variables. The correct names are given when running `rake adhearsion:config:show`, and are automatically added for all plugins. Plugins may define how the string environment variable is transformed to be useful.
   * Feature: Rake task adhearsion:config:show improved to make the output copy and paste-able in a configuration file.
-  * Rake tasks cleaned up and some initialization bugs fixed
   * Feature: Call variables are aggregated from the headers sent and received during its existence
   * Feature: Call variables are accessible using `#[]` and `#[]=` on the call
-  * Bugfix: `Call` and `OutboundCall` now respond to `#to` and `#from` with the correct values from the offer/dial
-  * Bugfix: An `OutboundCall` allows storing call variables just like a `Call`
   * Feature: Router can match against variables on a call using `#[]`
   * Feature: adhearsion process is named via configuration module
   * Feature: CallController#dial now takes a `:for` (or `:timeout`) option to specify a timeout on the dial command
-  * Bugfix: The console should be shut down when shutting down the process
   * Feature: Include a sensible `.gitignore` in generated apps
   * Feature: CallController can now perform join operations on calls, and take either a call ID, a call object or a mixer name as the target
-  * Change: Plugins no longer load dialplan/event/rpc/console methods using corresponding class methods
-  * Feature: CallController and Console can have modules of methods mixed in using `CallController.mixin` and `Console.mixin`
+  * Bugfix: `Call` and `OutboundCall` now respond to `#to` and `#from` with the correct values from the offer/dial
+  * Bugfix: An `OutboundCall` allows storing call variables just like a `Call`
+  * Bugfix: The console should be shut down when shutting down the process
+  * Rake tasks cleaned up and some initialization bugs fixed
 
 # 2.0.0.alpha1 - 2012-01-17
 
