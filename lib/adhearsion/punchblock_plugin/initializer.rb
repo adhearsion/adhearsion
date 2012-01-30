@@ -36,7 +36,7 @@ module Adhearsion
           # When a stop is requested, change our status to "Do Not Disturb"
           # This should prevent the telephony engine from sending us any new calls.
           Events.register_callback :stop_requested do
-            connection.not_ready!
+            connection.not_ready! if connection.connected?
           end
 
           # Make sure we stop everything when we shutdown
@@ -70,9 +70,16 @@ module Adhearsion
         end
 
         def connect
+          return unless Process.state_name == :booting
           m = Mutex.new
           blocker = ConditionVariable.new
+
           Events.punchblock ::Punchblock::Connection::Connected do
+            m.synchronize { blocker.broadcast }
+          end
+
+          Events.shutdown do
+            logger.info "Shutting down while connecting. Breaking the connection block."
             m.synchronize { blocker.broadcast }
           end
 
