@@ -298,28 +298,28 @@ module Adhearsion
 
     describe '#accept' do
       it "should delegate to the call" do
-        flexmock(subject.call).should_receive(:accept).once.with(:foo)
+        flexmock(call).should_receive(:accept).once.with(:foo)
         subject.accept :foo
       end
     end
 
     describe '#answer' do
       it "should delegate to the call" do
-        flexmock(subject.call).should_receive(:answer).once.with(:foo)
+        flexmock(call).should_receive(:answer).once.with(:foo)
         subject.answer :foo
       end
     end
 
     describe '#reject' do
       it "should delegate to the call" do
-        flexmock(subject.call).should_receive(:reject).once.with(:foo, :bar)
+        flexmock(call).should_receive(:reject).once.with(:foo, :bar)
         subject.reject :foo, :bar
       end
     end
 
     describe '#hangup' do
       it "should delegate to the call" do
-        flexmock(subject.call).should_receive(:hangup!).once.with(:foo)
+        flexmock(call).should_receive(:hangup!).once.with(:foo)
         subject.hangup :foo
       end
     end
