@@ -42,10 +42,10 @@ module Adhearsion
       load_config
       initialize_log_paths
       daemonize! if should_daemonize?
+      start_logging
       launch_console if need_console?
       catch_termination_signal
       create_pid_file
-      start_logging
       set_ahn_proc_name
       logger.info "Loaded config in <#{Adhearsion.config.platform.environment}> environment"
       initialize_exception_logger
