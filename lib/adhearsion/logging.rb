@@ -36,15 +36,30 @@ module Adhearsion
         ::Logging.reset
       end
 
-      def start
+      def init
         ::Logging.init LOG_LEVELS
-        ::Logging::Logger[:root].level = :info
-        ::Logging.logger.root.appenders = [::Logging.appenders.stdout('stdout')]
-        self.send :_set_formatter, ::Logging::Layouts.basic(:format_as => :string, :backtrace => true)
 
         LOG_LEVELS.each do |level|
           Adhearsion::Logging.const_defined?(level) or Adhearsion::Logging.const_set(level, ::Logging::LEVELS[::Logging.levelify(level)])
         end
+      end
+
+      def start(_appenders = nil, level = :info, formatter = nil)
+        ::Logging.logger.root.appenders = _appenders.nil? ? default_appenders : _appenders
+
+        ::Logging.logger.root.level = level
+
+        formatter = formatter if formatter
+      end
+
+      def default_appenders
+        [::Logging.appenders.stdout(
+           'stdout',
+           :layout => ::Logging.layouts.pattern(
+             :pattern => adhearsion_pattern,
+             :color_scheme => 'bright'
+           )
+         )]
       end
 
       def logging_level=(new_logging_level)
@@ -80,7 +95,9 @@ module Adhearsion
       alias :appenders :outputters
 
       def formatter=(formatter)
-        _set_formatter(formatter)
+        ::Logging.logger.root.appenders.each do |appender|
+          appender.layout = formatter
+        end
       end
 
       alias :layout= :formatter=
@@ -91,16 +108,8 @@ module Adhearsion
 
       alias :layout :formatter
 
-      private
-
-      def _set_formatter(formatter)
-        ::Logging.logger.root.appenders.each do |appender|
-          appender.layout = formatter
-        end
-      end
-
     end
 
-    start unless ::Logging.const_defined? :MAX_LEVEL_LENGTH
+    init unless ::Logging.const_defined? :MAX_LEVEL_LENGTH
   end
 end

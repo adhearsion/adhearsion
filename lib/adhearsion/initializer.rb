@@ -4,10 +4,6 @@ require 'adhearsion/linux_proc_name'
 module Adhearsion
   class Initializer
 
-    extend ActiveSupport::Autoload
-
-    autoload :Logging
-
     class << self
       def start(*args, &block)
         new(*args, &block).start
@@ -174,14 +170,7 @@ module Adhearsion
       if should_daemonize?
         appenders
       else
-        stdout = ::Logging.appenders.stdout(
-                            'stdout',
-                            :layout => ::Logging.layouts.pattern(
-                              :pattern => Adhearsion::Logging.adhearsion_pattern,
-                              :color_scheme => 'bright'
-                            )
-                          )
-        appenders << stdout
+        appenders += Adhearsion::Logging.default_appenders
       end
     end
 
@@ -238,7 +227,7 @@ module Adhearsion
 
     def start_logging
       outputters = init_get_logging_appenders
-      Logging.start outputters, Adhearsion.config.platform.logging.level, Adhearsion.config.platform.logging.formatter
+      Adhearsion::Logging.start outputters, Adhearsion.config.platform.logging.level, Adhearsion.config.platform.logging.formatter
     end
 
     def initialize_exception_logger

@@ -10,7 +10,7 @@ describe Adhearsion::Initializer do
   describe "#start" do
     before do
       Adhearsion::Logging.reset
-      flexmock(Adhearsion::Initializer::Logging).should_receive(:start).once.and_return('')
+      flexmock(Adhearsion::Logging).should_receive(:start).once.and_return('')
       flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
       flexmock(::Logging::Appenders).should_receive(:file).and_return(nil)
       Adhearsion.config = nil
@@ -22,7 +22,7 @@ describe Adhearsion::Initializer do
 
     after :all do
       Adhearsion::Logging.reset
-      Adhearsion::Initializer::Logging.start
+      Adhearsion::Logging.start
       Adhearsion::Logging.silence!
     end
 
@@ -145,7 +145,7 @@ describe Adhearsion::Initializer do
 
     after :all do
       Adhearsion::Logging.reset
-      Adhearsion::Initializer::Logging.start
+      Adhearsion::Logging.start
       Adhearsion::Logging.silence!
       Adhearsion::Events.reinitialize_queue!
     end
@@ -153,7 +153,7 @@ describe Adhearsion::Initializer do
     it "should start logging with valid parameters" do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
         flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
-        flexmock(Adhearsion::Initializer::Logging).should_receive(:start).once.with(Array, :info, nil).and_return('')
+        flexmock(Adhearsion::Logging).should_receive(:start).once.with(Array, :info, nil).and_return('')
         Adhearsion::Initializer.start :pid_file => true
       end
     end
@@ -192,7 +192,7 @@ describe "Updating RAILS_ENV variable" do
 
   before do
     Adhearsion::Logging.reset
-    flexmock(Adhearsion::Initializer::Logging).should_receive(:start).once.and_return('')
+    flexmock(Adhearsion::Logging).should_receive(:start).once.and_return('')
     flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
     flexmock(::Logging::Appenders).should_receive(:file).and_return(nil)
     Adhearsion.config = nil
