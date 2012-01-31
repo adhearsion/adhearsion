@@ -41,7 +41,7 @@ module Adhearsion
 
           new_call.on_answer do |event|
             calls.each do |call_to_hangup, target|
-              call_to_hangup.hangup! unless call_to_hangup.id == new_call.id
+              call_to_hangup.hangup unless call_to_hangup.id == new_call.id
             end
             new_call.join call
           end

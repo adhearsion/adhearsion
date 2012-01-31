@@ -74,7 +74,7 @@ module Adhearsion
       end
 
       on_end do |event|
-        hangup
+        clear_from_active_calls
         @end_reason_mutex.synchronize { @end_reason = event.reason }
         commands.terminate
       end
@@ -103,13 +103,13 @@ module Adhearsion
       write_and_await_response Punchblock::Command::Reject.new(:reason => reason, :headers => headers)
     end
 
-    def hangup!(headers = nil)
+    def hangup(headers = nil)
       return false unless active?
       @end_reason_mutex.synchronize { @end_reason = true }
       write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
     end
 
-    def hangup
+    def clear_from_active_calls
       Adhearsion.active_calls.remove_inactive_call self
     end
 
@@ -181,7 +181,7 @@ module Adhearsion
           begin
             CallController.exec controller
           ensure
-            hangup!
+            hangup
           end
           latch.countdown! if latch
         end

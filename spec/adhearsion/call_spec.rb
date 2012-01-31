@@ -89,15 +89,6 @@ module Adhearsion
       end
     end
 
-    it 'a hungup call removes itself from the active calls' do
-      size_before = Adhearsion.active_calls.size
-
-      call = Adhearsion.active_calls.from_offer offer
-      Adhearsion.active_calls.size.should > size_before
-      call.hangup
-      Adhearsion.active_calls.size.should == size_before
-    end
-
     it 'allows the registration of event handlers which are called when messages are delivered' do
       event = flexmock 'Event'
       event.should_receive(:foo?).and_return true
@@ -134,7 +125,6 @@ module Adhearsion
         end
 
         it "should mark the call as ended" do
-          flexmock(subject).should_receive(:hangup).once
           subject << end_event
           subject.should_not be_active
         end
@@ -147,6 +137,16 @@ module Adhearsion
         it "should instruct the command registry to terminate" do
           flexmock(subject.commands).should_receive(:terminate).once
           subject << end_event
+        end
+
+        it "removes itself from the active calls" do
+          size_before = Adhearsion.active_calls.size
+
+          Adhearsion.active_calls << subject
+          Adhearsion.active_calls.size.should > size_before
+
+          subject << end_event
+          Adhearsion.active_calls.size.should == size_before
         end
       end
     end
@@ -344,7 +344,7 @@ module Adhearsion
         end
       end
 
-      describe "#hangup!" do
+      describe "#hangup" do
         describe "if the call is not active" do
           before do
             flexmock(subject).should_receive(:active?).and_return false
@@ -352,21 +352,21 @@ module Adhearsion
 
           it "should do nothing and return false" do
             flexmock(subject).should_receive(:write_and_await_response).never
-            subject.hangup!.should be false
+            subject.hangup.should be false
           end
         end
 
         describe "if the call is active" do
           it "should mark the call inactive" do
             expect_message_waiting_for_response Punchblock::Command::Hangup.new
-            subject.hangup!
+            subject.hangup
             subject.should_not be_active
           end
 
           describe "with no headers" do
             it 'should send a Hangup message' do
               expect_message_waiting_for_response Punchblock::Command::Hangup.new
-              subject.hangup!
+              subject.hangup
             end
           end
 
@@ -374,7 +374,7 @@ module Adhearsion
             it 'should send a Hangup message with the correct headers' do
               headers = {:foo => 'bar'}
               expect_message_waiting_for_response Punchblock::Command::Hangup.new(:headers => headers)
-              subject.hangup! headers
+              subject.hangup headers
             end
           end
         end
@@ -495,7 +495,7 @@ module Adhearsion
 
         it "should hangup the call after all controllers have executed" do
           flexmock(CallController).should_receive(:exec).once.with mock_controller
-          subject.should_receive(:hangup!).once
+          subject.should_receive(:hangup).once
           subject.execute_controller mock_controller, latch
           latch.wait(3).should be_true
         end

@@ -208,7 +208,7 @@ module Adhearsion
         subject.should_receive(:before).once.ordered
         call.should_receive(:answer).once.ordered
         subject.should_receive(:after).never.ordered
-        call.should_receive(:hangup!).once.ordered
+        call.should_receive(:hangup).once.ordered
 
         call.execute_controller subject, latch
         latch.wait(1).should be_true
@@ -319,7 +319,7 @@ module Adhearsion
 
     describe '#hangup' do
       it "should delegate to the call" do
-        flexmock(call).should_receive(:hangup!).once.with(:foo)
+        flexmock(call).should_receive(:hangup).once.with(:foo)
         subject.hangup :foo
       end
     end

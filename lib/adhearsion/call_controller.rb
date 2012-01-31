@@ -113,7 +113,7 @@ module Adhearsion
     end
 
     def hangup(headers = nil)
-      hangup_response = call.hangup! headers
+      hangup_response = call.hangup headers
       after_call unless hangup_response == false
     end
 
