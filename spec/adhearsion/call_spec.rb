@@ -300,6 +300,14 @@ module Adhearsion
             subject.accept headers
           end
         end
+
+        describe "a second time" do
+          it "should only send one Accept message" do
+            expect_message_waiting_for_response Punchblock::Command::Accept.new
+            subject.accept
+            subject.accept
+          end
+        end
       end
 
       describe '#answer' do

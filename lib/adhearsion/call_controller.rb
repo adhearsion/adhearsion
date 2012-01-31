@@ -34,16 +34,15 @@ module Adhearsion
     end
 
     class << self
-      def exec(controller, fresh_call = true)
+      def exec(controller)
         return unless controller
 
         new_controller = catch :pass_controller do
-          controller.skip_accept! unless fresh_call
           controller.execute!
           nil
         end
 
-        exec new_controller, false
+        exec new_controller
       end
 
       ##
@@ -65,7 +64,7 @@ module Adhearsion
 
     def execute!(*options)
       execute_callbacks :before_call
-      accept if auto_accept?
+      accept
       run
     rescue Hangup
       logger.info "Call was hung up"
@@ -94,18 +93,6 @@ module Adhearsion
           instance_exec &callback
         end
       end
-    end
-
-    def skip_accept!
-      @skip_accept = true
-    end
-
-    def skip_accept?
-      @skip_accept || false
-    end
-
-    def auto_accept?
-      Adhearsion.config.platform.automatically_accept_incoming_calls && !skip_accept?
     end
 
     def after_call

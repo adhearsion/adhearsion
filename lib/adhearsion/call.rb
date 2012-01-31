@@ -113,7 +113,7 @@ module Adhearsion
     end
 
     def accept(headers = nil)
-      write_and_await_response Punchblock::Command::Accept.new(:headers => headers)
+      @accept_command ||= write_and_await_response Punchblock::Command::Accept.new(:headers => headers)
     end
 
     def answer(headers = nil)

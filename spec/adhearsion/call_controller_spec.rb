@@ -32,38 +32,10 @@ module Adhearsion
         flexmock call.wrapped_object, :write_and_await_response => nil
       end
 
-      context "when auto-accept is enabled" do
-        before do
-          Adhearsion.config.platform.automatically_accept_incoming_calls = true
-        end
-
-        it "should accept the call" do
-          subject.should_receive(:accept).once.ordered
-          subject.should_receive(:run).once.ordered
-          subject.execute!
-        end
-
-        context "and accept is skipped" do
-          before { subject.skip_accept! }
-
-          it "should not accept the call" do
-            subject.should_receive(:accept).never
-            subject.should_receive(:run).once
-            subject.execute!
-          end
-        end
-      end
-
-      context "when auto-accept is disabled" do
-        before do
-          Adhearsion.config.platform.automatically_accept_incoming_calls = false
-        end
-
-        it "should not accept the call" do
-          subject.should_receive(:accept).never
-          subject.should_receive(:run).once
-          subject.execute!
-        end
+      it "should accept the call" do
+        subject.should_receive(:accept).once.ordered
+        subject.should_receive(:run).once.ordered
+        subject.execute!
       end
 
       it "catches Hangup exceptions and logs the hangup" do
@@ -139,7 +111,6 @@ module Adhearsion
         flexmock subject, :execute_component_and_await_completion => nil
         flexmock call.wrapped_object, :write_and_await_response => nil
         flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
-        Adhearsion.config.platform.automatically_accept_incoming_calls = true
       end
 
       it "should invoke another controller before returning to the current controller" do
@@ -199,7 +170,6 @@ module Adhearsion
         flexmock subject, :execute_component_and_await_completion => nil
         flexmock(SecondController).new_instances.should_receive(:md_check).once.with :foo => 'bar'
         flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
-        Adhearsion.config.platform.automatically_accept_incoming_calls = true
       end
 
       let(:latch) { CountDownLatch.new 1 }
@@ -212,12 +182,6 @@ module Adhearsion
 
         call.execute_controller subject, latch
         latch.wait(1).should be_true
-      end
-
-      it "should not attempt to accept the call again" do
-        call.should_receive(:accept).once
-
-        CallController.exec subject
       end
 
       it "should execute after_call callbacks before passing control" do
@@ -379,7 +343,6 @@ describe ExampleCallController do
   before do
     flexmock subject, :execute_component_and_await_completion => nil
     flexmock call.wrapped_object, :write_and_await_response => nil
-    Adhearsion.config.platform.automatically_accept_incoming_calls = true
   end
 
   it "should execute the before_call callbacks before accepting the call" do
