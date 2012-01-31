@@ -51,7 +51,7 @@ module Adhearsion
 
     def initialize_config
       _config = Configuration.new
-      env = ENV['AHN_ENV']
+      env = ENV['AHN_ENV'] || ENV['RAILS_ENV']
       env = nil unless _config.valid_environment? env
       _config.platform.environment = env if env
       _config
