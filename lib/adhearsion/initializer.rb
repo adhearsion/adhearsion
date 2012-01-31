@@ -43,12 +43,11 @@ module Adhearsion
       catch_termination_signal
       create_pid_file
       set_ahn_proc_name
-      logger.info "Loaded config in <#{Adhearsion.config.platform.environment}> environment"
       initialize_exception_logger
       update_rails_env_var
       init_plugins
 
-      logger.info "Adhearsion v#{Adhearsion::VERSION} initialized!"
+      logger.info "Adhearsion v#{Adhearsion::VERSION} initialized with environment <#{Adhearsion.config.platform.environment}>!"
       Adhearsion::Process.booted
 
       run_plugins
