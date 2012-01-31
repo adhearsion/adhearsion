@@ -227,23 +227,27 @@ describe "Updating RAILS_ENV variable" do
       ENV['RAILS_ENV'] = "test"
     end
 
-    it "should preserve the RAILS_ENV value if AHN_ENV is unset" do
-      ahn = nil
-      stub_behavior_for_initializer_with_no_path_changing_behavior do
-        ahn = Adhearsion::Initializer.start
+    context "if AHN_ENV is set" do
+      it "should preserve the RAILS_ENV value" do
+        ENV['AHN_ENV'] = "production"
+        ahn = nil
+        stub_behavior_for_initializer_with_no_path_changing_behavior do
+          ahn = Adhearsion::Initializer.start
+        end
+        ahn.update_rails_env_var
+        ENV['RAILS_ENV'].should == "test"
       end
-      ahn.update_rails_env_var
-      ENV['RAILS_ENV'].should == "test"
     end
 
-    it "should update the RAILS_ENV value with the AHN_ENV value" do
-      ENV['AHN_ENV'] = "production"
-      ahn = nil
-      stub_behavior_for_initializer_with_no_path_changing_behavior do
-        ahn = Adhearsion::Initializer.start
+    context "if AHN_ENV is unset" do
+      it "should preserve the RAILS_ENV value" do
+        ahn = nil
+        stub_behavior_for_initializer_with_no_path_changing_behavior do
+          ahn = Adhearsion::Initializer.start
+        end
+        ahn.update_rails_env_var
+        ENV['RAILS_ENV'].should == "test"
       end
-      ahn.update_rails_env_var
-      ENV['RAILS_ENV'].should == "production"
     end
   end
 
