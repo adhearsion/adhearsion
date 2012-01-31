@@ -20,5 +20,35 @@ module Adhearsion
         Adhearsion::Console.libedit?.should be true
       end
     end
+
+    describe "#log_level" do
+      context "with a value" do
+        it "should set the log level via Adhearsion::Logging" do
+          flexmock(Adhearsion::Logging).should_receive(:level=).once.with(:foo)
+          Console.log_level :foo
+        end
+      end
+
+      context "without a value" do
+        it "should return the current level as a symbol" do
+          Adhearsion::Logging.level = :fatal
+          Console.log_level.should == :fatal
+        end
+      end
+    end
+
+    describe "#silence!" do
+      it "should delegate to Adhearsion::Logging" do
+        flexmock(Adhearsion::Logging).should_receive(:silence!).once
+        Console.silence!
+      end
+    end
+
+    describe "#unsilence!" do
+      it "should delegate to Adhearsion::Logging" do
+        flexmock(Adhearsion::Logging).should_receive(:unsilence!).once
+        Console.unsilence!
+      end
+    end
   end
 end

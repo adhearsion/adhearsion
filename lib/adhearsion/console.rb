@@ -5,6 +5,8 @@ module Adhearsion
     include Adhearsion
     include Singleton
 
+    delegate :silence!, :unsilence!, :to => Adhearsion::Logging
+
     class << self
       ##
       # Include another external functionality into the console
@@ -46,6 +48,14 @@ module Adhearsion
       @pry_thread.kill
       @pry_thread = nil
       logger.info "Shutting down"
+    end
+
+    def log_level(level = nil)
+      if level
+        Adhearsion::Logging.level = level
+      else
+        ::Logging::LEVELS.invert[Adhearsion::Logging.level].to_sym
+      end
     end
 
     def calls

@@ -63,13 +63,13 @@ module Adhearsion
       end
 
       def logging_level=(new_logging_level)
-        ::Logging::Logger[:root].level = new_logging_level
+        ::Logging.logger.root.level = new_logging_level
       end
 
       alias :level= :logging_level=
 
       def logging_level
-        ::Logging::Logger[:root].level
+        ::Logging.logger.root.level
       end
 
       def get_logger(logger_name)

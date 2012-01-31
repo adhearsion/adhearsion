@@ -1,4 +1,5 @@
 # develop (2.0.0.head)
+  * Feature: Add log level helper methods to Console
 
 # 2.0.0.alpha2 - 2012-01-30
   * Change: Plugins no longer load dialplan/event/rpc/console methods using corresponding class methods
