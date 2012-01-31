@@ -72,25 +72,19 @@ module Adhearsion
       #
       def configuration_for_component_named(component_name)
         # Look for configuration in #{AHN_ROOT}/config/components first
-        if File.exists?("#{AHN_ROOT}/config/components/#{component_name}.yml")
-          return YAML.load_file "#{AHN_ROOT}/config/components/#{component_name}.yml"
-        end
-
         # Look for configuration in #{AHN_ROOT}/components/#{component_name}/config next
-        if File.exists?("#{AHN_ROOT}/components/#{component_name}/config/#{component_name}.yml")
-          return YAML.load_file "#{AHN_ROOT}/components/#{component_name}/config/#{component_name}.yml"
+        # Next try the local app component directory
+        %W{
+          #{AHN_ROOT}/config/components/#{component_name}.yml
+          #{AHN_ROOT}/components/#{component_name}/config/#{component_name}.yml
+          #{File.join @path_to_container_directory, component_name, "#{component_name}.yml"}
+        }.each do |filename|
+          return YAML.load_file filename if File.exists?(filename)
         end
 
-        # Next try the local app component directory
-        component_dir = File.join(@path_to_container_directory, component_name)
-        config_file = File.join component_dir, "#{component_name}.yml"
-        if File.exists?(config_file)
-          YAML.load_file config_file
-        else
-          # Nothing found? Return an empty hash
-          ahn_log.warn "No configuration found for requested component #{component_name}"
-          return {}
-        end
+        # Nothing found? Return an empty hash
+        ahn_log.warn "No configuration found for requested component #{component_name}"
+        {}
       end
 
       def extend_object_with(object, *scopes)
