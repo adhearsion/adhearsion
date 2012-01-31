@@ -76,6 +76,11 @@ module Adhearsion
           return YAML.load_file "#{AHN_ROOT}/config/components/#{component_name}.yml"
         end
 
+        # Look for configuration in #{AHN_ROOT}/components/#{component_name}/config next
+        if File.exists?("#{AHN_ROOT}/components/#{component_name}/config/#{component_name}.yml")
+          return YAML.load_file "#{AHN_ROOT}/components/#{component_name}/config/#{component_name}.yml"
+        end
+
         # Next try the local app component directory
         component_dir = File.join(@path_to_container_directory, component_name)
         config_file = File.join component_dir, "#{component_name}.yml"
