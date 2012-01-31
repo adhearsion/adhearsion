@@ -18,26 +18,13 @@ module Adhearsion
 
       let(:latch) { CountDownLatch.new 1 }
 
-      def mock_dial
-        flexmock(OutboundCall).new_instances.should_receive(:dial).and_return true
-      end
-
       describe "#dial" do
-        it "should create a new call and return it" do
-          mock_dial
-          t = Thread.new do
-            subject.dial(to, {}, latch).should be_a OutboundCall
-          end
-          latch.countdown!
-          t.join
-        end
-
-        it "should dial the call to the correct endpoint" do
+        it "should dial the call to the correct endpoint and return it" do
           other_mock_call
           flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
           flexmock(other_mock_call).should_receive(:dial).with(to, :from => 'foo').once
           dial_thread = Thread.new do
-            subject.dial to, :from => 'foo'
+            subject.dial(to, :from => 'foo').should be_a OutboundCall
           end
           sleep 0.1
           other_mock_call << mock_end

@@ -1,4 +1,23 @@
 require 'thread'
+require 'celluloid'
+
+module Celluloid
+  module ClassMethods
+    def ===(other)
+      other.kind_of? self
+    end
+  end
+
+  class ActorProxy
+    def is_a?(klass)
+      Actor.call @mailbox, :is_a?, klass
+    end
+
+    def kind_of?(klass)
+      Actor.call @mailbox, :kind_of?, klass
+    end
+  end
+end
 
 module Adhearsion
   ##
@@ -6,6 +25,7 @@ module Adhearsion
   #
   class Call
 
+    include Celluloid
     include HasGuardedHandlers
 
     attr_accessor :offer, :client, :end_reason, :commands, :variables
@@ -26,7 +46,7 @@ module Adhearsion
     end
 
     def id
-      offer.call_id
+      offer.call_id if offer
     end
 
     def tags
@@ -37,7 +57,7 @@ module Adhearsion
     # that using a symbol would create a memory leak if used improperly
     # @param [String, Symbol] label String or Symbol with which to tag this call
     def tag(label)
-      raise ArgumentError, "Tag must be a String or Symbol" unless [String, Symbol].include?(label.class)
+      abort ArgumentError.new "Tag must be a String or Symbol" unless [String, Symbol].include?(label.class)
       @tag_mutex.synchronize { @tags << label }
     end
 
@@ -77,6 +97,7 @@ module Adhearsion
         clear_from_active_calls
         @end_reason_mutex.synchronize { @end_reason = event.reason }
         commands.terminate
+        after(5) { current_actor.terminate! }
       end
     end
 
@@ -110,7 +131,7 @@ module Adhearsion
     end
 
     def clear_from_active_calls
-      Adhearsion.active_calls.remove_inactive_call self
+      Adhearsion.active_calls.remove_inactive_call current_actor
     end
 
     ##
@@ -128,7 +149,7 @@ module Adhearsion
       when String
         options[:other_call_id] = target
       when Hash
-        raise ArgumentError, "You cannot specify both a call ID and mixer name" if target.has_key?(:call_id) && target.has_key?(:mixer_name)
+        abort ArgumentError.new "You cannot specify both a call ID and mixer name" if target.has_key?(:call_id) && target.has_key?(:mixer_name)
         target.tap do |t|
           t[:other_call_id] = t[:call_id]
           t.delete :call_id
@@ -136,7 +157,7 @@ module Adhearsion
 
         options.merge! target
       else
-        raise ArgumentError, "Don't know how to join to #{target.inspect}"
+        abort ArgumentError.new "Don't know how to join to #{target.inspect}"
       end
       command = Punchblock::Command::Join.new options
       write_and_await_response command
@@ -161,18 +182,26 @@ module Adhearsion
       commands << command
       write_command command
       response = command.response timeout
-      raise response if response.is_a? Exception
+      abort response if response.is_a? Exception
       command
     end
 
     def write_command(command)
-      raise Hangup unless active? || command.is_a?(Punchblock::Command::Hangup)
+      abort Hangup.new unless active? || command.is_a?(Punchblock::Command::Hangup)
       variables.merge! command.headers_hash if command.respond_to? :headers_hash
       client.execute_command command, :call_id => id
     end
 
     def logger_id
       "#{self.class}: #{id}"
+    end
+
+    def logger
+      super
+    end
+
+    def to_ary
+      [current_actor]
     end
 
     def execute_controller(controller, latch = nil)

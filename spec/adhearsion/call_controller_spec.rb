@@ -29,7 +29,7 @@ module Adhearsion
     describe "execution on a call" do
       before do
         flexmock subject, :execute_component_and_await_completion => nil
-        flexmock call, :write_and_await_response => nil
+        flexmock call.wrapped_object, :write_and_await_response => nil
       end
 
       context "when auto-accept is enabled" do
@@ -137,7 +137,7 @@ module Adhearsion
 
       before do
         flexmock subject, :execute_component_and_await_completion => nil
-        flexmock call, :write_and_await_response => nil
+        flexmock call.wrapped_object, :write_and_await_response => nil
         flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
         Adhearsion.config.platform.automatically_accept_incoming_calls = true
       end
@@ -195,7 +195,7 @@ module Adhearsion
       subject { PassController.new call }
 
       before do
-        flexmock(call).should_receive(:write_and_await_response).and_return nil
+        flexmock(call.wrapped_object).should_receive(:write_and_await_response).and_return nil
         flexmock subject, :execute_component_and_await_completion => nil
         flexmock(SecondController).new_instances.should_receive(:md_check).once.with :foo => 'bar'
         flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
@@ -208,7 +208,7 @@ module Adhearsion
         subject.should_receive(:before).once.ordered
         call.should_receive(:answer).once.ordered
         subject.should_receive(:after).never.ordered
-        call.should_receive(:hangup).once.ordered
+        call.wrapped_object.should_receive(:hangup).once.ordered
 
         call.execute_controller subject, latch
         latch.wait(1).should be_true
@@ -378,7 +378,7 @@ describe ExampleCallController do
 
   before do
     flexmock subject, :execute_component_and_await_completion => nil
-    flexmock call, :write_and_await_response => nil
+    flexmock call.wrapped_object, :write_and_await_response => nil
     Adhearsion.config.platform.automatically_accept_incoming_calls = true
   end
 
