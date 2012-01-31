@@ -32,12 +32,6 @@ module Adhearsion
         flexmock call.wrapped_object, :write_and_await_response => nil
       end
 
-      it "should accept the call" do
-        subject.should_receive(:accept).once.ordered
-        subject.should_receive(:run).once.ordered
-        subject.execute!
-      end
-
       it "catches Hangup exceptions and logs the hangup" do
         subject.should_receive(:run).once.and_raise(Hangup).ordered
         flexmock(subject.logger).should_receive(:info).once.with(/Call was hung up/).ordered
@@ -123,12 +117,6 @@ module Adhearsion
 
       it "should invoke the new controller with metadata" do
         flexmock(SecondController).new_instances.should_receive(:md_check).once.with :foo => 'bar'
-        subject.execute!
-      end
-
-      it "should not attempt to accept the call again" do
-        call.should_receive(:accept).once
-
         subject.execute!
       end
 
@@ -260,13 +248,6 @@ module Adhearsion
       end
     end
 
-    describe '#accept' do
-      it "should delegate to the call" do
-        flexmock(call).should_receive(:accept).once.with(:foo)
-        subject.accept :foo
-      end
-    end
-
     describe '#answer' do
       it "should delegate to the call" do
         flexmock(call).should_receive(:answer).once.with(:foo)
@@ -345,9 +326,8 @@ describe ExampleCallController do
     flexmock call.wrapped_object, :write_and_await_response => nil
   end
 
-  it "should execute the before_call callbacks before accepting the call" do
+  it "should execute the before_call callbacks before processing the call" do
     subject.should_receive(:setup_models).twice.ordered
-    subject.should_receive(:accept).once.ordered
     subject.should_receive(:join_to_conference).once.ordered
     subject.execute!
   end

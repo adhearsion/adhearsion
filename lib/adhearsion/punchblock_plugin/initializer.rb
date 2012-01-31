@@ -119,6 +119,7 @@ module Adhearsion
             when :booting, :rejecting
               call.reject :decline
             when :running
+              call.accept
               dispatcher = Adhearsion.router.handle call
               dispatcher.call call
             else
