@@ -2,6 +2,8 @@ module Adhearsion
   module Generators
     extend ActiveSupport::Autoload
 
+    autoload :Generator
+
     class << self
       ##
       # Return a ordered list of task with their class

@@ -1,26 +1,11 @@
-begin
-  require 'thor/group'
-rescue LoadError
-  puts "Thor is not available.\nIf you ran this command from a git checkout " \
-       "of Adhearsion, please make sure thor is installed,\nand run this command " \
-       "as `ruby #{$0} #{(ARGV | ['--dev']).join(" ")}`"
-  exit
-end
-
 module Adhearsion
   module Generators
-    class CallControllerGenerator < Thor::Group
-      include Thor::Actions
-
+    class CallControllerGenerator < Generator
       argument :controller_name, :type => :string
 
       def self.source_root(path = nil)
-        path = File.join(base_root, 'templates')
+        path = File.join(base_root, 'call_controller', 'templates')
         path if File.exists?(path)
-      end
-
-      def self.base_root
-        File.dirname(__FILE__)
       end
 
       def create_controller
