@@ -15,9 +15,11 @@ module Adhearsion
 
       def require_arguments?
         false
+
+      def self.base_root
+        File.dirname(__FILE__)
       end
 
     end
   end
 end
-

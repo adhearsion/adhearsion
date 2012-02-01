@@ -5,12 +5,8 @@ module Adhearsion
       argument :controller_name, :type => :string
 
       def self.source_root(path = nil)
-        path = File.join(base_root, 'templates')
+        path = File.join(base_root, 'call_controller', 'templates')
         path if File.exists?(path)
-      end
-
-      def self.base_root
-        File.dirname(__FILE__)
       end
 
       def create_controller

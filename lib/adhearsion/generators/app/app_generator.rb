@@ -4,17 +4,13 @@ module Adhearsion
 
       BASEDIRS = %w( config lib script )
 
-      argument :app_action, :type => :string
-      argument :app_path,   :type => :string
-
       def self.source_root(path = nil)
-        path = File.join(base_root, 'templates')
+        path = File.join(base_root, 'app', 'templates')
         path if File.exists?(path)
       end
 
-      def self.base_root
-        File.dirname(__FILE__)
-      end
+      argument :app_action, :type => :string
+      argument :app_path,   :type => :string
 
       def setup_project
         self.destination_root = @app_path
