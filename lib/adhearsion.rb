@@ -30,6 +30,7 @@ module Adhearsion
   autoload :DialplanController
   autoload :Dispatcher
   autoload :Events
+  autoload :Generators
   autoload :MenuDSL
   autoload :Initializer
   autoload :Logging

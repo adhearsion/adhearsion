@@ -28,7 +28,6 @@ module Adhearsion
 
       desc "create /path/to/directory", "Create a new Adhearsion application under the given path"
       def create(path)
-        require 'adhearsion/generators'
         require 'adhearsion/generators/app/app_generator'
         Adhearsion::Generators::AppGenerator.start
       end
