@@ -37,7 +37,7 @@ module Adhearsion
         require 'adhearsion/generators/controller/controller_generator'
         Generators.add_generator :controller, Adhearsion::Generators::ControllerGenerator
 
-        run_generator generator_name
+        Generators.invoke generator_name
       end
 
       desc "version", "Shows Adhearsion version"
@@ -97,14 +97,6 @@ module Adhearsion
       end
 
       protected
-
-      # Loads the components available for all generators and try running them
-      # @private
-      def run_generator(generator_name)
-        generator_class = Generators.mappings[generator_name.to_sym]
-        raise UnknownGeneratorError, generator_name unless generator_class
-        generator_class.start
-      end
 
       def start_app(path, mode, pid_file = nil)
         execute_from_app_dir! path
