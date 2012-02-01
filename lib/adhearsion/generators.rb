@@ -9,7 +9,7 @@ module Adhearsion
       # Return a ordered list of task with their class
       #
       def mappings
-        @_mappings ||= ActiveSupport::OrderedHash.new
+        @_mappings ||= Hash.new
       end
 
       ##
