@@ -29,17 +29,17 @@ module Adhearsion
       desc "create /path/to/directory", "Create a new Adhearsion application under the given path"
       def create(path)
         require 'adhearsion/generators/app/app_generator'
-        Adhearsion::Generators::AppGenerator.start
+        Generators::AppGenerator.start
       end
 
       desc "generate [controller] arguments", "Invoke a generator"
       def generate(gentype, *args)
         require 'adhearsion/generators'
         case gentype
-          when 'controller'
-            require 'adhearsion/generators/call_controller/call_controller_generator'
-            Adhearsion::Generators::CallControllerGenerator.start(args)
-          end
+        when 'controller'
+          require 'adhearsion/generators/call_controller/call_controller_generator'
+          Generators::CallControllerGenerator.start args
+        end
       end
 
       desc "version", "Shows Adhearsion version"

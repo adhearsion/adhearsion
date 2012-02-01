@@ -10,7 +10,7 @@ module Adhearsion
       #
       def mappings
         @_mappings ||= ActiveSupport::OrderedHash.new
-      end 
+      end
       ##
       # Globally add a new generator class to +ahn generate+
       #
@@ -28,8 +28,6 @@ module Adhearsion
         mappings[name] = klass
       end
 
-
-      
     end#class << self
   end#module
 end#module
