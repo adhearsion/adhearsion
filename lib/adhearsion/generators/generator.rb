@@ -13,9 +13,8 @@ module Adhearsion
     class Generator < Thor::Group
       include Thor::Actions
 
-      def require_arguments?
-        false
-      end
+      argument :generate_command, :type => :string
+      argument :generator_name, :type => :string
 
       def self.base_root
         File.dirname(__FILE__)

@@ -32,18 +32,12 @@ module Adhearsion
         Generators::AppGenerator.start
       end
 
-      desc "generate [controller] arguments", "Invoke a generator"
-      def generate(gentype, path)
-        require 'adhearsion/generators'
+      desc "generate [generator_name] arguments", "Invoke a generator"
+      def generate(generator_name, *args)
         require 'adhearsion/generators/controller/controller_generator'
-        
-        Adhearsion::Generators.add_generator(:controller, Adhearsion::Generators::ControllerGenerator)
+        Generators.add_generator :controller, Adhearsion::Generators::ControllerGenerator
 
-        if Adhearsion::Generators.mappings[gentype.to_sym]
-          run_generator
-        else
-          raise UnknownGeneratorError, gentype
-        end
+        run_generator generator_name
       end
 
       desc "version", "Shows Adhearsion version"
@@ -106,17 +100,10 @@ module Adhearsion
 
       # Loads the components available for all generators and try running them
       # @private
-      def run_generator(*args)
-        generator_kind = ARGV.delete_at(1).to_s.downcase.to_sym if ARGV[1].present?
-        ARGV.delete_at(0)
-        generator_class = Adhearsion::Generators.mappings[generator_kind]
-
-        if generator_class
-          args = ARGV.empty? && generator_class.require_arguments? ? ["-h"] : ARGV
-          generator_class.start(args)
-        else
-          raise UnknownGeneratorError, generator_kind
-        end
+      def run_generator(generator_name)
+        generator_class = Generators.mappings[generator_name.to_sym]
+        raise UnknownGeneratorError, generator_name unless generator_class
+        generator_class.start
       end
 
       def start_app(path, mode, pid_file = nil)

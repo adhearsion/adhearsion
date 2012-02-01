@@ -9,11 +9,8 @@ module Adhearsion
         path if File.exists?(path)
       end
 
-      argument :app_action, :type => :string
-      argument :app_path,   :type => :string
-
       def setup_project
-        self.destination_root = @app_path
+        self.destination_root = @generator_name
         BASEDIRS.each { |dir| directory dir }
         copy_file "Gemfile"
         copy_file "Rakefile"

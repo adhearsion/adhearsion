@@ -11,6 +11,7 @@ module Adhearsion
       def mappings
         @_mappings ||= ActiveSupport::OrderedHash.new
       end
+
       ##
       # Globally add a new generator class to +ahn generate+
       #
@@ -22,7 +23,7 @@ module Adhearsion
       # @return [Hash] generator mappings
       #
       # @example
-      # Adhearsion::Generators.add_generator(:myplugin, MyPlugin)
+      # Adhearsion::Generators.add_generator :myplugin, MyPluginGenerator
       #
       def add_generator(name, klass)
         mappings[name] = klass
