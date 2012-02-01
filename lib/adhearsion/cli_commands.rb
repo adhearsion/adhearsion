@@ -28,9 +28,20 @@ module Adhearsion
 
       desc "create /path/to/directory", "Create a new Adhearsion application under the given path"
       def create(path)
-        require 'adhearsion/generators'
         require 'adhearsion/generators/app/app_generator'
-        Adhearsion::Generators::AppGenerator.start
+        Generators::AppGenerator.start
+      end
+
+      desc "generate [generator_name] arguments", "Invoke a generator"
+      def generate(generator_name = nil, *args)
+        require 'adhearsion/generators/controller/controller_generator'
+        Generators.add_generator :controller, Adhearsion::Generators::ControllerGenerator
+
+        if generator_name
+          Generators.invoke generator_name
+        else
+          Generators.help
+        end
       end
 
       desc "version", "Shows Adhearsion version"
@@ -141,6 +152,13 @@ module Adhearsion
     class PathRequired < Thor::Error
       def initialize(cmd)
         super "A valid path is required for #{cmd}, unless run from an Adhearson app directory"
+      end
+    end
+
+     class UnknownGeneratorError < Thor::Error
+      def initialize(gentype)
+        puts "Please specify generator to use (#{Adhearsion::Generators.mappings.keys.join(", ")})"
+        super "Unknown command: #{gentype}"
       end
     end
 

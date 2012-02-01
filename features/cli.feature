@@ -104,3 +104,8 @@ Feature: Adhearsion Ahn CLI
     When I run `ahn help`
     Then I should see the usage message
     And the exit status should be 0
+
+  Scenario: Listing generators
+    When I run `ahn generate`
+    Then the output should contain "Please choose a generator below."
+    And the output should contain "controller"
