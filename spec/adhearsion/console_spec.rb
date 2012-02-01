@@ -4,20 +4,20 @@ module Adhearsion
   describe Console do
     describe "providing hooks to include console functionality" do
       it "should allow mixing in a module globally on all CallController classes" do
-        Adhearsion::Console.mixin TestBiscuit
-        Adhearsion::Console.throwadogabone.should be true
+        Console.mixin TestBiscuit
+        Console.throwadogabone.should be true
       end
     end
 
     describe 'testing for libedit vs. readline' do
       it 'should return true when detecting readline' do
         flexmock(Readline).should_receive(:emacs_editing_mode).once.and_return true
-        Adhearsion::Console.libedit?.should be false
+        Console.libedit?.should be false
       end
 
       it 'should return false when detecting libedit' do
         flexmock(Readline).should_receive(:emacs_editing_mode).once.and_raise NotImplementedError
-        Adhearsion::Console.libedit?.should be true
+        Console.libedit?.should be true
       end
     end
 
@@ -56,6 +56,67 @@ module Adhearsion
         flexmock(Adhearsion::Process).should_receive(:shutdown!).once
         Console.shutdown
       end
+    end
+
+    describe "#use" do
+      let(:call)    { Adhearsion::Call.new }
+      let(:call_id) { rand.to_s }
+
+      before do
+        Adhearsion.active_calls.clear!
+        flexmock(call).should_receive(:id => call_id)
+      end
+
+      context "with a call" do
+        it "should interact with the call" do
+          flexmock(Console.instance).should_receive(:interact_with_call).once.with call
+          Console.use call
+        end
+      end
+
+      context "with no argument" do
+        context "with one currently active call" do
+          before do
+            Adhearsion.active_calls << call
+          end
+
+          it "should interact with the current call" do
+            flexmock(Console.instance).should_receive(:interact_with_call).once.with call
+            Console.use
+          end
+        end
+
+        context "with multiple current calls" do
+          it "should allow selection of the call to use"
+        end
+      end
+
+      context "with a call ID" do
+        context "if an active call with that ID exists" do
+          before do
+            Adhearsion.active_calls << call
+          end
+
+          it "should interact with that call" do
+            flexmock(Console.instance).should_receive(:interact_with_call).once.with call
+            Console.use call_id
+          end
+        end
+
+        context "if an active call with that ID does not exist" do
+          it "should log an error explaining that the call does not exist" do
+            flexmock(Console.logger).should_receive(:error).once.with /does not exist/
+            flexmock(Console.instance).should_receive(:interact_with_call).never
+            Console.use call_id
+          end
+        end
+      end
+    end
+
+    describe "#interact_with_call" do
+      it "should suspend the call's controller"
+
+      it "should execute an interactive call controller on the call"
     end
   end
 end
