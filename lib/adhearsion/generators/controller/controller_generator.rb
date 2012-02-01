@@ -4,11 +4,6 @@ module Adhearsion
 
       argument :controller_name, :type => :string
 
-      def self.source_root(path = nil)
-        path = File.join(base_root, 'controller', 'templates')
-        path if File.exists?(path)
-      end
-
       def create_controller
         raise Exception, "Generator commands need to be run in an Adhearsion app directory" unless ScriptAhnLoader.in_ahn_application?('.')
         self.destination_root = '.'
