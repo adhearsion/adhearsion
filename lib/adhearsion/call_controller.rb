@@ -34,16 +34,15 @@ module Adhearsion
     end
 
     class << self
-      def exec(controller, fresh_call = true)
+      def exec(controller)
         return unless controller
 
         new_controller = catch :pass_controller do
-          controller.skip_accept! unless fresh_call
           controller.execute!
           nil
         end
 
-        exec new_controller, false
+        exec new_controller
       end
 
       ##
@@ -53,19 +52,18 @@ module Adhearsion
       end
     end
 
-    attr_reader :call, :metadata
+    attr_reader :call, :metadata, :block
 
     delegate :[], :[]=, :to => :@metadata
     delegate :variables, :logger, :to => :call
-    delegate :write_and_await_response, :accept, :answer, :reject, :to => :call
+    delegate :write_and_await_response, :answer, :reject, :mute, :unmute, :join, :to => :call
 
-    def initialize(call, metadata = nil)
-      @call, @metadata = call, metadata || {}
+    def initialize(call, metadata = nil, &block)
+      @call, @metadata, @block = call, metadata || {}, block
     end
 
     def execute!(*options)
       execute_callbacks :before_call
-      accept if auto_accept?
       run
     rescue Hangup
       logger.info "Call was hung up"
@@ -76,6 +74,7 @@ module Adhearsion
     end
 
     def run
+      instance_exec &block if block
     end
 
     def invoke(controller_class, metadata = nil)
@@ -95,33 +94,13 @@ module Adhearsion
       end
     end
 
-    def skip_accept!
-      @skip_accept = true
-    end
-
-    def skip_accept?
-      @skip_accept || false
-    end
-
-    def auto_accept?
-      Adhearsion.config.platform.automatically_accept_incoming_calls && !skip_accept?
-    end
-
     def after_call
       @after_call ||= execute_callbacks :after_call
     end
 
     def hangup(headers = nil)
-      hangup_response = call.hangup! headers
+      hangup_response = call.hangup headers
       after_call unless hangup_response == false
-    end
-
-    def mute
-      write_and_await_response ::Punchblock::Command::Mute.new
-    end
-
-    def unmute
-      write_and_await_response ::Punchblock::Command::Unmute.new
     end
 
     def execute_component_and_await_completion(component)

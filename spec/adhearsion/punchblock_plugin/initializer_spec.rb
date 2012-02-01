@@ -45,10 +45,9 @@ module Adhearsion
         Events.refresh!
       end
 
-      let(:call_id)       { rand }
-      let(:offer)         { ::Punchblock::Event::Offer.new.tap { |o| o.call_id = call_id } }
-      let(:mock_call)     { flexmock('Call', :id => call_id).tap { |call| call.should_ignore_missing } }
-      let(:mock_manager)  { flexmock 'a mock dialplan manager' }
+      let(:call_id)   { rand }
+      let(:offer)     { ::Punchblock::Event::Offer.new.tap { |o| o.call_id = call_id } }
+      let(:mock_call) { flexmock('Call', :id => call_id).tap { |call| call.should_ignore_missing } }
 
       describe "starts the client with the default values" do
         subject { initialize_punchblock }
@@ -191,6 +190,10 @@ module Adhearsion
 
         context "when when Adhearsion::Process is in :running" do
           let(:process_state) { :running }
+
+          it "should accept the call" do
+            mock_call.should_receive(:accept).once
+          end
 
           it "should execute the dispatcher provided by the router" do
             controller = Class.new

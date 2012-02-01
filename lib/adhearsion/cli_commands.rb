@@ -108,7 +108,7 @@ module Adhearsion
 
       def start_app(path, mode, pid_file = nil)
         execute_from_app_dir! path
-        say "Starting Adhearsion server at #{path}"
+        say "Starting Adhearsion server at #{Dir.pwd}"
         Adhearsion::Initializer.start :mode => mode, :pid_file => pid_file
       end
 

@@ -12,9 +12,12 @@ module Adhearsion
       def setup_project
         self.destination_root = @generator_name
         BASEDIRS.each { |dir| directory dir }
-        copy_file "Gemfile"
+        template "Gemfile.erb", "Gemfile"
+        copy_file "gitignore", ".gitignore"
+        copy_file "Procfile"
         copy_file "Rakefile"
         copy_file "README.md"
+        chmod "script/ahn", 0755
       end
     end
   end

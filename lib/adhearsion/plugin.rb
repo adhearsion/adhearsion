@@ -12,7 +12,6 @@ module Adhearsion
   # * create initializers
   # * add rake tasks to Adhearsion
   # * add/modify configuration files
-  # * add dialplan, rpc, console and events methods
   #
   # == How to create your Adhearsion Plugin
   #

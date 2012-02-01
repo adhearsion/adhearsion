@@ -45,3 +45,17 @@ Adhearsion::Events.exeption do |e|
 end
 
 Adhearsion::Logging.silence!
+
+
+# Test modules for #mixin methods
+module TestBiscuit
+  def throwadogabone
+    true
+  end
+end
+
+module MarmaladeIsBetterThanJam
+  def sobittersweet
+    true
+  end
+end

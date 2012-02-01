@@ -14,6 +14,7 @@ abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby
   girl_friday
   loquacious
 
+  adhearsion/version
   adhearsion/foundation/all
 }.each { |f| require f }
 
@@ -27,7 +28,6 @@ module Adhearsion
   autoload :Configuration
   autoload :Console
   autoload :Conveniences
-  autoload :DialplanController
   autoload :Dispatcher
   autoload :Events
   autoload :Generators
@@ -37,7 +37,6 @@ module Adhearsion
   autoload :OutboundCall
   autoload :Plugin
   autoload :Router
-  autoload :Version
 
   class << self
 
@@ -53,7 +52,7 @@ module Adhearsion
 
     def initialize_config
       _config = Configuration.new
-      env = ENV['AHN_ENV']
+      env = ENV['AHN_ENV'] || ENV['RAILS_ENV']
       env = nil unless _config.valid_environment? env
       _config.platform.environment = env if env
       _config

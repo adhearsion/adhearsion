@@ -89,15 +89,6 @@ module Adhearsion
       end
     end
 
-    it 'a hungup call removes itself from the active calls' do
-      size_before = Adhearsion.active_calls.size
-
-      call = Adhearsion.active_calls.from_offer offer
-      Adhearsion.active_calls.size.should > size_before
-      call.hangup
-      Adhearsion.active_calls.size.should == size_before
-    end
-
     it 'allows the registration of event handlers which are called when messages are delivered' do
       event = flexmock 'Event'
       event.should_receive(:foo?).and_return true
@@ -134,7 +125,6 @@ module Adhearsion
         end
 
         it "should mark the call as ended" do
-          flexmock(subject).should_receive(:hangup).once
           subject << end_event
           subject.should_not be_active
         end
@@ -147,6 +137,22 @@ module Adhearsion
         it "should instruct the command registry to terminate" do
           flexmock(subject.commands).should_receive(:terminate).once
           subject << end_event
+        end
+
+        it "removes itself from the active calls" do
+          size_before = Adhearsion.active_calls.size
+
+          Adhearsion.active_calls << subject
+          Adhearsion.active_calls.size.should > size_before
+
+          subject << end_event
+          Adhearsion.active_calls.size.should == size_before
+        end
+
+        it "shuts down the actor" do
+          subject << end_event
+          sleep 5
+          subject.should_not be_alive
         end
       end
     end
@@ -203,14 +209,14 @@ module Adhearsion
 
       it "should asynchronously write the command to the Punchblock connection" do
         mock_client = flexmock('Client')
-        flexmock(subject).should_receive(:client).once.and_return mock_client
+        flexmock(subject.wrapped_object).should_receive(:client).once.and_return mock_client
         mock_client.should_receive(:execute_command).once.with(mock_command, :call_id => subject.id).and_return true
         subject.write_command mock_command
       end
 
       describe "with a hungup call" do
         before do
-          flexmock(subject).should_receive(:active?).and_return(false)
+          flexmock(subject.wrapped_object).should_receive(:active?).and_return(false)
         end
 
         it "should raise a Hangup exception" do
@@ -237,7 +243,7 @@ module Adhearsion
       end
 
       it "writes a command to the call" do
-        flexmock(subject).should_receive(:write_command).once.with(message)
+        flexmock(subject.wrapped_object).should_receive(:write_command).once.with(message)
         subject.write_and_await_response message
       end
 
@@ -276,7 +282,7 @@ module Adhearsion
       include FlexMock::ArgumentTypes
 
       def expect_message_waiting_for_response(message)
-        flexmock(subject).should_receive(:write_and_await_response).once.with(message).and_return(message)
+        flexmock(subject.wrapped_object).should_receive(:write_and_await_response).once.with(message).and_return(message)
       end
 
       describe '#accept' do
@@ -292,6 +298,14 @@ module Adhearsion
             headers = {:foo => 'bar'}
             expect_message_waiting_for_response Punchblock::Command::Accept.new(:headers => headers)
             subject.accept headers
+          end
+        end
+
+        describe "a second time" do
+          it "should only send one Accept message" do
+            expect_message_waiting_for_response Punchblock::Command::Accept.new
+            subject.accept
+            subject.accept
           end
         end
       end
@@ -344,29 +358,29 @@ module Adhearsion
         end
       end
 
-      describe "#hangup!" do
+      describe "#hangup" do
         describe "if the call is not active" do
           before do
-            flexmock(subject).should_receive(:active?).and_return false
+            flexmock(subject.wrapped_object).should_receive(:active?).and_return false
           end
 
           it "should do nothing and return false" do
             flexmock(subject).should_receive(:write_and_await_response).never
-            subject.hangup!.should be false
+            subject.hangup.should be false
           end
         end
 
         describe "if the call is active" do
           it "should mark the call inactive" do
             expect_message_waiting_for_response Punchblock::Command::Hangup.new
-            subject.hangup!
+            subject.hangup
             subject.should_not be_active
           end
 
           describe "with no headers" do
             it 'should send a Hangup message' do
               expect_message_waiting_for_response Punchblock::Command::Hangup.new
-              subject.hangup!
+              subject.hangup
             end
           end
 
@@ -374,18 +388,108 @@ module Adhearsion
             it 'should send a Hangup message with the correct headers' do
               headers = {:foo => 'bar'}
               expect_message_waiting_for_response Punchblock::Command::Hangup.new(:headers => headers)
-              subject.hangup! headers
+              subject.hangup headers
             end
           end
         end
       end
 
       describe "#join" do
-        let(:other_call_id) { rand }
+        def expect_join_with_options(options = {})
+          Punchblock::Command::Join.new(options).tap do |join|
+            expect_message_waiting_for_response join
+          end
+        end
 
-        it "should mark the call inactive" do
-          expect_message_waiting_for_response Punchblock::Command::Join.new :other_call_id => other_call_id
-          subject.join other_call_id
+        context "with a call" do
+          let(:call_id) { rand.to_s }
+          let(:target)  { flexmock Call.new, :id => call_id }
+
+          it "should send a join command joining to the provided call ID" do
+            expect_join_with_options :other_call_id => call_id
+            subject.join target
+          end
+
+          context "and direction/media options" do
+            it "should send a join command with the correct options" do
+              expect_join_with_options :other_call_id => call_id, :media => :bridge, :direction => :recv
+              subject.join target, :media => :bridge, :direction => :recv
+            end
+          end
+        end
+
+        context "with a call ID" do
+          let(:target) { rand.to_s }
+
+          it "should send a join command joining to the provided call ID" do
+            expect_join_with_options :other_call_id => target
+            subject.join target
+          end
+
+          context "and direction/media options" do
+            it "should send a join command with the correct options" do
+              expect_join_with_options :other_call_id => target, :media => :bridge, :direction => :recv
+              subject.join target, :media => :bridge, :direction => :recv
+            end
+          end
+        end
+
+        context "with a call ID as a hash key" do
+          let(:call_id) { rand.to_s }
+          let(:target)  { { :call_id => call_id } }
+
+          it "should send a join command joining to the provided call ID" do
+            expect_join_with_options :other_call_id => call_id
+            subject.join target
+          end
+
+          context "and direction/media options" do
+            it "should send a join command with the correct options" do
+              expect_join_with_options :other_call_id => call_id, :media => :bridge, :direction => :recv
+              subject.join target.merge({:media => :bridge, :direction => :recv})
+            end
+          end
+        end
+
+        context "with a mixer name as a hash key" do
+          let(:mixer_name)  { rand.to_s }
+          let(:target)      { { :mixer_name => mixer_name } }
+
+          it "should send a join command joining to the provided call ID" do
+            expect_join_with_options :mixer_name => mixer_name
+            subject.join target
+          end
+
+          context "and direction/media options" do
+            it "should send a join command with the correct options" do
+              expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+              subject.join target.merge({:media => :bridge, :direction => :recv})
+            end
+          end
+        end
+
+        context "with a call ID and a mixer name as hash keys" do
+          let(:call_id)     { rand.to_s }
+          let(:mixer_name)  { rand.to_s }
+          let(:target)      { { :call_id => call_id, :mixer_name => mixer_name } }
+
+          it "should raise an ArgumentError" do
+            lambda { subject.join target }.should raise_error ArgumentError, /call ID and mixer name/
+          end
+        end
+      end
+
+      describe "#mute" do
+        it 'should send a Mute message' do
+          expect_message_waiting_for_response Punchblock::Command::Mute.new
+          subject.mute
+        end
+      end
+
+      describe "#unmute" do
+        it 'should send a Mute message' do
+          expect_message_waiting_for_response Punchblock::Command::Unmute.new
+          subject.unmute
         end
       end
 
@@ -394,7 +498,7 @@ module Adhearsion
         let(:mock_controller) { flexmock 'CallController' }
 
         before do
-          flexmock subject, :write_and_await_response => true
+          flexmock subject.wrapped_object, :write_and_await_response => true
         end
 
         it "should call #execute on the controller instance" do
@@ -405,7 +509,7 @@ module Adhearsion
 
         it "should hangup the call after all controllers have executed" do
           flexmock(CallController).should_receive(:exec).once.with mock_controller
-          subject.should_receive(:hangup!).once
+          subject.should_receive(:hangup).once
           subject.execute_controller mock_controller, latch
           latch.wait(3).should be_true
         end

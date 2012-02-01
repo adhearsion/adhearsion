@@ -4,6 +4,7 @@ module CallControllerTestHelpers
   def self.included(test_case)
     test_case.let(:call_id) { rand }
     test_case.let(:call)    { Adhearsion::Call.new }
+    test_case.let(:block)   { nil }
 
     test_case.subject do
       case test_case.describes
@@ -11,11 +12,10 @@ module CallControllerTestHelpers
         test_case.describes
       when Module
         Class.new Adhearsion::CallController
-      end.new call, :doo => :dah
+      end.new call, :doo => :dah, &block
     end
 
     test_case.before do
-      flexmock Adhearsion::Plugin, :methods_scope => {:dialplan => Module.new { def foo; end}}
       flexmock subject
       flexmock call, :write_command => true, :id => call_id
     end

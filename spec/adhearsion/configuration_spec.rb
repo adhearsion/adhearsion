@@ -24,9 +24,9 @@ describe Adhearsion::Configuration do
     end
 
     it "should allow to update a config value" do
-      subject.platform.automatically_accept_incoming_calls.should == true
-      subject.platform.automatically_accept_incoming_calls = false
-      subject.platform.automatically_accept_incoming_calls.should == false
+      subject.platform.environment.should == :development
+      subject.platform.environment = :production
+      subject.platform.environment.should == :production
     end
 
     it "should allow to create new config values" do
@@ -39,7 +39,7 @@ describe Adhearsion::Configuration do
     subject do
       Adhearsion::Configuration.new do
         root "foo", :desc => "Adhearsion application root folder"
-        automatically_accept_incoming_calls false, :desc => "Adhearsion will not accept automatically any inbound call"
+        environment :development, :desc => "Active environment. Supported values: development, production, staging, test"
       end
     end
 
@@ -47,8 +47,8 @@ describe Adhearsion::Configuration do
       subject.platform.root.should == "foo"
     end
 
-    it "should return the automatically_accept_incoming_calls value" do
-      subject.platform.automatically_accept_incoming_calls.should == false
+    it "should return the environment value" do
+      subject.platform.environment.should == :development
     end
 
     it "should return a description for the platform configuration" do
@@ -56,9 +56,9 @@ describe Adhearsion::Configuration do
     end
 
     it "should allow to update a config value" do
-      subject.platform.automatically_accept_incoming_calls.should == false
-      subject.platform.automatically_accept_incoming_calls = true
-      subject.platform.automatically_accept_incoming_calls.should == true
+      subject.platform.environment.should == :development
+      subject.platform.environment = :production
+      subject.platform.environment.should == :production
     end
 
     it "should allow to create new config values" do
@@ -87,7 +87,7 @@ describe Adhearsion::Configuration do
     end
 
     it "should allow to retrieve any platform configuration value" do
-      subject.automatically_accept_incoming_calls.should == true
+      subject.environment.should == :development
     end
 
     describe "if configuration has a named environment" do
@@ -187,14 +187,14 @@ describe Adhearsion::Configuration do
     it "should retrieve a string with the platform configuration" do
       desc = subject.description :platform, :show_values => false
       desc.length.should > 0
-      desc.should match /^.*automatically_accept_incoming_calls.*$/
+      desc.should match /^.*environment.*$/
       desc.should match /^.*root.*$/
     end
 
     it "should retrieve a string with the platform configuration and values" do
       desc = subject.description :platform
       desc.length.should > 0
-      desc.should match /^.*automatically_accept_incoming_calls.*true.*$/
+      desc.should match /^.*environment.*:development.*$/
       desc.should match /^.*root.*$/
     end
 
@@ -284,7 +284,7 @@ describe Adhearsion::Configuration do
       it "should retrieve both platform and plugin configuration" do
         desc = subject.description :all
         desc.length.should > 0
-        desc.should match /^.*automatically_accept_incoming_calls.*true.*$/
+        desc.should match /^.*environment.*:development.*$/
         desc.should match /^.*root.*$/
         desc.should match /^.*name.*user.*$/
         desc.should match /^.*password.*password.*$/
@@ -295,7 +295,7 @@ describe Adhearsion::Configuration do
         desc = subject.description :all, :show_values => false
         desc.length.should > 0
         desc.should match /^.*Configuration for platform.*$/
-        desc.should match /^.*automatically_accept_incoming_calls.*$/
+        desc.should match /^.*environment.*$/
         desc.should match /^.*root.*$/
         desc.should match /^.*Configuration for my_plugin.*$/
         desc.should match /^.*name.*$/
