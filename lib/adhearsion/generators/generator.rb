@@ -22,6 +22,19 @@ module Adhearsion
         @_source_root ||= default_source_root
       end
 
+      # Tries to get the description from a USAGE file one folder above the source
+      # root otherwise uses a default description.
+      def self.desc(description = nil)
+        return super if description
+        usage = source_root && File.expand_path("../USAGE", source_root)
+
+        @desc ||= if usage && File.exist?(usage)
+          ERB.new(File.read(usage)).result(binding)
+        else
+          "Description:\n    Create #{base_name.humanize.downcase} files for #{generator_name} generator."
+        end
+      end
+
       # Convenience method to get the namespace from the class name. It's the
       # same as Thor default except that the Generator at the end of the class
       # is removed.
