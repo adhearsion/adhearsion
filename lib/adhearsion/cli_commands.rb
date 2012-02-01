@@ -33,11 +33,15 @@ module Adhearsion
       end
 
       desc "generate [generator_name] arguments", "Invoke a generator"
-      def generate(generator_name, *args)
+      def generate(generator_name = nil, *args)
         require 'adhearsion/generators/controller/controller_generator'
         Generators.add_generator :controller, Adhearsion::Generators::ControllerGenerator
 
-        Generators.invoke generator_name
+        if generator_name
+          Generators.invoke generator_name
+        else
+          Generators.help
+        end
       end
 
       desc "version", "Shows Adhearsion version"

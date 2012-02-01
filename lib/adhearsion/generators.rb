@@ -6,6 +6,18 @@ module Adhearsion
 
     class << self
 
+      # Show help message with available generators.
+      def help(command = 'generate')
+        puts "Usage: ahn #{command} GENERATOR_NAME [args] [options]"
+        puts
+        puts "Please choose a generator below."
+        puts
+
+        mappings.each_pair do |name, klass|
+          puts name
+        end
+      end
+
       def invoke(generator_name, args = ARGV)
         klass = Generators.mappings[generator_name.to_sym]
         raise UnknownGeneratorError, generator_name unless klass
