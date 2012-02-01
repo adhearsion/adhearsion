@@ -1,4 +1,7 @@
 # develop (2.0.0.head)
+  * Feature: Add `ahn generate` command to allow invocation of generators
+  * Feature: Add simple generator for call controllers
+  * Feature: Allow plugins to register their generator classes
   * Feature: Add log level helper methods to Console
   * Feature: Console's shutdown/exit method initiates the shutdown routine
   * Bugfix: Remove config option for auto-accept - hard-coded to true
