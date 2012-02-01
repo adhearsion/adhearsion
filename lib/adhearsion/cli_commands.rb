@@ -34,13 +34,17 @@ module Adhearsion
       end
 
       desc "generate [controller] arguments", "Invoke a generator"
-      def generate(gentype, *args)
+      def generate(gentype, path)
         require 'adhearsion/generators'
-        case gentype
-          when 'controller'
-            require 'adhearsion/generators/call_controller/call_controller_generator'
-            Adhearsion::Generators::CallControllerGenerator.start(args)
-          end
+        require 'adhearsion/generators/controller/controller_generator'
+        
+        Adhearsion::Generators.add_generator(:controller, Adhearsion::Generators::ControllerGenerator)
+
+        if Adhearsion::Generators.mappings[gentype.to_sym]
+          run_generator
+        else
+          raise UnknownGeneratorError, gentype
+        end
       end
 
       desc "version", "Shows Adhearsion version"
@@ -101,6 +105,21 @@ module Adhearsion
 
       protected
 
+      # Loads the components available for all generators and try running them
+      # @private
+      def run_generator(*args)
+        generator_kind = ARGV.delete_at(1).to_s.downcase.to_sym if ARGV[1].present?
+        ARGV.delete_at(0)
+        generator_class = Adhearsion::Generators.mappings[generator_kind]
+
+        if generator_class
+          args = ARGV.empty? && generator_class.require_arguments? ? ["-h"] : ARGV
+          generator_class.start(args)
+        else
+          raise UnknownGeneratorError, generator_kind
+        end
+      end
+
       def start_app(path, mode, pid_file = nil)
         execute_from_app_dir! path
         say "Starting Adhearsion server at #{path}"
@@ -151,6 +170,13 @@ module Adhearsion
     class PathRequired < Thor::Error
       def initialize(cmd)
         super "A valid path is required for #{cmd}, unless run from an Adhearson app directory"
+      end
+    end
+
+     class UnknownGeneratorError < Thor::Error
+      def initialize(gentype)
+        puts "Please specify generator to use (#{Adhearsion::Generators.mappings.keys.join(", ")})"
+        super "Unknown command: #{gentype}"
       end
     end
 
