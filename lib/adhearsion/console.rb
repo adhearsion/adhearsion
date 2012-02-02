@@ -2,7 +2,7 @@ require 'pry'
 
 module Adhearsion
   class Console
-    include Adhearsion
+    # include Adhearsion
     include Singleton
 
     delegate :silence!, :unsilence!, :to => Adhearsion::Logging
