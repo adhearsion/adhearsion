@@ -114,21 +114,16 @@ module Adhearsion
     private
 
     def interact_with_call(call)
-      Pry.prompt = [ proc { "AHN<#{call.channel}> " },
-                     proc { "AHN<#{call.channel}? " }  ]
+      Pry.prompt = [ proc { "AHN<#{call.id}> " },
+                     proc { "AHN<#{call.id}? " }  ]
 
-      # Pause execution of the thread currently controlling the call
-      # call.with_command_lock do
-      #   CallWrapper.new(call).pry
-      # end
+      CallController.exec InteractiveController.new(call)
     end
 
-    # class CallWrapper
-    #   attr_accessor :call
-
-    #   def initialize(call)
-    #     @call = call
-    #   end
-    # end
+    class InteractiveController < CallController
+      def run
+        pry
+      end
+    end
   end
 end

@@ -2,6 +2,7 @@ require 'spec_helper'
 
 module Adhearsion
   describe Console do
+    include FlexMock::ArgumentTypes
     describe "providing hooks to include console functionality" do
       it "should allow mixing in a module globally on all CallController classes" do
         Console.mixin TestBiscuit
@@ -127,9 +128,17 @@ module Adhearsion
     end
 
     describe "#interact_with_call" do
+      let(:call) { Call.new }
+
       it "should suspend the call's controller"
 
-      it "should execute an interactive call controller on the call"
+      it "should execute an interactive call controller on the call" do
+        flexmock(CallController).should_receive(:exec).once.with(on do |c|
+          c.should be_a Console::InteractiveController
+          c.call.should be call
+        end)
+        Console.interact_with_call call
+      end
     end
   end
 end
