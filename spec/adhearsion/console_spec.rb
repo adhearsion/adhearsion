@@ -87,7 +87,20 @@ module Adhearsion
         end
 
         context "with multiple current calls" do
-          it "should allow selection of the call to use"
+          let(:call2) { Adhearsion::Call.new }
+
+          before do
+            flexmock(call2).should_receive :id => rand.to_s
+            Adhearsion.active_calls << call << call2
+          end
+
+          it "should allow selection of the call to use" do
+            mock_io = StringIO.new
+            Console.input = mock_io
+            flexmock(mock_io).should_receive(:gets).once.and_return "1\n"
+            flexmock(Console.instance).should_receive(:interact_with_call).once.with call2
+            Console.use
+          end
         end
       end
 

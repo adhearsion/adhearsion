@@ -2,7 +2,6 @@ require 'pry'
 
 module Adhearsion
   class Console
-    # include Adhearsion
     include Singleton
 
     delegate :silence!, :unsilence!, :to => Adhearsion::Logging
@@ -17,6 +16,12 @@ module Adhearsion
       def method_missing(method, *args, &block)
         instance.send method, *args, &block
       end
+    end
+
+    attr_accessor :input
+
+    def initialize
+      @input = $stdin
     end
 
     ##
@@ -82,7 +87,14 @@ module Adhearsion
         if calls.size == 1
           interact_with_call calls.values.first
         else
-
+          puts "Please choose a call:"
+          current_calls = calls.values
+          current_calls.each_with_index do |call, index|
+            puts "#{index}. #{call.id}"
+          end
+          index = input.gets.chomp.to_i
+          call = current_calls[index]
+          interact_with_call call
         end
       else
         raise ArgumentError

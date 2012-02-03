@@ -47,5 +47,12 @@ module Adhearsion
 
       subject.with_tag(:moderator).should == [tagged_call]
     end
+
+    describe "#<<" do
+      it "should allow chaining" do
+        subject << Call.new(new_offer) << Call.new(new_offer)
+        subject.size.should == 2
+      end
+    end
   end
 end
