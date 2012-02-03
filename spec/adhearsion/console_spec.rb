@@ -60,7 +60,7 @@ module Adhearsion
     end
 
     describe "#use" do
-      let(:call)    { Adhearsion::Call.new }
+      let(:call)    { Call.new }
       let(:call_id) { rand.to_s }
 
       before do
@@ -88,7 +88,7 @@ module Adhearsion
         end
 
         context "with multiple current calls" do
-          let(:call2) { Adhearsion::Call.new }
+          let(:call2) { Call.new }
 
           before do
             flexmock(call2).should_receive :id => rand.to_s
