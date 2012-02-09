@@ -37,7 +37,7 @@ module Adhearsion
           config.reconnect_timer    = options[:reconnect_timer] if options.has_key?(:reconnect_timer)
         end
 
-        Initializer.start
+        Initializer.init
         Adhearsion.config[:punchblock]
       end
 
@@ -105,7 +105,7 @@ module Adhearsion
           mock_connection.should_receive(:register_event_handler).once
           flexmock(::Punchblock::Client).should_receive(:new).once.and_return mock_connection
           flexmock(mock_connection).should_receive(:run).once
-          t = Thread.new { Initializer.start }
+          t = Thread.new { Initializer.init; Initializer.run }
           t.join 5
           t.status.should == "sleep"
           Events.trigger_immediately :punchblock, ::Punchblock::Connection::Connected.new
