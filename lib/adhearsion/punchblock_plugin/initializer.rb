@@ -1,7 +1,7 @@
 module Adhearsion
   class PunchblockPlugin
     class Initializer
-      cattr_accessor :config, :client, :dispatcher, :attempts
+      cattr_accessor :config, :client, :connection, :dispatcher, :attempts
 
       self.attempts = 0
 
@@ -25,7 +25,7 @@ module Adhearsion
             :mixers_domain      => self.config.mixers_domain
           }
 
-          connection = connection_class.new connection_options
+          self.connection = connection_class.new connection_options
           self.client = ::Punchblock::Client.new :connection => connection
 
           # Tell the Punchblock connection that we are ready to process calls.
