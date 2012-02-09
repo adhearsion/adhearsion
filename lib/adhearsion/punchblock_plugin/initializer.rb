@@ -6,7 +6,7 @@ module Adhearsion
       self.attempts = 0
 
       class << self
-        def start
+        def init
           self.config = Adhearsion.config[:punchblock]
           connection_class = case (self.config.platform || :xmpp)
           when :xmpp
@@ -65,7 +65,9 @@ module Adhearsion
           Events.punchblock proc { |e| e.respond_to?(:call_id) }, :call_id do |event|
             dispatch_call_event event
           end
+        end
 
+        def run
           connect
         end
 

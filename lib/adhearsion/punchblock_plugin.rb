@@ -23,7 +23,11 @@ module Adhearsion
     end
 
     init :punchblock do
-      Initializer.start
+      Initializer.init
+    end
+
+    run :punchblock do
+      Initializer.run
     end
 
     class << self

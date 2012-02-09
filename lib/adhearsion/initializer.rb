@@ -47,11 +47,11 @@ module Adhearsion
       update_rails_env_var
       init_plugins
 
-      logger.info "Adhearsion v#{Adhearsion::VERSION} initialized with environment <#{Adhearsion.config.platform.environment}>!"
-      Adhearsion::Process.booted
-
       run_plugins
       trigger_after_initialized_hooks
+
+      logger.info "Adhearsion v#{Adhearsion::VERSION} initialized with environment <#{Adhearsion.config.platform.environment}>!"
+      Adhearsion::Process.booted
 
       # This method will block until all important threads have finished.
       # When it does, the process will exit.
