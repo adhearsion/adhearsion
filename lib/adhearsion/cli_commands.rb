@@ -71,7 +71,7 @@ module Adhearsion
           options[:pidfile] :
           File.join(path, options[:pidfile])
         else
-          path + '/adhearsion.pid'
+          path + Adhearsion::Initializer::DEFAULT_PID_FILE_NAME
         end
 
         begin

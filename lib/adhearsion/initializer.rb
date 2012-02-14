@@ -10,6 +10,8 @@ module Adhearsion
       end
     end
 
+    DEFAULT_PID_FILE_NAME = 'adhearsion.pid'
+
     attr_reader :path, :daemon, :pid_file
 
     # Creation of pid_files
@@ -84,7 +86,7 @@ module Adhearsion
     end
 
     def default_pid_path
-      File.join Adhearsion.config.root, 'adhearsion.pid'
+      File.join Adhearsion.config.root, DEFAULT_PID_FILE_NAME
     end
 
     def resolve_pid_file_path
