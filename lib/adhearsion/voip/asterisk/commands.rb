@@ -757,6 +757,7 @@ module Adhearsion
           initial_timeout     = options[:initial_timeout] || timeout
           interdigit_timeout  = options[:interdigit_timeout] || timeout
           terminating_key     = options[:accept_key]
+          raise ArgumentError, ":accept_key must not be empty" if terminating_key == ""
           terminating_key = if terminating_key
             terminating_key.to_s
           elsif number_of_digits.nil? && !terminating_key.equal?(false)

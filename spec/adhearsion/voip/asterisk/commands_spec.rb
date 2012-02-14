@@ -1193,6 +1193,10 @@ describe 'The #input method' do
     pbx_was_asked_to_play files
   end
 
+  it 'should raise ArgumentError if passed an empty :accept_key' do
+    expect { mock_call.input 1, :accept_key => "" }.to raise_error ArgumentError
+  end
+
 end
 
 describe 'The #input! method' do
@@ -1387,6 +1391,10 @@ describe 'The #input! method' do
       mock_call.input! 10, :play => play_files, :timeout => 5.seconds, :interruptible => false
     }.should raise_error Adhearsion::VoIP::PlaybackError
     pbx_was_asked_to_play played_files
+  end
+
+  it 'should raise ArgumentError if passed an empty :accept_key' do
+    expect { mock_call.input 1, :accept_key => "" }.to raise_error ArgumentError
   end
 
 end
