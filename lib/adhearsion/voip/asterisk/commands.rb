@@ -299,7 +299,7 @@ module Adhearsion
         # by default.
         #
         # @param [string] file name to record to.  Full path information is optional.  If you want to change the
-        #   format of the file you will want to add a .<valid extention> to the end of the file name specifying the 
+        #   format of the file you will want to add a .<valid extention> to the end of the file name specifying the
         #   filetype you want to record in.  Alternately you can pass it is as :format in the options
         #
         # @param [hash] options
@@ -315,16 +315,16 @@ module Adhearsion
         # +:format+ - the format of the file to be recorded
         #
         # Silence and maxduration is specified in seconds.
-        # 
-        # @return [String] The filename of the recorded file.  
-        #         
+        #
+        # @return [String] The filename of the recorded file.
+        #
         # @example Asterisk generated filename
         #   filename = record
         # @example Specified filename
         #   record '/path/to/my-file.gsm'
         # @example All options specified
         #   record 'my-file.gsm', :silence => 5, :maxduration => 120
-        # 
+        #
         # @deprecated please use {#record_to_file} instead
         def record(*args)
           options = args.last.kind_of?(Hash) ? args.last : {}
@@ -359,7 +359,7 @@ module Adhearsion
         # by default.
         #
         # @param [string] file name to record to.  Full path information is optional.  If you want to change the
-        #   format of the file you will want to add a .<valid extention> to the end of the file name specifying the 
+        #   format of the file you will want to add a .<valid extention> to the end of the file name specifying the
         #   filetype you want to record in.  If you don't specify a valid extension it will default to gsm and a
         #   .gsm will be added to the file.  If you don't specify a filename it will write one in /tmp/recording_%d
         #   with %d being a counter that increments from 0 onward for the particular call you are making.
@@ -377,11 +377,11 @@ module Adhearsion
         # +:format+ - the format of the file to be recorded.  This will over-ride a implicit format in a file extension and append a .<format> to the end of the file.
         #
         # Silence and maxduration is specified in seconds.
-        # 
-        # @return [Symbol] One of the follwing..... :hangup, :write_error, :success_dtmf, :success_timeout  
-        #        
+        #
+        # @return [Symbol] One of the follwing..... :hangup, :write_error, :success_dtmf, :success_timeout
+        #
         # A sound file will be recorded to the specifed file unless a :write_error is returned.  A :success_dtmf is
-        # for when a call was ended with a DTMF tone.  A :success_timeout is returned when a call times out due to 
+        # for when a call was ended with a DTMF tone.  A :success_timeout is returned when a call times out due to
         # a silence longer than the specified silence or if the recording reaches the maxduration.
         #
         # @example Asterisk generated filename
@@ -441,15 +441,15 @@ module Adhearsion
           escapedigits = options.delete(:escapedigits) || "#"
           silence     = options.delete(:silence) || 0
 
-          response_params = filename, format, escapedigits, maxduration, 0          
+          response_params = filename, format, escapedigits, maxduration, 0
           response_values = []
- 
-          if !options.has_key? :beep 
+
+          if !options.has_key? :beep
             response_params << 'BEEP'
           elsif options[:beep]
             play_soundfile options[:beep]
             playback_response = get_variable('PLAYBACKSTATUS')
-            if playback_response != PLAYBACK_SUCCESS 
+            if playback_response != PLAYBACK_SUCCESS
               response_values << :playback_error
               response_values << playback_response
             end
@@ -465,7 +465,7 @@ module Adhearsion
           if resp.match /hangup/
             response_values << :hangup
           elsif resp.match /writefile/
-            response_values << :write_error 
+            response_values << :write_error
           elsif resp.match /dtmf/
             response_values << :success_dtmf
           elsif resp.match /timeout/
