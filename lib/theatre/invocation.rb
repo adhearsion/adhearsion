@@ -63,6 +63,7 @@ module Theatre
         end
         with_state_lock { @current_state = :success }
       rescue => e
+        Adhearsion::Events.trigger(['exception'], e)
         @error = e
         with_state_lock { @current_state = :error }
       ensure

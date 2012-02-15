@@ -64,6 +64,13 @@ describe "Using Invocations that've been ran through the Theatre" do
     invocation.error.should be_instance_of(ArgumentError)
   end
 
+  it "should trigger an exception event if an exception was raised" do
+    invocation = Theatre::Invocation.new("/namespace/whatever", lambda { raise ArgumentError, "this error is intentional" })
+    flexmock(Adhearsion::Events).should_receive(:trigger).once.with(['exception'], FlexMock.any)
+    invocation.queued
+    invocation.start
+  end
+
   it "should have a status of :success if no expection was raised" do
     callback = lambda { "No errors raised here!" }
     invocation = Theatre::Invocation.new("/namespace/whatever", callback)
