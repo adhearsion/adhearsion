@@ -18,7 +18,10 @@ module Adhearsion
     end
 
     def <<(call)
-      atomically { calls[call.id] = call }
+      atomically do
+        calls[call.id] = call
+      end
+      self
     end
 
     def any?

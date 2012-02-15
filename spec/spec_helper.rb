@@ -46,7 +46,6 @@ end
 
 Adhearsion::Logging.silence!
 
-
 # Test modules for #mixin methods
 module TestBiscuit
   def throwadogabone

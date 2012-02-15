@@ -151,7 +151,7 @@ module Adhearsion
 
         it "shuts down the actor" do
           subject << end_event
-          sleep 5
+          sleep 5.1
           subject.should_not be_alive
         end
       end

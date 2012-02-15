@@ -35,14 +35,12 @@ module Adhearsion
 
     class << self
       def exec(controller)
-        return unless controller
-
         new_controller = catch :pass_controller do
           controller.execute!
           nil
         end
 
-        exec new_controller
+        exec new_controller if new_controller
       end
 
       ##

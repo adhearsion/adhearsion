@@ -2,7 +2,6 @@ require 'pry'
 
 module Adhearsion
   class Console
-    include Adhearsion
     include Singleton
 
     delegate :silence!, :unsilence!, :to => Adhearsion::Logging
@@ -17,6 +16,12 @@ module Adhearsion
       def method_missing(method, *args, &block)
         instance.send method, *args, &block
       end
+    end
+
+    attr_accessor :input
+
+    def initialize
+      @input = $stdin
     end
 
     ##
@@ -68,17 +73,31 @@ module Adhearsion
       Adhearsion.active_calls
     end
 
-    def use(call)
-      unless call.is_a? Adhearsion::Call
-        raise ArgumentError unless Adhearsion.active_calls[call]
-        call = Adhearsion.active_calls[call]
-      end
-      Pry.prompt = [ proc { "AHN<#{call.channel}> " },
-                     proc { "AHN<#{call.channel}? " }  ]
-
-      # Pause execution of the thread currently controlling the call
-      call.with_command_lock do
-        CallWrapper.new(call).pry
+    def use(call = nil)
+      case call
+      when Call
+        interact_with_call call
+      when String
+        if call = calls[call]
+          interact_with_call call
+        else
+          logger.error "An active call with that ID does not exist"
+        end
+      when nil
+        if calls.size == 1
+          interact_with_call calls.values.first
+        else
+          puts "Please choose a call:"
+          current_calls = calls.values
+          current_calls.each_with_index do |call, index|
+            puts "#{index}. #{call.id}"
+          end
+          index = input.gets.chomp.to_i
+          call = current_calls[index]
+          interact_with_call call
+        end
+      else
+        raise ArgumentError
       end
     end
 
@@ -92,12 +111,18 @@ module Adhearsion
       end
     end
 
-    class CallWrapper
-      attr_accessor :call
+    private
 
-      def initialize(call)
-        @call = call
-        extend Adhearsion::Commands.for('asterisk')
+    def interact_with_call(call)
+      Pry.prompt = [ proc { "AHN<#{call.id}> " },
+                     proc { "AHN<#{call.id}? " }  ]
+
+      CallController.exec InteractiveController.new(call)
+    end
+
+    class InteractiveController < CallController
+      def run
+        pry
       end
     end
   end
