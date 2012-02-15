@@ -10,6 +10,8 @@ module Adhearsion
       end
     end
 
+    DEFAULT_PID_FILE_NAME = 'adhearsion.pid'
+
     attr_reader :path, :daemon, :pid_file
 
     # Creation of pid_files
@@ -47,11 +49,13 @@ module Adhearsion
       update_rails_env_var
       init_plugins
 
-      logger.info "Adhearsion v#{Adhearsion::VERSION} initialized with environment <#{Adhearsion.config.platform.environment}>!"
-      Adhearsion::Process.booted
-
       run_plugins
       trigger_after_initialized_hooks
+
+      if Adhearsion.status == :booting
+        Adhearsion::Process.booted
+        logger.info "Adhearsion v#{Adhearsion::VERSION} initialized with environment <#{Adhearsion.config.platform.environment}>!"
+      end
 
       # This method will block until all important threads have finished.
       # When it does, the process will exit.
@@ -82,7 +86,7 @@ module Adhearsion
     end
 
     def default_pid_path
-      File.join Adhearsion.config.root, 'adhearsion.pid'
+      File.join Adhearsion.config.root, DEFAULT_PID_FILE_NAME
     end
 
     def resolve_pid_file_path

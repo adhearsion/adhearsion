@@ -23,11 +23,16 @@ module Adhearsion
     end
 
     init :punchblock do
-      Initializer.start
+      Initializer.init
+    end
+
+    run :punchblock do
+      Initializer.run
     end
 
     class << self
       delegate :client, :to => Initializer
+      delegate :connection, :to => Initializer
 
       def validate_number(value)
         return 1.0/0.0 if ["Infinity", 1.0/0.0].include? value

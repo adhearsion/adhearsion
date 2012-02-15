@@ -1,12 +1,12 @@
 module Adhearsion
   class PunchblockPlugin
     class Initializer
-      cattr_accessor :config, :client, :dispatcher, :attempts
+      cattr_accessor :config, :client, :connection, :dispatcher, :attempts
 
       self.attempts = 0
 
       class << self
-        def start
+        def init
           self.config = Adhearsion.config[:punchblock]
           connection_class = case (self.config.platform || :xmpp)
           when :xmpp
@@ -25,7 +25,7 @@ module Adhearsion
             :mixers_domain      => self.config.mixers_domain
           }
 
-          connection = connection_class.new connection_options
+          self.connection = connection_class.new connection_options
           self.client = ::Punchblock::Client.new :connection => connection
 
           # Tell the Punchblock connection that we are ready to process calls.
@@ -65,7 +65,9 @@ module Adhearsion
           Events.punchblock proc { |e| e.respond_to?(:call_id) }, :call_id do |event|
             dispatch_call_event event
           end
+        end
 
+        def run
           connect
         end
 
