@@ -12,7 +12,7 @@ Feature: Adhearsion Ahn CLI (stop)
     """
     Stopping Adhearsion
     """
-    # And the file "ahn.pid" should not exist
+    And the file "ahn.pid" should not exist
 
   Scenario: Command stop with valid path and no pid option
     Given JRuby skip test
@@ -23,4 +23,4 @@ Feature: Adhearsion Ahn CLI (stop)
     """
     Stopping Adhearsion
     """
-    # And the file "adhearsion.pid" should not exist
+    And the file "path/somewhere/adhearsion.pid" should not exist

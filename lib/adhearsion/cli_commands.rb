@@ -90,6 +90,8 @@ module Adhearsion
           ::Process.kill "KILL", pid
         rescue Errno::ESRCH
         end
+
+        File.delete pid_file
       end
 
       desc "restart </path/to/directory>", "Restart the Adhearsion server"
