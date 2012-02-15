@@ -66,7 +66,21 @@ describe "Using Invocations that've been ran through the Theatre" do
 
   it "should trigger an exception event if an exception was raised" do
     invocation = Theatre::Invocation.new("/namespace/whatever", lambda { raise ArgumentError, "this error is intentional" })
-    flexmock(Adhearsion::Events).should_receive(:trigger).once.with(['exception'], FlexMock.any)
+    flexmock(Adhearsion::Events).should_receive(:trigger).once.with('/exception', FlexMock.any)
+    invocation.queued
+    invocation.start
+  end
+
+  it "should NOT trigger an exception if the exception occurs in an exception namespace" do
+    invocation = Theatre::Invocation.new("/exception", lambda { raise ArgumentError, "this error is intentional" })
+    flexmock(Adhearsion::Events).should_receive(:trigger).never
+    invocation.queued
+    invocation.start
+  end
+
+  it "should do the right thing with exceptions triggered with the wrong namespace" do
+    invocation = Theatre::Invocation.new(['exception'], lambda { raise ArgumentError, "this error is intentional" })
+    flexmock(Adhearsion::Events).should_receive(:trigger).never
     invocation.queued
     invocation.start
   end

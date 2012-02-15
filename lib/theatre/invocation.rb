@@ -22,9 +22,10 @@ module Theatre
     #
     def initialize(namespace, callback, payload=:theatre_no_payload)
       raise ArgumentError, "Callback must be a Proc" unless callback.kind_of? Proc
+      @namespace     = namespace
+      @callback      = callback
       @payload       = payload
       @unique_id     = new_guid.freeze
-      @callback      = callback
       @current_state = :new
       @state_lock    = Mutex.new
 
@@ -63,7 +64,14 @@ module Theatre
         end
         with_state_lock { @current_state = :success }
       rescue => e
-        Adhearsion::Events.trigger(['exception'], e)
+        if Array(@namespace).first =~ /exception/
+          # Exception encountered in exception handler.  Do not perpetuate the loop.
+          ahn_log.error "Exception encountered in exception handler!"
+          ahn_log.error e.message
+          ahn_log.error e.backtrace.join("\n")
+        else
+          Adhearsion::Events.trigger('/exception', e)
+        end
         @error = e
         with_state_lock { @current_state = :error }
       ensure
