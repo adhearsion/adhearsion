@@ -136,7 +136,7 @@ module Theatre
           next_invocation = @master_queue.pop
           return :stopped if next_invocation.equal? :THEATRE_SHUTDOWN!
           next_invocation.start
-        rescue Exception => error
+        rescue StandardError => error
           Adhearsion::Events.trigger(['exception'], error)
         end
       end
