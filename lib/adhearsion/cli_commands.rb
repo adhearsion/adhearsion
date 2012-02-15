@@ -66,13 +66,16 @@ module Adhearsion
       def stop(path = nil)
         execute_from_app_dir! path
 
+        path ||= '.'
+
         pid_file = if options[:pidfile]
-          File.expand_path File.exists?(File.expand_path(options[:pidfile])) ?
-          options[:pidfile] :
-          File.join(path, options[:pidfile])
+          File.exists?(File.expand_path(options[:pidfile])) ?
+            options[:pidfile] :
+            File.join(path, options[:pidfile])
         else
-          path + Adhearsion::Initializer::DEFAULT_PID_FILE_NAME
+          File.join path, Adhearsion::Initializer::DEFAULT_PID_FILE_NAME
         end
+        pid_file = File.expand_path pid_file
 
         begin
           pid = File.read(pid_file).to_i

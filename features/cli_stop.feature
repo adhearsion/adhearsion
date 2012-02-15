@@ -24,3 +24,15 @@ Feature: Adhearsion Ahn CLI (stop)
     Stopping Adhearsion
     """
     And the file "path/somewhere/adhearsion.pid" should not exist
+
+  Scenario: Command stop with no options inside the app directory
+    Given JRuby skip test
+    Given that I create a valid app under "path/somewhere"
+    And I cd to "path/somewhere"
+    When I run `ahn daemon`
+    And I run `ahn stop`
+    Then the output should contain:
+    """
+    Stopping Adhearsion
+    """
+    And the file "adhearsion.pid" should not exist
