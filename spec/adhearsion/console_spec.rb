@@ -130,9 +130,25 @@ module Adhearsion
     describe "#interact_with_call" do
       let(:call) { Call.new }
 
-      it "should suspend the call's controller"
+      it "should set it's own controller as the call's exclusive controller" do
+        flexmock(CallController).should_receive(:exec).once
+        flexmock(call).should_receive(:exclusive_controller=).once.with Console::InteractiveController
+        flexmock(call).should_receive(:exclusive_controller=).once.with nil
+        Console.interact_with_call call
+      end
+
+      it "should reset the call's exclusive controller to nil, even if the interactive controller raises" do
+        flexmock(call).should_receive(:exclusive_controller=).once.with(Console::InteractiveController).ordered
+        flexmock(CallController).should_receive(:exec).once.ordered.and_raise StandardError
+        flexmock(call).should_receive(:exclusive_controller=).once.with(nil).ordered
+        begin
+          Console.interact_with_call call
+        rescue StandardError
+        end
+      end
 
       it "should execute an interactive call controller on the call" do
+        pending
         flexmock(CallController).should_receive(:exec).once.with(on do |c|
           c.should be_a Console::InteractiveController
           c.call.should be call
