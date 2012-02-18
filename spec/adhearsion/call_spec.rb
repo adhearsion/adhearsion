@@ -243,7 +243,7 @@ module Adhearsion
       end
 
       it "writes a command to the call" do
-        flexmock(subject.wrapped_object).should_receive(:write_command).once.with(message)
+        flexmock(subject.wrapped_object).should_receive(:write_command).once.with(message, nil)
         subject.write_and_await_response message
       end
 
