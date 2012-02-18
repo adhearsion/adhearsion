@@ -85,6 +85,7 @@ module Adhearsion
             flexmock(other_mock_call).should_receive(:hangup).never
 
             flexmock(second_other_mock_call).should_receive(:dial).once
+            flexmock(second_other_mock_call).should_receive(:join).never
             flexmock(second_other_mock_call).should_receive(:hangup).once
 
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call, second_other_mock_call
@@ -100,6 +101,10 @@ module Adhearsion
 
             other_mock_call << mock_answered
             other_mock_call << mock_end
+
+            latch.wait(1).should be_false
+
+            second_other_mock_call << mock_end
 
             latch.wait(2).should be_true
 

@@ -31,8 +31,6 @@ module Adhearsion
       #   dial "IAX2/my.id@voipjet/19095551234", :from => "John Doe <9095551234>"
       #
       def dial(to, options = {}, latch = nil)
-        latch ||= CountDownLatch.new 1
-
         _for = options.delete :for
         options[:timeout] ||= _for if _for
 
@@ -52,6 +50,8 @@ module Adhearsion
 
           [new_call, target]
         end
+
+        latch ||= CountDownLatch.new calls.size
 
         calls.map! do |call, target|
           call.dial target, options
