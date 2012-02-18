@@ -499,19 +499,65 @@ module Adhearsion
 
         before do
           flexmock subject.wrapped_object, :write_and_await_response => true
+          flexmock(CallController).should_receive(:exec).once.with mock_controller
         end
 
         it "should call #execute on the controller instance" do
-          flexmock(CallController).should_receive(:exec).once.with mock_controller
           subject.execute_controller mock_controller, latch
           latch.wait(3).should be_true
         end
 
         it "should hangup the call after all controllers have executed" do
-          flexmock(CallController).should_receive(:exec).once.with mock_controller
-          subject.should_receive(:hangup).once
+          subject.wrapped_object.should_receive(:hangup).once
           subject.execute_controller mock_controller, latch
           latch.wait(3).should be_true
+        end
+      end
+
+      describe "with an exclusive controller set" do
+        class TestController < CallController
+          def run
+            write_and_await_response self[:answer_command]
+            self[:finish_time] = Time.new
+          end
+        end
+
+        let(:answer_command)        { ::Punchblock::Command::Answer.new }
+        let(:exclusive_controller)  { TestController.new subject, :answer_command => answer_command }
+
+        before do
+          subject.exclusive_controller = exclusive_controller
+          flexmock answer_command, :response => nil
+        end
+
+        it "allows the exclusive controller to write commands freely" do
+          controller  = TestController.new subject, :answer_command => answer_command
+          latch       = CountDownLatch.new 1
+
+          subject.execute_controller controller, latch
+
+          sleep 0.5
+
+          resume_time = Time.now
+          subject.exclusive_controller = nil
+
+          latch.wait(3).should be true
+
+          controller[:finish_time].should < resume_time
+        end
+
+        it "blocks any other controller when writing a command to the call, until the exclusive controller is removed" do
+          controller  = TestController.new subject, :answer_command => answer_command
+          latch       = CountDownLatch.new 1
+
+          subject.execute_controller controller, latch
+
+          resume_time = Time.now
+          subject.exclusive_controller = nil
+
+          latch.wait(3).should be true
+
+          controller[:finish_time].should > resume_time
         end
       end
     end

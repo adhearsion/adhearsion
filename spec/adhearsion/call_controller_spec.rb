@@ -185,8 +185,8 @@ module Adhearsion
       let(:message) { Punchblock::Command::Accept.new }
 
       it "delegates to the call" do
-        flexmock(subject.call).should_receive(:write_and_await_response).once.with(message, 20)
-        subject.write_and_await_response message, 20
+        flexmock(subject.call).should_receive(:write_and_await_response).once.with(message, subject)
+        subject.write_and_await_response message
       end
     end
 

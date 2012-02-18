@@ -29,6 +29,7 @@ module Adhearsion
     include HasGuardedHandlers
 
     attr_accessor :offer, :client, :end_reason, :commands, :variables
+    attr_reader :exclusive_controller
 
     delegate :[], :[]=, :to => :variables
     delegate :to, :from, :to => :offer, :allow_nil => true
@@ -171,22 +172,18 @@ module Adhearsion
       write_and_await_response ::Punchblock::Command::Unmute.new
     end
 
-    def with_command_lock
-      @command_monitor ||= Monitor.new
-      @command_monitor.synchronize { yield }
-    end
-
-    def write_and_await_response(command, timeout = 60)
+    def write_and_await_response(command, controller = nil)
       # TODO: Put this back once we figure out why it's causing CI to fail
       # logger.trace "Executing command #{command.inspect}"
       commands << command
-      write_command command
-      response = command.response timeout
+      write_command command, controller
+      response = command.response 60
       abort response if response.is_a? Exception
       command
     end
 
-    def write_command(command)
+    def write_command(command, controller = nil)
+      wait :exclusive_controller_release if exclusive_controller && exclusive_controller != controller
       abort Hangup.new unless active? || command.is_a?(Punchblock::Command::Hangup)
       variables.merge! command.headers_hash if command.respond_to? :headers_hash
       client.execute_command command, :call_id => id
@@ -205,15 +202,23 @@ module Adhearsion
     end
 
     def execute_controller(controller, latch = nil)
-      Adhearsion::Process.important_threads << Thread.new do
+      Thread.new(current_actor) do |call|
         catching_standard_errors do
           begin
             CallController.exec controller
           ensure
-            hangup
+            call.hangup!
           end
           latch.countdown! if latch
         end
+      end.tap { |t| Adhearsion::Process.important_threads << t }
+    end
+
+    def exclusive_controller=(controller)
+      if controller
+        @exclusive_controller = controller
+      else
+        signal :exclusive_controller_release
       end
     end
 
