@@ -181,7 +181,11 @@ module Adhearsion
       # logger.trace "Executing command #{command.inspect}"
       commands << command
       write_command command
-      response = command.response timeout
+      begin
+        response = command.response timeout
+      rescue Timeout::Error => e
+        abort e
+      end
       abort response if response.is_a? Exception
       command
     end

@@ -276,6 +276,18 @@ module Adhearsion
           lambda { subject.write_and_await_response message }.should raise_error Exception
         end
       end
+
+      describe "when the response times out" do
+        before do
+          message.should_receive(:response).and_raise Timeout::Error
+        end
+
+        it "should raise the error in the caller but not crash the actor" do
+          lambda { subject.write_and_await_response message }.should raise_error Timeout::Error
+          sleep 0.5
+          subject.should be_alive
+        end
+      end
     end
 
     describe "basic control commands" do
