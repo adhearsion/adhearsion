@@ -52,6 +52,26 @@ module Adhearsion
             latch.wait(1).should be_true
           end
 
+          it "unblocks the original controller if the original call ends" do
+            other_mock_call
+
+            flexmock(other_mock_call).should_receive(:dial).once
+            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+
+            latch = CountDownLatch.new 1
+
+            Thread.new do
+              subject.dial to
+              latch.countdown!
+            end
+
+            latch.wait(1).should be_false
+
+            call << mock_end
+
+            latch.wait(1).should be_true
+          end
+
           it "joins the new call to the existing one on answer" do
             other_mock_call
 
