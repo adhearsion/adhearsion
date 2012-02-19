@@ -36,11 +36,9 @@ module Adhearsion
     def initialize(offer = nil)
       register_initial_handlers
 
-      @tag_mutex        = Mutex.new
-      @tags             = []
-      @end_reason_mutex = Mutex.new
-      @commands         = CommandRegistry.new
-      @variables        = {}
+      @tags       = []
+      @commands   = CommandRegistry.new
+      @variables  = {}
 
       self << offer if offer
     end
@@ -50,7 +48,7 @@ module Adhearsion
     end
 
     def tags
-      @tag_mutex.synchronize { @tags.clone }
+      @tags.clone
     end
 
     # This may still be a symbol, but no longer requires the tag to be a symbol although beware
@@ -58,17 +56,15 @@ module Adhearsion
     # @param [String, Symbol] label String or Symbol with which to tag this call
     def tag(label)
       abort ArgumentError.new "Tag must be a String or Symbol" unless [String, Symbol].include?(label.class)
-      @tag_mutex.synchronize { @tags << label }
+      @tags << label
     end
 
     def remove_tag(symbol)
-      @tag_mutex.synchronize do
-        @tags.reject! { |tag| tag == symbol }
-      end
+      @tags.reject! { |tag| tag == symbol }
     end
 
     def tagged_with?(symbol)
-      @tag_mutex.synchronize { @tags.include? symbol }
+      @tags.include? symbol
     end
 
     def register_event_handler(*guards, &block)
@@ -95,7 +91,7 @@ module Adhearsion
 
       on_end do |event|
         clear_from_active_calls
-        @end_reason_mutex.synchronize { @end_reason = event.reason }
+        @end_reason = event.reason
         commands.terminate
         after(5) { current_actor.terminate! }
       end
@@ -109,7 +105,7 @@ module Adhearsion
     end
 
     def active?
-      @end_reason_mutex.synchronize { !end_reason }
+      !end_reason
     end
 
     def accept(headers = nil)
@@ -126,7 +122,7 @@ module Adhearsion
 
     def hangup(headers = nil)
       return false unless active?
-      @end_reason_mutex.synchronize { @end_reason = true }
+      @end_reason = true
       write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
     end
 
