@@ -28,7 +28,7 @@ module Adhearsion
     include Celluloid
     include HasGuardedHandlers
 
-    attr_accessor :offer, :client, :end_reason, :commands, :variables
+    attr_accessor :offer, :client, :end_reason, :commands, :variables, :controllers
 
     delegate :[], :[]=, :to => :variables
     delegate :to, :from, :to => :offer, :allow_nil => true
@@ -36,9 +36,10 @@ module Adhearsion
     def initialize(offer = nil)
       register_initial_handlers
 
-      @tags       = []
-      @commands   = CommandRegistry.new
-      @variables  = {}
+      @tags         = []
+      @commands     = CommandRegistry.new
+      @variables    = {}
+      @controllers  = []
 
       self << offer if offer
     end
@@ -167,11 +168,6 @@ module Adhearsion
       write_and_await_response ::Punchblock::Command::Unmute.new
     end
 
-    def with_command_lock
-      @command_monitor ||= Monitor.new
-      @command_monitor.synchronize { yield }
-    end
-
     def write_and_await_response(command, timeout = 60)
       # TODO: Put this back once we figure out why it's causing CI to fail
       # logger.trace "Executing command #{command.inspect}"
@@ -205,16 +201,25 @@ module Adhearsion
     end
 
     def execute_controller(controller, latch = nil)
-      Adhearsion::Process.important_threads << Thread.new do
+      Thread.new do
         catching_standard_errors do
           begin
+            @controllers << controller
             CallController.exec controller
           ensure
             hangup
           end
           latch.countdown! if latch
         end
-      end
+      end.tap { |t| Adhearsion::Process.important_threads << t }
+    end
+
+    def pause_controllers
+      controllers.each &:pause!
+    end
+
+    def resume_controllers
+      controllers.each &:resume!
     end
 
     class CommandRegistry < ThreadSafeArray
