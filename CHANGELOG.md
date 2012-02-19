@@ -9,6 +9,7 @@
   * Feature: The console can take control of a call
   * Bugfix: CallController#dial now blocks until all outbound calls complete
   * Bugfix: Call commands timing out now raise a timeout exception in the caller, but do not crash the actor
+  * Feature: It is now possible to pause/resume call controllers
 
 # 2.0.0.alpha2 - 2012-01-30
   * Change: Plugins no longer load dialplan/event/rpc/console methods using corresponding class methods
