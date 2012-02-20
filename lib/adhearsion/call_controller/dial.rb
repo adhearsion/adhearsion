@@ -45,6 +45,7 @@ module Adhearsion
 
           new_call.on_answer do |event|
             calls.each do |call_to_hangup, target|
+              logger.debug "Hanging up call #{call_to_hangup} because it was not the first to answer a #dial"
               call_to_hangup.hangup unless call_to_hangup.id == new_call.id
             end
 
@@ -54,6 +55,7 @@ module Adhearsion
               throw :pass
             end
 
+            logger.debug "Joining call #{new_call} to #{call} due to a #dial"
             new_call.join call
           end
 
@@ -71,7 +73,9 @@ module Adhearsion
 
         timeout = latch.wait options[:timeout]
 
+        logger.debug "#dial finished. Hanging up outbound calls #{calls.inspect}."
         calls.each do |outbound_call, target|
+          logger.debug "Hanging up #{outbound_call} because the #dial that created it is complete."
           outbound_call.hangup if outbound_call.alive?
         end
 
