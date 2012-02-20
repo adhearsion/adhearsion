@@ -47,11 +47,18 @@ module Adhearsion
             calls.each do |call_to_hangup, target|
               call_to_hangup.hangup unless call_to_hangup.id == new_call.id
             end
+
+            new_call.register_event_handler Punchblock::Event::Unjoined, :other_call_id => call.id do |event|
+              new_call[:"dial_countdown_#{call.id}"] = true
+              latch.countdown!
+              throw :pass
+            end
+
             new_call.join call
           end
 
           new_call.on_end do |event|
-            latch.countdown!
+            latch.countdown! unless new_call[:"dial_countdown_#{call.id}"]
           end
 
           [new_call, target]

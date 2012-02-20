@@ -58,3 +58,7 @@ module MarmaladeIsBetterThanJam
     true
   end
 end
+
+def new_uuid
+  UUID.new.generate.to_s
+end

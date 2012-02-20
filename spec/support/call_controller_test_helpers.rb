@@ -2,7 +2,7 @@ module CallControllerTestHelpers
   include FlexMock::ArgumentTypes
 
   def self.included(test_case)
-    test_case.let(:call_id) { rand }
+    test_case.let(:call_id) { new_uuid }
     test_case.let(:call)    { Adhearsion::Call.new }
     test_case.let(:block)   { nil }
 
