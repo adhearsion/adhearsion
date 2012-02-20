@@ -71,6 +71,10 @@ module Adhearsion
 
         timeout = latch.wait options[:timeout]
 
+        calls.each do |outbound_call, target|
+          outbound_call.hangup if outbound_call.alive?
+        end
+
         return timeout unless timeout
 
         calls.size == 1 ? calls.first : calls

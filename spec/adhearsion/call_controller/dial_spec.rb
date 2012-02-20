@@ -36,6 +36,7 @@ module Adhearsion
             other_mock_call
 
             flexmock(other_mock_call).should_receive(:dial).once
+            flexmock(other_mock_call).should_receive(:hangup).once
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
 
             latch = CountDownLatch.new 1
@@ -56,6 +57,7 @@ module Adhearsion
             other_mock_call
 
             flexmock(other_mock_call).should_receive(:dial).once
+            flexmock(other_mock_call).should_receive(:hangup).once
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
 
             latch = CountDownLatch.new 1
@@ -77,6 +79,7 @@ module Adhearsion
 
             flexmock(other_mock_call).should_receive(:dial).once
             flexmock(other_mock_call).should_receive(:join).once.with(call)
+            flexmock(other_mock_call).should_receive(:hangup).once
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
 
             latch = CountDownLatch.new 1
@@ -93,6 +96,29 @@ module Adhearsion
 
             latch.wait(1).should be_true
           end
+
+          it "hangs up the new call when the dial unblocks" do
+            other_mock_call
+
+            flexmock(other_mock_call).should_receive(:dial).once
+            flexmock(other_mock_call).should_receive(:join).once.with(call)
+            flexmock(other_mock_call).should_receive(:hangup).once
+            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+
+            latch = CountDownLatch.new 1
+
+            Thread.new do
+              subject.dial to
+              latch.countdown!
+            end
+
+            latch.wait(1).should be_false
+
+            other_mock_call << mock_answered
+            call << mock_end
+
+            latch.wait(1).should be_true
+          end
         end
 
         describe "with multiple third parties specified" do
@@ -102,11 +128,11 @@ module Adhearsion
 
             flexmock(other_mock_call).should_receive(:dial).once
             flexmock(other_mock_call).should_receive(:join).once.with(call)
-            flexmock(other_mock_call).should_receive(:hangup).never
+            flexmock(other_mock_call).should_receive(:hangup).once
 
             flexmock(second_other_mock_call).should_receive(:dial).once
             flexmock(second_other_mock_call).should_receive(:join).never
-            flexmock(second_other_mock_call).should_receive(:hangup).once
+            flexmock(second_other_mock_call).should_receive(:hangup).twice
 
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call, second_other_mock_call
             latch = CountDownLatch.new 1
@@ -140,11 +166,11 @@ module Adhearsion
 
             flexmock(other_mock_call).should_receive(:dial).once
             flexmock(other_mock_call).should_receive(:join).once.with(call)
-            flexmock(other_mock_call).should_receive(:hangup).never
+            flexmock(other_mock_call).should_receive(:hangup).once
 
             flexmock(second_other_mock_call).should_receive(:dial).once
             flexmock(second_other_mock_call).should_receive(:join).never
-            flexmock(second_other_mock_call).should_receive(:hangup).once
+            flexmock(second_other_mock_call).should_receive(:hangup).twice
 
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call, second_other_mock_call
             latch = CountDownLatch.new 1
@@ -181,6 +207,7 @@ module Adhearsion
             other_mock_call
 
             flexmock(other_mock_call).should_receive(:dial).once
+            flexmock(other_mock_call).should_receive(:hangup).once
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
 
             latch = CountDownLatch.new 1
