@@ -1,0 +1,5 @@
+module <%= @plugin_name %>
+  require "<%= @plugin_file %>/version"
+  require "<%= @plugin_file %>/plugin"
+  require "<%= @plugin_file %>/controller_methods"
+end

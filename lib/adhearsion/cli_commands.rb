@@ -36,6 +36,8 @@ module Adhearsion
       def generate(generator_name = nil, *args)
         require 'adhearsion/generators/controller/controller_generator'
         Generators.add_generator :controller, Adhearsion::Generators::ControllerGenerator
+        require 'adhearsion/generators/plugin/plugin_generator'
+        Generators.add_generator :plugin, Adhearsion::Generators::PluginGenerator
 
         if generator_name
           Generators.invoke generator_name
