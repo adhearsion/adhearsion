@@ -88,7 +88,7 @@ module Adhearsion
           puts "Please choose a call:"
           current_calls = calls.values
           current_calls.each_with_index do |call, index|
-            puts "#{index}. #{call.id}"
+            puts "#{index}. (#{call.is_a?(OutboundCall) ? 'o' : 'i' }) #{call.id} from #{call.from} to #{call.to}"
           end
           index = input.gets.chomp.to_i
           call = current_calls[index]
