@@ -73,7 +73,7 @@ module Adhearsion
       Adhearsion.active_calls
     end
 
-    def use(call = nil)
+    def take(call = nil)
       case call
       when Call
         interact_with_call call

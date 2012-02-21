@@ -59,7 +59,7 @@ module Adhearsion
       end
     end
 
-    describe "#use" do
+    describe "#take" do
       let(:call)    { Call.new }
       let(:call_id) { rand.to_s }
 
@@ -71,7 +71,7 @@ module Adhearsion
       context "with a call" do
         it "should interact with the call" do
           flexmock(Console.instance).should_receive(:interact_with_call).once.with call
-          Console.use call
+          Console.take call
         end
       end
 
@@ -83,7 +83,7 @@ module Adhearsion
 
           it "should interact with the current call" do
             flexmock(Console.instance).should_receive(:interact_with_call).once.with call
-            Console.use
+            Console.take
           end
         end
 
@@ -100,7 +100,7 @@ module Adhearsion
             Console.input = mock_io
             flexmock(mock_io).should_receive(:gets).once.and_return "1\n"
             flexmock(Console.instance).should_receive(:interact_with_call).once.with call2
-            Console.use
+            Console.take
           end
         end
       end
@@ -113,7 +113,7 @@ module Adhearsion
 
           it "should interact with that call" do
             flexmock(Console.instance).should_receive(:interact_with_call).once.with call
-            Console.use call_id
+            Console.take call_id
           end
         end
 
@@ -121,7 +121,7 @@ module Adhearsion
           it "should log an error explaining that the call does not exist" do
             flexmock(Console.logger).should_receive(:error).once.with /does not exist/
             flexmock(Console.instance).should_receive(:interact_with_call).never
-            Console.use call_id
+            Console.take call_id
           end
         end
       end
