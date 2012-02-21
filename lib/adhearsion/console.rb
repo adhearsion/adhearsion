@@ -117,12 +117,7 @@ module Adhearsion
       Pry.prompt = [ proc { "AHN<#{call.id}> " },
                      proc { "AHN<#{call.id}? " }  ]
 
-      begin
-        call.pause_controllers
-        CallController.exec InteractiveController.new(call)
-      ensure
-        call.resume_controllers
-      end
+      CallController.exec InteractiveController.new(call)
     end
 
     class InteractiveController < CallController
