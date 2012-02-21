@@ -1,5 +1,4 @@
 require 'thread'
-require 'celluloid'
 
 module Celluloid
   module ClassMethods

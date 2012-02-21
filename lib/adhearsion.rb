@@ -13,10 +13,13 @@ abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby
   has_guarded_handlers
   girl_friday
   loquacious
+  celluloid
 
   adhearsion/version
   adhearsion/foundation/all
 }.each { |f| require f }
+
+Celluloid.exception_handler { |e| Events.trigger :exception, e }
 
 module Adhearsion
   extend ActiveSupport::Autoload

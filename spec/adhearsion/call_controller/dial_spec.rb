@@ -6,11 +6,11 @@ module Adhearsion
       include CallControllerTestHelpers
 
       let(:to) { 'sip:foo@bar.com' }
-      let(:other_call_id)   { rand }
+      let(:other_call_id)   { new_uuid }
       let(:other_mock_call) { flexmock OutboundCall.new, :id => other_call_id }
 
       let(:second_to)               { 'sip:baz@bar.com' }
-      let(:second_other_call_id)    { rand }
+      let(:second_other_call_id)    { new_uuid }
       let(:second_other_mock_call)  { flexmock OutboundCall.new, :id => second_other_call_id }
 
       let(:mock_end)      { flexmock Punchblock::Event::End.new, :reason => :hangup }
@@ -31,11 +31,25 @@ module Adhearsion
           dial_thread.join.should be_true
         end
 
+        it "should default the caller ID to that of the original call" do
+          other_mock_call
+          flexmock call, :from => 'sip:foo@bar.com'
+          flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+          flexmock(other_mock_call).should_receive(:dial).with(to, :from => 'sip:foo@bar.com').once
+          dial_thread = Thread.new do
+            subject.dial to
+          end
+          sleep 0.1
+          other_mock_call << mock_end
+          dial_thread.join.should be_true
+        end
+
         describe "without a block" do
           it "blocks the original controller until the new call ends" do
             other_mock_call
 
             flexmock(other_mock_call).should_receive(:dial).once
+            flexmock(other_mock_call).should_receive(:hangup).once
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
 
             latch = CountDownLatch.new 1
@@ -52,11 +66,33 @@ module Adhearsion
             latch.wait(1).should be_true
           end
 
+          it "unblocks the original controller if the original call ends" do
+            other_mock_call
+
+            flexmock(other_mock_call).should_receive(:dial).once
+            flexmock(other_mock_call).should_receive(:hangup).once
+            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+
+            latch = CountDownLatch.new 1
+
+            Thread.new do
+              subject.dial to
+              latch.countdown!
+            end
+
+            latch.wait(1).should be_false
+
+            call << mock_end
+
+            latch.wait(1).should be_true
+          end
+
           it "joins the new call to the existing one on answer" do
             other_mock_call
 
             flexmock(other_mock_call).should_receive(:dial).once
             flexmock(other_mock_call).should_receive(:join).once.with(call)
+            flexmock(other_mock_call).should_receive(:hangup).once
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
 
             latch = CountDownLatch.new 1
@@ -73,6 +109,29 @@ module Adhearsion
 
             latch.wait(1).should be_true
           end
+
+          it "hangs up the new call when the dial unblocks" do
+            other_mock_call
+
+            flexmock(other_mock_call).should_receive(:dial).once
+            flexmock(other_mock_call).should_receive(:join).once.with(call)
+            flexmock(other_mock_call).should_receive(:hangup).once
+            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+
+            latch = CountDownLatch.new 1
+
+            Thread.new do
+              subject.dial to
+              latch.countdown!
+            end
+
+            latch.wait(1).should be_false
+
+            other_mock_call << mock_answered
+            call << mock_end
+
+            latch.wait(1).should be_true
+          end
         end
 
         describe "with multiple third parties specified" do
@@ -82,11 +141,11 @@ module Adhearsion
 
             flexmock(other_mock_call).should_receive(:dial).once
             flexmock(other_mock_call).should_receive(:join).once.with(call)
-            flexmock(other_mock_call).should_receive(:hangup).never
+            flexmock(other_mock_call).should_receive(:hangup).once
 
             flexmock(second_other_mock_call).should_receive(:dial).once
             flexmock(second_other_mock_call).should_receive(:join).never
-            flexmock(second_other_mock_call).should_receive(:hangup).once
+            flexmock(second_other_mock_call).should_receive(:hangup).twice
 
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call, second_other_mock_call
             latch = CountDownLatch.new 1
@@ -113,6 +172,45 @@ module Adhearsion
             calls.should have(2).calls
             calls.each { |c| c.should be_a OutboundCall }
           end
+
+          it "unblocks when the joined call unjoins, allowing it to proceed further" do
+            other_mock_call
+            second_other_mock_call
+
+            flexmock(other_mock_call).should_receive(:dial).once
+            flexmock(other_mock_call).should_receive(:join).once.with(call)
+            flexmock(other_mock_call).should_receive(:hangup).once
+
+            flexmock(second_other_mock_call).should_receive(:dial).once
+            flexmock(second_other_mock_call).should_receive(:join).never
+            flexmock(second_other_mock_call).should_receive(:hangup).twice
+
+            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call, second_other_mock_call
+            latch = CountDownLatch.new 1
+
+            t = Thread.new do
+              calls = subject.dial [to, second_to]
+              latch.countdown!
+              calls
+            end
+
+            latch.wait(1).should be_false
+
+            other_mock_call << mock_answered
+            other_mock_call << Punchblock::Event::Unjoined.new(:other_call_id => call.id)
+            other_mock_call << mock_end
+
+            latch.wait(1).should be_false
+
+            second_other_mock_call << mock_end
+
+            latch.wait(2).should be_true
+
+            t.join
+            calls = t.value
+            calls.should have(2).calls
+            calls.each { |c| c.should be_a OutboundCall }
+          end
         end
 
         describe "with a timeout specified" do
@@ -122,6 +220,7 @@ module Adhearsion
             other_mock_call
 
             flexmock(other_mock_call).should_receive(:dial).once
+            flexmock(other_mock_call).should_receive(:hangup).once
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
 
             latch = CountDownLatch.new 1
