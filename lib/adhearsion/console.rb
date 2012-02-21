@@ -63,11 +63,9 @@ module Adhearsion
       end
     end
 
-    def shutdown
+    def shutdown!
       Process.shutdown!
     end
-
-    alias :exit :shutdown
 
     def calls
       Adhearsion.active_calls

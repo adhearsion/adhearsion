@@ -52,10 +52,10 @@ module Adhearsion
       end
     end
 
-    describe "#shutdown" do
+    describe "#shutdown!" do
       it "should tell the process to shutdown" do
         flexmock(Adhearsion::Process).should_receive(:shutdown!).once
-        Console.shutdown
+        Console.shutdown!
       end
     end
 
