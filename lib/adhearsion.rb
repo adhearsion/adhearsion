@@ -19,6 +19,8 @@ abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby
   adhearsion/foundation/all
 }.each { |f| require f }
 
+Celluloid.exception_handler { |e| Events.trigger :exception, e }
+
 module Adhearsion
   extend ActiveSupport::Autoload
 
