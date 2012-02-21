@@ -4,15 +4,13 @@ require 'adhearsion/linux_proc_name'
 module Adhearsion
   class Initializer
 
-    extend ActiveSupport::Autoload
-
-    autoload :Logging
-
     class << self
       def start(*args, &block)
         new(*args, &block).start
       end
     end
+
+    DEFAULT_PID_FILE_NAME = 'adhearsion.pid'
 
     attr_reader :path, :daemon, :pid_file
 
@@ -47,16 +45,17 @@ module Adhearsion
       catch_termination_signal
       create_pid_file
       set_ahn_proc_name
-      logger.info "Loaded config in <#{Adhearsion.config.platform.environment}> environment"
       initialize_exception_logger
       update_rails_env_var
       init_plugins
 
-      logger.info "Adhearsion v#{Adhearsion::VERSION} initialized!"
-      Adhearsion::Process.booted
-
       run_plugins
       trigger_after_initialized_hooks
+
+      if Adhearsion.status == :booting
+        Adhearsion::Process.booted
+        logger.info "Adhearsion v#{Adhearsion::VERSION} initialized with environment <#{Adhearsion.config.platform.environment}>!"
+      end
 
       # This method will block until all important threads have finished.
       # When it does, the process will exit.
@@ -67,10 +66,10 @@ module Adhearsion
     def update_rails_env_var
       env = ENV['AHN_ENV']
       if env && Adhearsion.config.valid_environment?(env.to_sym)
-        if ENV['RAILS_ENV'] == env
-          logger.info "Using the configured value for RAILS_ENV : <#{env}>"
+        if ENV['RAILS_ENV']
+          logger.info "Using provided RAILS_ENV value of <#{ENV['RAILS_ENV']}>"
         else
-          logger.warn "Updating AHN_RAILS variable to <#{env}>"
+          logger.warn "Setting RAILS_ENV variable to <#{env}>"
           ENV['RAILS_ENV'] = env
         end
       else
@@ -79,7 +78,7 @@ module Adhearsion
           logger.info "Using the configured value for RAILS_ENV : <#{env}>"
         else
           env = Adhearsion.config.platform.environment.to_s
-          logger.info "Defining AHN_RAILS variable to <#{env}>"
+          logger.info "Defining RAILS_ENV variable to <#{env}>"
           ENV['RAILS_ENV'] = env
         end
       end
@@ -87,7 +86,7 @@ module Adhearsion
     end
 
     def default_pid_path
-      File.join Adhearsion.config.root, 'adhearsion.pid'
+      File.join Adhearsion.config.root, DEFAULT_PID_FILE_NAME
     end
 
     def resolve_pid_file_path
@@ -174,14 +173,7 @@ module Adhearsion
       if should_daemonize?
         appenders
       else
-        stdout = ::Logging.appenders.stdout(
-                            'stdout',
-                            :layout => ::Logging.layouts.pattern(
-                              :pattern => Adhearsion::Logging.adhearsion_pattern,
-                              :color_scheme => 'bright'
-                            )
-                          )
-        appenders << stdout
+        appenders += Adhearsion::Logging.default_appenders
       end
     end
 
@@ -238,7 +230,7 @@ module Adhearsion
 
     def start_logging
       outputters = init_get_logging_appenders
-      Logging.start outputters, Adhearsion.config.platform.logging.level, Adhearsion.config.platform.logging.formatter
+      Adhearsion::Logging.start outputters, Adhearsion.config.platform.logging.level, Adhearsion.config.platform.logging.formatter
     end
 
     def initialize_exception_logger

@@ -105,6 +105,20 @@ module Adhearsion
         end
       end
 
+      ##
+      # Register generator classes
+      #
+      # @example
+      #     FooBar = Class.new Adhearsion::Plugin do
+      #       generators :'my_plugin:foo_generator' => FooGenerator
+      #     end
+      #
+      def generators(mapping)
+        mapping.each_pair do |name, klass|
+          Generators.add_generator name, klass
+        end
+      end
+
       def subclasses
         @subclasses ||= []
       end

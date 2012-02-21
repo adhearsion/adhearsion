@@ -20,27 +20,18 @@ module Adhearsion
 
       let(:mock_call) { OutboundCall.new }
 
-      def mock_dial
-        flexmock(OutboundCall).new_instances.should_receive(:dial).and_return true
-      end
-
-      it "should create a new call and return it" do
-        mock_dial
-        OutboundCall.originate(to).should be_a OutboundCall
-      end
-
-      it "should dial the call to the correct endpoint" do
+      it "should dial the call to the correct endpoint and return it" do
         mock_call
         flexmock(OutboundCall).should_receive(:new).and_return mock_call
-        flexmock(mock_call).should_receive(:dial).with(to, :from => 'foo').once
-        OutboundCall.originate to, :from => 'foo'
+        flexmock(mock_call.wrapped_object).should_receive(:dial).with(to, :from => 'foo').once
+        OutboundCall.originate(to, :from => 'foo').should be mock_call
       end
 
       it "should run through the router when the call is answered" do
         mock_call
 
         flexmock(OutboundCall).should_receive(:new).and_return mock_call
-        flexmock(mock_call).should_receive(:dial).once
+        flexmock(mock_call.wrapped_object).should_receive(:dial).once
 
         mock_dispatcher = flexmock 'dispatcher'
         mock_dispatcher.should_receive(:call).once.with mock_call
@@ -66,7 +57,7 @@ module Adhearsion
 
     describe "#dial" do
       def expect_message_waiting_for_response(message)
-        flexmock(subject).should_receive(:write_and_await_response).once.with(message, 60).and_return do
+        flexmock(subject.wrapped_object).should_receive(:write_and_await_response).once.with(message, 60).and_return do
           message.call_id = call_id
           message
         end
@@ -115,7 +106,7 @@ module Adhearsion
 
     describe "basic control commands" do
       def expect_no_message_waiting_for_response
-        flexmock(subject).should_receive(:write_and_await_response).never
+        flexmock(subject.wrapped_object).should_receive(:write_and_await_response).never
       end
 
       describe '#accept' do

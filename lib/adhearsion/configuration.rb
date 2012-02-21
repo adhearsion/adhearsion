@@ -21,13 +21,9 @@ module Adhearsion
         root nil, :desc => "Adhearsion application root folder"
 
         lib "lib", :desc => <<-__
-          Folder to include the own libraries to be used. Adhearsion loads any ruby file 
-          located into this folder during the bootstrap process. Set to nil if you do not 
+          Folder to include the own libraries to be used. Adhearsion loads any ruby file
+          located into this folder during the bootstrap process. Set to nil if you do not
           want these files to be loaded. This folder is relative to the application root folder.
-        __
-
-        automatically_accept_incoming_calls true, :transform => Proc.new { |v| v == 'true' }, :desc => <<-__
-          Adhearsion will accept automatically any inbound call
         __
 
         environment :development, :transform => Proc.new { |v| v.to_sym }, :desc => <<-__

@@ -31,23 +31,43 @@ module Adhearsion
       #   dial "IAX2/my.id@voipjet/19095551234", :from => "John Doe <9095551234>"
       #
       def dial(to, options = {}, latch = nil)
-        latch ||= CountDownLatch.new 1
+        targets = Array(to)
+
+        latch ||= CountDownLatch.new targets.size
+
+        call.on_end { |_| latch.countdown! until latch.count == 0 }
 
         _for = options.delete :for
         options[:timeout] ||= _for if _for
 
-        calls = Array(to).map do |target|
+        options[:from] ||= call.from
+
+        calls = targets.map do |target|
           new_call = OutboundCall.new options
 
           new_call.on_answer do |event|
             calls.each do |call_to_hangup, target|
-              call_to_hangup.hangup! unless call_to_hangup.id == new_call.id
+              begin
+                next if call_to_hangup.id == new_call.id
+                logger.debug "Hanging up call #{call_to_hangup.id} because it was not the first to answer a #dial"
+                call_to_hangup.hangup
+              rescue Celluloid::DeadActorError
+                # This actor may previously have been shut down due to the call ending
+              end
             end
+
+            new_call.register_event_handler Punchblock::Event::Unjoined, :other_call_id => call.id do |event|
+              new_call[:"dial_countdown_#{call.id}"] = true
+              latch.countdown!
+              throw :pass
+            end
+
+            logger.debug "Joining call #{new_call.id} to #{call.id} due to a #dial"
             new_call.join call
           end
 
           new_call.on_end do |event|
-            latch.countdown!
+            latch.countdown! unless new_call[:"dial_countdown_#{call.id}"]
           end
 
           [new_call, target]
@@ -59,6 +79,16 @@ module Adhearsion
         end
 
         timeout = latch.wait options[:timeout]
+
+        logger.debug "#dial finished. Hanging up #{calls.size} outbound calls #{calls.inspect}."
+        calls.each do |outbound_call|
+          begin
+            logger.debug "Hanging up #{outbound_call} because the #dial that created it is complete."
+            outbound_call.hangup
+          rescue Celluloid::DeadActorError
+            # This actor may previously have been shut down due to the call ending
+          end
+        end
 
         return timeout unless timeout
 

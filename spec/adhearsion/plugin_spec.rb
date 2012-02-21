@@ -376,4 +376,22 @@ describe Adhearsion::Plugin do
 
   end
 
+  describe "registering generators" do
+    TestGenerator1 = Class.new Adhearsion::Generators::Generator
+    TestGenerator2 = Class.new Adhearsion::Generators::Generator
+
+    after do
+      defined?(FooBar) and Object.send(:remove_const, :"FooBar")
+    end
+
+    it "should add the generator to the index" do
+      FooBar = Class.new Adhearsion::Plugin do
+        generators :gen1 => TestGenerator1, :gen2 => TestGenerator2
+      end
+
+      Adhearsion::Generators.mappings[:gen1].should be TestGenerator1
+      Adhearsion::Generators.mappings[:gen2].should be TestGenerator2
+    end
+  end
+
 end

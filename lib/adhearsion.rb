@@ -13,6 +13,7 @@ abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby
   has_guarded_handlers
   girl_friday
   loquacious
+  celluloid
 
   adhearsion/version
   adhearsion/foundation/all
@@ -30,6 +31,7 @@ module Adhearsion
   autoload :Conveniences
   autoload :Dispatcher
   autoload :Events
+  autoload :Generators
   autoload :MenuDSL
   autoload :Initializer
   autoload :Logging
@@ -51,7 +53,7 @@ module Adhearsion
 
     def initialize_config
       _config = Configuration.new
-      env = ENV['AHN_ENV']
+      env = ENV['AHN_ENV'] || ENV['RAILS_ENV']
       env = nil unless _config.valid_environment? env
       _config.platform.environment = env if env
       _config
@@ -87,3 +89,5 @@ module Adhearsion
   RecordError        = Class.new StandardError # Represents failure to record such as when a file cannot be written.
   ConfigurationError = Class.new StandardError # Error raised while trying to configure a non existent plugin
 end
+
+Celluloid.exception_handler { |e| Adhearsion::Events.trigger :exception, e }

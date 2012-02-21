@@ -1,5 +1,5 @@
 module Adhearsion #:nodoc:
-  VERSION = '2.0.0.alpha2'
+  VERSION = '2.0.0.alpha3'
 
   class PkgVersion
     include Comparable

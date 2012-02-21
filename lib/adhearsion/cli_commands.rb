@@ -28,9 +28,22 @@ module Adhearsion
 
       desc "create /path/to/directory", "Create a new Adhearsion application under the given path"
       def create(path)
-        require 'adhearsion/generators'
         require 'adhearsion/generators/app/app_generator'
-        Adhearsion::Generators::AppGenerator.start
+        Generators::AppGenerator.start
+      end
+
+      desc "generate [generator_name] arguments", "Invoke a generator"
+      def generate(generator_name = nil, *args)
+        require 'adhearsion/generators/controller/controller_generator'
+        Generators.add_generator :controller, Adhearsion::Generators::ControllerGenerator
+        require 'adhearsion/generators/plugin/plugin_generator'
+        Generators.add_generator :plugin, Adhearsion::Generators::PluginGenerator
+
+        if generator_name
+          Generators.invoke generator_name
+        else
+          Generators.help
+        end
       end
 
       desc "version", "Shows Adhearsion version"
@@ -55,13 +68,16 @@ module Adhearsion
       def stop(path = nil)
         execute_from_app_dir! path
 
+        path ||= '.'
+
         pid_file = if options[:pidfile]
-          File.expand_path File.exists?(File.expand_path(options[:pidfile])) ?
-          options[:pidfile] :
-          File.join(path, options[:pidfile])
+          File.exists?(File.expand_path(options[:pidfile])) ?
+            options[:pidfile] :
+            File.join(path, options[:pidfile])
         else
-          path + '/adhearsion.pid'
+          File.join path, Adhearsion::Initializer::DEFAULT_PID_FILE_NAME
         end
+        pid_file = File.expand_path pid_file
 
         begin
           pid = File.read(pid_file).to_i
@@ -79,6 +95,8 @@ module Adhearsion
           ::Process.kill "KILL", pid
         rescue Errno::ESRCH
         end
+
+        File.delete pid_file
       end
 
       desc "restart </path/to/directory>", "Restart the Adhearsion server"
@@ -141,6 +159,13 @@ module Adhearsion
     class PathRequired < Thor::Error
       def initialize(cmd)
         super "A valid path is required for #{cmd}, unless run from an Adhearson app directory"
+      end
+    end
+
+     class UnknownGeneratorError < Thor::Error
+      def initialize(gentype)
+        puts "Please specify generator to use (#{Adhearsion::Generators.mappings.keys.join(", ")})"
+        super "Unknown command: #{gentype}"
       end
     end
 

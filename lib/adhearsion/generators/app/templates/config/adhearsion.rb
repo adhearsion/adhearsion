@@ -29,7 +29,7 @@ Adhearsion.config do |config|
   ##
   # Use with Asterisk
   #
-  # config.punchblock.platform = :asterisk # Your AMI username
+  # config.punchblock.platform = :asterisk # Use Asterisk
   # config.punchblock.username = "" # Your AMI username
   # config.punchblock.password = "" # Your AMI password
   # config.punchblock.host = "127.0.0.1" # Your AMI host

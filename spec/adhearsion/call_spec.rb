@@ -89,15 +89,6 @@ module Adhearsion
       end
     end
 
-    it 'a hungup call removes itself from the active calls' do
-      size_before = Adhearsion.active_calls.size
-
-      call = Adhearsion.active_calls.from_offer offer
-      Adhearsion.active_calls.size.should > size_before
-      call.hangup
-      Adhearsion.active_calls.size.should == size_before
-    end
-
     it 'allows the registration of event handlers which are called when messages are delivered' do
       event = flexmock 'Event'
       event.should_receive(:foo?).and_return true
@@ -134,7 +125,6 @@ module Adhearsion
         end
 
         it "should mark the call as ended" do
-          flexmock(subject).should_receive(:hangup).once
           subject << end_event
           subject.should_not be_active
         end
@@ -147,6 +137,22 @@ module Adhearsion
         it "should instruct the command registry to terminate" do
           flexmock(subject.commands).should_receive(:terminate).once
           subject << end_event
+        end
+
+        it "removes itself from the active calls" do
+          size_before = Adhearsion.active_calls.size
+
+          Adhearsion.active_calls << subject
+          Adhearsion.active_calls.size.should > size_before
+
+          subject << end_event
+          Adhearsion.active_calls.size.should == size_before
+        end
+
+        it "shuts down the actor" do
+          subject << end_event
+          sleep 5.1
+          subject.should_not be_alive
         end
       end
     end
@@ -203,14 +209,14 @@ module Adhearsion
 
       it "should asynchronously write the command to the Punchblock connection" do
         mock_client = flexmock('Client')
-        flexmock(subject).should_receive(:client).once.and_return mock_client
+        flexmock(subject.wrapped_object).should_receive(:client).once.and_return mock_client
         mock_client.should_receive(:execute_command).once.with(mock_command, :call_id => subject.id).and_return true
         subject.write_command mock_command
       end
 
       describe "with a hungup call" do
         before do
-          flexmock(subject).should_receive(:active?).and_return(false)
+          flexmock(subject.wrapped_object).should_receive(:active?).and_return(false)
         end
 
         it "should raise a Hangup exception" do
@@ -237,7 +243,7 @@ module Adhearsion
       end
 
       it "writes a command to the call" do
-        flexmock(subject).should_receive(:write_command).once.with(message)
+        flexmock(subject.wrapped_object).should_receive(:write_command).once.with(message)
         subject.write_and_await_response message
       end
 
@@ -270,13 +276,25 @@ module Adhearsion
           lambda { subject.write_and_await_response message }.should raise_error Exception
         end
       end
+
+      describe "when the response times out" do
+        before do
+          message.should_receive(:response).and_raise Timeout::Error
+        end
+
+        it "should raise the error in the caller but not crash the actor" do
+          lambda { subject.write_and_await_response message }.should raise_error Timeout::Error
+          sleep 0.5
+          subject.should be_alive
+        end
+      end
     end
 
     describe "basic control commands" do
       include FlexMock::ArgumentTypes
 
       def expect_message_waiting_for_response(message)
-        flexmock(subject).should_receive(:write_and_await_response).once.with(message).and_return(message)
+        flexmock(subject.wrapped_object).should_receive(:write_and_await_response).once.with(message).and_return(message)
       end
 
       describe '#accept' do
@@ -292,6 +310,14 @@ module Adhearsion
             headers = {:foo => 'bar'}
             expect_message_waiting_for_response Punchblock::Command::Accept.new(:headers => headers)
             subject.accept headers
+          end
+        end
+
+        describe "a second time" do
+          it "should only send one Accept message" do
+            expect_message_waiting_for_response Punchblock::Command::Accept.new
+            subject.accept
+            subject.accept
           end
         end
       end
@@ -344,29 +370,29 @@ module Adhearsion
         end
       end
 
-      describe "#hangup!" do
+      describe "#hangup" do
         describe "if the call is not active" do
           before do
-            flexmock(subject).should_receive(:active?).and_return false
+            flexmock(subject.wrapped_object).should_receive(:active?).and_return false
           end
 
           it "should do nothing and return false" do
             flexmock(subject).should_receive(:write_and_await_response).never
-            subject.hangup!.should be false
+            subject.hangup.should be false
           end
         end
 
         describe "if the call is active" do
           it "should mark the call inactive" do
             expect_message_waiting_for_response Punchblock::Command::Hangup.new
-            subject.hangup!
+            subject.hangup
             subject.should_not be_active
           end
 
           describe "with no headers" do
             it 'should send a Hangup message' do
               expect_message_waiting_for_response Punchblock::Command::Hangup.new
-              subject.hangup!
+              subject.hangup
             end
           end
 
@@ -374,7 +400,7 @@ module Adhearsion
             it 'should send a Hangup message with the correct headers' do
               headers = {:foo => 'bar'}
               expect_message_waiting_for_response Punchblock::Command::Hangup.new(:headers => headers)
-              subject.hangup! headers
+              subject.hangup headers
             end
           end
         end
@@ -484,7 +510,7 @@ module Adhearsion
         let(:mock_controller) { flexmock 'CallController' }
 
         before do
-          flexmock subject, :write_and_await_response => true
+          flexmock subject.wrapped_object, :write_and_await_response => true
         end
 
         it "should call #execute on the controller instance" do
@@ -495,7 +521,7 @@ module Adhearsion
 
         it "should hangup the call after all controllers have executed" do
           flexmock(CallController).should_receive(:exec).once.with mock_controller
-          subject.should_receive(:hangup!).once
+          subject.should_receive(:hangup).once
           subject.execute_controller mock_controller, latch
           latch.wait(3).should be_true
         end
@@ -546,13 +572,6 @@ module Adhearsion
           end
           finished_command.response.should == :foo
         end
-      end
-    end
-
-    describe Call::Registry do
-      it "should set a value and retrieve it" do
-        Adhearsion::Call::Registry[:test_value] = '123'
-        Adhearsion::Call::Registry[:test_value].should == '123'
       end
     end
   end

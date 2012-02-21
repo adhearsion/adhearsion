@@ -46,7 +46,6 @@ end
 
 Adhearsion::Logging.silence!
 
-
 # Test modules for #mixin methods
 module TestBiscuit
   def throwadogabone
@@ -58,4 +57,8 @@ module MarmaladeIsBetterThanJam
   def sobittersweet
     true
   end
+end
+
+def new_uuid
+  UUID.new.generate.to_s
 end

@@ -37,7 +37,7 @@ module Adhearsion
           config.reconnect_timer    = options[:reconnect_timer] if options.has_key?(:reconnect_timer)
         end
 
-        Initializer.start
+        Initializer.init
         Adhearsion.config[:punchblock]
       end
 
@@ -105,7 +105,7 @@ module Adhearsion
           mock_connection.should_receive(:register_event_handler).once
           flexmock(::Punchblock::Client).should_receive(:new).once.and_return mock_connection
           flexmock(mock_connection).should_receive(:run).once
-          t = Thread.new { Initializer.start }
+          t = Thread.new { Initializer.init; Initializer.run }
           t.join 5
           t.status.should == "sleep"
           Events.trigger_immediately :punchblock, ::Punchblock::Connection::Connected.new
@@ -191,6 +191,10 @@ module Adhearsion
         context "when when Adhearsion::Process is in :running" do
           let(:process_state) { :running }
 
+          it "should accept the call" do
+            mock_call.should_receive(:accept).once
+          end
+
           it "should execute the dispatcher provided by the router" do
             controller = Class.new
             Adhearsion.router do
@@ -236,7 +240,6 @@ module Adhearsion
 
       describe "dispatching a call event" do
         let(:mock_event)  { flexmock 'Event', :call_id => call_id }
-        let(:latch)       { CountDownLatch.new 1 }
 
         describe "with an active call" do
           before do
@@ -250,9 +253,8 @@ module Adhearsion
           end
 
           it "should place the event in the call's inbox" do
-            mock_call.should_receive(:<<).once.with(mock_event)
-            Initializer.dispatch_call_event mock_event, latch
-            latch.wait(10).should be_true
+            mock_call.should_receive(:deliver_message!).once.with(mock_event)
+            Initializer.dispatch_call_event mock_event
           end
         end
 

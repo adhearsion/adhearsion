@@ -2,6 +2,10 @@ require 'spec_helper'
 
 module Adhearsion
   describe Adhearsion::Process do
+    before :all do
+      Adhearsion.active_calls.clear!
+    end
+
     before :each do
       Adhearsion::Process.reset
     end
@@ -23,7 +27,12 @@ module Adhearsion
       flexmock(Adhearsion).should_receive(:active_calls).and_return calls
       flexmock(Adhearsion::Process.instance).should_receive(:final_shutdown).once
       calls = []
-      3.times { calls << Thread.new { sleep 1; calls.pop } }
+      3.times do
+        calls << Thread.new do
+          sleep 1
+          calls.pop
+        end
+      end
       Adhearsion::Process.stop_when_zero_calls
       calls.each { |thread| thread.join }
     end
