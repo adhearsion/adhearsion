@@ -54,13 +54,13 @@ module Adhearsion
 
     delegate :[], :[]=, :to => :@metadata
     delegate :variables, :logger, :to => :call
-    delegate :write_and_await_response, :answer, :reject, :mute, :unmute, :join, :to => :call
 
     def initialize(call, metadata = nil, &block)
       @call, @metadata, @block = call, metadata || {}, block
     end
 
     def execute!(*options)
+      call.register_controller! self
       execute_callbacks :before_call
       run
     rescue Hangup
@@ -97,8 +97,14 @@ module Adhearsion
     end
 
     def hangup(headers = nil)
+      block_until_resumed
       hangup_response = call.hangup headers
       after_call unless hangup_response == false
+    end
+
+    def write_and_await_response(command)
+      block_until_resumed
+      call.write_and_await_response command
     end
 
     def execute_component_and_await_completion(component)
@@ -109,6 +115,45 @@ module Adhearsion
       complete_event = component.complete_event
       raise StandardError, complete_event.reason.details if complete_event.reason.is_a? Punchblock::Event::Complete::Error
       component
+    end
+
+    def answer(*args)
+      block_until_resumed
+      call.answer *args
+    end
+
+    def reject(*args)
+      block_until_resumed
+      call.reject *args
+    end
+
+    def mute(*args)
+      block_until_resumed
+      call.mute *args
+    end
+
+    def unmute(*args)
+      block_until_resumed
+      call.unmute *args
+    end
+
+    def join(*args)
+      block_until_resumed
+      call.join *args
+    end
+
+    def block_until_resumed
+      @pause_latch && @pause_latch.wait
+    end
+
+    def pause!
+      @pause_latch = CountDownLatch.new 1
+    end
+
+    def resume!
+      return unless @pause_latch
+      @pause_latch.countdown!
+      @pause_latch = nil
     end
   end#class
 end
