@@ -203,7 +203,6 @@ module Adhearsion
       Thread.new do
         catching_standard_errors do
           begin
-            @controllers << controller
             CallController.exec controller
           ensure
             hangup
@@ -211,6 +210,10 @@ module Adhearsion
           latch.countdown! if latch
         end
       end.tap { |t| Adhearsion::Process.important_threads << t }
+    end
+
+    def register_controller(controller)
+      @controllers << controller
     end
 
     def pause_controllers

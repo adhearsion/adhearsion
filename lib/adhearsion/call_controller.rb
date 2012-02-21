@@ -60,6 +60,7 @@ module Adhearsion
     end
 
     def execute!(*options)
+      call.register_controller! self
       execute_callbacks :before_call
       run
     rescue Hangup

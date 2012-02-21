@@ -531,12 +531,12 @@ module Adhearsion
           controller_thread = subject.execute_controller mock_controller, latch
           Adhearsion::Process.important_threads.should include controller_thread
         end
+      end
 
+      describe "#register_controller" do
         it "should add the controller to a list on the call" do
-          flexmock(CallController).should_receive(:exec)
-          subject.execute_controller mock_controller, latch
-          subject.controllers.should include mock_controller
-          latch.wait(3).should be_true
+          subject.register_controller :foo
+          subject.controllers.should include :foo
         end
       end
 

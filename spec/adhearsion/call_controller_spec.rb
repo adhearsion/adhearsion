@@ -104,6 +104,7 @@ module Adhearsion
       before do
         flexmock subject, :execute_component_and_await_completion => nil
         flexmock call.wrapped_object, :write_and_await_response => nil
+        flexmock call, :register_controller! => nil
         flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
       end
 
@@ -154,23 +155,19 @@ module Adhearsion
       subject { PassController.new call }
 
       before do
-        flexmock(call.wrapped_object).should_receive(:write_and_await_response).and_return nil
+        flexmock call.wrapped_object, :write_and_await_response => nil
+        flexmock call, :register_controller! => nil
         flexmock subject, :execute_component_and_await_completion => nil
         flexmock(SecondController).new_instances.should_receive(:md_check).once.with :foo => 'bar'
         flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
       end
 
-      let(:latch) { CountDownLatch.new 1 }
-
       it "should cease execution of the current controller, and instruct the call to execute another" do
-        pending
         subject.should_receive(:before).once.ordered
         call.should_receive(:answer).once.ordered
         subject.should_receive(:after).never.ordered
-        call.wrapped_object.should_receive(:hangup).once.ordered
 
-        call.execute_controller subject, latch
-        latch.wait(1).should be_true
+        CallController.exec subject
       end
 
       it "should execute after_call callbacks before passing control" do
