@@ -19,28 +19,28 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   # Runtime dependencies
-  s.add_runtime_dependency "bundler", [">= 1.0.10"]
+  s.add_runtime_dependency 'bundler', [">= 1.0.10"]
   s.add_runtime_dependency 'punchblock', [">= 0.9.1"]
-  s.add_runtime_dependency "logging", [">= 1.6.1"]
-  s.add_runtime_dependency "adhearsion-loquacious", [">= 1.9.0"]
-  s.add_runtime_dependency "activesupport", [">= 3.0.10"]
+  s.add_runtime_dependency 'logging', [">= 1.6.1"]
+  s.add_runtime_dependency 'adhearsion-loquacious', [">= 1.9.0"]
+  s.add_runtime_dependency 'activesupport', [">= 3.0.10"]
   # i18n is only strictly a dependency for ActiveSupport >= 3.0.0
   # Since it doesn't conflict with <3.0.0 we'll require it to be
   # on the safe side.
-  s.add_runtime_dependency "i18n", ">= 0.5.0"
-  s.add_runtime_dependency "json"
-  s.add_runtime_dependency "thor"
-  s.add_runtime_dependency "rake"
-  s.add_runtime_dependency "pry"
-  s.add_runtime_dependency "uuid"
-  s.add_runtime_dependency "future-resource", [">= 0.0.2"]
-  s.add_runtime_dependency "ruby_speech", [">= 0.4.0"]
+  s.add_runtime_dependency 'i18n', [">= 0.5.0"]
+  s.add_runtime_dependency 'json'
+  s.add_runtime_dependency 'thor'
+  s.add_runtime_dependency 'rake'
+  s.add_runtime_dependency 'pry'
+  s.add_runtime_dependency 'uuid'
+  s.add_runtime_dependency 'future-resource', [">= 0.0.2"]
+  s.add_runtime_dependency 'ruby_speech', [">= 0.4.0"]
   s.add_runtime_dependency 'countdownlatch'
   s.add_runtime_dependency 'has-guarded-handlers', [">= 1.1.0"]
   s.add_runtime_dependency 'girl_friday'
   s.add_runtime_dependency 'jruby-openssl' if RUBY_PLATFORM == 'java'
-  s.add_runtime_dependency "ffi", [">= 1.0.11"]
-  s.add_runtime_dependency "celluloid", ">= 0.9.0"
+  s.add_runtime_dependency 'ffi', [">= 1.0.11"]
+  s.add_runtime_dependency 'celluloid', [">= 0.9.0"]
 
   # Development dependencies
   s.add_development_dependency 'rspec', ["~> 2.7.0"]
