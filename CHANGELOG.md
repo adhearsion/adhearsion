@@ -1,4 +1,4 @@
-# develop (2.0.0.head)
+# 2.0.0.alpha3 - 2012-02-21
   * Feature: Add `ahn generate` command to allow invocation of generators
   * Feature: Add simple generator for call controllers
   * Feature: Add simple generator for plugins
