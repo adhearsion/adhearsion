@@ -8,8 +8,6 @@ class Object
 end
 
 class ThreadSafeArray
-  include Enumerable
-
   def initialize
     @mutex = Mutex.new
     @array = []
