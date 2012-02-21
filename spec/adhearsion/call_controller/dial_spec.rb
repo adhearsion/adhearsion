@@ -31,6 +31,19 @@ module Adhearsion
           dial_thread.join.should be_true
         end
 
+        it "should default the caller ID to that of the original call" do
+          other_mock_call
+          flexmock call, :from => 'sip:foo@bar.com'
+          flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+          flexmock(other_mock_call).should_receive(:dial).with(to, :from => 'sip:foo@bar.com').once
+          dial_thread = Thread.new do
+            subject.dial to
+          end
+          sleep 0.1
+          other_mock_call << mock_end
+          dial_thread.join.should be_true
+        end
+
         describe "without a block" do
           it "blocks the original controller until the new call ends" do
             other_mock_call

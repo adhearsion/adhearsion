@@ -13,6 +13,7 @@
   * Bugfix: CallController#dial now unblocks immediately if the original call ends
   * Bugfix: CallController#dial now unblocks when the connected outbound call unjoins, rather than ending, incase post-processing on the outbound call is required
   * Bugfix: CallController#dial now hangs up outbound legs when it unblocks
+  * Feature: CallController#dial now defaults the outbound caller ID to that of the controller's call
 
 # 2.0.0.alpha2 - 2012-01-30
   * Change: Plugins no longer load dialplan/event/rpc/console methods using corresponding class methods

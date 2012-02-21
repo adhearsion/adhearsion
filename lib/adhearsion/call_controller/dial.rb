@@ -40,6 +40,8 @@ module Adhearsion
         _for = options.delete :for
         options[:timeout] ||= _for if _for
 
+        options[:from] ||= call.from
+
         calls = targets.map do |target|
           new_call = OutboundCall.new options
 
