@@ -49,7 +49,7 @@ module Adhearsion
             calls.each do |call_to_hangup, target|
               begin
                 next if call_to_hangup.id == new_call.id
-                logger.debug "Hanging up call #{call_to_hangup} because it was not the first to answer a #dial"
+                logger.debug "Hanging up call #{call_to_hangup.id} because it was not the first to answer a #dial"
                 call_to_hangup.hangup
               rescue Celluloid::DeadActorError
                 # This actor may previously have been shut down due to the call ending
@@ -62,7 +62,7 @@ module Adhearsion
               throw :pass
             end
 
-            logger.debug "Joining call #{new_call} to #{call} due to a #dial"
+            logger.debug "Joining call #{new_call.id} to #{call.id} due to a #dial"
             new_call.join call
           end
 
@@ -80,7 +80,7 @@ module Adhearsion
 
         timeout = latch.wait options[:timeout]
 
-        logger.debug "#dial finished. Hanging up outbound calls #{calls.inspect}."
+        logger.debug "#dial finished. Hanging up #{calls.size} outbound calls #{calls.inspect}."
         calls.each do |outbound_call|
           begin
             logger.debug "Hanging up #{outbound_call} because the #dial that created it is complete."
