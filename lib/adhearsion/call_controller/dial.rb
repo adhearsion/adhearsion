@@ -47,9 +47,10 @@ module Adhearsion
 
           new_call.on_answer do |event|
             calls.each do |call_to_hangup, target|
-              logger.debug "Hanging up call #{call_to_hangup} because it was not the first to answer a #dial"
               begin
-                call_to_hangup.hangup unless call_to_hangup.id == new_call.id
+                next if call_to_hangup.id == new_call.id
+                logger.debug "Hanging up call #{call_to_hangup} because it was not the first to answer a #dial"
+                call_to_hangup.hangup
               rescue Celluloid::DeadActorError
                 # This actor may previously have been shut down due to the call ending
               end
