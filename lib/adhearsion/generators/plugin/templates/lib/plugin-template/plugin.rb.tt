@@ -1,0 +1,29 @@
+module <%= @plugin_name %>
+  class Plugin < Adhearsion::Plugin
+    # Actions to perform when the plugin is loaded
+    #
+    init :<%= @plugin_file %> do
+      logger.warn "<%= @plugin_name %> has been loaded"
+    end
+
+    # Basic configuration for the plugin
+    #
+    config :<%= @plugin_file %> do
+      greeting "Hello", :desc => "What to use to greet users"
+    end
+
+    # Defining a Rake task is easy
+    # The following can be invoked with:
+    #   rake plugin_demo:info
+    #
+    tasks do
+      namespace :<%= @plugin_file %> do
+        desc "Prints the PluginTemplate information"
+        task :info do
+          STDOUT.puts "<%= @plugin_name %> plugin v. #{VERSION}"
+        end
+      end
+    end
+
+  end
+end
