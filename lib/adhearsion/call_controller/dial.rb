@@ -82,8 +82,8 @@ module Adhearsion
 
         logger.debug "#dial finished. Hanging up outbound calls #{calls.inspect}."
         calls.each do |outbound_call, target|
-          logger.debug "Hanging up #{outbound_call} because the #dial that created it is complete."
           begin
+            logger.debug "Hanging up #{outbound_call} because the #dial that created it is complete."
             outbound_call.hangup
           rescue Celluloid::DeadActorError
             # This actor may previously have been shut down due to the call ending
