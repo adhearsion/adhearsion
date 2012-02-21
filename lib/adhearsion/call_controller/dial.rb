@@ -46,7 +46,11 @@ module Adhearsion
           new_call.on_answer do |event|
             calls.each do |call_to_hangup, target|
               logger.debug "Hanging up call #{call_to_hangup} because it was not the first to answer a #dial"
-              call_to_hangup.hangup unless call_to_hangup.id == new_call.id
+              begin
+                call_to_hangup.hangup unless call_to_hangup.id == new_call.id
+              rescue Celluloid::DeadActorError
+                # This actor may previously have been shut down due to the call ending
+              end
             end
 
             new_call.register_event_handler Punchblock::Event::Unjoined, :other_call_id => call.id do |event|
@@ -76,7 +80,11 @@ module Adhearsion
         logger.debug "#dial finished. Hanging up outbound calls #{calls.inspect}."
         calls.each do |outbound_call, target|
           logger.debug "Hanging up #{outbound_call} because the #dial that created it is complete."
-          outbound_call.hangup if outbound_call.alive?
+          begin
+            outbound_call.hangup
+          rescue Celluloid::DeadActorError
+            # This actor may previously have been shut down due to the call ending
+          end
         end
 
         return timeout unless timeout
