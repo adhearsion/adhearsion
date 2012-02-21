@@ -81,7 +81,7 @@ module Adhearsion
         timeout = latch.wait options[:timeout]
 
         logger.debug "#dial finished. Hanging up outbound calls #{calls.inspect}."
-        calls.each do |outbound_call, target|
+        calls.each do |outbound_call|
           begin
             logger.debug "Hanging up #{outbound_call} because the #dial that created it is complete."
             outbound_call.hangup
