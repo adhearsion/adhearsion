@@ -75,6 +75,7 @@ module Adhearsion
     end
 
     def deliver_message(message)
+      logger.debug "Receiving message: #{message.inspect}"
       trigger_handler :event, message
     end
 
