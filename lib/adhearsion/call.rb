@@ -72,6 +72,7 @@ module Adhearsion
     end
 
     def deliver_message(message)
+      logger.debug "Receiving message: #{message.inspect}"
       trigger_handler :event, message
     end
 
@@ -168,8 +169,6 @@ module Adhearsion
     end
 
     def write_and_await_response(command, timeout = 60)
-      # TODO: Put this back once we figure out why it's causing CI to fail
-      # logger.trace "Executing command #{command.inspect}"
       commands << command
       write_command command
       begin
@@ -184,6 +183,7 @@ module Adhearsion
     def write_command(command)
       abort Hangup.new unless active? || command.is_a?(Punchblock::Command::Hangup)
       variables.merge! command.headers_hash if command.respond_to? :headers_hash
+      logger.trace "Executing command #{command.inspect}"
       client.execute_command command, :call_id => id
     end
 

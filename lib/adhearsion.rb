@@ -19,8 +19,6 @@ abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby
   adhearsion/foundation/all
 }.each { |f| require f }
 
-Celluloid.exception_handler { |e| Events.trigger :exception, e }
-
 module Adhearsion
   extend ActiveSupport::Autoload
 
@@ -91,3 +89,5 @@ module Adhearsion
   RecordError        = Class.new StandardError # Represents failure to record such as when a file cannot be written.
   ConfigurationError = Class.new StandardError # Error raised while trying to configure a non existent plugin
 end
+
+Celluloid.exception_handler { |e| Adhearsion::Events.trigger :exception, e }

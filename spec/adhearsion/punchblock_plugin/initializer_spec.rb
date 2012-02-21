@@ -240,7 +240,6 @@ module Adhearsion
 
       describe "dispatching a call event" do
         let(:mock_event)  { flexmock 'Event', :call_id => call_id }
-        let(:latch)       { CountDownLatch.new 1 }
 
         describe "with an active call" do
           before do
@@ -254,9 +253,8 @@ module Adhearsion
           end
 
           it "should place the event in the call's inbox" do
-            mock_call.should_receive(:<<).once.with(mock_event)
-            Initializer.dispatch_call_event mock_event, latch
-            latch.wait(10).should be_true
+            mock_call.should_receive(:deliver_message!).once.with(mock_event)
+            Initializer.dispatch_call_event mock_event
           end
         end
 
