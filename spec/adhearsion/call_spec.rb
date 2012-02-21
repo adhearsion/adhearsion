@@ -525,44 +525,6 @@ module Adhearsion
           subject.execute_controller mock_controller, latch
           latch.wait(3).should be_true
         end
-
-        it "should add the controller thread to the important threads" do
-          flexmock(CallController).should_receive(:exec)
-          controller_thread = subject.execute_controller mock_controller, latch
-          Adhearsion::Process.important_threads.should include controller_thread
-        end
-      end
-
-      describe "#register_controller" do
-        it "should add the controller to a list on the call" do
-          subject.register_controller :foo
-          subject.controllers.should include :foo
-        end
-      end
-
-      context "with two controllers registered" do
-        let(:controller1) { flexmock 'CallController1' }
-        let(:controller2) { flexmock 'CallController2' }
-
-        before { subject.controllers << controller1 << controller2 }
-
-        describe "#pause_controllers" do
-          it "should pause each of the registered controllers" do
-            controller1.should_receive(:pause!).once
-            controller2.should_receive(:pause!).once
-
-            subject.pause_controllers
-          end
-        end
-
-        describe "#resume_controllers" do
-          it "should resume each of the registered controllers" do
-            controller1.should_receive(:resume!).once
-            controller2.should_receive(:resume!).once
-
-            subject.resume_controllers
-          end
-        end
       end
     end
 

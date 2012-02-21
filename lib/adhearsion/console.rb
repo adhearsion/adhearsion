@@ -88,7 +88,7 @@ module Adhearsion
           puts "Please choose a call:"
           current_calls = calls.values
           current_calls.each_with_index do |call, index|
-            puts "#{index}. #{call.id}"
+            puts "#{index}. (#{call.is_a?(OutboundCall) ? 'o' : 'i' }) #{call.id} from #{call.from} to #{call.to}"
           end
           index = input.gets.chomp.to_i
           call = current_calls[index]
@@ -115,12 +115,7 @@ module Adhearsion
       Pry.prompt = [ proc { "AHN<#{call.id}> " },
                      proc { "AHN<#{call.id}? " }  ]
 
-      begin
-        call.pause_controllers
-        CallController.exec InteractiveController.new(call)
-      ensure
-        call.resume_controllers
-      end
+      CallController.exec InteractiveController.new(call)
     end
 
     class InteractiveController < CallController

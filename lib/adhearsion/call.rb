@@ -27,7 +27,7 @@ module Adhearsion
     include Celluloid
     include HasGuardedHandlers
 
-    attr_accessor :offer, :client, :end_reason, :commands, :variables, :controllers
+    attr_accessor :offer, :client, :end_reason, :commands, :variables
 
     delegate :[], :[]=, :to => :variables
     delegate :to, :from, :to => :offer, :allow_nil => true
@@ -35,10 +35,9 @@ module Adhearsion
     def initialize(offer = nil)
       register_initial_handlers
 
-      @tags         = []
-      @commands     = CommandRegistry.new
-      @variables    = {}
-      @controllers  = []
+      @tags       = []
+      @commands   = CommandRegistry.new
+      @variables  = {}
 
       self << offer if offer
     end
@@ -200,7 +199,7 @@ module Adhearsion
     end
 
     def execute_controller(controller, latch = nil)
-      Thread.new do
+      Adhearsion::Process.important_threads << Thread.new do
         catching_standard_errors do
           begin
             CallController.exec controller
@@ -209,19 +208,7 @@ module Adhearsion
           end
           latch.countdown! if latch
         end
-      end.tap { |t| Adhearsion::Process.important_threads << t }
-    end
-
-    def register_controller(controller)
-      @controllers << controller
-    end
-
-    def pause_controllers
-      controllers.each &:pause!
-    end
-
-    def resume_controllers
-      controllers.each &:resume!
+      end
     end
 
     class CommandRegistry < ThreadSafeArray

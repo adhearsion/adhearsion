@@ -10,7 +10,6 @@
   * Feature: The console can take control of a call
   * Bugfix: CallController#dial now blocks until all outbound calls complete
   * Bugfix: Call commands timing out now raise a timeout exception in the caller, but do not crash the actor
-  * Feature: It is now possible to pause/resume call controllers
   * Bugfix: CallController#dial now unblocks immediately if the original call ends
   * Bugfix: CallController#dial now unblocks when the connected outbound call unjoins, rather than ending, incase post-processing on the outbound call is required
   * Bugfix: CallController#dial now hangs up outbound legs when it unblocks
