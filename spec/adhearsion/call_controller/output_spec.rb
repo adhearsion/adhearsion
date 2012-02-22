@@ -297,7 +297,6 @@ module Adhearsion
             subject.should_receive(:play_ssml).once.with(argument, {})
             subject.should_receive(:output).once.with(:text, expected_string, {}).and_return true
             subject.speak(argument)
-
           end
         end
       end
