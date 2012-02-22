@@ -247,11 +247,6 @@ module Adhearsion
             Adhearsion.active_calls << mock_call
           end
 
-          it "should log an error" do
-            flexmock(Adhearsion::Logging.get_logger(Initializer)).should_receive(:debug).once.with("Event received for call #{call_id}: #{mock_event.inspect}")
-            Events.trigger_immediately :punchblock, mock_event
-          end
-
           it "should place the event in the call's inbox" do
             mock_call.should_receive(:deliver_message!).once.with(mock_event)
             Initializer.dispatch_call_event mock_event
