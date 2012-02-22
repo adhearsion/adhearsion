@@ -289,6 +289,16 @@ module Adhearsion
             subject.speak(string).should be true
           end
         end
+
+        describe "converts the argument to a string" do
+          it 'calls output with a string' do
+            expected_string = "123"
+            argument = 123
+            subject.should_receive(:play_ssml).once.with(argument, {})
+            subject.should_receive(:output).once.with(:text, expected_string, {}).and_return true
+            subject.speak(argument)
+          end
+        end
       end
 
       describe "#ssml_for" do
