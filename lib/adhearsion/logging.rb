@@ -58,7 +58,9 @@ module Adhearsion
            :layout => ::Logging.layouts.pattern(
              :pattern => adhearsion_pattern,
              :color_scheme => 'bright'
-           )
+           ),
+           :auto_flushing => 2,
+           :flush_period => 2
          )]
       end
 

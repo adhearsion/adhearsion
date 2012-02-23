@@ -163,7 +163,9 @@ module Adhearsion
           ::Logging.appenders.file(f,
             :layout => ::Logging.layouts.pattern(
               :pattern => Adhearsion::Logging.adhearsion_pattern
-            )
+            ),
+           :auto_flushing => 2,
+           :flush_period => 2
           )
         else
          a
