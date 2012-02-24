@@ -43,7 +43,7 @@ module Adhearsion
         options[:from] ||= call.from
 
         calls = targets.map do |target|
-          new_call = OutboundCall.new options
+          new_call = OutboundCall.new
 
           new_call.on_answer do |event|
             calls.each do |call_to_hangup, target|
