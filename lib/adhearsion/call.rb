@@ -1,23 +1,5 @@
 require 'thread'
 
-module Celluloid
-  module ClassMethods
-    def ===(other)
-      other.kind_of? self
-    end
-  end
-
-  class ActorProxy
-    def is_a?(klass)
-      Actor.call @mailbox, :is_a?, klass
-    end
-
-    def kind_of?(klass)
-      Actor.call @mailbox, :kind_of?, klass
-    end
-  end
-end
-
 module Adhearsion
   ##
   # Encapsulates call-related data and behavior.
