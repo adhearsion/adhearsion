@@ -130,7 +130,12 @@ module Adhearsion
     describe "#interact_with_call" do
       let(:call) { Call.new }
 
-      it "should suspend the call's controller"
+      it "should pause the call's controllers, and unpause even if the interactive controller raises" do
+        flexmock(call).should_receive(:pause_controllers).once.ordered
+        flexmock(CallController).should_receive(:exec).once.ordered.and_raise StandardError
+        flexmock(call).should_receive(:resume_controllers).once.ordered
+        lambda { Console.interact_with_call call }.should raise_error StandardError
+      end
 
       it "should execute an interactive call controller on the call" do
         flexmock(CallController).should_receive(:exec).once.with(on do |c|
