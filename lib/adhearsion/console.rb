@@ -44,7 +44,7 @@ module Adhearsion
       else
         logger.info "Starting up..."
         @pry_thread = Thread.current
-        binding.pry
+        pry
       end
     end
 
