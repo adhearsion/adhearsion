@@ -45,6 +45,7 @@ module Adhearsion
         logger.info "Starting up..."
         @pry_thread = Thread.current
         pry
+        logger.info "Console exiting"
       end
     end
 
@@ -119,13 +120,16 @@ module Adhearsion
         call.pause_controllers
         CallController.exec InteractiveController.new(call)
       ensure
+        logger.debug "Resuming call's controllers"
         call.resume_controllers
       end
     end
 
     class InteractiveController < CallController
       def run
+        logger.debug "Starting interactive controller."
         pry
+        logger.debug "Interactive controller finished."
       end
     end
   end
