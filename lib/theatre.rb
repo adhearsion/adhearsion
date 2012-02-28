@@ -68,6 +68,7 @@ module Theatre
             callback.call payload
           end
         rescue => captured_error_to_be_returned
+          Adhearsion::Events.trigger '/exception', captured_error_to_be_returned
           captured_error_to_be_returned
         end
       end

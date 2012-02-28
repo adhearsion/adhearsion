@@ -69,6 +69,7 @@ describe "Theatre::Theatre" do
         theatre.register_callback_at_namespace "breakage", callback
       end
 
+      flexmock(Adhearsion::Events).should_receive(:trigger).once.with('/exception', FlexMock.on {|e| e.is_a?(StandardError)})
       return_value = theatre.trigger_immediately("breakage")
       return_value.first.should equal(1)
       return_value[1].should be_instance_of(LocalJumpError)
