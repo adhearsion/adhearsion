@@ -28,16 +28,7 @@ module Adhearsion
     # Start the Adhearsion console
     #
     def run
-      Pry.prompt = [
-                      proc do |*args|
-                        obj, nest_level, pry_instance = args
-                        "AHN#{'  ' * nest_level}> "
-                      end,
-                      proc do |*args|
-                        obj, nest_level, pry_instance = args
-                        "AHN#{'  ' * nest_level}? "
-                      end
-                    ]
+      set_prompt
       Pry.config.command_prefix = "%"
       if libedit?
         logger.error "Cannot start. You are running Adhearsion on Ruby with libedit. You must use readline for the console to work."
@@ -101,6 +92,9 @@ module Adhearsion
       else
         raise ArgumentError
       end
+    ensure
+      set_prompt
+      pry
     end
 
     def libedit?
@@ -114,6 +108,19 @@ module Adhearsion
     end
 
     private
+
+    def set_prompt
+      Pry.prompt = [
+                proc do |*args|
+                  obj, nest_level, pry_instance = args
+                  "AHN#{'  ' * nest_level}> "
+                end,
+                proc do |*args|
+                  obj, nest_level, pry_instance = args
+                  "AHN#{'  ' * nest_level}? "
+                end
+              ]
+    end
 
     def interact_with_call(call)
       Pry.prompt = [ proc { "AHN<#{call.id}> " },
