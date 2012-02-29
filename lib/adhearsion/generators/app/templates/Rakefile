@@ -1,8 +1,5 @@
 #!/usr/bin/env rake
 
-require 'rubygems'
-require 'bundler'
-Bundler.setup
-Bundler.require
+require File.expand_path('../config/environment',  __FILE__)
 
 require 'adhearsion/tasks'
