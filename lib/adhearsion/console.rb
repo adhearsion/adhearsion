@@ -28,23 +28,15 @@ module Adhearsion
     # Start the Adhearsion console
     #
     def run
-      Pry.prompt = [
-                      proc do |*args|
-                        obj, nest_level, pry_instance = args
-                        "AHN#{'  ' * nest_level}> "
-                      end,
-                      proc do |*args|
-                        obj, nest_level, pry_instance = args
-                        "AHN#{'  ' * nest_level}? "
-                      end
-                    ]
+      set_prompt
       Pry.config.command_prefix = "%"
       if libedit?
         logger.error "Cannot start. You are running Adhearsion on Ruby with libedit. You must use readline for the console to work."
       else
         logger.info "Starting up..."
         @pry_thread = Thread.current
-        binding.pry
+        pry
+        logger.info "Console exiting"
       end
     end
 
@@ -82,7 +74,10 @@ module Adhearsion
           logger.error "An active call with that ID does not exist"
         end
       when nil
-        if calls.size == 1
+        case calls.size
+        when 0
+          logger.warn "No calls exist for control"
+        when 1
           interact_with_call calls.values.first
         else
           puts "Please choose a call:"
@@ -97,6 +92,9 @@ module Adhearsion
       else
         raise ArgumentError
       end
+    ensure
+      set_prompt
+      pry
     end
 
     def libedit?
@@ -111,16 +109,46 @@ module Adhearsion
 
     private
 
+    def set_prompt
+      Pry.prompt = [
+                proc do |*args|
+                  obj, nest_level, pry_instance = args
+                  "AHN#{'  ' * nest_level}> "
+                end,
+                proc do |*args|
+                  obj, nest_level, pry_instance = args
+                  "AHN#{'  ' * nest_level}? "
+                end
+              ]
+    end
+
     def interact_with_call(call)
       Pry.prompt = [ proc { "AHN<#{call.id}> " },
                      proc { "AHN<#{call.id}? " }  ]
 
-      CallController.exec InteractiveController.new(call)
+      begin
+        call.pause_controllers
+        CallController.exec InteractiveController.new(call)
+      ensure
+        logger.debug "Resuming call's controllers"
+        call.resume_controllers
+      end
     end
 
     class InteractiveController < CallController
       def run
-        pry
+        logger.debug "Starting interactive controller."
+        begin
+          pry
+        rescue => e
+          logger.error e
+        end
+        logger.debug "Interactive controller finished."
+      end
+
+      def hangup(*args)
+        super
+        exit
       end
     end
   end

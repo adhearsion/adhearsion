@@ -9,7 +9,7 @@ module Adhearsion
     include Celluloid
     include HasGuardedHandlers
 
-    attr_accessor :offer, :client, :end_reason, :commands, :variables
+    attr_accessor :offer, :client, :end_reason, :commands, :variables, :controllers
 
     delegate :[], :[]=, :to => :variables
     delegate :to, :from, :to => :offer, :allow_nil => true
@@ -17,9 +17,10 @@ module Adhearsion
     def initialize(offer = nil)
       register_initial_handlers
 
-      @tags       = []
-      @commands   = CommandRegistry.new
-      @variables  = {}
+      @tags         = []
+      @commands     = CommandRegistry.new
+      @variables    = {}
+      @controllers  = []
 
       self << offer if offer
     end
@@ -164,7 +165,7 @@ module Adhearsion
     def write_command(command)
       abort Hangup.new unless active? || command.is_a?(Punchblock::Command::Hangup)
       variables.merge! command.headers_hash if command.respond_to? :headers_hash
-      logger.trace "Executing command #{command.inspect}"
+      logger.debug "Executing command #{command.inspect}"
       client.execute_command command, :call_id => id
     end
 
@@ -181,7 +182,7 @@ module Adhearsion
     end
 
     def execute_controller(controller, latch = nil)
-      Adhearsion::Process.important_threads << Thread.new do
+      Thread.new do
         catching_standard_errors do
           begin
             CallController.exec controller
@@ -190,7 +191,19 @@ module Adhearsion
           end
           latch.countdown! if latch
         end
-      end
+      end.tap { |t| Adhearsion::Process.important_threads << t }
+    end
+
+    def register_controller(controller)
+      @controllers << controller
+    end
+
+    def pause_controllers
+      controllers.each &:pause!
+    end
+
+    def resume_controllers
+      controllers.each &:resume!
     end
 
     class CommandRegistry < ThreadSafeArray
