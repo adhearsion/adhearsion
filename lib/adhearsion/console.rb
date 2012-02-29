@@ -83,7 +83,10 @@ module Adhearsion
           logger.error "An active call with that ID does not exist"
         end
       when nil
-        if calls.size == 1
+        case calls.size
+        when 0
+          logger.warn "No calls exist for control"
+        when 1
           interact_with_call calls.values.first
         else
           puts "Please choose a call:"
