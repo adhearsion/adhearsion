@@ -1,5 +1,6 @@
 # develop (2.0.0.head)
   * Bugfix: #speak now correctly casts the argument to string if it is not SSML
+  * Bugfix: The console pauses controllers on a call while taking control
 
 # 2.0.0.alpha3 - 2012-02-21
   * Feature: Add `ahn generate` command to allow invocation of generators
@@ -18,7 +19,7 @@
   * Bugfix: CallController#dial now unblocks when the connected outbound call unjoins, rather than ending, incase post-processing on the outbound call is required
   * Bugfix: CallController#dial now hangs up outbound legs when it unblocks
   * Feature: CallController#dial now defaults the outbound caller ID to that of the controller's call
-  * Change: The command to take control of a call is now 'take' rather than 'use'.  'take' called without a call ID present a list of currently running calls
+  * Change: The command to take control of a call is now 'take' rather than 'use'. 'take' called without a call ID present a list of currently running calls
 
 # 2.0.0.alpha2 - 2012-01-30
   * Change: Plugins no longer load dialplan/event/rpc/console methods using corresponding class methods
