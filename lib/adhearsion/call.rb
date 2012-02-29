@@ -76,8 +76,12 @@ module Adhearsion
         clear_from_active_calls
         @end_reason = event.reason
         commands.terminate
-        after(5) { current_actor.terminate! }
+        after(after_end_hold_time) { current_actor.terminate! }
       end
+    end
+
+    def after_end_hold_time
+      30
     end
 
     def on_end(&block)

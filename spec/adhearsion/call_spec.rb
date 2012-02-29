@@ -39,6 +39,8 @@ module Adhearsion
     its(:offer)   { should be offer }
     its(:client)  { should be mock_client }
 
+    its(:after_end_hold_time) { should == 30 }
+
     describe "its variables" do
       context "with an offer with headers" do
         let(:headers)   { {:x_foo => 'bar'} }
@@ -150,8 +152,9 @@ module Adhearsion
         end
 
         it "shuts down the actor" do
+          flexmock subject.wrapped_object, :after_end_hold_time => 2
           subject << end_event
-          sleep 5.1
+          sleep 2.1
           subject.should_not be_alive
         end
       end
