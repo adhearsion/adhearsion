@@ -2,6 +2,10 @@ require 'spec_helper'
 
 module Adhearsion
   describe Console do
+    before do
+      flexmock Console.instance, :pry => nil
+    end
+
     include FlexMock::ArgumentTypes
     describe "providing hooks to include console functionality" do
       it "should allow mixing in a module globally on all CallController classes" do
