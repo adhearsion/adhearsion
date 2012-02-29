@@ -145,6 +145,11 @@ module Adhearsion
         end
         logger.debug "Interactive controller finished."
       end
+
+      def hangup(*args)
+        super
+        exit
+      end
     end
   end
 end
