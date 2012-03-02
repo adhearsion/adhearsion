@@ -29,7 +29,7 @@ module Adhearsion
       end
 
       def unsilence!
-        self.logging_level = :info
+        self.logging_level = Adhearsion.config.platform.logging['level']
       end
 
       def reset
