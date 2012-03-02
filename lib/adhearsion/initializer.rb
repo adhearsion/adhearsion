@@ -111,27 +111,19 @@ module Adhearsion
     def catch_termination_signal
       %w'INT TERM'.each do |process_signal|
         trap process_signal do
-          logger.info "Received #{process_signal} signal. Shutting down."
+          logger.info "Received SIG#{process_signal}. Shutting down."
           Adhearsion::Process.shutdown
         end
       end
 
       trap 'HUP' do
-        logger.info "Received HUP. Reopening logfiles"
-        ::Logging.reopen
-        logger.info "Logfiles reopened."
+        logger.debug "Received SIGHUP. Reopening logfiles."
+        Adhearsion::Logging.reopen_logs
       end
 
       trap 'ALRM' do
-        # Toggle between the configured log level and :trace
-        # Useful for debugging a live Adhearsion instance
-        if Adhearsion::Logging.level == ::Logging.level_num(Adhearsion.config.platform.logging['level'])
-          logger.warn "Received ALRM. Turning TRACE logging ON."
-          Adhearsion::Logging.level = :trace
-        else
-          logger.warn "Received ALRM. Turning TRACE logging OFF."
-          Adhearsion::Logging.level = Adhearsion.config.platform.logging['level']
-        end
+        logger.debug "Received SIGALRM. Toggling trace logging."
+        Adhearsion::Logging.toggle_trace!
       end
 
       trap 'ABRT' do

@@ -83,6 +83,22 @@ describe Adhearsion::Logging do
     _foo_logger.object_id.should_not eql(_bar_logger)
   end
 
+  it 'should reopen logfiles' do
+    flexmock(::Logging).should_receive(:reopen)
+    Adhearsion::Logging.reopen_logs
+  end
+
+  it 'should toggle between :trace and the configured log level' do
+    orig_level = Adhearsion.config.platform.logging['level']
+    Adhearsion.config.platform.logging['level'] = :warn
+    Adhearsion::Logging.level = :warn
+    Adhearsion::Logging.toggle_trace!
+    Adhearsion::Logging.level.should == 0
+    Adhearsion::Logging.toggle_trace!
+    Adhearsion::Logging.level.should == 3
+    Adhearsion.config.platform.logging['level'] = orig_level
+  end
+
   describe 'level changing' do
 
     before  { Adhearsion::Logging.unsilence! }
