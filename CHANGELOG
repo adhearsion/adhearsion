@@ -1,4 +1,5 @@
 1.2.5
+  - Catch missing exceptions raised in the after_initialized hook
   - Fixed memory leak in logging when lots of calls come in with unique call
   id's.
 
