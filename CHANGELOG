@@ -1,3 +1,6 @@
+1.2.5
+  - Catch missing exceptions raised in the after_initialized hook
+
 1.2.4
   - Backported Thor-based generators from Adhearsion 2 in order to escape Rubigen.
 
