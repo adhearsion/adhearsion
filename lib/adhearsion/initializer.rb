@@ -116,11 +116,6 @@ module Adhearsion
         end
       end
 
-      trap 'QUIT' do
-        logger.info "Received QUIT signal. Hard shutting down."
-        Adhearsion::Process.hard_shutdown
-      end
-
       trap 'ABRT' do
         logger.info "Received ABRT signal. Forcing stop."
         Adhearsion::Process.force_stop
