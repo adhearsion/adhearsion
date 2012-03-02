@@ -1,6 +1,6 @@
 1.2.5
-  - Fixed an issue with logging causes a memory leak when a large number of calls with
-  unique identifiers comes in.
+  - Fixed memory leak in logging when lots of calls come in with unique call
+  id's.
 
 1.2.4
   - Backported Thor-based generators from Adhearsion 2 in order to escape Rubigen.
