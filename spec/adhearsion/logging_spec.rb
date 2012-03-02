@@ -4,7 +4,7 @@ describe Adhearsion::Logging do
 
   before :all do
     ::Logging.shutdown
-    Adhearsion::Logging.reset
+    ::Logging.reset
     Adhearsion::Logging.init
   end
 

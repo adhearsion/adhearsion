@@ -53,10 +53,6 @@ module Adhearsion
         logger.info "Logfiles reopened."
       end
 
-      def reset
-        ::Logging.reset
-      end
-
       def init
         ::Logging.init LOG_LEVELS
 
