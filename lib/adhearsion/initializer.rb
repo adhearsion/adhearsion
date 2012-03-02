@@ -122,6 +122,18 @@ module Adhearsion
         logger.info "Logfiles reopened."
       end
 
+      trap 'ALRM' do
+        # Toggle between the configured log level and :trace
+        # Useful for debugging a live Adhearsion instance
+        if Adhearsion::Logging.level == ::Logging.level_num(Adhearsion.config.platform.logging['level'])
+          logger.warn "Received ALRM. Turning TRACE logging ON."
+          Adhearsion::Logging.level = :trace
+        else
+          logger.warn "Received ALRM. Turning TRACE logging OFF."
+          Adhearsion::Logging.level = Adhearsion.config.platform.logging['level']
+        end
+      end
+
       trap 'ABRT' do
         logger.info "Received ABRT signal. Forcing stop."
         Adhearsion::Process.force_stop
