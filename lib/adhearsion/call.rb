@@ -6,8 +6,20 @@ module Adhearsion
   #
   class Call
 
+    ExpiredError = Class.new Celluloid::DeadActorError
+
     include Celluloid
     include HasGuardedHandlers
+
+    def self.new(*args, &block)
+      super.tap do |proxy|
+        def proxy.method_missing(*args)
+          super
+        rescue Celluloid::DeadActorError => e
+          raise ExpiredError, "This call is expired and is no longer accessible"
+        end
+      end
+    end
 
     attr_accessor :offer, :client, :end_reason, :commands, :variables, :controllers
 
