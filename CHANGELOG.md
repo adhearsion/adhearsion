@@ -1,6 +1,7 @@
 # develop (2.0.0.head)
   * Bugfix: #speak now correctly casts the argument to string if it is not SSML
   * Bugfix: The console pauses controllers on a call while taking control
+  * Feature: Reopen logfiles on SIGHUP
 
 # 2.0.0.alpha3 - 2012-02-21
   * Feature: Add `ahn generate` command to allow invocation of generators

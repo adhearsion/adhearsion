@@ -116,6 +116,12 @@ module Adhearsion
         end
       end
 
+      trap 'HUP' do
+        logger.info "Received HUP. Reopening logfiles"
+        ::Logging.reopen
+        logger.info "Logfiles reopened."
+      end
+
       trap 'ABRT' do
         logger.info "Received ABRT signal. Forcing stop."
         Adhearsion::Process.force_stop
