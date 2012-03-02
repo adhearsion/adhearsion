@@ -84,7 +84,7 @@ describe Adhearsion::Logging do
   end
 
   it 'should reopen logfiles' do
-    flexmock(::Logging).should_receive(:reopen)
+    flexmock(::Logging).should_receive(:reopen).once
     Adhearsion::Logging.reopen_logs
   end
 
