@@ -9,7 +9,7 @@ describe Adhearsion::Initializer do
 
   describe "#start" do
     before do
-      Adhearsion::Logging.reset
+      ::Logging.reset
       flexmock(Adhearsion::Logging).should_receive(:start).once.and_return('')
       flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
       flexmock(::Logging::Appenders).should_receive(:file).and_return(nil)
@@ -21,7 +21,7 @@ describe Adhearsion::Initializer do
     end
 
     after :all do
-      Adhearsion::Logging.reset
+      ::Logging.reset
       Adhearsion::Logging.start
       Adhearsion::Logging.silence!
     end
@@ -137,14 +137,14 @@ describe Adhearsion::Initializer do
 
   describe "Initializing logger" do
     before do
-      Adhearsion::Logging.reset
+      ::Logging.reset
       flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
       flexmock(::Logging::Appenders).should_receive(:file).and_return(nil)
       Adhearsion.config = nil
     end
 
     after :all do
-      Adhearsion::Logging.reset
+      ::Logging.reset
       Adhearsion::Logging.start
       Adhearsion::Logging.silence!
       Adhearsion::Events.reinitialize_queue!
@@ -191,7 +191,7 @@ describe "Updating RAILS_ENV variable" do
   include InitializerStubs
 
   before do
-    Adhearsion::Logging.reset
+    ::Logging.reset
     flexmock(Adhearsion::Logging).should_receive(:start).once.and_return('')
     flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
     flexmock(::Logging::Appenders).should_receive(:file).and_return(nil)
