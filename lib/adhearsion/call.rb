@@ -197,6 +197,13 @@ module Adhearsion
       [current_actor]
     end
 
+    def inspect
+      attrs = [:offer, :end_reason, :commands, :variables, :controllers, :to, :from].map do |attr|
+        "#{attr}=#{send(attr).inspect}"
+      end
+      "#<#{self.class}:#{id} #{attrs.join ', '}>"
+    end
+
     def execute_controller(controller, latch = nil)
       Thread.new do
         catching_standard_errors do

@@ -18,4 +18,12 @@ class ThreadSafeArray
       @array.send method, *args, &block
     end
   end
+
+  def inspect
+    @mutex.synchronize { @array.inspect }
+  end
+
+  def to_s
+    @mutex.synchronize { @array.to_s }
+  end
 end

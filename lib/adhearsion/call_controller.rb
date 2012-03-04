@@ -155,5 +155,9 @@ module Adhearsion
       @pause_latch.countdown!
       @pause_latch = nil
     end
+
+    def inspect
+      "#<#{self.class} call=#{call.id}, metadata=#{metadata.inspect}>"
+    end
   end#class
 end
