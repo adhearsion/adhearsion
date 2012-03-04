@@ -28,10 +28,6 @@ module Adhearsion
       atomically { !calls.empty? }
     end
 
-    def size
-      atomically { calls.size }
-    end
-
     def remove_inactive_call(call)
       atomically { calls.delete call.id }
     end
