@@ -85,5 +85,10 @@ module Adhearsion
       flexmock(Adhearsion::Process.instance).should_receive(:die_now!).once
       Adhearsion::Process.shutdown
     end
+
+    it 'should forcibly kill the Adhearsion process on :force_stop' do
+      flexmock(::Process).should_receive(:exit).once.with(1)
+      Adhearsion::Process.force_stop
+    end
   end
 end
