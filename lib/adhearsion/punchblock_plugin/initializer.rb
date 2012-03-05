@@ -10,12 +10,15 @@ module Adhearsion
           self.config = Adhearsion.config[:punchblock]
           connection_class = case (self.config.platform || :xmpp)
           when :xmpp
+            username = [self.config.username, resource].join('/')
             ::Punchblock::Connection::XMPP
           when :asterisk
+            username = self.config.username
             ::Punchblock::Connection::Asterisk
           end
+
           connection_options = {
-            :username           => self.config.username,
+            :username           => username,
             :password           => self.config.password,
             :connection_timeout => self.config.connection_timeout,
             :host               => self.config.host,
@@ -136,6 +139,10 @@ module Adhearsion
           else
             logger.error "Event received for inactive call #{event.call_id}: #{event.inspect}"
           end
+        end
+
+        def resource
+          [Process.fqdn, ::Process.pid].join '-'
         end
       end
     end # Punchblock
