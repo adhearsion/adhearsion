@@ -1,5 +1,6 @@
 require 'state_machine'
 require 'singleton'
+require 'socket'
 
 module Adhearsion
   class Process
