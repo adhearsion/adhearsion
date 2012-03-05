@@ -38,6 +38,13 @@ module Adhearsion
         return 1.0/0.0 if ["Infinity", 1.0/0.0].include? value
         value.to_i
       end
+
+      def execute_component(command, timeout = 60)
+        client.execute_command command
+        response = command.response timeout
+        raise response if response.is_a? Exception
+        command
+      end
     end
   end
 end
