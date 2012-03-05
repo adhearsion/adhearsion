@@ -142,7 +142,7 @@ module Adhearsion
         end
 
         def resource
-          [Process.fqdn, ::Process.pid].join '-'
+          [Adhearsion::Process.fqdn, ::Process.pid].join '-'
         end
       end
     end # Punchblock
