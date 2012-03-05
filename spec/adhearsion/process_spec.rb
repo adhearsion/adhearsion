@@ -72,5 +72,18 @@ module Adhearsion
         Adhearsion::Process.final_shutdown
       end
     end
+
+    it 'should handle subsequent :shutdown events in the correct order' do
+      Adhearsion::Process.booted
+      Adhearsion::Process.state_name.should be :running
+      Adhearsion::Process.shutdown
+      Adhearsion::Process.state_name.should be :stopping
+      Adhearsion::Process.shutdown
+      Adhearsion::Process.state_name.should be :rejecting
+      Adhearsion::Process.shutdown
+      Adhearsion::Process.state_name.should be :stopped
+      flexmock(Adhearsion::Process.instance).should_receive(:die_now!).once
+      Adhearsion::Process.shutdown
+    end
   end
 end
