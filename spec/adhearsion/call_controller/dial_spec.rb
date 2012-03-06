@@ -119,7 +119,7 @@ module Adhearsion
 
               t.join
               status = t.value
-              status.overall.should == :no_answer
+              status.result.should == :no_answer
             end
           end
 
@@ -138,7 +138,7 @@ module Adhearsion
 
               t.join
               status = t.value
-              status.overall.should == :answer
+              status.result.should == :answer
             end
           end
         end
@@ -226,7 +226,7 @@ module Adhearsion
 
               t.join
               status = t.value
-              status.overall.should == :no_answer
+              status.result.should == :no_answer
             end
           end
 
@@ -248,7 +248,7 @@ module Adhearsion
 
               t.join
               status = t.value
-              status.overall.should == :answer
+              status.result.should == :answer
             end
           end
         end
@@ -274,7 +274,7 @@ module Adhearsion
             time.to_i.should == timeout
             t.join
             status = t.value
-            status.overall.should == :timeout
+            status.result.should == :timeout
           end
         end
 

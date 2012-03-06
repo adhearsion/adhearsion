@@ -100,18 +100,18 @@ module Adhearsion
 
       class DialStatus
         attr_accessor :calls
-        attr_reader :overall
+        attr_reader :result
 
         def initialize
-          @overall = :no_answer
+          @result = :no_answer
         end
 
         def answer!
-          @overall = :answer
+          @result = :answer
         end
 
         def timeout!
-          @overall = :timeout
+          @result = :timeout
         end
       end
 
