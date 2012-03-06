@@ -12,9 +12,9 @@ describe 'The ahn_log command' do
     ahn_log message
   end
 
-  it 'should not create a new logger when given method_missing' do
+  it 'should create a new logger when given method_missing' do
     ahn_log.micromenus 'danger will robinson!'
-    Log4r::Logger['micromenus'].should be nil
+    Log4r::Logger['micromenus'].should_not be nil
   end
 
   it 'should not define a singleton method on itself of any name found by method_missing' do

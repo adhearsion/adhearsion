@@ -74,7 +74,7 @@ module Adhearsion
       end
 
       def method_missing(logger_name, *args, &block)
-        logger = Log4r::Logger['#{logger_name}'] ? Log4r::Logger['#{logger_name}'] : self.class.new('#{logger_name}')
+        logger = Log4r::Logger["#{logger_name}"] ? Log4r::Logger["#{logger_name}"] : self.class.new("#{logger_name}")
         if args.any? || block_given?
           logger.info(*args, &block)
         else
