@@ -234,7 +234,7 @@ module Adhearsion
 
           latch.wait(1).should be_true
 
-          (t2 - t1).should > 0.5
+          (t2 - t1).should >= 0.5
         end
       end
     end
