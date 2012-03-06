@@ -69,6 +69,5 @@ When /^I terminate the process using the pid file "([^"]*)"$/ do |pidfile|
     pid = File.read(pidfile).to_i
     Process.kill("TERM", pid)
     sleep 1
-    Process.kill("KILL", pid)
   end
 end
