@@ -6,6 +6,7 @@
   * Feature: It is now possible to execute a global component (using `Adhearsion::PunchblockPlugin.execute_component`)
   * Feature: Now set XMPP JID resource to a concatenation of hostname and process ID for ID/debugging purposes
   * Feature: CallController#dial now returns a DialStatus object indicating the status of the dial command
+  * Feature: Punchblock plugin can now configure the active media engine (mostly for use on Asterisk)
 
 # 2.0.0.alpha3 - 2012-02-21
   * Feature: Add `ahn generate` command to allow invocation of generators
