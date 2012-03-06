@@ -59,7 +59,7 @@ module Adhearsion
       @call, @metadata, @block = call, metadata || {}, block
     end
 
-    def execute!(*options)
+    def execute!(*options) # :nodoc:
       call.register_controller! self
       execute_callbacks :before_call
       run
@@ -84,7 +84,7 @@ module Adhearsion
       throw :pass_controller, controller_class.new(call, metadata)
     end
 
-    def execute_callbacks(type)
+    def execute_callbacks(type) # :nodoc:
       self.class.callbacks[type].each do |callback|
         catching_standard_errors do
           instance_exec &callback
@@ -92,7 +92,7 @@ module Adhearsion
       end
     end
 
-    def after_call
+    def after_call # :nodoc:
       @after_call ||= execute_callbacks :after_call
     end
 
@@ -142,15 +142,15 @@ module Adhearsion
       call.join *args
     end
 
-    def block_until_resumed
+    def block_until_resumed # :nodoc:
       @pause_latch && @pause_latch.wait
     end
 
-    def pause!
+    def pause! # :nodoc:
       @pause_latch = CountDownLatch.new 1
     end
 
-    def resume!
+    def resume! # :nodoc:
       return unless @pause_latch
       @pause_latch.countdown!
       @pause_latch = nil

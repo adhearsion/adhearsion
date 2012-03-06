@@ -7,7 +7,7 @@ module Adhearsion
       # @param [Integer] the timeout to wait before returning, in seconds. nil or -1 mean no timeout.
       # @return [String|nil] the pressed key, or nil if timeout was reached.
       #
-      def wait_for_digit(timeout = 1)
+      def wait_for_digit(timeout = 1) # :nodoc:
         timeout = nil if timeout == -1
         timeout *= 1_000 if timeout
         input_component = execute_component_and_await_completion ::Punchblock::Component::Input.new :mode => :dtmf,
