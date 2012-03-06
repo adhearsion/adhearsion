@@ -19,12 +19,12 @@ module Adhearsion
       let(:latch) { CountDownLatch.new 1 }
 
       describe "#dial" do
-        it "should dial the call to the correct endpoint and return it" do
+        it "should dial the call to the correct endpoint and return a dial status object" do
           other_mock_call
           flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
           flexmock(other_mock_call).should_receive(:dial).with(to, :from => 'foo').once
           dial_thread = Thread.new do
-            subject.dial(to, :from => 'foo').should be_a OutboundCall
+            subject.dial(to, :from => 'foo').should be_a Dial::DialStatus
           end
           sleep 0.1
           other_mock_call << mock_end
@@ -151,9 +151,9 @@ module Adhearsion
             latch = CountDownLatch.new 1
 
             t = Thread.new do
-              calls = subject.dial [to, second_to]
+              status = subject.dial [to, second_to]
               latch.countdown!
-              calls
+              status
             end
 
             latch.wait(1).should be_false
@@ -168,9 +168,10 @@ module Adhearsion
             latch.wait(2).should be_true
 
             t.join
-            calls = t.value
-            calls.should have(2).calls
-            calls.each { |c| c.should be_a OutboundCall }
+            status = t.value
+            status.should be_a Dial::DialStatus
+            status.should have(2).calls
+            status.calls.each { |c| c.should be_a OutboundCall }
           end
 
           it "unblocks when the joined call unjoins, allowing it to proceed further" do
@@ -189,9 +190,9 @@ module Adhearsion
             latch = CountDownLatch.new 1
 
             t = Thread.new do
-              calls = subject.dial [to, second_to]
+              status = subject.dial [to, second_to]
               latch.countdown!
-              calls
+              status
             end
 
             latch.wait(1).should be_false
@@ -207,9 +208,9 @@ module Adhearsion
             latch.wait(2).should be_true
 
             t.join
-            calls = t.value
-            calls.should have(2).calls
-            calls.each { |c| c.should be_a OutboundCall }
+            status = t.value
+            status.should have(2).calls
+            status.calls.each { |c| c.should be_a OutboundCall }
           end
         end
 
@@ -225,18 +226,20 @@ module Adhearsion
 
             latch = CountDownLatch.new 1
 
-            value = nil
             time = Time.now
 
-            Thread.new do
-              value = subject.dial to, :timeout => timeout
+            t = Thread.new do
+              status = subject.dial to, :timeout => timeout
               latch.countdown!
+              status
             end
 
             latch.wait
             time = Time.now - time
             time.to_i.should == timeout
-            value.should == false
+            t.join
+            status = t.value
+            status.overall.should == :timeout
           end
         end
 

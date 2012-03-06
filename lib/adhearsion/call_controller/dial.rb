@@ -90,9 +90,16 @@ module Adhearsion
           end
         end
 
-        return timeout unless timeout
+        status = DialStatus.new
+        status.calls = calls
+        status.overall = if !timeout
+          :timeout
+        end
+        status
+      end
 
-        calls.size == 1 ? calls.first : calls
+      class DialStatus
+        attr_accessor :calls, :overall
       end
 
     end#module Dial
