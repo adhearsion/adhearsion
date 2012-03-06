@@ -55,8 +55,9 @@ module Adhearsion
 
           def dial_in_thread
             Thread.new do
-              subject.dial to
+              status = subject.dial to
               latch.countdown!
+              status
             end
           end
 
@@ -105,6 +106,41 @@ module Adhearsion
 
             latch.wait(1).should be_true
           end
+
+          context "when the call is rejected" do
+            it "has an overall dial status of :no_answer" do
+              t = dial_in_thread
+
+              sleep 0.5
+
+              other_mock_call << mock_end
+
+              latch.wait(2).should be_true
+
+              t.join
+              status = t.value
+              status.overall.should == :no_answer
+            end
+          end
+
+          context "when the call is answered and joined" do
+            it "has an overall dial status of :answer" do
+              flexmock(other_mock_call).should_receive(:join).once.with(call)
+
+              t = dial_in_thread
+
+              sleep 0.5
+
+              other_mock_call << mock_answered
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+
+              t.join
+              status = t.value
+              status.overall.should == :answer
+            end
+          end
         end
 
         describe "with multiple third parties specified" do
@@ -114,12 +150,11 @@ module Adhearsion
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call, second_other_mock_call
 
             flexmock(other_mock_call).should_receive(:dial).once
-            flexmock(other_mock_call).should_receive(:join).once.with(call)
             flexmock(other_mock_call).should_receive(:hangup).once
 
             flexmock(second_other_mock_call).should_receive(:dial).once
             flexmock(second_other_mock_call).should_receive(:join).never
-            flexmock(second_other_mock_call).should_receive(:hangup).twice
+            flexmock(second_other_mock_call).should_receive(:hangup).once
           end
 
           def dial_in_thread
@@ -131,6 +166,9 @@ module Adhearsion
           end
 
           it "dials all parties and joins the first one to answer, hanging up the rest" do
+            flexmock(other_mock_call).should_receive(:join).once.with(call)
+            flexmock(second_other_mock_call).should_receive(:hangup).once
+
             t = dial_in_thread
 
             latch.wait(1).should be_false
@@ -152,6 +190,9 @@ module Adhearsion
           end
 
           it "unblocks when the joined call unjoins, allowing it to proceed further" do
+            flexmock(other_mock_call).should_receive(:join).once.with(call)
+            flexmock(second_other_mock_call).should_receive(:hangup).once
+
             t = dial_in_thread
 
             latch.wait(1).should be_false
@@ -170,6 +211,45 @@ module Adhearsion
             status.should be_a Dial::DialStatus
             status.should have(2).calls
             status.calls.each { |c| c.should be_a OutboundCall }
+          end
+
+          context "when all calls are rejected" do
+            it "has an overall dial status of :no_answer" do
+              t = dial_in_thread
+
+              sleep 0.5
+
+              other_mock_call << mock_end
+              second_other_mock_call << mock_end
+
+              latch.wait(2).should be_true
+
+              t.join
+              status = t.value
+              status.overall.should == :no_answer
+            end
+          end
+
+          context "when a call is answered and joined" do
+            it "has an overall dial status of :answer" do
+              flexmock(other_mock_call).should_receive(:join).once.with(call)
+              flexmock(second_other_mock_call).should_receive(:hangup).once
+
+              t = dial_in_thread
+
+              sleep 0.5
+
+              other_mock_call << mock_answered
+              other_mock_call << mock_end
+
+              second_other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+
+              t.join
+              status = t.value
+              status.overall.should == :answer
+            end
           end
         end
 
