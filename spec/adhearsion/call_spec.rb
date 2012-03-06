@@ -274,10 +274,12 @@ module Adhearsion
       end
 
       describe "with an error response" do
-        let(:response) { Exception.new }
+        let(:new_exception) { Class.new Exception }
+        let(:response) { new_exception.new }
 
         it "raises the error" do
-          lambda { subject.write_and_await_response message }.should raise_error Exception
+          flexmock(Events).should_receive(:trigger).never
+          lambda { subject.write_and_await_response message }.should raise_error new_exception
         end
       end
 
