@@ -9,8 +9,7 @@ Feature: Adhearsion Ahn CLI (daemon)
     When I run `ahn daemon path/somewhere`
     And I cd to "path/somewhere"
     And I terminate the process using the pid file "adhearsion.pid"
-    Then the output should contain "Daemonizing now"
-    And the exit status should be 0
+    Then the exit status should be 0
 
   Scenario: Command daemon with pid option
     Given JRuby skip test
@@ -18,4 +17,4 @@ Feature: Adhearsion Ahn CLI (daemon)
     When I run `ahn daemon path/somewhere --pid-file=ahn.pid`
     And I cd to "path/somewhere"
     And I terminate the process using the pid file "ahn.pid"
-    Then the output should contain "Daemonizing now"
+    Then the exit status should be 0
