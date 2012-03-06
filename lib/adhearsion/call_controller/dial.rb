@@ -32,6 +32,7 @@ module Adhearsion
       #
       def dial(to, options = {}, latch = nil)
         targets = Array(to)
+        status = DialStatus.new
 
         latch ||= CountDownLatch.new targets.size
 
@@ -64,6 +65,7 @@ module Adhearsion
 
             logger.debug "Joining call #{new_call.id} to #{call.id} due to a #dial"
             new_call.join call
+            status.answer!
           end
 
           new_call.on_end do |event|
@@ -78,7 +80,10 @@ module Adhearsion
           call
         end
 
-        timeout = latch.wait options[:timeout]
+        status.calls = calls
+
+        no_timeout = latch.wait options[:timeout]
+        status.timeout! unless no_timeout
 
         logger.debug "#dial finished. Hanging up #{calls.size} outbound calls #{calls.inspect}."
         calls.each do |outbound_call|
@@ -90,9 +95,24 @@ module Adhearsion
           end
         end
 
-        return timeout unless timeout
+        status
+      end
 
-        calls.size == 1 ? calls.first : calls
+      class DialStatus
+        attr_accessor :calls
+        attr_reader :result
+
+        def initialize
+          @result = :no_answer
+        end
+
+        def answer!
+          @result = :answer
+        end
+
+        def timeout!
+          @result = :timeout
+        end
       end
 
     end#module Dial
