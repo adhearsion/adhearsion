@@ -99,7 +99,8 @@ module Adhearsion
       end
 
       class DialStatus
-        attr_accessor :calls, :overall
+        attr_accessor :calls
+        attr_reader :overall
 
         def initialize
           @overall = :no_answer
