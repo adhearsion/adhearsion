@@ -5,6 +5,7 @@
   * Feature: Toggle :trace logging on SIGALRM (useful for debugging a live process)
   * Feature: It is now possible to execute a global component (using `Adhearsion::PunchblockPlugin.execute_component`)
   * Feature: Now set XMPP JID resource to a concatenation of hostname and process ID for ID/debugging purposes
+  * Feature: CallController#dial now returns a DialStatus object indicating the status of the dial command
 
 # 2.0.0.alpha3 - 2012-02-21
   * Feature: Add `ahn generate` command to allow invocation of generators
