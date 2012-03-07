@@ -1,4 +1,4 @@
-# develop (2.0.0.head)
+# 2.0.0.beta1 - 2012-03-07
   * Bugfix: #speak now correctly casts the argument to string if it is not SSML
   * Bugfix: The console pauses controllers on a call while taking control
   * Feature: Reopen logfiles on SIGHUP
@@ -7,6 +7,7 @@
   * Feature: Now set XMPP JID resource to a concatenation of hostname and process ID for ID/debugging purposes
   * Feature: CallController#dial now returns a DialStatus object indicating the status of the dial command
   * Feature: Punchblock plugin can now configure the active media engine (mostly for use on Asterisk)
+  * Bugfix: Fix forcing Adhearsion to stop with enough SIGTERM or CTRL+C
 
 # 2.0.0.alpha3 - 2012-02-21
   * Feature: Add `ahn generate` command to allow invocation of generators
