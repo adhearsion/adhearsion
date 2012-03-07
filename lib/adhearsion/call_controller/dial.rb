@@ -32,6 +32,7 @@ module Adhearsion
       #
       def dial(to, options = {}, latch = nil)
         targets = Array(to)
+        status = DialStatus.new
 
         latch ||= CountDownLatch.new targets.size
 
@@ -43,7 +44,7 @@ module Adhearsion
         options[:from] ||= call.from
 
         calls = targets.map do |target|
-          new_call = OutboundCall.new options
+          new_call = OutboundCall.new
 
           new_call.on_answer do |event|
             calls.each do |call_to_hangup, target|
@@ -57,17 +58,18 @@ module Adhearsion
             end
 
             new_call.register_event_handler Punchblock::Event::Unjoined, :other_call_id => call.id do |event|
-              new_call[:"dial_countdown_#{call.id}"] = true
+              new_call["dial_countdown_#{call.id}"] = true
               latch.countdown!
               throw :pass
             end
 
             logger.debug "Joining call #{new_call.id} to #{call.id} due to a #dial"
             new_call.join call
+            status.answer!
           end
 
           new_call.on_end do |event|
-            latch.countdown! unless new_call[:"dial_countdown_#{call.id}"]
+            latch.countdown! unless new_call["dial_countdown_#{call.id}"]
           end
 
           [new_call, target]
@@ -78,7 +80,10 @@ module Adhearsion
           call
         end
 
-        timeout = latch.wait options[:timeout]
+        status.calls = calls
+
+        no_timeout = latch.wait options[:timeout]
+        status.timeout! unless no_timeout
 
         logger.debug "#dial finished. Hanging up #{calls.size} outbound calls #{calls.inspect}."
         calls.each do |outbound_call|
@@ -90,9 +95,24 @@ module Adhearsion
           end
         end
 
-        return timeout unless timeout
+        status
+      end
 
-        calls.size == 1 ? calls.first : calls
+      class DialStatus
+        attr_accessor :calls
+        attr_reader :result
+
+        def initialize
+          @result = :no_answer
+        end
+
+        def answer!
+          @result = :answer
+        end
+
+        def timeout!
+          @result = :timeout
+        end
       end
 
     end#module Dial

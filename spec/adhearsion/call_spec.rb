@@ -39,6 +39,8 @@ module Adhearsion
     its(:offer)   { should be offer }
     its(:client)  { should be mock_client }
 
+    its(:after_end_hold_time) { should == 30 }
+
     describe "its variables" do
       context "with an offer with headers" do
         let(:headers)   { {:x_foo => 'bar'} }
@@ -150,9 +152,11 @@ module Adhearsion
         end
 
         it "shuts down the actor" do
+          flexmock subject.wrapped_object, :after_end_hold_time => 2
           subject << end_event
-          sleep 5.1
+          sleep 2.1
           subject.should_not be_alive
+          lambda { subject.id }.should raise_error Call::ExpiredError, /expired and is no longer accessible/
         end
       end
     end
@@ -270,10 +274,12 @@ module Adhearsion
       end
 
       describe "with an error response" do
-        let(:response) { Exception.new }
+        let(:new_exception) { Class.new Exception }
+        let(:response) { new_exception.new }
 
         it "raises the error" do
-          lambda { subject.write_and_await_response message }.should raise_error Exception
+          flexmock(Events).should_receive(:trigger).never
+          lambda { subject.write_and_await_response message }.should raise_error new_exception
         end
       end
 
@@ -524,6 +530,44 @@ module Adhearsion
           subject.should_receive(:hangup).once
           subject.execute_controller mock_controller, latch
           latch.wait(3).should be_true
+        end
+
+        it "should add the controller thread to the important threads" do
+          flexmock(CallController).should_receive(:exec)
+          controller_thread = subject.execute_controller mock_controller, latch
+          Adhearsion::Process.important_threads.should include controller_thread
+        end
+      end
+
+      describe "#register_controller" do
+        it "should add the controller to a list on the call" do
+          subject.register_controller :foo
+          subject.controllers.should include :foo
+        end
+      end
+
+      context "with two controllers registered" do
+        let(:controller1) { flexmock 'CallController1' }
+        let(:controller2) { flexmock 'CallController2' }
+
+        before { subject.controllers << controller1 << controller2 }
+
+        describe "#pause_controllers" do
+          it "should pause each of the registered controllers" do
+            controller1.should_receive(:pause!).once
+            controller2.should_receive(:pause!).once
+
+            subject.pause_controllers
+          end
+        end
+
+        describe "#resume_controllers" do
+          it "should resume each of the registered controllers" do
+            controller1.should_receive(:resume!).once
+            controller2.should_receive(:resume!).once
+
+            subject.resume_controllers
+          end
         end
       end
     end

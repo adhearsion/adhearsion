@@ -8,8 +8,6 @@ class Object
 end
 
 class ThreadSafeArray
-  include Enumerable
-
   def initialize
     @mutex = Mutex.new
     @array = []
@@ -19,5 +17,13 @@ class ThreadSafeArray
     @mutex.synchronize do
       @array.send method, *args, &block
     end
+  end
+
+  def inspect
+    @mutex.synchronize { @array.inspect }
+  end
+
+  def to_s
+    @mutex.synchronize { @array.to_s }
   end
 end

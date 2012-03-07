@@ -20,6 +20,7 @@ module Adhearsion
       connection_timeout  60               , :transform => Proc.new { |v| PunchblockPlugin.validate_number v }, :desc => "The amount of time to wait for a connection"
       reconnect_attempts  1.0/0.0          , :transform => Proc.new { |v| PunchblockPlugin.validate_number v }, :desc => "The number of times to (re)attempt connection to the server"
       reconnect_timer     5                , :transform => Proc.new { |v| PunchblockPlugin.validate_number v }, :desc => "Delay between connection attempts"
+      media_engine        nil              , :transform => Proc.new { |v| v.to_sym }, :desc => "The media engine to use. Defaults to platform default."
     end
 
     init :punchblock do
@@ -37,6 +38,13 @@ module Adhearsion
       def validate_number(value)
         return 1.0/0.0 if ["Infinity", 1.0/0.0].include? value
         value.to_i
+      end
+
+      def execute_component(command, timeout = 60)
+        client.execute_command command
+        response = command.response timeout
+        raise response if response.is_a? Exception
+        command
       end
     end
   end

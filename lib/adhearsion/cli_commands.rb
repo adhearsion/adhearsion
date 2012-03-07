@@ -68,13 +68,12 @@ module Adhearsion
       def stop(path = nil)
         execute_from_app_dir! path
 
-        path ||= '.'
-
         pid_file = if options[:pidfile]
           File.exists?(File.expand_path(options[:pidfile])) ?
             options[:pidfile] :
             File.join(path, options[:pidfile])
         else
+          path = Dir.pwd
           File.join path, Adhearsion::Initializer::DEFAULT_PID_FILE_NAME
         end
         pid_file = File.expand_path pid_file
@@ -118,7 +117,7 @@ module Adhearsion
       def execute_from_app_dir!(path)
         return if in_app? and running_script_ahn?
 
-        path ||= '.' if in_app?
+        path ||= Dir.pwd if in_app?
 
         raise PathRequired, ARGV[0] if path.nil? or path.empty?
         raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?(path)

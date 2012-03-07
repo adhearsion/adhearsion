@@ -1,33 +1,27 @@
 require 'thread'
 
-module Celluloid
-  module ClassMethods
-    def ===(other)
-      other.kind_of? self
-    end
-  end
-
-  class ActorProxy
-    def is_a?(klass)
-      Actor.call @mailbox, :is_a?, klass
-    end
-
-    def kind_of?(klass)
-      Actor.call @mailbox, :kind_of?, klass
-    end
-  end
-end
-
 module Adhearsion
   ##
   # Encapsulates call-related data and behavior.
   #
   class Call
 
+    ExpiredError = Class.new Celluloid::DeadActorError
+
     include Celluloid
     include HasGuardedHandlers
 
-    attr_accessor :offer, :client, :end_reason, :commands, :variables
+    def self.new(*args, &block)
+      super.tap do |proxy|
+        def proxy.method_missing(*args)
+          super
+        rescue Celluloid::DeadActorError => e
+          raise ExpiredError, "This call is expired and is no longer accessible"
+        end
+      end
+    end
+
+    attr_accessor :offer, :client, :end_reason, :commands, :variables, :controllers
 
     delegate :[], :[]=, :to => :variables
     delegate :to, :from, :to => :offer, :allow_nil => true
@@ -35,9 +29,10 @@ module Adhearsion
     def initialize(offer = nil)
       register_initial_handlers
 
-      @tags       = []
-      @commands   = CommandRegistry.new
-      @variables  = {}
+      @tags         = []
+      @commands     = CommandRegistry.new
+      @variables    = {}
+      @controllers  = []
 
       self << offer if offer
     end
@@ -77,7 +72,7 @@ module Adhearsion
 
     alias << deliver_message
 
-    def register_initial_handlers
+    def register_initial_handlers # :nodoc:
       register_event_handler Punchblock::Event::Offer do |offer|
         @offer  = offer
         @client = offer.client
@@ -93,8 +88,12 @@ module Adhearsion
         clear_from_active_calls
         @end_reason = event.reason
         commands.terminate
-        after(5) { current_actor.terminate! }
+        after(after_end_hold_time) { current_actor.terminate! }
       end
+    end
+
+    def after_end_hold_time # :nodoc:
+      30
     end
 
     def on_end(&block)
@@ -126,7 +125,7 @@ module Adhearsion
       write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
     end
 
-    def clear_from_active_calls
+    def clear_from_active_calls # :nodoc:
       Adhearsion.active_calls.remove_inactive_call current_actor
     end
 
@@ -180,17 +179,17 @@ module Adhearsion
     end
 
     def write_command(command)
-      abort Hangup.new unless active? || command.is_a?(Punchblock::Command::Hangup)
+      abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
       variables.merge! command.headers_hash if command.respond_to? :headers_hash
-      logger.trace "Executing command #{command.inspect}"
+      logger.debug "Executing command #{command.inspect}"
       client.execute_command command, :call_id => id
     end
 
-    def logger_id
+    def logger_id # :nodoc:
       "#{self.class}: #{id}"
     end
 
-    def logger
+    def logger # :nodoc:
       super
     end
 
@@ -198,8 +197,15 @@ module Adhearsion
       [current_actor]
     end
 
+    def inspect
+      attrs = [:offer, :end_reason, :commands, :variables, :controllers, :to, :from].map do |attr|
+        "#{attr}=#{send(attr).inspect}"
+      end
+      "#<#{self.class}:#{id} #{attrs.join ', '}>"
+    end
+
     def execute_controller(controller, latch = nil)
-      Adhearsion::Process.important_threads << Thread.new do
+      Thread.new do
         catching_standard_errors do
           begin
             CallController.exec controller
@@ -208,10 +214,22 @@ module Adhearsion
           end
           latch.countdown! if latch
         end
-      end
+      end.tap { |t| Adhearsion::Process.important_threads << t }
     end
 
-    class CommandRegistry < ThreadSafeArray
+    def register_controller(controller)
+      @controllers << controller
+    end
+
+    def pause_controllers
+      controllers.each &:pause!
+    end
+
+    def resume_controllers
+      controllers.each &:resume!
+    end
+
+    class CommandRegistry < ThreadSafeArray # :nodoc:
       def terminate
         hangup = Hangup.new
         each { |command| command.response = hangup if command.requested? }

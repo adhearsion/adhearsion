@@ -34,8 +34,12 @@ RSpec.configure do |config|
   config.run_all_when_everything_filtered = true
   config.color_enabled = true
 
-  config.before(:each) do
+  config.before :each do
     Adhearsion.router = nil
+  end
+
+  config.after :each do
+    Celluloid.shutdown
   end
 end
 

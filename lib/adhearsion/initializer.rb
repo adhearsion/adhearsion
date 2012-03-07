@@ -111,14 +111,19 @@ module Adhearsion
     def catch_termination_signal
       %w'INT TERM'.each do |process_signal|
         trap process_signal do
-          logger.info "Received #{process_signal} signal. Shutting down."
+          logger.info "Received SIG#{process_signal}. Shutting down."
           Adhearsion::Process.shutdown
         end
       end
 
-      trap 'QUIT' do
-        logger.info "Received QUIT signal. Hard shutting down."
-        Adhearsion::Process.hard_shutdown
+      trap 'HUP' do
+        logger.debug "Received SIGHUP. Reopening logfiles."
+        Adhearsion::Logging.reopen_logs
+      end
+
+      trap 'ALRM' do
+        logger.debug "Received SIGALRM. Toggling trace logging."
+        Adhearsion::Logging.toggle_trace!
       end
 
       trap 'ABRT' do
@@ -163,7 +168,9 @@ module Adhearsion
           ::Logging.appenders.file(f,
             :layout => ::Logging.layouts.pattern(
               :pattern => Adhearsion::Logging.adhearsion_pattern
-            )
+            ),
+           :auto_flushing => 2,
+           :flush_period => 2
           )
         else
          a

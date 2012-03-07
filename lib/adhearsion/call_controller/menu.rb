@@ -103,7 +103,7 @@ module Adhearsion
         return :done
       end
 
-      def play_sound_files_for_menu(menu_instance, sound_files)
+      def play_sound_files_for_menu(menu_instance, sound_files) # :nodoc:
         digit = nil
         if sound_files.any? && menu_instance.digit_buffer_empty?
           digit = interruptible_play *sound_files
@@ -111,7 +111,7 @@ module Adhearsion
         digit || wait_for_digit(menu_instance.timeout)
       end
 
-      def jump_to(match_object, overrides = nil)
+      def jump_to(match_object, overrides = nil) # :nodoc:
         if match_object.block
           instance_exec overrides[:extension], &match_object.block
         else

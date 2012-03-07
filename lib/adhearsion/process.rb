@@ -1,5 +1,6 @@
 require 'state_machine'
 require 'singleton'
+require 'socket'
 
 module Adhearsion
   class Process
@@ -9,7 +10,7 @@ module Adhearsion
       before_transition :log_state_change
       after_transition :on => :shutdown, :do => :request_stop
       after_transition any => :stopped, :do => :final_shutdown
-      after_transition :on => :force_stop, :do => :die_now!
+      before_transition any => :force_stopped, :do => :die_now!
 
       event :booted do
         transition :booting => :running
@@ -27,8 +28,12 @@ module Adhearsion
         # This corresponds to the admin pressing CTRL+C three times.
         transition :rejecting => :stopped
 
+        # On the fourth shutdown request, we are probably hung.
+        # Attempt no more graceful shutdown and exit as quickly as possible.
+        transition :stopped => :force_stopped
+
         # If we are still booting, transition directly to stopped
-        transition :booting => :force_stop
+        transition :booting => :force_stopped
       end
 
       event :hard_shutdown do
@@ -88,6 +93,10 @@ module Adhearsion
 
     def die_now!
       ::Process.exit 1
+    end
+
+    def fqdn
+      Socket.gethostbyname(Socket.gethostname).first
     end
 
     def self.method_missing(method_name, *args, &block)

@@ -1,3 +1,14 @@
+# 2.0.0.beta1 - 2012-03-07
+  * Bugfix: #speak now correctly casts the argument to string if it is not SSML
+  * Bugfix: The console pauses controllers on a call while taking control
+  * Feature: Reopen logfiles on SIGHUP
+  * Feature: Toggle :trace logging on SIGALRM (useful for debugging a live process)
+  * Feature: It is now possible to execute a global component (using `Adhearsion::PunchblockPlugin.execute_component`)
+  * Feature: Now set XMPP JID resource to a concatenation of hostname and process ID for ID/debugging purposes
+  * Feature: CallController#dial now returns a DialStatus object indicating the status of the dial command
+  * Feature: Punchblock plugin can now configure the active media engine (mostly for use on Asterisk)
+  * Bugfix: Fix forcing Adhearsion to stop with enough SIGTERM or CTRL+C
+
 # 2.0.0.alpha3 - 2012-02-21
   * Feature: Add `ahn generate` command to allow invocation of generators
   * Feature: Add simple generator for call controllers
@@ -10,11 +21,12 @@
   * Feature: The console can take control of a call
   * Bugfix: CallController#dial now blocks until all outbound calls complete
   * Bugfix: Call commands timing out now raise a timeout exception in the caller, but do not crash the actor
+  * Feature: It is now possible to pause/resume call controllers
   * Bugfix: CallController#dial now unblocks immediately if the original call ends
   * Bugfix: CallController#dial now unblocks when the connected outbound call unjoins, rather than ending, incase post-processing on the outbound call is required
   * Bugfix: CallController#dial now hangs up outbound legs when it unblocks
   * Feature: CallController#dial now defaults the outbound caller ID to that of the controller's call
-  * Change: The command to take control of a call is now 'take' rather than 'use'.  'take' called without a call ID present a list of currently running calls
+  * Change: The command to take control of a call is now 'take' rather than 'use'. 'take' called without a call ID present a list of currently running calls
 
 # 2.0.0.alpha2 - 2012-01-30
   * Change: Plugins no longer load dialplan/event/rpc/console methods using corresponding class methods

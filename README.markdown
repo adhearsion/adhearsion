@@ -20,7 +20,7 @@ Features
 Requirements
 ------------
 
-* Ruby 1.9.2+ or JRuby 1.6.5+
+* Ruby 1.9.2+ or JRuby 1.6.7+
 * A VoIP platform:
   * Asterisk 1.8+
   * Prism 11+ with rayo-server

@@ -24,16 +24,33 @@ module Adhearsion
         '[%d] %-5l %c: %m\n'
       end
 
+      # Silence Adhearsion's logging, printing only FATAL messages
       def silence!
         self.logging_level = :fatal
       end
 
+      # Restore the default configured logging level
       def unsilence!
-        self.logging_level = :info
+        self.logging_level = Adhearsion.config.platform.logging['level']
       end
 
-      def reset
-        ::Logging.reset
+      # Toggle between the configured log level and :trace
+      # Useful for debugging a live Adhearsion instance
+      def toggle_trace!
+        if level == ::Logging.level_num(Adhearsion.config.platform.logging['level'])
+          logger.warn "Turning TRACE logging ON."
+          self.level = :trace
+        else
+          logger.warn "Turning TRACE logging OFF."
+          self.level = Adhearsion.config.platform.logging['level']
+        end
+      end
+
+      # Close logfiles and reopen them.  Useful for log rotation.
+      def reopen_logs
+        logger.info "Closing logfiles."
+        ::Logging.reopen
+        logger.info "Logfiles reopened."
       end
 
       def init
@@ -58,7 +75,9 @@ module Adhearsion
            :layout => ::Logging.layouts.pattern(
              :pattern => adhearsion_pattern,
              :color_scheme => 'bright'
-           )
+           ),
+           :auto_flushing => 2,
+           :flush_period => 2
          )]
       end
 

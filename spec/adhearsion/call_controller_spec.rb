@@ -104,6 +104,7 @@ module Adhearsion
       before do
         flexmock subject, :execute_component_and_await_completion => nil
         flexmock call.wrapped_object, :write_and_await_response => nil
+        flexmock call, :register_controller! => nil
         flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
       end
 
@@ -154,22 +155,19 @@ module Adhearsion
       subject { PassController.new call }
 
       before do
-        flexmock(call.wrapped_object).should_receive(:write_and_await_response).and_return nil
+        flexmock call.wrapped_object, :write_and_await_response => nil
+        flexmock call, :register_controller! => nil
         flexmock subject, :execute_component_and_await_completion => nil
         flexmock(SecondController).new_instances.should_receive(:md_check).once.with :foo => 'bar'
         flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
       end
 
-      let(:latch) { CountDownLatch.new 1 }
-
       it "should cease execution of the current controller, and instruct the call to execute another" do
         subject.should_receive(:before).once.ordered
         call.should_receive(:answer).once.ordered
         subject.should_receive(:after).never.ordered
-        call.wrapped_object.should_receive(:hangup).once.ordered
 
-        call.execute_controller subject, latch
-        latch.wait(1).should be_true
+        CallController.exec subject
       end
 
       it "should execute after_call callbacks before passing control" do
@@ -181,12 +179,63 @@ module Adhearsion
       end
     end
 
-    describe '#write_and_await_response' do
+    describe "#write_and_await_response" do
       let(:message) { Punchblock::Command::Accept.new }
 
-      it "delegates to the call" do
-        flexmock(subject.call).should_receive(:write_and_await_response).once.with(message, 20)
-        subject.write_and_await_response message, 20
+      it "delegates to the call, blocking first until it is allowed to execute" do
+        flexmock(subject).should_receive(:block_until_resumed).once.ordered
+        flexmock(subject.call).should_receive(:write_and_await_response).once.ordered.with(message)
+        subject.write_and_await_response message
+      end
+    end
+
+    [ :answer,
+      :reject,
+      :hangup,
+      :mute,
+      :unmute,
+      :join].each do |method_name|
+      describe "##{method_name}" do
+        it "delegates to the call, blocking first until it is allowed to execute" do
+          flexmock(subject).should_receive(:block_until_resumed).once.ordered
+          flexmock(subject.call).should_receive(method_name).once.ordered
+          subject.send method_name
+        end
+      end
+    end
+
+    describe "#block_until_resumed" do
+      context "when the controller has not been paused" do
+        it "should not block" do
+          t1 = Time.now
+          subject.block_until_resumed
+          t2 = Time.now
+
+          (t2 - t1).should < 0.2
+        end
+      end
+
+      context "when the controller is paused" do
+        before { subject.pause! }
+
+        it "should unblock when the controller is unpaused" do
+          t1 = t2 = nil
+          latch = CountDownLatch.new 1
+          t = Thread.new do
+            t1 = Time.now
+            subject.block_until_resumed
+            t2 = Time.now
+            latch.countdown!
+          end
+
+          sleep 0.5
+
+          subject.resume!
+
+          latch.wait(1).should be_true
+
+          (t2 - t1).should >= 0.5
+        end
       end
     end
 
@@ -245,48 +294,6 @@ module Adhearsion
         starting_time = Time.now
         subject.execute_component_and_await_completion slow_component
         (Time.now - starting_time).should > 0.5
-      end
-    end
-
-    describe '#answer' do
-      it "should delegate to the call" do
-        flexmock(call).should_receive(:answer).once.with(:foo)
-        subject.answer :foo
-      end
-    end
-
-    describe '#reject' do
-      it "should delegate to the call" do
-        flexmock(call).should_receive(:reject).once.with(:foo, :bar)
-        subject.reject :foo, :bar
-      end
-    end
-
-    describe '#hangup' do
-      it "should delegate to the call" do
-        flexmock(call).should_receive(:hangup).once.with(:foo)
-        subject.hangup :foo
-      end
-    end
-
-    describe '#mute' do
-      it 'should delegate to the call' do
-        flexmock(call).should_receive(:mute).once
-        subject.mute
-      end
-    end
-
-    describe '#unmute' do
-      it 'should delegate to the call' do
-        flexmock(call).should_receive(:unmute).once
-        subject.unmute
-      end
-    end
-
-    describe '#join' do
-      it 'should delegate to the call' do
-        flexmock(call).should_receive(:join).once.with(:foo)
-        subject.join :foo
       end
     end
   end
