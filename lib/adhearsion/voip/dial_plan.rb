@@ -93,10 +93,6 @@ module Adhearsion
         Components.component_manager.extend_object_with(self, :dialplan) if Components.component_manager
       end
 
-      def ahn_log(*args)
-        @call.ahn_log *args
-      end
-
     end
 
     class Manager

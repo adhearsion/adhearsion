@@ -17,9 +17,9 @@ describe 'The ahn_log command' do
     Log4r::Logger['micromenus'].should_not be nil
   end
 
-  it 'should not define a singleton method on itself of any name found by method_missing' do
+  it 'should define a singleton method on itself of any name found by method_missing' do
     ahn_log.agi "SOMETHING IMPORTANT HAPPENED"
-    Adhearsion::Logging::AdhearsionLogger.instance_methods.map{|m| m.to_sym}.should_not include :agi
+    Adhearsion::Logging::AdhearsionLogger.instance_methods.map{|m| m.to_sym}.should include :agi
   end
 
   it "dynamically generated loggers should support logging with blocks" do
@@ -42,8 +42,9 @@ describe 'The ahn_log command' do
   end
 
   it "handles crazy logger names" do
-    ahn_log.send :'locals@DEMO_ca.ll&', "hey"
-    ahn_log.send(:'locals@DEMO_ca.ll&').should_not be nil
+    ahn_log.send :'locals@DEMO_call&', "hey"
+    Log4r::Logger['locals@DEMO_call&'].should_not be nil
+    ahn_log.send(:'localsdemo_call').should == Log4r::Logger['locals@DEMO_call&']
   end
 
 end

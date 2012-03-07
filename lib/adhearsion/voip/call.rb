@@ -298,10 +298,6 @@ module Adhearsion
       end
     end
 
-    def ahn_log(*args)
-      Adhearsion::Logging::DefaultAdhearsionLogger.send Adhearsion::Logging::AdhearsionLogger.sanitized_logger_name(unique_identifier), *args
-    end
-
     def define_variable_accessors(recipient=self)
       variables.each do |key, value|
         define_singleton_accessor_with_pair(key, value, recipient)
