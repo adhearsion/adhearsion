@@ -139,13 +139,9 @@ module Adhearsion
 
     class InteractiveController < CallController
       def run
-        logger.debug "Starting interactive controller."
-        begin
-          pry
-        rescue => e
-          logger.error e
-        end
-        logger.debug "Interactive controller finished."
+        logger.debug "Starting interactive controller"
+        pry
+        logger.debug "Interactive controller finished"
       end
 
       def hangup(*args)
