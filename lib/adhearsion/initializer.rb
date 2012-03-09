@@ -199,7 +199,7 @@ module Adhearsion
 
     def daemonize!
       logger.info "Daemonizing now!"
-      logger.info "Creating PID file #{pid_file}"
+      logger.debug "Creating PID file #{pid_file}"
       extend Adhearsion::CustomDaemonizer
       daemonize resolve_log_file_path
     end
