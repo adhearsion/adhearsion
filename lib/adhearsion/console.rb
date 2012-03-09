@@ -33,10 +33,10 @@ module Adhearsion
       if libedit?
         logger.error "Cannot start. You are running Adhearsion on Ruby with libedit. You must use readline for the console to work."
       else
-        logger.info "Starting up..."
+        logger.info "Launching Adhearsion Console"
         @pry_thread = Thread.current
         pry
-        logger.info "Console exiting"
+        logger.info "Adhearsion Console exiting"
       end
     end
 
