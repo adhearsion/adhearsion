@@ -54,7 +54,7 @@ module Adhearsion
 
       if Adhearsion.status == :booting
         Adhearsion::Process.booted
-        logger.info "Adhearsion v#{Adhearsion::VERSION} initialized with environment <#{Adhearsion.config.platform.environment}>!"
+        logger.info "Adhearsion v#{Adhearsion::VERSION} initialized in \"#{Adhearsion.config.platform.environment}\"!"
       end
 
       # This method will block until all important threads have finished.
@@ -66,22 +66,19 @@ module Adhearsion
     def update_rails_env_var
       env = ENV['AHN_ENV']
       if env && Adhearsion.config.valid_environment?(env.to_sym)
-        if ENV['RAILS_ENV']
-          logger.info "Using provided RAILS_ENV value of <#{ENV['RAILS_ENV']}>"
-        else
-          logger.warn "Setting RAILS_ENV variable to <#{env}>"
+        unless ENV['RAILS_ENV']
+          logger.info "Copying AHN_ENV (#{env}) to RAILS_ENV"
           ENV['RAILS_ENV'] = env
         end
       else
-        env = ENV['RAILS_ENV']
-        if env
-          logger.info "Using the configured value for RAILS_ENV : <#{env}>"
-        else
+        unless ENV['RAILS_ENV']
           env = Adhearsion.config.platform.environment.to_s
-          logger.info "Defining RAILS_ENV variable to <#{env}>"
+          ENV['AHN_ENV'] = env
+          logger.info "Setting RAILS_ENV to \"#{env}\""
           ENV['RAILS_ENV'] = env
         end
       end
+      logger.warn "AHN_ENV(#{ENV['AHN_ENV']}) does not match RAILS_ENV(#{ENV['RAILS_ENV']})!" unless ENV['RAILS_ENV'] == ENV['AHN_ENV']
       env
     end
 
@@ -202,7 +199,7 @@ module Adhearsion
 
     def daemonize!
       logger.info "Daemonizing now!"
-      logger.info "Creating PID file #{pid_file}"
+      logger.debug "Creating PID file #{pid_file}"
       extend Adhearsion::CustomDaemonizer
       daemonize resolve_log_file_path
     end
@@ -243,6 +240,7 @@ module Adhearsion
     def initialize_exception_logger
       Events.register_handler :exception do |e|
         logger.error e
+        logger.debug e.backtrace.join "\n"
       end
     end
 

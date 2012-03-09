@@ -33,10 +33,10 @@ module Adhearsion
       if libedit?
         logger.error "Cannot start. You are running Adhearsion on Ruby with libedit. You must use readline for the console to work."
       else
-        logger.info "Starting up..."
+        logger.info "Launching Adhearsion Console"
         @pry_thread = Thread.current
         pry
-        logger.info "Console exiting"
+        logger.info "Adhearsion Console exiting"
       end
     end
 
@@ -44,7 +44,7 @@ module Adhearsion
       return unless @pry_thread
       @pry_thread.kill
       @pry_thread = nil
-      logger.info "Shutting down"
+      logger.info "Adhearsion Console shutting down"
     end
 
     def log_level(level = nil)
@@ -76,15 +76,17 @@ module Adhearsion
       when nil
         case calls.size
         when 0
-          logger.warn "No calls exist for control"
+          logger.warn "No calls active to take"
         when 1
           interact_with_call calls.values.first
         else
           puts "Please choose a call:"
+          puts "# (inbound/outbound) details"
           current_calls = calls.values
           current_calls.each_with_index do |call, index|
-            puts "#{index}. (#{call.is_a?(OutboundCall) ? 'o' : 'i' }) #{call.id} from #{call.from} to #{call.to}"
+            puts "#{index}: (#{call.is_a?(OutboundCall) ? 'o' : 'i' }) #{call.id} from #{call.from} to #{call.to}"
           end
+          print "#> "
           index = input.gets.chomp.to_i
           call = current_calls[index]
           interact_with_call call
@@ -130,20 +132,16 @@ module Adhearsion
         call.pause_controllers
         CallController.exec InteractiveController.new(call)
       ensure
-        logger.debug "Resuming call's controllers"
+        logger.debug "Restoring control of call to controllers"
         call.resume_controllers
       end
     end
 
     class InteractiveController < CallController
       def run
-        logger.debug "Starting interactive controller."
-        begin
-          pry
-        rescue => e
-          logger.error e
-        end
-        logger.debug "Interactive controller finished."
+        logger.debug "Starting interactive controller"
+        pry
+        logger.debug "Interactive controller finished"
       end
 
       def hangup(*args)
