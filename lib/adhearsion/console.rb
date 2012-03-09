@@ -81,10 +81,12 @@ module Adhearsion
           interact_with_call calls.values.first
         else
           puts "Please choose a call:"
+          puts "# (inbound/outbound) details"
           current_calls = calls.values
           current_calls.each_with_index do |call, index|
-            puts "#{index}. (#{call.is_a?(OutboundCall) ? 'o' : 'i' }) #{call.id} from #{call.from} to #{call.to}"
+            puts "#{index}: (#{call.is_a?(OutboundCall) ? 'o' : 'i' }) #{call.id} from #{call.from} to #{call.to}"
           end
+          print "#> "
           index = input.gets.chomp.to_i
           call = current_calls[index]
           interact_with_call call
