@@ -54,7 +54,7 @@ module Adhearsion
 
       if Adhearsion.status == :booting
         Adhearsion::Process.booted
-        logger.info "Adhearsion v#{Adhearsion::VERSION} initialized with environment <#{Adhearsion.config.platform.environment}>!"
+        logger.info "Adhearsion v#{Adhearsion::VERSION} initialized in \"#{Adhearsion.config.platform.environment}\"!"
       end
 
       # This method will block until all important threads have finished.
