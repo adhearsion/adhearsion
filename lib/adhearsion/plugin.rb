@@ -124,7 +124,7 @@ module Adhearsion
       end
 
       def inherited(base)
-        logger.debug "Detected new plugin: #{base.name}"
+        logger.info "Detected new plugin: #{base.name}"
         subclasses << base
       end
 
