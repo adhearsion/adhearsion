@@ -66,22 +66,19 @@ module Adhearsion
     def update_rails_env_var
       env = ENV['AHN_ENV']
       if env && Adhearsion.config.valid_environment?(env.to_sym)
-        if ENV['RAILS_ENV']
-          logger.info "Using provided RAILS_ENV value of <#{ENV['RAILS_ENV']}>"
-        else
-          logger.warn "Setting RAILS_ENV variable to <#{env}>"
+        unless ENV['RAILS_ENV']
+          logger.info "Copying AHN_ENV (#{env}) to RAILS_ENV"
           ENV['RAILS_ENV'] = env
         end
       else
-        env = ENV['RAILS_ENV']
-        if env
-          logger.info "Using the configured value for RAILS_ENV : <#{env}>"
-        else
+        unless ENV['RAILS_ENV']
           env = Adhearsion.config.platform.environment.to_s
-          logger.info "Defining RAILS_ENV variable to <#{env}>"
+          ENV['AHN_ENV'] = env
+          logger.info "Setting RAILS_ENV to \"#{env}\""
           ENV['RAILS_ENV'] = env
         end
       end
+      logger.warn "AHN_ENV(#{ENV['AHN_ENV']}) does not match RAILS_ENV(#{ENV['RAILS_ENV']})!" unless ENV['RAILS_ENV'] == ENV['AHN_ENV']
       env
     end
 
