@@ -18,9 +18,9 @@ Feature: Adhearsion Ahn CLI (start)
     And I run `ahn start` interactively
     And I wait for output to contain "Starting connection to server"
     And I terminate the interactive process
-    Then the output should contain "Adhearsion::Console: Starting up..."
+    Then the output should contain "Adhearsion::Console: Launching Adhearsion Console"
     And the output should contain "AHN>"
-    And the output should contain "Transitioning from booting to force_stop"
+    And the output should contain "Transitioning from running to stopping"
 
   Scenario: Command start with only path works properly
     Given JRuby skip test
@@ -28,6 +28,6 @@ Feature: Adhearsion Ahn CLI (start)
     When I run `ahn start path/somewhere` interactively
     And I wait for output to contain "Starting connection to server"
     And I terminate the interactive process
-    Then the output should contain "Adhearsion::Console: Starting up..."
+    Then the output should contain "Adhearsion::Console: Launching Adhearsion Console"
     And the output should contain "AHN>"
-    And the output should contain "Transitioning from booting to force_stop"
+    And the output should contain "Transitioning from running to stopping"
