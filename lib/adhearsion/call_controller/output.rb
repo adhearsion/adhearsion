@@ -162,7 +162,7 @@ module Adhearsion
             result = interruptible_play! output
           rescue PlaybackError => e
             # Ignore this exception and play the next output
-            logger.warn e.message
+            logger.warn "Error playing back the prompt: #{e.message}"
           ensure
             break if result
           end

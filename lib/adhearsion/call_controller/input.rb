@@ -73,7 +73,7 @@ module Adhearsion
         begin
           input! *args, &block
         rescue PlaybackError => e
-          logger.warn { e }
+          logger.warn "Error playing back the prompt: #{e.message}"
           retry # If sound playback fails, play the remaining sound files and wait for digits
         end
       end

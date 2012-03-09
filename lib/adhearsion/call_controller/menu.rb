@@ -67,14 +67,14 @@ module Adhearsion
           if menu_instance.should_continue?
             result_of_menu = menu_instance.continue
           else
-            logger.debug "Menu failed to get valid input. Executing failure hook."
+            logger.debug "Menu failed to get valid input. Calling \"failure\" hook."
             menu_instance.execute_failure_hook
             return :failed
           end
 
           case result_of_menu
           when MenuDSL::Menu::MenuResultInvalid
-            logger.debug "Menu get invalid input. Executing invalid hook and restarting."
+            logger.debug "Menu received invalid input. Calling \"invalid\" hook and restarting."
             menu_instance.execute_invalid_hook
             menu_instance.restart!
             result_of_menu = nil
@@ -88,14 +88,14 @@ module Adhearsion
                 jump_to result_of_menu.match_object, :extension => result_of_menu.new_extension
                 return true
               when MenuDSL::Menu::MenuGetAnotherDigitOrTimeout
-                logger.debug "Menu timed out. Executing timeout hook and restarting."
+                logger.debug "Menu timed out. Calling \"timeout\" hook and restarting."
                 menu_instance.execute_timeout_hook
                 menu_instance.restart!
                 result_of_menu = nil
               end
             end
           when MenuDSL::Menu::MenuResultFound
-            logger.debug "Menu got a valid input (#{result_of_menu.new_extension}). Executing the match."
+            logger.debug "Menu received valid input (#{result_of_menu.new_extension}). Calling the matching hook."
             jump_to result_of_menu.match_object, :extension => result_of_menu.new_extension
             return true
           end # case
