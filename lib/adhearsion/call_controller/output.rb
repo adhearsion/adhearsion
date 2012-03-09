@@ -247,7 +247,6 @@ module Adhearsion
             :value => grammar_accept(digits).to_s
           }
         input_stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
-          logger.warn "#stream_file Handling input complete event."
           output_component.stop! unless output_component.complete?
         end
         write_and_await_response input_stopper_component
