@@ -44,7 +44,7 @@ module Adhearsion
       return unless @pry_thread
       @pry_thread.kill
       @pry_thread = nil
-      logger.info "Shutting down"
+      logger.info "Adhearsion Console shutting down"
     end
 
     def log_level(level = nil)
