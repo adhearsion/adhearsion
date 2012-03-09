@@ -76,7 +76,7 @@ module Adhearsion
       when nil
         case calls.size
         when 0
-          logger.warn "No calls exist for control"
+          logger.warn "No calls active to take"
         when 1
           interact_with_call calls.values.first
         else
@@ -132,7 +132,7 @@ module Adhearsion
         call.pause_controllers
         CallController.exec InteractiveController.new(call)
       ensure
-        logger.debug "Resuming call's controllers"
+        logger.debug "Restoring control of call to controllers"
         call.resume_controllers
       end
     end
