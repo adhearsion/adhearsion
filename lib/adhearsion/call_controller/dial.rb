@@ -85,7 +85,7 @@ module Adhearsion
         no_timeout = latch.wait options[:timeout]
         status.timeout! unless no_timeout
 
-        logger.debug "#dial finished. Hanging up #{calls.size} outbound calls: #{calls.map{|c| c.id}.join", "}."
+        logger.debug "#dial finished. Hanging up #{calls.size} outbound calls: #{calls.map(&:id).join ", "}."
         calls.each do |outbound_call|
           begin
             outbound_call.hangup
