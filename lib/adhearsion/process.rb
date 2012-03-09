@@ -84,9 +84,11 @@ module Adhearsion
     end
 
     def stop_when_zero_calls
+      i = 0
       until Adhearsion.active_calls.count == 0
-        logger.trace "Stop requested but we still have #{Adhearsion.active_calls.count} active calls."
+        logger.info "Stop requested but we still have #{Adhearsion.active_calls.count} active calls." if (i % 50) == 0
         sleep 0.2
+        i += 1
       end
       final_shutdown
     end
