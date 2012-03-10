@@ -1,12 +1,12 @@
 module Adhearsion
   class CallController
-    module Menu
+    module Ask
 
       # Creates and manages a multiple choice menu driven by DTMF, handling playback of prompts,
       # invalid input, retries and timeouts, and final failures.
       #
       # @example A complete example of the method is as follows:
-      #   menu "Welcome, ", "/opt/sounds/menu-prompt.mp3", :tries => 2, :timeout => 10 do
+      #   ask "Welcome, ", "/opt/sounds/menu-prompt.mp3", :tries => 2, :timeout => 10 do
       #     match 1, OperatorController
       #
       #     match 10..19 do
@@ -24,7 +24,7 @@ module Adhearsion
       #     failure { pass OperatorController }
       #   end
       #
-      # The first arguments to #menu will be a list of sounds to play, as accepted by #play, including strings for TTS, Date and Time objects, and file paths.
+      # The first arguments to #ask will be a list of sounds to play, as accepted by #play, including strings for TTS, Date and Time objects, and file paths.
       # :tries and :timeout options respectively specify the number of tries before going into failure, and the timeout in seconds allowed on each digit input.
       # The most important part is the following block, which specifies how the menu will be constructed and handled.
       #
@@ -39,7 +39,7 @@ module Adhearsion
       # #timeout's block is run when time expires before or between input digits.
       # #failure runs its block when the maximum number of tries is reached without an input match.
       #
-      # Execution of the current context resumes after #menu finishes. If you wish to jump to an entirely different controller, use #pass.
+      # Execution of the current context resumes after #ask finishes. If you wish to jump to an entirely different controller, use #pass.
       # Menu will return :failed if failure was reached, or :done if a match was executed.
       #
       # @param [Object] A list of outputs to play, as accepted by #play
@@ -54,8 +54,8 @@ module Adhearsion
       # @see play
       # @see pass
       #
-      def menu(*args, &block)
-        raise ArgumentError, "You must provide a block to the #menu method." unless block_given?
+      def ask(*args, &block)
+        raise ArgumentError, "You must provide a block to #ask." unless block_given?
 
         options = args.last.kind_of?(Hash) ? args.pop : {}
         sound_files = args.flatten
@@ -101,6 +101,10 @@ module Adhearsion
           end # case
         end # while
         return :done
+      end
+
+      def menu(*args, &block)
+        ask *args, &block
       end
 
       def play_sound_files_for_menu(menu_instance, sound_files) # :nodoc:

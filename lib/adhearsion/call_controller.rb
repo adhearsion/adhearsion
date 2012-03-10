@@ -2,18 +2,18 @@ module Adhearsion
   class CallController
     extend ActiveSupport::Autoload
 
+    autoload :Ask
     autoload :Dial
     autoload :Input
     autoload :Output
     autoload :Record
-    autoload :Menu
     autoload :Utility
 
+    include Ask
     include Dial
     include Input
     include Output
     include Record
-    include Menu
     include Utility
 
     class_attribute :callbacks
