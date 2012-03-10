@@ -272,12 +272,19 @@ module Adhearsion
       end
 
       describe "#speak" do
+        it "should be an alias for #say" do
+          subject.should_receive(:say).once.with(:foo, {}).and_return true
+          subject.speak :foo
+        end
+      end
+
+      describe "#say" do
         describe "with a RubySpeech document" do
           it 'plays the correct SSML' do
             doc = RubySpeech::SSML.draw { string "Hello world" }
             subject.should_receive(:play_ssml).once.with(doc, {}).and_return true
             subject.should_receive(:output).never
-            subject.speak(doc).should be true
+            subject.say(doc).should be true
           end
         end
 
@@ -286,7 +293,7 @@ module Adhearsion
             string = "Hello world"
             subject.should_receive(:play_ssml).once.with(string, {})
             subject.should_receive(:output).once.with(:text, string, {}).and_return true
-            subject.speak(string).should be true
+            subject.say(string).should be true
           end
         end
 
@@ -296,7 +303,7 @@ module Adhearsion
             argument = 123
             subject.should_receive(:play_ssml).once.with(argument, {})
             subject.should_receive(:output).once.with(:text, expected_string, {}).and_return true
-            subject.speak(argument)
+            subject.say(argument)
           end
         end
       end

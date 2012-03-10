@@ -1,8 +1,12 @@
 module Adhearsion
   class CallController
     module Output
-      def speak(text, options = {})
+      def say(text, options = {})
         play_ssml(text, options) || output(:text, text.to_s, options)
+      end
+
+      def speak(text, options = {})
+        say text, options
       end
 
       #
