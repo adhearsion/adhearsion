@@ -273,8 +273,7 @@ module Adhearsion
 
       describe "#speak" do
         it "should be an alias for #say" do
-          subject.should_receive(:say).once.with(:foo, {}).and_return true
-          subject.speak :foo
+          subject.method(:speak).should == subject.method(:say)
         end
       end
 

@@ -115,9 +115,8 @@ module Adhearsion
       end#describe
 
       describe "#menu" do
-        it "should delegate to #ask" do
-          subject.should_receive(:ask).once.with(:foo)
-          subject.menu :foo
+        it "should be an alias for #ask" do
+          subject.method(:menu).should == subject.method(:ask)
         end
       end
 

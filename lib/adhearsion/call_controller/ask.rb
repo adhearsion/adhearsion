@@ -102,10 +102,7 @@ module Adhearsion
         end # while
         return :done
       end
-
-      def menu(*args, &block)
-        ask *args, &block
-      end
+      alias :menu :ask
 
       def play_sound_files_for_menu(menu_instance, sound_files) # :nodoc:
         digit = nil

@@ -4,10 +4,7 @@ module Adhearsion
       def say(text, options = {})
         play_ssml(text, options) || output(:text, text.to_s, options)
       end
-
-      def speak(text, options = {})
-        say text, options
-      end
+      alias :speak :say
 
       #
       # Plays the specified sound file names. This method will handle Time/DateTime objects (e.g. Time.now),
