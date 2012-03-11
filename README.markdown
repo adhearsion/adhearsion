@@ -38,7 +38,7 @@ An Adhearsion application can be as simple as this:
 
 ```ruby
 answer
-speak 'Hello, and thank you for your call. We will put you through to the front desk now...'
+say 'Hello, and thank you for your call. We will put you through to the front desk now...'
 dial 'tel:+18005550199'
 hangup
 ```

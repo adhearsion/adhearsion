@@ -19,7 +19,7 @@ class SimonGame < Adhearsion::CallController
 
   def say_number
     update_number
-    speak @number
+    say @number
   end
 
   def collect_attempt
@@ -28,9 +28,9 @@ class SimonGame < Adhearsion::CallController
 
   def verify_attempt
     if attempt_correct?
-      speak 'good'
+      say 'good'
     else
-      speak "#{@number.length - 1} times wrong, try again smarty"
+      say "#{@number.length - 1} times wrong, try again smarty"
       reset
     end
   end

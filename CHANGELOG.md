@@ -1,3 +1,7 @@
+# develop
+  * Change: `CallController#speak` is now `CallController#say`
+  * Change: `CallController#menu` is now `CallController#ask`
+
 # 2.0.0.beta1 - 2012-03-07
   * Bugfix: #speak now correctly casts the argument to string if it is not SSML
   * Bugfix: The console pauses controllers on a call while taking control
