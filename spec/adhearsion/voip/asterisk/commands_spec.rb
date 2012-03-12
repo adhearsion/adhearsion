@@ -751,6 +751,13 @@ describe 'the #record method' do
     mock_call.record(:beep => nil, :escapedigits => '26').should == '/tmp/recording_1.gsm'
   end
 
+  it 'should not modify the passed-in file name' do
+    mock_call.should_receive(:response).once.with('RECORD FILE', 'foo', 'wav', '#', -1, 0, 'BEEP').and_return("200 result=-1 (hangup) endpos=167840\n")
+    filename = 'foo.wav'
+    mock_call.record(filename).should == 'foo.wav'
+    filename.should == 'foo.wav'
+  end
+
   it 'determine the format from the filename' do
     mock_call.should_receive(:response).once.with('RECORD FILE', 'foo', 'wav', '26', -1, 0).and_return("200 result=0 (timeout) endpos=21600\n")
     mock_call.record('foo.wav', :beep => nil, :escapedigits => '26').should == 'foo.wav'
