@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 unless ENV['SKIP_RCOV']
   require 'simplecov'
   require 'simplecov-rcov'

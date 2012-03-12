@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 task :environment do
   require 'adhearsion/punchblock_plugin'
 

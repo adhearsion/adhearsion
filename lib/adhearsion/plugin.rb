@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Adhearsion
 
   # Plugin is the core of extension of Adhearsion framework and provides the easiest

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Adhearsion
   module MenuDSL
     class MatchCalculator

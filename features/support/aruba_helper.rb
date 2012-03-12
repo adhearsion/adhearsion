@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Aruba
   module Api
     # output() blocks for stderr and stdout it seems

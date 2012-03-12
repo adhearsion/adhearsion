@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module InitializerStubs
   UNWANTED_BEHAVIOR = {
     Adhearsion::Initializer => [:initialize_log_paths, :update_rails_env_var, :daemonize!, :require, :init_plugins, :run_plugins, :load_lib_folder]

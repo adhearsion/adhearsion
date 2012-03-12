@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'fileutils'
 require 'adhearsion/script_ahn_loader'
 require 'thor'

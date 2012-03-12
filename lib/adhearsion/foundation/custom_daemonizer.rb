@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # This is largely based on the Daemonize library by Travis Whitton and
 # Judson Lester. http://grub.ath.cx/daemonize. I cleaned it up a bit to
 # meet Adhearsion's quality standards.

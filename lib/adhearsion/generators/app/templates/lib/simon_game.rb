@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 class SimonGame < Adhearsion::CallController
   def run
     answer

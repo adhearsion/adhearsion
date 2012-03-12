@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # Centralized way to overwrite any Adhearsion platform or plugin configuration
 # - Execute rake adhearsion:config:desc to get the configuration options
 # - Execute rake adhearsion:config:show to get the configuration values

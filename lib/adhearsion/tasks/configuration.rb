@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 namespace :config do
   desc "Show configuration values; accepts a parameter: [nil|platform|<plugin-name>|all]"
   task :show, [:name] => [:environment] do |t, args|

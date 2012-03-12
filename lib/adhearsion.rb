@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE})! Please upgrade to at least Ruby v1.9.2, JRuby 1.6.5 or Rubinius 2.0." if RUBY_VERSION < "1.9.2"
 
 %w{

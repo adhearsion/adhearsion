@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'timeout'
 
 Then /^I should see the usage message$/ do

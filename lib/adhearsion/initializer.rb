@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'adhearsion/punchblock_plugin'
 require 'adhearsion/linux_proc_name'
 

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'simplecov'
 require 'simplecov-rcov'
 class SimpleCov::Formatter::MergedFormatter
