@@ -1,6 +1,7 @@
 1.2.5
   - Catch missing exceptions raised in the after_initialized hook
   - Fixed memory leak in logging when lots of calls come in with unique call id's.
+  - Fixed bug where we modified the filename variable passed to #record, which could lead to confusion by callers
 
 1.2.4
   - Backported Thor-based generators from Adhearsion 2 in order to escape Rubigen.
