@@ -159,7 +159,7 @@ describe Adhearsion::Configuration do
       [:production, :staging, :test].each do |env|
         it "should override the environment value with #{env.to_s} when set in ENV value" do
           ENV['AHN_ENV'] = env.to_s
-          Adhearsion.config.platform.environment.should == env.to_s
+          Adhearsion.config.platform.environment.should == env
         end
       end
     end
