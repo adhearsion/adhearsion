@@ -18,52 +18,6 @@ require 'cucumber'
 require 'aruba/cucumber'
 require 'adhearsion'
 
-module ChildProcess
-  class << self
-    def new(*args)
-      case os
-      when :unix, :macosx, :linux, :solaris, :bsd, :cygwin
-        if posix_spawn?
-          Unix::PosixSpawnProcess.new(args)
-        elsif jruby?
-          JRuby::Process.new(args)
-        else
-          Unix::ForkExecProcess.new(args)
-        end
-      when :windows
-        Windows::Process.new(args)
-      else
-        raise Error, "unsupported OS #{os.inspect}"
-      end
-    end
-    alias_method :build, :new
-
-    def os
-      @os ||= (
-        require "rbconfig"
-        host_os = RbConfig::CONFIG['host_os'].downcase
-
-        case host_os
-        when /linux/
-          :linux
-        when /darwin|mac os/
-          :macosx
-        when /mswin|msys|mingw32/
-          :windows
-        when /cygwin/
-          :cygwin
-        when /solaris|sunos/
-          :solaris
-        when /bsd/
-          :bsd
-        else
-          raise Error, "unknown os: #{host_os.inspect}"
-        end
-      )
-    end
-  end # class << self
-end # ChildProcess
-
 Before do
   @aruba_timeout_seconds = ENV['ARUBA_TIMEOUT'] || RUBY_PLATFORM == 'java' ? 60 : 30
   ENV['AHN_PUNCHBLOCK_RECONNECT_ATTEMPTS'] = '0'
