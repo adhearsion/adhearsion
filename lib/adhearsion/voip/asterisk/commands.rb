@@ -327,30 +327,20 @@ module Adhearsion
         #
         # @deprecated please use {#record_to_file} instead
         def record(*args)
-          options = args.last.kind_of?(Hash) ? args.last : {}
-          filename = args.first && !args.first.kind_of?(Hash) ? String.new(args.first) : "/tmp/recording_%d"
-          if filename.index("%d")
-            if @call.variables.has_key?(:recording_counter)
-              @call.variables[:recording_counter] += 1
-            else
-              @call.variables[:recording_counter]  = 0
-            end
-            filename = filename % @call.variables[:recording_counter]
-            @call.variables[:recording_counter] -= 1
-          end
+          options = args.last.kind_of?(Hash) ? args.pop : {}
+          filename = args.shift || "/tmp/recording_%d"
+          filename = increment_filename_counter filename
 
-          if (!options.has_key?(:format))
-            format = filename.slice!(/\.[^\.]+$/)
-            if (format.nil?)
-              ahn_log.agi.warn "Format not specified and not detected.  Defaulting to \"gsm\""
-              format = "gsm"
-            end
-            format.sub!(/^\./, "")
-          else
+          record_to_file(filename, *args, options)
+
+          # Reconstruct the logic that took place in #base_record_to_file, since it does not return the
+          # constructed filename
+          if (options.has_key?(:format))
             format = options[:format]
+          else
+            filename, format = format_from_filename filename
           end
-          record_to_file(*args)
-          filename + "." + format
+          "#{filename}.#{format}"
         end
 
         # Records a sound file with the given name. If no filename is specified a file named by Asterisk
@@ -408,12 +398,16 @@ module Adhearsion
           return_values.first
         end
 
-        # this is a base methor record_to_file and record_to_file! and should only be used via those methods
-        #
-        def base_record_to_file(*args)
-          options = args.last.kind_of?(Hash) ? args.pop : {}
-          filename = args.shift || "/tmp/recording_#{new_guid}_%d"
+        def format_from_filename(filename)
+          filename, format = filename.match(/(^.*)\.([^\.]+)$/).captures rescue [filename, nil]
+          if (format.nil?)
+            ahn_log.agi.warn "Format not specified and not detected.  Defaulting to \"gsm\""
+            format = "gsm"
+          end
+          [filename, format]
+        end
 
+        def increment_filename_counter(filename)
           if filename.index("%d")
             if @call.variables.has_key?(:recording_counter)
               @call.variables[:recording_counter] += 1
@@ -422,16 +416,21 @@ module Adhearsion
             end
             filename = filename % @call.variables[:recording_counter]
           end
+          filename
+        end
 
-          if (!options.has_key?(:format))
-            format = filename.slice!(/\.[^\.]+$/)
-            if (format.nil?)
-              ahn_log.agi.warn "Format not specified and not detected.  Defaulting to \"gsm\""
-              format = "gsm"
-            end
-            format.sub!(/^\./, "")
+        # this is a base methor record_to_file and record_to_file! and should only be used via those methods
+        #
+        def base_record_to_file(*args)
+          options = args.last.kind_of?(Hash) ? args.pop : {}
+          filename = args.shift || "/tmp/recording_#{new_guid}_%d"
+
+          filename = increment_filename_counter filename
+
+          if (options.has_key?(:format))
+            format = options[:format]
           else
-            format = options.delete(:format)
+            filename, format = format_from_filename filename
           end
 
           # maxduration must be in milliseconds when using RECORD FILE
