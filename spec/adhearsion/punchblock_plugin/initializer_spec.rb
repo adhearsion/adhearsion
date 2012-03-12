@@ -59,11 +59,11 @@ module Adhearsion
         subject { initialize_punchblock }
 
         it "should set properly the username value" do
-          subject.username.should == 'usera@127.0.0.1'
+          subject.username.should be == 'usera@127.0.0.1'
         end
 
         it "should set properly the password value" do
-          subject.password.should == '1'
+          subject.password.should be == '1'
         end
 
         it "should set properly the host value" do
@@ -87,15 +87,15 @@ module Adhearsion
         end
 
         it "should properly set the reconnect_attempts value" do
-          subject.reconnect_attempts.should == 1.0/0.0
+          subject.reconnect_attempts.should be == 1.0/0.0
         end
 
         it "should properly set the reconnect_timer value" do
-          subject.reconnect_timer.should == 5
+          subject.reconnect_timer.should be == 5
         end
 
         it "should properly set the media_engine value" do
-          subject.media_engine.should == nil
+          subject.media_engine.should be == nil
         end
       end
 
@@ -126,7 +126,7 @@ module Adhearsion
           flexmock(mock_connection).should_receive(:run).once
           t = Thread.new { Initializer.init; Initializer.run }
           t.join 5
-          t.status.should == "sleep"
+          t.status.should be == "sleep"
           Events.trigger_immediately :punchblock, ::Punchblock::Connection::Connected.new
           t.join
         end
@@ -149,7 +149,7 @@ module Adhearsion
 
         it 'should reset the Adhearsion process state to "booting"' do
           Adhearsion::Process.booted
-          Adhearsion::Process.state_name.should == :running
+          Adhearsion::Process.state_name.should be == :running
           mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
           flexmock(Adhearsion::Process).should_receive(:reset).at_least.once
           Initializer.connect_to_server
@@ -159,7 +159,7 @@ module Adhearsion
           Initializer.config.reconnect_attempts = 3
           mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
           Initializer.connect_to_server
-          Initializer.attempts.should == 3
+          Initializer.attempts.should be == 3
         end
 
         it 'should preserve a Punchblock::ProtocolError exception and give up' do
@@ -296,11 +296,11 @@ module Adhearsion
           end
 
           it "should set properly the username value" do
-            subject.username.should == 'userb@127.0.0.1'
+            subject.username.should be == 'userb@127.0.0.1'
           end
 
           it "should set properly the password value" do
-            subject.password.should == 'abc123'
+            subject.password.should be == 'abc123'
           end
         end
       end

@@ -49,7 +49,7 @@ module Adhearsion
           new_call = OutboundCall.new
 
           new_call.on_answer do |event|
-            calls.each do |call_to_hangup, target|
+            calls.each do |call_to_hangup, _|
               begin
                 next if call_to_hangup.id == new_call.id
                 logger.debug "#dial hanging up call #{call_to_hangup.id} because this call has been answered by another channel"
@@ -59,7 +59,7 @@ module Adhearsion
               end
             end
 
-            new_call.register_event_handler Punchblock::Event::Unjoined, :other_call_id => call.id do |event|
+            new_call.register_event_handler Punchblock::Event::Unjoined, :other_call_id => call.id do |unjoined|
               new_call["dial_countdown_#{call.id}"] = true
               latch.countdown!
               throw :pass

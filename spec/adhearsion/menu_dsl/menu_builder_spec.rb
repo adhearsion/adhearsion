@@ -6,7 +6,7 @@ module Adhearsion
   module MenuDSL
 
     describe MenuBuilder do
-      subject{ MenuDSL::MenuBuilder.new } 
+      subject{ MenuDSL::MenuBuilder.new }
 
       describe "#build" do
         it "sets the context and instance_eval's the block" do
@@ -24,7 +24,7 @@ module Adhearsion
         end
 
         it "raises an exception if given both a payload and a block" do
-          expect { subject.match(1, Object) {} }.to raise_error(ArgumentError) 
+          expect { subject.match(1, Object) {} }.to raise_error(ArgumentError)
         end
 
         it "raises an exception if given no patterns" do
@@ -49,11 +49,11 @@ module Adhearsion
 
       describe "#weighted_match_calculators" do
         let(:expected_pattern) { MenuDSL::MatchCalculator.build_with_pattern("1", Object) }
-        
+
         it "returns the generated patterns" do
           flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with("1", Object).and_return(expected_pattern)
           subject.match("1", Object)
-          subject.weighted_match_calculators.should == [expected_pattern]
+          subject.weighted_match_calculators.should be == [expected_pattern]
         end
       end#weighted_match_calculators
 
@@ -61,12 +61,12 @@ module Adhearsion
         let(:callback) { Proc.new() {} }
 
         it "raises an error if not passed a block" do
-          expect { subject.invalid }.to raise_error(LocalJumpError) 
+          expect { subject.invalid }.to raise_error(LocalJumpError)
         end
 
         it "sets the invalid callback" do
           subject.invalid(&callback)
-          subject.menu_callbacks[:invalid].should == callback
+          subject.menu_callbacks[:invalid].should be == callback
         end
       end#invalid
 
@@ -74,12 +74,12 @@ module Adhearsion
         let(:callback) { Proc.new() {} }
 
         it "raises an error if not passed a block" do
-          expect { subject.timeout }.to raise_error(LocalJumpError) 
+          expect { subject.timeout }.to raise_error(LocalJumpError)
         end
 
         it "sets the timeout callback" do
           subject.timeout(&callback)
-          subject.menu_callbacks[:timeout].should == callback
+          subject.menu_callbacks[:timeout].should be == callback
         end
       end#timeout
 
@@ -87,12 +87,12 @@ module Adhearsion
         let(:callback) { Proc.new() {} }
 
         it "raises an error if not passed a block" do
-          expect { subject.failure }.to raise_error(LocalJumpError) 
+          expect { subject.failure }.to raise_error(LocalJumpError)
         end
 
         it "sets the failure callback" do
           subject.failure(&callback)
-          subject.menu_callbacks[:failure].should == callback
+          subject.menu_callbacks[:failure].should be == callback
         end
       end#failure
 
@@ -103,7 +103,7 @@ module Adhearsion
             bar = baz
           end
           subject.execute_hook_for(:invalid, "1")
-          bar.should == "1"
+          bar.should be == "1"
         end
       end#execute_hook_for
 

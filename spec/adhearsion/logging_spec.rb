@@ -28,7 +28,7 @@ describe Adhearsion::Logging do
   end
 
   it 'should create the predefined set of log levels' do
-    ::Logging::LEVELS.keys.should == Adhearsion::Logging::LOG_LEVELS.map(&:downcase)
+    ::Logging::LEVELS.keys.should be == Adhearsion::Logging::LOG_LEVELS.map(&:downcase)
   end
 
   it "should log to the Object logger when given arguments" do
@@ -95,9 +95,9 @@ describe Adhearsion::Logging do
     Adhearsion.config.platform.logging['level'] = :warn
     Adhearsion::Logging.level = :warn
     Adhearsion::Logging.toggle_trace!
-    Adhearsion::Logging.level.should == 0
+    Adhearsion::Logging.level.should be == 0
     Adhearsion::Logging.toggle_trace!
-    Adhearsion::Logging.level.should == 3
+    Adhearsion::Logging.level.should be == 3
     Adhearsion.config.platform.logging['level'] = orig_level
   end
 
@@ -108,18 +108,18 @@ describe Adhearsion::Logging do
 
     it 'changing the logging level should affect all loggers' do
       loggers = [::Foo.logger, ::Foo::Bar.logger]
-      loggers.map(&:level).should_not == [Adhearsion::Logging::DEBUG] * 2
-      loggers.map(&:level).should == [Adhearsion::Logging::INFO] * 2
+      loggers.map(&:level).should_not be == [Adhearsion::Logging::DEBUG] * 2
+      loggers.map(&:level).should be == [Adhearsion::Logging::INFO] * 2
       Adhearsion::Logging.logging_level = :warn
-      loggers.map(&:level).should == [Adhearsion::Logging::WARN] * 2
+      loggers.map(&:level).should be == [Adhearsion::Logging::WARN] * 2
     end
 
     it 'changing the logging level, using level=, should affect all loggers' do
       loggers = [Foo.logger, ::Foo::Bar.logger]
-      loggers.map(&:level).should_not == [::Logging::LEVELS["debug"]] * 2
-      loggers.map(&:level).should == [::Logging::LEVELS["info"]] * 2
+      loggers.map(&:level).should_not be == [::Logging::LEVELS["debug"]] * 2
+      loggers.map(&:level).should be == [::Logging::LEVELS["info"]] * 2
       Adhearsion::Logging.level = :warn
-      loggers.map(&:level).should == [::Logging::LEVELS["warn"]] * 2
+      loggers.map(&:level).should be == [::Logging::LEVELS["warn"]] * 2
     end
 
     it 'should change all the Logger instance level' do

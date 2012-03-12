@@ -30,7 +30,7 @@ module Adhearsion
       # Prevent the possibility of acquiring a controlling terminal
       if oldmode.zero?
         trap 'SIGHUP', 'IGNORE'
-        exit if pid = safefork
+        exit if safefork
       end
 
       Dir.chdir "/"   # Release old working directory

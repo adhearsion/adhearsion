@@ -30,8 +30,8 @@ module Adhearsion
       Events.trigger :event, :foo
 
       latch.wait(2).should be_true
-      t.should == :event
-      o.should == :foo
+      t.should be == :event
+      o.should be == :foo
     end
 
     it "should allow executing events immediately" do
@@ -46,8 +46,8 @@ module Adhearsion
 
       Events.trigger_immediately :event, :foo
 
-      t.should == :event
-      o.should == :foo
+      t.should be == :event
+      o.should be == :foo
     end
 
     it "should handle events using registered guarded handlers" do
@@ -59,7 +59,7 @@ module Adhearsion
 
       Events.trigger_immediately :event, EventClass.new
 
-      result.should == :foo
+      result.should be == :foo
 
       Events.clear_handlers :event, EventClass
     end
@@ -88,7 +88,7 @@ module Adhearsion
 
       Events.trigger_immediately :event, EventClass.new
 
-      result.should == :bar
+      result.should be == :bar
 
       Events.clear_handlers :event, EventClass
     end
@@ -104,7 +104,7 @@ module Adhearsion
 
         Events.trigger_immediately :event
 
-        result.should == :foo
+        result.should be == :foo
 
         Events.clear_handlers :event
       end

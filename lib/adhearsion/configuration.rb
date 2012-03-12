@@ -74,9 +74,10 @@ module Adhearsion
     end
 
     def add_environment(env)
+      return if self.class.method_defined? env.to_sym
       self.class.send(:define_method, env.to_sym) do |*args, &block|
         unless block.nil? || env != self.platform.environment.to_sym
-          self.instance_eval &block
+          self.instance_eval(&block)
         end
         self
       end

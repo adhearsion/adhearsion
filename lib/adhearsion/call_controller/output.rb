@@ -53,7 +53,7 @@ module Adhearsion
       # @see play
       #
       def play!(*arguments)
-        play *arguments or raise Adhearsion::PlaybackError, "One of the passed outputs is invalid"
+        play(*arguments) or raise Adhearsion::PlaybackError, "One of the passed outputs is invalid"
       end
 
       #
@@ -255,7 +255,7 @@ module Adhearsion
         write_and_await_response input_stopper_component
         begin
           execute_component_and_await_completion output_component
-        rescue StandardError => e
+        rescue StandardError
           raise Adhearsion::PlaybackError, "Output failed for argument #{argument.inspect}"
         end
         input_stopper_component.stop! if input_stopper_component.executing?

@@ -36,11 +36,11 @@ module Adhearsion
       end
 
       it "#exact_matches should return an array of exact matches" do
-        CalculatedMatch.new(:exact_matches => [0,3,5]).exact_matches.should == [0,3,5]
+        CalculatedMatch.new(:exact_matches => [0,3,5]).exact_matches.should be == [0,3,5]
       end
 
       it "#potential_matches should return an array of potential matches" do
-        CalculatedMatch.new(:potential_matches => [88,99,77]).potential_matches.should == [88,99,77]
+        CalculatedMatch.new(:potential_matches => [88,99,77]).potential_matches.should be == [88,99,77]
       end
 
       it "::failed_match! should return a match that *really* failed" do
@@ -51,8 +51,8 @@ module Adhearsion
         failure.type_of_match.should be nil
 
         failure.match_payload.should be :match_payload_does_not_matter
-        failure.pattern.should == (10..20)
-        failure.query.should == 30
+        failure.pattern.should be == (10..20)
+        failure.query.should be == 30
       end
     end
   end

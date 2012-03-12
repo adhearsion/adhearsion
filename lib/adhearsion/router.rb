@@ -10,7 +10,7 @@ module Adhearsion
 
     def initialize(&block)
       @routes = []
-      instance_exec &block
+      instance_exec(&block)
     end
 
     def route(*args, &block)

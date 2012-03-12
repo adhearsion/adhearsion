@@ -19,17 +19,17 @@ module Adhearsion
 
           subject { Route.new name, target, *guards }
 
-          its(:name)    { should == name }
-          its(:target)  { should == target }
-          its(:guards)  { should == guards }
+          its(:name)    { should be == name }
+          its(:target)  { should be == target }
+          its(:guards)  { should be == guards }
         end
 
         describe "with a block target and guards" do
           subject { Route.new(name, *guards) { :foo } }
 
-          its(:name)    { should == name }
+          its(:name)    { should be == name }
           its(:target)  { should be_a Proc }
-          its(:guards)  { should == guards }
+          its(:guards)  { should be == guards }
         end
       end
 
@@ -121,7 +121,7 @@ module Adhearsion
 
           it "should instruct the call to use a CallController with the correct block" do
             flexmock(call).should_receive(:execute_controller).once.with(CallController).and_return do |controller|
-              controller.block.call.should == :foobar
+              controller.block.call.should be == :foobar
             end
             route.dispatcher.call call
           end

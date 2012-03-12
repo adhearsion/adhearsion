@@ -275,7 +275,7 @@ module Adhearsion
 
       describe "#speak" do
         it "should be an alias for #say" do
-          subject.method(:speak).should == subject.method(:say)
+          subject.method(:speak).should be == subject.method(:say)
         end
       end
 
@@ -319,7 +319,7 @@ module Adhearsion
         end
 
         it 'returns SSML for a text argument' do
-          subject.ssml_for(prompt).should == ssml
+          subject.ssml_for(prompt).should be == ssml
         end
 
         it 'returns the same SSML passed in if it is SSML' do
@@ -432,7 +432,7 @@ module Adhearsion
           expect_component_complete_event
           flexmock(Punchblock::Component::Output).new_instances.should_receive(:stop!)
           subject.should_receive(:execute_component_and_await_completion).once.with(output_component)
-          subject.stream_file(prompt, allowed_digits).should == '5'
+          subject.stream_file(prompt, allowed_digits).should be == '5'
         end
       end # describe #stream_file
 

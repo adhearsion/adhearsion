@@ -7,7 +7,7 @@ module Adhearsion
     it { should be_a Call }
 
     its(:id) { should be_nil }
-    its(:variables) { should == {} }
+    its(:variables) { should be == {} }
 
     let(:mock_client) { flexmock 'Punchblock Client' }
 
@@ -81,22 +81,22 @@ module Adhearsion
 
       it "should set the dial command" do
         subject.dial to, :from => from
-        subject.dial_command.should == expected_dial_command
+        subject.dial_command.should be == expected_dial_command
       end
 
       it "should set the call ID from the dial command" do
         subject.dial to, :from => from
-        subject.id.should == call_id
+        subject.id.should be == call_id
       end
 
       it "should set the to from the dial command" do
         subject.dial to, :from => from
-        subject.to.should == to
+        subject.to.should be == to
       end
 
       it "should set the 'from' from the dial command" do
         subject.dial to, :from => from
-        subject.from.should == from
+        subject.from.should be == from
       end
 
       it "should add the call to the active calls registry" do

@@ -12,16 +12,16 @@ module Adhearsion
     let(:call) { Adhearsion::Call.new mock_offer(nil, :x_foo => 'bar') }
 
     its(:call)      { should be call }
-    its(:metadata)  { should == {:doo => :dah} }
+    its(:metadata)  { should be == {:doo => :dah} }
 
     describe "setting meta-data" do
       it "should preserve data correctly" do
         subject[:foo].should be nil
         subject[:foo] = 7
-        subject[:foo].should == 7
+        subject[:foo].should be == 7
         subject[:bar] = 10
-        subject[:bar].should == 10
-        subject[:foo].should == 7
+        subject[:bar].should be == 10
+        subject[:foo].should be == 7
       end
     end
 
@@ -223,7 +223,7 @@ module Adhearsion
         it "should unblock when the controller is unpaused" do
           t1 = t2 = nil
           latch = CountDownLatch.new 1
-          t = Thread.new do
+          Thread.new do
             t1 = Time.now
             subject.block_until_resumed
             t2 = Time.now
@@ -257,8 +257,8 @@ module Adhearsion
 
       it "takes a block which is executed after acknowledgement but before waiting on completion" do
         @comp = nil
-        subject.execute_component_and_await_completion(component) { |comp| @comp = comp }.should == component
-        @comp.should == component
+        subject.execute_component_and_await_completion(component) { |comp| @comp = comp }.should be == component
+        @comp.should be == component
       end
 
       describe "with a successful completion" do
@@ -275,8 +275,8 @@ module Adhearsion
         end
 
         let(:error) do |error|
-          Punchblock::Event::Complete::Error.new.tap do |error|
-            error << details
+          Punchblock::Event::Complete::Error.new.tap do |e|
+            e << details
           end
         end
 

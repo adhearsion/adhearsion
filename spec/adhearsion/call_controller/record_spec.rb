@@ -32,7 +32,7 @@ module Adhearsion
           it "should execute the callback" do
             component.trigger_event_handler response
             Timeout::timeout 5 do
-              @rec.pop.should == response
+              @rec.pop.should be == response
             end
           end
 
@@ -59,7 +59,7 @@ module Adhearsion
 
           it 'should execute a passed block' do
             Timeout::timeout 5 do
-              @rec.pop.should == response
+              @rec.pop.should be == response
             end
           end
         end
@@ -91,8 +91,8 @@ module Adhearsion
 
         it 'takes a block which is executed after acknowledgement but before waiting on completion' do
           @comp = nil
-          subject.execute_component_and_await_completion(component) { |comp| @comp = comp }.should == component
-          @comp.should == component
+          subject.execute_component_and_await_completion(component) { |comp| @comp = comp }.should be == component
+          @comp.should be == component
         end
 
         describe "with a successful completion" do
@@ -109,8 +109,8 @@ module Adhearsion
           end
 
           let(:error) do |error|
-            Punchblock::Event::Complete::Error.new.tap do |error|
-              error << details
+            Punchblock::Event::Complete::Error.new.tap do |e|
+              e << details
             end
           end
 

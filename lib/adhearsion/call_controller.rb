@@ -74,7 +74,7 @@ module Adhearsion
     end
 
     def run
-      instance_exec &block if block
+      instance_exec(&block) if block
     end
 
     def invoke(controller_class, metadata = nil)
@@ -89,7 +89,7 @@ module Adhearsion
     def execute_callbacks(type) # :nodoc:
       self.class.callbacks[type].each do |callback|
         catching_standard_errors do
-          instance_exec &callback
+          instance_exec(&callback)
         end
       end
     end
@@ -121,31 +121,31 @@ module Adhearsion
 
     def answer(*args)
       block_until_resumed
-      call.answer *args
+      call.answer(*args)
     end
 
     def reject(*args)
       block_until_resumed
-      call.reject *args
+      call.reject(*args)
     end
 
     def mute(*args)
       block_until_resumed
-      call.mute *args
+      call.mute(*args)
     end
 
     def unmute(*args)
       block_until_resumed
-      call.unmute *args
+      call.unmute(*args)
     end
 
     def join(*args)
       block_until_resumed
-      call.join *args
+      call.join(*args)
     end
 
     def block_until_resumed # :nodoc:
-      @pause_latch && @pause_latch.wait
+      instance_variable_defined?(:@pause_latch) && @pause_latch.wait
     end
 
     def pause! # :nodoc:

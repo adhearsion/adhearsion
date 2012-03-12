@@ -17,7 +17,7 @@ module Adhearsion
       super.tap do |proxy|
         def proxy.method_missing(*args)
           super
-        rescue Celluloid::DeadActorError => e
+        rescue Celluloid::DeadActorError
           raise ExpiredError, "This call is expired and is no longer accessible"
         end
       end
@@ -35,6 +35,7 @@ module Adhearsion
       @commands     = CommandRegistry.new
       @variables    = {}
       @controllers  = []
+      @end_reason   = nil
 
       self << offer if offer
     end
@@ -224,11 +225,11 @@ module Adhearsion
     end
 
     def pause_controllers
-      controllers.each &:pause!
+      controllers.each(&:pause!)
     end
 
     def resume_controllers
-      controllers.each &:resume!
+      controllers.each(&:resume!)
     end
 
     class CommandRegistry < ThreadSafeArray # :nodoc:

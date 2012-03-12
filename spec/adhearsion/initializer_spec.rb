@@ -38,7 +38,7 @@ describe Adhearsion::Initializer do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
          flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
          ahn = Adhearsion::Initializer.start :pid_file => true
-         ahn.pid_file[0, path.length].should == path
+         ahn.pid_file[0, path.length].should be == path
       end
     end
 
@@ -53,7 +53,7 @@ describe Adhearsion::Initializer do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
         flexmock(File).should_receive(:open).once.with(File.join(path, 'adhearsion.pid'), 'w', Proc)
         ahn = Adhearsion::Initializer.start :mode => :daemon
-        ahn.pid_file[0, path.size].should == path
+        ahn.pid_file[0, path.size].should be == path
       end
     end
 
@@ -68,7 +68,7 @@ describe Adhearsion::Initializer do
       random_file = "/tmp/AHN_TEST_#{rand 100000}.pid"
       stub_behavior_for_initializer_with_no_path_changing_behavior do
         ahn = Adhearsion::Initializer.start :pid_file => random_file
-        ahn.pid_file.should == random_file
+        ahn.pid_file.should be == random_file
         File.exists?(random_file).should be true
         File.delete random_file
       end
@@ -78,7 +78,7 @@ describe Adhearsion::Initializer do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
          flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
          ahn = Adhearsion::Initializer.start :pid_file => true
-         ahn.resolve_log_file_path.should == path + Adhearsion.config.platform.logging.outputters[0]
+         ahn.resolve_log_file_path.should be == path + Adhearsion.config.platform.logging.outputters[0]
       end
     end
 
@@ -87,7 +87,7 @@ describe Adhearsion::Initializer do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
          flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
          ahn = Adhearsion::Initializer.start :pid_file => true
-         ahn.resolve_log_file_path.should == path + Adhearsion.config.platform.logging.outputters[0]
+         ahn.resolve_log_file_path.should be == path + Adhearsion.config.platform.logging.outputters[0]
       end
     end
 
@@ -122,7 +122,7 @@ describe Adhearsion::Initializer do
     end
 
     it "should set the adhearsion proc name" do
-      ahn = stub_behavior_for_initializer_with_no_path_changing_behavior do
+      stub_behavior_for_initializer_with_no_path_changing_behavior do
         flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
         flexmock(Adhearsion::LinuxProcName).should_receive(:set_proc_name).with(Adhearsion.config.platform.process_name)
         Adhearsion::Initializer.start :pid_file => true
@@ -130,10 +130,10 @@ describe Adhearsion::Initializer do
     end
 
     it "should update the adhearsion proc name" do
-      ahn = stub_behavior_for_initializer_with_no_path_changing_behavior do
+      stub_behavior_for_initializer_with_no_path_changing_behavior do
         Adhearsion::Initializer.start :pid_file => true
       end
-      $0.should == Adhearsion.config.platform.process_name
+      $0.should be == Adhearsion.config.platform.process_name
     end
   end
 
@@ -173,12 +173,12 @@ describe Adhearsion::Initializer do
 
     it "should return false if folder does not exist" do
       Adhearsion.config.platform.lib = "my_random_lib_directory"
-      Adhearsion::Initializer.new.load_lib_folder.should == false
+      Adhearsion::Initializer.new.load_lib_folder.should be == false
     end
 
     it "should return false and not load any file if config folder is set to nil" do
       Adhearsion.config.platform.lib = nil
-      Adhearsion::Initializer.new.load_lib_folder.should == false
+      Adhearsion::Initializer.new.load_lib_folder.should be == false
     end
 
     it "should load the contents of the preconfigured directory" do
@@ -219,7 +219,7 @@ describe "Updating RAILS_ENV variable" do
           ahn = Adhearsion::Initializer.start
         end
         ahn.update_rails_env_var
-        ENV['RAILS_ENV'].should == env.to_s
+        ENV['RAILS_ENV'].should be == env.to_s
       end
     end
   end
@@ -237,7 +237,7 @@ describe "Updating RAILS_ENV variable" do
           ahn = Adhearsion::Initializer.start
         end
         ahn.update_rails_env_var
-        ENV['RAILS_ENV'].should == "test"
+        ENV['RAILS_ENV'].should be == "test"
       end
     end
 
@@ -248,7 +248,7 @@ describe "Updating RAILS_ENV variable" do
           ahn = Adhearsion::Initializer.start
         end
         ahn.update_rails_env_var
-        ENV['RAILS_ENV'].should == "test"
+        ENV['RAILS_ENV'].should be == "test"
       end
     end
   end
@@ -264,7 +264,7 @@ describe "Updating RAILS_ENV variable" do
         ahn = Adhearsion::Initializer.start
       end
       ahn.update_rails_env_var
-      ENV['RAILS_ENV'].should == "production"
+      ENV['RAILS_ENV'].should be == "production"
     end
   end
 

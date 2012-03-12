@@ -109,7 +109,7 @@ module Adhearsion
       def play_sound_files_for_menu(menu_instance, sound_files) # :nodoc:
         digit = nil
         if sound_files.any? && menu_instance.digit_buffer_empty?
-          digit = interruptible_play *sound_files
+          digit = interruptible_play(*sound_files)
         end
         digit || wait_for_digit(menu_instance.timeout)
       end

@@ -4,7 +4,7 @@ require 'spec_helper'
 
 module Adhearsion
   describe Call do
-    let(:mock_client) { flexmock('Client').tap &:should_ignore_missing }
+    let(:mock_client) { flexmock('Client').tap(&:should_ignore_missing) }
 
     let(:call_id) { rand }
     let(:headers) { nil }
@@ -29,32 +29,32 @@ module Adhearsion
 
     it { should respond_to :<< }
 
-    its(:end_reason) { should == nil }
+    its(:end_reason) { should be == nil }
     it { should be_active }
 
     its(:commands) { should be_a Call::CommandRegistry }
     its(:commands) { should be_empty }
 
-    its(:id)      { should == call_id }
-    its(:to)      { should == to }
-    its(:from)    { should == from }
+    its(:id)      { should be == call_id }
+    its(:to)      { should be == to }
+    its(:from)    { should be == from }
     its(:offer)   { should be offer }
     its(:client)  { should be mock_client }
 
-    its(:after_end_hold_time) { should == 30 }
+    its(:after_end_hold_time) { should be == 30 }
 
     describe "its variables" do
       context "with an offer with headers" do
         let(:headers)   { {:x_foo => 'bar'} }
-        its(:variables) { should == headers }
+        its(:variables) { should be == headers }
 
         it "should be made available via []" do
-          subject[:x_foo].should == 'bar'
+          subject[:x_foo].should be == 'bar'
         end
 
         it "should be alterable using []=" do
           subject[:x_foo] = 'baz'
-          subject[:x_foo].should == 'baz'
+          subject[:x_foo].should be == 'baz'
         end
 
         context "when receiving an event with headers" do
@@ -62,7 +62,7 @@ module Adhearsion
 
           it "should merge later headers" do
             subject << event
-            subject.variables.should == {:x_foo => 'bar', :x_bar => 'foo'}
+            subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
           end
         end
 
@@ -71,19 +71,19 @@ module Adhearsion
 
           it "should merge later headers" do
             subject.write_command command
-            subject.variables.should == {:x_foo => 'bar', :x_bar => 'foo'}
+            subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
           end
         end
       end
 
       context "with an offer without headers" do
         let(:headers)   { nil }
-        its(:variables) { should == {} }
+        its(:variables) { should be == {} }
       end
 
       context "without an offer" do
         let(:offer)     { nil }
-        its(:variables) { should == {} }
+        its(:variables) { should be == {} }
       end
     end
 
@@ -135,7 +135,7 @@ module Adhearsion
 
         it "should set the end reason" do
           subject << end_event
-          subject.end_reason.should == :hangup
+          subject.end_reason.should be == :hangup
         end
 
         it "should instruct the command registry to terminate" do
@@ -147,10 +147,10 @@ module Adhearsion
           size_before = Adhearsion.active_calls.size
 
           Adhearsion.active_calls << subject
-          Adhearsion.active_calls.size.should > size_before
+          Adhearsion.active_calls.size.should be > size_before
 
           subject << end_event
-          Adhearsion.active_calls.size.should == size_before
+          Adhearsion.active_calls.size.should be == size_before
         end
 
         it "shuts down the actor" do
@@ -192,7 +192,7 @@ module Adhearsion
       subject.tag :female
       subject.remove_tag :female
       subject.tag :male
-      subject.tags.should == [:moderator, :male]
+      subject.tags.should be == [:moderator, :male]
     end
 
     describe "#tagged_with?" do
@@ -616,7 +616,7 @@ module Adhearsion
           commands.each do |command|
             command.response.should be_a Hangup
           end
-          finished_command.response.should == :foo
+          finished_command.response.should be == :foo
         end
       end
     end

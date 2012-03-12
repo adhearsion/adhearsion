@@ -47,9 +47,7 @@ module Adhearsion
       describe "#ask" do
         let(:sound_files) { ["press", "button"] }
 
-        let(:menu_instance) do
-          menu_instance = flexmock(MenuDSL::Menu.new({}) {})
-        end
+        let(:menu_instance) { flexmock(MenuDSL::Menu.new({}) {}) }
         let(:result_done) { MenuDSL::Menu::MenuResultDone.new }
         let(:result_invalid) { MenuDSL::Menu::MenuResultInvalid.new }
         let(:result_get_another_or_timeout) { MenuDSL::Menu::MenuGetAnotherDigitOrTimeout.new }
@@ -64,14 +62,14 @@ module Adhearsion
           menu_instance.should_receive(:should_continue?).and_return(true)
           menu_instance.should_receive(:continue).and_return(result_done)
           result = subject.ask(sound_files) {}
-          result.should == :done
+          result.should be == :done
         end
 
         it "executes failure hook and returns :failure if menu fails" do
           menu_instance.should_receive(:should_continue?).and_return(false)
           menu_instance.should_receive(:execute_failure_hook)
           result = subject.ask(sound_files) {}
-          result.should == :failed
+          result.should be == :failed
         end
 
         it "executes invalid hook if input is invalid" do
@@ -118,7 +116,7 @@ module Adhearsion
 
       describe "#menu" do
         it "should be an alias for #ask" do
-          subject.method(:menu).should == subject.method(:ask)
+          subject.method(:menu).should be == subject.method(:ask)
         end
       end
 

@@ -121,7 +121,7 @@ module Adhearsion
 
               t.join
               status = t.value
-              status.result.should == :no_answer
+              status.result.should be == :no_answer
             end
           end
 
@@ -140,7 +140,7 @@ module Adhearsion
 
               t.join
               status = t.value
-              status.result.should == :answer
+              status.result.should be == :answer
             end
           end
         end
@@ -228,7 +228,7 @@ module Adhearsion
 
               t.join
               status = t.value
-              status.result.should == :no_answer
+              status.result.should be == :no_answer
             end
           end
 
@@ -250,7 +250,7 @@ module Adhearsion
 
               t.join
               status = t.value
-              status.result.should == :answer
+              status.result.should be == :answer
             end
           end
         end
@@ -273,10 +273,10 @@ module Adhearsion
 
             latch.wait
             time = Time.now - time
-            time.to_i.should == timeout
+            time.to_i.should be == timeout
             t.join
             status = t.value
-            status.result.should == :timeout
+            status.result.should be == :timeout
           end
         end
 

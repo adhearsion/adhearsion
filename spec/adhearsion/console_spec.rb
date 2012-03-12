@@ -39,7 +39,7 @@ module Adhearsion
       context "without a value" do
         it "should return the current level as a symbol" do
           Adhearsion::Logging.level = :fatal
-          Console.log_level.should == :fatal
+          Console.log_level.should be == :fatal
         end
       end
     end
@@ -125,7 +125,7 @@ module Adhearsion
 
         context "if an active call with that ID does not exist" do
           it "should log an error explaining that the call does not exist" do
-            flexmock(Console.logger).should_receive(:error).once.with /does not exist/
+            flexmock(Console.logger).should_receive(:error).once.with(/does not exist/)
             flexmock(Console.instance).should_receive(:interact_with_call).never
             Console.take call_id
           end

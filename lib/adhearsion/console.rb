@@ -43,7 +43,7 @@ module Adhearsion
     end
 
     def stop
-      return unless @pry_thread
+      return unless instance_variable_defined?(:@pry_thread)
       @pry_thread.kill
       @pry_thread = nil
       logger.info "Adhearsion Console shutting down"
@@ -85,8 +85,8 @@ module Adhearsion
           puts "Please choose a call:"
           puts "# (inbound/outbound) details"
           current_calls = calls.values
-          current_calls.each_with_index do |call, index|
-            puts "#{index}: (#{call.is_a?(OutboundCall) ? 'o' : 'i' }) #{call.id} from #{call.from} to #{call.to}"
+          current_calls.each_with_index do |active_call, index|
+            puts "#{index}: (#{active_call.is_a?(OutboundCall) ? 'o' : 'i' }) #{active_call.id} from #{active_call.from} to #{active_call.to}"
           end
           print "#> "
           index = input.gets.chomp.to_i
@@ -116,11 +116,11 @@ module Adhearsion
     def set_prompt
       Pry.prompt = [
                 proc do |*args|
-                  obj, nest_level, pry_instance = args
+                  _, nest_level, _ = args
                   "AHN#{'  ' * nest_level}> "
                 end,
                 proc do |*args|
-                  obj, nest_level, pry_instance = args
+                  _, nest_level, _ = args
                   "AHN#{'  ' * nest_level}? "
                 end
               ]

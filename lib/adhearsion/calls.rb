@@ -46,14 +46,14 @@ module Adhearsion
 
     def with_tag(tag)
       atomically do
-        calls.inject([]) do |calls_with_tag,(key,call)|
+        calls.inject([]) do |calls_with_tag,(_,call)|
           call.tagged_with?(tag) ? calls_with_tag << call : calls_with_tag
         end
       end
     end
 
     def each(&block)
-      atomically { calls.values.each &block }
+      atomically { calls.values.each(&block) }
     end
 
     def each_pair

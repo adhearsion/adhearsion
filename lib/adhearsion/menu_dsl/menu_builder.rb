@@ -10,11 +10,12 @@ module Adhearsion
       def initialize
         @patterns = []
         @menu_callbacks = {}
+        @context = nil
       end
 
       def build(&block)
         @context = eval "self", block.binding
-        instance_eval &block
+        instance_eval(&block)
       end
 
       def match(*args, &block)

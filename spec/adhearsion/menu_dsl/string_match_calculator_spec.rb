@@ -15,12 +15,12 @@ module Adhearsion
           match_case = calculator.match str[0,2]
           match_case.exact_match?.should_not be true
           match_case.potential_match?.should be true
-          match_case.potential_matches.should == [str]
+          match_case.potential_matches.should be == [str]
 
           match_case = calculator.match str
           match_case.exact_match?.should be true
           match_case.potential_match?.should_not be true
-          match_case.exact_matches.should == [str]
+          match_case.exact_matches.should be == [str]
         end
       end
 
@@ -30,7 +30,7 @@ module Adhearsion
           match_case = calculator.match special_digit
           match_case.potential_match?.should_not be true
           match_case.exact_match?.should be true
-          match_case.exact_matches.first.should == special_digit
+          match_case.exact_matches.first.should be == special_digit
         end
       end
     end

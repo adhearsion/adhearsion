@@ -17,12 +17,12 @@ describe Adhearsion::Plugin do
 
     it "should provide the plugin name in a plugin class" do
       ::FooBar = Class.new Adhearsion::Plugin
-      ::FooBar.plugin_name.should == "foo_bar"
+      ::FooBar.plugin_name.should be == "foo_bar"
     end
 
     it "should provide the plugin name in a plugin instance" do
       ::FooBar = Class.new Adhearsion::Plugin
-      ::FooBar.new.plugin_name.should == "foo_bar"
+      ::FooBar.new.plugin_name.should be == "foo_bar"
     end
 
     it "should provide a setter for plugin name" do
@@ -30,7 +30,7 @@ describe Adhearsion::Plugin do
         self.plugin_name = "bar_foo"
       end
 
-      ::FooBar.plugin_name.should == "bar_foo"
+      ::FooBar.plugin_name.should be == "bar_foo"
     end
   end
 
@@ -49,7 +49,7 @@ describe Adhearsion::Plugin do
       end
     }
 
-    its(:plugin_name) { should == :bar_foo }
+    its(:plugin_name) { should be == :bar_foo }
 
     its(:config) { should be_instance_of Loquacious::Configuration }
 
@@ -58,9 +58,9 @@ describe Adhearsion::Plugin do
         subject.config.should respond_to value
       end
 
-      subject.config.name.should     == "user"
-      subject.config.password.should == "password"
-      subject.config.host.should     == "localhost"
+      subject.config.name.should     be == "user"
+      subject.config.password.should be == "password"
+      subject.config.host.should     be == "localhost"
     end
 
     it "should return a description of configuration options" do
@@ -70,7 +70,7 @@ describe Adhearsion::Plugin do
     describe "while updating config values" do
       it "should return the updated value" do
         subject.config.name = "usera"
-        subject.config.name.should == "usera"
+        subject.config.name.should be == "usera"
       end
     end
 
@@ -107,7 +107,7 @@ describe Adhearsion::Plugin do
   end
 
   describe "Adhearsion::Plugin.init_plugins" do
-    before do
+    before(:all) do
       Adhearsion::Plugin.class_eval do
         def self.reset_methods_scope
           @methods_scope = Hash.new { |hash, key| hash[key] = Module.new }
@@ -117,7 +117,9 @@ describe Adhearsion::Plugin do
           @subclasses = nil
         end
       end
+    end
 
+    before do
       Adhearsion::Plugin.reset_methods_scope
       Adhearsion::Plugin.reset_subclasses
     end
@@ -342,29 +344,29 @@ describe Adhearsion::Plugin do
       subject.should be_instance_of Array
     end
 
-    its(:length) { should == 0 }
+    its(:length) { should be == 0 }
 
     it "should not load a new task when there is no block in the method call" do
-      subject.length.should == 0
+      subject.length.should be == 0
       FooBar = Class.new Adhearsion::Plugin do
         tasks
       end
 
-      subject.length.should == 0
+      subject.length.should be == 0
     end
 
     it "should load a new task when there is a block in the method call" do
-      subject.length.should == 0
+      subject.length.should be == 0
       FooBar = Class.new Adhearsion::Plugin do
         tasks do
           puts "foo bar"
         end
       end
-      Adhearsion::Plugin.tasks.length.should == 1
+      Adhearsion::Plugin.tasks.length.should be == 1
     end
 
     it "should execute the tasks blocks while loading rake tasks" do
-      subject.length.should == 0
+      subject.length.should be == 0
       FooBar = Class.new Adhearsion::Plugin do
         tasks do
           FooBar.foo

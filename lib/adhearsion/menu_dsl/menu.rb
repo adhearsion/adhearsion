@@ -16,7 +16,7 @@ module Adhearsion
         @max_number_of_tries  = options[:tries]   || DEFAULT_MAX_NUMBER_OF_TRIES
         @builder              = MenuDSL::MenuBuilder.new
 
-        @builder.build &block
+        @builder.build(&block)
 
         initialize_digit_buffer
       end

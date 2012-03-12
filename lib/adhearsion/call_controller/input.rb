@@ -73,7 +73,7 @@ module Adhearsion
       #                  will not appear in the output.
       def input(*args, &block)
         begin
-          input! *args, &block
+          input!(*args, &block)
         rescue PlaybackError => e
           logger.warn "Error playing back the prompt: #{e.message}"
           retry # If sound playback fails, play the remaining sound files and wait for digits
