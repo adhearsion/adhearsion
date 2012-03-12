@@ -56,15 +56,17 @@ module Adhearsion
       end
 
       it "should trigger shutdown handlers synchronously" do
-        shutdown_value = []
+        foo = lambda { |b| b }
 
-        Events.shutdown { shutdown_value << :foo }
-        Events.shutdown { shutdown_value << :bar }
-        Events.shutdown { shutdown_value << :baz }
+        flexmock(foo).should_receive(:[]).once.with(:a).ordered
+        flexmock(foo).should_receive(:[]).once.with(:b).ordered
+        flexmock(foo).should_receive(:[]).once.with(:c).ordered
+
+        Events.shutdown { sleep 2; foo[:a] }
+        Events.shutdown { sleep 1; foo[:b] }
+        Events.shutdown { foo[:c] }
 
         Adhearsion::Process.final_shutdown
-
-        shutdown_value.should == [:foo, :bar, :baz]
       end
 
       it "should stop the console" do
