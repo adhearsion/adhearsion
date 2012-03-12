@@ -66,6 +66,8 @@ end # ChildProcess
 
 Before do
   @aruba_timeout_seconds = ENV['ARUBA_TIMEOUT'] || RUBY_PLATFORM == 'java' ? 60 : 30
+  ENV['AHN_PUNCHBLOCK_RECONNECT_ATTEMPTS'] = '0'
+  ENV['AHN_PUNCHBLOCK_PORT'] = '1'
 end
 
 # TODO: check for name space / run issues

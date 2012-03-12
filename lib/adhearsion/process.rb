@@ -41,7 +41,7 @@ module Adhearsion
       end
 
       event :stop do
-        transition :rejecting => :stopped
+        transition [:booting, :rejecting] => :stopped
       end
 
       event :force_stop do
@@ -81,6 +81,8 @@ module Adhearsion
       Events.trigger_immediately :shutdown
 
       Console.stop
+
+      logger.info "Adhearsion shut down"
     end
 
     def stop_when_zero_calls

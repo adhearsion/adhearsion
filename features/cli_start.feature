@@ -17,17 +17,15 @@ Feature: Adhearsion Ahn CLI (start)
     When I cd to "path/somewhere"
     And I run `ahn start` interactively
     And I wait for output to contain "Starting connection to server"
-    And I terminate the interactive process
     Then the output should contain "Adhearsion::Console: Launching Adhearsion Console"
     And the output should contain "AHN>"
-    And the output should contain "Transitioning from running to stopping"
+    And the output should contain "Adhearsion shut down"
 
   Scenario: Command start with only path works properly
     Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
     When I run `ahn start path/somewhere` interactively
     And I wait for output to contain "Starting connection to server"
-    And I terminate the interactive process
     Then the output should contain "Adhearsion::Console: Launching Adhearsion Console"
     And the output should contain "AHN>"
-    And the output should contain "Transitioning from running to stopping"
+    And the output should contain "Adhearsion shut down"
