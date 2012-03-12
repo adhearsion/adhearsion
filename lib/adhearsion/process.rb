@@ -41,7 +41,7 @@ module Adhearsion
       end
 
       event :stop do
-        transition [:booting, :rejecting] => :stopped
+        transition all => :stopped
       end
 
       event :force_stop do

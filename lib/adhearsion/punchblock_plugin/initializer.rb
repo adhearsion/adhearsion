@@ -105,6 +105,8 @@ module Adhearsion
             # We only care about disconnects if the process is up or booting
             return unless [:booting, :running].include? Adhearsion::Process.state_name
 
+            Adhearsion::Process.reset unless Adhearsion::Process.state_name == :booting
+
             self.attempts += 1
 
             if self.attempts >= self.config.reconnect_attempts
@@ -113,7 +115,6 @@ module Adhearsion
               return
             end
 
-            Adhearsion::Process.reset unless Adhearsion::Process.state_name == :booting
             logger.error "Connection lost. Attempting reconnect #{self.attempts} of #{self.config.reconnect_attempts}"
             sleep self.config.reconnect_timer
             retry

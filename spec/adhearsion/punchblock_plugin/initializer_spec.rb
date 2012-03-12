@@ -149,14 +149,14 @@ module Adhearsion
           Adhearsion::Process.booted
           Adhearsion::Process.state_name.should == :running
           mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
-          expect { Initializer.connect_to_server }.should raise_error ::Punchblock::DisconnectedError
-          Adhearsion::Process.state_name.should == :booting
+          flexmock(Adhearsion::Process).should_receive(:reset).at_least.once
+          Initializer.connect_to_server
         end
 
         it 'should retry the connection the specified number of times' do
           Initializer.config.reconnect_attempts = 3
           mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
-          expect { Initializer.connect_to_server }.should raise_error ::Punchblock::DisconnectedError
+          Initializer.connect_to_server
           Initializer.attempts.should == 3
         end
 
