@@ -4,4 +4,6 @@ require 'adhearsion/script_ahn_loader'
 # the rest of this script is not run.
 Adhearsion::ScriptAhnLoader.exec_script_ahn!
 
+require 'bundler/setup'
+require 'adhearsion'
 require 'adhearsion/commands'
