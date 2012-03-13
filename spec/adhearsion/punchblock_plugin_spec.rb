@@ -22,7 +22,7 @@ module Adhearsion
       end
 
       it "writes a command to the client" do
-        flexmock(PunchblockPlugin.client).should_receive(:execute_command).once.with(message)
+        flexmock(PunchblockPlugin.client).should_receive(:execute_command).once.with(message, :async => true)
         PunchblockPlugin.execute_component message
       end
 

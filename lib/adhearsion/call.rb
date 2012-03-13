@@ -185,7 +185,7 @@ module Adhearsion
       abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
       variables.merge! command.headers_hash if command.respond_to? :headers_hash
       logger.debug "Executing command #{command.inspect}"
-      client.execute_command command, :call_id => id
+      client.execute_command command, :call_id => id, :async => true
     end
 
     def logger_id # :nodoc:

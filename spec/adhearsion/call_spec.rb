@@ -216,7 +216,7 @@ module Adhearsion
       it "should asynchronously write the command to the Punchblock connection" do
         mock_client = flexmock('Client')
         flexmock(subject.wrapped_object).should_receive(:client).once.and_return mock_client
-        mock_client.should_receive(:execute_command).once.with(mock_command, :call_id => subject.id).and_return true
+        mock_client.should_receive(:execute_command).once.with(mock_command, :call_id => subject.id, :async => true).and_return true
         subject.write_command mock_command
       end
 

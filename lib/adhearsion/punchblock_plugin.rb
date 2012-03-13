@@ -43,7 +43,7 @@ module Adhearsion
       end
 
       def execute_component(command, timeout = 60)
-        client.execute_command command
+        client.execute_command command, :async => true
         response = command.response timeout
         raise response if response.is_a? Exception
         command
