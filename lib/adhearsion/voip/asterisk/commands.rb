@@ -331,7 +331,12 @@ module Adhearsion
           filename = args.shift || "/tmp/recording_%d"
           filename = increment_filename_counter filename
 
-          record_to_file(filename, *args, options)
+          # Work around Ruby 1.8 limitation with *args
+          newargs = []
+          newargs << filename
+          newargs += args
+          newargs << options
+          record_to_file *newargs
 
           # Reconstruct the logic that took place in #base_record_to_file, since it does not return the
           # constructed filename
