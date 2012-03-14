@@ -96,15 +96,17 @@ module Adhearsion
           ::Process.kill "KILL", pid
         rescue Errno::ESRCH
         end
-
-        File.delete pid_file
       end
 
       desc "restart </path/to/directory>", "Restart the Adhearsion server"
       method_option :pidfile, :type => :string, :aliases => %w(--pid-file)
       def restart(path = nil)
         execute_from_app_dir! path
-        invoke :stop
+        begin
+          invoke :stop
+        rescue PIDReadError => e
+          puts e.message
+        end
         invoke :daemon
       end
 
