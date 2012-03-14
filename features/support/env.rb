@@ -26,6 +26,10 @@ Before do
   ENV['AHN_PUNCHBLOCK_PORT'] = '1'
 end
 
+Before '@reconnect' do
+  ENV['AHN_PUNCHBLOCK_RECONNECT_ATTEMPTS'] = '100'
+end
+
 # TODO: check for name space / run issues
 # NOTE: this will not stop a forked process (eg. daemon mode)
 After do
