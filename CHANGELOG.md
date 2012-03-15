@@ -1,6 +1,7 @@
 # develop
   * Change: `CallController#speak` is now `CallController#say`
   * Change: `CallController#menu` is now `CallController#ask`
+  * Change: 'ahn restart' now does not fail if the PID file is not found
 
 # 2.0.0.beta1 - 2012-03-07
   * Bugfix: #speak now correctly casts the argument to string if it is not SSML
