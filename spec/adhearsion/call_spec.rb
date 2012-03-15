@@ -509,6 +509,63 @@ module Adhearsion
         end
       end
 
+      describe "#unjoin" do
+        def expect_unjoin_with_options(options = {})
+          Punchblock::Command::Unjoin.new(options).tap do |unjoin|
+            expect_message_waiting_for_response unjoin
+          end
+        end
+
+        context "with a call" do
+          let(:call_id) { rand.to_s }
+          let(:target)  { flexmock Call.new, :id => call_id }
+
+          it "should send an unjoin command unjoining from the provided call ID" do
+            expect_unjoin_with_options :other_call_id => call_id
+            subject.unjoin target
+          end
+        end
+
+        context "with a call ID" do
+          let(:target) { rand.to_s }
+
+          it "should send an unjoin command unjoining from the provided call ID" do
+            expect_unjoin_with_options :other_call_id => target
+            subject.unjoin target
+          end
+        end
+
+        context "with a call ID as a hash key" do
+          let(:call_id) { rand.to_s }
+          let(:target)  { { :call_id => call_id } }
+
+          it "should send an unjoin command unjoining from the provided call ID" do
+            expect_unjoin_with_options :other_call_id => call_id
+            subject.unjoin target
+          end
+        end
+
+        context "with a mixer name as a hash key" do
+          let(:mixer_name)  { rand.to_s }
+          let(:target)      { { :mixer_name => mixer_name } }
+
+          it "should send an unjoin command unjoining from the provided call ID" do
+            expect_unjoin_with_options :mixer_name => mixer_name
+            subject.unjoin target
+          end
+        end
+
+        context "with a call ID and a mixer name as hash keys" do
+          let(:call_id)     { rand.to_s }
+          let(:mixer_name)  { rand.to_s }
+          let(:target)      { { :call_id => call_id, :mixer_name => mixer_name } }
+
+          it "should raise an ArgumentError" do
+            lambda { subject.unjoin target }.should raise_error ArgumentError, /call ID and mixer name/
+          end
+        end
+      end
+
       describe "#mute" do
         it 'should send a Mute message' do
           expect_message_waiting_for_response Punchblock::Command::Mute.new
