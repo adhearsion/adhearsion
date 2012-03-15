@@ -4,7 +4,7 @@ require 'spec_helper'
 
 module Adhearsion
   class CallController
-    describe Record, focus: true do
+    describe Record do
       include CallControllerTestHelpers
 
       describe "#record" do
