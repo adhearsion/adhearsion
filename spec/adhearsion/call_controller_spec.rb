@@ -195,14 +195,30 @@ module Adhearsion
       :reject,
       :hangup,
       :mute,
-      :unmute,
-      :join].each do |method_name|
+      :unmute].each do |method_name|
       describe "##{method_name}" do
         it "delegates to the call, blocking first until it is allowed to execute" do
           flexmock(subject).should_receive(:block_until_resumed).once.ordered
           flexmock(subject.call).should_receive(method_name).once.ordered
           subject.send method_name
         end
+      end
+    end
+
+    describe "#join" do
+      it "delegates to the call, blocking first until it is allowed to execute, and unblocking when an unjoined event is received" do
+        flexmock(subject).should_receive(:block_until_resumed).once.ordered
+        flexmock(subject.call).should_receive(:join).once.with('call1', :foo => :bar).ordered
+        latch = CountDownLatch.new 1
+        Thread.new do
+          subject.join 'call1', :foo => :bar
+          latch.countdown!
+        end
+        latch.wait(1).should be false
+        subject.call << Punchblock::Event::Joined.new(:other_call_id => 'call1')
+        latch.wait(1).should be false
+        subject.call << Punchblock::Event::Unjoined.new(:other_call_id => 'call1')
+        latch.wait(1).should be true
       end
     end
 

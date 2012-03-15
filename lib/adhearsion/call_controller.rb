@@ -142,6 +142,7 @@ module Adhearsion
     def join(*args)
       block_until_resumed
       call.join(*args)
+      call.wait_for_unjoined args.first
     end
 
     def block_until_resumed # :nodoc:

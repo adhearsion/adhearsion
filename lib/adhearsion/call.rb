@@ -87,6 +87,11 @@ module Adhearsion
         throw :pass
       end
 
+      register_event_handler Punchblock::Event::Unjoined do |event|
+        signal :unjoined, event.other_call_id
+        throw :pass
+      end
+
       on_end do |event|
         clear_from_active_calls
         @end_reason = event.reason
@@ -159,6 +164,13 @@ module Adhearsion
       end
       command = Punchblock::Command::Join.new options
       write_and_await_response command
+    end
+
+    def wait_for_unjoined(expected_target)
+      target = nil
+      until target == expected_target do
+        target = wait :unjoined
+      end
     end
 
     def mute
