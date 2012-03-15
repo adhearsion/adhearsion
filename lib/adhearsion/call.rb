@@ -87,6 +87,12 @@ module Adhearsion
         throw :pass
       end
 
+      register_event_handler Punchblock::Event::Unjoined do |event|
+        target = event.other_call_id || event.mixer_name
+        signal :unjoined, target
+        throw :pass
+      end
+
       on_end do |event|
         clear_from_active_calls
         @end_reason = event.reason
@@ -141,24 +147,44 @@ module Adhearsion
     # @param [Hash, Optional] options further options to be joined with
     #
     def join(target, options = {})
-      case target
+      command = Punchblock::Command::Join.new join_options_with_target(target, options)
+      write_and_await_response command
+    end
+
+    ##
+    # Unjoins this call from another call or a mixer
+    #
+    # @param [Call, String, Hash] target the target to unjoin from. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
+    # @option target [String] call_id The call ID to unjoin from
+    # @option target [String] mixer_name The mixer to unjoin from
+    #
+    def unjoin(target)
+      command = Punchblock::Command::Unjoin.new join_options_with_target(target)
+      write_and_await_response command
+    end
+
+    def join_options_with_target(target, options = {})
+      options.merge(case target
       when Call
-        options[:other_call_id] = target.id
+        { :other_call_id => target.id }
       when String
-        options[:other_call_id] = target
+        { :other_call_id => target }
       when Hash
         abort ArgumentError.new "You cannot specify both a call ID and mixer name" if target.has_key?(:call_id) && target.has_key?(:mixer_name)
         target.tap do |t|
           t[:other_call_id] = t[:call_id]
           t.delete :call_id
         end
-
-        options.merge! target
       else
         abort ArgumentError.new "Don't know how to join to #{target.inspect}"
+      end)
+    end
+
+    def wait_for_unjoined(expected_target)
+      target = nil
+      until target == expected_target do
+        target = wait :unjoined
       end
-      command = Punchblock::Command::Join.new options
-      write_and_await_response command
     end
 
     def mute
