@@ -289,6 +289,8 @@ module Adhearsion
 
       it "blocks until the component receives a complete event" do
         slow_component = Punchblock::Component::Output.new
+        slow_component.request!
+        slow_component.execute!
         Thread.new do
           sleep 0.5
           slow_component.complete_event = response

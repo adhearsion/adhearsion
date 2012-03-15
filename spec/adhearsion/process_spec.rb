@@ -13,7 +13,8 @@ module Adhearsion
     end
 
     it 'should trigger :stop_requested events on #shutdown' do
-      flexmock(Events).should_receive(:trigger_immediately).once.with(:stop_requested)
+      flexmock(Events).should_receive(:trigger_immediately).once.with(:stop_requested).ordered
+      flexmock(Events).should_receive(:trigger_immediately).once.with(:shutdown).ordered
       Adhearsion::Process.booted
       Adhearsion::Process.shutdown
     end
