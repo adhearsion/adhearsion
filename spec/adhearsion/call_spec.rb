@@ -276,12 +276,21 @@ module Adhearsion
       end
 
       describe "with an error response" do
-        let(:new_exception) { Class.new Exception }
+        let(:new_exception) { Punchblock::ProtocolError }
         let(:response) { new_exception.new }
 
         it "raises the error" do
           flexmock(Events).should_receive(:trigger).never
           lambda { subject.write_and_await_response message }.should raise_error new_exception
+        end
+
+        context "where the name is :item_not_found" do
+          let(:response) { new_exception.new :item_not_found }
+
+          it "should raise a Hangup exception" do
+            flexmock(Events).should_receive(:trigger).never
+            lambda { subject.write_and_await_response message }.should raise_error Hangup
+          end
         end
       end
 

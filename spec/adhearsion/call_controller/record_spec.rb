@@ -4,7 +4,7 @@ require 'spec_helper'
 
 module Adhearsion
   class CallController
-    describe Record do
+    describe Record, focus: true do
       include CallControllerTestHelpers
 
       describe "#record" do
@@ -14,50 +14,57 @@ module Adhearsion
             :max_duration => 5000
           }
         end
-        let(:component) { Punchblock::Component::Record.new options }
-        let(:response)  { Punchblock::Event::Complete.new }
+        let(:component) { ::Punchblock::Component::Record.new options }
+        let(:response)  { ::Punchblock::Event::Complete.new }
 
         describe "with :async => true and an :on_complete callback" do
-          let(:callback) { lambda { |rec| @rec.push rec } }
-
           before do
-            expect_component_execution_asynchronously component
+            component
+            flexmock(::Punchblock::Component::Record).should_receive(:new).once.with(options).and_return component
+            expect_message_waiting_for_response component
             @rec = Queue.new
-            options.merge! :async => true, :on_complete => callback
-            subject.record options
-            component.request!
+            subject.record(options.merge(async: true)) { |rec| @rec.push rec }
             component.execute!
           end
 
           it "should execute the callback" do
             component.trigger_event_handler response
             Timeout::timeout 5 do
-              @rec.pop.should be == response
+              @rec.pop.should be response
             end
           end
+        end
 
-          describe "when the callback raises an exception" do
-            before { TestException = Class.new StandardError }
-            let(:callback) { lambda { |rec| raise TestException } }
+        describe "when the callback raises an exception" do
+          before do
+            TestException = Class.new StandardError
+            component
+            flexmock(::Punchblock::Component::Record).should_receive(:new).once.with({}).and_return component
+          end
 
-            it "should pass the exception to the events system" do
-              flexmock(Events).should_receive(:trigger).once.with(:exception, TestException)
-              component.trigger_event_handler response
-            end
+          it "should pass the exception to the events system" do
+            flexmock(Events).should_receive(:trigger).once.with(:exception, TestException)
+            expect_component_execution component
+            subject.record { |rec| raise TestException }
+            component.request!
+            component.execute!
+            component.trigger_event_handler response
           end
         end
 
         describe "with :async => false" do
           before do
+            component
+            flexmock(::Punchblock::Component::Record).should_receive(:new).once.with(options).and_return component
             expect_component_execution component
-            component.request!
-            component.execute!
-            component.add_event response
             @rec = Queue.new
             subject.record(options.merge(:async => false)) { |rec| @rec.push rec }
+            component.request!
+            component.execute!
           end
 
           it 'should execute a passed block' do
+            component.trigger_event_handler response  
             Timeout::timeout 5 do
               @rec.pop.should be == response
             end

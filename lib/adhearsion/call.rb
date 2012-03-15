@@ -177,7 +177,16 @@ module Adhearsion
       rescue Timeout::Error => e
         abort e
       end
-      abort response if response.is_a? Exception
+      case response
+      when Punchblock::ProtocolError
+        if response.name == :item_not_found
+          abort Hangup.new(@end_reason)
+        else
+          abort response
+        end
+      when Exception
+        abort response
+      end
       command
     end
 
