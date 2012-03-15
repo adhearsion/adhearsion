@@ -88,7 +88,8 @@ module Adhearsion
       end
 
       register_event_handler Punchblock::Event::Unjoined do |event|
-        signal :unjoined, event.other_call_id
+        target = event.other_call_id || event.mixer_name
+        signal :unjoined, target
         throw :pass
       end
 

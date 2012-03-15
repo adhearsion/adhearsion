@@ -139,10 +139,11 @@ module Adhearsion
       call.unmute(*args)
     end
 
-    def join(*args)
+    def join(target, options = {})
       block_until_resumed
-      call.join(*args)
-      call.wait_for_unjoined args.first
+      join_command = call.join target, options
+      waiter = join_command.other_call_id || join_command.mixer_name
+      call.wait_for_unjoined waiter
     end
 
     def block_until_resumed # :nodoc:
