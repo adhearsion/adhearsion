@@ -260,6 +260,7 @@ module Adhearsion
 
       it "blocks until a response is received" do
         slow_command = Punchblock::Command::Dial.new
+        slow_command.request!
         Thread.new do
           sleep 0.5
           slow_command.response = response

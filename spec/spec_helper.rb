@@ -26,6 +26,8 @@ end
   adhearsion
 }.each { |f| require f }
 
+Thread.abort_on_exception = true
+
 Bundler.require(:default, :test) if defined?(Bundler)
 
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |f| require f }
