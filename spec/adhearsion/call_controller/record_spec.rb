@@ -64,7 +64,7 @@ module Adhearsion
           end
 
           it 'should execute a passed block' do
-            component.trigger_event_handler response  
+            component.trigger_event_handler response
             Timeout::timeout 5 do
               @rec.pop.should be == response
             end
