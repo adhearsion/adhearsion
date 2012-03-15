@@ -87,6 +87,12 @@ module Adhearsion
         throw :pass
       end
 
+      register_event_handler Punchblock::Event::Joined do |event|
+        target = event.other_call_id || event.mixer_name
+        signal :joined, target
+        throw :pass
+      end
+
       register_event_handler Punchblock::Event::Unjoined do |event|
         target = event.other_call_id || event.mixer_name
         signal :unjoined, target
@@ -178,6 +184,13 @@ module Adhearsion
       else
         abort ArgumentError.new "Don't know how to join to #{target.inspect}"
       end)
+    end
+
+    def wait_for_joined(expected_target)
+      target = nil
+      until target == expected_target do
+        target = wait :joined
+      end
     end
 
     def wait_for_unjoined(expected_target)

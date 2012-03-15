@@ -140,10 +140,19 @@ module Adhearsion
     end
 
     def join(target, options = {})
+      async = if target.is_a?(Hash)
+        target.delete :async
+      else
+        options.delete :async
+      end
       block_until_resumed
       join_command = call.join target, options
       waiter = join_command.other_call_id || join_command.mixer_name
-      call.wait_for_unjoined waiter
+      if async
+        call.wait_for_joined waiter
+      else
+        call.wait_for_unjoined waiter
+      end
     end
 
     def block_until_resumed # :nodoc:

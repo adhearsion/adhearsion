@@ -237,6 +237,36 @@ module Adhearsion
           latch.wait(1).should be true
         end
       end
+
+      context "with :async => true" do
+        it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
+          flexmock(subject).should_receive(:block_until_resumed).once.ordered
+          flexmock(subject.call).should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:other_call_id => 'call1')
+          latch = CountDownLatch.new 1
+          Thread.new do
+            subject.join 'call1', :foo => :bar, :async => true
+            latch.countdown!
+          end
+          latch.wait(1).should be false
+          subject.call << Punchblock::Event::Joined.new(:other_call_id => 'call1')
+          latch.wait(1).should be true
+        end
+
+        context "with a mixer" do
+          it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
+            flexmock(subject).should_receive(:block_until_resumed).once.ordered
+            flexmock(subject.call).should_receive(:join).once.with({:mixer_name => 'foobar', :foo => :bar}, {}).ordered.and_return Punchblock::Command::Join.new(:mixer_name => 'foobar')
+            latch = CountDownLatch.new 1
+            Thread.new do
+              subject.join :mixer_name => 'foobar', :foo => :bar, :async => true
+              latch.countdown!
+            end
+            latch.wait(1).should be false
+            subject.call << Punchblock::Event::Joined.new(:mixer_name => 'foobar')
+            latch.wait(1).should be true
+          end
+        end
+      end
     end
 
     describe "#block_until_resumed" do
