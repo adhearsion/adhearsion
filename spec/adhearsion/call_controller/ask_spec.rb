@@ -48,11 +48,14 @@ module Adhearsion
         let(:sound_files) { ["press", "button"] }
 
         let(:menu_instance) { flexmock(MenuDSL::Menu.new({}) {}) }
-        let(:result_done) { MenuDSL::Menu::MenuResultDone.new }
-        let(:result_invalid) { MenuDSL::Menu::MenuResultInvalid.new }
+
+        let(:result_done)                   { MenuDSL::Menu::MenuResultDone.new }
+        let(:result_terminated)             { MenuDSL::Menu::MenuTerminated.new }
+        let(:result_limit_reached)          { MenuDSL::Menu::MenuLimitReached.new }
+        let(:result_invalid)                { MenuDSL::Menu::MenuResultInvalid.new }
         let(:result_get_another_or_timeout) { MenuDSL::Menu::MenuGetAnotherDigitOrTimeout.new }
-        let(:result_get_another_or_finish) { MenuDSL::Menu::MenuGetAnotherDigitOrFinish.new(:match_object, :new_extension) }
-        let(:result_found) { MenuDSL::Menu::MenuResultFound.new(:match_object, :new_extension) }
+        let(:result_get_another_or_finish)  { MenuDSL::Menu::MenuGetAnotherDigitOrFinish.new(:match_object, :new_extension) }
+        let(:result_found)                  { MenuDSL::Menu::MenuResultFound.new(:match_object, :new_extension) }
 
         before(:each) do
           flexmock(MenuDSL::Menu).should_receive(:new).and_return(menu_instance)
@@ -61,6 +64,20 @@ module Adhearsion
         it "exits the function if MenuResultDone" do
           menu_instance.should_receive(:should_continue?).and_return(true)
           menu_instance.should_receive(:continue).and_return(result_done)
+          result = subject.ask(sound_files) {}
+          result.should be == :done
+        end
+
+        it "exits the function if MenuTerminated" do
+          menu_instance.should_receive(:should_continue?).and_return(true)
+          menu_instance.should_receive(:continue).and_return(result_terminated)
+          result = subject.ask(sound_files) {}
+          result.should be == :done
+        end
+
+        it "exits the function if MenuLimitReached" do
+          menu_instance.should_receive(:should_continue?).and_return(true)
+          menu_instance.should_receive(:continue).and_return(result_limit_reached)
           result = subject.ask(sound_files) {}
           result.should be == :done
         end

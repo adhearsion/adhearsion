@@ -8,12 +8,14 @@ module Adhearsion
       DEFAULT_MAX_NUMBER_OF_TRIES = 1
       DEFAULT_TIMEOUT             = 5
 
-      attr_reader :builder, :timeout, :tries_count, :max_number_of_tries
+      attr_reader :builder, :timeout, :tries_count, :max_number_of_tries, :terminator, :limit
 
       def initialize(options = {}, &block)
         @tries_count          = 0 # Counts the number of tries the menu's been executed
         @timeout              = options[:timeout] || DEFAULT_TIMEOUT
         @max_number_of_tries  = options[:tries]   || DEFAULT_MAX_NUMBER_OF_TRIES
+        @terminator           = options[:terminator].to_s
+        @limit                = options[:limit]
         @builder              = MenuDSL::MenuBuilder.new
 
         @builder.build(&block)
@@ -39,6 +41,9 @@ module Adhearsion
 
       def continue
         return get_another_digit_or_timeout! if digit_buffer_empty?
+
+        return menu_terminated! if digit_buffer.last == terminator
+        return menu_limit_reached! if limit && digit_buffer.size >= limit
 
         calculated_matches = builder.calculate_matches_for digit_buffer_string
 
@@ -93,6 +98,14 @@ module Adhearsion
         MenuResultFound.new(match_object, new_extension)
       end
 
+      def menu_terminated!
+        MenuTerminated.new
+      end
+
+      def menu_limit_reached!
+        MenuLimitReached.new
+      end
+
       def get_another_digit_or_finish!(match_payload, new_extension)
         MenuGetAnotherDigitOrFinish.new(match_payload, new_extension)
       end
@@ -129,6 +142,9 @@ module Adhearsion
       end
 
       MenuResultInvalid = Class.new MenuResult
+
+      MenuTerminated = Class.new MenuResultDone
+      MenuLimitReached = Class.new MenuResultDone
 
       # For our default purpose, we need the digit_buffer to behave much like a normal String except that it should
       # handle its own resetting (clearing)

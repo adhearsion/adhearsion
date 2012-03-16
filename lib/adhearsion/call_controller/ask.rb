@@ -46,8 +46,10 @@ module Adhearsion
       #
       # @param [Object] A list of outputs to play, as accepted by #play
       # @param [Hash] options Options to use for the menu
+      # @option options [Integer] :limit Digit limit (causes collection to caese after a specified number of digits have been collected)
       # @option options [Integer] :tries Number of tries allowed before failure
       # @option options [Integer] :timeout Timeout in seconds before the first and between each input digit
+      # @option options [String] :terminator Digit to terminate input
       #
       # @return [Symbol] :failure on failure, :done if a match is reached and executed. Will only return if control is not passed.
       #

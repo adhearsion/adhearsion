@@ -44,6 +44,38 @@ module Adhearsion
             end
           end
 
+          context 'when no terminator is set' do
+            it "should have no terminator" do
+              subject.terminator.should be == ''
+            end
+          end
+
+          context 'when a terminator is set' do
+            let(:options) {
+              {:terminator => 3}
+            }
+
+            it 'should have the passed terminator' do
+              subject.terminator.should be == '3'
+            end
+          end
+
+          context 'when no limit is set' do
+            it "should have no limit" do
+              subject.limit.should be nil
+            end
+          end
+
+          context 'when a limit is set' do
+            let(:options) {
+              {:limit => 3}
+            }
+
+            it 'should have the passed limit' do
+              subject.limit.should be == 3
+            end
+          end
+
           context 'menu builder setup' do
             its(:builder) { should be_a MenuBuilder }
 
@@ -138,8 +170,9 @@ module Adhearsion
           class MockControllerA; end
           class MockControllerB; end
           class MockControllerC; end
+          let(:options) { {} }
           let(:menu_instance) {
-            Menu.new do
+            Menu.new options do
               match 1, MockControllerA
               match 21, MockControllerA
               match 23, MockControllerA
@@ -191,6 +224,28 @@ module Adhearsion
             menu_result.should be_a Menu::MenuResultFound
             menu_result.match_object.match_payload.should be == MockControllerC
             menu_result.match_object.pattern.to_s.should be == "6"
+          end
+
+          context "when a terminator digit is set" do
+            let(:options) { { :terminator => '#' } }
+
+            context "when the terminator is issued" do
+              it "returns a MenuTerminated" do
+                menu_instance << '#'
+                menu_instance.continue.should be_a Menu::MenuTerminated
+                menu_instance.continue.should be_a Menu::MenuResultDone
+              end
+            end
+          end
+
+          context "when a digit limit is set" do
+            let(:options) { { :limit => 1 } }
+
+            it "it returns MenuLimitReached" do
+              menu_instance << 2
+              menu_instance.continue.should be_a Menu::MenuLimitReached
+              menu_instance.continue.should be_a Menu::MenuResultDone
+            end
           end
 
         end#continue
