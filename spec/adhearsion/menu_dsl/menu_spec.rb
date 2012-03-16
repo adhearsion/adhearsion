@@ -76,6 +76,22 @@ module Adhearsion
             end
           end
 
+          context 'when no interruptibility is set' do
+            it "should be interruptible" do
+              subject.interruptible.should be true
+            end
+          end
+
+          context 'when interruptible is set false' do
+            let(:options) {
+              {:interruptible => false}
+            }
+
+            it 'should be interruptible' do
+              subject.interruptible.should be false
+            end
+          end
+
           context 'menu builder setup' do
             its(:builder) { should be_a MenuBuilder }
 

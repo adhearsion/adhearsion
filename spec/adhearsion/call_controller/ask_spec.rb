@@ -15,13 +15,23 @@ module Adhearsion
 
         it "should play the sound files for the menu" do
           subject.should_receive(:interruptible_play).with(sound_file).and_return("1")
-          subject.play_sound_files_for_menu(menu_instance, sound_files)
+          subject.play_sound_files_for_menu(menu_instance, sound_files).should be == '1'
         end
 
         it "should wait for digit if nothing is pressed during playback" do
           subject.should_receive(:interruptible_play).with(sound_file).and_return(nil)
           subject.should_receive(:wait_for_digit).with(menu_instance.timeout).and_return("1")
-          subject.play_sound_files_for_menu(menu_instance, sound_files)
+          subject.play_sound_files_for_menu(menu_instance, sound_files).should be == '1'
+        end
+
+        context "when the menu is not interruptible" do
+          let(:options) { { :interruptible => false } }
+
+          it "should play the sound files and wait for digit" do
+            subject.should_receive(:play).with(sound_file).and_return true
+            subject.should_receive(:wait_for_digit).with(menu_instance.timeout).and_return("1")
+            subject.play_sound_files_for_menu(menu_instance, sound_files).should be == '1'
+          end
         end
       end#play_sound_files_for_menu
 

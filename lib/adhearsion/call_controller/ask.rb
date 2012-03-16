@@ -49,6 +49,7 @@ module Adhearsion
       # @option options [Integer] :limit Digit limit (causes collection to caese after a specified number of digits have been collected)
       # @option options [Integer] :tries Number of tries allowed before failure
       # @option options [Integer] :timeout Timeout in seconds before the first and between each input digit
+      # @option options [Boolean] :interruptible If the prompt should be interruptible or not. Defaults to true
       # @option options [String] :terminator Digit to terminate input
       #
       # @return [Symbol] :failure on failure, :done if a match is reached and executed. Will only return if control is not passed.
@@ -111,7 +112,11 @@ module Adhearsion
       def play_sound_files_for_menu(menu_instance, sound_files) # :nodoc:
         digit = nil
         if sound_files.any? && menu_instance.digit_buffer_empty?
-          digit = interruptible_play(*sound_files)
+          if menu_instance.interruptible
+            digit = interruptible_play(*sound_files)
+          else
+            play(*sound_files)
+          end
         end
         digit || wait_for_digit(menu_instance.timeout)
       end
