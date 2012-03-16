@@ -101,8 +101,7 @@ module Adhearsion
           end
         end
 
-        timeout     = options[:timeout]
-        terminator  = options[:terminator]
+        timeout, terminator = options.values_at :timeout, :terminator
 
         terminator = if terminator
           terminator.to_s
@@ -142,18 +141,13 @@ module Adhearsion
 
         loop do
           return buffer if key.nil?
-          if terminator
-            if key == terminator
-              return buffer
-            else
-              buffer << key
-              return buffer if number_of_digits && number_of_digits == buffer.length
-            end
-          else
-            buffer << key
-            return buffer if number_of_digits && number_of_digits == buffer.length
-          end
+          return buffer if terminator && key == terminator
+
+          buffer << key
+
+          return buffer if number_of_digits && number_of_digits == buffer.length
           return buffer if block_given? && yield(buffer)
+
           key = wait_for_digit timeout
         end
       end # #input!
