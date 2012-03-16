@@ -112,6 +112,19 @@ module Adhearsion
         end
       end#failure
 
+      describe "#validator" do
+        let(:callback) { Proc.new() {} }
+
+        it "raises an error if not passed a block" do
+          expect { subject.validator }.to raise_error(LocalJumpError)
+        end
+
+        it "sets the invalid callback" do
+          subject.validator(&callback)
+          subject.menu_callbacks[:validator].should be == callback
+        end
+      end#invalid
+
       describe "#execute_hook_for" do
         it "executes the correct hook" do
           bar = nil

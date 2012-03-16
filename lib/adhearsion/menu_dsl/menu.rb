@@ -58,6 +58,8 @@ module Adhearsion
         return menu_terminated! if @terminated
         return menu_limit_reached! if limit && digit_buffer.size >= limit
 
+        return menu_validator_terminated! if execute_validator_hook
+
         calculated_matches = builder.calculate_matches_for digit_buffer_string
 
         if calculated_matches.exact_match_count >= 1
@@ -95,6 +97,10 @@ module Adhearsion
         builder.execute_hook_for :failure, digit_buffer_string
       end
 
+      def execute_validator_hook
+        builder.execute_hook_for :validator, digit_buffer_string
+      end
+
       protected
 
       # If you're using a more complex class in subclasses, you may want to override this method in addition to the
@@ -116,6 +122,11 @@ module Adhearsion
       def menu_terminated!
         @status = :terminated
         MenuTerminated.new
+      end
+
+      def menu_validator_terminated!
+        @status = :validator_terminated
+        MenuValidatorTerminated.new
       end
 
       def menu_limit_reached!
@@ -163,6 +174,7 @@ module Adhearsion
       MenuResultInvalid = Class.new MenuResult
 
       MenuTerminated = Class.new MenuResultDone
+      MenuValidatorTerminated = Class.new MenuResultDone
       MenuLimitReached = Class.new MenuResultDone
 
       # For our default purpose, we need the digit_buffer to behave much like a normal String except that it should

@@ -9,6 +9,7 @@
   * Feature: `CallController#ask` may now have prompt interruptibility configured using `:interruptible => false`
   * Change: `CallController#ask` now returns a menu object for establishing completion mode, input buffer (#result), etc
   * Feature: If `CallController#ask` is given a digit limit or terminator digit, specifying matches becomes optional and digit collection continues until one of those conditions is experienced
+  * Feature: `CallController#ask` can now have a `validator` specified for early termination of input collection based on the current buffer
 
 # 2.0.0.beta1 - 2012-03-07
   * Bugfix: #speak now correctly casts the argument to string if it is not SSML

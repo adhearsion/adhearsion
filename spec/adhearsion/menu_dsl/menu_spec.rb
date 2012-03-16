@@ -211,6 +211,16 @@ module Adhearsion
           end
         end
 
+        describe "#execute_validator_hook" do
+          it "calls the builder's execute_hook_for with :validator" do
+            mock_menu_builder = flexmock(MenuBuilder.new)
+            flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
+            mock_menu_builder.should_receive(:execute_hook_for).with(:validator, "")
+            menu_instance = Menu.new
+            menu_instance.execute_validator_hook
+          end
+        end
+
         describe "#continue" do
           class MockControllerA; end
           class MockControllerB; end
@@ -301,6 +311,26 @@ module Adhearsion
                 menu_instance.continue.should be_a Menu::MenuLimitReached
                 menu_instance.continue.should be_a Menu::MenuResultDone
                 menu_instance.status.should be == :limited
+                menu_instance.result.should be == '242'
+              end
+            end
+
+            context "when a validator is defined" do
+              let(:menu_instance) do
+                Menu.new options do
+                  validator { |buffer| buffer == "242" }
+                end
+              end
+
+              it "buffers until the validator returns true, then returns MenuValidatorTerminated and sets the status to :validator_terminated" do
+                menu_instance << 2
+                menu_instance << 4
+                menu_instance.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout
+                menu_instance.status.should be == :potential
+                menu_instance << 2
+                menu_instance.continue.should be_a Menu::MenuValidatorTerminated
+                menu_instance.continue.should be_a Menu::MenuResultDone
+                menu_instance.status.should be == :validator_terminated
                 menu_instance.result.should be == '242'
               end
             end

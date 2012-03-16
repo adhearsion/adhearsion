@@ -44,6 +44,7 @@ module Adhearsion
 
       def execute_hook_for(symbol, input)
         callback = @menu_callbacks[symbol]
+        return unless callback
         @context.instance_exec input, &callback
       end
 
@@ -60,6 +61,11 @@ module Adhearsion
       def failure(&block)
         raise LocalJumpError, "Must supply a block!" unless block_given?
         @menu_callbacks[:failure] = block
+      end
+
+      def validator(&block)
+        raise LocalJumpError, "Must supply a block!" unless block_given?
+        @menu_callbacks[:validator] = block
       end
 
       def calculate_matches_for(result)
