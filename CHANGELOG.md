@@ -6,7 +6,7 @@
   * Feature: Added `Call#unjoin`
   * Feature: `CallControll#join` can be made non-blocking by passing `:async => true`
   * Feature: `CallController#ask` now supports `:terminator` and `:limit` options to add early termination by terminator digit or digit limit conditions
-  * Feature: `CallController#ask` may now have prompt interruptibility configured using `:interruptible => false`
+  * Feature: `CallController#ask` may now disallow the caller from interrupting prompts by specifying `:interruptible => false`
   * Change: `CallController#ask` now returns a menu object for establishing completion mode, input buffer (#result), etc
   * Feature: If `CallController#ask` is given a digit limit or terminator digit, specifying matches becomes optional and digit collection continues until one of those conditions is experienced
   * Feature: `CallController#ask` can now have a `validator` specified for early termination of input collection based on the current buffer
