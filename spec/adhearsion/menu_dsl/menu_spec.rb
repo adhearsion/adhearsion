@@ -270,27 +270,39 @@ module Adhearsion
             menu_result.match_object.pattern.to_s.should be == "6"
           end
 
-          context "when a terminator digit is set" do
-            let(:options) { { :terminator => '#' } }
+          context "with no matchers" do
+            let(:menu_instance) { Menu.new options }
 
-            context "when the terminator is issued" do
-              it "returns a MenuTerminated and sets the status to :terminated" do
+            context "when a terminator digit is set" do
+              let(:options) { { :terminator => '#' } }
+
+              it "buffers until the terminator is issued then returns a MenuTerminated and sets the status to :terminated, removing the terminator from the buffer" do
+                menu_instance << 2
+                menu_instance << 4
+                menu_instance.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout
+                menu_instance.status.should be == :potential
                 menu_instance << '#'
                 menu_instance.continue.should be_a Menu::MenuTerminated
                 menu_instance.continue.should be_a Menu::MenuResultDone
                 menu_instance.status.should be == :terminated
+                menu_instance.result.should be == '24#'
               end
             end
-          end
 
-          context "when a digit limit is set" do
-            let(:options) { { :limit => 1 } }
+            context "when a digit limit is set" do
+              let(:options) { { :limit => 3 } }
 
-            it "it returns MenuLimitReached and sets the status to :limited" do
-              menu_instance << 2
-              menu_instance.continue.should be_a Menu::MenuLimitReached
-              menu_instance.continue.should be_a Menu::MenuResultDone
-              menu_instance.status.should be == :limited
+              it "buffers until the limit is reached, then returns MenuLimitReached and sets the status to :limited" do
+                menu_instance << 2
+                menu_instance << 4
+                menu_instance.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout
+                menu_instance.status.should be == :potential
+                menu_instance << 2
+                menu_instance.continue.should be_a Menu::MenuLimitReached
+                menu_instance.continue.should be_a Menu::MenuResultDone
+                menu_instance.status.should be == :limited
+                menu_instance.result.should be == '242'
+              end
             end
           end
 

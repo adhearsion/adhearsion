@@ -62,7 +62,7 @@ module Adhearsion
           else
             get_another_digit_or_finish! first_exact_match.match_payload, first_exact_match.query
           end
-        elsif calculated_matches.potential_match_count >= 1
+        elsif calculated_matches.potential_match_count >= 1 || !@builder.has_matchers?
           get_another_digit_or_timeout!
         else
           invalid!
