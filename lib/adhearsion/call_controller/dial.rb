@@ -33,7 +33,13 @@ module Adhearsion
       #   dial "IAX2/my.id@voipjet/19095551234", :from => "John Doe <9095551234>"
       #
       def dial(to, options = {}, latch = nil)
-        targets = Array(to)
+        targets = case to
+          when Hash
+            to.keys
+          else
+            Array(to)
+        end
+
         status = DialStatus.new
 
         latch ||= CountDownLatch.new targets.size
@@ -78,7 +84,13 @@ module Adhearsion
         end
 
         calls.map! do |call, target|
-          call.dial target, options
+          if to.is_a? Hash
+            target_options = to[target] || {}
+            local_options = options.merge(target_options)
+          else
+            local_options = options
+          end
+          call.dial target, local_options
           call
         end
 
