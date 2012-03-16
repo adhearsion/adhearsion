@@ -7,6 +7,9 @@ module Adhearsion
       # Creates and manages a multiple choice menu driven by DTMF, handling playback of prompts,
       # invalid input, retries and timeouts, and final failures.
       #
+      # @example A basic digit collection:
+      #   ask :terminator => '#', :limit => 3
+      #
       # @example A complete example of the method is as follows:
       #   ask "Welcome, ", "/opt/sounds/menu-prompt.mp3", :tries => 2, :timeout => 10 do
       #     match 1, OperatorController
@@ -24,6 +27,8 @@ module Adhearsion
       #     invalid { play "Please choose a valid extension" }
       #     timeout { play "Input timed out, try again." }
       #     failure { pass OperatorController }
+      #
+      #     validator { |buffer| buffer == "12980" }
       #   end
       #
       # The first arguments to #ask will be a list of sounds to play, as accepted by #play, including strings for TTS, Date and Time objects, and file paths.
@@ -40,6 +45,8 @@ module Adhearsion
       # #invalid has its associated block executed when the input does not possibly match any pattern.
       # #timeout's block is run when time expires before or between input digits.
       # #failure runs its block when the maximum number of tries is reached without an input match.
+      #
+      # #validator runs its block on each digit being collected. If it returns true, the collection is terminated.
       #
       # Execution of the current context resumes after #ask finishes. If you wish to jump to an entirely different controller, use #pass.
       # Menu will return :failed if failure was reached, or :done if a match was executed.
