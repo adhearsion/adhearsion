@@ -7,7 +7,7 @@
   * Feature: `CallControll#join` can be made non-blocking by passing `:async => true`
   * Feature: `CallController#ask` now supports `:terminator` and `:limit` options to add early termination by terminator digit or digit limit conditions
   * Feature: `CallController#ask` may now have prompt interruptibility configured using `:interruptible => false`
-  * Change: `CallController#ask` now returns a menu object for establishing completion mode, etc
+  * Change: `CallController#ask` now returns a menu object for establishing completion mode, input buffer (#result), etc
 
 # 2.0.0.beta1 - 2012-03-07
   * Bugfix: #speak now correctly casts the argument to string if it is not SSML

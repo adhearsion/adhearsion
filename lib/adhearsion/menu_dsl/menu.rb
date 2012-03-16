@@ -35,6 +35,7 @@ module Adhearsion
       def digit_buffer_string
         digit_buffer.to_s
       end
+      alias :result :digit_buffer_string
 
       def digit_buffer_empty?
         digit_buffer.empty?

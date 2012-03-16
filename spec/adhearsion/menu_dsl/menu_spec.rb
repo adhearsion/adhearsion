@@ -114,6 +114,7 @@ module Adhearsion
           it "should add a digit to the buffer" do
             subject << 'a'
             subject.digit_buffer.should be == 'a'
+            subject.result.should be == 'a'
           end
         end
 
