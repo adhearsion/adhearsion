@@ -72,19 +72,6 @@ module Adhearsion
       #                  absense of input. If the :accept_key argument was pressed, it
       #                  will not appear in the output.
       def input(*args, &block)
-        begin
-          input!(*args, &block)
-        rescue PlaybackError => e
-          logger.warn "Error playing back the prompt: #{e.message}"
-          retry # If sound playback fails, play the remaining sound files and wait for digits
-        end
-      end
-
-      # Same as {#input}, but immediately raises an exception if sound playback fails
-      #
-      # @return (see #input)
-      # @raise [Adhearsion::PlaybackError] If a sound file cannot be played
-      def input!(*args, &block)
         options = args.last.kind_of?(Hash) ? args.pop : {}
         number_of_digits = args.shift
 

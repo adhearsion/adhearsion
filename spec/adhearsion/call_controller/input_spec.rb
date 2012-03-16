@@ -126,24 +126,24 @@ module Adhearsion
         end
       end # wait_for_digit
 
-      describe "#input!" do
+      describe "#input" do
         describe "simple usage" do
           let(:timeout) { 3000 }
 
           it "can be called with no arguments" do
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('1')
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input!
+            subject.input
           end
 
           it "can be called with 1 digit as an argument" do
             subject.should_receive(:wait_for_digit).with(nil)
-            subject.input! 1
+            subject.input 1
           end
 
           it "accepts a timeout argument" do
             subject.should_receive(:wait_for_digit).with(3000)
-            subject.input! :timeout => timeout
+            subject.input :timeout => timeout
           end
         end
 
@@ -153,13 +153,13 @@ module Adhearsion
           it "called with no arguments, it returns any number of digits taking a terminating digit" do
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('1')
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input!.should be == '1'
+            subject.input.should be == '1'
           end
 
           it "allows to set a different terminator" do
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('1')
             subject.should_receive(:wait_for_digit).once.with(nil).and_return(terminator)
-            subject.input!(:terminator => terminator).should be == '1'
+            subject.input(:terminator => terminator).should be == '1'
           end
         end
 
@@ -168,7 +168,7 @@ module Adhearsion
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('1')
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('2')
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('3')
-            subject.input!(3).should be == '123'
+            subject.input(3).should be == '123'
           end
         end
 
@@ -182,19 +182,19 @@ module Adhearsion
           it "plays a string argument" do
             subject.should_receive(:interruptible_play!).with(string_play)
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input! :play => string_play
+            subject.input :play => string_play
           end
 
           it "plays a SSML argument" do
             subject.should_receive(:interruptible_play!).with(ssml_play)
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input! :play => ssml_play
+            subject.input :play => ssml_play
           end
 
           it "plays a Hash argument" do
             subject.should_receive(:interruptible_play!).with([hash_value, hash_options])
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input! :play => hash_play
+            subject.input :play => hash_play
           end
 
           it "plays an array of mixed arguments" do
@@ -202,31 +202,31 @@ module Adhearsion
             subject.should_receive(:interruptible_play!).with(ssml_play)
             subject.should_receive(:interruptible_play!).with([hash_value, hash_options])
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input! :play => [string_play, ssml_play, hash_play]
+            subject.input :play => [string_play, ssml_play, hash_play]
           end
 
           it "plays a string argument, takes 1 digit and returns the input" do
             subject.should_receive(:interruptible_play!).with(string_play).and_return('1')
-            subject.input!(1, :play => string_play).should be == '1'
+            subject.input(1, :play => string_play).should be == '1'
           end
 
           it "plays a string argument, takes 2 digits and returns the input" do
             subject.should_receive(:interruptible_play!).with(string_play).and_return('1')
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('1')
-            subject.input!(2, :play => string_play).should be == '11'
+            subject.input(2, :play => string_play).should be == '11'
           end
 
           it "plays a string argument, allows for any number of digit and an accept key" do
             subject.should_receive(:interruptible_play!).with(string_play).and_return('1').ordered
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('2').ordered
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('#').ordered
-            subject.input!(:play => string_play).should be == '12'
+            subject.input(:play => string_play).should be == '12'
           end
 
           it "plays an array of mixed arguments, stops playing when a key is pressed, and returns the input" do
             subject.should_receive(:interruptible_play!).and_return(nil, '1', StandardError.new("should not be called"))
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input!(:play => [string_play, ssml_play, hash_play]).should be == '1'
+            subject.input(:play => [string_play, ssml_play, hash_play]).should be == '1'
           end
         end # describe with play arguments
 
@@ -236,14 +236,14 @@ module Adhearsion
           it "calls play! when passed :interruptible => false" do
             subject.should_receive(:play!).with(string_play)
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input! :play => string_play, :interruptible => false
+            subject.input :play => string_play, :interruptible => false
           end
 
           it "still collects digits when passed :interruptible => false" do
             subject.should_receive(:play!).with(string_play)
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('1')
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input!(:play => string_play, :interruptible => false).should be == '1'
+            subject.input(:play => string_play, :interruptible => false).should be == '1'
           end
         end # describe non interruptible play
 
@@ -252,28 +252,17 @@ module Adhearsion
 
           it "speaks passed text" do
             subject.should_receive(:interruptible_play!).with(string_speak, {})
-            subject.input! :speak => {:text => string_speak }
+            subject.input :speak => {:text => string_speak }
           end
 
           it "speaks passed text and collect digits" do
             subject.should_receive(:interruptible_play!).with(string_speak, {}).and_return('1')
             subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input!(:speak => {:text => string_speak }).should be == '1'
+            subject.input(:speak => {:text => string_speak }).should be == '1'
           end
         end
 
         it 'throws an exception when playback fails'
-      end # describe input!
-
-      describe "#input" do
-        let(:string_play) { "Thanks for calling" }
-
-        it "just calls #input!" do
-          subject.should_receive(:input!).with(:play => string_play).and_return(nil)
-          subject.input! :play => string_play
-        end
-
-        it 'does not throw exceptions when playback fails'
       end # describe input
     end
   end
