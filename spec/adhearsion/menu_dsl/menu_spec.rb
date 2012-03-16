@@ -10,19 +10,19 @@ module Adhearsion
         subject { Menu.new(options) {}  }
 
         describe "#initialize" do
-
           its(:tries_count) { should be == 0 }
-
 
           context 'when no timeout is set' do
             it "should have the default timeout" do
               subject.timeout.should be == 5
             end
           end
+
           context 'when a timeout is set' do
             let(:options) {
               {:timeout => 20}
             }
+
             it 'should have the passed timeout' do
               subject.timeout.should be == 20
             end
@@ -33,10 +33,12 @@ module Adhearsion
               subject.max_number_of_tries.should be == 1
             end
           end
+
           context 'when a max number of tries is set' do
             let(:options) {
               {:tries => 3}
             }
+
             it 'should have the passed max number of tries' do
               subject.max_number_of_tries.should be == 3
             end
@@ -71,6 +73,7 @@ module Adhearsion
           it "returns true if buffer is empty" do
             subject.digit_buffer_empty?.should be == true
           end
+
           it "returns false if buffer is not empty" do
             subject << 1
             subject.digit_buffer_empty?.should be == false
@@ -147,6 +150,7 @@ module Adhearsion
               match 6..8, MockControllerA
             end
           }
+
           it "returns a MenuGetAnotherDigitOrTimeout if the digit buffer is empty" do
             subject.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout
           end

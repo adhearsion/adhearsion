@@ -19,6 +19,7 @@ module Adhearsion
 
       describe "#match" do
         let(:match_block) { Proc.new() {} }
+
         it "raises an exception if called without a CallController and no block" do
           expect { subject.match 1 }.to raise_error(ArgumentError)
         end
@@ -40,6 +41,7 @@ module Adhearsion
           flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with("1", nil, match_block)
           subject.match("1", &match_block)
         end
+
         it "creates multiple patterns if multiple arguments are passed in" do
           flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with(1, Object)
           flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with(2, Object)
