@@ -310,6 +310,7 @@ module Adhearsion
             end
             sleep 0.1
             other_mock_call << mock_end
+            dial_thread.join.should be_true
           end
 
           it "with multiple destinations as an array and an options hash, it dials each call with specified options" do
