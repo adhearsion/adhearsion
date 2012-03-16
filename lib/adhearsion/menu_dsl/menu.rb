@@ -20,6 +20,7 @@ module Adhearsion
         @limit                = options[:limit]
         @interruptible        = options.has_key?(:interruptible) ? options[:interruptible] : true
         @builder              = MenuDSL::MenuBuilder.new
+        @terminated           = false
 
         @builder.build(&block) if block
 
@@ -31,7 +32,11 @@ module Adhearsion
       end
 
       def <<(other)
-        digit_buffer << other
+        if other == terminator
+          @terminated = true
+        else
+          digit_buffer << other
+        end
       end
 
       def digit_buffer
@@ -50,7 +55,7 @@ module Adhearsion
       def continue
         return get_another_digit_or_timeout! if digit_buffer_empty?
 
-        return menu_terminated! if digit_buffer.last == terminator
+        return menu_terminated! if @terminated
         return menu_limit_reached! if limit && digit_buffer.size >= limit
 
         calculated_matches = builder.calculate_matches_for digit_buffer_string

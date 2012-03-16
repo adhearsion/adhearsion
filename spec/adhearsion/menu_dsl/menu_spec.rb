@@ -285,7 +285,7 @@ module Adhearsion
                 menu_instance.continue.should be_a Menu::MenuTerminated
                 menu_instance.continue.should be_a Menu::MenuResultDone
                 menu_instance.status.should be == :terminated
-                menu_instance.result.should be == '24#'
+                menu_instance.result.should be == '24'
               end
             end
 
