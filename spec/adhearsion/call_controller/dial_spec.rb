@@ -50,14 +50,16 @@ module Adhearsion
 
         describe "without a block" do
           before do
-            flexmock(other_mock_call).should_receive(:dial).once
+            flexmock(other_mock_call).should_receive(:dial).once.with(to, options)
             flexmock(other_mock_call).should_receive(:hangup).once
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
           end
 
+          let(:options) { { :foo => :bar } }
+
           def dial_in_thread
             Thread.new do
-              status = subject.dial to
+              status = subject.dial to, options
               latch.countdown!
               status
             end
@@ -146,22 +148,26 @@ module Adhearsion
         end
 
         describe "with multiple third parties specified" do
+          let(:options) { {} }
+          let(:other_options) { options }
+          let(:second_other_options) { options }
+
           before do
             second_other_mock_call
 
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call, second_other_mock_call
 
-            flexmock(other_mock_call).should_receive(:dial).once
+            flexmock(other_mock_call).should_receive(:dial).once.with(to, other_options)
             flexmock(other_mock_call).should_receive(:hangup).once
 
-            flexmock(second_other_mock_call).should_receive(:dial).once
+            flexmock(second_other_mock_call).should_receive(:dial).once.with(second_to, second_other_options)
             flexmock(second_other_mock_call).should_receive(:join).never
             flexmock(second_other_mock_call).should_receive(:hangup).once
           end
 
           def dial_in_thread
             Thread.new do
-              status = subject.dial [to, second_to]
+              status = subject.dial [to, second_to], options
               latch.countdown!
               status
             end
@@ -213,6 +219,51 @@ module Adhearsion
             status.should be_a Dial::DialStatus
             status.should have(2).calls
             status.calls.each { |c| c.should be_a OutboundCall }
+          end
+
+          describe "with options overrides" do
+            let(:options) do
+              {
+                :from => 'foo',
+                :timeout => 3000
+              }
+            end
+
+            let(:other_options) do
+              {
+                :from => 'foo',
+                :timeout => 4000
+              }
+            end
+
+            let(:second_other_options) do
+              {
+                :from => 'foo',
+                :timeout => 5000
+              }
+            end
+
+            it "with multiple destinations as an hash, with overrides for each, and an options hash, it dials each call with specified options" do
+              t = Thread.new do
+                subject.dial({
+                  to => {:timeout => 4000},
+                  second_to => {:timeout => 5000}
+                }, options)
+                latch.countdown!
+              end
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_false
+
+              second_other_mock_call << mock_end
+
+              latch.wait(2).should be_true
+
+              t.join
+            end
           end
 
           context "when all calls are rejected" do
@@ -277,66 +328,6 @@ module Adhearsion
             t.join
             status = t.value
             status.result.should be == :timeout
-          end
-        end
-
-        describe "multiple destinations and options overrides" do
-          let(:global_options) do
-            { 
-              :from => 'foo',
-              :timeout => 3000
-            } 
-          end
-
-          let(:other_merged_options) do
-            { 
-              :from => 'foo',
-              :timeout => 4000
-            } 
-          end
-
-          let(:second_other_merged_options) do
-            { 
-              :from => 'foo',
-              :timeout => 5000
-            } 
-          end
-
-          it "with a single destination and an options hash, it dials the call with specified options" do
-            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
-            flexmock(other_mock_call).should_receive(:dial).with(to, global_options).once
-            dial_thread = Thread.new do
-              subject.dial(to, global_options)
-            end
-            sleep 0.1
-            other_mock_call << mock_end
-          end
-
-          it "with multiple destinations as an array and an options hash, it dials each call with specified options" do
-            second_other_mock_call
-            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call, second_other_mock_call
-            flexmock(other_mock_call).should_receive(:dial).with(to, global_options).once
-            flexmock(second_other_mock_call).should_receive(:dial).with(second_to, global_options).once
-            dial_thread = Thread.new do
-              subject.dial([to, second_to], global_options)
-            end
-            sleep 0.1
-            other_mock_call << mock_end
-          end
-
-          it "with multiple destinations as an hash, with overrides for each, and an options hash, it dials each call with specified options" do
-            second_other_mock_call
-            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call, second_other_mock_call
-            flexmock(other_mock_call).should_receive(:dial).with(to, other_merged_options).once
-            flexmock(second_other_mock_call).should_receive(:dial).with(second_to, second_other_merged_options).once
-            dial_thread = Thread.new do
-              subject.dial({
-                to => {:timeout => 4000}, 
-                second_to => {:timeout => 5000}
-              }, global_options)
-            end
-            sleep 0.1
-            other_mock_call << mock_end
           end
         end
 
