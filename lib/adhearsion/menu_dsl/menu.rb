@@ -8,6 +8,8 @@ module Adhearsion
       DEFAULT_MAX_NUMBER_OF_TRIES = 1
       DEFAULT_TIMEOUT             = 5
 
+      InvalidStructureError = Class.new StandardError
+
       attr_reader :builder, :timeout, :tries_count, :max_number_of_tries, :terminator, :limit, :interruptible, :status
 
       def initialize(options = {}, &block)
@@ -22,6 +24,10 @@ module Adhearsion
         @builder.build(&block) if block
 
         initialize_digit_buffer
+      end
+
+      def validate
+        @terminator.present? || !!@limit || @builder.has_matchers? || raise(InvalidStructureError, "You must specify one or more of matchers, limit, or terminator")
       end
 
       def <<(other)

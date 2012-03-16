@@ -70,6 +70,7 @@ module Adhearsion
         before(:each) do
           flexmock menu_instance
           flexmock(MenuDSL::Menu).should_receive(:new).and_return(menu_instance)
+          menu_instance.should_receive(:validate).and_return true
         end
 
         it "exits the function if MenuResultDone" do

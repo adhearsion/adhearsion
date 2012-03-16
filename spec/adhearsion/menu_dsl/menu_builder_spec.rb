@@ -49,6 +49,20 @@ module Adhearsion
         end
       end#match
 
+      describe "#has_matchers?" do
+        context "with no matchers specified" do
+          its(:has_matchers?) { should be false }
+        end
+
+        context "with at least one matcher specified" do
+          before do
+            subject.match(1) {}
+          end
+
+          its(:has_matchers?) { should be true }
+        end
+      end
+
       describe "#weighted_match_calculators" do
         let(:expected_pattern) { MenuDSL::MatchCalculator.build_with_pattern("1", Object) }
 

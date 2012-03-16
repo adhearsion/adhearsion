@@ -64,6 +64,7 @@ module Adhearsion
         sound_files = args.flatten
 
         menu_instance = MenuDSL::Menu.new options, &block
+        menu_instance.validate
         result_of_menu = nil
 
         until MenuDSL::Menu::MenuResultDone === result_of_menu

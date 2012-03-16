@@ -48,6 +48,10 @@ module Adhearsion
             it "should have no terminator" do
               subject.terminator.should be == ''
             end
+
+            it 'should not validate successfully' do
+              lambda { subject.validate }.should raise_error(Menu::InvalidStructureError)
+            end
           end
 
           context 'when a terminator is set' do
@@ -58,11 +62,19 @@ module Adhearsion
             it 'should have the passed terminator' do
               subject.terminator.should be == '3'
             end
+
+            it 'should validate successfully' do
+              subject.validate.should be true
+            end
           end
 
           context 'when no limit is set' do
             it "should have no limit" do
               subject.limit.should be nil
+            end
+
+            it 'should not validate successfully' do
+              lambda { subject.validate }.should raise_error(Menu::InvalidStructureError)
             end
           end
 
@@ -73,6 +85,10 @@ module Adhearsion
 
             it 'should have the passed limit' do
               subject.limit.should be == 3
+            end
+
+            it 'should validate successfully' do
+              subject.validate.should be true
             end
           end
 
@@ -89,6 +105,18 @@ module Adhearsion
 
             it 'should be interruptible' do
               subject.interruptible.should be false
+            end
+          end
+
+          context 'when matchers are specified' do
+            subject do
+              Menu.new do
+                match(1) { }
+              end
+            end
+
+            it 'should validate successfully' do
+              subject.validate.should be true
             end
           end
 

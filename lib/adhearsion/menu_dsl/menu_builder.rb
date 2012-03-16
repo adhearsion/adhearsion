@@ -38,6 +38,10 @@ module Adhearsion
         @patterns
       end
 
+      def has_matchers?
+        @patterns.size > 0
+      end
+
       def execute_hook_for(symbol, input)
         callback = @menu_callbacks[symbol]
         @context.instance_exec input, &callback
