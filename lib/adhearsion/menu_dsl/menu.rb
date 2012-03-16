@@ -8,7 +8,7 @@ module Adhearsion
       DEFAULT_MAX_NUMBER_OF_TRIES = 1
       DEFAULT_TIMEOUT             = 5
 
-      attr_reader :builder, :timeout, :tries_count, :max_number_of_tries, :terminator, :limit, :interruptible
+      attr_reader :builder, :timeout, :tries_count, :max_number_of_tries, :terminator, :limit, :interruptible, :status
 
       def initialize(options = {}, &block)
         @tries_count          = 0 # Counts the number of tries the menu's been executed
@@ -92,26 +92,32 @@ module Adhearsion
       end
 
       def invalid!
+        @status = :invalid
         MenuResultInvalid.new
       end
 
       def menu_result_found!(match_object, new_extension)
+        @status = :matched
         MenuResultFound.new(match_object, new_extension)
       end
 
       def menu_terminated!
+        @status = :terminated
         MenuTerminated.new
       end
 
       def menu_limit_reached!
+        @status = :limited
         MenuLimitReached.new
       end
 
       def get_another_digit_or_finish!(match_payload, new_extension)
+        @status = :multi_matched
         MenuGetAnotherDigitOrFinish.new(match_payload, new_extension)
       end
 
       def get_another_digit_or_timeout!
+        @status = :potential
         MenuGetAnotherDigitOrTimeout.new
       end
 

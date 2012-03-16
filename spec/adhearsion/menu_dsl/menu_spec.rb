@@ -202,22 +202,19 @@ module Adhearsion
 
           it "returns a MenuGetAnotherDigitOrTimeout if the digit buffer is empty" do
             subject.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout
+            menu_instance.status.should be nil
           end
 
           it "asks for another digit if it has potential matches" do
             menu_instance << 2
             menu_instance.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout
+            menu_instance.status.should be == :potential
           end
 
           it "returns a MenuResultInvalid if there are no matches" do
             menu_instance << 9
             menu_instance.continue.should be_a Menu::MenuResultInvalid
-          end
-
-          it "returns a MenuGetAnotherDigitOrFinish if it has exact and potential matches" do
-            menu_instance << 3
-            menu_result = menu_instance.continue
-            menu_result.should be_a Menu::MenuGetAnotherDigitOrFinish
+            menu_instance.status.should be == :invalid
           end
 
           it "returns the first exact match when it has exact and potentials" do
@@ -226,12 +223,14 @@ module Adhearsion
             menu_result.should be_a Menu::MenuGetAnotherDigitOrFinish
             menu_result.match_object.should be == MockControllerB
             menu_result.new_extension.should be == "3"
+            menu_instance.status.should be == :multi_matched
           end
 
           it "returns a MenuResultFound if it has exact matches" do
             menu_instance << 6
             menu_result = menu_instance.continue
             menu_result.should be_a Menu::MenuResultFound
+            menu_instance.status.should be == :matched
           end
 
           it "returns the first exact match when it has only exact matches" do
@@ -246,10 +245,11 @@ module Adhearsion
             let(:options) { { :terminator => '#' } }
 
             context "when the terminator is issued" do
-              it "returns a MenuTerminated" do
+              it "returns a MenuTerminated and sets the status to :terminated" do
                 menu_instance << '#'
                 menu_instance.continue.should be_a Menu::MenuTerminated
                 menu_instance.continue.should be_a Menu::MenuResultDone
+              menu_instance.status.should be == :terminated
               end
             end
           end
@@ -257,10 +257,11 @@ module Adhearsion
           context "when a digit limit is set" do
             let(:options) { { :limit => 1 } }
 
-            it "it returns MenuLimitReached" do
+            it "it returns MenuLimitReached and sets the status to :limited" do
               menu_instance << 2
               menu_instance.continue.should be_a Menu::MenuLimitReached
               menu_instance.continue.should be_a Menu::MenuResultDone
+              menu_instance.status.should be == :limited
             end
           end
 

@@ -52,7 +52,7 @@ module Adhearsion
       # @option options [Boolean] :interruptible If the prompt should be interruptible or not. Defaults to true
       # @option options [String] :terminator Digit to terminate input
       #
-      # @return [Symbol] :failure on failure, :done if a match is reached and executed. Will only return if control is not passed.
+      # @return [Adhearsion::MenuDSL::Menu] a menu object on which #status may be called to establish the completion mode of the operation
       #
       # @raise [ArgumentError] Raised if no block is passed in
       #
@@ -72,7 +72,7 @@ module Adhearsion
           else
             logger.debug "Menu failed to get valid input. Calling \"failure\" hook."
             menu_instance.execute_failure_hook
-            return :failed
+            return menu_instance
           end
 
           case result_of_menu
@@ -89,7 +89,7 @@ module Adhearsion
               case result_of_menu
               when MenuDSL::Menu::MenuGetAnotherDigitOrFinish
                 jump_to result_of_menu.match_object, :extension => result_of_menu.new_extension
-                return true
+                return menu_instance
               when MenuDSL::Menu::MenuGetAnotherDigitOrTimeout
                 logger.debug "Menu timed out. Calling \"timeout\" hook and restarting."
                 menu_instance.execute_timeout_hook
@@ -100,10 +100,11 @@ module Adhearsion
           when MenuDSL::Menu::MenuResultFound
             logger.debug "Menu received valid input (#{result_of_menu.new_extension}). Calling the matching hook."
             jump_to result_of_menu.match_object, :extension => result_of_menu.new_extension
-            return true
+            return menu_instance
           end # case
         end # while
-        return :done
+
+        menu_instance
       end
       alias :menu :ask
 
