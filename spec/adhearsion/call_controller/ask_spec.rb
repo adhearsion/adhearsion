@@ -35,6 +35,67 @@ module Adhearsion
         end
       end#play_sound_files_for_menu
 
+      describe "#wait_for_digit" do
+        let(:timeout) { 2 }
+        let(:timeout_ms) { 2000 }
+
+        let(:grxml) {
+          RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
+            rule id: 'inputdigits', scope: 'public' do
+              one_of do
+                0.upto(9) { |d| item { d.to_s } }
+                item { "#" }
+                item { "*" }
+              end
+            end
+          end
+        }
+
+        let(:input_component) {
+          Punchblock::Component::Input.new(
+            { :mode => :dtmf,
+              :initial_timeout => timeout_ms,
+              :inter_digit_timeout => timeout_ms,
+              :grammar => {
+                :value => grxml.to_s
+              }
+            }
+          )
+        }
+
+        def expect_component_complete_event
+          complete_event = Punchblock::Event::Complete.new
+          flexmock(complete_event).should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
+          flexmock(Punchblock::Component::Input).new_instances do |input|
+            input.should_receive(:complete?).and_return(false)
+            input.should_receive(:complete_event).and_return(complete_event)
+          end
+        end
+
+        it "sends the correct input component" do
+          expect_component_complete_event
+          subject.should_receive(:execute_component_and_await_completion).once.with(input_component).and_return input_component
+          subject.wait_for_digit timeout
+        end
+
+        it "returns the correct pressed digit" do
+          expect_component_complete_event
+          subject.should_receive(:execute_component_and_await_completion).once.with(Punchblock::Component::Input).and_return input_component
+          subject.wait_for_digit(timeout).should be == '5'
+        end
+
+        context "with a nil timeout" do
+          let(:timeout)     { nil }
+          let(:timeout_ms)  { nil }
+
+          it "does not set a timeout on the component" do
+            expect_component_complete_event
+            subject.should_receive(:execute_component_and_await_completion).once.with(input_component).and_return input_component
+            subject.wait_for_digit timeout
+          end
+        end
+      end # wait_for_digit
+
       describe "#jump_to" do
         let(:match_object) { flexmock(Class.new) }
         let(:overrides) { Hash.new(:extension => "1") }

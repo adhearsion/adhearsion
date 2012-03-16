@@ -128,6 +128,27 @@ module Adhearsion
         digit || wait_for_digit(menu_instance.timeout)
       end
 
+      #
+      # Waits for a single digit and returns it, or returns nil if nothing was pressed
+      #
+      # @param [Integer] the timeout to wait before returning, in seconds. nil or -1 mean no timeout.
+      # @return [String|nil] the pressed key, or nil if timeout was reached.
+      #
+      def wait_for_digit(timeout = 1) # :nodoc:
+        timeout = nil if timeout == -1
+        timeout *= 1_000 if timeout
+        input_component = execute_component_and_await_completion ::Punchblock::Component::Input.new :mode => :dtmf,
+          :initial_timeout => timeout,
+          :inter_digit_timeout => timeout,
+            :grammar => {
+              :value => grammar_accept.to_s
+          }
+
+        reason = input_component.complete_event.reason
+        result = reason.respond_to?(:interpretation) ? reason.interpretation : nil
+        parse_single_dtmf result
+      end
+
       def jump_to(match_object, overrides = nil) # :nodoc:
         if match_object.block
           instance_exec overrides[:extension], &match_object.block
