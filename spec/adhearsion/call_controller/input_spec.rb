@@ -4,7 +4,7 @@ require 'spec_helper'
 
 module Adhearsion
   class CallController
-    describe Ask do
+    describe Input do
       include CallControllerTestHelpers
 
       describe "#play_sound_files_for_menu" do

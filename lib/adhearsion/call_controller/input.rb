@@ -2,7 +2,7 @@
 
 module Adhearsion
   class CallController
-    module Ask
+    module Input
 
       # Creates and manages a multiple choice menu driven by DTMF, handling playback of prompts,
       # invalid input, retries and timeouts, and final failures.
