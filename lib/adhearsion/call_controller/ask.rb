@@ -60,8 +60,6 @@ module Adhearsion
       # @see pass
       #
       def ask(*args, &block)
-        raise ArgumentError, "You must provide a block to #ask." unless block_given?
-
         options = args.last.kind_of?(Hash) ? args.pop : {}
         sound_files = args.flatten
 

@@ -19,7 +19,7 @@ module Adhearsion
         @interruptible        = options.has_key?(:interruptible) ? options[:interruptible] : true
         @builder              = MenuDSL::MenuBuilder.new
 
-        @builder.build(&block)
+        @builder.build(&block) if block
 
         initialize_digit_buffer
       end

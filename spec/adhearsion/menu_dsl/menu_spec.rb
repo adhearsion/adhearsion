@@ -7,7 +7,7 @@ module Adhearsion
     describe Menu do
 
         let(:options) { Hash.new }
-        subject { Menu.new(options) {}  }
+        subject { Menu.new(options) }
 
         describe "#initialize" do
           its(:tries_count) { should be == 0 }
@@ -99,7 +99,7 @@ module Adhearsion
               mock_menu_builder = flexmock(MenuBuilder.new)
               flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
               mock_menu_builder.should_receive(:match).once.with(1)
-              Menu.new {match 1}
+              Menu.new { match 1 }
             end
           end
 
@@ -157,7 +157,7 @@ module Adhearsion
             mock_menu_builder = flexmock(MenuBuilder.new)
             flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
             mock_menu_builder.should_receive(:execute_hook_for).with(:invalid, "")
-            menu_instance = Menu.new() {}
+            menu_instance = Menu.new
             menu_instance.execute_invalid_hook
           end
         end
@@ -167,7 +167,7 @@ module Adhearsion
             mock_menu_builder = flexmock(MenuBuilder.new)
             flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
             mock_menu_builder.should_receive(:execute_hook_for).with(:timeout, "")
-            menu_instance = Menu.new() {}
+            menu_instance = Menu.new
             menu_instance.execute_timeout_hook
           end
         end
@@ -177,7 +177,7 @@ module Adhearsion
             mock_menu_builder = flexmock(MenuBuilder.new)
             flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
             mock_menu_builder.should_receive(:execute_hook_for).with(:failure, "")
-            menu_instance = Menu.new() {}
+            menu_instance = Menu.new
             menu_instance.execute_failure_hook
           end
         end
