@@ -37,12 +37,7 @@ module Adhearsion
       #   dial "IAX2/my.id@voipjet/19095551234", :from => "John Doe <9095551234>"
       #
       def dial(to, options = {}, latch = nil)
-        targets = case to
-          when Hash
-            to.keys
-          else
-            Array(to)
-        end
+        targets = to.respond_to?(:has_key?) ? to : Array(to)
 
         status = DialStatus.new
 
@@ -55,7 +50,7 @@ module Adhearsion
 
         options[:from] ||= call.from
 
-        calls = targets.map do |target|
+        calls = targets.map do |target, specific_options|
           new_call = OutboundCall.new
 
           new_call.on_answer do |event|
@@ -84,17 +79,12 @@ module Adhearsion
             latch.countdown! unless new_call["dial_countdown_#{call.id}"]
           end
 
-          [new_call, target]
+          [new_call, target, specific_options]
         end
 
-        calls.map! do |call, target|
-          if to.is_a? Hash
-            target_options = to[target] || {}
-            local_options = options.dup.deep_merge target_options
-          else
-            local_options = options
-          end
-          call.dial target, local_options
+        calls.map! do |call, target, specific_options|
+          local_options = options.dup.deep_merge specific_options if specific_options
+          call.dial target, (local_options || options)
           call
         end
 
