@@ -4,7 +4,11 @@ module Adhearsion
   class CallController
     module Input
 
-      Result = Struct.new(:response, :status, :menu)
+      Result = Struct.new(:response, :status, :menu) do
+        def to_s
+          response
+        end
+      end
 
       # Prompts for input via DTMF, handling playback of prompts,
       # timeouts, digit limits and terminator digits.
