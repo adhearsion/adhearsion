@@ -115,10 +115,12 @@ module Adhearsion
         end
       end#jump_to
 
-      describe "#ask" do
+      describe "#menu" do
         let(:sound_files) { ["press", "button"] }
 
-        let(:menu_instance) { MenuDSL::Menu.new }
+        let(:menu_instance) do
+          MenuDSL::Menu.new { match(1) {} }
+        end
 
         let(:result_done)                   { MenuDSL::Menu::MenuResultDone.new }
         let(:result_terminated)             { MenuDSL::Menu::MenuTerminated.new }
@@ -128,37 +130,36 @@ module Adhearsion
         let(:result_get_another_or_finish)  { MenuDSL::Menu::MenuGetAnotherDigitOrFinish.new(:match_object, :new_extension) }
         let(:result_found)                  { MenuDSL::Menu::MenuResultFound.new(:match_object, :new_extension) }
 
-        before(:each) do
+        before do
           flexmock menu_instance
           flexmock(MenuDSL::Menu).should_receive(:new).and_return(menu_instance)
-          menu_instance.should_receive(:validate).and_return true
         end
 
         it "exits the function if MenuResultDone" do
           menu_instance.should_receive(:should_continue?).and_return(true)
           menu_instance.should_receive(:continue).and_return(result_done)
-          result = subject.ask(sound_files)
+          result = subject.menu sound_files
           result.should be menu_instance
         end
 
         it "exits the function if MenuTerminated" do
           menu_instance.should_receive(:should_continue?).and_return(true)
           menu_instance.should_receive(:continue).and_return(result_terminated)
-          result = subject.ask(sound_files)
+          result = subject.menu sound_files
           result.should be menu_instance
         end
 
         it "exits the function if MenuLimitReached" do
           menu_instance.should_receive(:should_continue?).and_return(true)
           menu_instance.should_receive(:continue).and_return(result_limit_reached)
-          result = subject.ask(sound_files)
+          result = subject.menu sound_files
           result.should be menu_instance
         end
 
         it "executes failure hook and returns :failure if menu fails" do
           menu_instance.should_receive(:should_continue?).and_return(false)
           menu_instance.should_receive(:execute_failure_hook)
-          result = subject.ask(sound_files)
+          result = subject.menu sound_files
           result.should be menu_instance
         end
 
@@ -167,7 +168,7 @@ module Adhearsion
           menu_instance.should_receive(:continue).and_return(result_invalid, result_done)
           menu_instance.should_receive(:execute_invalid_hook)
           menu_instance.should_receive(:restart!)
-          result = subject.ask(sound_files)
+          result = subject.menu sound_files
           result.should be menu_instance
         end
 
@@ -177,7 +178,7 @@ module Adhearsion
           subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return(nil)
           menu_instance.should_receive(:execute_timeout_hook)
           menu_instance.should_receive(:restart!)
-          subject.ask(sound_files)
+          subject.menu sound_files
         end
 
         it "plays audio, then adds digit to digit buffer if input is received" do
@@ -185,7 +186,7 @@ module Adhearsion
           menu_instance.should_receive(:continue).and_return(result_get_another_or_timeout, result_done)
           subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return("1")
           menu_instance.should_receive(:<<).with("1")
-          subject.ask(sound_files)
+          subject.menu sound_files
         end
 
         it "plays audio, then jumps to payload when input is finished" do
@@ -193,24 +194,92 @@ module Adhearsion
           menu_instance.should_receive(:continue).and_return(result_get_another_or_finish)
           subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return(nil)
           subject.should_receive(:jump_to).with(:match_object, :extension => :new_extension)
-          subject.ask(sound_files)
+          subject.menu sound_files
         end
 
         it "jumps to payload when result is found" do
           menu_instance.should_receive(:should_continue?).and_return(true)
           menu_instance.should_receive(:continue).and_return(result_found)
           subject.should_receive(:jump_to).with(:match_object, :extension => :new_extension)
-          result = subject.ask(sound_files)
+          result = subject.menu sound_files
           result.should be menu_instance
+        end
+
+        context "if a digit limit is specified" do
+          it "should raise an ArgumentError"
+        end
+
+        context "if a terminator digit is specified" do
+          it "should raise an ArgumentError"
         end
 
       end#describe
 
-      describe "#menu" do
-        it "should be an alias for #ask" do
-          subject.method(:menu).should be == subject.method(:ask)
+      describe "#ask" do
+        let(:sound_files) { ["press", "button"] }
+
+        context "mocking out the menu" do
+          let(:menu_instance) { MenuDSL::Menu.new :limit => 2 }
+
+          let(:result_done)                   { MenuDSL::Menu::MenuResultDone.new }
+          let(:result_terminated)             { MenuDSL::Menu::MenuTerminated.new }
+          let(:result_limit_reached)          { MenuDSL::Menu::MenuLimitReached.new }
+          let(:result_invalid)                { MenuDSL::Menu::MenuResultInvalid.new }
+          let(:result_get_another_or_timeout) { MenuDSL::Menu::MenuGetAnotherDigitOrTimeout.new }
+          let(:result_get_another_or_finish)  { MenuDSL::Menu::MenuGetAnotherDigitOrFinish.new(:match_object, :new_extension) }
+          let(:result_found)                  { MenuDSL::Menu::MenuResultFound.new(:match_object, :new_extension) }
+
+          before do
+            flexmock menu_instance
+            flexmock(MenuDSL::Menu).should_receive(:new).and_return(menu_instance)
+          end
+
+          it "exits the function if MenuResultDone" do
+            menu_instance.should_receive(:continue).and_return(result_done)
+            result = subject.ask sound_files
+            result.should be menu_instance
+          end
+
+          it "exits the function if MenuTerminated" do
+            menu_instance.should_receive(:continue).and_return(result_terminated)
+            result = subject.ask sound_files
+            result.should be menu_instance
+          end
+
+          it "exits the function if MenuLimitReached" do
+            menu_instance.should_receive(:continue).and_return(result_limit_reached)
+            result = subject.ask sound_files
+            result.should be menu_instance
+          end
+
+          it "plays audio, then executes timeout hook if input times out" do
+            menu_instance.should_receive(:continue).and_return(result_get_another_or_timeout, result_done)
+            subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return(nil)
+            menu_instance.should_receive(:execute_timeout_hook)
+            menu_instance.should_receive(:restart!)
+            subject.ask sound_files
+          end
+
+          it "plays audio, then adds digit to digit buffer if input is received" do
+            menu_instance.should_receive(:continue).and_return(result_get_another_or_timeout, result_done)
+            subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return("1")
+            menu_instance.should_receive(:<<).with("1")
+            subject.ask sound_files
+          end
         end
-      end
+
+        context "with a block passed" do
+          it "should set that block as the buffer validator" do
+            foo = nil
+            subject.should_receive(:play_sound_files_for_menu).and_return("1")
+            subject.ask sound_files, :limit => 0 do |buffer|
+              foo = :bar
+            end.execute_validator_hook
+            foo.should be == :bar
+          end
+        end
+
+      end#describe
 
     end#shared
   end

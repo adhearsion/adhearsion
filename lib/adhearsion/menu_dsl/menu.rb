@@ -27,8 +27,13 @@ module Adhearsion
         initialize_digit_buffer
       end
 
-      def validate
-        @terminator.present? || !!@limit || @builder.has_matchers? || raise(InvalidStructureError, "You must specify one or more of matchers, limit, or terminator")
+      def validate(mode = nil)
+        case mode
+        when :basic
+          @terminator.present? || !!@limit || raise(InvalidStructureError, "You must specify at least one of limit or terminator")
+        else
+          @builder.has_matchers? || raise(InvalidStructureError, "You must specify one or more matchers")
+        end
       end
 
       def <<(other)

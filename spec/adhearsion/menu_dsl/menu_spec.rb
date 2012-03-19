@@ -63,8 +63,12 @@ module Adhearsion
               subject.terminator.should be == '3'
             end
 
-            it 'should validate successfully' do
-              subject.validate.should be true
+            it 'should validate(:basic) successfully' do
+              subject.validate(:basic).should be true
+            end
+
+            it 'should not validate successfully' do
+              lambda { subject.validate }.should raise_error(Menu::InvalidStructureError)
             end
           end
 
@@ -87,8 +91,12 @@ module Adhearsion
               subject.limit.should be == 3
             end
 
-            it 'should validate successfully' do
-              subject.validate.should be true
+            it 'should validate(:basic) successfully' do
+              subject.validate(:basic).should be true
+            end
+
+            it 'should not validate successfully' do
+              lambda { subject.validate }.should raise_error(Menu::InvalidStructureError)
             end
           end
 
@@ -117,6 +125,10 @@ module Adhearsion
 
             it 'should validate successfully' do
               subject.validate.should be true
+            end
+
+            it 'should not validate(:basic) successfully' do
+              lambda { subject.validate :basic }.should raise_error(Menu::InvalidStructureError)
             end
           end
 
