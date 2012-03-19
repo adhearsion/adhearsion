@@ -6,12 +6,16 @@ module Adhearsion
       #
       # Dial a third party and join to this call
       #
-      # @param [String|Array<String>] number represents the extension or "number" that asterisk should dial.
+      # @param [String|Array<String>|Hash] number represents the extension or "number" that asterisk should dial.
       # Be careful to not just specify a number like 5001, 9095551001
       # You must specify a properly formatted string as Asterisk would expect to use in order to understand
       # whether the call should be dialed using SIP, IAX, or some other means.
       # You can also specify an array of destinations: each will be called with the same options simultaneously.
       # The first call answered is joined, the others are hung up.
+      # A hash argument has the dial target as each key, and an hash of options as the value, in the form:
+      # dial({'SIP/100' => {:timeout => 3000}, 'SIP/200' => {:timeout => 4000} })
+      # The option hash for each target is merged into the global options, overriding them for the single dial.
+      # Destinations are dialed simultaneously as with an array.
       #
       # @param [Hash] options
       #
@@ -33,7 +37,8 @@ module Adhearsion
       #   dial "IAX2/my.id@voipjet/19095551234", :from => "John Doe <9095551234>"
       #
       def dial(to, options = {}, latch = nil)
-        targets = Array(to)
+        targets = to.respond_to?(:has_key?) ? to : Array(to)
+
         status = DialStatus.new
 
         latch ||= CountDownLatch.new targets.size
@@ -45,7 +50,7 @@ module Adhearsion
 
         options[:from] ||= call.from
 
-        calls = targets.map do |target|
+        calls = targets.map do |target, specific_options|
           new_call = OutboundCall.new
 
           new_call.on_answer do |event|
@@ -74,11 +79,12 @@ module Adhearsion
             latch.countdown! unless new_call["dial_countdown_#{call.id}"]
           end
 
-          [new_call, target]
+          [new_call, target, specific_options]
         end
 
-        calls.map! do |call, target|
-          call.dial target, options
+        calls.map! do |call, target, specific_options|
+          local_options = options.dup.deep_merge specific_options if specific_options
+          call.dial target, (local_options || options)
           call
         end
 

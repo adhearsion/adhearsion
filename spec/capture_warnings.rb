@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'tempfile'
 stderr_file = Tempfile.new "ahn.stderr"
 $stderr.reopen stderr_file.path

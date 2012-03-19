@@ -4,7 +4,6 @@ require 'English'
 require 'tmpdir'
 require 'tempfile'
 
-# Require all other files here.
-Dir.glob File.join(File.dirname(__FILE__), "*rb") do |file|
+Dir.glob File.join(File.dirname(__FILE__), 'foundation', "*rb") do |file|
   require file
 end

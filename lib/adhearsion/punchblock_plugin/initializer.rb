@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require 'blather'
+
 module Adhearsion
   class PunchblockPlugin
     class Initializer
@@ -10,12 +12,15 @@ module Adhearsion
       class << self
         def init
           self.config = Adhearsion.config[:punchblock]
+
+          username = self.config.username
           connection_class = case (self.config.platform || :xmpp)
           when :xmpp
-            username = [self.config.username, resource].join('/')
+            username = Blather::JID.new username
+            username = Blather::JID.new username.node, username.domain, resource unless username.resource
+            username = username.to_s
             ::Punchblock::Connection::XMPP
           when :asterisk
-            username = self.config.username
             ::Punchblock::Connection::Asterisk
           end
 

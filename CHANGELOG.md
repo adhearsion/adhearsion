@@ -11,6 +11,9 @@
   * Feature: If `CallController#ask` is given a digit limit or terminator digit, specifying matches becomes optional and digit collection continues until one of those conditions is experienced
   * Feature: `CallController#ask` can now have a `validator` specified for early termination of input collection based on the current buffer
   * Change: `CallController#input` has been removed in favour of `#ask`
+  * Feature: CallController#dial now supports overriding or extra options for single call destinations
+  * Change: Added https://github.com/peritor/deep_merge as a runtime dependency
+  * Coding Standards: pre-commit script to run `rake encodeify` provided. Unit tests now check for encoding
 
 # 2.0.0.beta1 - 2012-03-07
   * Bugfix: #speak now correctly casts the argument to string if it is not SSML
