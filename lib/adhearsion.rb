@@ -18,7 +18,7 @@ abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby
   celluloid
 
   adhearsion/version
-  adhearsion/foundation/all
+  adhearsion/foundation
 }.each { |f| require f }
 
 module Adhearsion
