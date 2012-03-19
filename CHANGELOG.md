@@ -7,6 +7,7 @@
   * Feature: `CallControll#join` can be made non-blocking by passing `:async => true`
   * Feature: CallController#dial now supports overriding or extra options for single call destinations
   * Change: Added https://github.com/peritor/deep_merge as a runtime dependency
+  * Coding Standards: pre-commit script to run `rake encodeify` provided. Unit tests now check for encoding
 
 # 2.0.0.beta1 - 2012-03-07
   * Bugfix: #speak now correctly casts the argument to string if it is not SSML
