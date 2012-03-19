@@ -5,6 +5,7 @@
   * Change: `CallController#join` now blocks until a corresponding unjoined event is received
   * Feature: Added `Call#unjoin`
   * Feature: `CallControll#join` can be made non-blocking by passing `:async => true`
+  * Coding Standards: pre-commit script to run `rake encodeify` provided. Unit tests now check for encoding
 
 # 2.0.0.beta1 - 2012-03-07
   * Bugfix: #speak now correctly casts the argument to string if it is not SSML
