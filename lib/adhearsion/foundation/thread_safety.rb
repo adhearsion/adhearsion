@@ -11,7 +11,7 @@ end
 
 class ThreadSafeArray < BasicObject
   def initialize
-    @mutex = Mutex.new
+    @mutex = ::Mutex.new
     @array = []
   end
 
