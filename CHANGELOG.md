@@ -1,16 +1,13 @@
 # develop
   * Change: `CallController#speak` is now `CallController#say`
-  * Change: `CallController#menu` is now `CallController#ask`
-  * Change: 'ahn restart' now does not fail if the PID file is not found
+  * Change: `CallController#input` has been removed in favour of `#ask`
+  * Feature: `CallController#menu` and `CallController#ask` returns a `Result` object from which the status and response may be established
+  * Feature: `CallController#ask` behaves similarly to `#menu`, processing prompts and supporting `:terminator` and `:limit` options
+  * Feature: `CallController#menu` may now disallow the caller from interrupting prompts by specifying `:interruptible => false`
+  * Bugfix: 'ahn restart' now does not fail if the PID file is not found
   * Change: `CallController#join` now blocks until a corresponding unjoined event is received
   * Feature: Added `Call#unjoin`
   * Feature: `CallControll#join` can be made non-blocking by passing `:async => true`
-  * Feature: `CallController#ask` now supports `:terminator` and `:limit` options to add early termination by terminator digit or digit limit conditions
-  * Feature: `CallController#ask` may now disallow the caller from interrupting prompts by specifying `:interruptible => false`
-  * Change: `CallController#ask` now returns a menu object for establishing completion mode, input buffer (#result), etc
-  * Feature: If `CallController#ask` is given a digit limit or terminator digit, specifying matches becomes optional and digit collection continues until one of those conditions is experienced
-  * Feature: `CallController#ask` can now have a `validator` specified for early termination of input collection based on the current buffer
-  * Change: `CallController#input` has been removed in favour of `#ask`
   * Feature: CallController#dial now supports overriding or extra options for single call destinations
   * Change: Added https://github.com/peritor/deep_merge as a runtime dependency
   * Coding Standards: pre-commit script to run `rake encodeify` provided. Unit tests now check for encoding
