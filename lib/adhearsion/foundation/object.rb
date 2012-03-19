@@ -2,14 +2,11 @@
 
 require 'adhearsion/logging'
 
-module PBLoggerOverride
+class Object
+  undef :pb_logger
   def pb_logger
     logger
   end
-end
-
-class Object
-  include PBLoggerOverride
 
   def logger_id
     self

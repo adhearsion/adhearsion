@@ -77,6 +77,11 @@ module Adhearsion
 
           new_call.on_end do |event|
             latch.countdown! unless new_call["dial_countdown_#{call.id}"]
+
+            case event.reason
+            when :error
+              status.error!
+            end
           end
 
           [new_call, target, specific_options]
@@ -107,10 +112,13 @@ module Adhearsion
 
       class DialStatus
         attr_accessor :calls
-        attr_reader :result
 
         def initialize
-          @result = :no_answer
+          @result = nil
+        end
+
+        def result
+          @result || :no_answer
         end
 
         def answer!
@@ -118,7 +126,11 @@ module Adhearsion
         end
 
         def timeout!
-          @result = :timeout
+          @result ||= :timeout
+        end
+
+        def error!
+          @result ||= :error
         end
       end
 

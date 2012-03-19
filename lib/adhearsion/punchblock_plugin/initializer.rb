@@ -88,6 +88,7 @@ module Adhearsion
           blocker = ConditionVariable.new
 
           Events.punchblock ::Punchblock::Connection::Connected do
+            Adhearsion::Process.booted
             m.synchronize { blocker.broadcast }
           end
 
@@ -136,6 +137,7 @@ module Adhearsion
             call = Adhearsion.active_calls.from_offer offer
             case Adhearsion::Process.state_name
             when :booting, :rejecting
+              logger.info "Declining call because the process is not yet running."
               call.reject :decline
             when :running
               call.accept

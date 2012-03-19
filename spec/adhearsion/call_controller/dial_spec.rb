@@ -15,10 +15,13 @@ module Adhearsion
       let(:second_other_call_id)    { new_uuid }
       let(:second_other_mock_call)  { flexmock OutboundCall.new, :id => second_other_call_id }
 
-      let(:mock_end)      { flexmock Punchblock::Event::End.new, :reason => :hangup }
       let(:mock_answered) { Punchblock::Event::Answered.new }
 
       let(:latch) { CountDownLatch.new 1 }
+
+      def mock_end(reason = :hangup)
+        flexmock Punchblock::Event::End.new, :reason => reason
+      end
 
       describe "#dial" do
         before do
@@ -117,13 +120,29 @@ module Adhearsion
 
               sleep 0.5
 
-              other_mock_call << mock_end
+              other_mock_call << mock_end(:reject)
 
               latch.wait(2).should be_true
 
               t.join
               status = t.value
               status.result.should be == :no_answer
+            end
+          end
+
+          context "when the call ends with an error" do
+            it "has an overall dial status of :error" do
+              t = dial_in_thread
+
+              sleep 0.5
+
+              other_mock_call << mock_end(:error)
+
+              latch.wait(2).should be_true
+
+              t.join
+              status = t.value
+              status.result.should be == :error
             end
           end
 
@@ -297,8 +316,8 @@ module Adhearsion
 
               sleep 0.5
 
-              other_mock_call << mock_end
-              second_other_mock_call << mock_end
+              other_mock_call << mock_end(:reject)
+              second_other_mock_call << mock_end(:reject)
 
               latch.wait(2).should be_true
 
@@ -308,7 +327,7 @@ module Adhearsion
             end
           end
 
-          context "when a call is answered and joined" do
+          context "when a call is answered and joined, and the other ends with an error" do
             it "has an overall dial status of :answer" do
               flexmock(other_mock_call).should_receive(:join).once.with(call)
               flexmock(second_other_mock_call).should_receive(:hangup).once
@@ -320,7 +339,7 @@ module Adhearsion
               other_mock_call << mock_answered
               other_mock_call << mock_end
 
-              second_other_mock_call << mock_end
+              second_other_mock_call << mock_end(:error)
 
               latch.wait(1).should be_true
 
