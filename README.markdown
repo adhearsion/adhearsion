@@ -69,6 +69,7 @@ Contributions
 -----------------------------
 
 Adhearsion has a set of [contribution guidelines](https://github.com/adhearsion/adhearsion/wiki/Contributing) which help to smooth the contribution process.
+There is a pre-commit hook that runs encoding checks available in pre-commit. To use it, please copy it to .git/hooks/pre-commit and make it executable.
 
 Copyright
 ---------

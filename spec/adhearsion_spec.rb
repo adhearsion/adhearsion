@@ -68,4 +68,13 @@ describe Adhearsion do
       Adhearsion.status.should be == :booting
     end
   end
+
+  it "should have an encoding on all files" do
+    Dir['{bin,features,lib,spec}/**/*.rb'].each do |filename|
+      File.open filename do |file|
+        first_line = file.first
+        first_line.should == "# encoding: utf-8\n"
+      end
+    end
+  end
 end
