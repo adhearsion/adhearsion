@@ -10,7 +10,7 @@ at_exit do
   lines = stderr_file.read.split("\n").uniq
   stderr_file.close!
 
-  ahn_warnings, other_warnings = lines.partition { |line| line.include?(current_dir) && !line.include?('vendor') }
+  ahn_warnings, other_warnings = lines.partition { |line| line.include?(current_dir) && !line.include?('vendor') && line.include?('warning') }
 
   if ahn_warnings.any?
     puts
