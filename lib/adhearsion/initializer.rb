@@ -54,10 +54,9 @@ module Adhearsion
       run_plugins
       trigger_after_initialized_hooks
 
-      if Adhearsion.status == :booting
-        Adhearsion::Process.booted
-        logger.info "Adhearsion v#{Adhearsion::VERSION} initialized in \"#{Adhearsion.config.platform.environment}\"!"
-      end
+      Adhearsion::Process.booted if Adhearsion.status == :booting
+
+      logger.info "Adhearsion v#{Adhearsion::VERSION} initialized in \"#{Adhearsion.config.platform.environment}\"!" if Adhearsion.status == :running
 
       # This method will block until all important threads have finished.
       # When it does, the process will exit.
