@@ -130,8 +130,11 @@ module Adhearsion
         let(:result_get_another_or_finish)  { MenuDSL::Menu::MenuGetAnotherDigitOrFinish.new(:match_object, :new_extension) }
         let(:result_found)                  { MenuDSL::Menu::MenuResultFound.new(:match_object, :new_extension) }
 
+        let(:status) { :foo }
+        let(:response) { '1234' }
+
         before do
-          flexmock menu_instance
+          flexmock menu_instance, :status => status, :result => response
           flexmock(MenuDSL::Menu).should_receive(:new).and_return(menu_instance)
         end
 
@@ -139,28 +142,32 @@ module Adhearsion
           menu_instance.should_receive(:should_continue?).and_return(true)
           menu_instance.should_receive(:continue).and_return(result_done)
           result = subject.menu sound_files
-          result.should be menu_instance
+          result.menu.should be menu_instance
+          result.response.should be response
         end
 
         it "exits the function if MenuTerminated" do
           menu_instance.should_receive(:should_continue?).and_return(true)
           menu_instance.should_receive(:continue).and_return(result_terminated)
           result = subject.menu sound_files
-          result.should be menu_instance
+          result.menu.should be menu_instance
+          result.response.should be response
         end
 
         it "exits the function if MenuLimitReached" do
           menu_instance.should_receive(:should_continue?).and_return(true)
           menu_instance.should_receive(:continue).and_return(result_limit_reached)
           result = subject.menu sound_files
-          result.should be menu_instance
+          result.menu.should be menu_instance
+          result.response.should be response
         end
 
         it "executes failure hook and returns :failure if menu fails" do
           menu_instance.should_receive(:should_continue?).and_return(false)
           menu_instance.should_receive(:execute_failure_hook)
           result = subject.menu sound_files
-          result.should be menu_instance
+          result.menu.should be menu_instance
+          result.response.should be response
         end
 
         it "executes invalid hook if input is invalid" do
@@ -169,7 +176,8 @@ module Adhearsion
           menu_instance.should_receive(:execute_invalid_hook)
           menu_instance.should_receive(:restart!)
           result = subject.menu sound_files
-          result.should be menu_instance
+          result.menu.should be menu_instance
+          result.response.should be response
         end
 
         it "plays audio, then executes timeout hook if input times out" do
@@ -202,7 +210,8 @@ module Adhearsion
           menu_instance.should_receive(:continue).and_return(result_found)
           subject.should_receive(:jump_to).with(:match_object, :extension => :new_extension)
           result = subject.menu sound_files
-          result.should be menu_instance
+          result.menu.should be menu_instance
+          result.response.should be response
         end
 
         context "if a digit limit is specified" do
@@ -229,27 +238,33 @@ module Adhearsion
           let(:result_get_another_or_finish)  { MenuDSL::Menu::MenuGetAnotherDigitOrFinish.new(:match_object, :new_extension) }
           let(:result_found)                  { MenuDSL::Menu::MenuResultFound.new(:match_object, :new_extension) }
 
+          let(:status)    { :foo }
+          let(:response)  { '1234' }
+
           before do
-            flexmock menu_instance
+            flexmock menu_instance, :status => status, :result => response
             flexmock(MenuDSL::Menu).should_receive(:new).and_return(menu_instance)
           end
 
           it "exits the function if MenuResultDone" do
             menu_instance.should_receive(:continue).and_return(result_done)
             result = subject.ask sound_files
-            result.should be menu_instance
+            result.menu.should be menu_instance
+            result.response.should be response
           end
 
           it "exits the function if MenuTerminated" do
             menu_instance.should_receive(:continue).and_return(result_terminated)
             result = subject.ask sound_files
-            result.should be menu_instance
+            result.menu.should be menu_instance
+            result.response.should be response
           end
 
           it "exits the function if MenuLimitReached" do
             menu_instance.should_receive(:continue).and_return(result_limit_reached)
             result = subject.ask sound_files
-            result.should be menu_instance
+            result.menu.should be menu_instance
+            result.response.should be response
           end
 
           it "plays audio, then executes timeout hook if input times out" do
@@ -274,7 +289,7 @@ module Adhearsion
             subject.should_receive(:play_sound_files_for_menu).and_return("1")
             subject.ask sound_files, :limit => 0 do |buffer|
               foo = :bar
-            end.execute_validator_hook
+            end.menu.execute_validator_hook
             foo.should be == :bar
           end
         end

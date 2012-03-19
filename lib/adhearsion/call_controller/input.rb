@@ -4,8 +4,10 @@ module Adhearsion
   class CallController
     module Input
 
-      # Creates and manages a multiple choice menu driven by DTMF, handling playback of prompts,
-      # invalid input, retries and timeouts, and final failures.
+      Result = Struct.new(:response, :status, :menu)
+
+      # Prompts for input via DTMF, handling playback of prompts,
+      # timeouts, digit limits and terminator digits.
       #
       # @example A basic digit collection:
       #   ask "Welcome, ", "/opt/sounds/menu-prompt.mp3",
@@ -19,12 +21,12 @@ module Adhearsion
       #
       # @param [Object] A list of outputs to play, as accepted by #play
       # @param [Hash] options Options to use for the menu
+      # @option options [Boolean] :interruptible If the prompt should be interruptible or not. Defaults to true
       # @option options [Integer] :limit Digit limit (causes collection to cease after a specified number of digits have been collected)
       # @option options [Integer] :timeout Timeout in seconds before the first and between each input digit
-      # @option options [Boolean] :interruptible If the prompt should be interruptible or not. Defaults to true
       # @option options [String] :terminator Digit to terminate input
       #
-      # @return [Adhearsion::MenuDSL::Menu] a menu object on which #status may be called to establish the completion mode of the operation
+      # @return [Result] a result object from which the #response and #status may be established
       #
       # @see play
       # @see pass
@@ -48,7 +50,11 @@ module Adhearsion
           end # case
         end # while
 
-        menu_instance
+        Result.new.tap do |result|
+          result.response = menu_instance.result
+          result.status   = menu_instance.status
+          result.menu     = menu_instance
+        end
       end
 
       # Creates and manages a multiple choice menu driven by DTMF, handling playback of prompts,
@@ -99,7 +105,7 @@ module Adhearsion
       # @option options [Integer] :timeout Timeout in seconds before the first and between each input digit
       # @option options [Boolean] :interruptible If the prompt should be interruptible or not. Defaults to true
       #
-      # @return [Adhearsion::MenuDSL::Menu] a menu object on which #status may be called to establish the completion mode of the operation
+      # @return [Result] a result object from which the #response and #status may be established
       #
       # @see play
       # @see pass
@@ -152,7 +158,11 @@ module Adhearsion
           end # while
         end
 
-        menu_instance
+        Result.new.tap do |result|
+          result.response = menu_instance.result
+          result.status   = menu_instance.status
+          result.menu     = menu_instance
+        end
       end
 
       def play_sound_files_for_menu(menu_instance, sound_files) # :nodoc:
