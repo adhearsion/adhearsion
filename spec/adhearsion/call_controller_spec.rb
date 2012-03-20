@@ -42,8 +42,16 @@ module Adhearsion
 
       it "catches standard errors, triggering an exception event" do
         subject.should_receive(:run).once.and_raise(StandardError).ordered
-        flexmock(Events).should_receive(:trigger).once.with(:exception, StandardError).ordered
+        latch = CountDownLatch.new 1
+        ex = lo = nil
+        Events.exception do |e, l|
+          ex, lo = e, l
+          latch.countdown!
+        end
         subject.execute!
+        latch.wait(1).should be true
+        ex.should be_a StandardError
+        lo.should be subject.logger
       end
 
       context "when a block is specified" do
