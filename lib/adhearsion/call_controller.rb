@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Adhearsion
   class CallController
     extend ActiveSupport::Autoload
@@ -6,14 +8,12 @@ module Adhearsion
     autoload :Input
     autoload :Output
     autoload :Record
-    autoload :Menu
     autoload :Utility
 
     include Dial
     include Input
     include Output
     include Record
-    include Menu
     include Utility
 
     class_attribute :callbacks
@@ -63,16 +63,16 @@ module Adhearsion
       call.register_controller! self
       execute_callbacks :before_call
       run
-    rescue Hangup
+    rescue Call::Hangup
       logger.info "Call was hung up"
     rescue SyntaxError, StandardError => e
-      Events.trigger :exception, e
+      Events.trigger :exception, [e, logger]
     ensure
       after_call
     end
 
     def run
-      instance_exec &block if block
+      instance_exec(&block) if block
     end
 
     def invoke(controller_class, metadata = nil)
@@ -87,7 +87,7 @@ module Adhearsion
     def execute_callbacks(type) # :nodoc:
       self.class.callbacks[type].each do |callback|
         catching_standard_errors do
-          instance_exec &callback
+          instance_exec(&callback)
         end
       end
     end
@@ -113,37 +113,48 @@ module Adhearsion
       yield component if block_given?
 
       complete_event = component.complete_event
-      raise StandardError, complete_event.reason.details if complete_event.reason.is_a? Punchblock::Event::Complete::Error
+      raise StandardError, [complete_event.reason.details, component.inspect].join(": ") if complete_event.reason.is_a? Punchblock::Event::Complete::Error
       component
     end
 
     def answer(*args)
       block_until_resumed
-      call.answer *args
+      call.answer(*args)
     end
 
     def reject(*args)
       block_until_resumed
-      call.reject *args
+      call.reject(*args)
     end
 
     def mute(*args)
       block_until_resumed
-      call.mute *args
+      call.mute(*args)
     end
 
     def unmute(*args)
       block_until_resumed
-      call.unmute *args
+      call.unmute(*args)
     end
 
-    def join(*args)
+    def join(target, options = {})
+      async = if target.is_a?(Hash)
+        target.delete :async
+      else
+        options.delete :async
+      end
       block_until_resumed
-      call.join *args
+      join_command = call.join target, options
+      waiter = join_command.other_call_id || join_command.mixer_name
+      if async
+        call.wait_for_joined waiter
+      else
+        call.wait_for_unjoined waiter
+      end
     end
 
     def block_until_resumed # :nodoc:
-      @pause_latch && @pause_latch.wait
+      instance_variable_defined?(:@pause_latch) && @pause_latch.wait
     end
 
     def pause! # :nodoc:

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module CallControllerTestHelpers
   include FlexMock::ArgumentTypes
 
@@ -28,10 +30,6 @@ module CallControllerTestHelpers
 
   def expect_component_execution(component)
     subject.should_receive(:execute_component_and_await_completion).once.with(component).and_return(component)
-  end
-
-  def expect_component_execution_asynchronously(component)
-    subject.should_receive(:execute_component).once.with(component).and_return(component)
   end
 
   def mock_with_potential_matches(potential_matches)

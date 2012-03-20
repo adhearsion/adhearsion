@@ -1,15 +1,21 @@
+# encoding: utf-8
+
 module Adhearsion
   class CallController
     module Dial
       #
       # Dial a third party and join to this call
       #
-      # @param [String|Array<String>] number represents the extension or "number" that asterisk should dial.
+      # @param [String|Array<String>|Hash] number represents the extension or "number" that asterisk should dial.
       # Be careful to not just specify a number like 5001, 9095551001
       # You must specify a properly formatted string as Asterisk would expect to use in order to understand
       # whether the call should be dialed using SIP, IAX, or some other means.
       # You can also specify an array of destinations: each will be called with the same options simultaneously.
       # The first call answered is joined, the others are hung up.
+      # A hash argument has the dial target as each key, and an hash of options as the value, in the form:
+      # dial({'SIP/100' => {:timeout => 3000}, 'SIP/200' => {:timeout => 4000} })
+      # The option hash for each target is merged into the global options, overriding them for the single dial.
+      # Destinations are dialed simultaneously as with an array.
       #
       # @param [Hash] options
       #
@@ -31,7 +37,8 @@ module Adhearsion
       #   dial "IAX2/my.id@voipjet/19095551234", :from => "John Doe <9095551234>"
       #
       def dial(to, options = {}, latch = nil)
-        targets = Array(to)
+        targets = to.respond_to?(:has_key?) ? to : Array(to)
+
         status = DialStatus.new
 
         latch ||= CountDownLatch.new targets.size
@@ -43,40 +50,46 @@ module Adhearsion
 
         options[:from] ||= call.from
 
-        calls = targets.map do |target|
+        calls = targets.map do |target, specific_options|
           new_call = OutboundCall.new
 
           new_call.on_answer do |event|
-            calls.each do |call_to_hangup, target|
+            calls.each do |call_to_hangup, _|
               begin
                 next if call_to_hangup.id == new_call.id
-                logger.debug "Hanging up call #{call_to_hangup.id} because it was not the first to answer a #dial"
+                logger.debug "#dial hanging up call #{call_to_hangup.id} because this call has been answered by another channel"
                 call_to_hangup.hangup
               rescue Celluloid::DeadActorError
                 # This actor may previously have been shut down due to the call ending
               end
             end
 
-            new_call.register_event_handler Punchblock::Event::Unjoined, :other_call_id => call.id do |event|
+            new_call.register_event_handler Punchblock::Event::Unjoined, :other_call_id => call.id do |unjoined|
               new_call["dial_countdown_#{call.id}"] = true
               latch.countdown!
               throw :pass
             end
 
-            logger.debug "Joining call #{new_call.id} to #{call.id} due to a #dial"
+            logger.debug "#dial joining call #{new_call.id} to #{call.id}"
             new_call.join call
             status.answer!
           end
 
           new_call.on_end do |event|
             latch.countdown! unless new_call["dial_countdown_#{call.id}"]
+
+            case event.reason
+            when :error
+              status.error!
+            end
           end
 
-          [new_call, target]
+          [new_call, target, specific_options]
         end
 
-        calls.map! do |call, target|
-          call.dial target, options
+        calls.map! do |call, target, specific_options|
+          local_options = options.dup.deep_merge specific_options if specific_options
+          call.dial target, (local_options || options)
           call
         end
 
@@ -85,10 +98,9 @@ module Adhearsion
         no_timeout = latch.wait options[:timeout]
         status.timeout! unless no_timeout
 
-        logger.debug "#dial finished. Hanging up #{calls.size} outbound calls #{calls.inspect}."
+        logger.debug "#dial finished. Hanging up #{calls.size} outbound calls: #{calls.map(&:id).join ", "}."
         calls.each do |outbound_call|
           begin
-            logger.debug "Hanging up #{outbound_call} because the #dial that created it is complete."
             outbound_call.hangup
           rescue Celluloid::DeadActorError
             # This actor may previously have been shut down due to the call ending
@@ -100,10 +112,13 @@ module Adhearsion
 
       class DialStatus
         attr_accessor :calls
-        attr_reader :result
 
         def initialize
-          @result = :no_answer
+          @result = nil
+        end
+
+        def result
+          @result || :no_answer
         end
 
         def answer!
@@ -111,7 +126,11 @@ module Adhearsion
         end
 
         def timeout!
-          @result = :timeout
+          @result ||= :timeout
+        end
+
+        def error!
+          @result ||= :error
         end
       end
 

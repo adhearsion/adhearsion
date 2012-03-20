@@ -1,8 +1,10 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 module Adhearsion
   describe Call do
-    let(:mock_client) { flexmock('Client').tap &:should_ignore_missing }
+    let(:mock_client) { flexmock('Client').tap(&:should_ignore_missing) }
 
     let(:call_id) { rand }
     let(:headers) { nil }
@@ -27,32 +29,31 @@ module Adhearsion
 
     it { should respond_to :<< }
 
-    its(:end_reason) { should == nil }
+    its(:end_reason) { should be == nil }
     it { should be_active }
 
-    its(:commands) { should be_a Call::CommandRegistry }
     its(:commands) { should be_empty }
 
-    its(:id)      { should == call_id }
-    its(:to)      { should == to }
-    its(:from)    { should == from }
+    its(:id)      { should be == call_id }
+    its(:to)      { should be == to }
+    its(:from)    { should be == from }
     its(:offer)   { should be offer }
     its(:client)  { should be mock_client }
 
-    its(:after_end_hold_time) { should == 30 }
+    its(:after_end_hold_time) { should be == 30 }
 
     describe "its variables" do
       context "with an offer with headers" do
         let(:headers)   { {:x_foo => 'bar'} }
-        its(:variables) { should == headers }
+        its(:variables) { should be == headers }
 
         it "should be made available via []" do
-          subject[:x_foo].should == 'bar'
+          subject[:x_foo].should be == 'bar'
         end
 
         it "should be alterable using []=" do
           subject[:x_foo] = 'baz'
-          subject[:x_foo].should == 'baz'
+          subject[:x_foo].should be == 'baz'
         end
 
         context "when receiving an event with headers" do
@@ -60,7 +61,7 @@ module Adhearsion
 
           it "should merge later headers" do
             subject << event
-            subject.variables.should == {:x_foo => 'bar', :x_bar => 'foo'}
+            subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
           end
         end
 
@@ -69,19 +70,19 @@ module Adhearsion
 
           it "should merge later headers" do
             subject.write_command command
-            subject.variables.should == {:x_foo => 'bar', :x_bar => 'foo'}
+            subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
           end
         end
       end
 
       context "with an offer without headers" do
         let(:headers)   { nil }
-        its(:variables) { should == {} }
+        its(:variables) { should be == {} }
       end
 
       context "without an offer" do
         let(:offer)     { nil }
-        its(:variables) { should == {} }
+        its(:variables) { should be == {} }
       end
     end
 
@@ -133,7 +134,7 @@ module Adhearsion
 
         it "should set the end reason" do
           subject << end_event
-          subject.end_reason.should == :hangup
+          subject.end_reason.should be == :hangup
         end
 
         it "should instruct the command registry to terminate" do
@@ -145,10 +146,10 @@ module Adhearsion
           size_before = Adhearsion.active_calls.size
 
           Adhearsion.active_calls << subject
-          Adhearsion.active_calls.size.should > size_before
+          Adhearsion.active_calls.size.should be > size_before
 
           subject << end_event
-          Adhearsion.active_calls.size.should == size_before
+          Adhearsion.active_calls.size.should be == size_before
         end
 
         it "shuts down the actor" do
@@ -190,7 +191,7 @@ module Adhearsion
       subject.tag :female
       subject.remove_tag :female
       subject.tag :male
-      subject.tags.should == [:moderator, :male]
+      subject.tags.should be == [:moderator, :male]
     end
 
     describe "#tagged_with?" do
@@ -214,7 +215,7 @@ module Adhearsion
       it "should asynchronously write the command to the Punchblock connection" do
         mock_client = flexmock('Client')
         flexmock(subject.wrapped_object).should_receive(:client).once.and_return mock_client
-        mock_client.should_receive(:execute_command).once.with(mock_command, :call_id => subject.id).and_return true
+        mock_client.should_receive(:execute_command).once.with(mock_command, :call_id => subject.id, :async => true).and_return true
         subject.write_command mock_command
       end
 
@@ -224,7 +225,7 @@ module Adhearsion
         end
 
         it "should raise a Hangup exception" do
-          lambda { subject.write_command mock_command }.should raise_error(Hangup)
+          lambda { subject.write_command mock_command }.should raise_error(Call::Hangup)
         end
 
         describe "if the command is a Hangup" do
@@ -258,6 +259,7 @@ module Adhearsion
 
       it "blocks until a response is received" do
         slow_command = Punchblock::Command::Dial.new
+        slow_command.request!
         Thread.new do
           sleep 0.5
           slow_command.response = response
@@ -274,12 +276,21 @@ module Adhearsion
       end
 
       describe "with an error response" do
-        let(:new_exception) { Class.new Exception }
+        let(:new_exception) { Punchblock::ProtocolError }
         let(:response) { new_exception.new }
 
         it "raises the error" do
           flexmock(Events).should_receive(:trigger).never
           lambda { subject.write_and_await_response message }.should raise_error new_exception
+        end
+
+        context "where the name is :item_not_found" do
+          let(:response) { new_exception.new :item_not_found }
+
+          it "should raise a Hangup exception" do
+            flexmock(Events).should_receive(:trigger).never
+            lambda { subject.write_and_await_response message }.should raise_error Call::Hangup
+          end
         end
       end
 
@@ -289,7 +300,7 @@ module Adhearsion
         end
 
         it "should raise the error in the caller but not crash the actor" do
-          lambda { subject.write_and_await_response message }.should raise_error Timeout::Error
+          lambda { subject.write_and_await_response message }.should raise_error Call::CommandTimeout, message.to_s
           sleep 0.5
           subject.should be_alive
         end
@@ -497,6 +508,63 @@ module Adhearsion
         end
       end
 
+      describe "#unjoin" do
+        def expect_unjoin_with_options(options = {})
+          Punchblock::Command::Unjoin.new(options).tap do |unjoin|
+            expect_message_waiting_for_response unjoin
+          end
+        end
+
+        context "with a call" do
+          let(:call_id) { rand.to_s }
+          let(:target)  { flexmock Call.new, :id => call_id }
+
+          it "should send an unjoin command unjoining from the provided call ID" do
+            expect_unjoin_with_options :other_call_id => call_id
+            subject.unjoin target
+          end
+        end
+
+        context "with a call ID" do
+          let(:target) { rand.to_s }
+
+          it "should send an unjoin command unjoining from the provided call ID" do
+            expect_unjoin_with_options :other_call_id => target
+            subject.unjoin target
+          end
+        end
+
+        context "with a call ID as a hash key" do
+          let(:call_id) { rand.to_s }
+          let(:target)  { { :call_id => call_id } }
+
+          it "should send an unjoin command unjoining from the provided call ID" do
+            expect_unjoin_with_options :other_call_id => call_id
+            subject.unjoin target
+          end
+        end
+
+        context "with a mixer name as a hash key" do
+          let(:mixer_name)  { rand.to_s }
+          let(:target)      { { :mixer_name => mixer_name } }
+
+          it "should send an unjoin command unjoining from the provided call ID" do
+            expect_unjoin_with_options :mixer_name => mixer_name
+            subject.unjoin target
+          end
+        end
+
+        context "with a call ID and a mixer name as hash keys" do
+          let(:call_id)     { rand.to_s }
+          let(:mixer_name)  { rand.to_s }
+          let(:target)      { { :call_id => call_id, :mixer_name => mixer_name } }
+
+          it "should raise an ArgumentError" do
+            lambda { subject.unjoin target }.should raise_error ArgumentError, /call ID and mixer name/
+          end
+        end
+      end
+
       describe "#mute" do
         it 'should send a Mute message' do
           expect_message_waiting_for_response Punchblock::Command::Mute.new
@@ -612,9 +680,9 @@ module Adhearsion
           end
           subject.terminate
           commands.each do |command|
-            command.response.should be_a Hangup
+            command.response.should be_a Call::Hangup
           end
-          finished_command.response.should == :foo
+          finished_command.response.should be == :foo
         end
       end
     end

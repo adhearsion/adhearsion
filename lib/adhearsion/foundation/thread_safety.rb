@@ -1,15 +1,17 @@
+# encoding: utf-8
+
 require 'thread'
 
 class Object
   def synchronize(&block)
     @mutex ||= Mutex.new
-    @mutex.synchronize &block
+    @mutex.synchronize(&block)
   end
 end
 
-class ThreadSafeArray
+class ThreadSafeArray < BasicObject
   def initialize
-    @mutex = Mutex.new
+    @mutex = ::Mutex.new
     @array = []
   end
 
@@ -17,13 +19,5 @@ class ThreadSafeArray
     @mutex.synchronize do
       @array.send method, *args, &block
     end
-  end
-
-  def inspect
-    @mutex.synchronize { @array.inspect }
-  end
-
-  def to_s
-    @mutex.synchronize { @array.to_s }
   end
 end

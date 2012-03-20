@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 require 'adhearsion/generators'
 
@@ -10,7 +12,7 @@ module Adhearsion
         DummyGenerator = Class.new
 
         Generators.add_generator generator_key, DummyGenerator
-        Generators.mappings[generator_key].should == DummyGenerator
+        Generators.mappings[generator_key].should be == DummyGenerator
       end
     end
   end

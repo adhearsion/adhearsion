@@ -1,6 +1,9 @@
-module Adhearsion
+# encoding: utf-8
 
+module Adhearsion
   class Configuration
+
+    ConfigurationError = Class.new StandardError # Error raised while trying to configure a non existent plugin
 
     ##
     # Initialize the configuration object
@@ -72,9 +75,10 @@ module Adhearsion
     end
 
     def add_environment(env)
+      return if self.class.method_defined? env.to_sym
       self.class.send(:define_method, env.to_sym) do |*args, &block|
         unless block.nil? || env != self.platform.environment.to_sym
-          self.instance_eval &block
+          self.instance_eval(&block)
         end
         self
       end
@@ -96,7 +100,7 @@ module Adhearsion
     # Adhearsion.config.foo => returns the configuration object associated to the foo plugin
     def method_missing(method_name, *args, &block)
       config = Loquacious::Configuration.for method_name, &block
-      raise Adhearsion::ConfigurationError.new "Invalid plugin #{method_name}" if config.nil?
+      raise Adhearsion::Configuration::ConfigurationError.new "Invalid plugin #{method_name}" if config.nil?
       config
     end
 

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Adhearsion
 
   # https://gist.github.com/1350729

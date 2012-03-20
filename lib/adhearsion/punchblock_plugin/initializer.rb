@@ -1,3 +1,7 @@
+# encoding: utf-8
+
+require 'blather'
+
 module Adhearsion
   class PunchblockPlugin
     class Initializer
@@ -8,12 +12,15 @@ module Adhearsion
       class << self
         def init
           self.config = Adhearsion.config[:punchblock]
+
+          username = self.config.username
           connection_class = case (self.config.platform || :xmpp)
           when :xmpp
-            username = [self.config.username, resource].join('/')
+            username = Blather::JID.new username
+            username = Blather::JID.new username.node, username.domain, resource unless username.resource
+            username = username.to_s
             ::Punchblock::Connection::XMPP
           when :asterisk
-            username = self.config.username
             ::Punchblock::Connection::Asterisk
           end
 
@@ -50,7 +57,7 @@ module Adhearsion
 
           # Handle events from Punchblock via events system
           self.client.register_event_handler do |event|
-            Events.trigger :punchblock, event
+            handle_event event
           end
 
           Events.punchblock ::Punchblock::Connection::Connected do |event|
@@ -81,6 +88,7 @@ module Adhearsion
           blocker = ConditionVariable.new
 
           Events.punchblock ::Punchblock::Connection::Connected do
+            Adhearsion::Process.booted
             m.synchronize { blocker.broadcast }
           end
 
@@ -103,15 +111,21 @@ module Adhearsion
             client.run
           rescue ::Punchblock::DisconnectedError => e
             # We only care about disconnects if the process is up or booting
-            if [:booting, :running].include? Adhearsion::Process.state_name
-              self.attempts += 1
-              Adhearsion::Process.reset unless Adhearsion::Process.state_name == :booting
-              logger.error "Connection lost. Attempting reconnect #{self.attempts} of #{self.config.reconnect_attempts}"
-              sleep self.config.reconnect_timer
-              retry unless self.attempts >= self.config.reconnect_attempts
-              logger.fatal "Connection retry attempts exceeded"
-              raise e
+            return unless [:booting, :running].include? Adhearsion::Process.state_name
+
+            Adhearsion::Process.reset unless Adhearsion::Process.state_name == :booting
+
+            self.attempts += 1
+
+            if self.attempts >= self.config.reconnect_attempts
+              logger.fatal "Connection lost. Connection retry attempts exceeded."
+              Adhearsion::Process.stop!
+              return
             end
+
+            logger.error "Connection lost. Attempting reconnect #{self.attempts} of #{self.config.reconnect_attempts}"
+            sleep self.config.reconnect_timer
+            retry
           rescue ::Punchblock::ProtocolError => e
             logger.fatal "The connection failed due to a protocol error: #{e.name}."
             raise e
@@ -123,6 +137,7 @@ module Adhearsion
             call = Adhearsion.active_calls.from_offer offer
             case Adhearsion::Process.state_name
             when :booting, :rejecting
+              logger.info "Declining call because the process is not yet running."
               call.reject :decline
             when :running
               call.accept
@@ -139,6 +154,14 @@ module Adhearsion
             call.deliver_message! event
           else
             logger.error "Event received for inactive call #{event.call_id}: #{event.inspect}"
+          end
+        end
+
+        def handle_event(event)
+          Events.trigger :punchblock, event
+          case event
+          when Punchblock::Event::Asterisk::AMI::Event
+            Events.trigger :ami, event
           end
         end
 

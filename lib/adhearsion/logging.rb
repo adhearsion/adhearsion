@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'logging'
 
 module Adhearsion
@@ -11,14 +13,14 @@ module Adhearsion
 
       ::Logging.color_scheme 'bright',
         :levels => {
+          :debug => :magenta,
           :info  => :green,
           :warn  => :yellow,
           :error => :red,
           :fatal => [:white, :on_red]
         },
-        :date     => :blue,
-        :logger   => :cyan,
-        :message  => :magenta
+        :date     => [:bold, :blue],
+        :logger   => :cyan
 
       def adhearsion_pattern
         '[%d] %-5l %c: %m\n'

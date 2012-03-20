@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Adhearsion
   module Generators
     class PluginGenerator < Generator

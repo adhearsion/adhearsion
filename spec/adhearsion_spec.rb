@@ -1,10 +1,12 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 describe Adhearsion do
   describe "#ahn_root=" do
     it "should update properly the config root variable" do
       Adhearsion.ahn_root = "./"
-      Adhearsion.config[:platform].root.should == Dir.getwd
+      Adhearsion.config[:platform].root.should be == Dir.getwd
     end
 
     it "should update properly the config root variable when path is nil" do
@@ -63,7 +65,16 @@ describe Adhearsion do
 
   describe "#status" do
     it "should be the process status name" do
-      Adhearsion.status.should == :booting
+      Adhearsion.status.should be == :booting
+    end
+  end
+
+  it "should have an encoding on all files" do
+    Dir['{bin,features,lib,spec}/**/*.rb'].each do |filename|
+      File.open filename do |file|
+        first_line = file.first
+        first_line.should == "# encoding: utf-8\n"
+      end
     end
   end
 end

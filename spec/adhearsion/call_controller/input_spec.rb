@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 module Adhearsion
@@ -5,63 +7,33 @@ module Adhearsion
     describe Input do
       include CallControllerTestHelpers
 
-      describe "#grammar_digits" do
-        let(:grxml) {
-          RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
-            rule id: 'inputdigits', scope: 'public' do
-              item repeat: '2' do
-                one_of do
-                  0.upto(9) { |d| item { d.to_s } }
-                end
-              end
-            end
+      describe "#play_sound_files_for_menu" do
+        let(:options) { Hash.new }
+        let(:menu_instance) { Adhearsion::MenuDSL::Menu.new(options) }
+        let(:sound_file) { "press a button" }
+        let(:sound_files) { [sound_file] }
+
+        it "should play the sound files for the menu" do
+          subject.should_receive(:interruptible_play).with(sound_file).and_return("1")
+          subject.play_sound_files_for_menu(menu_instance, sound_files).should be == '1'
+        end
+
+        it "should wait for digit if nothing is pressed during playback" do
+          subject.should_receive(:interruptible_play).with(sound_file).and_return(nil)
+          subject.should_receive(:wait_for_digit).with(menu_instance.timeout).and_return("1")
+          subject.play_sound_files_for_menu(menu_instance, sound_files).should be == '1'
+        end
+
+        context "when the menu is not interruptible" do
+          let(:options) { { :interruptible => false } }
+
+          it "should play the sound files and wait for digit" do
+            subject.should_receive(:play).with(sound_file).and_return true
+            subject.should_receive(:wait_for_digit).with(menu_instance.timeout).and_return("1")
+            subject.play_sound_files_for_menu(menu_instance, sound_files).should be == '1'
           end
-        }
-
-        it 'generates the correct GRXML grammar' do
-          subject.grammar_digits(2).to_s.should == grxml.to_s
         end
-
-      end # describe #grammar_digits
-
-      describe "#grammar_accept" do
-        let(:grxml) {
-          RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
-            rule id: 'inputdigits', scope: 'public' do
-              one_of do
-                item { '3' }
-                item { '5' }
-              end
-            end
-          end
-        }
-
-        it 'generates the correct GRXML grammar' do
-          subject.grammar_accept('35').to_s.should == grxml.to_s
-        end
-
-        it 'filters meaningless characters out' do
-          subject.grammar_accept('3+5').to_s.should == grxml.to_s
-        end
-      end # grammar_accept
-
-      describe "#parse_single_dtmf"  do
-        it "correctly returns the parsed input" do
-          subject.parse_single_dtmf("dtmf-3").should == '3'
-        end
-
-        it "correctly returns star as *" do
-          subject.parse_single_dtmf("dtmf-star").should == '*'
-        end
-
-        it "correctly returns pound as #" do
-          subject.parse_single_dtmf("dtmf-pound").should == '#'
-        end
-
-        it "correctly returns nil when input is nil" do
-          subject.parse_single_dtmf(nil).should == nil
-        end
-      end # describe #grammar_accept
+      end#play_sound_files_for_menu
 
       describe "#wait_for_digit" do
         let(:timeout) { 2 }
@@ -109,7 +81,7 @@ module Adhearsion
         it "returns the correct pressed digit" do
           expect_component_complete_event
           subject.should_receive(:execute_component_and_await_completion).once.with(Punchblock::Component::Input).and_return input_component
-          subject.wait_for_digit(timeout).should == '5'
+          subject.wait_for_digit(timeout).should be == '5'
         end
 
         context "with a nil timeout" do
@@ -124,155 +96,206 @@ module Adhearsion
         end
       end # wait_for_digit
 
-      describe "#input!" do
-        describe "simple usage" do
-          let(:timeout) { 3000 }
+      describe "#jump_to" do
+        let(:match_object) { flexmock(Class.new) }
+        let(:overrides) { Hash.new(:extension => "1") }
+        let(:block) { Proc.new {} }
 
-          it "can be called with no arguments" do
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('1')
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input!
+        it "calls instance_exec if the match object has a block" do
+          match_object.should_receive(:block).and_return(block)
+          subject.should_receive(:instance_exec).with(overrides[:extension], block)
+          subject.jump_to(match_object, overrides)
+        end
+
+        it "calls invoke if the match object does not have a block" do
+          match_object.should_receive(:block).and_return(false)
+          match_object.should_receive(:match_payload).and_return(:payload)
+          subject.should_receive(:invoke).with(:payload, overrides)
+          subject.jump_to(match_object, overrides)
+        end
+      end#jump_to
+
+      describe "#menu" do
+        let(:sound_files) { ["press", "button"] }
+
+        let(:menu_instance) do
+          MenuDSL::Menu.new { match(1) {} }
+        end
+
+        let(:result_done)                   { MenuDSL::Menu::MenuResultDone.new }
+        let(:result_terminated)             { MenuDSL::Menu::MenuTerminated.new }
+        let(:result_limit_reached)          { MenuDSL::Menu::MenuLimitReached.new }
+        let(:result_invalid)                { MenuDSL::Menu::MenuResultInvalid.new }
+        let(:result_get_another_or_timeout) { MenuDSL::Menu::MenuGetAnotherDigitOrTimeout.new }
+        let(:result_get_another_or_finish)  { MenuDSL::Menu::MenuGetAnotherDigitOrFinish.new(:match_object, :new_extension) }
+        let(:result_found)                  { MenuDSL::Menu::MenuResultFound.new(:match_object, :new_extension) }
+
+        let(:status) { :foo }
+        let(:response) { '1234' }
+
+        before do
+          flexmock menu_instance, :status => status, :result => response
+          flexmock(MenuDSL::Menu).should_receive(:new).and_return(menu_instance)
+        end
+
+        it "exits the function if MenuResultDone" do
+          menu_instance.should_receive(:should_continue?).and_return(true)
+          menu_instance.should_receive(:continue).and_return(result_done)
+          result = subject.menu sound_files
+          result.menu.should be menu_instance
+          result.response.should be response
+        end
+
+        it "exits the function if MenuTerminated" do
+          menu_instance.should_receive(:should_continue?).and_return(true)
+          menu_instance.should_receive(:continue).and_return(result_terminated)
+          result = subject.menu sound_files
+          result.menu.should be menu_instance
+          result.response.should be response
+        end
+
+        it "exits the function if MenuLimitReached" do
+          menu_instance.should_receive(:should_continue?).and_return(true)
+          menu_instance.should_receive(:continue).and_return(result_limit_reached)
+          result = subject.menu sound_files
+          result.menu.should be menu_instance
+          result.response.should be response
+        end
+
+        it "executes failure hook and returns :failure if menu fails" do
+          menu_instance.should_receive(:should_continue?).and_return(false)
+          menu_instance.should_receive(:execute_failure_hook)
+          result = subject.menu sound_files
+          result.menu.should be menu_instance
+          result.response.should be response
+        end
+
+        it "executes invalid hook if input is invalid" do
+          menu_instance.should_receive(:should_continue?).twice.and_return(true)
+          menu_instance.should_receive(:continue).and_return(result_invalid, result_done)
+          menu_instance.should_receive(:execute_invalid_hook)
+          menu_instance.should_receive(:restart!)
+          result = subject.menu sound_files
+          result.menu.should be menu_instance
+          result.response.should be response
+        end
+
+        it "plays audio, then executes timeout hook if input times out" do
+          menu_instance.should_receive(:should_continue?).twice.and_return(true)
+          menu_instance.should_receive(:continue).and_return(result_get_another_or_timeout, result_done)
+          subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return(nil)
+          menu_instance.should_receive(:execute_timeout_hook)
+          menu_instance.should_receive(:restart!)
+          subject.menu sound_files
+        end
+
+        it "plays audio, then adds digit to digit buffer if input is received" do
+          menu_instance.should_receive(:should_continue?).twice.and_return(true)
+          menu_instance.should_receive(:continue).and_return(result_get_another_or_timeout, result_done)
+          subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return("1")
+          menu_instance.should_receive(:<<).with("1")
+          subject.menu sound_files
+        end
+
+        it "plays audio, then jumps to payload when input is finished" do
+          menu_instance.should_receive(:should_continue?).and_return(true)
+          menu_instance.should_receive(:continue).and_return(result_get_another_or_finish)
+          subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return(nil)
+          subject.should_receive(:jump_to).with(:match_object, :extension => :new_extension)
+          subject.menu sound_files
+        end
+
+        it "jumps to payload when result is found" do
+          menu_instance.should_receive(:should_continue?).and_return(true)
+          menu_instance.should_receive(:continue).and_return(result_found)
+          subject.should_receive(:jump_to).with(:match_object, :extension => :new_extension)
+          result = subject.menu sound_files
+          result.menu.should be menu_instance
+          result.response.should be response
+        end
+
+        context "if a digit limit is specified" do
+          it "should raise an ArgumentError"
+        end
+
+        context "if a terminator digit is specified" do
+          it "should raise an ArgumentError"
+        end
+
+      end#describe
+
+      describe "#ask" do
+        let(:sound_files) { ["press", "button"] }
+
+        context "mocking out the menu" do
+          let(:menu_instance) { MenuDSL::Menu.new :limit => 2 }
+
+          let(:result_done)                   { MenuDSL::Menu::MenuResultDone.new }
+          let(:result_terminated)             { MenuDSL::Menu::MenuTerminated.new }
+          let(:result_limit_reached)          { MenuDSL::Menu::MenuLimitReached.new }
+          let(:result_invalid)                { MenuDSL::Menu::MenuResultInvalid.new }
+          let(:result_get_another_or_timeout) { MenuDSL::Menu::MenuGetAnotherDigitOrTimeout.new }
+          let(:result_get_another_or_finish)  { MenuDSL::Menu::MenuGetAnotherDigitOrFinish.new(:match_object, :new_extension) }
+          let(:result_found)                  { MenuDSL::Menu::MenuResultFound.new(:match_object, :new_extension) }
+
+          let(:status)    { :foo }
+          let(:response)  { '1234' }
+
+          before do
+            flexmock menu_instance, :status => status, :result => response
+            flexmock(MenuDSL::Menu).should_receive(:new).and_return(menu_instance)
           end
 
-          it "can be called with 1 digit as an argument" do
-            subject.should_receive(:wait_for_digit).with(nil)
-            subject.input! 1
+          it "exits the function if MenuResultDone" do
+            menu_instance.should_receive(:continue).and_return(result_done)
+            result = subject.ask sound_files
+            result.menu.should be menu_instance
+            result.response.should be response
           end
 
-          it "accepts a timeout argument" do
-            subject.should_receive(:wait_for_digit).with(3000)
-            subject.input! :timeout => timeout
+          it "exits the function if MenuTerminated" do
+            menu_instance.should_receive(:continue).and_return(result_terminated)
+            result = subject.ask sound_files
+            result.menu.should be menu_instance
+            result.response.should be response
+          end
+
+          it "exits the function if MenuLimitReached" do
+            menu_instance.should_receive(:continue).and_return(result_limit_reached)
+            result = subject.ask sound_files
+            result.menu.should be menu_instance
+            result.response.should be response
+          end
+
+          it "plays audio, then executes timeout hook if input times out" do
+            menu_instance.should_receive(:continue).and_return(result_get_another_or_timeout, result_done)
+            subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return(nil)
+            menu_instance.should_receive(:execute_timeout_hook)
+            menu_instance.should_receive(:restart!)
+            subject.ask sound_files
+          end
+
+          it "plays audio, then adds digit to digit buffer if input is received" do
+            menu_instance.should_receive(:continue).and_return(result_get_another_or_timeout, result_done)
+            subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return("1")
+            menu_instance.should_receive(:<<).with("1")
+            subject.ask sound_files
           end
         end
 
-        describe "any number of digits with a terminator" do
-          let(:terminator) { '9' }
-
-          it "called with no arguments, it returns any number of digits taking a terminating digit" do
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('1')
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input!.should == '1'
-          end
-
-          it "allows to set a different terminator" do
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('1')
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return(terminator)
-            subject.input!(:terminator => terminator).should == '1'
+        context "with a block passed" do
+          it "should set that block as the buffer validator" do
+            foo = nil
+            subject.should_receive(:play_sound_files_for_menu).and_return("1")
+            subject.ask sound_files, :limit => 0 do |buffer|
+              foo = :bar
+            end.menu.execute_validator_hook
+            foo.should be == :bar
           end
         end
 
-        describe "with a fixed number or digits" do
-          it "accepts and returns three digits without a terminator" do
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('1')
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('2')
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('3')
-            subject.input!(3).should == '123'
-          end
-        end
+      end#describe
 
-        describe "with play arguments" do
-          let(:string_play)   { "Thanks for calling" }
-          let(:ssml_play)     { RubySpeech::SSML.draw { string "Please stand by" } }
-          let(:hash_play)     { {:value => Time.parse("24/10/2011"), :strftime => "%H:%M"} }
-          let(:hash_value)    { Time.parse "24/10/2011" }
-          let(:hash_options)  { {:strftime => "%H:%M"} }
-
-          it "plays a string argument" do
-            subject.should_receive(:interruptible_play!).with(string_play)
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input! :play => string_play
-          end
-
-          it "plays a SSML argument" do
-            subject.should_receive(:interruptible_play!).with(ssml_play)
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input! :play => ssml_play
-          end
-
-          it "plays a Hash argument" do
-            subject.should_receive(:interruptible_play!).with([hash_value, hash_options])
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input! :play => hash_play
-          end
-
-          it "plays an array of mixed arguments" do
-            subject.should_receive(:interruptible_play!).with(string_play)
-            subject.should_receive(:interruptible_play!).with(ssml_play)
-            subject.should_receive(:interruptible_play!).with([hash_value, hash_options])
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input! :play => [string_play, ssml_play, hash_play]
-          end
-
-          it "plays a string argument, takes 1 digit and returns the input" do
-            subject.should_receive(:interruptible_play!).with(string_play).and_return('1')
-            subject.input!(1, :play => string_play).should == '1'
-          end
-
-          it "plays a string argument, takes 2 digits and returns the input" do
-            subject.should_receive(:interruptible_play!).with(string_play).and_return('1')
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('1')
-            subject.input!(2, :play => string_play).should == '11'
-          end
-
-          it "plays a string argument, allows for any number of digit and an accept key" do
-            subject.should_receive(:interruptible_play!).with(string_play).and_return('1').ordered
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('2').ordered
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('#').ordered
-            subject.input!(:play => string_play).should == '12'
-          end
-
-          it "plays an array of mixed arguments, stops playing when a key is pressed, and returns the input" do
-            subject.should_receive(:interruptible_play!).and_return(nil, '1', StandardError.new("should not be called"))
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input!(:play => [string_play, ssml_play, hash_play]).should == '1'
-          end
-        end # describe with play arguments
-
-        describe "non interruptible play" do
-          let(:string_play) { "Thanks for calling" }
-
-          it "calls play! when passed :interruptible => false" do
-            subject.should_receive(:play!).with(string_play)
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input! :play => string_play, :interruptible => false
-          end
-
-          it "still collects digits when passed :interruptible => false" do
-            subject.should_receive(:play!).with(string_play)
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('1')
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input!(:play => string_play, :interruptible => false).should == '1'
-          end
-        end # describe non interruptible play
-
-        describe "speak functionality" do
-          let(:string_speak) { "Thanks for calling" }
-
-          it "speaks passed text" do
-            subject.should_receive(:interruptible_play!).with(string_speak, {})
-            subject.input! :speak => {:text => string_speak }
-          end
-
-          it "speaks passed text and collect digits" do
-            subject.should_receive(:interruptible_play!).with(string_speak, {}).and_return('1')
-            subject.should_receive(:wait_for_digit).once.with(nil).and_return('#')
-            subject.input!(:speak => {:text => string_speak }).should == '1'
-          end
-        end
-
-        it 'throws an exception when playback fails'
-      end # describe input!
-
-      describe "#input" do
-        let(:string_play) { "Thanks for calling" }
-
-        it "just calls #input!" do
-          subject.should_receive(:input!).with(:play => string_play).and_return(nil)
-          subject.input! :play => string_play
-        end
-
-        it 'does not throw exceptions when playback fails'
-      end # describe input
-    end
+    end#shared
   end
 end

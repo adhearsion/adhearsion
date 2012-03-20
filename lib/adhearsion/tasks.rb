@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'adhearsion'
 
 Dir[File.join(File.dirname(__FILE__), "tasks/*.rb")].each do |file|

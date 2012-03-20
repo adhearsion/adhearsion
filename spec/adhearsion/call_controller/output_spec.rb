@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 module Adhearsion
@@ -267,17 +269,23 @@ module Adhearsion
 
         it "raises an exception if play fails" do
           subject.should_receive(:play).once.and_return false
-          expect { subject.play!(non_existing) }.to raise_error(Adhearsion::PlaybackError)
+          expect { subject.play!(non_existing) }.to raise_error(Output::PlaybackError)
         end
       end
 
       describe "#speak" do
+        it "should be an alias for #say" do
+          subject.method(:speak).should be == subject.method(:say)
+        end
+      end
+
+      describe "#say" do
         describe "with a RubySpeech document" do
           it 'plays the correct SSML' do
             doc = RubySpeech::SSML.draw { string "Hello world" }
             subject.should_receive(:play_ssml).once.with(doc, {}).and_return true
             subject.should_receive(:output).never
-            subject.speak(doc).should be true
+            subject.say(doc).should be true
           end
         end
 
@@ -286,7 +294,7 @@ module Adhearsion
             string = "Hello world"
             subject.should_receive(:play_ssml).once.with(string, {})
             subject.should_receive(:output).once.with(:text, string, {}).and_return true
-            subject.speak(string).should be true
+            subject.say(string).should be true
           end
         end
 
@@ -296,7 +304,7 @@ module Adhearsion
             argument = 123
             subject.should_receive(:play_ssml).once.with(argument, {})
             subject.should_receive(:output).once.with(:text, expected_string, {}).and_return true
-            subject.speak(argument)
+            subject.say(argument)
           end
         end
       end
@@ -311,7 +319,7 @@ module Adhearsion
         end
 
         it 'returns SSML for a text argument' do
-          subject.ssml_for(prompt).should == ssml
+          subject.ssml_for(prompt).should be == ssml
         end
 
         it 'returns the same SSML passed in if it is SSML' do
@@ -326,8 +334,14 @@ module Adhearsion
         end
 
         it "detects a file path" do
-          http_path = "/usr/shared/sounds/hello.mp3"
-          subject.detect_type(http_path).should be :audio
+          file_path = "file:///usr/shared/sounds/hello.mp3"
+          subject.detect_type(file_path).should be :audio
+
+          absolute_path = "/usr/shared/sounds/hello.mp3"
+          subject.detect_type(absolute_path).should be :audio
+
+          relative_path = "foo/bar"
+          subject.detect_type(relative_path).should_not be :audio
         end
 
         it "detects a Date object" do
@@ -424,7 +438,7 @@ module Adhearsion
           expect_component_complete_event
           flexmock(Punchblock::Component::Output).new_instances.should_receive(:stop!)
           subject.should_receive(:execute_component_and_await_completion).once.with(output_component)
-          subject.stream_file(prompt, allowed_digits).should == '5'
+          subject.stream_file(prompt, allowed_digits).should be == '5'
         end
       end # describe #stream_file
 
@@ -445,8 +459,8 @@ module Adhearsion
         end
 
         it 'raises an exception when output is unsuccessful' do
-          subject.should_receive(:stream_file).once.and_raise PlaybackError, "Output failed"
-          expect { subject.interruptible_play!(non_existing) }.to raise_error(Adhearsion::PlaybackError)
+          subject.should_receive(:stream_file).once.and_raise Output::PlaybackError, "Output failed"
+          expect { subject.interruptible_play!(non_existing) }.to raise_error(Output::PlaybackError)
         end
       end # describe interruptible_play!
 
@@ -466,8 +480,8 @@ module Adhearsion
         end
 
         it "should not raise an exception when output is unsuccessful" do
-          subject.should_receive(:stream_file).once.and_raise PlaybackError, "Output failed"
-          lambda { subject.interruptible_play non_existing }.should_not raise_error(Adhearsion::PlaybackError)
+          subject.should_receive(:stream_file).once.and_raise Output::PlaybackError, "Output failed"
+          lambda { subject.interruptible_play non_existing }.should_not raise_error(Output::PlaybackError)
         end
       end # describe interruptible_play
 

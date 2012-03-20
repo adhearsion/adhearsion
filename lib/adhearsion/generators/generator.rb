@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 begin
   require 'thor/group'
 rescue LoadError
@@ -66,7 +68,7 @@ module Adhearsion
       def self.generator_name
         @generator_name ||= begin
           if generator = name.to_s.split('::').last
-            generator.sub! /Generator$/, ''
+            generator.sub!(/Generator$/, '')
             generator.underscore
           end
         end

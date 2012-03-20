@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Adhearsion
   module MenuDSL
 
@@ -6,21 +8,40 @@ module Adhearsion
       DEFAULT_MAX_NUMBER_OF_TRIES = 1
       DEFAULT_TIMEOUT             = 5
 
-      attr_reader :builder, :timeout, :tries_count, :max_number_of_tries
+      InvalidStructureError = Class.new StandardError
+
+      attr_reader :builder, :timeout, :tries_count, :max_number_of_tries, :terminator, :limit, :interruptible, :status
 
       def initialize(options = {}, &block)
         @tries_count          = 0 # Counts the number of tries the menu's been executed
         @timeout              = options[:timeout] || DEFAULT_TIMEOUT
         @max_number_of_tries  = options[:tries]   || DEFAULT_MAX_NUMBER_OF_TRIES
+        @terminator           = options[:terminator].to_s
+        @limit                = options[:limit]
+        @interruptible        = options.has_key?(:interruptible) ? options[:interruptible] : true
         @builder              = MenuDSL::MenuBuilder.new
+        @terminated           = false
 
-        @builder.build &block
+        @builder.build(&block) if block
 
         initialize_digit_buffer
       end
 
+      def validate(mode = nil)
+        case mode
+        when :basic
+          @terminator.present? || !!@limit || raise(InvalidStructureError, "You must specify at least one of limit or terminator")
+        else
+          @builder.has_matchers? || raise(InvalidStructureError, "You must specify one or more matchers")
+        end
+      end
+
       def <<(other)
-        digit_buffer << other
+        if other == terminator
+          @terminated = true
+        else
+          digit_buffer << other
+        end
       end
 
       def digit_buffer
@@ -30,6 +51,7 @@ module Adhearsion
       def digit_buffer_string
         digit_buffer.to_s
       end
+      alias :result :digit_buffer_string
 
       def digit_buffer_empty?
         digit_buffer.empty?
@@ -37,6 +59,11 @@ module Adhearsion
 
       def continue
         return get_another_digit_or_timeout! if digit_buffer_empty?
+
+        return menu_terminated! if @terminated
+        return menu_limit_reached! if limit && digit_buffer.size >= limit
+
+        return menu_validator_terminated! if execute_validator_hook
 
         calculated_matches = builder.calculate_matches_for digit_buffer_string
 
@@ -47,7 +74,7 @@ module Adhearsion
           else
             get_another_digit_or_finish! first_exact_match.match_payload, first_exact_match.query
           end
-        elsif calculated_matches.potential_match_count >= 1
+        elsif calculated_matches.potential_match_count >= 1 || !@builder.has_matchers?
           get_another_digit_or_timeout!
         else
           invalid!
@@ -75,6 +102,10 @@ module Adhearsion
         builder.execute_hook_for :failure, digit_buffer_string
       end
 
+      def execute_validator_hook
+        builder.execute_hook_for :validator, digit_buffer_string
+      end
+
       protected
 
       # If you're using a more complex class in subclasses, you may want to override this method in addition to the
@@ -84,18 +115,37 @@ module Adhearsion
       end
 
       def invalid!
+        @status = :invalid
         MenuResultInvalid.new
       end
 
       def menu_result_found!(match_object, new_extension)
+        @status = :matched
         MenuResultFound.new(match_object, new_extension)
       end
 
+      def menu_terminated!
+        @status = :terminated
+        MenuTerminated.new
+      end
+
+      def menu_validator_terminated!
+        @status = :validator_terminated
+        MenuValidatorTerminated.new
+      end
+
+      def menu_limit_reached!
+        @status = :limited
+        MenuLimitReached.new
+      end
+
       def get_another_digit_or_finish!(match_payload, new_extension)
+        @status = :multi_matched
         MenuGetAnotherDigitOrFinish.new(match_payload, new_extension)
       end
 
       def get_another_digit_or_timeout!
+        @status = :potential
         MenuGetAnotherDigitOrTimeout.new
       end
 
@@ -127,6 +177,10 @@ module Adhearsion
       end
 
       MenuResultInvalid = Class.new MenuResult
+
+      MenuTerminated = Class.new MenuResultDone
+      MenuValidatorTerminated = Class.new MenuResultDone
+      MenuLimitReached = Class.new MenuResultDone
 
       # For our default purpose, we need the digit_buffer to behave much like a normal String except that it should
       # handle its own resetting (clearing)

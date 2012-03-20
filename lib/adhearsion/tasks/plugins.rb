@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 desc "List the configured plugins"
 task :plugins => :environment do |t,args|
   if Adhearsion::Plugin.subclasses.length > 0

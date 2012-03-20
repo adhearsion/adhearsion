@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 class FinancialWizard < Adhearsion::CallController
@@ -10,16 +12,16 @@ module Adhearsion
     let(:call) { Adhearsion::Call.new mock_offer(nil, :x_foo => 'bar') }
 
     its(:call)      { should be call }
-    its(:metadata)  { should == {:doo => :dah} }
+    its(:metadata)  { should be == {:doo => :dah} }
 
     describe "setting meta-data" do
       it "should preserve data correctly" do
         subject[:foo].should be nil
         subject[:foo] = 7
-        subject[:foo].should == 7
+        subject[:foo].should be == 7
         subject[:bar] = 10
-        subject[:bar].should == 10
-        subject[:foo].should == 7
+        subject[:bar].should be == 10
+        subject[:foo].should be == 7
       end
     end
 
@@ -33,15 +35,23 @@ module Adhearsion
       end
 
       it "catches Hangup exceptions and logs the hangup" do
-        subject.should_receive(:run).once.and_raise(Hangup).ordered
+        subject.should_receive(:run).once.and_raise(Call::Hangup).ordered
         flexmock(subject.logger).should_receive(:info).once.with(/Call was hung up/).ordered
         subject.execute!
       end
 
       it "catches standard errors, triggering an exception event" do
         subject.should_receive(:run).once.and_raise(StandardError).ordered
-        flexmock(Events).should_receive(:trigger).once.with(:exception, StandardError).ordered
+        latch = CountDownLatch.new 1
+        ex = lo = nil
+        Events.exception do |e, l|
+          ex, lo = e, l
+          latch.countdown!
+        end
         subject.execute!
+        latch.wait(1).should be true
+        ex.should be_a StandardError
+        lo.should be subject.logger
       end
 
       context "when a block is specified" do
@@ -76,7 +86,7 @@ module Adhearsion
       end
 
       def simulate_remote_hangup
-        raise Hangup
+        raise Call::Hangup
       end
     end
 
@@ -193,13 +203,76 @@ module Adhearsion
       :reject,
       :hangup,
       :mute,
-      :unmute,
-      :join].each do |method_name|
+      :unmute].each do |method_name|
       describe "##{method_name}" do
         it "delegates to the call, blocking first until it is allowed to execute" do
           flexmock(subject).should_receive(:block_until_resumed).once.ordered
           flexmock(subject.call).should_receive(method_name).once.ordered
           subject.send method_name
+        end
+      end
+    end
+
+    describe "#join" do
+      it "delegates to the call, blocking first until it is allowed to execute, and unblocking when an unjoined event is received" do
+        flexmock(subject).should_receive(:block_until_resumed).once.ordered
+        flexmock(subject.call).should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:other_call_id => 'call1')
+        latch = CountDownLatch.new 1
+        Thread.new do
+          subject.join 'call1', :foo => :bar
+          latch.countdown!
+        end
+        latch.wait(1).should be false
+        subject.call << Punchblock::Event::Joined.new(:other_call_id => 'call1')
+        latch.wait(1).should be false
+        subject.call << Punchblock::Event::Unjoined.new(:other_call_id => 'call1')
+        latch.wait(1).should be true
+      end
+
+      context "with a mixer" do
+        it "delegates to the call, blocking first until it is allowed to execute, and unblocking when an unjoined event is received" do
+          flexmock(subject).should_receive(:block_until_resumed).once.ordered
+          flexmock(subject.call).should_receive(:join).once.with({:mixer_name => 'foobar', :foo => :bar}, {}).ordered.and_return Punchblock::Command::Join.new(:mixer_name => 'foobar')
+          latch = CountDownLatch.new 1
+          Thread.new do
+            subject.join :mixer_name => 'foobar', :foo => :bar
+            latch.countdown!
+          end
+          latch.wait(1).should be false
+          subject.call << Punchblock::Event::Joined.new(:mixer_name => 'foobar')
+          latch.wait(1).should be false
+          subject.call << Punchblock::Event::Unjoined.new(:mixer_name => 'foobar')
+          latch.wait(1).should be true
+        end
+      end
+
+      context "with :async => true" do
+        it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
+          flexmock(subject).should_receive(:block_until_resumed).once.ordered
+          flexmock(subject.call).should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:other_call_id => 'call1')
+          latch = CountDownLatch.new 1
+          Thread.new do
+            subject.join 'call1', :foo => :bar, :async => true
+            latch.countdown!
+          end
+          latch.wait(1).should be false
+          subject.call << Punchblock::Event::Joined.new(:other_call_id => 'call1')
+          latch.wait(1).should be true
+        end
+
+        context "with a mixer" do
+          it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
+            flexmock(subject).should_receive(:block_until_resumed).once.ordered
+            flexmock(subject.call).should_receive(:join).once.with({:mixer_name => 'foobar', :foo => :bar}, {}).ordered.and_return Punchblock::Command::Join.new(:mixer_name => 'foobar')
+            latch = CountDownLatch.new 1
+            Thread.new do
+              subject.join :mixer_name => 'foobar', :foo => :bar, :async => true
+              latch.countdown!
+            end
+            latch.wait(1).should be false
+            subject.call << Punchblock::Event::Joined.new(:mixer_name => 'foobar')
+            latch.wait(1).should be true
+          end
         end
       end
     end
@@ -221,7 +294,7 @@ module Adhearsion
         it "should unblock when the controller is unpaused" do
           t1 = t2 = nil
           latch = CountDownLatch.new 1
-          t = Thread.new do
+          Thread.new do
             t1 = Time.now
             subject.block_until_resumed
             t2 = Time.now
@@ -255,8 +328,8 @@ module Adhearsion
 
       it "takes a block which is executed after acknowledgement but before waiting on completion" do
         @comp = nil
-        subject.execute_component_and_await_completion(component) { |comp| @comp = comp }.should == component
-        @comp.should == component
+        subject.execute_component_and_await_completion(component) { |comp| @comp = comp }.should be == component
+        @comp.should be == component
       end
 
       describe "with a successful completion" do
@@ -273,20 +346,22 @@ module Adhearsion
         end
 
         let(:error) do |error|
-          Punchblock::Event::Complete::Error.new.tap do |error|
-            error << details
+          Punchblock::Event::Complete::Error.new.tap do |e|
+            e << details
           end
         end
 
         let(:details) { "Oh noes, it's all borked" }
 
         it "raises the error" do
-          lambda { subject.execute_component_and_await_completion component }.should raise_error(StandardError, details)
+          lambda { subject.execute_component_and_await_completion component }.should raise_error(StandardError, "#{details}: #{component}")
         end
       end
 
       it "blocks until the component receives a complete event" do
         slow_component = Punchblock::Component::Output.new
+        slow_component.request!
+        slow_component.execute!
         Thread.new do
           sleep 0.5
           slow_component.complete_event = response

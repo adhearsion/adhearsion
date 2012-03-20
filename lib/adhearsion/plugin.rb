@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Adhearsion
 
   # Plugin is the core of extension of Adhearsion framework and provides the easiest
@@ -99,9 +101,9 @@ module Adhearsion
       end
 
       def load_tasks
-        o = Object.new.tap { |o| o.extend Rake::DSL if defined? Rake::DSL }
+        container = Object.new.tap { |o| o.extend Rake::DSL if defined? Rake::DSL }
         tasks.each do |block|
-          o.instance_eval &block
+          container.instance_eval(&block)
         end
       end
 
@@ -124,7 +126,7 @@ module Adhearsion
       end
 
       def inherited(base)
-        logger.debug "Detected new plugin: #{base.name}"
+        logger.info "Detected new plugin: #{base.name}"
         subclasses << base
       end
 
@@ -159,15 +161,15 @@ module Adhearsion
       end
 
       # Recursively initialization of all the loaded plugins
-      def init_plugins *args
+      def init_plugins(*args)
         initializers.tsort.each do |initializer|
-          initializer.run *args
+          initializer.run(*args)
         end
       end
 
-      def run_plugins *args
+      def run_plugins(*args)
         runners.tsort.each do |runner|
-          runner.run *args
+          runner.run(*args)
         end
       end
 

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 unless ENV['SKIP_RCOV']
   require 'simplecov'
   require 'simplecov-rcov'
@@ -23,6 +25,8 @@ end
   countdownlatch
   adhearsion
 }.each { |f| require f }
+
+Thread.abort_on_exception = true
 
 Bundler.require(:default, :test) if defined?(Bundler)
 

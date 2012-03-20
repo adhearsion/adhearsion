@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE})! Please upgrade to at least Ruby v1.9.2, JRuby 1.6.5 or Rubinius 2.0." if RUBY_VERSION < "1.9.2"
 
 %w{
@@ -16,7 +18,7 @@ abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby
   celluloid
 
   adhearsion/version
-  adhearsion/foundation/all
+  adhearsion/foundation
 }.each { |f| require f }
 
 module Adhearsion
@@ -54,6 +56,7 @@ module Adhearsion
     def initialize_config
       _config = Configuration.new
       env = ENV['AHN_ENV'] || ENV['RAILS_ENV']
+      env = env.to_sym if env.respond_to? :to_sym
       env = nil unless _config.valid_environment? env
       _config.platform.environment = env if env
       _config
@@ -83,11 +86,6 @@ module Adhearsion
       Adhearsion::Process.state_name
     end
   end
-
-  Hangup             = Class.new StandardError # At the moment, we'll just use this to end a call-handling Thread
-  PlaybackError      = Class.new StandardError # Represents failure to play audio, such as when the sound file cannot be found
-  RecordError        = Class.new StandardError # Represents failure to record such as when a file cannot be written.
-  ConfigurationError = Class.new StandardError # Error raised while trying to configure a non existent plugin
 end
 
 Celluloid.exception_handler { |e| Adhearsion::Events.trigger :exception, e }

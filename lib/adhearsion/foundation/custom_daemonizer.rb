@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # This is largely based on the Daemonize library by Travis Whitton and
 # Judson Lester. http://grub.ath.cx/daemonize. I cleaned it up a bit to
 # meet Adhearsion's quality standards.
@@ -28,7 +30,7 @@ module Adhearsion
       # Prevent the possibility of acquiring a controlling terminal
       if oldmode.zero?
         trap 'SIGHUP', 'IGNORE'
-        exit if pid = safefork
+        exit if safefork
       end
 
       Dir.chdir "/"   # Release old working directory

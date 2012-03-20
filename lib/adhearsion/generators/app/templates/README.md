@@ -25,4 +25,13 @@ In `config/adhearsion.rb` you'll need to set the VoIP platform you're using, alo
 
 Start your new app with "ahn start /path/to/your/app". You'll get a lovely console and should be presented with the SimonGame
 
+### Running your app on heroku
+
+In order to run an adhearsion application on Heroku, you must create the application on the 'cedar' stack (`heroku apps:create --stack cedar`) and re-scale your processes like so:
+
+```
+heroku ps:scale web=0
+heroku ps:scale ahn=1
+```
+
 Check out [the Adhearsion website](http://adhearsion.com) for more details of where to go from here.

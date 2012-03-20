@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 module Adhearsion
@@ -57,11 +59,11 @@ module Adhearsion
         subject { initialize_punchblock }
 
         it "should set properly the username value" do
-          subject.username.should == 'usera@127.0.0.1'
+          subject.username.should be == 'usera@127.0.0.1'
         end
 
         it "should set properly the password value" do
-          subject.password.should == '1'
+          subject.password.should be == '1'
         end
 
         it "should set properly the host value" do
@@ -85,15 +87,15 @@ module Adhearsion
         end
 
         it "should properly set the reconnect_attempts value" do
-          subject.reconnect_attempts.should == 1.0/0.0
+          subject.reconnect_attempts.should be == 1.0/0.0
         end
 
         it "should properly set the reconnect_timer value" do
-          subject.reconnect_timer.should == 5
+          subject.reconnect_timer.should be == 5
         end
 
         it "should properly set the media_engine value" do
-          subject.media_engine.should == nil
+          subject.media_engine.should be == nil
         end
       end
 
@@ -107,9 +109,9 @@ module Adhearsion
       end
 
       it "starts the client with any overridden settings" do
-        overrides = {:username => 'userb@127.0.0.1', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift}
+        overrides = {:username => 'userb@127.0.0.1/foo', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift}
 
-        flexmock(::Punchblock::Connection::XMPP).should_receive(:new).once.with(overrides.merge({:username => 'userb@127.0.0.1/hostname-1234'})).and_return do
+        flexmock(::Punchblock::Connection::XMPP).should_receive(:new).once.with(overrides).and_return do
           flexmock 'Client', :event_handler= => true
         end
         initialize_punchblock overrides
@@ -124,7 +126,7 @@ module Adhearsion
           flexmock(mock_connection).should_receive(:run).once
           t = Thread.new { Initializer.init; Initializer.run }
           t.join 5
-          t.status.should == "sleep"
+          t.status.should be == "sleep"
           Events.trigger_immediately :punchblock, ::Punchblock::Connection::Connected.new
           t.join
         end
@@ -147,17 +149,17 @@ module Adhearsion
 
         it 'should reset the Adhearsion process state to "booting"' do
           Adhearsion::Process.booted
-          Adhearsion::Process.state_name.should == :running
+          Adhearsion::Process.state_name.should be == :running
           mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
-          expect { Initializer.connect_to_server }.should raise_error ::Punchblock::DisconnectedError
-          Adhearsion::Process.state_name.should == :booting
+          flexmock(Adhearsion::Process).should_receive(:reset).at_least.once
+          Initializer.connect_to_server
         end
 
         it 'should retry the connection the specified number of times' do
           Initializer.config.reconnect_attempts = 3
           mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
-          expect { Initializer.connect_to_server }.should raise_error ::Punchblock::DisconnectedError
-          Initializer.attempts.should == 3
+          Initializer.connect_to_server
+          Initializer.attempts.should be == 3
         end
 
         it 'should preserve a Punchblock::ProtocolError exception and give up' do
@@ -294,13 +296,31 @@ module Adhearsion
           end
 
           it "should set properly the username value" do
-            subject.username.should == 'userb@127.0.0.1'
+            subject.username.should be == 'userb@127.0.0.1'
           end
 
           it "should set properly the password value" do
-            subject.password.should == 'abc123'
+            subject.password.should be == 'abc123'
           end
         end
+      end
+
+      it "should allow easily registering handlers for AMI events" do
+        result = nil
+        ami_event = Punchblock::Event::Asterisk::AMI::Event.new :name => 'foobar'
+        latch = CountDownLatch.new 1
+
+        Events.draw do
+          ami :name => 'foobar' do |event|
+            result = event
+            latch.countdown!
+          end
+        end
+
+        Initializer.handle_event ami_event
+
+        latch.wait(1).should be true
+        result.should be ami_event
       end
     end
   end

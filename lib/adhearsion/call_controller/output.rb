@@ -1,9 +1,14 @@
+# encoding: utf-8
+
 module Adhearsion
   class CallController
     module Output
-      def speak(text, options = {})
+      PlaybackError = Class.new StandardError # Represents failure to play audio, such as when the sound file cannot be found
+
+      def say(text, options = {})
         play_ssml(text, options) || output(:text, text.to_s, options)
       end
+      alias :speak :say
 
       #
       # Plays the specified sound file names. This method will handle Time/DateTime objects (e.g. Time.now),
@@ -50,7 +55,7 @@ module Adhearsion
       # @see play
       #
       def play!(*arguments)
-        play *arguments or raise Adhearsion::PlaybackError, "One of the passed outputs is invalid"
+        play(*arguments) or raise PlaybackError, "One of the passed outputs is invalid"
       end
 
       #
@@ -162,7 +167,7 @@ module Adhearsion
             result = interruptible_play! output
           rescue PlaybackError => e
             # Ignore this exception and play the next output
-            logger.warn e.message
+            logger.warn "Error playing back the prompt: #{e.message}"
           ensure
             break if result
           end
@@ -174,7 +179,7 @@ module Adhearsion
         result = nil
         result = :time if [Date, Time, DateTime].include? output.class
         result = :numeric if output.kind_of?(Numeric) || output =~ /^\d+$/
-        result = :audio if !result && (/\//.match(output.to_s) || URI::regexp(%w(http https)).match(output.to_s))
+        result = :audio if !result && (/^\//.match(output.to_s) || URI::regexp.match(output.to_s))
         result ||= :text
       end
 
@@ -247,13 +252,12 @@ module Adhearsion
             :value => grammar_accept(digits).to_s
           }
         input_stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
-          logger.warn "#stream_file Handling input complete event."
           output_component.stop! unless output_component.complete?
         end
         write_and_await_response input_stopper_component
         begin
           execute_component_and_await_completion output_component
-        rescue StandardError => e
+        rescue StandardError
           raise Adhearsion::PlaybackError, "Output failed for argument #{argument.inspect}"
         end
         input_stopper_component.stop! if input_stopper_component.executing?

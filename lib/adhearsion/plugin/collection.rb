@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'tsort'
 
 module Adhearsion
@@ -8,7 +10,7 @@ module Adhearsion
       alias :tsort_each_node :each
 
       def tsort_each_child(child, &block)
-        select { |i| i.before == child.name || i.name == child.after }.each &block
+        select { |i| i.before == child.name || i.name == child.after }.each(&block)
       end
 
       def +(other)

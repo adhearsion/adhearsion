@@ -1,6 +1,9 @@
+# encoding: utf-8
+
 require 'adhearsion/logging'
 
 class Object
+  undef :pb_logger
   def pb_logger
     logger
   end

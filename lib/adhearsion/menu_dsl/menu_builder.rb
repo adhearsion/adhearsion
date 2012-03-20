@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Adhearsion
   module MenuDSL
 
@@ -8,11 +10,12 @@ module Adhearsion
       def initialize
         @patterns = []
         @menu_callbacks = {}
+        @context = nil
       end
 
       def build(&block)
         @context = eval "self", block.binding
-        instance_eval &block
+        instance_eval(&block)
       end
 
       def match(*args, &block)
@@ -35,8 +38,13 @@ module Adhearsion
         @patterns
       end
 
+      def has_matchers?
+        @patterns.size > 0
+      end
+
       def execute_hook_for(symbol, input)
         callback = @menu_callbacks[symbol]
+        return unless callback
         @context.instance_exec input, &callback
       end
 
@@ -53,6 +61,11 @@ module Adhearsion
       def failure(&block)
         raise LocalJumpError, "Must supply a block!" unless block_given?
         @menu_callbacks[:failure] = block
+      end
+
+      def validator(&block)
+        raise LocalJumpError, "Must supply a block!" unless block_given?
+        @menu_callbacks[:validator] = block
       end
 
       def calculate_matches_for(result)

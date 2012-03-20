@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Adhearsion
   class Events
 
@@ -26,7 +28,7 @@ module Adhearsion
     refresh!
 
     def queue
-      @queue || reinitialize_queue!
+      queue? ? @queue : reinitialize_queue!
     end
 
     def trigger(type, object = nil)
@@ -37,8 +39,12 @@ module Adhearsion
       queue.push_immediately Message.new(type, object)
     end
 
+    def queue?
+      instance_variable_defined? :@queue
+    end
+
     def reinitialize_queue!
-      GirlFriday.shutdown! if @queue
+      GirlFriday.shutdown! if queue?
       # TODO: Extract number of threads to use from Adhearsion.config
       @queue = GirlFriday::WorkQueue.new 'main_queue', :error_handler => ErrorHandler do |message|
         begin
@@ -54,7 +60,7 @@ module Adhearsion
     end
 
     def draw(&block)
-      instance_exec &block
+      instance_exec(&block)
     end
 
     def method_missing(method_name, *args, &block)
@@ -62,7 +68,7 @@ module Adhearsion
     end
 
     def respond_to?(method_name)
-      return true if @handlers && @handlers.has_key?(method_name)
+      return true if instance_variable_defined?(:@handlers) && @handlers.has_key?(method_name)
       super
     end
 

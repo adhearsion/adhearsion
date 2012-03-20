@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Adhearsion
   class Router
     extend ActiveSupport::Autoload
@@ -8,7 +10,7 @@ module Adhearsion
 
     def initialize(&block)
       @routes = []
-      instance_exec &block
+      instance_exec(&block)
     end
 
     def route(*args, &block)
@@ -23,7 +25,7 @@ module Adhearsion
 
     def handle(call)
       return unless route = match(call)
-      logger.debug "Call #{call.id} passing through router matched route #{route}"
+      logger.info "Call #{call.id} selected route \"#{route.name}\" (#{route.target})"
       route.dispatcher
     end
   end

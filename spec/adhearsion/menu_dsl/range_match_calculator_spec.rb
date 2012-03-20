@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 module Adhearsion
@@ -8,8 +10,8 @@ module Adhearsion
         digits_that_begin_with_eleven = [110..119, 1100..1111].map { |x| Array(x) }.flatten
         calculator = RangeMatchCalculator.new 11..1111, :match_payload_doesnt_matter
         match = calculator.match 11
-        match.exact_matches.should == [11]
-        match.potential_matches.should == digits_that_begin_with_eleven
+        match.exact_matches.should be == [11]
+        match.potential_matches.should be == digits_that_begin_with_eleven
       end
 
       it "return values of #match should be an instance of CalculatedMatch" do

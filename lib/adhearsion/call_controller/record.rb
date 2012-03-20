@@ -1,13 +1,16 @@
+# encoding: utf-8
+
 module Adhearsion
   class CallController
     module Record
+      RecordError = Class.new StandardError # Represents failure to record such as when a file cannot be written.
+
       #
       # Start a recording
       #
       # @param [Hash] options
       # @param [Block] &block to process result of the record method
       # @option options [Boolean, Optional] :async Execute asynchronously. Defaults to false
-      # @option options [Proc, Optional] :on_complete Block to be executed on completion when this method is invoked asynchronously
       # @option options [Boolean, Optional] :start_beep Indicates whether subsequent record will be preceded with a beep. Default is true.
       # @option options [Boolean, Optional] :start_paused Whether subsequent record will start in PAUSE mode. Default is false.
       # @option options [String, Optional] :max_duration Indicates the maximum duration (milliseconds) for a recording.
@@ -18,23 +21,18 @@ module Adhearsion
       #
       # @return recording object
 
-      def record(options = {}, &block)
-        async = options.delete(:async) ? true : false
-        on_complete = options.delete :on_complete
+      def record(options = {})
+        async = options.delete :async
 
         component = ::Punchblock::Component::Record.new options
+        component.register_event_handler ::Punchblock::Event::Complete do |event|
+          catching_standard_errors { yield event if block_given? }
+        end
 
         if async
-          execute_component(component).tap do |result|
-            # FIXME: Setting the callback after we begin execution constitutes a race condition. We need to mock the component creation here, since the tests assume we're using whatever is returned by component exection, and that's what we pass the complete event to
-            result.register_event_handler Punchblock::Event::Complete do |event|
-              catching_standard_errors { on_complete.call event }
-            end
-          end
+          write_and_await_response component
         else
-          execute_component_and_await_completion(component).tap do |result|
-            yield result.complete_event if block_given?
-          end
+          execute_component_and_await_completion component
         end
       end
     end

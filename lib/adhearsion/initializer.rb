@@ -1,5 +1,8 @@
+# encoding: utf-8
+
 require 'adhearsion/punchblock_plugin'
 require 'adhearsion/linux_proc_name'
+require 'rbconfig'
 
 module Adhearsion
   class Initializer
@@ -41,6 +44,7 @@ module Adhearsion
       initialize_log_paths
       daemonize! if should_daemonize?
       start_logging
+      debugging_log
       launch_console if need_console?
       catch_termination_signal
       create_pid_file
@@ -52,10 +56,9 @@ module Adhearsion
       run_plugins
       trigger_after_initialized_hooks
 
-      if Adhearsion.status == :booting
-        Adhearsion::Process.booted
-        logger.info "Adhearsion v#{Adhearsion::VERSION} initialized with environment <#{Adhearsion.config.platform.environment}>!"
-      end
+      Adhearsion::Process.booted if Adhearsion.status == :booting
+
+      logger.info "Adhearsion v#{Adhearsion::VERSION} initialized in \"#{Adhearsion.config.platform.environment}\"!" if Adhearsion.status == :running
 
       # This method will block until all important threads have finished.
       # When it does, the process will exit.
@@ -63,25 +66,37 @@ module Adhearsion
       self
     end
 
+    def debugging_items
+      [
+        "OS: #{RbConfig::CONFIG['host_os']} - RUBY: #{RUBY_ENGINE} #{RUBY_VERSION}",
+        "Environment: #{ENV.inspect}",
+        Adhearsion.config.description(:all),
+        "Gem versions: #{Gem.loaded_specs.inject([]) { |c,g| c << "#{g[0]} #{g[1].version}" }}"
+      ]
+    end
+
+    def debugging_log
+      debugging_items.each do |item|
+        logger.trace item
+      end
+    end
+
     def update_rails_env_var
       env = ENV['AHN_ENV']
       if env && Adhearsion.config.valid_environment?(env.to_sym)
-        if ENV['RAILS_ENV']
-          logger.info "Using provided RAILS_ENV value of <#{ENV['RAILS_ENV']}>"
-        else
-          logger.warn "Setting RAILS_ENV variable to <#{env}>"
+        unless ENV['RAILS_ENV']
+          logger.info "Copying AHN_ENV (#{env}) to RAILS_ENV"
           ENV['RAILS_ENV'] = env
         end
       else
-        env = ENV['RAILS_ENV']
-        if env
-          logger.info "Using the configured value for RAILS_ENV : <#{env}>"
-        else
+        unless ENV['RAILS_ENV']
           env = Adhearsion.config.platform.environment.to_s
-          logger.info "Defining RAILS_ENV variable to <#{env}>"
+          ENV['AHN_ENV'] = env
+          logger.info "Setting RAILS_ENV to \"#{env}\""
           ENV['RAILS_ENV'] = env
         end
       end
+      logger.warn "AHN_ENV(#{ENV['AHN_ENV']}) does not match RAILS_ENV(#{ENV['RAILS_ENV']})!" unless ENV['RAILS_ENV'] == ENV['AHN_ENV']
       env
     end
 
@@ -202,7 +217,7 @@ module Adhearsion
 
     def daemonize!
       logger.info "Daemonizing now!"
-      logger.info "Creating PID file #{pid_file}"
+      logger.debug "Creating PID file #{pid_file}"
       extend Adhearsion::CustomDaemonizer
       daemonize resolve_log_file_path
     end
@@ -211,7 +226,6 @@ module Adhearsion
       Adhearsion::Process.important_threads << Thread.new do
         catching_standard_errors do
           Adhearsion::Console.run
-          Adhearsion::Process.shutdown
         end
       end
     end
@@ -241,8 +255,8 @@ module Adhearsion
     end
 
     def initialize_exception_logger
-      Events.register_handler :exception do |e|
-        logger.error e
+      Events.register_handler :exception do |e, l|
+        (l || logger).error e
       end
     end
 

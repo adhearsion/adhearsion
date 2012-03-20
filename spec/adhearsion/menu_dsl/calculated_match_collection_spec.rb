@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 module Adhearsion
@@ -23,10 +25,10 @@ module Adhearsion
         mock_matches_2 = mock_with_potential_matches mock_matches_array_2
 
         subject << mock_matches_1
-        subject.actual_potential_matches.should == mock_matches_array_1
+        subject.actual_potential_matches.should be == mock_matches_array_1
 
         subject << mock_matches_2
-        subject.actual_potential_matches.should == mock_matches_array_1 + mock_matches_array_2
+        subject.actual_potential_matches.should be == mock_matches_array_1 + mock_matches_array_2
       end
 
       it "the <<() method should collect the exact matches into the actual_exact_matches Array" do
@@ -36,10 +38,10 @@ module Adhearsion
         mock_matches_2 = mock_with_exact_matches mock_matches_array_2
 
         subject << mock_matches_1
-        subject.actual_exact_matches.should == mock_matches_array_1
+        subject.actual_exact_matches.should be == mock_matches_array_1
 
         subject << mock_matches_2
-        subject.actual_exact_matches.should == mock_matches_array_1 + mock_matches_array_2
+        subject.actual_exact_matches.should be == mock_matches_array_1 + mock_matches_array_2
       end
 
       it "if any exact matches exist, the exact_match?() method should return true" do

@@ -9,7 +9,9 @@ task :default => [:spec, :features]
 task :gem => :build
 
 require 'rspec/core/rake_task'
-RSpec::Core::RakeTask.new
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.ruby_opts = "-w -r./spec/capture_warnings"
+end
 
 require 'ci/reporter/rake/rspec'
 require 'ci/reporter/rake/cucumber'
@@ -37,4 +39,23 @@ end
 
 task :stats do
   system 'doc/cloc-1.55.pl . --exclude-dir=.git,vendor,coverage,doc'
+end
+
+task :encodeify do
+  Dir['{bin,features,lib,spec}/**/*.rb'].each do |filename|
+    File.open filename do |file|
+      first_line = file.first
+      if first_line == "# encoding: utf-8\n"
+        puts "#{filename} is utf-8"
+      else
+        puts "Making #{filename} utf-8..."
+        File.unlink filename
+        File.open filename, "w" do |new_file|
+          new_file.write "# encoding: utf-8\n\n"
+          new_file.write first_line
+          new_file.write file.read
+        end
+      end
+    end
+  end
 end

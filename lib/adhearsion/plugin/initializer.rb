@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Adhearsion
   class Plugin
     class Initializer
@@ -21,7 +23,7 @@ module Adhearsion
       end
 
       def run(*args)
-        @context.instance_exec *args, &block
+        @context.instance_exec(*args, &block)
       end
 
       def bind(context)

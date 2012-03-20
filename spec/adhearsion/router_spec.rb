@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 FooBarController = Class.new
@@ -39,16 +41,16 @@ module Adhearsion
         end
 
         it "should build up the routes with the correct data" do
-          subject[0].name.should == 'calls from fred'
-          subject[0].guards.should == [{:from => 'fred'}]
-          subject[0].target.should == FooBarController
+          subject[0].name.should be == 'calls from fred'
+          subject[0].guards.should be == [{:from => 'fred'}]
+          subject[0].target.should be == FooBarController
 
-          subject[1].name.should == 'calls from paul'
-          subject[1].guards.should == [{:from => 'paul'}]
+          subject[1].name.should be == 'calls from paul'
+          subject[1].guards.should be == [{:from => 'paul'}]
           subject[1].target.should be_a Proc
 
-          subject[2].name.should == 'catchall'
-          subject[2].guards.should == []
+          subject[2].name.should be == 'catchall'
+          subject[2].guards.should be == []
           subject[2].target.should be_a Proc
         end
       end
@@ -73,17 +75,17 @@ module Adhearsion
 
         context 'with a call from fred' do
           let(:call) { flexmock 'Adhearsion::Call', :from => 'fred' }
-          its(:name) { should == 'calls from fred' }
+          its(:name) { should be == 'calls from fred' }
         end
 
         context 'with a call from paul' do
           let(:call) { flexmock 'Adhearsion::Call', :from => 'paul' }
-          its(:name) { should == 'calls from paul' }
+          its(:name) { should be == 'calls from paul' }
         end
 
         context 'with a call from frank' do
           let(:call) { flexmock 'Adhearsion::Call', :from => 'frank' }
-          its(:name) { should == 'catchall' }
+          its(:name) { should be == 'catchall' }
         end
       end
 

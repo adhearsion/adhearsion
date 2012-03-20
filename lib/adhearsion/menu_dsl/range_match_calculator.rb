@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Adhearsion
   module MenuDSL
 
@@ -42,7 +44,8 @@ module Adhearsion
           power = 0
           while num < last
             ones_count = 10**power - 1
-            matches.concat ([num, first].max..[num + ones_count, last].min).to_a
+            range = ([num, first].max..[num + ones_count, last].min).to_a
+            matches.concat range
             num *= 10
             power += 1
           end

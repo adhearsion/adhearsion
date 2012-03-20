@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Adhearsion
   class OutboundCall < Call
     attr_reader :dial_command

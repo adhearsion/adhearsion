@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 class Object
   def catching_standard_errors(&block)
     begin

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 module Adhearsion
@@ -10,7 +12,7 @@ module Adhearsion
         match = calculator.match 4
         match.potential_match?.should be true
         match.exact_match?.should_not be true
-        match.potential_matches.should == [444]
+        match.potential_matches.should be == [444]
       end
 
       it "a multi-digit exact match scenario" do

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'thread'
 
 module Adhearsion
@@ -6,7 +8,9 @@ module Adhearsion
   #
   class Call
 
-    ExpiredError = Class.new Celluloid::DeadActorError
+    Hangup          = Class.new StandardError
+    ExpiredError    = Class.new Celluloid::DeadActorError
+    CommandTimeout  = Class.new StandardError
 
     include Celluloid
     include HasGuardedHandlers
@@ -15,7 +19,7 @@ module Adhearsion
       super.tap do |proxy|
         def proxy.method_missing(*args)
           super
-        rescue Celluloid::DeadActorError => e
+        rescue Celluloid::DeadActorError
           raise ExpiredError, "This call is expired and is no longer accessible"
         end
       end
@@ -33,6 +37,7 @@ module Adhearsion
       @commands     = CommandRegistry.new
       @variables    = {}
       @controllers  = []
+      @end_reason   = nil
 
       self << offer if offer
     end
@@ -84,7 +89,20 @@ module Adhearsion
         throw :pass
       end
 
+      register_event_handler Punchblock::Event::Joined do |event|
+        target = event.other_call_id || event.mixer_name
+        signal :joined, target
+        throw :pass
+      end
+
+      register_event_handler Punchblock::Event::Unjoined do |event|
+        target = event.other_call_id || event.mixer_name
+        signal :unjoined, target
+        throw :pass
+      end
+
       on_end do |event|
+        logger.info "Call ended"
         clear_from_active_calls
         @end_reason = event.reason
         commands.terminate
@@ -121,6 +139,7 @@ module Adhearsion
 
     def hangup(headers = nil)
       return false unless active?
+      logger.info "Hanging up"
       @end_reason = true
       write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
     end
@@ -138,24 +157,51 @@ module Adhearsion
     # @param [Hash, Optional] options further options to be joined with
     #
     def join(target, options = {})
-      case target
+      command = Punchblock::Command::Join.new join_options_with_target(target, options)
+      write_and_await_response command
+    end
+
+    ##
+    # Unjoins this call from another call or a mixer
+    #
+    # @param [Call, String, Hash] target the target to unjoin from. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
+    # @option target [String] call_id The call ID to unjoin from
+    # @option target [String] mixer_name The mixer to unjoin from
+    #
+    def unjoin(target)
+      command = Punchblock::Command::Unjoin.new join_options_with_target(target)
+      write_and_await_response command
+    end
+
+    def join_options_with_target(target, options = {})
+      options.merge(case target
       when Call
-        options[:other_call_id] = target.id
+        { :other_call_id => target.id }
       when String
-        options[:other_call_id] = target
+        { :other_call_id => target }
       when Hash
         abort ArgumentError.new "You cannot specify both a call ID and mixer name" if target.has_key?(:call_id) && target.has_key?(:mixer_name)
         target.tap do |t|
           t[:other_call_id] = t[:call_id]
           t.delete :call_id
         end
-
-        options.merge! target
       else
         abort ArgumentError.new "Don't know how to join to #{target.inspect}"
+      end)
+    end
+
+    def wait_for_joined(expected_target)
+      target = nil
+      until target == expected_target do
+        target = wait :joined
       end
-      command = Punchblock::Command::Join.new options
-      write_and_await_response command
+    end
+
+    def wait_for_unjoined(expected_target)
+      target = nil
+      until target == expected_target do
+        target = wait :unjoined
+      end
     end
 
     def mute
@@ -169,20 +215,28 @@ module Adhearsion
     def write_and_await_response(command, timeout = 60)
       commands << command
       write_command command
-      begin
-        response = command.response timeout
-      rescue Timeout::Error => e
-        abort e
+
+      case (response = command.response timeout)
+      when Punchblock::ProtocolError
+        if response.name == :item_not_found
+          abort Hangup.new(@end_reason)
+        else
+          abort response
+        end
+      when Exception
+        abort response
       end
-      abort response if response.is_a? Exception
+
       command
+    rescue Timeout::Error => e
+      abort CommandTimeout.new(command.to_s)
     end
 
     def write_command(command)
       abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
       variables.merge! command.headers_hash if command.respond_to? :headers_hash
       logger.debug "Executing command #{command.inspect}"
-      client.execute_command command, :call_id => id
+      client.execute_command command, :call_id => id, :async => true
     end
 
     def logger_id # :nodoc:
@@ -222,11 +276,11 @@ module Adhearsion
     end
 
     def pause_controllers
-      controllers.each &:pause!
+      controllers.each(&:pause!)
     end
 
     def resume_controllers
-      controllers.each &:resume!
+      controllers.each(&:resume!)
     end
 
     class CommandRegistry < ThreadSafeArray # :nodoc:

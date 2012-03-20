@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 module Adhearsion
@@ -20,12 +22,13 @@ module Adhearsion
       end
 
       it "writes a command to the client" do
-        flexmock(PunchblockPlugin.client).should_receive(:execute_command).once.with(message)
+        flexmock(PunchblockPlugin.client).should_receive(:execute_command).once.with(message, :async => true)
         PunchblockPlugin.execute_component message
       end
 
       it "blocks until a response is received" do
         slow_command = Punchblock::Command::Dial.new
+        slow_command.request!
         Thread.new do
           sleep 0.5
           slow_command.response = response
