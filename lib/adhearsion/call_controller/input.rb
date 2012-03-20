@@ -3,6 +3,184 @@
 module Adhearsion
   class CallController
     module Input
+
+      Result = Struct.new(:response, :status, :menu) do
+        def to_s
+          response
+        end
+      end
+
+      # Prompts for input via DTMF, handling playback of prompts,
+      # timeouts, digit limits and terminator digits.
+      #
+      # @example A basic digit collection:
+      #   ask "Welcome, ", "/opt/sounds/menu-prompt.mp3",
+      #       :timeout => 10, :terminator => '#', :limit => 3 do |buffer|
+      #     buffer == "12980"
+      #   end
+      #
+      # The first arguments will be a list of sounds to play, as accepted by #play, including strings for TTS, Date and Time objects, and file paths.
+      # :timeout, :terminator and :limit options may then be specified.
+      # A block may be passed which is invoked on each digit being collected. If it returns true, the collection is terminated.
+      #
+      # @param [Object] A list of outputs to play, as accepted by #play
+      # @param [Hash] options Options to use for the menu
+      # @option options [Boolean] :interruptible If the prompt should be interruptible or not. Defaults to true
+      # @option options [Integer] :limit Digit limit (causes collection to cease after a specified number of digits have been collected)
+      # @option options [Integer] :timeout Timeout in seconds before the first and between each input digit
+      # @option options [String] :terminator Digit to terminate input
+      #
+      # @return [Result] a result object from which the #response and #status may be established
+      #
+      # @see play
+      # @see pass
+      #
+      def ask(*args, &block)
+        options = args.last.kind_of?(Hash) ? args.pop : {}
+        sound_files = args.flatten
+
+        menu_instance = MenuDSL::Menu.new options do
+          validator(&block) if block
+        end
+        menu_instance.validate :basic
+        result_of_menu = nil
+
+        until MenuDSL::Menu::MenuResultDone === result_of_menu
+          result_of_menu = menu_instance.continue
+
+          if result_of_menu.is_a?(MenuDSL::Menu::MenuGetAnotherDigit)
+            next_digit = play_sound_files_for_menu menu_instance, sound_files
+            menu_instance << next_digit if next_digit
+          end # case
+        end # while
+
+        Result.new.tap do |result|
+          result.response = menu_instance.result
+          result.status   = menu_instance.status
+          result.menu     = menu_instance
+        end
+      end
+
+      # Creates and manages a multiple choice menu driven by DTMF, handling playback of prompts,
+      # invalid input, retries and timeouts, and final failures.
+      #
+      # @example A complete example of the method is as follows:
+      #   ask "Welcome, ", "/opt/sounds/menu-prompt.mp3", :tries => 2, :timeout => 10 do
+      #     match 1, OperatorController
+      #
+      #     match 10..19 do
+      #       pass DirectController
+      #     end
+      #
+      #     match 5, 6, 9 do |exten|
+      #      play "The #{exten} extension is currently not active"
+      #     end
+      #
+      #     match '7', OfficeController
+      #
+      #     invalid { play "Please choose a valid extension" }
+      #     timeout { play "Input timed out, try again." }
+      #     failure { pass OperatorController }
+      #   end
+      #
+      # The first arguments will be a list of sounds to play, as accepted by #play, including strings for TTS, Date and Time objects, and file paths.
+      # :tries and :timeout options respectively specify the number of tries before going into failure, and the timeout in seconds allowed on each digit input.
+      # The most important part is the following block, which specifies how the menu will be constructed and handled.
+      #
+      # #match handles connecting an input pattern to a payload.
+      # The pattern can be one or more of: an integer, a Range, a string, an Array of the possible single types.
+      # Input is matched against patterns, and the first exact match has it's payload executed.
+      # Matched input is passed in to the associated block, or to the controller through #options.
+      #
+      # Allowed payloads are the name of a controller class, in which case it is executed through its #run method, or a block.
+      #
+      # #invalid has its associated block executed when the input does not possibly match any pattern.
+      # #timeout's block is run when time expires before or between input digits.
+      # #failure runs its block when the maximum number of tries is reached without an input match.
+      #
+      # #validator runs its block on each digit being collected. If it returns true, the collection is terminated.
+      #
+      # Execution of the current context resumes after #ask finishes. If you wish to jump to an entirely different controller, use #pass.
+      # Menu will return :failed if failure was reached, or :done if a match was executed.
+      #
+      # @param [Object] A list of outputs to play, as accepted by #play
+      # @param [Hash] options Options to use for the menu
+      # @option options [Integer] :tries Number of tries allowed before failure
+      # @option options [Integer] :timeout Timeout in seconds before the first and between each input digit
+      # @option options [Boolean] :interruptible If the prompt should be interruptible or not. Defaults to true
+      #
+      # @return [Result] a result object from which the #response and #status may be established
+      #
+      # @see play
+      # @see pass
+      #
+      def menu(*args, &block)
+        options = args.last.kind_of?(Hash) ? args.pop : {}
+        sound_files = args.flatten
+
+        menu_instance = MenuDSL::Menu.new options, &block
+        menu_instance.validate
+        result_of_menu = nil
+
+        catch :finish do
+          until MenuDSL::Menu::MenuResultDone === result_of_menu
+            if menu_instance.should_continue?
+              result_of_menu = menu_instance.continue
+            else
+              logger.debug "Menu failed to get valid input. Calling \"failure\" hook."
+              menu_instance.execute_failure_hook
+              throw :finish
+            end
+
+            case result_of_menu
+            when MenuDSL::Menu::MenuResultInvalid
+              logger.debug "Menu received invalid input. Calling \"invalid\" hook and restarting."
+              menu_instance.execute_invalid_hook
+              menu_instance.restart!
+              result_of_menu = nil
+            when MenuDSL::Menu::MenuGetAnotherDigit
+              next_digit = play_sound_files_for_menu menu_instance, sound_files
+              if next_digit
+                menu_instance << next_digit
+              else
+                case result_of_menu
+                when MenuDSL::Menu::MenuGetAnotherDigitOrFinish
+                  jump_to result_of_menu.match_object, :extension => result_of_menu.new_extension
+                  throw :finish
+                when MenuDSL::Menu::MenuGetAnotherDigitOrTimeout
+                  logger.debug "Menu timed out. Calling \"timeout\" hook and restarting."
+                  menu_instance.execute_timeout_hook
+                  menu_instance.restart!
+                  result_of_menu = nil
+                end
+              end
+            when MenuDSL::Menu::MenuResultFound
+              logger.debug "Menu received valid input (#{result_of_menu.new_extension}). Calling the matching hook."
+              jump_to result_of_menu.match_object, :extension => result_of_menu.new_extension
+              throw :finish
+            end # case
+          end # while
+        end
+
+        Result.new.tap do |result|
+          result.response = menu_instance.result
+          result.status   = menu_instance.status
+          result.menu     = menu_instance
+        end
+      end
+
+      def play_sound_files_for_menu(menu_instance, sound_files) # :nodoc:
+        digit = nil
+        if sound_files.any? && menu_instance.digit_buffer_empty?
+          if menu_instance.interruptible
+            digit = interruptible_play(*sound_files)
+          else
+            play(*sound_files)
+          end
+        end
+        digit || wait_for_digit(menu_instance.timeout)
+      end
+
       #
       # Waits for a single digit and returns it, or returns nil if nothing was pressed
       #
@@ -24,152 +202,14 @@ module Adhearsion
         parse_single_dtmf result
       end
 
-      # Used to receive keypad input from the user. Digits are collected
-      # via DTMF (keypad) input until one of three things happens:
-      #
-      #  1. The number of digits you specify as the first argument is collected
-      #  2. The timeout you specify with the :timeout option elapses, in seconds.
-      #  3. The "#" key (or the key you specify with :accept_key) is pressed
-      #
-      # Usage examples
-      #
-      #   input   # Receives digits until the caller presses the "#" key
-      #   input 3 # Receives three digits. Can be 0-9, * or #
-      #   input 5, :accept_key => "*"   # Receive at most 5 digits, stopping if '*' is pressed
-      #   input 1, :timeout => 60000 # Receive a single digit, returning an empty
-      #                                   string if the timeout is encountered
-      #   input 9, :timeout => 7000, :accept_key => "0" # Receives nine digits, returning
-      #                                              # when the timeout is encountered
-      #                                              # or when the "0" key is pressed.
-      #   input 3, :play => "you-sound-cute"
-      #   input :play => ["if-this-is-correct-press", 1, "otherwise-press", 2]
-      #   input :interruptible => false, :play => ["you-cannot-interrupt-this-message"] # Disallow DTMF (keypad) interruption
-      #                                                                                 # until after all files are played.
-      #
-      # When specifying outputs to play, the playback of the sequence of files will stop
-      # immediately when the user presses the first digit.
-      #
-      # Accepted output types are:
-      #   1. Any object supported by detect_type (@see detect_type)
-      #   2. Any valid SSML document
-      #   3. An Hash with at least the :value key set to a supported object type, and other keys as options to the specific output
-      #
-      # :play usage examples
-      #   input 1, :play => RubySpeech::SSML.draw { string "hello there" } # 1 digit, SSML document
-      #   input 2, :play => "hello there" # 2 digits, string
-      #   input 2, :play => {:value => Time.now, :strftime => "%H:%M"} # 2 digits, Hash with :value
-      #   input :play => [ "the time is", {:value => Time.now, :strftime => "%H:%M"} ] # no digit limit, two mixed outputs
-      #
-      # The :timeout option works like a digit timeout, therefore each digit pressed
-      # causes the timer to reset. This is a much more user-friendly approach than an
-      # absolute timeout.
-      #
-      # Note that when the digit limit is not specified the :accept_key becomes "#".
-      # Otherwise there would be no way to end the collection of digits. You can
-      # obviously override this by passing in a new key with :accept_key.
-      #
-      # @return [String] The keypad input received. An empty string is returned in the
-      #                  absense of input. If the :accept_key argument was pressed, it
-      #                  will not appear in the output.
-      def input(*args, &block)
-        begin
-          input!(*args, &block)
-        rescue PlaybackError => e
-          logger.warn "Error playing back the prompt: #{e.message}"
-          retry # If sound playback fails, play the remaining sound files and wait for digits
+      def jump_to(match_object, overrides = nil) # :nodoc:
+        if match_object.block
+          instance_exec overrides[:extension], &match_object.block
+        else
+          invoke match_object.match_payload, overrides
         end
       end
 
-      # Same as {#input}, but immediately raises an exception if sound playback fails
-      #
-      # @return (see #input)
-      # @raise [Adhearsion::PlaybackError] If a sound file cannot be played
-      def input!(*args, &block)
-        options = args.last.kind_of?(Hash) ? args.pop : {}
-        number_of_digits = args.shift
-
-        options[:play] = Array(case options[:play]
-          when String
-            options[:play]
-          when Array
-            options[:play].compact
-          when NilClass
-            []
-          else
-            [options[:play]]
-        end)
-
-        play_command = if options.has_key?(:interruptible) && options[:interruptible] == false
-          :play!
-        else
-          options[:interruptible] = true
-          :interruptible_play!
-        end
-
-        if options.has_key? :speak
-          raise ArgumentError, ':speak must be a Hash' unless options[:speak].is_a? Hash
-          raise ArgumentError, 'Must include a text string when requesting TTS fallback' unless options[:speak].has_key?(:text)
-          if options.has_key?(:speak) && options.has_key?(:play) && options[:play].size > 0
-            raise ArgumentError, 'Must specify only one of :play or :speak'
-          end
-        end
-
-        timeout     = options[:timeout]
-        terminator  = options[:terminator]
-
-        terminator = if terminator
-          terminator.to_s
-        elsif number_of_digits.nil? && !terminator.equal?(false)
-          '#'
-        end
-
-        if number_of_digits && number_of_digits < 0
-          logger.warn "Giving -1 to #input is now deprecated. Do not specify a first " +
-                      "argument to allow unlimited digits." if number_of_digits == -1
-          raise ArgumentError, "The number of digits must be positive!"
-        end
-
-        buffer = ''
-        if options[:play].any?
-          # Consume the sound files one at a time. In the event of playback
-          # failure, this tells us which files remain unplayed.
-          while output = options[:play].shift
-            if output.class == Hash
-              argument = output.delete(:value)
-              raise ArgumentError, ':value has to be specified for each :play argument that is a Hash' if argument.nil?
-              output = [argument, output]
-            end
-            key = send play_command, output
-            key = nil if play_command == :play!
-            break if key
-          end
-          key ||= ''
-          # instead use a normal play command, :speak is basically an alias
-        elsif options[:speak]
-          speak_output = options[:speak].delete(:text)
-          key = send play_command, speak_output, options[:speak]
-          key = nil if play_command == :play!
-        else
-          key = wait_for_digit timeout
-        end
-
-        loop do
-          return buffer if key.nil?
-          if terminator
-            if key == terminator
-              return buffer
-            else
-              buffer << key
-              return buffer if number_of_digits && number_of_digits == buffer.length
-            end
-          else
-            buffer << key
-            return buffer if number_of_digits && number_of_digits == buffer.length
-          end
-          return buffer if block_given? && yield(buffer)
-          key = wait_for_digit timeout
-        end
-      end # #input!
-    end # Input
+    end # module
   end
 end

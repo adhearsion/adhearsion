@@ -19,6 +19,7 @@ module Adhearsion
 
       describe "#match" do
         let(:match_block) { Proc.new() {} }
+
         it "raises an exception if called without a CallController and no block" do
           expect { subject.match 1 }.to raise_error(ArgumentError)
         end
@@ -40,12 +41,27 @@ module Adhearsion
           flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with("1", nil, match_block)
           subject.match("1", &match_block)
         end
+
         it "creates multiple patterns if multiple arguments are passed in" do
           flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with(1, Object)
           flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with(2, Object)
           subject.match(1, 2, Object)
         end
       end#match
+
+      describe "#has_matchers?" do
+        context "with no matchers specified" do
+          its(:has_matchers?) { should be false }
+        end
+
+        context "with at least one matcher specified" do
+          before do
+            subject.match(1) {}
+          end
+
+          its(:has_matchers?) { should be true }
+        end
+      end
 
       describe "#weighted_match_calculators" do
         let(:expected_pattern) { MenuDSL::MatchCalculator.build_with_pattern("1", Object) }
@@ -95,6 +111,19 @@ module Adhearsion
           subject.menu_callbacks[:failure].should be == callback
         end
       end#failure
+
+      describe "#validator" do
+        let(:callback) { Proc.new() {} }
+
+        it "raises an error if not passed a block" do
+          expect { subject.validator }.to raise_error(LocalJumpError)
+        end
+
+        it "sets the invalid callback" do
+          subject.validator(&callback)
+          subject.menu_callbacks[:validator].should be == callback
+        end
+      end#invalid
 
       describe "#execute_hook_for" do
         it "executes the correct hook" do
