@@ -66,13 +66,17 @@ module Adhearsion
       self
     end
 
-    def debugging_log
+    def debugging_items
       [
         "OS: #{RbConfig::CONFIG['host_os']} - RUBY: #{RUBY_ENGINE} #{RUBY_VERSION}",
         "Environment: #{ENV.inspect}",
         Adhearsion.config.description(:all),
         "Gem versions: #{Gem.loaded_specs.inject([]) { |c,g| c << "#{g[0]} #{g[1].version}" }}"
-      ].each do |item|
+      ]
+    end
+
+    def debugging_log
+      debugging_items.each do |item|
         logger.trace item
       end
     end
