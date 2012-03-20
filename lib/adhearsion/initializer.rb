@@ -239,8 +239,8 @@ module Adhearsion
     end
 
     def initialize_exception_logger
-      Events.register_handler :exception do |e|
-        logger.error e
+      Events.register_handler :exception do |e, l|
+        (l || logger).error e
       end
     end
 

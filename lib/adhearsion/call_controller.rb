@@ -68,7 +68,7 @@ module Adhearsion
     rescue Hangup
       logger.info "Call was hung up"
     rescue SyntaxError, StandardError => e
-      Events.trigger :exception, e
+      Events.trigger :exception, [e, logger]
     ensure
       after_call
     end
