@@ -8,8 +8,9 @@ module Adhearsion
   #
   class Call
 
-    ExpiredError = Class.new Celluloid::DeadActorError
-    CommandTimeout = Class.new StandardError
+    Hangup          = Class.new StandardError
+    ExpiredError    = Class.new Celluloid::DeadActorError
+    CommandTimeout  = Class.new StandardError
 
     include Celluloid
     include HasGuardedHandlers

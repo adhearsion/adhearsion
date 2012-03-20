@@ -35,7 +35,7 @@ module Adhearsion
       end
 
       it "catches Hangup exceptions and logs the hangup" do
-        subject.should_receive(:run).once.and_raise(Hangup).ordered
+        subject.should_receive(:run).once.and_raise(Call::Hangup).ordered
         flexmock(subject.logger).should_receive(:info).once.with(/Call was hung up/).ordered
         subject.execute!
       end
@@ -86,7 +86,7 @@ module Adhearsion
       end
 
       def simulate_remote_hangup
-        raise Hangup
+        raise Call::Hangup
       end
     end
 

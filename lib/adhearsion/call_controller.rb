@@ -63,7 +63,7 @@ module Adhearsion
       call.register_controller! self
       execute_callbacks :before_call
       run
-    rescue Hangup
+    rescue Call::Hangup
       logger.info "Call was hung up"
     rescue SyntaxError, StandardError => e
       Events.trigger :exception, [e, logger]

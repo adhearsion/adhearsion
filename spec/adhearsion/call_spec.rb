@@ -225,7 +225,7 @@ module Adhearsion
         end
 
         it "should raise a Hangup exception" do
-          lambda { subject.write_command mock_command }.should raise_error(Hangup)
+          lambda { subject.write_command mock_command }.should raise_error(Call::Hangup)
         end
 
         describe "if the command is a Hangup" do
@@ -289,7 +289,7 @@ module Adhearsion
 
           it "should raise a Hangup exception" do
             flexmock(Events).should_receive(:trigger).never
-            lambda { subject.write_and_await_response message }.should raise_error Hangup
+            lambda { subject.write_and_await_response message }.should raise_error Call::Hangup
           end
         end
       end
@@ -680,7 +680,7 @@ module Adhearsion
           end
           subject.terminate
           commands.each do |command|
-            command.response.should be_a Hangup
+            command.response.should be_a Call::Hangup
           end
           finished_command.response.should be == :foo
         end
