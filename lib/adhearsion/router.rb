@@ -25,7 +25,7 @@ module Adhearsion
 
     def handle(call)
       return unless route = match(call)
-      logger.debug "Call #{call.id} selected route \"#{route.name}\" (#{route.target})"
+      logger.info "Call #{call.id} selected route \"#{route.name}\" (#{route.target})"
       route.dispatcher
     end
   end

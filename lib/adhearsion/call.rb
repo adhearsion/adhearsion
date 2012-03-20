@@ -100,6 +100,7 @@ module Adhearsion
       end
 
       on_end do |event|
+        logger.info "Call ended"
         clear_from_active_calls
         @end_reason = event.reason
         commands.terminate
@@ -136,6 +137,7 @@ module Adhearsion
 
     def hangup(headers = nil)
       return false unless active?
+      logger.info "Hanging up"
       @end_reason = true
       write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
     end
