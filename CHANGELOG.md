@@ -1,4 +1,6 @@
 # develop
+
+# 2.0.0.rc1 - 2012-03-20
   * Change: `CallController#speak` is now `CallController#say`
   * Change: `CallController#input` has been removed in favour of `#ask`
   * Feature: `CallController#menu` and `CallController#ask` returns a `Result` object from which the status and response may be established
