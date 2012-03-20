@@ -269,7 +269,7 @@ module Adhearsion
 
         it "raises an exception if play fails" do
           subject.should_receive(:play).once.and_return false
-          expect { subject.play!(non_existing) }.to raise_error(Adhearsion::PlaybackError)
+          expect { subject.play!(non_existing) }.to raise_error(Output::PlaybackError)
         end
       end
 
@@ -459,8 +459,8 @@ module Adhearsion
         end
 
         it 'raises an exception when output is unsuccessful' do
-          subject.should_receive(:stream_file).once.and_raise PlaybackError, "Output failed"
-          expect { subject.interruptible_play!(non_existing) }.to raise_error(Adhearsion::PlaybackError)
+          subject.should_receive(:stream_file).once.and_raise Output::PlaybackError, "Output failed"
+          expect { subject.interruptible_play!(non_existing) }.to raise_error(Output::PlaybackError)
         end
       end # describe interruptible_play!
 
@@ -480,8 +480,8 @@ module Adhearsion
         end
 
         it "should not raise an exception when output is unsuccessful" do
-          subject.should_receive(:stream_file).once.and_raise PlaybackError, "Output failed"
-          lambda { subject.interruptible_play non_existing }.should_not raise_error(Adhearsion::PlaybackError)
+          subject.should_receive(:stream_file).once.and_raise Output::PlaybackError, "Output failed"
+          lambda { subject.interruptible_play non_existing }.should_not raise_error(Output::PlaybackError)
         end
       end # describe interruptible_play
 

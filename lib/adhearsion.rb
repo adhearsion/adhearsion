@@ -87,8 +87,6 @@ module Adhearsion
     end
   end
 
-  PlaybackError      = Class.new StandardError # Represents failure to play audio, such as when the sound file cannot be found
-  RecordError        = Class.new StandardError # Represents failure to record such as when a file cannot be written.
   ConfigurationError = Class.new StandardError # Error raised while trying to configure a non existent plugin
 end
 

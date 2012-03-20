@@ -3,6 +3,8 @@
 module Adhearsion
   class CallController
     module Output
+      PlaybackError = Class.new StandardError # Represents failure to play audio, such as when the sound file cannot be found
+
       def say(text, options = {})
         play_ssml(text, options) || output(:text, text.to_s, options)
       end
@@ -53,7 +55,7 @@ module Adhearsion
       # @see play
       #
       def play!(*arguments)
-        play(*arguments) or raise Adhearsion::PlaybackError, "One of the passed outputs is invalid"
+        play(*arguments) or raise PlaybackError, "One of the passed outputs is invalid"
       end
 
       #

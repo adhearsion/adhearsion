@@ -3,6 +3,8 @@
 module Adhearsion
   class CallController
     module Record
+      RecordError = Class.new StandardError # Represents failure to record such as when a file cannot be written.
+
       #
       # Start a recording
       #
