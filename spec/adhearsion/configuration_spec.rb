@@ -73,7 +73,7 @@ describe Adhearsion::Configuration do
     it "should raise a ConfigurationError" do
       lambda {
         Adhearsion.config.foo.bar = "bazz"
-      }.should raise_error Adhearsion::ConfigurationError, "Invalid plugin foo"
+      }.should raise_error Adhearsion::Configuration::ConfigurationError, "Invalid plugin foo"
     end
   end
 

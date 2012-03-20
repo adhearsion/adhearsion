@@ -86,8 +86,6 @@ module Adhearsion
       Adhearsion::Process.state_name
     end
   end
-
-  ConfigurationError = Class.new StandardError # Error raised while trying to configure a non existent plugin
 end
 
 Celluloid.exception_handler { |e| Adhearsion::Events.trigger :exception, e }
