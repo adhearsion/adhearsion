@@ -177,7 +177,7 @@ module Adhearsion
         result = nil
         result = :time if [Date, Time, DateTime].include? output.class
         result = :numeric if output.kind_of?(Numeric) || output =~ /^\d+$/
-        result = :audio if !result && (/\//.match(output.to_s) || URI::regexp(%w(http https)).match(output.to_s))
+        result = :audio if !result && (/^\//.match(output.to_s) || URI::regexp.match(output.to_s))
         result ||= :text
       end
 

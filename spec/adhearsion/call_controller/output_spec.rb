@@ -334,8 +334,14 @@ module Adhearsion
         end
 
         it "detects a file path" do
-          http_path = "/usr/shared/sounds/hello.mp3"
-          subject.detect_type(http_path).should be :audio
+          file_path = "file:///usr/shared/sounds/hello.mp3"
+          subject.detect_type(file_path).should be :audio
+
+          absolute_path = "/usr/shared/sounds/hello.mp3"
+          subject.detect_type(absolute_path).should be :audio
+
+          relative_path = "foo/bar"
+          subject.detect_type(relative_path).should_not be :audio
         end
 
         it "detects a Date object" do
