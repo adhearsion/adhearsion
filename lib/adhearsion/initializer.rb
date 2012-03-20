@@ -209,7 +209,6 @@ module Adhearsion
       Adhearsion::Process.important_threads << Thread.new do
         catching_standard_errors do
           Adhearsion::Console.run
-          Adhearsion::Process.shutdown
         end
       end
     end
