@@ -2,7 +2,7 @@
 
 module InitializerStubs
   UNWANTED_BEHAVIOR = {
-    Adhearsion::Initializer => [:initialize_log_paths, :update_rails_env_var, :daemonize!, :require, :init_plugins, :run_plugins, :load_lib_folder]
+    Adhearsion::Initializer => [:debugging_log, :initialize_log_paths, :update_rails_env_var, :daemonize!, :require, :init_plugins, :run_plugins, :load_lib_folder]
   } unless defined? UNWANTED_BEHAVIOR
 
   def stub_behavior_for_initializer_with_no_path_changing_behavior
