@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 task :debugging => :environment do
   initializer = Adhearsion::Initializer.new
   puts
