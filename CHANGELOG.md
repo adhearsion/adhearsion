@@ -1,18 +1,34 @@
-# develop
+# [develop](https://github.com/adhearsion/adhearsion)
+
+# [2.0.0.rc1](https://github.com/adhearsion/adhearsion/compare/v2.0.0.beta1...v2.0.0.rc1) - [2012-03-20](https://rubygems.org/gems/adhearsion/versions/2.0.0.rc1)
+  * Change: `CallController#join` now blocks until a corresponding unjoined event is received
   * Change: `CallController#speak` is now `CallController#say`
   * Change: `CallController#input` has been removed in favour of `#ask`
+
+  * Feature: `CallController#menu` may now disallow the caller from interrupting prompts by specifying `:interruptible => false`
   * Feature: `CallController#menu` and `CallController#ask` returns a `Result` object from which the status and response may be established
   * Feature: `CallController#ask` behaves similarly to `#menu`, processing prompts and supporting `:terminator` and `:limit` options
-  * Feature: `CallController#menu` may now disallow the caller from interrupting prompts by specifying `:interruptible => false`
-  * Bugfix: 'ahn restart' now does not fail if the PID file is not found
-  * Change: `CallController#join` now blocks until a corresponding unjoined event is received
   * Feature: Added `Call#unjoin`
-  * Feature: `CallControll#join` can be made non-blocking by passing `:async => true`
-  * Feature: CallController#dial now supports overriding or extra options for single call destinations
-  * Change: Added https://github.com/peritor/deep_merge as a runtime dependency
-  * Coding Standards: pre-commit script to run `rake encodeify` provided. Unit tests now check for encoding
+  * Feature: `CallControll#join` now blocks until the corresponding call is unjoined and can be made non-blocking by passing `:async => true`
+  * Feature: `CallController#dial` now supports overriding or extra options for each call destinations
+  * Feature: Asterisk AMI events may now be handled using the `ami` handler
+  * Feature: Added environment debugging info when running at trace level, and by using `rake debugging`
 
-# 2.0.0.beta1 - 2012-03-07
+  * Bugfix: `ahn restart` now does not fail if the PID file is not found
+  * Bugfix: AHN_ENV and RAILS_ENV are now respected correctly
+  * Bugfix: `ahn` command now elminates all version mis-matches between installed and bundled gems
+  * Bugfix: Adhearsion is now ruby warning-free
+  * Bugfix: A hangup exception is now raised if call commands fail with a call-not-found
+  * Bugfix: `CallController#record` now functions as advertised
+  * Bugfix: The punchblock JID resource is not overriden if defined in config
+  * Bugfix: `DialStatus` objects returned from `CallController#dial` now include the cases where dials fail
+  * Bugfix: Calls are now processed after Punchblock reconnects
+  * Bugfix: Better exception logging
+  * Bugfix: Strings passed to `CallController#play` which contain `/` but are not file paths are now rendered as text
+  * Bugfix: Adhearsion now functions correctly on Heroku
+  * Cleaned up log messages
+
+# [2.0.0.beta1](https://github.com/adhearsion/adhearsion/compare/v2.0.0.alpha3...v2.0.0.beta1) - [2012-03-07](https://rubygems.org/gems/adhearsion/versions/2.0.0.beta1)
   * Bugfix: #speak now correctly casts the argument to string if it is not SSML
   * Bugfix: The console pauses controllers on a call while taking control
   * Feature: Reopen logfiles on SIGHUP
@@ -23,7 +39,7 @@
   * Feature: Punchblock plugin can now configure the active media engine (mostly for use on Asterisk)
   * Bugfix: Fix forcing Adhearsion to stop with enough SIGTERM or CTRL+C
 
-# 2.0.0.alpha3 - 2012-02-21
+# [2.0.0.alpha3](https://github.com/adhearsion/adhearsion/compare/v2.0.0.alpha2...v2.0.0.alpha3) - [2012-02-21](https://rubygems.org/gems/adhearsion/versions/2.0.0.alpha3)
   * Feature: Add `ahn generate` command to allow invocation of generators
   * Feature: Add simple generator for call controllers
   * Feature: Add simple generator for plugins
@@ -42,7 +58,7 @@
   * Feature: CallController#dial now defaults the outbound caller ID to that of the controller's call
   * Change: The command to take control of a call is now 'take' rather than 'use'. 'take' called without a call ID present a list of currently running calls
 
-# 2.0.0.alpha2 - 2012-01-30
+# [2.0.0.alpha2](https://github.com/adhearsion/adhearsion/compare/v2.0.0.alpha1...v2.0.0.alpha2) - [2012-01-30](https://rubygems.org/gems/adhearsion/versions/2.0.0.alpha2)
   * Change: Plugins no longer load dialplan/event/rpc/console methods using corresponding class methods
   * Feature: CallController and Console can have modules of methods mixed in using `CallController.mixin` and `Console.mixin`
   * Feature: Added the ability to override configuration using environment variables. The correct names are given when running `rake adhearsion:config:show`, and are automatically added for all plugins. Plugins may define how the string environment variable is transformed to be useful.
@@ -59,7 +75,7 @@
   * Bugfix: The console should be shut down when shutting down the process
   * Rake tasks cleaned up and some initialization bugs fixed
 
-# 2.0.0.alpha1 - 2012-01-17
+# [2.0.0.alpha1](https://github.com/adhearsion/adhearsion/compare/v1.2.1...v2.0.0.alpha1) - [2012-01-17](https://rubygems.org/gems/adhearsion/versions/2.0.0.alpha1)
 
 ## Major architectural changes
   * Adhearsion is no longer a framework for creating Asterisk applications, and it does not know anything about the specifics of Asterisk. Adhearsion now makes use of the Punchblock library which abstracts features from common telephony engines. Supported engines are now:
