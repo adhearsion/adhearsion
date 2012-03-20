@@ -311,7 +311,7 @@ module Adhearsion
         latch = CountDownLatch.new 1
 
         Events.draw do
-          ami do |event|
+          ami :name => 'foobar' do |event|
             result = event
             latch.countdown!
           end
