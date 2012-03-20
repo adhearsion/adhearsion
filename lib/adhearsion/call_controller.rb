@@ -4,14 +4,12 @@ module Adhearsion
   class CallController
     extend ActiveSupport::Autoload
 
-    autoload :Ask
     autoload :Dial
     autoload :Input
     autoload :Output
     autoload :Record
     autoload :Utility
 
-    include Ask
     include Dial
     include Input
     include Output

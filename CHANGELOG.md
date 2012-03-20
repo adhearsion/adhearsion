@@ -1,7 +1,10 @@
 # develop
   * Change: `CallController#speak` is now `CallController#say`
-  * Change: `CallController#menu` is now `CallController#ask`
-  * Change: 'ahn restart' now does not fail if the PID file is not found
+  * Change: `CallController#input` has been removed in favour of `#ask`
+  * Feature: `CallController#menu` and `CallController#ask` returns a `Result` object from which the status and response may be established
+  * Feature: `CallController#ask` behaves similarly to `#menu`, processing prompts and supporting `:terminator` and `:limit` options
+  * Feature: `CallController#menu` may now disallow the caller from interrupting prompts by specifying `:interruptible => false`
+  * Bugfix: 'ahn restart' now does not fail if the PID file is not found
   * Change: `CallController#join` now blocks until a corresponding unjoined event is received
   * Feature: Added `Call#unjoin`
   * Feature: `CallControll#join` can be made non-blocking by passing `:async => true`
