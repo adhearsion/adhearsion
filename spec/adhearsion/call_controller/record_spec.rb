@@ -72,63 +72,6 @@ module Adhearsion
         end
       end
 
-      describe "#record with default options" do
-        let(:options) {{
-          :start_beep => true,
-          :format => 'mp3',
-          :start_paused => false,
-          :stop_beep => true,
-          :max_duration => 500000,
-          :initial_timeout => 10000,
-          :final_timeout => 30000
-        }}
-
-        let(:component) { Punchblock::Component::Record.new(options) }
-        let(:response) { Punchblock::Event::Complete.new }
-
-        before do
-          expect_message_waiting_for_response component
-          component.execute!
-          component.complete_event = response
-        end
-
-        it 'executes a #record with the correct options' do
-          subject.execute_component_and_await_completion component
-        end
-
-        it 'takes a block which is executed after acknowledgement but before waiting on completion' do
-          @comp = nil
-          subject.execute_component_and_await_completion(component) { |comp| @comp = comp }.should be == component
-          @comp.should be == component
-        end
-
-        describe "with a successful completion" do
-          it 'returns the executed component' do
-            subject.execute_component_and_await_completion(component).should be component
-          end
-        end
-
-        describe 'with an error response' do
-          let(:response) do
-            Punchblock::Event::Complete.new.tap do |complete|
-              complete << error
-            end
-          end
-
-          let(:error) do |error|
-            Punchblock::Event::Complete::Error.new.tap do |e|
-              e << details
-            end
-          end
-
-          let(:details) { "Something came up" }
-
-          it 'raises the error' do
-            lambda { subject.execute_component_and_await_completion component }.should raise_error(StandardError, details)
-          end
-        end
-      end
-
     end
   end
 end
