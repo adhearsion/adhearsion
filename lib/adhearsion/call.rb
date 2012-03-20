@@ -9,6 +9,7 @@ module Adhearsion
   class Call
 
     ExpiredError = Class.new Celluloid::DeadActorError
+    CommandTimeout = Class.new StandardError
 
     include Celluloid
     include HasGuardedHandlers
@@ -216,7 +217,7 @@ module Adhearsion
       begin
         response = command.response timeout
       rescue Timeout::Error => e
-        abort e
+        abort CommandTimeout.new(command.to_s)
       end
       case response
       when Punchblock::ProtocolError

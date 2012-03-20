@@ -300,7 +300,7 @@ module Adhearsion
         end
 
         it "should raise the error in the caller but not crash the actor" do
-          lambda { subject.write_and_await_response message }.should raise_error Timeout::Error
+          lambda { subject.write_and_await_response message }.should raise_error Call::CommandTimeout, message.to_s
           sleep 0.5
           subject.should be_alive
         end
