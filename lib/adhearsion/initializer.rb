@@ -241,7 +241,6 @@ module Adhearsion
     def initialize_exception_logger
       Events.register_handler :exception do |e|
         logger.error e
-        logger.debug e.backtrace.join "\n"
       end
     end
 
