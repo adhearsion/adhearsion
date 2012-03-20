@@ -2,6 +2,7 @@
 
 require 'adhearsion/punchblock_plugin'
 require 'adhearsion/linux_proc_name'
+require 'rbconfig'
 
 module Adhearsion
   class Initializer
@@ -43,6 +44,7 @@ module Adhearsion
       initialize_log_paths
       daemonize! if should_daemonize?
       start_logging
+      debugging_log
       launch_console if need_console?
       catch_termination_signal
       create_pid_file
@@ -62,6 +64,17 @@ module Adhearsion
       # When it does, the process will exit.
       join_important_threads
       self
+    end
+
+    def debugging_log
+      [
+        "OS: #{RbConfig::CONFIG['host_os']} - RUBY: #{RUBY_ENGINE} #{RUBY_VERSION}",
+        "Environment: #{ENV.inspect}",
+        Adhearsion.config.description(:all),
+        "Gem versions: #{Gem.loaded_specs.inject([]) { |c,g| c << "#{g[0]} #{g[1].version}" }}"
+      ].each do |item|
+        logger.trace item
+      end
     end
 
     def update_rails_env_var
