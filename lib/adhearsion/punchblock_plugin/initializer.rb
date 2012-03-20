@@ -57,7 +57,7 @@ module Adhearsion
 
           # Handle events from Punchblock via events system
           self.client.register_event_handler do |event|
-            Events.trigger :punchblock, event
+            handle_event event
           end
 
           Events.punchblock ::Punchblock::Connection::Connected do |event|
@@ -154,6 +154,14 @@ module Adhearsion
             call.deliver_message! event
           else
             logger.error "Event received for inactive call #{event.call_id}: #{event.inspect}"
+          end
+        end
+
+        def handle_event(event)
+          Events.trigger :punchblock, event
+          case event
+          when Punchblock::Event::Asterisk::AMI::Event
+            Events.trigger :ami, event
           end
         end
 

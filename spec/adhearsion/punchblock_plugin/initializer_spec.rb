@@ -304,6 +304,24 @@ module Adhearsion
           end
         end
       end
+
+      it "should allow easily registering handlers for AMI events" do
+        result = nil
+        ami_event = Punchblock::Event::Asterisk::AMI::Event.new :name => 'foobar'
+        latch = CountDownLatch.new 1
+
+        Events.draw do
+          ami do |event|
+            result = event
+            latch.countdown!
+          end
+        end
+
+        Initializer.handle_event ami_event
+
+        latch.wait(1).should be true
+        result.should be ami_event
+      end
     end
   end
 end
