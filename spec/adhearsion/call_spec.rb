@@ -32,7 +32,6 @@ module Adhearsion
     its(:end_reason) { should be == nil }
     it { should be_active }
 
-    its(:commands) { should be_a Call::CommandRegistry }
     its(:commands) { should be_empty }
 
     its(:id)      { should be == call_id }
