@@ -2,6 +2,12 @@
 
 require 'spec_helper'
 
+class BrokenController < Adhearsion::CallController
+  def run
+    raise "Blat!"
+  end
+end
+
 module Adhearsion
   describe Call do
     let(:mock_client) { flexmock('Client').tap(&:should_ignore_missing) }
@@ -124,6 +130,19 @@ module Adhearsion
           lambda { subject << :foo }.should_not raise_error
           sleep 1
           subject.should be_alive
+        end
+
+        it 'passes the exception through the Events system' do
+          latch = CountDownLatch.new 1
+          Adhearsion::Events.exception do |e, l|
+            e.should be_a RuntimeError
+            l.should be subject.logger
+            latch.countdown!
+          end
+          subject.register_event_handler { |e| raise 'foo' }
+          lambda { subject << :foo }.should_not raise_error
+          latch.wait(3).should be true
+          Adhearsion::Events.clear_handlers :exception
         end
       end
     end
@@ -613,6 +632,18 @@ module Adhearsion
           flexmock(CallController).should_receive(:exec)
           controller_thread = subject.execute_controller mock_controller, latch
           Adhearsion::Process.important_threads.should include controller_thread
+        end
+
+        it "should pass the exception to the events system" do
+          latch = CountDownLatch.new 1
+          Adhearsion::Events.exception do |e, l|
+            e.should be_a RuntimeError
+            l.should be subject.logger
+            latch.countdown!
+          end
+          subject.execute_controller BrokenController.new(subject), latch
+          latch.wait(3).should be true
+          Adhearsion::Events.clear_handlers :exception
         end
       end
 
