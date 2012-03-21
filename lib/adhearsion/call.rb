@@ -73,6 +73,8 @@ module Adhearsion
     def deliver_message(message)
       logger.debug "Receiving message: #{message.inspect}"
       trigger_handler :event, message
+    rescue => e
+      logger.error e
     end
 
     alias << deliver_message

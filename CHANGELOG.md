@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Bugfix: Exceptions raised in call event handlers no longer kill the call actor
 
 # [2.0.0.rc1](https://github.com/adhearsion/adhearsion/compare/v2.0.0.beta1...v2.0.0.rc1) - [2012-03-20](https://rubygems.org/gems/adhearsion/versions/2.0.0.rc1)
   * Change: `CallController#join` now blocks until a corresponding unjoined event is received

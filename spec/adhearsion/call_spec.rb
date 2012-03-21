@@ -117,6 +117,15 @@ module Adhearsion
           subject << event
         end
       end
+
+      context "when raising an exception" do
+        it "does not kill the call actor" do
+          subject.register_event_handler { |e| raise 'foo' }
+          lambda { subject << :foo }.should_not raise_error
+          sleep 1
+          subject.should be_alive
+        end
+      end
     end
 
     describe "#<<" do
