@@ -424,8 +424,15 @@ describe ExampleCallController do
   it "should capture errors in callbacks" do
     subject.should_receive(:setup_models).and_raise StandardError
     subject.should_receive(:clean_up_models).and_raise StandardError
-    flexmock(Adhearsion::Events).should_receive(:trigger).times(4).with :exception, StandardError
+    latch = CountDownLatch.new 4
+    Adhearsion::Events.exception do |e, l|
+      e.should be_a StandardError
+      l.should be subject.logger
+      latch.countdown!
+    end
     subject.execute!
+    latch.wait(1).should be true
+    Adhearsion::Events.clear_handlers :exception
   end
 
   describe "when the controller finishes without a hangup" do
