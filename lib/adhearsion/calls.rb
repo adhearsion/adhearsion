@@ -18,7 +18,14 @@ module Adhearsion
     end
 
     def remove_inactive_call(call)
-      delete call.respond_to?(:id) ? call.id : call
+      if call_is_dead?(call) != nil
+        call_id = key call
+        delete call_id if call_id
+      elsif call.respond_to?(:id)
+        delete call.id
+      else
+        delete call
+      end
     end
 
     def with_tag(tag)
@@ -29,6 +36,13 @@ module Adhearsion
 
     def each(&block)
       values.each(&block)
+    end
+
+    private
+
+    def call_is_dead?(call)
+      !call.alive?
+    rescue NoMethodError
     end
   end
 end

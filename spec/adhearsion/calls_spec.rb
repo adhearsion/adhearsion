@@ -12,7 +12,7 @@ module Adhearsion
     end
 
     def new_offer(call_id = nil, headers = {})
-      Punchblock::Event::Offer.new :call_id => call_id || rand, :headers => headers
+      Punchblock::Event::Offer.new :call_id => call_id || random_call_id, :headers => headers
     end
 
     it 'can create a call and add it to the collection' do
@@ -40,6 +40,20 @@ module Adhearsion
         it "should remove the call from the collection" do
           subject.size.should be == number_of_calls - 1
           subject[deleted_call.id].should be_nil
+        end
+      end
+
+      context "by dead call object" do
+        before do
+          @call_id = deleted_call.id
+          deleted_call.terminate
+          deleted_call.should_not be_alive
+          subject.remove_inactive_call deleted_call
+        end
+
+        it "should remove the call from the collection" do
+          subject.size.should be == number_of_calls - 1
+          subject[@call_id].should be_nil
         end
       end
 
