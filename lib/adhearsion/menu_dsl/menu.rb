@@ -8,7 +8,7 @@ module Adhearsion
       DEFAULT_MAX_NUMBER_OF_TRIES = 1
       DEFAULT_TIMEOUT             = 5
 
-      InvalidStructureError = Class.new StandardError
+      InvalidStructureError = Class.new Adhearsion::Error
 
       attr_reader :builder, :timeout, :tries_count, :max_number_of_tries, :terminator, :limit, :interruptible, :status
 

@@ -3,7 +3,7 @@
 module Adhearsion
   class Configuration
 
-    ConfigurationError = Class.new StandardError # Error raised while trying to configure a non existent plugin
+    ConfigurationError = Class.new Adhearsion::Error # Error raised while trying to configure a non existent plugin
 
     ##
     # Initialize the configuration object

@@ -354,7 +354,7 @@ module Adhearsion
         let(:details) { "Oh noes, it's all borked" }
 
         it "raises the error" do
-          lambda { subject.execute_component_and_await_completion component }.should raise_error(StandardError, "#{details}: #{component}")
+          lambda { subject.execute_component_and_await_completion component }.should raise_error(Adhearsion::Error, "#{details}: #{component}")
         end
       end
 
