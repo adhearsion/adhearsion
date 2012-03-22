@@ -29,6 +29,14 @@ module Adhearsion
       subject.size.should be == 1
     end
 
+    describe "#first" do
+      it "should return the first item in the collection" do
+        subject << call
+        subject.first.should be call
+        subject.first.id.should be == call.id
+      end
+    end
+
     describe "removing a call" do
       let(:deleted_call) { calls[number_of_calls / 2] }
 
