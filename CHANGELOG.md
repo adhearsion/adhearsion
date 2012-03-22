@@ -1,4 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+
+# [2.0.0.rc2](https://github.com/adhearsion/adhearsion/compare/v2.0.0.rc1...v2.0.0.rc2) - [2012-03-22](https://rubygems.org/gems/adhearsion/versions/2.0.0.rc2)
   * Bugfix: Exceptions raised in call event handlers no longer kill the call actor
   * Bugfix: More exceptions handled internally by Adhearsion are logged in an appropriate context
   * Bugfix/Change: `Adhearsion::Calls` (`Adhearsion.active_calls`) is now an actor for better thread-safety, and mirrors the Hash API more closely.
