@@ -299,6 +299,6 @@ module Adhearsion
       end
     end
 
-    InitializationFailedError = Class.new StandardError
+    InitializationFailedError = Class.new Adhearsion::Error
   end
 end

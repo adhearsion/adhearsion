@@ -1,5 +1,12 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
+# [2.0.0.rc2](https://github.com/adhearsion/adhearsion/compare/v2.0.0.rc1...v2.0.0.rc2) - [2012-03-22](https://rubygems.org/gems/adhearsion/versions/2.0.0.rc2)
+  * Bugfix: Exceptions raised in call event handlers no longer kill the call actor
+  * Bugfix: More exceptions handled internally by Adhearsion are logged in an appropriate context
+  * Bugfix/Change: `Adhearsion::Calls` (`Adhearsion.active_calls`) is now an actor for better thread-safety, and mirrors the Hash API more closely.
+  * Bugfix: Calls are now removed from the active call collection and hung up if their actor dies
+  * Bugfix: SimonGame now works using the new `CallController#ask` api
+
 # [2.0.0.rc1](https://github.com/adhearsion/adhearsion/compare/v2.0.0.beta1...v2.0.0.rc1) - [2012-03-20](https://rubygems.org/gems/adhearsion/versions/2.0.0.rc1)
   * Change: `CallController#join` now blocks until a corresponding unjoined event is received
   * Change: `CallController#speak` is now `CallController#say`

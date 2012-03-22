@@ -24,6 +24,8 @@ abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby
 module Adhearsion
   extend ActiveSupport::Autoload
 
+  Error = Class.new StandardError
+
   autoload :Process
   autoload :Call
   autoload :CallController
@@ -79,7 +81,11 @@ module Adhearsion
     end
 
     def active_calls
-      @calls ||= Calls.new
+      if @calls && @calls.alive?
+        @calls
+      else
+        @calls = Calls.new
+      end
     end
 
     def status

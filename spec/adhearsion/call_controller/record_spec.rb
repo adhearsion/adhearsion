@@ -43,12 +43,19 @@ module Adhearsion
           end
 
           it "should pass the exception to the events system" do
-            flexmock(Events).should_receive(:trigger).once.with(:exception, TestException)
+            latch = CountDownLatch.new 1
+            Adhearsion::Events.exception do |e, l|
+              e.should be_a TestException
+              l.should be subject.logger
+              latch.countdown!
+            end
             expect_component_execution component
             subject.record { |rec| raise TestException }
             component.request!
             component.execute!
             component.trigger_event_handler response
+            latch.wait(1).should be true
+            Adhearsion::Events.clear_handlers :exception
           end
         end
 

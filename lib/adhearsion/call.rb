@@ -8,9 +8,9 @@ module Adhearsion
   #
   class Call
 
-    Hangup          = Class.new StandardError
+    Hangup          = Class.new Adhearsion::Error
+    CommandTimeout  = Class.new Adhearsion::Error
     ExpiredError    = Class.new Celluloid::DeadActorError
-    CommandTimeout  = Class.new StandardError
 
     include Celluloid
     include HasGuardedHandlers
@@ -72,7 +72,7 @@ module Adhearsion
 
     def deliver_message(message)
       logger.debug "Receiving message: #{message.inspect}"
-      trigger_handler :event, message
+      catching_standard_errors { trigger_handler :event, message }
     end
 
     alias << deliver_message
