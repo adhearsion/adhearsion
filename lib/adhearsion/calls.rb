@@ -49,6 +49,7 @@ module Adhearsion
     end
 
     def call_died(call, reason)
+      return unless reason
       catching_standard_errors do
         call_id = key call
         remove_inactive_call call
