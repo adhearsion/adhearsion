@@ -92,6 +92,11 @@ module Adhearsion
         end
       end
 
+      def crash
+        lambda { call.crash_me }.should raise_error(StandardError, "Someone crashed me")
+        sleep 0.5
+      end
+
       it "is removed from the collection" do
         call_id = call.id
         size_before = subject.size
@@ -100,18 +105,24 @@ module Adhearsion
         subject.size.should be > size_before
         subject[call_id].should be call
 
-        lambda { call.crash_me }.should raise_error(StandardError, "Someone crashed me")
-        sleep 0.5
+        crash
         subject.size.should be == size_before
         subject[call_id].should be_nil
       end
 
+      it "is sends a hangup command for the call" do
+        call_id = call.id
+        flexmock PunchblockPlugin, :client => flexmock('Client')
+        flexmock(PunchblockPlugin.client).should_receive(:execute_command).once.with(Punchblock::Command::Hangup, :async => true, :call_id => call_id)
+
+        subject << call
+
+        crash
+      end
+
       it "shuts down the actor" do
-        flexmock call.wrapped_object, :after_end_hold_time => 2
-        lambda { call.crash_me }.should raise_error(StandardError, "Someone crashed me")
-        sleep 2.1
+        crash
         call.should_not be_alive
-        lambda { call.id }.should raise_error Call::ExpiredError, /expired and is no longer accessible/
       end
     end
   end
