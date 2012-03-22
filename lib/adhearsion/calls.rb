@@ -6,6 +6,8 @@ module Adhearsion
   class Calls < Hash
     include Celluloid
 
+    trap_exit :call_died
+
     def from_offer(offer)
       Call.new(offer).tap do |call|
         self << call
@@ -13,8 +15,9 @@ module Adhearsion
     end
 
     def <<(call)
+      link call
       self[call.id] = call
-      self
+      current_actor
     end
 
     def remove_inactive_call(call)
@@ -43,6 +46,10 @@ module Adhearsion
     def call_is_dead?(call)
       !call.alive?
     rescue NoMethodError
+    end
+
+    def call_died(call, reason)
+      remove_inactive_call call
     end
   end
 end

@@ -82,5 +82,37 @@ module Adhearsion
         subject.size.should be == 2
       end
     end
+
+    describe "when a call in the collection crashes" do
+      let(:wrapped_object) { call.wrapped_object }
+
+      before do
+        def wrapped_object.crash_me
+          raise StandardError, "Someone crashed me"
+        end
+      end
+
+      it "is removed from the collection" do
+        call_id = call.id
+        size_before = subject.size
+
+        subject << call
+        subject.size.should be > size_before
+        subject[call_id].should be call
+
+        lambda { call.crash_me }.should raise_error(StandardError, "Someone crashed me")
+        sleep 0.5
+        subject.size.should be == size_before
+        subject[call_id].should be_nil
+      end
+
+      it "shuts down the actor" do
+        flexmock call.wrapped_object, :after_end_hold_time => 2
+        lambda { call.crash_me }.should raise_error(StandardError, "Someone crashed me")
+        sleep 2.1
+        call.should_not be_alive
+        lambda { call.id }.should raise_error Call::ExpiredError, /expired and is no longer accessible/
+      end
+    end
   end
 end
