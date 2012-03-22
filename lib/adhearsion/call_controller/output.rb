@@ -167,7 +167,7 @@ module Adhearsion
             result = interruptible_play! output
           rescue PlaybackError => e
             # Ignore this exception and play the next output
-            logger.warn "Error playing back the prompt: #{e.message}"
+            logger.error "Error playing back the prompt: #{e.message}"
           ensure
             break if result
           end
@@ -257,8 +257,8 @@ module Adhearsion
         write_and_await_response input_stopper_component
         begin
           execute_component_and_await_completion output_component
-        rescue StandardError
-          raise PlaybackError, "Output failed for argument #{argument.inspect}"
+        rescue ::Punchblock::ProtocolError => e
+          raise PlaybackError, "Output failed for argument #{argument.inspect} due to #{e.inspect}"
         end
         input_stopper_component.stop! if input_stopper_component.executing?
         reason = input_stopper_component.complete_event.reason
