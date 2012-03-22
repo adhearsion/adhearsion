@@ -70,3 +70,4 @@ end
 def new_uuid
   UUID.new.generate.to_s
 end
+alias :random_call_id :new_uuid
