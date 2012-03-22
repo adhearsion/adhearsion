@@ -258,7 +258,7 @@ module Adhearsion
         begin
           execute_component_and_await_completion output_component
         rescue StandardError
-          raise Adhearsion::PlaybackError, "Output failed for argument #{argument.inspect}"
+          raise PlaybackError, "Output failed for argument #{argument.inspect}"
         end
         input_stopper_component.stop! if input_stopper_component.executing?
         reason = input_stopper_component.complete_event.reason
