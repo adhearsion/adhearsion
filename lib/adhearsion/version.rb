@@ -1,7 +1,6 @@
 # encoding: utf-8
 
 module Adhearsion #:nodoc:
-  VERSION = '2.0.0.rc1'
 
   class PkgVersion
     include Comparable
@@ -29,4 +28,5 @@ module Adhearsion #:nodoc:
       "#{@major}.#{@minor}.#{@revision}"
     end
   end
+  VERSION = '2.0.0.rc2'
 end
