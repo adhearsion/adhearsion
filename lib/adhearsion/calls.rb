@@ -52,7 +52,7 @@ module Adhearsion
       catching_standard_errors do
         call_id = key call
         remove_inactive_call call
-        PunchblockPlugin.client.execute_command Punchblock::Command::Hangup, :async => true, :call_id => call_id
+        PunchblockPlugin.client.execute_command Punchblock::Command::Hangup.new, :async => true, :call_id => call_id
       end
     end
   end
