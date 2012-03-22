@@ -81,7 +81,11 @@ module Adhearsion
     end
 
     def active_calls
-      @calls ||= Calls.new
+      if @calls && @calls.alive?
+        @calls
+      else
+        @calls = Calls.new
+      end
     end
 
     def status

@@ -74,7 +74,7 @@ module Adhearsion
 
     def final_shutdown
       Adhearsion.active_calls.each do |call|
-        call.hangup
+        call.hangup!
       end
 
       # This should shut down any remaining threads.  Once those threads have

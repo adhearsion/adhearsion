@@ -5,7 +5,7 @@ require 'spec_helper'
 module Adhearsion
   describe Adhearsion::Process do
     before :all do
-      Adhearsion.active_calls.clear!
+      Adhearsion.active_calls.clear
     end
 
     before :each do
@@ -17,6 +17,7 @@ module Adhearsion
       flexmock(Events).should_receive(:trigger_immediately).once.with(:shutdown).ordered
       Adhearsion::Process.booted
       Adhearsion::Process.shutdown
+      sleep 0.2
     end
 
     it '#stop_when_zero_calls should wait until the list of active calls reaches 0' do
@@ -49,13 +50,13 @@ module Adhearsion
       it "should hang up active calls" do
         3.times do
           fake_call = flexmock Object.new, :id => rand
-          flexmock(fake_call).should_receive(:hangup).once
+          flexmock(fake_call).should_receive(:hangup!).once
           Adhearsion.active_calls << fake_call
         end
 
         Adhearsion::Process.final_shutdown
 
-        Adhearsion.active_calls.clear!
+        Adhearsion.active_calls.clear
       end
 
       it "should trigger shutdown handlers synchronously" do
@@ -89,6 +90,7 @@ module Adhearsion
       Adhearsion::Process.state_name.should be :stopped
       flexmock(Adhearsion::Process.instance).should_receive(:die_now!).once
       Adhearsion::Process.shutdown
+      sleep 0.2
     end
 
     it 'should forcibly kill the Adhearsion process on :force_stop' do

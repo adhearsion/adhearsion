@@ -1,17 +1,10 @@
 # encoding: utf-8
 
-require 'thread'
-
 module Adhearsion
   ##
   # This manages the list of calls the Adhearsion service receives
-  class Calls
-    attr_reader :semaphore, :calls
-
-    def initialize
-      @semaphore = Monitor.new
-      @calls     = {}
-    end
+  class Calls < Hash
+    include Celluloid
 
     def from_offer(offer)
       Call.new(offer).tap do |call|
@@ -20,63 +13,22 @@ module Adhearsion
     end
 
     def <<(call)
-      atomically do
-        calls[call.id] = call
-      end
+      self[call.id] = call
       self
     end
 
-    def any?
-      atomically { !calls.empty? }
-    end
-
     def remove_inactive_call(call)
-      atomically { calls.delete call.id }
-    end
-
-    # Searches all active calls by their id
-    def find(id)
-      atomically { calls[id] }
-    end
-    alias :[] :find
-
-    def clear!
-      atomically { calls.clear }
+      delete call.respond_to?(:id) ? call.id : call
     end
 
     def with_tag(tag)
-      atomically do
-        calls.inject([]) do |calls_with_tag,(_,call)|
-          call.tagged_with?(tag) ? calls_with_tag << call : calls_with_tag
-        end
+      find_all do |call|
+        call.tagged_with? tag
       end
     end
 
     def each(&block)
-      atomically { calls.values.each(&block) }
+      values.each(&block)
     end
-
-    def each_pair
-      calls.each_pair { |id, call| yield id, call }
-    end
-
-    def to_a
-      calls.values
-    end
-
-    def to_h
-      calls
-    end
-
-    def method_missing(m, *args)
-      atomically { calls.send m.to_sym, *args }
-    end
-
-    private
-
-    def atomically(&block)
-      semaphore.synchronize(&block)
-    end
-
   end
 end
