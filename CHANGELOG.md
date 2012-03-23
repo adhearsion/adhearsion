@@ -1,5 +1,8 @@
 # [develop](https://github.com/adhearsion/adhearsion)
   * Bugfix/Change: `Adhearsion::Calls` (`Adhearsion.active_calls`) now exactly mirrors the Hash API
+  * Bugfix: Fix mis-use of `PlaybackError` (wrong namespace)
+  * Bugfix: Calls collection now correctly hangs up dead calls, and only genuine crashes
+  * Bugfix: Logging of playback errors is more explicit
 
 # [2.0.0.rc2](https://github.com/adhearsion/adhearsion/compare/v2.0.0.rc1...v2.0.0.rc2) - [2012-03-22](https://rubygems.org/gems/adhearsion/versions/2.0.0.rc2)
   * Bugfix: Exceptions raised in call event handlers no longer kill the call actor
