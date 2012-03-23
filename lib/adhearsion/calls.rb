@@ -32,13 +32,9 @@ module Adhearsion
     end
 
     def with_tag(tag)
-      find_all do |call|
+      values.find_all do |call|
         call.tagged_with? tag
       end
-    end
-
-    def each(&block)
-      values.each(&block)
     end
 
     private
