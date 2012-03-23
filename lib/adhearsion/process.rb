@@ -73,7 +73,7 @@ module Adhearsion
     end
 
     def final_shutdown
-      Adhearsion.active_calls.each do |call|
+      Adhearsion.active_calls.each do |_, call|
         call.hangup!
       end
 

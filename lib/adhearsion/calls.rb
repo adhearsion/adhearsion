@@ -32,13 +32,9 @@ module Adhearsion
     end
 
     def with_tag(tag)
-      find_all do |call|
+      values.find_all do |call|
         call.tagged_with? tag
       end
-    end
-
-    def each(&block)
-      values.each(&block)
     end
 
     private
@@ -49,10 +45,11 @@ module Adhearsion
     end
 
     def call_died(call, reason)
+      return unless reason
       catching_standard_errors do
         call_id = key call
         remove_inactive_call call
-        PunchblockPlugin.client.execute_command Punchblock::Command::Hangup, :async => true, :call_id => call_id
+        PunchblockPlugin.client.execute_command Punchblock::Command::Hangup.new, :async => true, :call_id => call_id
       end
     end
   end

@@ -1,5 +1,5 @@
 # encoding: utf-8
 
 module Adhearsion #:nodoc:
-  VERSION = '2.0.0.rc2'
+  VERSION = '2.0.0.rc3'
 end
