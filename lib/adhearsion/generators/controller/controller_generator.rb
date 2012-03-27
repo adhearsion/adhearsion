@@ -6,6 +6,10 @@ module Adhearsion
 
       argument :controller_name, :type => :string
 
+      def self.short_desc
+        "A call controller template. 'controller_name' should be the disired class name, either CamelCase or under_scored."
+      end
+
       def create_controller
         raise Exception, "Generator commands need to be run in an Adhearsion app directory" unless ScriptAhnLoader.in_ahn_application?('.')
         self.destination_root = '.'

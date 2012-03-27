@@ -3,6 +3,10 @@
 require 'fileutils'
 require 'adhearsion/script_ahn_loader'
 require 'thor'
+require 'adhearsion/generators/controller/controller_generator'
+require 'adhearsion/generators/plugin/plugin_generator'
+Adhearsion::Generators.add_generator :controller, Adhearsion::Generators::ControllerGenerator
+Adhearsion::Generators.add_generator :plugin, Adhearsion::Generators::PluginGenerator
 
 class Thor
   class Task
@@ -34,17 +38,12 @@ module Adhearsion
         Generators::AppGenerator.start
       end
 
-      desc "generate [generator_name] arguments", "Invoke a generator"
+      desc "generate [generator_name] arguments", Generators.help
       def generate(generator_name = nil, *args)
-        require 'adhearsion/generators/controller/controller_generator'
-        Generators.add_generator :controller, Adhearsion::Generators::ControllerGenerator
-        require 'adhearsion/generators/plugin/plugin_generator'
-        Generators.add_generator :plugin, Adhearsion::Generators::PluginGenerator
-
         if generator_name
           Generators.invoke generator_name
         else
-          Generators.help
+          help 'generate'
         end
       end
 

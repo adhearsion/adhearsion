@@ -6,4 +6,10 @@ Feature: Adhearsion Ahn CLI (generate)
   Scenario: Listing generators
     When I run `ahn generate`
     Then the output should contain "Please choose a generator below."
-    And the output should contain "controller"
+    And the output should contain "controller [controller_name]: A call controller template. 'controller_name' should be the disired class name, either CamelCase or under_scored."
+    Then the output should contain "plugin [plugin_name]: A plugin template. 'plugin_name' should be the disired plugin module name, either CamelCase or under_scored."
+
+  Scenario: Generator help
+    When I run `ahn help generate`
+    Then the output should contain "controller [controller_name]: A call controller template. 'controller_name' should be the disired class name, either CamelCase or under_scored."
+    Then the output should contain "plugin [plugin_name]: A plugin template. 'plugin_name' should be the disired plugin module name, either CamelCase or under_scored."

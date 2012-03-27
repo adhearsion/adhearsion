@@ -33,8 +33,12 @@ module Adhearsion
         @desc ||= if usage && File.exist?(usage)
           ERB.new(File.read(usage)).result(binding)
         else
-          "Description:\n    Create #{base_name.humanize.downcase} files for #{generator_name} generator."
+          "#{generator_name} [#{arguments.drop(2).map(&:name).join(', ')}]: #{short_desc}."
         end
+      end
+
+      def self.short_desc
+        nil
       end
 
       # Convenience method to get the namespace from the class name. It's the
