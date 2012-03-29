@@ -69,6 +69,7 @@ module Adhearsion
       Events.trigger :exception, [e, logger]
     ensure
       after_call
+      logger.debug "Finished executing controller #{self.inspect}"
     end
 
     def run
