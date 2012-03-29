@@ -1,5 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
   * Feature: `Call#execute_controller` now takes a post-execution callback (proc)
+  * Bugfix: Calls should be hung up when router executed controllers complete, not after everything executed by `Call#execute_controller`
   * Bugfix: Deal with race conditions raising exceptions when hanging up calls after a controller executes
 
 # [2.0.0.rc3](https://github.com/adhearsion/adhearsion/compare/v2.0.0.rc2...v2.0.0.rc3) - [2012-03-23](https://rubygems.org/gems/adhearsion/versions/2.0.0.rc3)

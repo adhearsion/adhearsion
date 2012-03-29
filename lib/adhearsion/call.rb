@@ -265,12 +265,8 @@ module Adhearsion
           begin
             CallController.exec controller
           ensure
-            begin
-              call.hangup
-            rescue Hangup
-            end
+            completion_callback.call call if completion_callback
           end
-          completion_callback.call call if completion_callback
         end
       end.tap { |t| Adhearsion::Process.important_threads << t }
     end

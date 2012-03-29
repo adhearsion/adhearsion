@@ -621,13 +621,6 @@ module Adhearsion
           latch.wait(3).should be_true
         end
 
-        it "should hangup the call after all controllers have executed" do
-          flexmock(CallController).should_receive(:exec).once.with mock_controller
-          subject.should_receive(:hangup).once
-          subject.execute_controller mock_controller, lambda { |call| latch.countdown! }
-          latch.wait(3).should be_true
-        end
-
         it "should add the controller thread to the important threads" do
           flexmock(CallController).should_receive(:exec)
           controller_thread = subject.execute_controller mock_controller, lambda { |call| latch.countdown! }

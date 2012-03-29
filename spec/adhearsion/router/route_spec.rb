@@ -107,7 +107,12 @@ module Adhearsion
           let(:route)       { Route.new 'foobar', controller }
 
           it "should instruct the call to use an instance of the controller" do
-            flexmock(call).should_receive(:execute_controller).once.with controller
+            flexmock(call).should_receive(:execute_controller).once.with controller, Proc
+            route.dispatcher.call call
+          end
+
+          it "should hangup the call after all controllers have executed" do
+            flexmock(call).should_receive(:hangup).once
             route.dispatcher.call call
           end
         end
@@ -120,7 +125,7 @@ module Adhearsion
           end
 
           it "should instruct the call to use a CallController with the correct block" do
-            flexmock(call).should_receive(:execute_controller).once.with(CallController).and_return do |controller|
+            flexmock(call).should_receive(:execute_controller).once.with(CallController, Proc).and_return do |controller|
               controller.block.call.should be == :foobar
             end
             route.dispatcher.call call

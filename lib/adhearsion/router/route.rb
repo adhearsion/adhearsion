@@ -29,7 +29,12 @@ module Adhearsion
             target.new call
           end
 
-          call.execute_controller controller
+          call.execute_controller controller, lambda { |call|
+            begin
+              call.hangup
+            rescue Hangup
+            end
+          }
         end
       end
 
