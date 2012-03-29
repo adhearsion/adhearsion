@@ -259,12 +259,16 @@ module Adhearsion
     end
 
     def execute_controller(controller, latch = nil)
+      call = current_actor
       Thread.new do
         catching_standard_errors do
           begin
             CallController.exec controller
           ensure
-            hangup
+            begin
+              call.hangup
+            rescue Hangup
+            end
           end
           latch.countdown! if latch
         end
