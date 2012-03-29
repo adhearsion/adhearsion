@@ -258,7 +258,7 @@ module Adhearsion
       "#<#{self.class}:#{id} #{attrs.join ', '}>"
     end
 
-    def execute_controller(controller, latch = nil)
+    def execute_controller(controller, completion_callback = nil)
       call = current_actor
       Thread.new do
         catching_standard_errors do
@@ -270,7 +270,7 @@ module Adhearsion
             rescue Hangup
             end
           end
-          latch.countdown! if latch
+          completion_callback.call call if completion_callback
         end
       end.tap { |t| Adhearsion::Process.important_threads << t }
     end

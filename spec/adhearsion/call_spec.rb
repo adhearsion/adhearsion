@@ -617,20 +617,20 @@ module Adhearsion
 
         it "should call #execute on the controller instance" do
           flexmock(CallController).should_receive(:exec).once.with mock_controller
-          subject.execute_controller mock_controller, latch
+          subject.execute_controller mock_controller, lambda { |call| latch.countdown! }
           latch.wait(3).should be_true
         end
 
         it "should hangup the call after all controllers have executed" do
           flexmock(CallController).should_receive(:exec).once.with mock_controller
           subject.should_receive(:hangup).once
-          subject.execute_controller mock_controller, latch
+          subject.execute_controller mock_controller, lambda { |call| latch.countdown! }
           latch.wait(3).should be_true
         end
 
         it "should add the controller thread to the important threads" do
           flexmock(CallController).should_receive(:exec)
-          controller_thread = subject.execute_controller mock_controller, latch
+          controller_thread = subject.execute_controller mock_controller, lambda { |call| latch.countdown! }
           Adhearsion::Process.important_threads.should include controller_thread
         end
 
@@ -641,9 +641,17 @@ module Adhearsion
             l.should be subject.logger
             latch.countdown!
           end
-          subject.execute_controller BrokenController.new(subject), latch
+          subject.execute_controller BrokenController.new(subject), lambda { |call| latch.countdown! }
           latch.wait(3).should be true
           Adhearsion::Events.clear_handlers :exception
+        end
+
+        it "should execute a callback after the controller executes" do
+          flexmock(CallController).should_receive(:exec)
+          foo = nil
+          subject.execute_controller mock_controller, lambda { |call| foo = call; latch.countdown! }
+          latch.wait(3).should be_true
+          foo.should be subject
         end
       end
 
