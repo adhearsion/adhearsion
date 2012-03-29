@@ -1,5 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
   * Feature: `Call#execute_controller` now takes a post-execution callback (proc)
+  * Feature: App generator now includes directory scaffolding for call controller specs and a sample `spec_helper.rb`
   * Bugfix: Calls should be hung up when router executed controllers complete, not after everything executed by `Call#execute_controller`
   * Bugfix: Deal with race conditions raising exceptions when hanging up calls after a controller executes
 

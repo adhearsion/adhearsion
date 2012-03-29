@@ -10,14 +10,19 @@ Feature: Adhearsion App Generator
       | lib                   |
       | config                |
       | script                |
+      | spec                  |
+      | spec/call_controllers |
+      | spec/support          |
 
     And the following files should exist:
       | .gitignore            |
+      | .rspec                |
       | config/adhearsion.rb  |
       | config/environment.rb |
       | Gemfile               |
       | lib/simon_game.rb     |
       | script/ahn            |
+      | spec/spec_helper.rb   |
       | README.md             |
       | Rakefile              |
       | Procfile              |
