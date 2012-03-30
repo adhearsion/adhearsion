@@ -10,13 +10,12 @@ module Adhearsion
 
       # Show help message with available generators.
       def help(command = 'generate')
-        puts "Usage: ahn #{command} GENERATOR_NAME [args] [options]"
-        puts
-        puts "Please choose a generator below."
-        puts
+        "".tap do |h|
+          h << "Available generators:\n"
 
-        mappings.each_pair do |name, klass|
-          puts name
+          mappings.each_pair do |name, klass|
+            h << "* " << klass.desc << "\n"
+          end
         end
       end
 

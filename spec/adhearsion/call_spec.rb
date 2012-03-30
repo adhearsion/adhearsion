@@ -17,7 +17,7 @@ module Adhearsion
     let(:to)      { 'sip:you@there.com' }
     let(:from)    { 'sip:me@here.com' }
     let :offer do
-      Punchblock::Event::Offer.new :call_id => call_id,
+      Punchblock::Event::Offer.new :target_call_id => call_id,
                                    :to      => to,
                                    :from    => from,
                                    :headers => headers
@@ -313,7 +313,7 @@ module Adhearsion
         end
 
         context "where the name is :item_not_found" do
-          let(:response) { new_exception.new :item_not_found }
+          let(:response) { new_exception.new.setup :item_not_found }
 
           it "should raise a Hangup exception" do
             flexmock(Events).should_receive(:trigger).never
@@ -463,13 +463,13 @@ module Adhearsion
           let(:target)  { flexmock Call.new, :id => call_id }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options :other_call_id => call_id
+            expect_join_with_options :call_id => call_id
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :other_call_id => call_id, :media => :bridge, :direction => :recv
+              expect_join_with_options :call_id => call_id, :media => :bridge, :direction => :recv
               subject.join target, :media => :bridge, :direction => :recv
             end
           end
@@ -479,13 +479,13 @@ module Adhearsion
           let(:target) { rand.to_s }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options :other_call_id => target
+            expect_join_with_options :call_id => target
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :other_call_id => target, :media => :bridge, :direction => :recv
+              expect_join_with_options :call_id => target, :media => :bridge, :direction => :recv
               subject.join target, :media => :bridge, :direction => :recv
             end
           end
@@ -496,13 +496,13 @@ module Adhearsion
           let(:target)  { { :call_id => call_id } }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options :other_call_id => call_id
+            expect_join_with_options :call_id => call_id
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :other_call_id => call_id, :media => :bridge, :direction => :recv
+              expect_join_with_options :call_id => call_id, :media => :bridge, :direction => :recv
               subject.join target.merge({:media => :bridge, :direction => :recv})
             end
           end
@@ -548,7 +548,7 @@ module Adhearsion
           let(:target)  { flexmock Call.new, :id => call_id }
 
           it "should send an unjoin command unjoining from the provided call ID" do
-            expect_unjoin_with_options :other_call_id => call_id
+            expect_unjoin_with_options :call_id => call_id
             subject.unjoin target
           end
         end
@@ -557,7 +557,7 @@ module Adhearsion
           let(:target) { rand.to_s }
 
           it "should send an unjoin command unjoining from the provided call ID" do
-            expect_unjoin_with_options :other_call_id => target
+            expect_unjoin_with_options :call_id => target
             subject.unjoin target
           end
         end
@@ -567,7 +567,7 @@ module Adhearsion
           let(:target)  { { :call_id => call_id } }
 
           it "should send an unjoin command unjoining from the provided call ID" do
-            expect_unjoin_with_options :other_call_id => call_id
+            expect_unjoin_with_options :call_id => call_id
             subject.unjoin target
           end
         end
@@ -617,20 +617,13 @@ module Adhearsion
 
         it "should call #execute on the controller instance" do
           flexmock(CallController).should_receive(:exec).once.with mock_controller
-          subject.execute_controller mock_controller, latch
-          latch.wait(3).should be_true
-        end
-
-        it "should hangup the call after all controllers have executed" do
-          flexmock(CallController).should_receive(:exec).once.with mock_controller
-          subject.should_receive(:hangup).once
-          subject.execute_controller mock_controller, latch
+          subject.execute_controller mock_controller, lambda { |call| latch.countdown! }
           latch.wait(3).should be_true
         end
 
         it "should add the controller thread to the important threads" do
           flexmock(CallController).should_receive(:exec)
-          controller_thread = subject.execute_controller mock_controller, latch
+          controller_thread = subject.execute_controller mock_controller, lambda { |call| latch.countdown! }
           Adhearsion::Process.important_threads.should include controller_thread
         end
 
@@ -641,9 +634,17 @@ module Adhearsion
             l.should be subject.logger
             latch.countdown!
           end
-          subject.execute_controller BrokenController.new(subject), latch
+          subject.execute_controller BrokenController.new(subject), lambda { |call| latch.countdown! }
           latch.wait(3).should be true
           Adhearsion::Events.clear_handlers :exception
+        end
+
+        it "should execute a callback after the controller executes" do
+          flexmock(CallController).should_receive(:exec)
+          foo = nil
+          subject.execute_controller mock_controller, lambda { |call| foo = call; latch.countdown! }
+          latch.wait(3).should be_true
+          foo.should be subject
         end
       end
 

@@ -216,16 +216,16 @@ module Adhearsion
     describe "#join" do
       it "delegates to the call, blocking first until it is allowed to execute, and unblocking when an unjoined event is received" do
         flexmock(subject).should_receive(:block_until_resumed).once.ordered
-        flexmock(subject.call).should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:other_call_id => 'call1')
+        flexmock(subject.call).should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:call_id => 'call1')
         latch = CountDownLatch.new 1
         Thread.new do
           subject.join 'call1', :foo => :bar
           latch.countdown!
         end
         latch.wait(1).should be false
-        subject.call << Punchblock::Event::Joined.new(:other_call_id => 'call1')
+        subject.call << Punchblock::Event::Joined.new(:call_id => 'call1')
         latch.wait(1).should be false
-        subject.call << Punchblock::Event::Unjoined.new(:other_call_id => 'call1')
+        subject.call << Punchblock::Event::Unjoined.new(:call_id => 'call1')
         latch.wait(1).should be true
       end
 
@@ -249,14 +249,14 @@ module Adhearsion
       context "with :async => true" do
         it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
           flexmock(subject).should_receive(:block_until_resumed).once.ordered
-          flexmock(subject.call).should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:other_call_id => 'call1')
+          flexmock(subject.call).should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:call_id => 'call1')
           latch = CountDownLatch.new 1
           Thread.new do
             subject.join 'call1', :foo => :bar, :async => true
             latch.countdown!
           end
           latch.wait(1).should be false
-          subject.call << Punchblock::Event::Joined.new(:other_call_id => 'call1')
+          subject.call << Punchblock::Event::Joined.new(:call_id => 'call1')
           latch.wait(1).should be true
         end
 
@@ -317,7 +317,7 @@ module Adhearsion
       let(:response)  { Punchblock::Event::Complete.new }
 
       before do
-        expect_message_waiting_for_response component
+        expect_message_of_type_waiting_for_response component
         component.execute!
         component.complete_event = response
       end

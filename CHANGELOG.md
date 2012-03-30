@@ -1,5 +1,13 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
+# [2.0.0.rc4](https://github.com/adhearsion/adhearsion/compare/v2.0.0.rc3...v2.0.0.rc4) - [2012-03-30](https://rubygems.org/gems/adhearsion/versions/2.0.0.rc4)
+  * Feature: `Call#execute_controller` now takes a post-execution callback (proc)
+  * Feature: App generator now includes directory scaffolding for call controller specs and a sample `spec_helper.rb` which loads app config and the `lib/` directory
+  * Bugfix: Calls should be hung up when router executed controllers complete, not after everything executed by `Call#execute_controller`
+  * Bugfix: Deal with race conditions raising exceptions when hanging up calls after a controller executes
+  * Bugfix: Updates to new dependency APIs
+  * Bugfix: Ensure `Call::Hangup` exceptions are captured properly by the router and fix test synchronization
+
 # [2.0.0.rc3](https://github.com/adhearsion/adhearsion/compare/v2.0.0.rc2...v2.0.0.rc3) - [2012-03-23](https://rubygems.org/gems/adhearsion/versions/2.0.0.rc3)
   * Bugfix/Change: `Adhearsion::Calls` (`Adhearsion.active_calls`) now exactly mirrors the Hash API
   * Bugfix: Fix mis-use of `PlaybackError` (wrong namespace)

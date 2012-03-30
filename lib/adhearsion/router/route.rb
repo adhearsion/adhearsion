@@ -22,14 +22,20 @@ module Adhearsion
       end
 
       def dispatcher
-        @dispatcher ||= lambda do |call|
+        @dispatcher ||= lambda do |call, callback = nil|
           controller = if target.respond_to?(:call)
             CallController.new call, &target
           else
             target.new call
           end
 
-          call.execute_controller controller
+          call.execute_controller controller, lambda { |call|
+            begin
+              call.hangup
+            rescue Call::Hangup
+            end
+            callback.call if callback
+          }
         end
       end
 

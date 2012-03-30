@@ -28,6 +28,11 @@ module CallControllerTestHelpers
     message.request!
   end
 
+  def expect_message_of_type_waiting_for_response(message)
+    subject.should_receive(:write_and_await_response).once.with(message.class).and_return message
+    message.request!
+  end
+
   def expect_component_execution(component)
     subject.should_receive(:execute_component_and_await_completion).once.with(component).and_return(component)
   end
