@@ -12,7 +12,7 @@ module Adhearsion
     end
 
     def new_offer(call_id = nil, headers = {})
-      Punchblock::Event::Offer.new :call_id => call_id || random_call_id, :headers => headers
+      Punchblock::Event::Offer.new :target_call_id => call_id || random_call_id, :headers => headers
     end
 
     it 'can create a call and add it to the collection' do

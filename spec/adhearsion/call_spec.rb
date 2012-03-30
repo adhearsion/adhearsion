@@ -17,7 +17,7 @@ module Adhearsion
     let(:to)      { 'sip:you@there.com' }
     let(:from)    { 'sip:me@here.com' }
     let :offer do
-      Punchblock::Event::Offer.new :call_id => call_id,
+      Punchblock::Event::Offer.new :target_call_id => call_id,
                                    :to      => to,
                                    :from    => from,
                                    :headers => headers
@@ -463,13 +463,13 @@ module Adhearsion
           let(:target)  { flexmock Call.new, :id => call_id }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options :other_call_id => call_id
+            expect_join_with_options :call_id => call_id
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :other_call_id => call_id, :media => :bridge, :direction => :recv
+              expect_join_with_options :call_id => call_id, :media => :bridge, :direction => :recv
               subject.join target, :media => :bridge, :direction => :recv
             end
           end
@@ -479,13 +479,13 @@ module Adhearsion
           let(:target) { rand.to_s }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options :other_call_id => target
+            expect_join_with_options :call_id => target
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :other_call_id => target, :media => :bridge, :direction => :recv
+              expect_join_with_options :call_id => target, :media => :bridge, :direction => :recv
               subject.join target, :media => :bridge, :direction => :recv
             end
           end
@@ -496,13 +496,13 @@ module Adhearsion
           let(:target)  { { :call_id => call_id } }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options :other_call_id => call_id
+            expect_join_with_options :call_id => call_id
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :other_call_id => call_id, :media => :bridge, :direction => :recv
+              expect_join_with_options :call_id => call_id, :media => :bridge, :direction => :recv
               subject.join target.merge({:media => :bridge, :direction => :recv})
             end
           end
@@ -548,7 +548,7 @@ module Adhearsion
           let(:target)  { flexmock Call.new, :id => call_id }
 
           it "should send an unjoin command unjoining from the provided call ID" do
-            expect_unjoin_with_options :other_call_id => call_id
+            expect_unjoin_with_options :call_id => call_id
             subject.unjoin target
           end
         end
@@ -557,7 +557,7 @@ module Adhearsion
           let(:target) { rand.to_s }
 
           it "should send an unjoin command unjoining from the provided call ID" do
-            expect_unjoin_with_options :other_call_id => target
+            expect_unjoin_with_options :call_id => target
             subject.unjoin target
           end
         end
@@ -567,7 +567,7 @@ module Adhearsion
           let(:target)  { { :call_id => call_id } }
 
           it "should send an unjoin command unjoining from the provided call ID" do
-            expect_unjoin_with_options :other_call_id => call_id
+            expect_unjoin_with_options :call_id => call_id
             subject.unjoin target
           end
         end

@@ -16,7 +16,7 @@ module Adhearsion
     end
 
     def id
-      dial_command.call_id if dial_command
+      dial_command.target_call_id if dial_command
     end
 
     def client

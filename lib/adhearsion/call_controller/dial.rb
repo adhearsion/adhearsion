@@ -64,7 +64,7 @@ module Adhearsion
               end
             end
 
-            new_call.register_event_handler Punchblock::Event::Unjoined, :other_call_id => call.id do |unjoined|
+            new_call.register_event_handler Punchblock::Event::Unjoined, :call_id => call.id do |unjoined|
               new_call["dial_countdown_#{call.id}"] = true
               latch.countdown!
               throw :pass

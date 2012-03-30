@@ -73,7 +73,7 @@ module Adhearsion
             event.source.trigger_event_handler event
           end
 
-          Events.punchblock proc { |e| e.respond_to?(:call_id) }, :call_id do |event|
+          Events.punchblock proc { |e| e.respond_to?(:target_call_id) }, :target_call_id do |event|
             dispatch_call_event event
           end
         end
@@ -150,10 +150,10 @@ module Adhearsion
         end
 
         def dispatch_call_event(event)
-          if call = Adhearsion.active_calls[event.call_id]
+          if call = Adhearsion.active_calls[event.target_call_id]
             call.deliver_message! event
           else
-            logger.error "Event received for inactive call #{event.call_id}: #{event.inspect}"
+            logger.error "Event received for inactive call #{event.target_call_id}: #{event.inspect}"
           end
         end
 

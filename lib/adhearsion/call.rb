@@ -43,7 +43,7 @@ module Adhearsion
     end
 
     def id
-      offer.call_id if offer
+      offer.target_call_id if offer
     end
 
     def tags
@@ -90,13 +90,13 @@ module Adhearsion
       end
 
       register_event_handler Punchblock::Event::Joined do |event|
-        target = event.other_call_id || event.mixer_name
+        target = event.call_id || event.mixer_name
         signal :joined, target
         throw :pass
       end
 
       register_event_handler Punchblock::Event::Unjoined do |event|
-        target = event.other_call_id || event.mixer_name
+        target = event.call_id || event.mixer_name
         signal :unjoined, target
         throw :pass
       end
@@ -176,15 +176,12 @@ module Adhearsion
     def join_options_with_target(target, options = {})
       options.merge(case target
       when Call
-        { :other_call_id => target.id }
+        { :call_id => target.id }
       when String
-        { :other_call_id => target }
+        { :call_id => target }
       when Hash
         abort ArgumentError.new "You cannot specify both a call ID and mixer name" if target.has_key?(:call_id) && target.has_key?(:mixer_name)
-        target.tap do |t|
-          t[:other_call_id] = t[:call_id]
-          t.delete :call_id
-        end
+        target
       else
         abort ArgumentError.new "Don't know how to join to #{target.inspect}"
       end)

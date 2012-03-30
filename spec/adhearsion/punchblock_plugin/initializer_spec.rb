@@ -52,7 +52,7 @@ module Adhearsion
       end
 
       let(:call_id)   { rand }
-      let(:offer)     { ::Punchblock::Event::Offer.new.tap { |o| o.call_id = call_id } }
+      let(:offer)     { ::Punchblock::Event::Offer.new.tap { |o| o.target_call_id = call_id } }
       let(:mock_call) { flexmock('Call', :id => call_id).tap { |call| call.should_ignore_missing } }
 
       describe "starts the client with the default values" do
@@ -245,7 +245,7 @@ module Adhearsion
 
       describe "dispatching a component event" do
         let(:component)   { flexmock 'ComponentNode' }
-        let(:mock_event)  { flexmock 'Event', :call_id => call_id, :source => component }
+        let(:mock_event)  { flexmock 'Event', :target_call_id => call_id, :source => component }
 
         before do
           initialize_punchblock
@@ -258,7 +258,7 @@ module Adhearsion
       end
 
       describe "dispatching a call event" do
-        let(:mock_event)  { flexmock 'Event', :call_id => call_id }
+        let(:mock_event)  { flexmock 'Event', :target_call_id => call_id }
 
         describe "with an active call" do
           before do
@@ -273,7 +273,7 @@ module Adhearsion
         end
 
         describe "with an inactive call" do
-          let(:mock_event) { flexmock 'Event', :call_id => call_id }
+          let(:mock_event) { flexmock 'Event', :target_call_id => call_id }
 
           it "should log an error" do
             flexmock(Adhearsion::Logging.get_logger(Initializer)).should_receive(:error).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")

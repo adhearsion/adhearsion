@@ -146,7 +146,7 @@ module Adhearsion
       end
       block_until_resumed
       join_command = call.join target, options
-      waiter = join_command.other_call_id || join_command.mixer_name
+      waiter = join_command.call_id || join_command.mixer_name
       if async
         call.wait_for_joined waiter
       else
