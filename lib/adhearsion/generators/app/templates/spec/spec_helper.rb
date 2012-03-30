@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 ENV["AHN_ENV"] ||= 'test'
 require File.expand_path("../../config/environment", __FILE__)
 require 'adhearsion/rspec'
