@@ -313,7 +313,7 @@ module Adhearsion
         end
 
         context "where the name is :item_not_found" do
-          let(:response) { new_exception.new :item_not_found }
+          let(:response) { new_exception.new.setup :item_not_found }
 
           it "should raise a Hangup exception" do
             flexmock(Events).should_receive(:trigger).never
