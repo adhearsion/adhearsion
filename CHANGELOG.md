@@ -1,4 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+
+# [2.0.0.rc4](https://github.com/adhearsion/adhearsion/compare/v2.0.0.rc3...v2.0.0.rc4) - [2012-03-30](https://rubygems.org/gems/adhearsion/versions/2.0.0.rc4)
   * Feature: `Call#execute_controller` now takes a post-execution callback (proc)
   * Feature: App generator now includes directory scaffolding for call controller specs and a sample `spec_helper.rb` which loads app config and the `lib/` directory
   * Bugfix: Calls should be hung up when router executed controllers complete, not after everything executed by `Call#execute_controller`
