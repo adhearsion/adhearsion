@@ -317,7 +317,7 @@ module Adhearsion
       let(:response)  { Punchblock::Event::Complete.new }
 
       before do
-        expect_message_waiting_for_response component
+        expect_message_of_type_waiting_for_response component
         component.execute!
         component.complete_event = response
       end
