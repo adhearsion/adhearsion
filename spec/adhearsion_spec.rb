@@ -65,7 +65,6 @@ describe Adhearsion do
     it "should create a new collection if the existing one dies" do
       original = Adhearsion.active_calls
       original.terminate
-      sleep 0.1
       original.should_not be_alive
 
       current = Adhearsion.active_calls
