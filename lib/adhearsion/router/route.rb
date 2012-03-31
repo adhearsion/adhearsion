@@ -29,9 +29,9 @@ module Adhearsion
             target.new call
           end
 
-          call.execute_controller controller, lambda { |call|
+          call.execute_controller controller, lambda { |call_actor|
             begin
-              call.hangup
+              call_actor.hangup
             rescue Call::Hangup
             end
             callback.call if callback

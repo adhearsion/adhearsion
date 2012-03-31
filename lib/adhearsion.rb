@@ -81,7 +81,7 @@ module Adhearsion
     end
 
     def active_calls
-      if @calls && @calls.alive?
+      if instance_variable_defined?(:@calls) && @calls.alive?
         @calls
       else
         @calls = Calls.new

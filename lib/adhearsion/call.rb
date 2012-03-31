@@ -225,7 +225,7 @@ module Adhearsion
       end
 
       command
-    rescue Timeout::Error => e
+    rescue Timeout::Error
       abort CommandTimeout.new(command.to_s)
     end
 
