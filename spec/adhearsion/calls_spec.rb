@@ -47,6 +47,7 @@ module Adhearsion
         before do
           @call_id = deleted_call.id
           deleted_call.terminate
+          sleep 0.1
           deleted_call.should_not be_alive
           subject.remove_inactive_call deleted_call
         end
