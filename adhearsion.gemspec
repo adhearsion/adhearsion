@@ -40,7 +40,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'girl_friday'
   s.add_runtime_dependency 'jruby-openssl' if RUBY_PLATFORM == 'java'
   s.add_runtime_dependency 'ffi', [">= 1.0.11"]
-  s.add_runtime_dependency 'celluloid', [">= 0.9.0"]
+  s.add_runtime_dependency 'celluloid', [">= 0.10.0"]
   s.add_runtime_dependency 'deep_merge'
 
   # Development dependencies
