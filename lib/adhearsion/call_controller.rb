@@ -6,6 +6,7 @@ module Adhearsion
 
     autoload :Dial
     autoload :Input
+    autoload :MenuDSL
     autoload :Output
     autoload :Record
     autoload :Utility

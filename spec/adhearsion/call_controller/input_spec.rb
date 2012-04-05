@@ -9,7 +9,7 @@ module Adhearsion
 
       describe "#play_sound_files_for_menu" do
         let(:options) { Hash.new }
-        let(:menu_instance) { Adhearsion::MenuDSL::Menu.new(options) }
+        let(:menu_instance) { MenuDSL::Menu.new(options) }
         let(:sound_file) { "press a button" }
         let(:sound_files) { [sound_file] }
 

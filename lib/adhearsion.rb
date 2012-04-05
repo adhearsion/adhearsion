@@ -3,8 +3,6 @@
 abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE})! Please upgrade to at least Ruby v1.9.2, JRuby 1.6.5 or Rubinius 2.0." if RUBY_VERSION < "1.9.2"
 
 %w{
-  bundler/setup
-
   active_support/all
   uuid
   future-resource
@@ -36,7 +34,6 @@ module Adhearsion
   autoload :Dispatcher
   autoload :Events
   autoload :Generators
-  autoload :MenuDSL
   autoload :Initializer
   autoload :Logging
   autoload :OutboundCall
@@ -81,7 +78,7 @@ module Adhearsion
     end
 
     def active_calls
-      if @calls && @calls.alive?
+      if instance_variable_defined?(:@calls) && @calls.alive?
         @calls
       else
         @calls = Calls.new
@@ -95,3 +92,9 @@ module Adhearsion
 end
 
 Celluloid.exception_handler { |e| Adhearsion::Events.trigger :exception, e }
+
+module Celluloid
+  def self.logger
+    ::Logging.logger['Celluloid']
+  end
+end
