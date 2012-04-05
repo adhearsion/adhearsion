@@ -1,4 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Bugfix: Fix environment abuse in ahn CLI
+  * Bugfix: Celluloid log messages enter the adhearsion logger
 
 # [2.0.0.rc4](https://github.com/adhearsion/adhearsion/compare/v2.0.0.rc3...v2.0.0.rc4) - [2012-03-30](https://rubygems.org/gems/adhearsion/versions/2.0.0.rc4)
   * Feature: `Call#execute_controller` now takes a post-execution callback (proc)
