@@ -1,4 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+
+# [2.0.0.rc5](https://github.com/adhearsion/adhearsion/compare/v2.0.0.rc4...v2.0.0.rc5) - [2012-04-06](https://rubygems.org/gems/adhearsion/versions/2.0.0.rc5)
   * Bugfix: Fix environment abuse in ahn CLI
   * Bugfix: Celluloid log messages enter the adhearsion logger
 
