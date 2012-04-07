@@ -23,7 +23,7 @@ module Adhearsion
       def set_proc_name(name)
         $0 = name # process name in ps command
         if error
-          logger.warn error
+          logger.debug error
           return false
         end
         return false unless LibC.respond_to?(:prctl)
