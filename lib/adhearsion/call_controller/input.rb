@@ -10,6 +10,7 @@ module Adhearsion
         end
       end
 
+      #
       # Prompts for input via DTMF, handling playback of prompts,
       # timeouts, digit limits and terminator digits.
       #
@@ -23,7 +24,7 @@ module Adhearsion
       # :timeout, :terminator and :limit options may then be specified.
       # A block may be passed which is invoked on each digit being collected. If it returns true, the collection is terminated.
       #
-      # @param [Object] A list of outputs to play, as accepted by #play
+      # @param [Object, Array<Object>] args A list of outputs to play, as accepted by #play
       # @param [Hash] options Options to use for the menu
       # @option options [Boolean] :interruptible If the prompt should be interruptible or not. Defaults to true
       # @option options [Integer] :limit Digit limit (causes collection to cease after a specified number of digits have been collected)
@@ -32,8 +33,8 @@ module Adhearsion
       #
       # @return [Result] a result object from which the #response and #status may be established
       #
-      # @see play
-      # @see pass
+      # @see Output#play
+      # @see CallController#pass
       #
       def ask(*args, &block)
         options = args.last.kind_of?(Hash) ? args.pop : {}
@@ -51,8 +52,8 @@ module Adhearsion
           if result_of_menu.is_a?(MenuDSL::Menu::MenuGetAnotherDigit)
             next_digit = play_sound_files_for_menu menu_instance, sound_files
             menu_instance << next_digit if next_digit
-          end # case
-        end # while
+          end
+        end
 
         Result.new.tap do |result|
           result.response = menu_instance.result
@@ -103,7 +104,7 @@ module Adhearsion
       # Execution of the current context resumes after #ask finishes. If you wish to jump to an entirely different controller, use #pass.
       # Menu will return :failed if failure was reached, or :done if a match was executed.
       #
-      # @param [Object] A list of outputs to play, as accepted by #play
+      # @param [Object] args A list of outputs to play, as accepted by #play
       # @param [Hash] options Options to use for the menu
       # @option options [Integer] :tries Number of tries allowed before failure
       # @option options [Integer] :timeout Timeout in seconds before the first and between each input digit
@@ -111,8 +112,8 @@ module Adhearsion
       #
       # @return [Result] a result object from which the #response and #status may be established
       #
-      # @see play
-      # @see pass
+      # @see Output#play
+      # @see CallController#pass
       #
       def menu(*args, &block)
         options = args.last.kind_of?(Hash) ? args.pop : {}
@@ -158,8 +159,8 @@ module Adhearsion
               logger.debug "Menu received valid input (#{result_of_menu.new_extension}). Calling the matching hook."
               jump_to result_of_menu.match_object, :extension => result_of_menu.new_extension
               throw :finish
-            end # case
-          end # while
+            end
+          end
         end
 
         Result.new.tap do |result|
@@ -186,7 +187,7 @@ module Adhearsion
       # Waits for a single digit and returns it, or returns nil if nothing was pressed
       #
       # @param [Integer] the timeout to wait before returning, in seconds. nil or -1 mean no timeout.
-      # @return [String|nil] the pressed key, or nil if timeout was reached.
+      # @return [String, nil] the pressed key, or nil if timeout was reached.
       #
       # @private
       #

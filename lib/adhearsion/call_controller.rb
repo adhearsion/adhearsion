@@ -35,6 +35,11 @@ module Adhearsion
     end
 
     class << self
+      #
+      # Execute a call controller, allowing passing control to another controller
+      #
+      # @param [CallController] controller
+      #
       def exec(controller)
         new_controller = catch :pass_controller do
           controller.execute!
@@ -44,18 +49,29 @@ module Adhearsion
         exec new_controller if new_controller
       end
 
-      ##
+      #
       # Include another module into all CallController classes
+      #
       def mixin(mod)
         include mod
       end
     end
 
-    attr_reader :call, :metadata, :block
+    attr_reader :call, :metadata
+
+    # @private
+    attr_reader :block
 
     delegate :[], :[]=, :to => :@metadata
     delegate :variables, :logger, :to => :call
 
+    #
+    # Create a new instance
+    #
+    # @param [Call] call the call to operate the controller on
+    # @param [Hash] metadata generic key-value storage applicable to the controller
+    # @param block to execute on the call
+    #
     def initialize(call, metadata = nil, &block)
       @call, @metadata, @block = call, metadata || {}, block
     end
@@ -74,15 +90,30 @@ module Adhearsion
       logger.debug "Finished executing controller #{self.inspect}"
     end
 
+    #
+    # Invoke the block supplied when creating the controller
+    #
     def run
       instance_exec(&block) if block
     end
 
+    #
+    # Invoke another controller class within this controller, returning to this context on completion.
+    #
+    # @param [Class] controller_class The class of controller to execute
+    # @param [Hash] metadata generic key-value storage applicable to the controller
+    #
     def invoke(controller_class, metadata = nil)
       controller = controller_class.new call, metadata
       controller.run
     end
 
+    #
+    # Cease execution of this controller, and pass to another.
+    #
+    # @param [Class] controller_class The class of controller to pass to
+    # @param [Hash] metadata generic key-value storage applicable to the controller
+    #
     def pass(controller_class, metadata = nil)
       throw :pass_controller, controller_class.new(call, metadata)
     end
@@ -101,17 +132,24 @@ module Adhearsion
       @after_call ||= execute_callbacks :after_call
     end
 
+    #
+    # Hangup the call, and execute after_call callbacks
+    #
+    # @param [Hash] headers
+    #
     def hangup(headers = nil)
       block_until_resumed
       hangup_response = call.hangup headers
       after_call unless hangup_response == false
     end
 
+    # @private
     def write_and_await_response(command)
       block_until_resumed
       call.write_and_await_response command
     end
 
+    # @private
     def execute_component_and_await_completion(component)
       write_and_await_response component
 
@@ -122,26 +160,55 @@ module Adhearsion
       component
     end
 
+    #
+    # Answer the call
+    #
+    # @see Call#answer
+    #
     def answer(*args)
       block_until_resumed
       call.answer(*args)
     end
 
+    #
+    # Reject the call
+    #
+    # @see Call#reject
+    #
     def reject(*args)
       block_until_resumed
       call.reject(*args)
     end
 
+    #
+    # Mute the call
+    #
+    # @see Call#mute
+    #
     def mute(*args)
       block_until_resumed
       call.mute(*args)
     end
 
+    #
+    # Unmute the call
+    #
+    # @see Call#unmute
+    #
     def unmute(*args)
       block_until_resumed
       call.unmute(*args)
     end
 
+    #
+    # Join the call to another call or a mixer, and block until the call is unjoined (by hangup or otherwise).
+    #
+    # @param [Object] target See Call#join for details
+    # @param [Hash] options
+    # @option options [Boolean] :async Return immediately, without waiting for the calls to unjoin. Defaults to false.
+    #
+    # @see Call#join
+    #
     def join(target, options = {})
       async = if target.is_a?(Hash)
         target.delete :async
@@ -175,6 +242,7 @@ module Adhearsion
       @pause_latch = nil
     end
 
+    # @private
     def inspect
       "#<#{self.class} call=#{call.id}, metadata=#{metadata.inspect}>"
     end
