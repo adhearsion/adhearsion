@@ -183,7 +183,7 @@ module Adhearsion
     # @param [Hash, Optional] options further options to be joined with
     #
     def join(target, options = {})
-      command = Punchblock::Command::Join.new join_options_with_target(target, options)
+      command = Punchblock::Command::Join.new options.merge(join_options_with_target(target))
       write_and_await_response command
     end
 
@@ -199,9 +199,9 @@ module Adhearsion
       write_and_await_response command
     end
 
-    def join_options_with_target(target, options = {})
-      options.merge(case target
     # @private
+    def join_options_with_target(target)
+      case target
       when Call
         { :call_id => target.id }
       when String
@@ -211,7 +211,7 @@ module Adhearsion
         target
       else
         abort ArgumentError.new "Don't know how to join to #{target.inspect}"
-      end)
+      end
     end
 
     def wait_for_joined(expected_target)
