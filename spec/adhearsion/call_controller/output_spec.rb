@@ -282,29 +282,27 @@ module Adhearsion
       describe "#say" do
         describe "with a RubySpeech document" do
           it 'plays the correct SSML' do
-            doc = RubySpeech::SSML.draw { string "Hello world" }
-            subject.should_receive(:play_ssml).once.with(doc, {}).and_return true
-            subject.should_receive(:output).never
-            subject.say(doc).should be true
+            ssml = RubySpeech::SSML.draw { string "Hello world" }
+            expect_component_execution Punchblock::Component::Output.new(:ssml => ssml)
+            subject.say(ssml).should be_a Punchblock::Component::Output
           end
         end
 
         describe "with a string" do
           it 'outputs the correct text' do
-            string = "Hello world"
-            subject.should_receive(:play_ssml).once.with(string, {})
-            subject.should_receive(:output).once.with(:text, string, {}).and_return true
-            subject.say(string).should be true
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_component_execution Punchblock::Component::Output.new(:ssml => ssml)
+            subject.say(str).should be_a Punchblock::Component::Output
           end
         end
 
         describe "converts the argument to a string" do
           it 'calls output with a string' do
-            expected_string = "123"
             argument = 123
-            subject.should_receive(:play_ssml).once.with(argument, {})
-            subject.should_receive(:output).once.with(:text, expected_string, {}).and_return true
-            subject.say(argument)
+            ssml = RubySpeech::SSML.draw { string '123' }
+            expect_component_execution Punchblock::Component::Output.new(:ssml => ssml)
+            subject.say(argument).should be_a Punchblock::Component::Output
           end
         end
       end

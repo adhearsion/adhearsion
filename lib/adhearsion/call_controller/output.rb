@@ -6,7 +6,7 @@ module Adhearsion
       PlaybackError = Class.new Adhearsion::Error # Represents failure to play audio, such as when the sound file cannot be found
 
       def say(text, options = {})
-        play_ssml(text, options) || output(:text, text.to_s, options)
+        play_ssml(text, options) || output(ssml_for_text(text.to_s), options)
       end
       alias :speak :say
 
@@ -117,17 +117,12 @@ module Adhearsion
 
       def play_ssml(ssml, options = {}) # :nodoc:
         if [RubySpeech::SSML::Speak, Nokogiri::XML::Document].include? ssml.class
-          output :ssml, ssml.to_s, options
+          output ssml.to_s, options
         end
       end
 
-      def output(type, content, options = {}) # :nodoc:
-        options.merge! type => content
-        execute_component_and_await_completion ::Punchblock::Component::Output.new(options)
-      end
-
-      def output!(type, content, options = {}) # :nodoc:
-        options.merge! type => content
+      def output(content, options = {}) # :nodoc:
+        options.merge! :ssml => content
         execute_component_and_await_completion ::Punchblock::Component::Output.new(options)
       end
 
