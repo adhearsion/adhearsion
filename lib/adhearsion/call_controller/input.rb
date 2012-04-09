@@ -169,7 +169,8 @@ module Adhearsion
         end
       end
 
-      def play_sound_files_for_menu(menu_instance, sound_files) # :nodoc:
+      # @private
+      def play_sound_files_for_menu(menu_instance, sound_files)
         digit = nil
         if sound_files.any? && menu_instance.digit_buffer_empty?
           if menu_instance.interruptible
@@ -187,7 +188,9 @@ module Adhearsion
       # @param [Integer] the timeout to wait before returning, in seconds. nil or -1 mean no timeout.
       # @return [String|nil] the pressed key, or nil if timeout was reached.
       #
-      def wait_for_digit(timeout = 1) # :nodoc:
+      # @private
+      #
+      def wait_for_digit(timeout = 1)
         timeout = nil if timeout == -1
         timeout *= 1_000 if timeout
         input_component = execute_component_and_await_completion ::Punchblock::Component::Input.new :mode => :dtmf,
@@ -202,7 +205,8 @@ module Adhearsion
         parse_single_dtmf result
       end
 
-      def jump_to(match_object, overrides = nil) # :nodoc:
+      # @private
+      def jump_to(match_object, overrides = nil)
         if match_object.block
           instance_exec overrides[:extension], &match_object.block
         else
@@ -210,6 +214,6 @@ module Adhearsion
         end
       end
 
-    end # module
+    end
   end
 end

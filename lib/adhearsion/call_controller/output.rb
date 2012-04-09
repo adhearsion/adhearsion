@@ -115,13 +115,15 @@ module Adhearsion
         play_ssml ssml_for_audio(argument, options)
       end
 
-      def play_ssml(ssml, options = {}) # :nodoc:
+      # @private
+      def play_ssml(ssml, options = {})
         if [RubySpeech::SSML::Speak, Nokogiri::XML::Document].include? ssml.class
           output ssml.to_s, options
         end
       end
 
-      def output(content, options = {}) # :nodoc:
+      # @private
+      def output(content, options = {})
         options.merge! :ssml => content
         execute_component_and_await_completion ::Punchblock::Component::Output.new(options)
       end
@@ -170,7 +172,8 @@ module Adhearsion
         result
       end
 
-      def detect_type(output) # :nodoc:
+      # @private
+      def detect_type(output)
         result = nil
         result = :time if [Date, Time, DateTime].include? output.class
         result = :numeric if output.kind_of?(Numeric) || output =~ /^\d+$/
@@ -178,7 +181,8 @@ module Adhearsion
         result ||= :text
       end
 
-      def play_ssml_for(*args) # :nodoc:
+      # @private
+      def play_ssml_for(*args)
         play_ssml ssml_for(args)
       end
 
@@ -189,7 +193,9 @@ module Adhearsion
       # @param [String|Hash|RubySpeech::SSML::Speak] the argument with options as accepted by the play_ methods, or an SSML document
       # @return [RubySpeech::SSML::Speak] an SSML document
       #
-      def ssml_for(*args) # :nodoc:
+      # @private
+      #
+      def ssml_for(*args)
         return args[0] if args.size == 1 && args[0].is_a?(RubySpeech::SSML::Speak)
         argument, options = args.flatten
         options ||= {}
@@ -197,11 +203,13 @@ module Adhearsion
         send "ssml_for_#{type}", argument, options
       end
 
-      def ssml_for_text(argument, options = {}) # :nodoc:
+      # @private
+      def ssml_for_text(argument, options = {})
         RubySpeech::SSML.draw { argument }
       end
 
-      def ssml_for_time(argument, options = {}) # :nodoc:
+      # @private
+      def ssml_for_time(argument, options = {})
         interpretation = case argument
         when Date then 'date'
         when Time then 'time'
@@ -217,13 +225,15 @@ module Adhearsion
         end
       end
 
-      def ssml_for_numeric(argument, options = {}) # :nodoc:
+      # @private
+      def ssml_for_numeric(argument, options = {})
         RubySpeech::SSML.draw do
           say_as(:interpret_as => 'cardinal') { argument.to_s }
         end
       end
 
-      def ssml_for_audio(argument, options = {}) # :nodoc:
+      # @private
+      def ssml_for_audio(argument, options = {})
         fallback = (options || {}).delete :fallback
         RubySpeech::SSML.draw do
           audio(:src => argument) { fallback }

@@ -77,7 +77,8 @@ module Adhearsion
 
     alias << deliver_message
 
-    def register_initial_handlers # :nodoc:
+    # @private
+    def register_initial_handlers
       register_event_handler Punchblock::Event::Offer do |offer|
         @offer  = offer
         @client = offer.client
@@ -110,7 +111,8 @@ module Adhearsion
       end
     end
 
-    def after_end_hold_time # :nodoc:
+    # @private
+    def after_end_hold_time
       30
     end
 
@@ -144,7 +146,8 @@ module Adhearsion
       write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
     end
 
-    def clear_from_active_calls # :nodoc:
+    # @private
+    def clear_from_active_calls
       Adhearsion.active_calls.remove_inactive_call current_actor
     end
 
@@ -236,11 +239,13 @@ module Adhearsion
       client.execute_command command, :call_id => id, :async => true
     end
 
-    def logger_id # :nodoc:
+    # @private
+    def logger_id
       "#{self.class}: #{id}"
     end
 
-    def logger # :nodoc:
+    # @private
+    def logger
       super
     end
 
@@ -280,7 +285,8 @@ module Adhearsion
       controllers.each(&:resume!)
     end
 
-    class CommandRegistry < ThreadSafeArray # :nodoc:
+    # @private
+    class CommandRegistry < ThreadSafeArray
       def terminate
         hangup = Hangup.new
         each { |command| command.response = hangup if command.requested? }
