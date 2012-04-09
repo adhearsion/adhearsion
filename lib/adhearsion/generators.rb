@@ -21,7 +21,7 @@ module Adhearsion
 
       def invoke(generator_name, args = ARGV)
         klass = Generators.mappings[generator_name.to_sym]
-        raise UnknownGeneratorError, generator_name unless klass
+        raise CLI::UnknownGeneratorError, generator_name unless klass
 
         args << "--help" if args.empty? && klass.arguments.any?(&:required?)
 
