@@ -6,14 +6,14 @@ Adhearsion rests above a lower-level telephony platform, for example [Asterisk](
 
 ## Features
 
-* An elegant system of call controllers for writing the code which controls a live phone call.
-* An events subsystem which maintains a Thread-pool for executing your namespaced callbacks.
-* A very useful plugin architecture with which you may write Adhearsion plugins and share them with the world via RubyGems.
-* JRuby compatibility for running atop the Java Virtual Machine and using virtually any Java library.
-* Ability to re-use existing Ruby on Rails database models with ActiveRecord/ActiveLDAP
-* Easy interactive communication via XMPP instant messages using the Blather library
-* Strong test coverage
-* Much more
+* Simple Ruby code
+* Flexible CallControllers to handle calls
+* High-level media handling constructs
+* Simple interaction between calls
+* Self-documenting configuration engine
+* Support for plugins and other code reuse
+* Integration with databases, web APIs, etc
+* Event monitoring, async communication
 
 ## Requirements
 
