@@ -11,7 +11,7 @@ Edit `extensions.conf` to include the following:
 exten => _.,1,AGI(agi:async)
 ```
 
-and setup a user in `manager.conf` with read/write access to `all`.
+and setup a user in `manager.conf` with read/write access to `all`, `dialplan` and `agi`.
 
 ## Voxeo PRISM
 
@@ -23,7 +23,7 @@ In `config/adhearsion.rb` you'll need to set the VoIP platform you're using, alo
 
 ## Ready, set, go!
 
-Start your new app with "ahn start /path/to/your/app". You'll get a lovely console and should be presented with the SimonGame
+Start your new app with "ahn start". You'll get a lovely console and should be presented with the SimonGame when you call in.
 
 ### Running your app on heroku
 
@@ -33,5 +33,7 @@ In order to run an adhearsion application on Heroku, you must create the applica
 heroku ps:scale web=0
 heroku ps:scale ahn=1
 ```
+
+More detail is available in the [deployment documentation](http://adhearsion.com/docs/best-practices/deployment).
 
 Check out [the Adhearsion website](http://adhearsion.com) for more details of where to go from here.
