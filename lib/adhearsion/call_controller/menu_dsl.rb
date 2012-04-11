@@ -2,6 +2,7 @@
 
 module Adhearsion
   class CallController
+    # @private
     module MenuDSL
       extend ActiveSupport::Autoload
 

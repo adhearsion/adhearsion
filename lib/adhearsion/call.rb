@@ -25,7 +25,10 @@ module Adhearsion
       end
     end
 
-    attr_accessor :offer, :client, :end_reason, :commands, :variables, :controllers
+    # @private
+    attr_accessor :offer, :client, :end_reason, :commands, :controllers
+
+    attr_accessor :variables
 
     delegate :[], :[]=, :to => :variables
     delegate :to, :from, :to => :offer, :allow_nil => true
@@ -42,28 +45,46 @@ module Adhearsion
       self << offer if offer
     end
 
+    #
+    # @return [String, nil] The globally unique ID for the call
+    #
     def id
       offer.target_call_id if offer
     end
 
+    #
+    # @return [Array] The set of labels with which this call has been tagged.
+    #
     def tags
       @tags.clone
     end
 
-    # This may still be a symbol, but no longer requires the tag to be a symbol although beware
-    # that using a symbol would create a memory leak if used improperly
+    #
+    # Tag a call with an arbitrary label
+    #
     # @param [String, Symbol] label String or Symbol with which to tag this call
+    #
     def tag(label)
       abort ArgumentError.new "Tag must be a String or Symbol" unless [String, Symbol].include?(label.class)
       @tags << label
     end
 
-    def remove_tag(symbol)
-      @tags.reject! { |tag| tag == symbol }
+    #
+    # Remove a label
+    #
+    # @param [String, Symbol] label
+    #
+    def remove_tag(label)
+      @tags.reject! { |tag| tag == label }
     end
 
-    def tagged_with?(symbol)
-      @tags.include? symbol
+    #
+    # Establish if the call is tagged with the provided label
+    #
+    # @param [String, Symbol] label
+    #
+    def tagged_with?(label)
+      @tags.include? label
     end
 
     def register_event_handler(*guards, &block)
@@ -74,10 +95,10 @@ module Adhearsion
       logger.debug "Receiving message: #{message.inspect}"
       catching_standard_errors { trigger_handler :event, message }
     end
-
     alias << deliver_message
 
-    def register_initial_handlers # :nodoc:
+    # @private
+    def register_initial_handlers
       register_event_handler Punchblock::Event::Offer do |offer|
         @offer  = offer
         @client = offer.client
@@ -110,7 +131,8 @@ module Adhearsion
       end
     end
 
-    def after_end_hold_time # :nodoc:
+    # @private
+    def after_end_hold_time
       30
     end
 
@@ -121,6 +143,9 @@ module Adhearsion
       end
     end
 
+    #
+    # @return [Boolean] if the call is currently active or not (disconnected)
+    #
     def active?
       !end_reason
     end
@@ -144,7 +169,8 @@ module Adhearsion
       write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
     end
 
-    def clear_from_active_calls # :nodoc:
+    # @private
+    def clear_from_active_calls
       Adhearsion.active_calls.remove_inactive_call current_actor
     end
 
@@ -157,7 +183,7 @@ module Adhearsion
     # @param [Hash, Optional] options further options to be joined with
     #
     def join(target, options = {})
-      command = Punchblock::Command::Join.new join_options_with_target(target, options)
+      command = Punchblock::Command::Join.new options.merge(join_options_with_target(target))
       write_and_await_response command
     end
 
@@ -173,8 +199,9 @@ module Adhearsion
       write_and_await_response command
     end
 
-    def join_options_with_target(target, options = {})
-      options.merge(case target
+    # @private
+    def join_options_with_target(target)
+      case target
       when Call
         { :call_id => target.id }
       when String
@@ -184,7 +211,7 @@ module Adhearsion
         target
       else
         abort ArgumentError.new "Don't know how to join to #{target.inspect}"
-      end)
+      end
     end
 
     def wait_for_joined(expected_target)
@@ -209,6 +236,7 @@ module Adhearsion
       write_and_await_response ::Punchblock::Command::Unmute.new
     end
 
+    # @private
     def write_and_await_response(command, timeout = 60)
       commands << command
       write_command command
@@ -229,6 +257,7 @@ module Adhearsion
       abort CommandTimeout.new(command.to_s)
     end
 
+    # @private
     def write_command(command)
       abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
       variables.merge! command.headers_hash if command.respond_to? :headers_hash
@@ -236,18 +265,22 @@ module Adhearsion
       client.execute_command command, :call_id => id, :async => true
     end
 
-    def logger_id # :nodoc:
+    # @private
+    def logger_id
       "#{self.class}: #{id}"
     end
 
-    def logger # :nodoc:
+    # @private
+    def logger
       super
     end
 
+    # @private
     def to_ary
       [current_actor]
     end
 
+    # @private
     def inspect
       attrs = [:offer, :end_reason, :commands, :variables, :controllers, :to, :from].map do |attr|
         "#{attr}=#{send(attr).inspect}"
@@ -268,24 +301,28 @@ module Adhearsion
       end.tap { |t| Adhearsion::Process.important_threads << t }
     end
 
+    # @private
     def register_controller(controller)
       @controllers << controller
     end
 
+    # @private
     def pause_controllers
       controllers.each(&:pause!)
     end
 
+    # @private
     def resume_controllers
       controllers.each(&:resume!)
     end
 
-    class CommandRegistry < ThreadSafeArray # :nodoc:
+    # @private
+    class CommandRegistry < ThreadSafeArray
       def terminate
         hangup = Hangup.new
         each { |command| command.response = hangup if command.requested? }
       end
     end
 
-  end#Call
-end#Adhearsion
+  end
+end

@@ -8,11 +8,12 @@ require 'adhearsion/generators/plugin/plugin_generator'
 Adhearsion::Generators.add_generator :controller, Adhearsion::Generators::ControllerGenerator
 Adhearsion::Generators.add_generator :plugin, Adhearsion::Generators::PluginGenerator
 
+# @private
 class Thor
   class Task
     protected
 
-    def sans_backtrace(backtrace, caller) #:nodoc:
+    def sans_backtrace(backtrace, caller)
       saned  = backtrace.reject { |frame| frame =~ FILE_REGEXP || (frame =~ /\.java:/ && RUBY_PLATFORM =~ /java/) }
       saned -= caller
     end

@@ -5,8 +5,14 @@ module Adhearsion
     module Output
       PlaybackError = Class.new Adhearsion::Error # Represents failure to play audio, such as when the sound file cannot be found
 
+      #
+      # Speak output using text-to-speech (TTS)
+      #
+      # @param [String, #to_s] text The text to be rendered
+      # @param [Hash] options A set of options for output
+      #
       def say(text, options = {})
-        play_ssml(text, options) || output(:text, text.to_s, options)
+        play_ssml(text, options) || output(ssml_for_text(text.to_s), options)
       end
       alias :speak :say
 
@@ -54,6 +60,8 @@ module Adhearsion
       # Plays the specified input arguments, raising an exception if any can't be played.
       # @see play
       #
+      # @private
+      #
       def play!(*arguments)
         play(*arguments) or raise PlaybackError, "One of the passed outputs is invalid"
       end
@@ -62,25 +70,22 @@ module Adhearsion
       # Plays the given Date, Time, or Integer (seconds since epoch)
       # using the given timezone and format.
       #
-      # @param [Date|Time|DateTime] Time to be said.
-      # @param [Hash] Additional options to specify how exactly to say time specified.
-      #
-      # +:format+   - This format is used only to disambiguate times that could be interpreted in different ways.
+      # @param [Date, Time, DateTime] time Time to be said.
+      # @param [Hash] options Additional options to specify how exactly to say time specified.
+      # @option options [String] :format This format is used only to disambiguate times that could be interpreted in different ways.
       #   For example, 01/06/2011 could mean either the 1st of June or the 6th of January.
       #   Please refer to the SSML specification.
       # @see http://www.w3.org/TR/ssml-sayas/#S3.1
-      # +:strftime+ - This format is what defines the string that is sent to the Speech Synthesis Engine.
+      # @option options [String] :strftime This format is what defines the string that is sent to the Speech Synthesis Engine.
       #   It uses Time::strftime symbols.
       #
       # @return [Boolean] true if successful, false if the given argument could not be played.
       #
-      def play_time(*args)
-        argument, options = args.flatten
-        return false unless [Date, Time, DateTime].include? argument.class
+      def play_time(time, options = {})
+        return false unless [Date, Time, DateTime].include? time.class
 
-        options ||= {}
         return false unless options.is_a? Hash
-        play_ssml ssml_for_time(argument, options)
+        play_ssml ssml_for_time(time, options)
       end
 
       #
@@ -88,14 +93,13 @@ module Adhearsion
       # When playing numbers, Adhearsion assumes you're saying the number, not the digits. For example, play("100")
       # is pronounced as "one hundred" instead of "one zero zero".
       #
-      # @param [Numeric|String] Numeric or String containing a valid Numeric, like "321".
+      # @param [Numeric, String] Numeric or String containing a valid Numeric, like "321".
       #
       # @return [Boolean] true if successful, false if the given argument could not be played.
       #
-      def play_numeric(*args)
-        argument, options = args.flatten
-        if argument.kind_of?(Numeric) || argument =~ /^\d+$/
-          play_ssml ssml_for_numeric(argument, options)
+      def play_numeric(number, options = nil)
+        if number.kind_of?(Numeric) || number =~ /^\d+$/
+          play_ssml ssml_for_numeric(number, options)
         end
       end
 
@@ -104,36 +108,34 @@ module Adhearsion
       # SSML supports http:// paths and full disk paths.
       # The Punchblock backend will have to handle cases like Asterisk where there is a fixed sounds directory.
       #
-      # @param [String] http:// URL or full disk path to the sound file
-      # @param [Hash] Additional options to specify how exactly to say time specified.
-      # +:fallback+ - The text to play if the file is not available
+      # @param [String] file http:// URL or full disk path to the sound file
+      # @param [Hash] options Additional options to specify how exactly to say time specified.
+      # @option options [String] :fallback The text to play if the file is not available
       #
       # @return [Boolean] true on correct play of the file, false on file missing or not playable
       #
-      def play_audio(*args)
-        argument, options = args.flatten
-        play_ssml ssml_for_audio(argument, options)
+      def play_audio(file, options = nil)
+        play_ssml ssml_for_audio(file, options)
       end
 
-      def play_ssml(ssml, options = {}) # :nodoc:
+      # @private
+      def play_ssml(ssml, options = {})
         if [RubySpeech::SSML::Speak, Nokogiri::XML::Document].include? ssml.class
-          output :ssml, ssml.to_s, options
+          output ssml.to_s, options
         end
       end
 
-      def output(type, content, options = {}) # :nodoc:
-        options.merge! type => content
-        execute_component_and_await_completion ::Punchblock::Component::Output.new(options)
-      end
-
-      def output!(type, content, options = {}) # :nodoc:
-        options.merge! type => content
+      # @private
+      def output(content, options = {})
+        options.merge! :ssml => content
         execute_component_and_await_completion ::Punchblock::Component::Output.new(options)
       end
 
       #
       # Same as interruptible_play, but throws an error if unable to play the output
       # @see interruptible_play
+      #
+      # @private
       #
       def interruptible_play!(*outputs)
         result = nil
@@ -155,10 +157,10 @@ module Adhearsion
       #   input = interruptible_play ssml
       #   play input unless input.nil?
       #
-      # @param [String|Numeric|Date|Time|RubySpeech::SSML::Speak|Array|Hash] The argument to play to the user, or an array of arguments.
+      # @param [String, Numeric, Date, Time, RubySpeech::SSML::Speak, Array, Hash] The argument to play to the user, or an array of arguments.
       # @param [Hash] Additional options.
       #
-      # @return [String|Nil] The single DTMF character entered by the user, or nil if nothing was entered
+      # @return [String, nil] The single DTMF character entered by the user, or nil if nothing was entered
       #
       def interruptible_play(*outputs)
         result = nil
@@ -175,7 +177,8 @@ module Adhearsion
         result
       end
 
-      def detect_type(output) # :nodoc:
+      # @private
+      def detect_type(output)
         result = nil
         result = :time if [Date, Time, DateTime].include? output.class
         result = :numeric if output.kind_of?(Numeric) || output =~ /^\d+$/
@@ -183,7 +186,8 @@ module Adhearsion
         result ||= :text
       end
 
-      def play_ssml_for(*args) # :nodoc:
+      # @private
+      def play_ssml_for(*args)
         play_ssml ssml_for(args)
       end
 
@@ -191,10 +195,12 @@ module Adhearsion
       # Generates SSML for the argument and options passed, using automatic detection
       # Directly returns the argument if it is already an SSML document
       #
-      # @param [String|Hash|RubySpeech::SSML::Speak] the argument with options as accepted by the play_ methods, or an SSML document
+      # @param [String, Hash, RubySpeech::SSML::Speak] the argument with options as accepted by the play_ methods, or an SSML document
       # @return [RubySpeech::SSML::Speak] an SSML document
       #
-      def ssml_for(*args) # :nodoc:
+      # @private
+      #
+      def ssml_for(*args)
         return args[0] if args.size == 1 && args[0].is_a?(RubySpeech::SSML::Speak)
         argument, options = args.flatten
         options ||= {}
@@ -202,11 +208,13 @@ module Adhearsion
         send "ssml_for_#{type}", argument, options
       end
 
-      def ssml_for_text(argument, options = {}) # :nodoc:
+      # @private
+      def ssml_for_text(argument, options = {})
         RubySpeech::SSML.draw { argument }
       end
 
-      def ssml_for_time(argument, options = {}) # :nodoc:
+      # @private
+      def ssml_for_time(argument, options = {})
         interpretation = case argument
         when Date then 'date'
         when Time then 'time'
@@ -222,13 +230,15 @@ module Adhearsion
         end
       end
 
-      def ssml_for_numeric(argument, options = {}) # :nodoc:
+      # @private
+      def ssml_for_numeric(argument, options = {})
         RubySpeech::SSML.draw do
           say_as(:interpret_as => 'cardinal') { argument.to_s }
         end
       end
 
-      def ssml_for_audio(argument, options = {}) # :nodoc:
+      # @private
+      def ssml_for_audio(argument, options = {})
         fallback = (options || {}).delete :fallback
         RubySpeech::SSML.draw do
           audio(:src => argument) { fallback }
@@ -241,7 +251,8 @@ module Adhearsion
       #
       # @param [Object] String or Hash specifying output and options
       # @param [String] String with the digits that are allowed to interrupt output
-      # @return [String|nil] The pressed digit, or nil if nothing was pressed
+      #
+      # @return [String, nil] The pressed digit, or nil if nothing was pressed
       #
       def stream_file(argument, digits = '0123456789#*')
         result = nil

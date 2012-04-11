@@ -9,7 +9,9 @@ module Adhearsion
       # @param [Integer] Number of digits to accept in the grammar.
       # @return [RubySpeech::GRXML::Grammar] A grammar suitable for use in SSML prompts
       #
-      def grammar_digits(digits = 1) # :nodoc:
+      # @private
+      #
+      def grammar_digits(digits = 1)
         RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
           rule id: 'inputdigits', scope: 'public' do
             item repeat: digits.to_s do
@@ -19,14 +21,16 @@ module Adhearsion
             end
           end
         end
-      end # grammar_digits
+      end
 
       # Utility method to create a single-digit grammar to accept only some digits
       #
       # @param [String] String representing the digits to accept
       # @return [RubySpeech::GRXML::Grammar] A grammar suitable for use in SSML prompts
       #
-      def grammar_accept(digits = '0123456789#*') # :nodoc:
+      # @private
+      #
+      def grammar_accept(digits = '0123456789#*')
         allowed_digits = '0123456789#*'
         gram_digits = digits.chars.select { |x| allowed_digits.include? x }
 
@@ -45,7 +49,9 @@ module Adhearsion
       # @param [String] the tone string to be parsed
       # @return [String] the digit in case input was 0-9, * or # if star or pound respectively
       #
-      def parse_single_dtmf(result) # :nodoc:
+      # @private
+      #
+      def parse_single_dtmf(result)
         return if result.nil?
         case tone = result.split('-')[1]
         when 'star'
@@ -57,6 +63,6 @@ module Adhearsion
         end
       end
 
-    end#module
+    end
   end
 end

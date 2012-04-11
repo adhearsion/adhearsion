@@ -4,37 +4,43 @@ module Adhearsion
   class CallController
     module Dial
       #
-      # Dial a third party and join to this call
+      # Dial one or more third parties and join one to this call
       #
-      # @param [String|Array<String>|Hash] number represents the extension or "number" that asterisk should dial.
-      # Be careful to not just specify a number like 5001, 9095551001
-      # You must specify a properly formatted string as Asterisk would expect to use in order to understand
-      # whether the call should be dialed using SIP, IAX, or some other means.
-      # You can also specify an array of destinations: each will be called with the same options simultaneously.
-      # The first call answered is joined, the others are hung up.
-      # A hash argument has the dial target as each key, and an hash of options as the value, in the form:
-      # dial({'SIP/100' => {:timeout => 3000}, 'SIP/200' => {:timeout => 4000} })
-      # The option hash for each target is merged into the global options, overriding them for the single dial.
-      # Destinations are dialed simultaneously as with an array.
+      # @overload dial(to[String], options = {})
+      #   @param [String] to The target URI to dial.
+      #     You must specify a properly formatted string that your VoIP platform understands.
+      #     eg. sip:foo@bar.com, tel:+14044754840, or SIP/foo/1234
+      #   @param [Hash] options see below
       #
-      # @param [Hash] options
+      # @overload dial(to[Array], options = {})
+      #   @param [Array<String>] to Target URIs to dial.
+      #     Each will be called with the same options simultaneously.
+      #     The first call answered is joined, the others are hung up.
+      #   @param [Hash] options see below
       #
-      # +:from+ - the caller id to be used when the call is placed. It is advised you properly adhere to the
-      # policy of VoIP termination providers with respect to caller id values.
+      # @overload dial(to[Hash], options = {})
+      #   @param [Hash<String => Hash>] to Target URIs to dial, mapped to their per-target options overrides.
+      #     Each will be called with the same options simultaneously.
+      #     The first call answered is joined, the others are hung up.
+      #     Each calls options are deep-merged with the global options hash.
+      #   @param [Hash] options see below
       #
-      # +:for+ - this option can be thought of best as a timeout.  i.e. timeout after :for if no one answers the call
-      # For example, dial(%w{SIP/jay-desk-650 SIP/jay-desk-601 SIP/jay-desk-601-2}, :for => 15.seconds, :from => callerid)
-      # this call will timeout after 15 seconds if 1 of the 3 extensions being dialed do not pick prior to the 15 second time limit
+      # @option options [String] :from the caller id to be used when the call is placed. It is advised you properly adhere to the
+      #   policy of VoIP termination providers with respect to caller id values.
+      #
+      # @option options [Numeric] :for this option can be thought of best as a timeout.
+      #   i.e. timeout after :for if no one answers the call
       #
       # @example Make a call to the PSTN using my SIP provider for VoIP termination
       #   dial "SIP/19095551001@my.sip.voip.terminator.us"
       #
-      # @example Make 3 Simulataneous calls to the SIP extensions, try for 15 seconds and use the callerid
-      # for this call specified by the variable my_callerid
+      # @example Make 3 simulataneous calls to the SIP extensions, try for 15 seconds and use the callerid for this call specified by the variable my_callerid
       #   dial %w{SIP/jay-desk-650 SIP/jay-desk-601 SIP/jay-desk-601-2}, :for => 15.seconds, :from => my_callerid
       #
       # @example Make a call using the IAX provider to the PSTN
       #   dial "IAX2/my.id@voipjet/19095551234", :from => "John Doe <9095551234>"
+      #
+      # @return [DialStatus] the status of the dial operation
       #
       def dial(to, options = {}, latch = nil)
         targets = to.respond_to?(:has_key?) ? to : Array(to)
@@ -111,29 +117,38 @@ module Adhearsion
       end
 
       class DialStatus
+        # The collection of calls created during the dial operation
         attr_accessor :calls
 
+        # @private
         def initialize
           @result = nil
         end
 
+        #
+        # The result of the dial operation.
+        #
+        # @return [Symbol] :no_answer, :answer, :timeout, :error
         def result
           @result || :no_answer
         end
 
+        # @private
         def answer!
           @result = :answer
         end
 
+        # @private
         def timeout!
           @result ||= :timeout
         end
 
+        # @private
         def error!
           @result ||= :error
         end
       end
 
-    end#module Dial
+    end
   end
 end
