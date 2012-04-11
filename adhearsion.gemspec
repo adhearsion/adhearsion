@@ -7,11 +7,10 @@ Gem::Specification.new do |s|
   s.version     = Adhearsion::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Jay Phillips", "Jason Goecke", "Ben Klang", "Ben Langfeld"]
-  s.email       = "dev&Adhearsion.com"
+  s.email       = "dev@adhearsion.com"
   s.homepage    = "http://adhearsion.com"
   s.summary     = "Adhearsion, open-source telephony development framework"
   s.description = "Adhearsion is an open-source telephony development framework"
-  s.date        = Date.today.to_s
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
