@@ -94,7 +94,10 @@ end
 Celluloid.exception_handler { |e| Adhearsion::Events.trigger :exception, e }
 
 module Celluloid
-  def self.logger
-    ::Logging.logger['Celluloid']
+  class << self
+    undef :logger
+    def logger
+      ::Logging.logger['Celluloid']
+    end
   end
 end
