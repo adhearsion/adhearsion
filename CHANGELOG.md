@@ -116,8 +116,8 @@
   * `ahn generate` command allows invocation of generators for call controllers, plugins or those provided by plugins
   * The command to take control of a call is now 'take' rather than 'use'. 'take' called without a call ID presents a list of currently running calls
   * Defined some project management guidelines for Adhearsion core (see http://adhearsion.com/contribute).
-  * TODO: Transferred copyright in the Adhearsion codebase from individual contributors to Adhearsion Foundation Inc, the non-profit organisation responsible for supporting the Adhearsion project.
-  * TODO: Dual-licensed as LGPL and MIT.
+  * Transferred copyright in the Adhearsion codebase from individual contributors to Adhearsion Foundation Inc, the non-profit organisation responsible for supporting the Adhearsion project.
+  * Re-licensed as MIT.
 
 # 1.2.1 - 2011-09-21
   * Removed the restful_rpc component since it is now in a gem.
