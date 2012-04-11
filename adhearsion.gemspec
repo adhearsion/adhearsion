@@ -17,8 +17,8 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_runtime_dependency 'bundler', [">= 1.0.10"]
-  s.add_runtime_dependency 'punchblock', [">= 0.12.0"]
+  s.add_runtime_dependency 'bundler', ["~> 1.0"]
+  s.add_runtime_dependency 'punchblock', ["~> 1.0"]
   s.add_runtime_dependency 'logging', [">= 1.6.1"]
   s.add_runtime_dependency 'adhearsion-loquacious', [">= 1.9.0"]
   s.add_runtime_dependency 'activesupport', [">= 3.0.10"]
@@ -26,10 +26,10 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'rake'
   s.add_runtime_dependency 'pry'
   s.add_runtime_dependency 'uuid'
-  s.add_runtime_dependency 'future-resource', [">= 0.0.2"]
-  s.add_runtime_dependency 'ruby_speech', [">= 0.4.0"]
+  s.add_runtime_dependency 'future-resource', ["~> 1.0"]
+  s.add_runtime_dependency 'ruby_speech', ["~> 1.0"]
   s.add_runtime_dependency 'countdownlatch'
-  s.add_runtime_dependency 'has-guarded-handlers', [">= 1.1.0"]
+  s.add_runtime_dependency 'has-guarded-handlers', ["~> 1.1"]
   s.add_runtime_dependency 'girl_friday'
   s.add_runtime_dependency 'jruby-openssl' if RUBY_PLATFORM == 'java'
   s.add_runtime_dependency 'ffi', [">= 1.0.11"]
