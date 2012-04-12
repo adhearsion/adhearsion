@@ -23,6 +23,7 @@ end
   active_support
   stringio
   countdownlatch
+  uuid
   adhearsion
 }.each { |f| require f }
 

@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+require 'has_guarded_handlers'
 require 'thread'
 
 module Adhearsion

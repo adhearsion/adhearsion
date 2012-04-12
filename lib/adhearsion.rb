@@ -4,14 +4,9 @@ abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby
 
 %w{
   active_support/all
-  uuid
-  future-resource
   punchblock
-  ostruct
   ruby_speech
   countdownlatch
-  has_guarded_handlers
-  girl_friday
   loquacious
   celluloid
 

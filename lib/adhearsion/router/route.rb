@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require 'has_guarded_handlers'
+
 module Adhearsion
   class Router
     class Route
