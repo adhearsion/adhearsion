@@ -1,9 +1,15 @@
 # encoding: utf-8
 
-require 'English'
-require 'tmpdir'
-require 'tempfile'
+%w{
+  English
+  tmpdir
+  tempfile
+}.each { |f| require f }
 
-Dir.glob File.join(File.dirname(__FILE__), 'foundation', "*rb") do |file|
-  require file
-end
+%w{
+  custom_daemonizer
+  exception_handler
+  libc
+  object
+  thread_safety
+}.each { |f| require "adhearsion/foundation/#{f}" }
