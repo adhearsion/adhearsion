@@ -11,7 +11,7 @@ Edit `extensions.conf` to include the following:
 exten => _.,1,AGI(agi:async)
 ```
 
-and setup a user in `manager.conf` with read/write access to `all`, `dialplan` and `agi`.
+and setup a user in `manager.conf` with read/write access to `all`.
 
 ## Voxeo PRISM
 
