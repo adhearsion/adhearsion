@@ -17,7 +17,6 @@ unless ENV['SKIP_RCOV']
 end
 
 %w{
-  rubygems
   bundler/setup
   flexmock/rspec
   active_support
