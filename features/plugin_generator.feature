@@ -25,7 +25,7 @@ Feature: Adhearsion plugin generator
     And the file "test_plugin/README.md" should contain "TestPlugin"
     And the file "test_plugin/lib/test_plugin.rb" should contain each of these content parts:
     """
-    module TestPlugin
+    TestPlugin
     test_plugin/version
     test_plugin/plugin
     test_plugin/controller_methods
