@@ -126,11 +126,9 @@ describe "Using Invocations that've been ran through the Theatre" do
     invocation = Theatre::Invocation.new('/foo/bar', lambda { raise LocalJumpError })
     invocation.queued
 
-    now = Time.now
-    flexmock(Time).should_receive(:now).twice.and_return now
-
     invocation.start
     invocation.should be_error
+    invocation.finished_time.should be_kind_of(Time)
   end
 
   it "should set the #started_time property after starting" do
