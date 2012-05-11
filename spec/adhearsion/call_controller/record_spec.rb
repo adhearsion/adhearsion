@@ -77,8 +77,35 @@ module Adhearsion
             end
           end
         end
-      end
 
+        describe "with :interruptible => true" do
+          let(:input_component) {
+             ::Punchblock::Component::Input.new
+          }
+          it "stops the recording" do
+            flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => 'dtmf-1', :name => :input))
+
+            def subject.write_and_await_response(input_component)
+              input_component.trigger_event_handler Punchblock::Event::Complete.new
+            end
+
+            def expect_component_complete_event
+              complete_event = Punchblock::Event::Complete.new
+              flexmock(complete_event).should_receive(:reason => flexmock(:interpretation => 'dtmf-1', :name => :input))
+              flexmock(Punchblock::Component::Input).new_instances do |input|
+                input.should_receive(:complete?).and_return(false)
+                input.should_receive(:complete_event).and_return(complete_event)
+              end
+            end
+
+            expect_component_complete_event
+            flexmock(Punchblock::Component::Record).new_instances.should_receive(:stop!)
+            subject.should_receive(:execute_component_and_await_completion).once.with(component)
+            subject.record(options.merge(:async => false)) { |rec| @rec.push rec }
+          end 
+        end
+
+      end
     end
   end
 end
