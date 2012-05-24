@@ -26,15 +26,30 @@ module Adhearsion
       # @option options [String, Optional] :format File format used during recording.
       # @option options [String, Optional] :initial_timeout Controls how long (milliseconds) the recognizer should wait after the end of the prompt for the caller to speak before sending a Recorder event.
       # @option options [String, Optional] :final_timeout Controls the length (milliseconds) of a period of silence after callers have spoken to conclude they finished.
+      # @option options [Boolean, Optional] :interruptible Allows the recording to be terminated by any single DTMF key, default is false
       #
       # @return Punchblock::Component::Record
       #
       def record(options = {})
         async = options.delete :async
+        interruptible = options.delete :interruptible
+        interrupt_key = '0123456789#*'
+        stopper_component = nil
 
         component = ::Punchblock::Component::Record.new options
         component.register_event_handler ::Punchblock::Event::Complete do |event|
           catching_standard_errors { yield event if block_given? }
+        end
+
+        if interruptible
+          stopper_component = ::Punchblock::Component::Input.new :mode => :dtmf,
+            :grammar => {
+              :value => grammar_accept(interrupt_key)
+            }
+          stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
+            component.stop! unless component.complete?
+          end
+          write_and_await_response stopper_component
         end
 
         if async
@@ -42,6 +57,8 @@ module Adhearsion
         else
           execute_component_and_await_completion component
         end
+        stopper_component.stop! if stopper_component && stopper_component.executing?
+        component
       end
     end
   end
