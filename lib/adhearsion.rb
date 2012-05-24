@@ -37,14 +37,21 @@ module Adhearsion
 
   class << self
 
+    #
+    # Sets the application path
+    # @param[String|Pathname] The application path to set
+    #
     def root=(path)
       Adhearsion.config[:platform].root = path.nil? ? nil : File.expand_path(path)
     end
 
+    #
+    # Returns the current application path
+    # @return [Pathname] The application path
+    # 
     def root
       Adhearsion.config[:platform].root
     end
-
 
     #
     # @deprecated Use #root= instead
