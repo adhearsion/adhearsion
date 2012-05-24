@@ -57,7 +57,7 @@ module Adhearsion
     # @deprecated Use #root= instead
     #
     def ahn_root=(path)
-      Adhearsion.deprecated("#Adhearsion.root=")
+      Adhearsion.deprecated "#Adhearsion.root="
       Adhearsion.root = path
     end
 
