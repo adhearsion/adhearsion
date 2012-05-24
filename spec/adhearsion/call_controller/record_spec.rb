@@ -78,10 +78,18 @@ module Adhearsion
           end
         end
 
+        
+        describe "with :interruptible => false" do
+          let(:input_component) { ::Punchblock::Component::Input.new }
+          it "does not use an Input component" do
+            subject.should_receive(:execute_component_and_await_completion).once.with(component)
+            subject.should_receive(:write_and_await_response).never.with(input_component)
+            subject.record(options.merge(:async => false, :interruptible => false)) { |rec| @rec.push rec }
+          end
+        end
+
         describe "with :interruptible => true" do
-          let(:input_component) {
-             ::Punchblock::Component::Input.new
-          }
+          let(:input_component) { ::Punchblock::Component::Input.new }
           it "stops the recording" do
             flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:name => :input))
 
@@ -89,16 +97,12 @@ module Adhearsion
               input_component.trigger_event_handler Punchblock::Event::Complete.new
             end
 
-            def expect_component_complete_event
-              complete_event = Punchblock::Event::Complete.new
-              flexmock(complete_event).should_receive(:reason => flexmock(:name => :input))
-              flexmock(Punchblock::Component::Input).new_instances do |input|
-                input.should_receive(:complete?).and_return(false)
-                input.should_receive(:complete_event).and_return(complete_event)
-              end
+            complete_event = Punchblock::Event::Complete.new
+            flexmock(complete_event).should_receive(:reason => flexmock(:name => :input))
+            flexmock(Punchblock::Component::Input).new_instances do |input|
+              input.should_receive(:complete?).and_return(false)
+              input.should_receive(:complete_event).and_return(complete_event)
             end
-
-            expect_component_complete_event
             flexmock(Punchblock::Component::Record).new_instances.should_receive(:stop!)
             subject.should_receive(:execute_component_and_await_completion).once.with(component)
             subject.record(options.merge(:async => false, :interruptible => true)) { |rec| @rec.push rec }

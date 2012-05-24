@@ -18,7 +18,7 @@ module Adhearsion
       # @option options [String, Optional] :format File format used during recording.
       # @option options [String, Optional] :initial_timeout Controls how long (milliseconds) the recognizer should wait after the end of the prompt for the caller to speak before sending a Recorder event.
       # @option options [String, Optional] :final_timeout Controls the length (milliseconds) of a period of silence after callers have spoken to conclude they finished.
-      # @option options [Boolean, Optional] :interruptible Allows the recording to be terminated by any single DTMF key
+      # @option options [Boolean, Optional] :interruptible Allows the recording to be terminated by any single DTMF key, default is false
       #
       # @return Punchblock::Component::Record::Recording
       #
