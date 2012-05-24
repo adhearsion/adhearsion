@@ -37,8 +37,20 @@ module Adhearsion
 
   class << self
 
-    def ahn_root=(path)
+    def root=(path)
       Adhearsion.config[:platform].root = path.nil? ? nil : File.expand_path(path)
+    end
+
+    def root
+      Adhearsion.config[:platform].root
+    end
+
+
+    #
+    # @deprecated Use #root= instead
+    #
+    def ahn_root=(path)
+      Adhearsion.root = path
     end
 
     def config(&block)
