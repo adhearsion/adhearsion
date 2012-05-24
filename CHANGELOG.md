@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * CallController#record now has an :interruptible option that allows recording to be stopped by pressing any DTMF key
   * Adhearsion.root and Adhearsion.root= are now available to return the root path to the application. Adhearsion.ahn_root= is deprecated.
   * Adhearsion.deprecated added for internal use to clearly mark deprecated methods.
 
