@@ -3,6 +3,25 @@
 require 'spec_helper'
 
 describe Adhearsion do
+  describe "#root=" do
+    it "should update properly the config root variable" do
+      Adhearsion.root = "./"
+      Adhearsion.config[:platform].root.should be == Dir.getwd
+    end
+
+    it "should update properly the config root variable when path is nil" do
+      Adhearsion.root = nil
+      Adhearsion.config[:platform].root.should be_nil
+    end
+  end
+  
+  describe "#root" do
+    it "should return the set root" do
+      Adhearsion.root = "./"
+      Adhearsion.root.should be == Dir.getwd
+    end
+  end
+
   describe "#ahn_root=" do
     it "should update properly the config root variable" do
       Adhearsion.ahn_root = "./"

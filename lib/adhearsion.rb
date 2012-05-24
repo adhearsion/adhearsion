@@ -37,14 +37,39 @@ module Adhearsion
 
   class << self
 
-    def ahn_root=(path)
+    #
+    # Sets the application path
+    # @param[String|Pathname] The application path to set
+    #
+    def root=(path)
       Adhearsion.config[:platform].root = path.nil? ? nil : File.expand_path(path)
+    end
+
+    #
+    # Returns the current application path
+    # @return [Pathname] The application path
+    # 
+    def root
+      Adhearsion.config[:platform].root
+    end
+
+    #
+    # @deprecated Use #root= instead
+    #
+    def ahn_root=(path)
+      Adhearsion.deprecated "#Adhearsion.root="
+      Adhearsion.root = path
     end
 
     def config(&block)
       @config ||= initialize_config
       block_given? and yield @config
       @config
+    end
+
+    def deprecated(new_method)
+      logger.info "#{caller[0]} - This method is deprecated, please use #{new_method}."
+      logger.warn caller.join("\n")
     end
 
     def initialize_config
