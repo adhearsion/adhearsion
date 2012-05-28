@@ -12,3 +12,5 @@ coverage
 spec/reports
 doc
 /.rbx/
+tmp/
+*.log
