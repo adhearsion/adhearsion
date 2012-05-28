@@ -4,6 +4,7 @@
   * Adhearsion.deprecated added for internal use to clearly mark deprecated methods.
   * Feature: Added `Call#on_joined` and `Call#on_unjoined` for easily registering joined/unjoined handlers
   * Feature: Permit asynchronous output using bang version of methods (eg `CallController#play!`)
+  * Feature: Added `CallController#safely` which will catch and log `StandardError` in a call controller, but will not allow it to crash the controller
 
 # [2.0.0](https://github.com/adhearsion/adhearsion/compare/v1.2.1...v2.0.0) - [2012-04-11](https://rubygems.org/gems/adhearsion/versions/2.0.0)
 
