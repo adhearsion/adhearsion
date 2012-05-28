@@ -3,6 +3,7 @@
   * Adhearsion.root and Adhearsion.root= are now available to return the root path to the application. Adhearsion.ahn_root= is deprecated.
   * Adhearsion.deprecated added for internal use to clearly mark deprecated methods.
   * Feature: Added `Call#on_joined` and `Call#on_unjoined` for easily registering joined/unjoined handlers
+  * Feature: Permit asynchronous output using bang version of methods (eg `CallController#play!`)
 
 # [2.0.0](https://github.com/adhearsion/adhearsion/compare/v1.2.1...v2.0.0) - [2012-04-11](https://rubygems.org/gems/adhearsion/versions/2.0.0)
 

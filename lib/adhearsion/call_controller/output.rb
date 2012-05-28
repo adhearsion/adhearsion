@@ -21,6 +21,16 @@ module Adhearsion
       alias :speak :say
 
       #
+      # Speak output asynchronously
+      #
+      # Executes the same as #say, but returns immediately
+      #
+      def say!(*args)
+        new_play(true).tap { |p| p.say! *args }
+      end
+      alias :speak! :say!
+
+      #
       # Plays the specified sound file names. This method will handle Time/DateTime objects (e.g. Time.now),
       # Fixnums (e.g. 1000), Strings which are valid Fixnums (e.g "123"), and direct sound files. To specify how the Date/Time objects are said
       # pass in as an array with the first parameter as the Date/Time/DateTime object along with a hash with the
@@ -52,6 +62,15 @@ module Adhearsion
       end
 
       #
+      # Play output asynchronously
+      #
+      # Executes the same as #play, but returns immediately
+      #
+      def play!(*args)
+        new_play(true).tap { |p| p.play! *args }
+      end
+
+      #
       # Plays the given audio file.
       # SSML supports http:// paths and full disk paths.
       # The Punchblock backend will have to handle cases like Asterisk where there is a fixed sounds directory.
@@ -64,6 +83,15 @@ module Adhearsion
       #
       def play_audio(*args)
         new_play.play_audio *args
+      end
+
+      #
+      # Play audio asynchronously
+      #
+      # Executes the same as #play_audio, but returns immediately
+      #
+      def play_audio!(*args)
+        new_play(true).tap { |p| p.play_audio! *args }
       end
 
       #
@@ -86,6 +114,15 @@ module Adhearsion
       end
 
       #
+      # Play time asynchronously
+      #
+      # Executes the same as #play_time, but returns immediately
+      #
+      def play_time!(*args)
+        new_play(true).tap { |p| p.play_time! *args }
+      end
+
+      #
       # Plays the given Numeric argument or string representing a decimal number.
       # When playing numbers, Adhearsion assumes you're saying the number, not the digits. For example, play("100")
       # is pronounced as "one hundred" instead of "one zero zero".
@@ -96,6 +133,15 @@ module Adhearsion
       #
       def play_numeric(*args)
         new_play.play_numeric *args
+      end
+
+      #
+      # Play numerics asynchronously
+      #
+      # Executes the same as #play_numeric, but returns immediately
+      #
+      def play_numeric!(*args)
+        new_play(true).tap { |p| p.play_numeric! *args }
       end
 
       #
@@ -118,9 +164,20 @@ module Adhearsion
         new_play.interruptible_play *args
       end
 
+      #
+      # Play interruptible asynchronously
+      #
+      # Executes the same as #interruptiple_play, but returns immediately
+      #
+      def interruptible_play!(*args)
+        new_play(true).tap { |p| p.interruptible_play! *args }
+      end
+
       # @private
-      def new_play
-        Play.new self
+      def new_play(actor = false)
+        Play.new(self).tap do |play|
+          play.extend Celluloid if actor
+        end
       end
     end # Output
   end # CallController
