@@ -5,7 +5,8 @@ module Adhearsion
     module Output
       extend ActiveSupport::Autoload
 
-      autoload :Play
+      autoload :Formatter
+      autoload :Player
 
       PlaybackError = Class.new Adhearsion::Error # Represents failure to play audio, such as when the sound file cannot be found
 
@@ -15,8 +16,10 @@ module Adhearsion
       # @param [String, #to_s] text The text to be rendered
       # @param [Hash] options A set of options for output
       #
-      def say(*args)
-        new_play.say *args
+      # @raises [PlaybackError] if the given argument could not be played
+      #
+      def say(text, options = {})
+        player.play_ssml(text, options) || player.output(Formatter.ssml_for_text(text.to_s), options)
       end
       alias :speak :say
 
@@ -40,15 +43,24 @@ module Adhearsion
       # @example Play two sound files
       #   play "/path/to/you-sound-cute.mp3", "/path/to/what-are-you-wearing.wav"
       #
-      # @return [Boolean] true is returned if everything was successful. Otherwise, false indicates that
-      #   some sound file(s) could not be played.
+      # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
       # @see play_time
       # @see play_numeric
       # @see play_audio
       #
-      def play(*args)
-        new_play.play *args
+      def play(*arguments)
+        arguments.each do |argument|
+          case argument
+          when Hash
+            player.play_ssml_for argument.delete(:value), argument
+          when RubySpeech::SSML::Speak
+            player.play_ssml argument
+          else
+            player.play_ssml_for argument
+          end
+        end
+        true
       end
 
       #
@@ -60,10 +72,11 @@ module Adhearsion
       # @param [Hash] options Additional options to specify how exactly to say time specified.
       # @option options [String] :fallback The text to play if the file is not available
       #
-      # @return [Boolean] true on correct play of the file, false on file missing or not playable
+      # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
-      def play_audio(*args)
-        new_play.play_audio *args
+      def play_audio(file, options = nil)
+        player.play_ssml Formatter.ssml_for_audio(file, options)
+        true
       end
 
       #
@@ -79,10 +92,12 @@ module Adhearsion
       # @option options [String] :strftime This format is what defines the string that is sent to the Speech Synthesis Engine.
       #   It uses Time::strftime symbols.
       #
-      # @return [Boolean] true if successful, false if the given argument could not be played.
+      # @raises [ArgumentError] if the given argument can not be played
       #
-      def play_time(*args)
-        new_play.play_time *args
+      def play_time(time, options = {})
+        raise ArgumentError unless [Date, Time, DateTime].include?(time.class) && options.is_a?(Hash)
+        player.play_ssml Formatter.ssml_for_time(time, options)
+        true
       end
 
       #
@@ -92,10 +107,12 @@ module Adhearsion
       #
       # @param [Numeric, String] Numeric or String containing a valid Numeric, like "321".
       #
-      # @return [Boolean] true if successful, false if the given argument could not be played.
+      # @raises [ArgumentError] if the given argument can not be played
       #
-      def play_numeric(*args)
-        new_play.play_numeric *args
+      def play_numeric(number)
+        raise ArgumentError unless number.kind_of?(Numeric) || number =~ /^\d+$/
+        player.play_ssml Formatter.ssml_for_numeric(number)
+        true
       end
 
       #
@@ -113,14 +130,19 @@ module Adhearsion
       # @param [Hash] Additional options.
       #
       # @return [String, nil] The single DTMF character entered by the user, or nil if nothing was entered
+      # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
-      def interruptible_play(*args)
-        new_play.interruptible_play *args
+      def interruptible_play(*outputs)
+        result = nil
+        outputs.each do |output|
+          player.stream_file(output) && break
+        end
+        result
       end
 
       # @private
-      def new_play
-        Play.new self
+      def player
+        @player ||= Player.new(self)
       end
     end # Output
   end # CallController
