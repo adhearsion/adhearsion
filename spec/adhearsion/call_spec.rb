@@ -110,6 +110,132 @@ module Adhearsion
     describe "event handlers" do
       let(:response) { flexmock 'Response' }
 
+      describe "for joined events" do
+        context "joined to another call" do
+          let :event do
+            Punchblock::Event::Joined.new :call_id => 'foobar'
+          end
+
+          it "should trigger any on_joined callbacks set for the matching call ID" do
+            response.should_receive(:call).once.with(event)
+            subject.on_joined(:call_id => 'foobar') { |event| response.call event }
+            subject << event
+          end
+
+          it "should not trigger on_joined callbacks for other call IDs" do
+            response.should_receive(:call).never
+            subject.on_joined(:call_id => 'barfoo') { |event| response.call event }
+            subject << event
+          end
+
+          it "should not trigger on_joined callbacks for mixers" do
+            response.should_receive(:call).never
+            subject.on_joined(:mixer_name => 'foobar') { |event| response.call event }
+            subject << event
+          end
+        end
+
+        context "joined to a mixer" do
+          let :event do
+            Punchblock::Event::Joined.new :mixer_name => 'foobar'
+          end
+
+          it "should trigger on_joined callbacks for the matching mixer name" do
+            response.should_receive(:call).once.with(event)
+            subject.on_joined(:mixer_name => 'foobar') { |event| response.call event }
+            subject << event
+          end
+
+          it "should not trigger on_joined callbacks for other mixer names" do
+            response.should_receive(:call).never
+            subject.on_joined(:mixer_name => 'barfoo') { |event| response.call event }
+            subject << event
+          end
+
+          it "should not trigger any on_joined callbacks set for calls" do
+            response.should_receive(:call).never
+            subject.on_joined(:call_id => 'foobar') { |event| response.call event }
+            subject << event
+          end
+        end
+      end
+
+      describe "for unjoined events" do
+        context "unjoined from another call" do
+          let :event do
+            Punchblock::Event::Unjoined.new :call_id => 'foobar'
+          end
+
+          it "should trigger any on_unjoined callbacks set for the matching call ID" do
+            response.should_receive(:call).once.with(event)
+            subject.on_unjoined(:call_id => 'foobar') { |event| response.call event }
+            subject << event
+          end
+
+          it "should trigger any on_unjoined callbacks set for the matching call ID as a string" do
+            response.should_receive(:call).once.with(event)
+            subject.on_unjoined('foobar') { |event| response.call event }
+            subject << event
+          end
+
+          it "should trigger any on_unjoined callbacks set for the matching call" do
+            response.should_receive(:call).once.with(event)
+            call = flexmock Call.new, :id => 'foobar'
+            subject.on_unjoined(call) { |event| response.call event }
+            subject << event
+          end
+
+          it "should not trigger on_unjoined callbacks for other call IDs" do
+            response.should_receive(:call).never
+            subject.on_unjoined(:call_id => 'barfoo') { |event| response.call event }
+            subject << event
+          end
+
+          it "should not trigger on_unjoined callbacks for mixers" do
+            response.should_receive(:call).never
+            subject.on_joined(:mixer_name => 'foobar') { |event| response.call event }
+            subject << event
+          end
+        end
+
+        context "unjoined from a mixer" do
+          let :event do
+            Punchblock::Event::Unjoined.new :mixer_name => 'foobar'
+          end
+
+          it "should trigger on_unjoined callbacks for the matching mixer name" do
+            response.should_receive(:call).once.with(event)
+            subject.on_unjoined(:mixer_name => 'foobar') { |event| response.call event }
+            subject << event
+          end
+
+          it "should not trigger on_unjoined callbacks for other mixer names" do
+            response.should_receive(:call).never
+            subject.on_unjoined(:mixer_name => 'barfoo') { |event| response.call event }
+            subject << event
+          end
+
+          it "should not trigger any on_unjoined callbacks set for calls" do
+            response.should_receive(:call).never
+            subject.on_unjoined(:call_id => 'foobar') { |event| response.call event }
+            subject << event
+          end
+
+          it "should not trigger any on_unjoined callbacks set for the matching call ID as a string" do
+            response.should_receive(:call).never
+            subject.on_unjoined('foobar') { |event| response.call event }
+            subject << event
+          end
+
+          it "should not trigger any on_unjoined callbacks set for the matching call" do
+            response.should_receive(:call).never
+            call = flexmock Call.new, :id => 'foobar'
+            subject.on_unjoined(call) { |event| response.call event }
+            subject << event
+          end
+        end
+      end
+
       describe "for end events" do
         let :event do
           Punchblock::Event::End.new.tap do |e|
