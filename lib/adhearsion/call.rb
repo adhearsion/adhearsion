@@ -111,16 +111,14 @@ module Adhearsion
         throw :pass
       end
 
-      register_event_handler Punchblock::Event::Joined do |event|
+      on_joined do |event|
         target = event.call_id || event.mixer_name
         signal :joined, target
-        throw :pass
       end
 
-      register_event_handler Punchblock::Event::Unjoined do |event|
+      on_unjoined do |event|
         target = event.call_id || event.mixer_name
         signal :unjoined, target
-        throw :pass
       end
 
       on_end do |event|
@@ -135,6 +133,39 @@ module Adhearsion
     # @private
     def after_end_hold_time
       30
+    end
+
+    ##
+    # Registers a callback for when this call is joined to another call or a mixer
+    #
+    # @param [Call, String, Hash, nil] target the target to guard on. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
+    # @option target [String] call_id The call ID to guard on
+    # @option target [String] mixer_name The mixer name to guard on
+    #
+    def on_joined(target = nil, &block)
+      register_event_handler Punchblock::Event::Joined, *guards_for_target(target) do |event|
+        block.call event
+        throw :pass
+      end
+    end
+
+    ##
+    # Registers a callback for when this call is unjoined from another call or a mixer
+    #
+    # @param [Call, String, Hash, nil] target the target to guard on. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
+    # @option target [String] call_id The call ID to guard on
+    # @option target [String] mixer_name The mixer name to guard on
+    #
+    def on_unjoined(target = nil, &block)
+      register_event_handler Punchblock::Event::Unjoined, *guards_for_target(target) do |event|
+        block.call event
+        throw :pass
+      end
+    end
+
+    # @private
+    def guards_for_target(target)
+      target ? [join_options_with_target(target)] : []
     end
 
     def on_end(&block)
