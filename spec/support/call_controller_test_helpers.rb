@@ -38,8 +38,13 @@ module CallControllerTestHelpers
     message.request!
   end
 
-  def expect_component_execution(component)
-    controller.should_receive(:execute_component_and_await_completion).once.with(component).and_return(component)
+  def expect_component_execution(component, fail = false)
+    expectation = controller.should_receive(:execute_component_and_await_completion).once.with(component)
+    if fail
+      expectation.and_raise fail
+    else
+      expectation.and_return component
+    end
   end
 
   def mock_with_potential_matches(potential_matches)

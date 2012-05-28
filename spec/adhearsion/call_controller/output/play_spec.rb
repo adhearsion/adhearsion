@@ -68,8 +68,8 @@ module Adhearsion
           describe "with something that's not a number" do
             let(:input) { 'foo' }
 
-            it 'returns nil' do
-              subject.play_numeric(input).should be nil
+            it 'raises ArgumentError' do
+              lambda { subject.play_numeric input }.should raise_error(ArgumentError)
             end
           end
         end
@@ -142,8 +142,8 @@ module Adhearsion
           describe "with an object other than Time, DateTime, or Date" do
             let(:input) { "foo" }
 
-            it 'returns false' do
-              subject.play_time(input).should be false
+            it 'raises ArgumentError' do
+              lambda { subject.play_time input }.should raise_error(ArgumentError)
             end
           end
         end
@@ -167,19 +167,6 @@ module Adhearsion
               end
 
               subject.play(*args).should be true
-            end
-
-            describe "if an audio file cannot be found" do
-              before do
-                pending
-                subject.should_receive(:play_audio).with(args[0]).and_return(true).ordered
-                subject.should_receive(:play_audio).with(args[1]).and_return(false).ordered
-                subject.should_receive(:play_audio).with(args[2]).and_return(true).ordered
-              end
-
-              it 'should return false' do
-                subject.play(*args).should be false
-              end
             end
           end
 
@@ -233,27 +220,6 @@ module Adhearsion
               subject.should_receive(:play_ssml).with(ssml).and_return(true)
               subject.play(ssml).should be true
             end
-          end
-        end
-
-        describe "#play!" do
-          let(:prompt)        { "Press any button." }
-          let(:second_prompt) { "Or press nothing." }
-          let(:non_existing) { "http://adhearsion.com/nonexistingfile.mp3" }
-
-          it "calls play a single time" do
-            subject.should_receive(:play).once.with(prompt).and_return(true)
-            subject.play!(prompt)
-          end
-
-          it "calls play two times" do
-            subject.should_receive(:play).once.with(prompt, second_prompt).and_return(true)
-            subject.play!(prompt, second_prompt)
-          end
-
-          it "raises an exception if play fails" do
-            subject.should_receive(:play).once.and_return false
-            expect { subject.play!(non_existing) }.to raise_error(Output::PlaybackError)
           end
         end
 
@@ -357,47 +323,59 @@ module Adhearsion
           end
         end # describe #stream_file
 
-        describe "#interruptible_play!" do
-          let(:output1)       { "one two" }
-          let(:output2)       { "three four" }
-          let(:non_existing)  { "http://adhearsion.com/nonexistingfile.mp3" }
-
-          it "plays two outputs in succession" do
-            subject.should_receive(:stream_file).twice
-            subject.interruptible_play! output1, output2
-          end
-
-          it "stops at the first play when input is received" do
-            subject.should_receive(:stream_file).once.and_return(2)
-            subject.interruptible_play! output1, output2
-          end
-
-          it 'raises an exception when output is unsuccessful' do
-            subject.should_receive(:stream_file).once.and_raise Output::PlaybackError, "Output failed"
-            expect { subject.interruptible_play!(non_existing) }.to raise_error(Output::PlaybackError)
-          end
-        end # describe interruptible_play!
-
         describe "#interruptible_play" do
           let(:output1)       { "one two" }
           let(:output2)       { "three four" }
           let(:non_existing)  { "http://adhearsion.com/nonexistingfile.mp3" }
 
           it "plays two outputs in succession" do
-            subject.should_receive(:interruptible_play!).twice
+            subject.should_receive(:stream_file).twice
             subject.interruptible_play output1, output2
           end
 
           it "stops at the first play when input is received" do
-            subject.should_receive(:interruptible_play!).once.and_return(2)
+            subject.should_receive(:stream_file).once.and_return(2)
             subject.interruptible_play output1, output2
           end
 
-          it "should not raise an exception when output is unsuccessful" do
+          it 'raises an exception when output is unsuccessful' do
             subject.should_receive(:stream_file).once.and_raise Output::PlaybackError, "Output failed"
-            lambda { subject.interruptible_play non_existing }.should_not raise_error(Output::PlaybackError)
+            expect { subject.interruptible_play non_existing }.to raise_error(Output::PlaybackError)
           end
         end # describe interruptible_play
+
+        describe "#output" do
+          let(:content) { RubySpeech::SSML.draw { string "BOO" } }
+
+          it "should execute an output component with the provided SSML content" do
+            expect_component_execution Punchblock::Component::Output.new(:ssml => content)
+            subject.output content
+          end
+
+          it "should allow extra options to be passed to the output component" do
+            component = Punchblock::Component::Output.new :ssml => content, :start_paused => true
+            expect_component_execution component
+            subject.output content, :start_paused => true
+          end
+
+          it "yields the component to the block before executing it" do
+            component = Punchblock::Component::Output.new :ssml => content, :start_paused => true
+            expect_component_execution component
+            subject.output content do |comp|
+              comp.start_paused = true
+            end
+          end
+
+          it "raises a PlaybackError if the component fails to start" do
+            expect_component_execution Punchblock::Component::Output.new(:ssml => content), Punchblock::ProtocolError
+            lambda { subject.output content }.should raise_error(PlaybackError)
+          end
+
+          it "raises a Playback Error if the component ends due to an error" do
+            expect_component_execution Punchblock::Component::Output.new(:ssml => content), Adhearsion::Error
+            lambda { subject.output content }.should raise_error(PlaybackError)
+          end
+        end
 
         describe "#play_ssml" do
           let(:ssml) { RubySpeech::SSML.draw { string "BOO" } }
@@ -405,18 +383,6 @@ module Adhearsion
           it 'executes an Output with the correct ssml' do
             expect_component_execution Punchblock::Component::Output.new(:ssml => ssml.to_s)
             subject.play_ssml ssml
-          end
-
-          describe "if an error is returned" do
-            before do
-              pending
-              subject.should_receive(:execute_component_and_await_completion).once.and_raise(StandardError)
-            end
-
-            it 'should return false' do
-              pending
-              subject.play_ssml(ssml).should be false
-            end
           end
         end
 

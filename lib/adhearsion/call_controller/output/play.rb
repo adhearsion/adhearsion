@@ -17,6 +17,8 @@ module Adhearsion
         # @param [String, #to_s] text The text to be rendered
         # @param [Hash] options A set of options for output
         #
+        # @raises [PlaybackError] if the given argument could not be played
+        #
         def say(text, options = {})
           play_ssml(text, options) || output(ssml_for_text(text.to_s), options)
         end
@@ -41,8 +43,7 @@ module Adhearsion
         # @example Play two sound files
         #   play "/path/to/you-sound-cute.mp3", "/path/to/what-are-you-wearing.wav"
         #
-        # @return [Boolean] true is returned if everything was successful. Otherwise, false indicates that
-        #   some sound file(s) could not be played.
+        # @raises [PlaybackError] if (one of) the given argument(s) could not be played
         #
         # @see play_time
         # @see play_numeric
@@ -70,7 +71,7 @@ module Adhearsion
         # @param [Hash] options Additional options to specify how exactly to say time specified.
         # @option options [String] :fallback The text to play if the file is not available
         #
-        # @return [Boolean] true on correct play of the file, false on file missing or not playable
+        # @raises [PlaybackError] if (one of) the given argument(s) could not be played
         #
         def play_audio(file, options = nil)
           play_ssml ssml_for_audio(file, options)
@@ -89,12 +90,10 @@ module Adhearsion
         # @option options [String] :strftime This format is what defines the string that is sent to the Speech Synthesis Engine.
         #   It uses Time::strftime symbols.
         #
-        # @return [Boolean] true if successful, false if the given argument could not be played.
+        # @raises [ArgumentError] if the given argument can not be played
         #
         def play_time(time, options = {})
-          return false unless [Date, Time, DateTime].include? time.class
-
-          return false unless options.is_a? Hash
+          raise ArgumentError unless [Date, Time, DateTime].include?(time.class) && options.is_a?(Hash)
           play_ssml ssml_for_time(time, options)
         end
 
@@ -105,12 +104,11 @@ module Adhearsion
         #
         # @param [Numeric, String] Numeric or String containing a valid Numeric, like "321".
         #
-        # @return [Boolean] true if successful, false if the given argument could not be played.
+        # @raises [ArgumentError] if the given argument can not be played
         #
         def play_numeric(number, options = nil)
-          if number.kind_of?(Numeric) || number =~ /^\d+$/
-            play_ssml ssml_for_numeric(number, options)
-          end
+          raise ArgumentError unless number.kind_of?(Numeric) || number =~ /^\d+$/
+          play_ssml ssml_for_numeric(number, options)
         end
 
         #
@@ -128,30 +126,14 @@ module Adhearsion
         # @param [Hash] Additional options.
         #
         # @return [String, nil] The single DTMF character entered by the user, or nil if nothing was entered
+        # @raises [PlaybackError] if (one of) the given argument(s) could not be played
         #
         def interruptible_play(*outputs)
           result = nil
           outputs.each do |output|
-            begin
-              result = interruptible_play! output
-            rescue PlaybackError => e
-              # Ignore this exception and play the next output
-              logger.error "Error playing back the prompt: #{e.message}"
-            ensure
-              break if result
-            end
+            stream_file(output) && break
           end
           result
-        end
-
-        #
-        # Plays the specified input arguments, raising an exception if any can't be played.
-        # @see play
-        #
-        # @private
-        #
-        def play!(*arguments)
-          play(*arguments) or raise PlaybackError, "One of the passed outputs is invalid"
         end
 
         #
@@ -167,23 +149,20 @@ module Adhearsion
         #
         def stream_file(argument, digits = '0123456789#*')
           result = nil
-          ssml = ssml_for argument
-          output_component = ::Punchblock::Component::Output.new :ssml => ssml.to_s
-          input_stopper_component = ::Punchblock::Component::Input.new :mode => :dtmf,
+          stopper = Punchblock::Component::Input.new :mode => :dtmf,
             :grammar => {
               :value => controller.grammar_accept(digits)
             }
-          input_stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
-            output_component.stop! unless output_component.complete?
+
+          output ssml_for(argument) do |output_component|
+            stopper.register_event_handler Punchblock::Event::Complete do |event|
+              output_component.stop! unless output_component.complete?
+            end
+            controller.write_and_await_response stopper
           end
-          controller.write_and_await_response input_stopper_component
-          begin
-            controller.execute_component_and_await_completion output_component
-          rescue ::Punchblock::ProtocolError => e
-            raise PlaybackError, "Output failed for argument #{argument.inspect} due to #{e.inspect}"
-          end
-          input_stopper_component.stop! if input_stopper_component.executing?
-          reason = input_stopper_component.complete_event.reason
+
+          stopper.stop! if stopper.executing?
+          reason = stopper.complete_event.reason
           result = reason.interpretation if reason.respond_to? :interpretation
           return controller.parse_single_dtmf result unless result.nil?
           result
@@ -192,29 +171,22 @@ module Adhearsion
         # @private
         def play_ssml(ssml, options = {})
           if [RubySpeech::SSML::Speak, Nokogiri::XML::Document].include? ssml.class
-            output ssml.to_s, options
+            output ssml, options
           end
         end
 
+        #
         # @private
+        # @yields The output component before executing it
+        # @raises [PlaybackError] if (one of) the given argument(s) could not be played
+        #
         def output(content, options = {})
-          options.merge! :ssml => content
-          controller.execute_component_and_await_completion ::Punchblock::Component::Output.new(options)
-        end
-
-        #
-        # Same as interruptible_play, but throws an error if unable to play the output
-        # @see interruptible_play
-        #
-        # @private
-        #
-        def interruptible_play!(*outputs)
-          result = nil
-          outputs.each do |output|
-            result = stream_file output
-            break unless result.nil?
-          end
-          result
+          options.merge! :ssml => content.to_s
+          component = Punchblock::Component::Output.new options
+          yield component if block_given?
+          controller.execute_component_and_await_completion component
+        rescue Adhearsion::Error, Punchblock::ProtocolError => e
+          raise PlaybackError, "Output failed due to #{e.inspect}"
         end
 
         # @private
