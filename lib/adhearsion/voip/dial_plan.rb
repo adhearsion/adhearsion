@@ -203,11 +203,11 @@ module Adhearsion
       end
 
       def load(dialplan_file)
-          dialplan_code = dialplan_file.read
-          @context_collector.instance_eval(dialplan_code, dialplan_file.path)
-        ensure
-          dialplan_file.close
-          nil
+        dialplan_code = dialplan_file.read
+        @context_collector.instance_eval(dialplan_code, dialplan_file.path)
+      ensure
+        dialplan_file.close
+        nil
       end
 
       class ContextNameCollector# < ::BlankSlate
