@@ -321,7 +321,7 @@ module Adhearsion
             expect_component_execution output_component
             subject.stream_file(prompt, allowed_digits).should be == '5'
           end
-        end # describe #stream_file
+        end
 
         describe "#interruptible_play" do
           let(:output1)       { "one two" }
@@ -342,7 +342,7 @@ module Adhearsion
             subject.should_receive(:stream_file).once.and_raise Output::PlaybackError, "Output failed"
             expect { subject.interruptible_play non_existing }.to raise_error(Output::PlaybackError)
           end
-        end # describe interruptible_play
+        end
 
         describe "#output" do
           let(:content) { RubySpeech::SSML.draw { string "BOO" } }
