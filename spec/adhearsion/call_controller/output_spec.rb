@@ -11,6 +11,10 @@ module Adhearsion
         expect_component_execution Punchblock::Component::Output.new(:ssml => ssml)
       end
 
+      def expect_async_ssml_output(ssml)
+        expect_message_waiting_for_response Punchblock::Component::Output.new(:ssml => ssml)
+      end
+
       describe "#player" do
         it "should return a Player component targetted at the current controller" do
           player = controller.player
@@ -20,6 +24,18 @@ module Adhearsion
 
         it "should return the same player every time" do
           controller.player.should be controller.player
+        end
+      end
+
+      describe "#async_player" do
+        it "should return an AsyncPlayer component targetted at the current controller" do
+          player = controller.async_player
+          player.should be_a Output::AsyncPlayer
+          player.controller.should be controller
+        end
+
+        it "should return the same player every time" do
+          controller.async_player.should be controller.async_player
         end
       end
 
@@ -50,6 +66,37 @@ module Adhearsion
           it 'places the fallback in the SSML doc' do
             expect_ssml_output ssml
             subject.play_audio(audio_file, :fallback => fallback).should be true
+          end
+        end
+      end
+
+      describe "#play_audio_async" do
+        let(:audio_file) { "/sounds/boo.wav" }
+
+        let :ssml do
+          file = audio_file
+          RubySpeech::SSML.draw { audio :src => file }
+        end
+
+        it 'plays the correct ssml' do
+          expect_async_ssml_output ssml
+          subject.play_audio_async(audio_file).should be_a Punchblock::Component::Output
+        end
+
+        context "with a fallback" do
+          let(:fallback) { "text for tts" }
+
+          let :ssml do
+            file = audio_file
+            fallback_text = fallback
+            RubySpeech::SSML.draw do
+              audio(:src => file) { fallback_text }
+            end
+          end
+
+          it 'places the fallback in the SSML doc' do
+            expect_async_ssml_output ssml
+            subject.play_audio_async(audio_file, :fallback => fallback).should be_a Punchblock::Component::Output
           end
         end
       end

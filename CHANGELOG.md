@@ -6,6 +6,7 @@
   * Feature: Permit asynchronous output using bang version of methods (eg `CallController#play!`)
   * Feature: Added `CallController#safely` which will catch and log `StandardError` in a call controller, but will not allow it to crash the controller
   * Bugfix: All output methods will now raise `Adhearsion::CallController::Output::PlaybackError` when output fails, instead of failing silently
+  * Feature: Added `CallController#play_audio_async` which will begin audio playback and return an output component, which can be stopped.
 
 # [2.0.0](https://github.com/adhearsion/adhearsion/compare/v1.2.1...v2.0.0) - [2012-04-11](https://rubygems.org/gems/adhearsion/versions/2.0.0)
 

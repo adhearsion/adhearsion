@@ -3,13 +3,7 @@
 module Adhearsion
   class CallController
     module Output
-      class Player
-
-        attr_accessor :controller
-
-        def initialize(controller)
-          @controller = controller
-        end
+      class Player < AbstractPlayer
 
         #
         # Plays a single output, not only files, accepting interruption by one of the digits specified
@@ -41,12 +35,6 @@ module Adhearsion
           result
         end
 
-        def play_ssml(ssml, options = {})
-          if [RubySpeech::SSML::Speak, Nokogiri::XML::Document].include? ssml.class
-            output ssml, options
-          end
-        end
-
         #
         # @yields The output component before executing it
         # @raises [PlaybackError] if (one of) the given argument(s) could not be played
@@ -58,23 +46,6 @@ module Adhearsion
           controller.execute_component_and_await_completion component
         rescue Adhearsion::Error, Punchblock::ProtocolError => e
           raise PlaybackError, "Output failed due to #{e.inspect}"
-        end
-
-        #
-        # @yields The output component before executing it
-        # @raises [PlaybackError] if (one of) the given argument(s) could not be played
-        #
-        def output_async(content, options = {})
-          options.merge! :ssml => content.to_s
-          component = Punchblock::Component::Output.new options
-          controller.write_and_await_response component
-          component
-        rescue Punchblock::ProtocolError => e
-          raise PlaybackError, "Async output failed due to #{e.inspect}"
-        end
-
-        def play_ssml_for(*args)
-          play_ssml Formatter.ssml_for(args)
         end
       end
     end

@@ -5,6 +5,8 @@ module Adhearsion
     module Output
       extend ActiveSupport::Autoload
 
+      autoload :AbstractPlayer
+      autoload :AsyncPlayer
       autoload :Formatter
       autoload :Player
 
@@ -80,6 +82,22 @@ module Adhearsion
       end
 
       #
+      # Plays the given audio file and returns as soon as it begins.
+      # SSML supports http:// paths and full disk paths.
+      # The Punchblock backend will have to handle cases like Asterisk where there is a fixed sounds directory.
+      #
+      # @param [String] file http:// URL or full disk path to the sound file
+      # @param [Hash] options Additional options to specify how exactly to say time specified.
+      # @option options [String] :fallback The text to play if the file is not available
+      #
+      # @raises [PlaybackError] if (one of) the given argument(s) could not be played
+      # @returns [Punchblock::Component::Output]
+      #
+      def play_audio_async(file, options = nil)
+        async_player.play_ssml Formatter.ssml_for_audio(file, options)
+      end
+
+      #
       # Plays the given Date, Time, or Integer (seconds since epoch)
       # using the given timezone and format.
       #
@@ -143,6 +161,11 @@ module Adhearsion
       # @private
       def player
         @player ||= Player.new(self)
+      end
+
+      # @private
+      def async_player
+        @async_player ||= AsyncPlayer.new(self)
       end
     end # Output
   end # CallController
