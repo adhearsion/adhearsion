@@ -7,7 +7,15 @@ module Adhearsion
 
     LOG_LEVELS = %w(TRACE DEBUG INFO WARN ERROR FATAL)
 
-    METHOD = :logger
+    module HasLogger
+      def logger
+        ::Logging.logger[logger_id]
+      end
+
+      def logger_id
+        self
+      end
+    end
 
     class << self
 
