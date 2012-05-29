@@ -117,6 +117,33 @@ module Adhearsion
           end
         end
 
+        describe "#output_async" do
+          let(:content) { RubySpeech::SSML.draw { string "BOO" } }
+
+          it "should execute an output component with the provided SSML content" do
+            component = Punchblock::Component::Output.new :ssml => content
+            expect_message_waiting_for_response component
+            comp = subject.output_async content
+          end
+
+          it "should allow extra options to be passed to the output component" do
+            component = Punchblock::Component::Output.new :ssml => content, :start_paused => true
+            expect_message_waiting_for_response component
+            subject.output_async content, :start_paused => true
+          end
+
+          it "returns the component" do
+            component = Punchblock::Component::Output.new :ssml => content
+            expect_message_waiting_for_response component
+            subject.output_async(content).should be_a Punchblock::Component::Output
+          end
+
+          it "raises a PlaybackError if the component fails to start" do
+            expect_message_waiting_for_response Punchblock::Component::Output.new(:ssml => content), Punchblock::ProtocolError
+            lambda { subject.output_async content }.should raise_error(PlaybackError)
+          end
+        end
+
         describe "#play_ssml" do
           let(:ssml) { RubySpeech::SSML.draw { string "BOO" } }
 

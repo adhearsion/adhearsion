@@ -28,14 +28,17 @@ module CallControllerTestHelpers
     end.new call, :doo => :dah, &block
   end
 
-  def expect_message_waiting_for_response(message)
-    controller.should_receive(:write_and_await_response).once.with(message).and_return message
-    message.request!
+  def expect_message_waiting_for_response(message, fail = false)
+    expectation = controller.should_receive(:write_and_await_response).once.with message
+    if fail
+      expectation.and_raise fail
+    else
+      expectation.and_return message
+    end
   end
 
   def expect_message_of_type_waiting_for_response(message)
     controller.should_receive(:write_and_await_response).once.with(message.class).and_return message
-    message.request!
   end
 
   def expect_component_execution(component, fail = false)
