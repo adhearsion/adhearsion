@@ -37,6 +37,19 @@ module Adhearsion
             expect_message_waiting_for_response Punchblock::Component::Output.new(:ssml => content), Punchblock::ProtocolError
             lambda { subject.output content }.should raise_error(PlaybackError)
           end
+
+          it "logs the complete event if it is an error" do
+            response = Punchblock::Event::Complete.new
+            response.reason = Punchblock::Event::Complete::Error.new
+            component = Punchblock::Component::Output.new(:ssml => content)
+            flexmock subject, :new_output => component
+            expect_message_waiting_for_response component
+            flexmock(controller.logger).should_receive(:error).once
+            subject.output content
+            component.request!
+            component.execute!
+            component.trigger_event_handler response
+          end
         end
 
         describe "#play_ssml" do

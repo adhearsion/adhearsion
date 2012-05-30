@@ -41,7 +41,7 @@ module Adhearsion
         #
         def output(content, options = {})
           options.merge! :ssml => content.to_s
-          component = Punchblock::Component::Output.new options
+          component = new_output options
           yield component if block_given?
           controller.execute_component_and_await_completion component
         rescue Adhearsion::Error, Punchblock::ProtocolError => e

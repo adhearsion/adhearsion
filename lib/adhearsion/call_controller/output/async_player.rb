@@ -11,7 +11,10 @@ module Adhearsion
         #
         def output(content, options = {})
           options.merge! :ssml => content.to_s
-          component = Punchblock::Component::Output.new options
+          component = new_output options
+          component.register_event_handler Punchblock::Event::Complete do |event|
+            controller.logger.error event if event.reason.is_a?(Punchblock::Event::Complete::Error)
+          end
           controller.write_and_await_response component
           component
         rescue Punchblock::ProtocolError => e

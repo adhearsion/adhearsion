@@ -20,6 +20,10 @@ module Adhearsion
         def play_ssml_for(*args)
           play_ssml Formatter.ssml_for(args)
         end
+
+        def new_output(options)
+          Punchblock::Component::Output.new options
+        end
       end
     end
   end
