@@ -24,6 +24,7 @@ module Adhearsion
             expect_message_waiting_for_response component
             @rec = Queue.new
             subject.record(options.merge(async: true)) { |rec| @rec.push rec }
+            component.request!
             component.execute!
           end
 
