@@ -49,16 +49,4 @@ module CallControllerTestHelpers
       expectation.and_return component
     end
   end
-
-  def mock_with_potential_matches(potential_matches)
-    Adhearsion::Punchblock::MenuDSL::CalculatedMatch.new :potential_matches => potential_matches
-  end
-
-  def mock_with_exact_matches(exact_matches)
-    Adhearsion::Punchblock::MenuDSL::CalculatedMatch.new :exact_matches => exact_matches
-  end
-
-  def mock_with_potential_and_exact_matches(potential_matches, exact_matches)
-    Adhearsion::Punchblock::MenuDSL::CalculatedMatch.new :potential_matches => potential_matches, :exact_matches => exact_matches
-  end
 end
