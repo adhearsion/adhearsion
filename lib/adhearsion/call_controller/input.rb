@@ -194,7 +194,7 @@ module Adhearsion
       def wait_for_digit(timeout = 1)
         timeout = nil if timeout == -1
         timeout *= 1_000 if timeout
-        input_component = execute_component_and_await_completion ::Punchblock::Component::Input.new :mode => :dtmf,
+        input_component = execute_component_and_await_completion Punchblock::Component::Input.new :mode => :dtmf,
           :initial_timeout => timeout,
           :inter_digit_timeout => timeout,
             :grammar => {
