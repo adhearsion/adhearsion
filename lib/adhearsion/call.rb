@@ -261,11 +261,11 @@ module Adhearsion
     end
 
     def mute
-      write_and_await_response ::Punchblock::Command::Mute.new
+      write_and_await_response Punchblock::Command::Mute.new
     end
 
     def unmute
-      write_and_await_response ::Punchblock::Command::Unmute.new
+      write_and_await_response Punchblock::Command::Unmute.new
     end
 
     # @private

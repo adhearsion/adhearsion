@@ -52,7 +52,7 @@ module Adhearsion
       end
 
       let(:call_id)   { rand }
-      let(:offer)     { ::Punchblock::Event::Offer.new.tap { |o| o.target_call_id = call_id } }
+      let(:offer)     { Punchblock::Event::Offer.new.tap { |o| o.target_call_id = call_id } }
       let(:mock_call) { flexmock('Call', :id => call_id).tap { |call| call.should_ignore_missing } }
 
       describe "starts the client with the default values" do
@@ -102,7 +102,7 @@ module Adhearsion
       it "starts the client with the correct resource" do
         username = "usera@127.0.0.1/hostname-1234"
 
-        flexmock(::Punchblock::Connection::XMPP).should_receive(:new).once.with(FlexMock.hsh :username => username).and_return do
+        flexmock(Punchblock::Connection::XMPP).should_receive(:new).once.with(FlexMock.hsh :username => username).and_return do
           flexmock 'Client', :event_handler= => true
         end
         initialize_punchblock
@@ -111,7 +111,7 @@ module Adhearsion
       it "starts the client with any overridden settings" do
         overrides = {:username => 'userb@127.0.0.1/foo', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift}
 
-        flexmock(::Punchblock::Connection::XMPP).should_receive(:new).once.with(overrides).and_return do
+        flexmock(Punchblock::Connection::XMPP).should_receive(:new).once.with(overrides).and_return do
           flexmock 'Client', :event_handler= => true
         end
         initialize_punchblock overrides
@@ -122,12 +122,12 @@ module Adhearsion
           reset_default_config
           mock_connection = flexmock :mock_connection
           mock_connection.should_receive(:register_event_handler).once
-          flexmock(::Punchblock::Client).should_receive(:new).once.and_return mock_connection
+          flexmock(Punchblock::Client).should_receive(:new).once.and_return mock_connection
           flexmock(mock_connection).should_receive(:run).once
           t = Thread.new { Initializer.init; Initializer.run }
           t.join 5
           t.status.should be == "sleep"
-          Events.trigger_immediately :punchblock, ::Punchblock::Connection::Connected.new
+          Events.trigger_immediately :punchblock, Punchblock::Connection::Connected.new
           t.join
         end
       end
@@ -150,28 +150,28 @@ module Adhearsion
         it 'should reset the Adhearsion process state to "booting"' do
           Adhearsion::Process.booted
           Adhearsion::Process.state_name.should be == :running
-          mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
+          mock_client.should_receive(:run).and_raise Punchblock::DisconnectedError
           flexmock(Adhearsion::Process).should_receive(:reset).at_least.once
           Initializer.connect_to_server
         end
 
         it 'should retry the connection the specified number of times' do
           Initializer.config.reconnect_attempts = 3
-          mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
+          mock_client.should_receive(:run).and_raise Punchblock::DisconnectedError
           Initializer.connect_to_server
           Initializer.attempts.should be == 3
         end
 
         it 'should preserve a Punchblock::ProtocolError exception and give up' do
-          mock_client.should_receive(:run).and_raise ::Punchblock::ProtocolError
-          expect { Initializer.connect_to_server }.should raise_error ::Punchblock::ProtocolError
+          mock_client.should_receive(:run).and_raise Punchblock::ProtocolError
+          expect { Initializer.connect_to_server }.should raise_error Punchblock::ProtocolError
         end
 
         it 'should not attempt to reconnect if Adhearsion is shutting down' do
           Adhearsion::Process.booted
           Adhearsion::Process.shutdown
-          mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
-          Initializer.should_not raise_error ::Punchblock::DisconnectedError
+          mock_client.should_receive(:run).and_raise Punchblock::DisconnectedError
+          Initializer.should_not raise_error Punchblock::DisconnectedError
         end
       end
 
@@ -179,7 +179,7 @@ module Adhearsion
         let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift} }
 
         it 'should start an Asterisk PB connection' do
-          flexmock(::Punchblock::Connection::Asterisk).should_receive(:new).once.with(overrides).and_return do
+          flexmock(Punchblock::Connection::Asterisk).should_receive(:new).once.with(overrides).and_return do
             flexmock 'Client', :event_handler= => true
           end
           initialize_punchblock overrides.merge(:platform => :asterisk)

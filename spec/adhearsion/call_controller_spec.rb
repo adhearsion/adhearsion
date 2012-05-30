@@ -318,6 +318,7 @@ module Adhearsion
 
       before do
         expect_message_of_type_waiting_for_response component
+        component.request!
         component.execute!
         component.complete_event = response
       end
