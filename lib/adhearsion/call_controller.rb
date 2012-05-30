@@ -221,6 +221,8 @@ module Adhearsion
       end
     end
 
+    alias :safely :catching_standard_errors
+
     # @private
     def block_until_resumed
       instance_variable_defined?(:@pause_latch) && @pause_latch.wait

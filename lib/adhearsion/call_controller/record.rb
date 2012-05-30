@@ -36,17 +36,17 @@ module Adhearsion
         interrupt_key = '0123456789#*'
         stopper_component = nil
 
-        component = ::Punchblock::Component::Record.new options
-        component.register_event_handler ::Punchblock::Event::Complete do |event|
+        component = Punchblock::Component::Record.new options
+        component.register_event_handler Punchblock::Event::Complete do |event|
           catching_standard_errors { yield event if block_given? }
         end
 
         if interruptible
-          stopper_component = ::Punchblock::Component::Input.new :mode => :dtmf,
+          stopper_component = Punchblock::Component::Input.new :mode => :dtmf,
             :grammar => {
               :value => grammar_accept(interrupt_key)
             }
-          stopper_component.register_event_handler ::Punchblock::Event::Complete do |event|
+          stopper_component.register_event_handler Punchblock::Event::Complete do |event|
             component.stop! unless component.complete?
           end
           write_and_await_response stopper_component
