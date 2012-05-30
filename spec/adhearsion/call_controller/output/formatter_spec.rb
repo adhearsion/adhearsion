@@ -5,7 +5,7 @@ require 'spec_helper'
 module Adhearsion
   class CallController
     module Output
-      describe Formatter, :focus do
+      describe Formatter do
         subject { Formatter }
 
         describe ".ssml_for" do
