@@ -733,7 +733,7 @@ module Adhearsion
         end
       end
 
-      describe "#execute_controller", :focus do
+      describe "#execute_controller" do
         let(:latch)           { CountDownLatch.new 1 }
         let(:mock_controller) { flexmock 'CallController' }
 
