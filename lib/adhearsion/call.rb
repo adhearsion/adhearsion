@@ -320,8 +320,10 @@ module Adhearsion
       "#<#{self.class}:#{id} #{attrs.join ', '}>"
     end
 
-    def execute_controller(controller, completion_callback = nil)
+    def execute_controller(controller = nil, completion_callback = nil, &block)
+      raise ArgumentError if controller && block_given?
       call = current_actor
+      controller ||= CallController.new call, &block
       Thread.new do
         catching_standard_errors do
           begin
