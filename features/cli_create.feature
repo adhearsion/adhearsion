@@ -19,6 +19,6 @@ Feature: Adhearsion Ahn CLI (Create)
     When I run `ahn create`
     Then the output should contain:
     """
-    "create" was called incorrectly. Call as "ahn create /path/to/directory".
+    ahn create requires at least 1 argument: "ahn create /path/to/directory".
     """
     And the exit status should be 1
