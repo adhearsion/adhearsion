@@ -1,7 +1,8 @@
 # encoding: utf-8
 
 require 'tempfile'
-stderr_file = Tempfile.new "ahn.stderr"
+stderr_file = Tempfile.new "ahn#{rand}.stderr"
+warnings_filename = "tmp/ahnwarnings#{rand}.txt"
 $stderr.reopen stderr_file.path
 current_dir = Dir.pwd
 
@@ -23,9 +24,9 @@ at_exit do
   end
 
   if other_warnings.any?
-    File.open('tmp/warnings.txt', 'w') { |f| f.write other_warnings.join("\n") }
+    File.open(warnings_filename, 'w') { |f| f.write other_warnings.join("\n") }
     puts
-    puts "Non-AHN warnings written to tmp/warnings.txt"
+    puts "Non-AHN warnings written to #{warnings_filename}"
     puts
   end
 
