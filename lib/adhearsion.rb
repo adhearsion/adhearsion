@@ -48,7 +48,7 @@ module Adhearsion
     #
     # Returns the current application path
     # @return [Pathname] The application path
-    # 
+    #
     def root
       Adhearsion.config[:platform].root
     end

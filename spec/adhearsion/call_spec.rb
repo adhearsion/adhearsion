@@ -747,6 +747,18 @@ module Adhearsion
           latch.wait(3).should be_true
         end
 
+        it "should use the passed block as a controller if none is specified" do
+          flexmock(CallController).should_receive(:exec).once.with CallController
+          subject.execute_controller nil, lambda { |call| latch.countdown! } do
+            foo
+          end
+          latch.wait(3).should be_true
+        end
+
+        it "should raise ArgumentError if both a controller and a block are passed" do
+          lambda { subject.execute_controller(mock_controller) { foo } }.should raise_error(ArgumentError)
+        end
+
         it "should add the controller thread to the important threads" do
           flexmock(CallController).should_receive(:exec)
           controller_thread = subject.execute_controller mock_controller, lambda { |call| latch.countdown! }
