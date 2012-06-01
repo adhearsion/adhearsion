@@ -6,6 +6,6 @@ rvm:
   - jruby-19mode # JRuby in 1.9 mode
   - rbx-19mode # currently in active development, may or may not work for your project
   - ruby-head
-env: ARUBA_TIMEOUT=120 RAILS_ENV=development AHN_ENV=development SKIP_RCOV=true
+env: ARUBA_TIMEOUT=120 RAILS_ENV=development AHN_ENV=development
 notifications:
   irc: "irc.freenode.org#adhearsion"
