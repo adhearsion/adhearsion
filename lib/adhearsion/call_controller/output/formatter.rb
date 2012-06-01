@@ -7,7 +7,7 @@ module Adhearsion
 
         class << self
           def ssml_for_collection(collection)
-            doc = collection.inject RubySpeech::SSML::Speak.new do |doc, argument|
+            collection.inject RubySpeech::SSML::Speak.new do |doc, argument|
               doc + case argument
               when Hash
                 Formatter.ssml_for argument.delete(:value), argument
