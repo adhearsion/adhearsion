@@ -224,18 +224,20 @@ module Adhearsion
         end
 
         describe "with multiple arguments" do
-          let(:args) { ["/foo/bar.wav", "/foo/bar2.wav", "/foo/bar3.wav"] }
+          let(:args) { ["/foo/bar.wav", 1, Time.now] }
           let :ssml do
-            file = audio_file
-            RubySpeech::SSML.draw { audio :src => file }
+            file = args[0]
+            n = args[1].to_s
+            t = args[2].to_s
+            RubySpeech::SSML.draw do
+              audio :src => file
+              say_as(:interpret_as => 'cardinal') { n }
+              say_as(:interpret_as => 'time') { t }
+            end
           end
 
-          it 'plays multiple files' do
-            args.each do |file|
-              ssml = RubySpeech::SSML.draw { audio :src => file }
-              expect_ssml_output ssml
-            end
-
+          it 'plays all arguments in one document' do
+            expect_ssml_output ssml
             subject.play(*args).should be true
           end
         end

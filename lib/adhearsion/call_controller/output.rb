@@ -52,16 +52,7 @@ module Adhearsion
       # @see play_audio
       #
       def play(*arguments)
-        arguments.each do |argument|
-          case argument
-          when Hash
-            player.play_ssml_for argument.delete(:value), argument
-          when RubySpeech::SSML::Speak
-            player.play_ssml argument
-          else
-            player.play_ssml_for argument
-          end
-        end
+        player.play_ssml Formatter.ssml_for_collection(arguments)
         true
       end
 
