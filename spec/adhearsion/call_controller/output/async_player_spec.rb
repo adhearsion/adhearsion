@@ -18,7 +18,7 @@ module Adhearsion
           it "should execute an output component with the provided SSML content" do
             component = Punchblock::Component::Output.new :ssml => content
             expect_message_waiting_for_response component
-            comp = subject.output content
+            subject.output content
           end
 
           it "should allow extra options to be passed to the output component" do

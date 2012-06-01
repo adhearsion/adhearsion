@@ -115,7 +115,7 @@ module Adhearsion
             component
             flexmock(Punchblock::Component::Record).should_receive(:new).once.with(options).and_return component
             expect_component_execution component
-            subject.record(options.merge(:async => false)).should == component
+            subject.record(options.merge(:async => false)).should be == component
             component.request!
             component.execute!
           end
