@@ -275,11 +275,6 @@ module Adhearsion
     end
 
     # @private
-    def logger
-      super
-    end
-
-    # @private
     def to_ary
       [current_actor]
     end

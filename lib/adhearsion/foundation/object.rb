@@ -10,3 +10,11 @@ class Object
     logger
   end
 end
+
+module Celluloid
+  class ActorProxy
+    def logger
+      Actor.call @mailbox, :logger
+    end
+  end
+end
