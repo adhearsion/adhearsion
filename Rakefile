@@ -9,7 +9,7 @@ task :gem => :build
 
 require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new(:spec) do |t|
-  # t.ruby_opts = "-w -r./spec/capture_warnings"
+  t.ruby_opts = "-w -r./spec/capture_warnings"
 end
 
 require 'ci/reporter/rake/rspec'
