@@ -149,6 +149,36 @@ module Adhearsion
         result
       end
 
+      #
+      # Plays a single output, not only files, accepting interruption by one of the digits specified
+      # Currently still stops execution, will be fixed soon in Punchblock
+      #
+      # @param [Object] String or Hash specifying output and options
+      # @param [String] String with the digits that are allowed to interrupt output
+      #
+      # @return [String, nil] The pressed digit, or nil if nothing was pressed
+      #
+      def stream_file(argument, digits = '0123456789#*')
+        result = nil
+        stopper = Punchblock::Component::Input.new :mode => :dtmf,
+          :grammar => {
+            :value => grammar_accept(digits)
+          }
+
+        player.output Formatter.ssml_for(argument) do |output_component|
+          stopper.register_event_handler Punchblock::Event::Complete do |event|
+            output_component.stop! unless output_component.complete?
+          end
+          write_and_await_response stopper
+        end
+
+        stopper.stop! if stopper.executing?
+        reason = stopper.complete_event.reason
+        result = reason.interpretation if reason.respond_to? :interpretation
+        return parse_single_dtmf result unless result.nil?
+        result
+      end
+
       # @private
       def player
         @player ||= Player.new(self)
