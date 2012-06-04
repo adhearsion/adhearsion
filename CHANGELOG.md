@@ -1,5 +1,14 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
+# [2.0.1](https://github.com/adhearsion/adhearsion/compare/v2.0.0...v2.0.1) - [2012-06-04](https://rubygems.org/gems/adhearsion/versions/2.0.1)
+  * Bugfix: Avoid infinitely recursive exception handlers
+  * Bugfix: Don't require rubygems where we don't need it
+  * Bugfix: Patch method name conflict with new Celluloid release
+  * Bugfix: Generated applications are now locked to Adhearsion major version
+  * Bugfix: Ensure the `#logger` method is defined more robustly on all objects
+  * Bugfix: Ensure actor (call) loggers are accessible outside the object
+  * Cleanup: Remove old invalid rake tasks, improve some documentation
+
 # [2.0.0](https://github.com/adhearsion/adhearsion/compare/v1.2.1...v2.0.0) - [2012-04-11](https://rubygems.org/gems/adhearsion/versions/2.0.0)
 
 ## Major architectural changes

@@ -11,7 +11,9 @@ Edit `extensions.conf` to include the following:
 exten => _.,1,AGI(agi:async)
 ```
 
-and setup a user in `manager.conf` with read/write access to `all`, `dialplan` and `agi`.
+and setup a user in `manager.conf` with read/write access to `all`.
+
+If you are using Asterisk 1.8, you will need to add an additional context with the name `adhearsion-redirect`. On Asterisk 10 and above this is auto-provisioned.
 
 ## Voxeo PRISM
 
