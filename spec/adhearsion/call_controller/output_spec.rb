@@ -340,19 +340,16 @@ module Adhearsion
         let(:non_existing)  { "http://adhearsion.com/nonexistingfile.mp3" }
 
         it "plays two outputs in succession" do
-          pending
           subject.should_receive(:stream_file).twice
           subject.interruptible_play output1, output2
         end
 
         it "stops at the first play when input is received" do
-          pending
           subject.should_receive(:stream_file).once.and_return(2)
           subject.interruptible_play output1, output2
         end
 
         it 'raises an exception when output is unsuccessful' do
-          pending
           subject.should_receive(:stream_file).once.and_raise Output::PlaybackError, "Output failed"
           expect { subject.interruptible_play non_existing }.to raise_error(Output::PlaybackError)
         end

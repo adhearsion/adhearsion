@@ -144,7 +144,7 @@ module Adhearsion
       def interruptible_play(*outputs)
         result = nil
         outputs.each do |output|
-          player.stream_file(output) && break
+          stream_file(output) && break
         end
         result
       end
