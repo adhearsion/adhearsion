@@ -20,7 +20,25 @@ module Adhearsion
           end
 
           it 'returns the same SSML passed in if it is SSML' do
-            subject.ssml_for(ssml) == ssml
+            subject.ssml_for(ssml).should be == ssml
+          end
+        end
+
+        describe ".ssml_for_collection" do
+          let(:collection) { ["/foo/bar.wav", 1, Time.now] }
+          let :ssml do
+            file = collection[0]
+            n = collection[1].to_s
+            t = collection[2].to_s
+            RubySpeech::SSML.draw do
+              audio :src => file
+              say_as(:interpret_as => 'cardinal') { n }
+              say_as(:interpret_as => 'time') { t }
+            end
+          end
+
+          it "should create a composite SSML document" do
+            subject.ssml_for_collection(collection).should be == ssml
           end
         end
 
