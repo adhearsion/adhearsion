@@ -70,7 +70,7 @@ module Adhearsion
         end
       end
 
-      describe "#play_audio_async" do
+      describe "#play_audio!" do
         let(:audio_file) { "/sounds/boo.wav" }
 
         let :ssml do
@@ -80,7 +80,7 @@ module Adhearsion
 
         it 'plays the correct ssml' do
           expect_async_ssml_output ssml
-          subject.play_audio_async(audio_file).should be_a Punchblock::Component::Output
+          subject.play_audio!(audio_file).should be_a Punchblock::Component::Output
         end
 
         context "with a fallback" do
@@ -96,7 +96,7 @@ module Adhearsion
 
           it 'places the fallback in the SSML doc' do
             expect_async_ssml_output ssml
-            subject.play_audio_async(audio_file, :fallback => fallback).should be_a Punchblock::Component::Output
+            subject.play_audio!(audio_file, :fallback => fallback).should be_a Punchblock::Component::Output
           end
         end
       end
@@ -131,6 +131,40 @@ module Adhearsion
 
           it 'raises ArgumentError' do
             lambda { subject.play_numeric input }.should raise_error(ArgumentError)
+          end
+        end
+      end
+
+      describe "#play_numeric!" do
+        let :ssml do
+          RubySpeech::SSML.draw do
+            say_as(:interpret_as => 'cardinal') { "123" }
+          end
+        end
+
+        describe "with a number" do
+          let(:input) { 123 }
+
+          it 'plays the correct ssml' do
+            expect_async_ssml_output ssml
+            subject.play_numeric!(input).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with a string representation of a number" do
+          let(:input) { "123" }
+
+          it 'plays the correct ssml' do
+            expect_async_ssml_output ssml
+            subject.play_numeric!(input).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with something that's not a number" do
+          let(:input) { 'foo' }
+
+          it 'raises ArgumentError' do
+            lambda { subject.play_numeric! input }.should raise_error(ArgumentError)
           end
         end
       end
@@ -205,6 +239,80 @@ module Adhearsion
 
           it 'raises ArgumentError' do
             lambda { subject.play_time input }.should raise_error(ArgumentError)
+          end
+        end
+      end
+
+      describe "#play_time!" do
+        let :ssml do
+          content = input.to_s
+          opts    = expected_say_as_options
+          RubySpeech::SSML.draw do
+            say_as(opts) { content }
+          end
+        end
+
+        describe "with a time" do
+          let(:input) { Time.parse("12/5/2000") }
+          let(:expected_say_as_options) { {:interpret_as => 'time'} }
+
+          it 'plays the correct SSML' do
+            expect_async_ssml_output ssml
+            subject.play_time!(input).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with a date" do
+          let(:input) { Date.parse('2011-01-23') }
+          let(:expected_say_as_options) { {:interpret_as => 'date'} }
+
+          it 'plays the correct SSML' do
+            expect_async_ssml_output ssml
+            subject.play_time!(input).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with a date and a say_as format" do
+          let(:input)   { Date.parse('2011-01-23') }
+          let(:format)  { "d-m-y" }
+          let(:expected_say_as_options) { {:interpret_as => 'date', :format => format} }
+
+          it 'plays the correct SSML' do
+            expect_async_ssml_output ssml
+            subject.play_time!(input, :format => format).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with a date and a strftime option" do
+          let(:strftime)    { "%d-%m-%Y" }
+          let(:base_input)  { Date.parse('2011-01-23') }
+          let(:input)       { base_input.strftime(strftime) }
+          let(:expected_say_as_options) { {:interpret_as => 'date'} }
+
+          it 'plays the correct SSML' do
+            expect_async_ssml_output ssml
+            subject.play_time!(base_input, :strftime => strftime).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with a date, a format option and a strftime option" do
+          let(:strftime)    { "%d-%m-%Y" }
+          let(:format)      { "d-m-y" }
+          let(:base_input)  { Date.parse('2011-01-23') }
+          let(:input)       { base_input.strftime(strftime) }
+          let(:expected_say_as_options) { {:interpret_as => 'date', :format => format} }
+
+          it 'plays the correct SSML' do
+            expect_async_ssml_output ssml
+            subject.play_time!(base_input, :format => format, :strftime => strftime).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with an object other than Time, DateTime, or Date" do
+          let(:input) { "foo" }
+
+          it 'raises ArgumentError' do
+            lambda { subject.play_time! input }.should raise_error(ArgumentError)
           end
         end
       end
@@ -334,6 +442,131 @@ module Adhearsion
         end
       end
 
+      describe '#play!' do
+        describe "with a single string" do
+          let(:audio_file) { "/foo/bar.wav" }
+          let :ssml do
+            file = audio_file
+            RubySpeech::SSML.draw { audio :src => file }
+          end
+
+          it 'plays the audio file' do
+            expect_async_ssml_output ssml
+            subject.play!(audio_file).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with multiple arguments" do
+          let(:args) { ["/foo/bar.wav", 1, Time.now] }
+          let :ssml do
+            file = args[0]
+            n = args[1].to_s
+            t = args[2].to_s
+            RubySpeech::SSML.draw do
+              audio :src => file
+              say_as(:interpret_as => 'cardinal') { n }
+              say_as(:interpret_as => 'time') { t }
+            end
+          end
+
+          it 'plays all arguments in one document' do
+            expect_async_ssml_output ssml
+            subject.play!(*args).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with a number" do
+          let(:argument) { 123 }
+
+          let(:ssml) do
+            number = argument.to_s
+            RubySpeech::SSML.draw do
+              say_as(:interpret_as => 'cardinal') { number }
+            end
+          end
+
+          it 'plays the number' do
+            expect_async_ssml_output ssml
+            subject.play!(argument).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with a string representation of a number" do
+          let(:argument) { '123' }
+
+          let(:ssml) do
+            number = argument
+            RubySpeech::SSML.draw do
+              say_as(:interpret_as => 'cardinal') { number }
+            end
+          end
+
+          it 'plays the number' do
+            expect_async_ssml_output ssml
+            subject.play!(argument).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with a time" do
+          let(:time) { Time.parse "12/5/2000" }
+
+          let(:ssml) do
+            t = time.to_s
+            RubySpeech::SSML.draw do
+              say_as(:interpret_as => 'time') { t }
+            end
+          end
+
+          it 'plays the time' do
+            expect_async_ssml_output ssml
+            subject.play!(time).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with a date" do
+          let(:date) { Date.parse '2011-01-23' }
+          let(:ssml) do
+            d = date.to_s
+            RubySpeech::SSML.draw do
+              say_as(:interpret_as => 'date') { d }
+            end
+          end
+
+          it 'plays the time' do
+            expect_async_ssml_output ssml
+            subject.play!(date).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with an array containing a Date/DateTime/Time object and a hash" do
+          let(:date)      { Date.parse '2011-01-23' }
+          let(:format)    { "d-m-y" }
+          let(:strftime)  { "%d-%m%Y" }
+
+          let :ssml do
+            d = date.strftime strftime
+            f = format
+            RubySpeech::SSML.draw do
+              say_as(:interpret_as => 'date', :format => f) { d }
+            end
+          end
+
+          it 'plays the time with the specified format and strftime' do
+            expect_async_ssml_output ssml
+            subject.play!(:value => date, :format => format, :strftime => strftime).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with an SSML document" do
+          let(:ssml) { RubySpeech::SSML.draw { string "Hello world" } }
+
+          it "plays the SSML without generating" do
+            expect_async_ssml_output ssml
+            subject.play!(ssml).should be_a Punchblock::Component::Output
+          end
+        end
+      end
+
       describe "#interruptible_play" do
         let(:output1)       { "one two" }
         let(:output2)       { "three four" }
@@ -458,6 +691,40 @@ module Adhearsion
       describe "#speak" do
         it "should be an alias for #say" do
           subject.method(:speak).should be == subject.method(:say)
+        end
+      end
+
+      describe "#say!" do
+        describe "with a RubySpeech document" do
+          it 'plays the correct SSML' do
+            ssml = RubySpeech::SSML.draw { string "Hello world" }
+            expect_async_ssml_output ssml
+            subject.say!(ssml).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with a string" do
+          it 'outputs the correct text' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_async_ssml_output ssml
+            subject.say!(str).should be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "converts the argument to a string" do
+          it 'calls output with a string' do
+            argument = 123
+            ssml = RubySpeech::SSML.draw { string '123' }
+            expect_async_ssml_output ssml
+            subject.say!(argument).should be_a Punchblock::Component::Output
+          end
+        end
+      end
+
+      describe "#speak!" do
+        it "should be an alias for #say!" do
+          subject.method(:speak!).should be == subject.method(:say!)
         end
       end
     end
