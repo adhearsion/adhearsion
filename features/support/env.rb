@@ -1,18 +1,5 @@
 # encoding: utf-8
 
-require 'simplecov'
-require 'simplecov-rcov'
-class SimpleCov::Formatter::MergedFormatter
-  def format(result)
-     SimpleCov::Formatter::HTMLFormatter.new.format(result)
-     SimpleCov::Formatter::RcovFormatter.new.format(result)
-  end
-end
-SimpleCov.formatter = SimpleCov::Formatter::MergedFormatter
-SimpleCov.start do
-  add_filter "/vendor/"
-end
-
 JRUBY_OPTS_SAVED=ENV['JRUBY_OPTS']
 JAVA_OPTS_SAVED=ENV['JAVA_OPTS']
 

@@ -23,6 +23,10 @@ module Adhearsion
         rescue Celluloid::DeadActorError
           raise ExpiredError, "This call is expired and is no longer accessible"
         end
+
+        def proxy.join(*args)
+          Actor.call @mailbox, :join, *args
+        end
       end
     end
 
