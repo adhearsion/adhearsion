@@ -157,6 +157,7 @@ module Adhearsion
       # @param [String] String with the digits that are allowed to interrupt output
       #
       # @return [String, nil] The pressed digit, or nil if nothing was pressed
+      # @private
       #
       def stream_file(argument, digits = '0123456789#*')
         result = nil
