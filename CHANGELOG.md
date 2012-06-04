@@ -8,7 +8,6 @@
   * Bugfix: All output methods will now raise `Adhearsion::CallController::Output::PlaybackError` when output fails, instead of failing silently
   * Feature: Added `CallController#play_audio_async` which will begin audio playback and return an output component, which can be stopped.
   * Feature: Allow `Call#execute_controller` to take a block instead of a controller instance. Simplifies event-based execution of simple controllers (eg whisper into a call).
-  * Bugfix: Exception handlers which raise are now not infinitely recursive.
 
 # [2.0.1](https://github.com/adhearsion/adhearsion/compare/v2.0.0...v2.0.1) - [2012-06-04](https://rubygems.org/gems/adhearsion/versions/2.0.1)
   * Bugfix: Avoid infinitely recursive exception handlers
