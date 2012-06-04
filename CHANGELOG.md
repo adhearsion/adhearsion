@@ -3,10 +3,9 @@
   * Adhearsion.root and Adhearsion.root= are now available to return the root path to the application. Adhearsion.ahn_root= is deprecated.
   * Adhearsion.deprecated added for internal use to clearly mark deprecated methods.
   * Feature: Added `Call#on_joined` and `Call#on_unjoined` for easily registering joined/unjoined handlers
-  * Feature: Permit asynchronous output using bang version of methods (eg `CallController#play!`)
+  * Feature: Permit asynchronous output using bang version of methods (eg `CallController#play!`). return an output component, which can be stopped.
   * Feature: Added `CallController#safely` which will catch and log `StandardError` in a call controller, but will not allow it to crash the controller
   * Bugfix: All output methods will now raise `Adhearsion::CallController::Output::PlaybackError` when output fails, instead of failing silently
-  * Feature: Added `CallController#play_audio_async` which will begin audio playback and return an output component, which can be stopped.
   * Feature: Allow `Call#execute_controller` to take a block instead of a controller instance. Simplifies event-based execution of simple controllers (eg whisper into a call).
 
 # [2.0.1](https://github.com/adhearsion/adhearsion/compare/v2.0.0...v2.0.1) - [2012-06-04](https://rubygems.org/gems/adhearsion/versions/2.0.1)

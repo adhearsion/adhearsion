@@ -6,6 +6,19 @@ module Adhearsion
       module Formatter
 
         class << self
+          def ssml_for_collection(collection)
+            collection.inject RubySpeech::SSML::Speak.new do |doc, argument|
+              doc + case argument
+              when Hash
+                Formatter.ssml_for argument.delete(:value), argument
+              when RubySpeech::SSML::Speak
+                argument
+              else
+                Formatter.ssml_for argument
+              end
+            end
+          end
+
           def detect_type(output)
             result = nil
             result = :time if [Date, Time, DateTime].include? output.class
