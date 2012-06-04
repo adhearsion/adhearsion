@@ -47,12 +47,15 @@ module Adhearsion
       GirlFriday.shutdown! if queue?
       # TODO: Extract number of threads to use from Adhearsion.config
       @queue = GirlFriday::WorkQueue.new 'main_queue', :error_handler => ErrorHandler do |message|
-        begin
-          handle_message message
-        rescue Exception => e
-          ErrorHandler.new.handle e
-        end
+        work message
       end
+    end
+
+    def work(message)
+      handle_message message
+    rescue => e
+      raise if message.type == :exception
+      trigger :exception, e
     end
 
     def handle_message(message)
@@ -82,7 +85,8 @@ module Adhearsion
 
     class ErrorHandler
       def handle(exception)
-        Events.trigger :exception, exception
+        logger.error "Exception encountered in exception handler!"
+        logger.error exception
       end
     end
 
