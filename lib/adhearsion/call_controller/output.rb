@@ -214,11 +214,10 @@ module Adhearsion
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
       def interruptible_play(*outputs)
-        result = nil
-        outputs.each do |output|
-          stream_file(output) && break
+        outputs.find do |output|
+          digit = stream_file output
+          return digit if digit
         end
-        result
       end
 
       #

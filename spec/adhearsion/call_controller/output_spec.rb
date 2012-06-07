@@ -574,12 +574,14 @@ module Adhearsion
 
         it "plays two outputs in succession" do
           subject.should_receive(:stream_file).twice
-          subject.interruptible_play output1, output2
+          digit = subject.interruptible_play output1, output2
+          digit.should be_nil
         end
 
         it "stops at the first play when input is received" do
           subject.should_receive(:stream_file).once.and_return(2)
-          subject.interruptible_play output1, output2
+          digit = subject.interruptible_play output1, output2
+          digit.should be == 2
         end
 
         it 'raises an exception when output is unsuccessful' do
