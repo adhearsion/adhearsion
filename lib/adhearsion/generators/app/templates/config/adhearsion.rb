@@ -35,6 +35,14 @@ Adhearsion.config do |config|
   # config.punchblock.password = "" # Your AMI password
   # config.punchblock.host = "127.0.0.1" # Your AMI host
   # config.punchblock.port = 5038 # Your AMI port
+
+  ##
+  # Use with FreeSWITCH
+  #
+  # config.punchblock.platform = :freeswitch # Use FreeSWITCH
+  # config.punchblock.password = "" # Your Inbound EventSocket password
+  # config.punchblock.host = "127.0.0.1" # Your IES host
+  # config.punchblock.port = 8021 # Your IES port
 end
 
 Adhearsion::Events.draw do
