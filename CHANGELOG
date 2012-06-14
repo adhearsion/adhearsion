@@ -1,5 +1,6 @@
 support/1.x.x
-  - Bugfix: Adhearsion was not explicitly closing dialplan.rb files when loading them. This caused file descriptors to remain open on JRuby.
+1.2.6
+  - Bugfix: Adhearsion was not explicitly closing dialplan.rb or events.rb files when loading them. This caused file descriptors to remain open on JRuby even though they were GC'd by CRuby.
 
 1.2.5
   - Catch missing exceptions raised in the after_initialized hook
