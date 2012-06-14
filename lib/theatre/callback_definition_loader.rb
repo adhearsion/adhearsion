@@ -26,6 +26,8 @@ module Theatre
       file = File.open(file) if file.kind_of? String
       instance_eval file.read, file.path
       self
+    ensure
+      file.close
     end
 
     ##
