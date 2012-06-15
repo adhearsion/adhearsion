@@ -102,6 +102,32 @@ module Adhearsion
         it "should return the route's dispatcher" do
           subject.handle(call).should be route.dispatcher
         end
+
+        context "when there are no routes" do
+          subject do
+            Router.new
+          end
+
+          let(:call) { flexmock 'Adhearsion::Call', :id => 'abc123' }
+
+          it "should raise Router::NoMatch error" do
+            lambda { subject.handle call }.should raise_error(Router::NoMatchError)
+          end
+        end
+
+        context "when no routes match" do
+          subject do
+            Router.new do
+              route 'too-specific', FooBarController, :to => 'foo'
+            end
+          end
+
+          let(:call) { flexmock 'Adhearsion::Call', :id => 'abc123', :to => 'bar' }
+
+          it "should raise Router::NoMatch error" do
+            lambda { subject.handle call }.should raise_error(Router::NoMatchError)
+          end
+        end
       end
     end
   end
