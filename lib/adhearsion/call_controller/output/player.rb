@@ -14,6 +14,8 @@ module Adhearsion
           component = new_output options
           yield component if block_given?
           controller.execute_component_and_await_completion component
+        rescue Call::Hangup
+          raise
         rescue Adhearsion::Error, Punchblock::ProtocolError => e
           raise PlaybackError, "Output failed due to #{e.inspect}"
         end
