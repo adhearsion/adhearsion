@@ -104,9 +104,16 @@ module Adhearsion
 
         let(:latch) { CountDownLatch.new 1 }
 
+        before { flexmock(call.wrapped_object).should_receive :write_and_await_response }
+
         context "via a call controller" do
           let(:controller)  { CallController }
           let(:route)       { Route.new 'foobar', controller }
+
+          it "should accept the call" do
+            flexmock(call).should_receive(:accept).once
+            route.dispatcher.call call
+          end
 
           it "should instruct the call to use an instance of the controller" do
             flexmock(call).should_receive(:execute_controller).once.with controller, Proc
