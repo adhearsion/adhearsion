@@ -105,13 +105,14 @@ module Adhearsion
 
         context "when there are no routes" do
           subject do
-            Router.new
+            Router.new {}
           end
 
           let(:call) { flexmock 'Adhearsion::Call', :id => 'abc123' }
 
-          it "should raise Router::NoMatch error" do
-            lambda { subject.handle call }.should raise_error(Router::NoMatchError)
+          it "should return a dispatcher which rejects the call as an error" do
+            call.should_receive(:reject).once.with(:error)
+            subject.handle(call).call call
           end
         end
 
@@ -124,8 +125,9 @@ module Adhearsion
 
           let(:call) { flexmock 'Adhearsion::Call', :id => 'abc123', :to => 'bar' }
 
-          it "should raise Router::NoMatch error" do
-            lambda { subject.handle call }.should raise_error(Router::NoMatchError)
+          it "should return a dispatcher which rejects the call as an error" do
+            call.should_receive(:reject).once.with(:error)
+            subject.handle(call).call call
           end
         end
       end

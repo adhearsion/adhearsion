@@ -6,6 +6,8 @@ module Adhearsion
 
     autoload :Route
 
+    NoMatchError = Class.new Adhearsion::Error
+
     attr_reader :routes
 
     def initialize(&block)
@@ -24,9 +26,12 @@ module Adhearsion
     end
 
     def handle(call)
-      return unless route = match(call)
+      raise NoMatchError unless route = match(call)
       logger.info "Call #{call.id} selected route \"#{route.name}\" (#{route.target})"
       route.dispatcher
+    rescue NoMatchError
+      logger.warn "Call #{call.id} could not find a matching route. Rejecting."
+      lambda { |call| call.reject :error }
     end
   end
 end
