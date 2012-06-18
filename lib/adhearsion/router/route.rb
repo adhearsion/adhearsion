@@ -31,6 +31,8 @@ module Adhearsion
             target.new call
           end
 
+          call.accept
+
           call.execute_controller controller, lambda { |call_actor|
             begin
               call_actor.hangup
