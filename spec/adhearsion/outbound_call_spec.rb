@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 module Adhearsion
@@ -5,57 +7,37 @@ module Adhearsion
     it { should be_a Call }
 
     its(:id) { should be_nil }
-    its(:variables) { should == {} }
+    its(:variables) { should be == {} }
 
     let(:mock_client) { flexmock 'Punchblock Client' }
 
     before do
-      Initializer::Punchblock.client = mock_client
+      PunchblockPlugin::Initializer.client = mock_client
     end
 
-    its(:connection) { should be mock_client }
+    its(:client) { should be mock_client }
 
     describe ".originate" do
       let(:to) { 'sip:foo@bar.com' }
 
-      let(:mock_manager)  { flexmock 'DialPlan::Manager' }
-      let(:mock_call)     { OutboundCall.new }
+      let(:mock_call) { OutboundCall.new }
 
-      def mock_dial
-        flexmock(OutboundCall).new_instances.should_receive(:dial).and_return true
-      end
-
-      it "should create a new call and return it" do
-        mock_dial
-        OutboundCall.originate(to).should be_a OutboundCall
-      end
-
-      it "should allow setting the call's dialplan context" do
-        mock_dial
-        call = OutboundCall.originate to, :context => :foo
-        call.context.should == :foo
-      end
-
-      it "uses the default context if none is provided" do
-        mock_dial
-        call = OutboundCall.originate to
-        call.context.should == Call.new.context
-      end
-
-      it "should dial the call to the correct endpoint" do
+      it "should dial the call to the correct endpoint and return it" do
         mock_call
         flexmock(OutboundCall).should_receive(:new).and_return mock_call
-        flexmock(mock_call).should_receive(:dial).with(to, :from => 'foo').once
-        OutboundCall.originate to, :from => 'foo'
+        flexmock(mock_call.wrapped_object).should_receive(:dial).with(to, :from => 'foo').once
+        OutboundCall.originate(to, :from => 'foo').should be mock_call
       end
 
-      it "should run the dialplan when the call is answered" do
+      it "should run through the router when the call is answered" do
         mock_call
 
         flexmock(OutboundCall).should_receive(:new).and_return mock_call
-        flexmock(mock_call).should_receive(:dial).once
+        flexmock(mock_call.wrapped_object).should_receive(:dial).once
 
-        flexmock(DialPlan::Manager).should_receive(:handle).once.with(mock_call)
+        mock_dispatcher = flexmock 'dispatcher'
+        mock_dispatcher.should_receive(:call).once.with mock_call
+        flexmock(Adhearsion.router).should_receive(:handle).once.with(mock_call).and_return mock_dispatcher
 
         OutboundCall.originate(to).deliver_message Punchblock::Event::Answered.new
       end
@@ -77,8 +59,8 @@ module Adhearsion
 
     describe "#dial" do
       def expect_message_waiting_for_response(message)
-        flexmock(subject).should_receive(:write_and_await_response).once.with(message).and_return do
-          message.call_id = call_id
+        flexmock(subject.wrapped_object).should_receive(:write_and_await_response).once.with(message, 60).and_return do
+          message.target_call_id = call_id
           message
         end
       end
@@ -99,12 +81,22 @@ module Adhearsion
 
       it "should set the dial command" do
         subject.dial to, :from => from
-        subject.dial_command.should == expected_dial_command
+        subject.dial_command.should be == expected_dial_command
       end
 
       it "should set the call ID from the dial command" do
         subject.dial to, :from => from
-        subject.id.should == call_id
+        subject.id.should be == call_id
+      end
+
+      it "should set the to from the dial command" do
+        subject.dial to, :from => from
+        subject.to.should be == to
+      end
+
+      it "should set the 'from' from the dial command" do
+        subject.dial to, :from => from
+        subject.from.should be == from
       end
 
       it "should add the call to the active calls registry" do
@@ -116,7 +108,7 @@ module Adhearsion
 
     describe "basic control commands" do
       def expect_no_message_waiting_for_response
-        flexmock(subject).should_receive(:write_and_await_response).never
+        flexmock(subject.wrapped_object).should_receive(:write_and_await_response).never
       end
 
       describe '#accept' do

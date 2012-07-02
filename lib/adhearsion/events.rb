@@ -1,3 +1,8 @@
+# encoding: utf-8
+
+require 'has_guarded_handlers'
+require 'girl_friday'
+
 module Adhearsion
   class Events
 
@@ -26,7 +31,7 @@ module Adhearsion
     refresh!
 
     def queue
-      @queue || reinitialize_queue!
+      queue? ? @queue : reinitialize_queue!
     end
 
     def trigger(type, object = nil)
@@ -37,16 +42,23 @@ module Adhearsion
       queue.push_immediately Message.new(type, object)
     end
 
+    def queue?
+      instance_variable_defined? :@queue
+    end
+
     def reinitialize_queue!
-      GirlFriday.shutdown! if @queue
-      # TODO: Extract number of threads to use from AHN_CONFIG
+      GirlFriday.shutdown! if queue?
+      # TODO: Extract number of threads to use from Adhearsion.config
       @queue = GirlFriday::WorkQueue.new 'main_queue', :error_handler => ErrorHandler do |message|
-        begin
-          handle_message message
-        rescue Exception => e
-          ErrorHandler.new.handle e
-        end
+        work message
       end
+    end
+
+    def work(message)
+      handle_message message
+    rescue => e
+      raise if message.type == :exception
+      trigger :exception, e
     end
 
     def handle_message(message)
@@ -54,7 +66,7 @@ module Adhearsion
     end
 
     def draw(&block)
-      instance_exec &block
+      instance_exec(&block)
     end
 
     def method_missing(method_name, *args, &block)
@@ -62,15 +74,22 @@ module Adhearsion
     end
 
     def respond_to?(method_name)
-      return true if @handlers && @handlers.has_key?(method_name)
+      return true if instance_variable_defined?(:@handlers) && @handlers.has_key?(method_name)
       super
     end
 
     alias :register_callback :register_handler
 
+    private
+
+    def call_handler(handler, guards, event)
+      super && throw(:pass)
+    end
+
     class ErrorHandler
       def handle(exception)
-        Events.trigger :exception, exception
+        logger.error "Exception encountered in exception handler!"
+        logger.error exception
       end
     end
 

@@ -1,31 +1,26 @@
+# encoding: utf-8
+
 module Adhearsion
   class OutboundCall < Call
     attr_reader :dial_command
 
+    delegate :to, :from, :to => :dial_command, :allow_nil => true
+
     class << self
       def originate(to, opts = {})
-        new(opts).tap do |call|
-          call.run_dialplan_on_answer
+        new.tap do |call|
+          call.run_router_on_answer
           call.dial to, opts
         end
       end
     end
 
-    def initialize(opts = {})
-      super()
-      @context = opts.delete(:context) if opts.has_key?(:context)
-    end
-
     def id
-      dial_command.call_id if dial_command
+      dial_command.target_call_id if dial_command
     end
 
-    def variables
-      {}
-    end
-
-    def connection
-      Initializer::Punchblock.client
+    def client
+      PunchblockPlugin::Initializer.client
     end
 
     def accept(*args)
@@ -39,21 +34,29 @@ module Adhearsion
 
     def dial(to, options = {})
       options.merge! :to => to
-      write_and_await_response(Punchblock::Command::Dial.new(options)).tap do |dial_command|
+      if options[:timeout]
+        wait_timeout = options[:timeout]
+        options[:timeout] = options[:timeout] * 1000
+      else
+        wait_timeout = 60
+      end
+
+      write_and_await_response(Punchblock::Command::Dial.new(options), wait_timeout).tap do |dial_command|
         @dial_command = dial_command
-        Adhearsion.active_calls << self
+        Adhearsion.active_calls << current_actor
       end
     end
 
-    def run_dialplan
+    def run_router
       catching_standard_errors do
-        DialPlan::Manager.handle self
+        dispatcher = Adhearsion.router.handle current_actor
+        dispatcher.call current_actor
       end
     end
 
-    def run_dialplan_on_answer
+    def run_router_on_answer
       register_event_handler :class => Punchblock::Event::Answered do |event|
-        run_dialplan
+        run_router
         throw :pass
       end
     end

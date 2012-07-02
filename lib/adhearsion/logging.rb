@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'logging'
 
 module Adhearsion
@@ -5,56 +7,98 @@ module Adhearsion
 
     LOG_LEVELS = %w(TRACE DEBUG INFO WARN ERROR FATAL)
 
-    METHOD = :logger
+    module HasLogger
+      def logger
+        ::Logging.logger[logger_id]
+      end
+
+      def logger_id
+        self
+      end
+    end
 
     class << self
 
-      ::Logging.color_scheme( 'bright',
+      ::Logging.color_scheme 'bright',
         :levels => {
+          :debug => :magenta,
           :info  => :green,
           :warn  => :yellow,
           :error => :red,
           :fatal => [:white, :on_red]
         },
-        :date => :blue,
-        :logger => :cyan,
-        :message => :magenta
-      )
+        :date     => [:bold, :blue],
+        :logger   => :cyan
 
       def adhearsion_pattern
         '[%d] %-5l %c: %m\n'
       end
 
+      # Silence Adhearsion's logging, printing only FATAL messages
       def silence!
         self.logging_level = :fatal
       end
 
+      # Restore the default configured logging level
       def unsilence!
-        self.logging_level = :info
+        self.logging_level = Adhearsion.config.platform.logging['level']
       end
 
-      def reset
-        ::Logging.reset
+      # Toggle between the configured log level and :trace
+      # Useful for debugging a live Adhearsion instance
+      def toggle_trace!
+        if level == ::Logging.level_num(Adhearsion.config.platform.logging['level'])
+          logger.warn "Turning TRACE logging ON."
+          self.level = :trace
+        else
+          logger.warn "Turning TRACE logging OFF."
+          self.level = Adhearsion.config.platform.logging['level']
+        end
       end
 
-      def start
-        ::Logging.init(LOG_LEVELS) 
-        ::Logging.logger.root.appenders = [::Logging.appenders.stdout('stdout')]
-        self.send(:_set_formatter, ::Logging::Layouts.basic({:format_as => :string, :backtrace => true}))
-        
-        LOG_LEVELS.each{|level|
+      # Close logfiles and reopen them.  Useful for log rotation.
+      def reopen_logs
+        logger.info "Closing logfiles."
+        ::Logging.reopen
+        logger.info "Logfiles reopened."
+      end
+
+      def init
+        ::Logging.init LOG_LEVELS
+
+        LOG_LEVELS.each do |level|
           Adhearsion::Logging.const_defined?(level) or Adhearsion::Logging.const_set(level, ::Logging::LEVELS[::Logging.levelify(level)])
-        }
+        end
+      end
+
+      def start(_appenders = nil, level = :info, formatter = nil)
+        ::Logging.logger.root.appenders = _appenders.nil? ? default_appenders : _appenders
+
+        ::Logging.logger.root.level = level
+
+        formatter = formatter if formatter
+      end
+
+      def default_appenders
+        [::Logging.appenders.stdout(
+           'stdout',
+           :layout => ::Logging.layouts.pattern(
+             :pattern => adhearsion_pattern,
+             :color_scheme => 'bright'
+           ),
+           :auto_flushing => 2,
+           :flush_period => 2
+         )]
       end
 
       def logging_level=(new_logging_level)
-        ::Logging::Logger[:root].level = new_logging_level
+        ::Logging.logger.root.level = new_logging_level
       end
 
       alias :level= :logging_level=
 
       def logging_level
-        ::Logging::Logger[:root].level
+        ::Logging.logger.root.level
       end
 
       def get_logger(logger_name)
@@ -80,7 +124,9 @@ module Adhearsion
       alias :appenders :outputters
 
       def formatter=(formatter)
-        _set_formatter(formatter)
+        ::Logging.logger.root.appenders.each do |appender|
+          appender.layout = formatter
+        end
       end
 
       alias :layout= :formatter=
@@ -91,19 +137,8 @@ module Adhearsion
 
       alias :layout :formatter
 
-      private
-
-      def _set_formatter(formatter)
-        ::Logging.logger.root.appenders.each do |appender|
-          appender.layout = formatter
-        end
-      end
-
     end
 
-    unless ::Logging.const_defined? :MAX_LEVEL_LENGTH
-      start
-    end
-
+    init unless ::Logging.const_defined? :MAX_LEVEL_LENGTH
   end
 end

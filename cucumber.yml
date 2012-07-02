@@ -1,0 +1,4 @@
+default: --tags ~@wip
+wip: --wip --tags @wip
+cli: --tags @cli
+guard: --format pretty --strict --tags ~@wip

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 # This is largely based on the Daemonize library by Travis Whitton and
 # Judson Lester. http://grub.ath.cx/daemonize. I cleaned it up a bit to
 # meet Adhearsion's quality standards.
@@ -23,12 +25,12 @@ module Adhearsion
       safefork and exit # Fork and exit from the parent
 
       # Detach from the controlling terminal
-      raise 'Cannot detach from controlled terminal' unless sess_id = Process.setsid
+      raise 'Cannot detach from controlled terminal' unless sess_id = ::Process.setsid
 
       # Prevent the possibility of acquiring a controlling terminal
       if oldmode.zero?
         trap 'SIGHUP', 'IGNORE'
-        exit if pid = safefork
+        exit if safefork
       end
 
       Dir.chdir "/"   # Release old working directory

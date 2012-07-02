@@ -1,71 +1,56 @@
-require 'thread'
+# encoding: utf-8
 
 module Adhearsion
   ##
   # This manages the list of calls the Adhearsion service receives
-  class Calls
-    attr_reader :semaphore, :calls
+  class Calls < Hash
+    include Celluloid
 
-    def initialize
-      @semaphore = Monitor.new
-      @calls     = {}
-    end
+    trap_exit :call_died
 
-    def <<(call)
-      atomically { calls[call.id] = call }
-    end
-
-    def any?
-      atomically { !calls.empty? }
-    end
-
-    def size
-      atomically { calls.size }
-    end
-
-    def remove_inactive_call(call)
-      atomically { calls.delete call.id }
-    end
-
-    # Searches all active calls by their id
-    def find(id)
-      atomically { calls[id] }
-    end
-    alias :[] :find
-
-    def clear!
-      atomically { calls.clear }
-    end
-
-    def with_tag(tag)
-      atomically do
-        calls.inject(Array.new) do |calls_with_tag,(key,call)|
-          call.tagged_with?(tag) ? calls_with_tag << call : calls_with_tag
-        end
+    def from_offer(offer)
+      Call.new(offer).tap do |call|
+        self << call
       end
     end
 
-    def each
-      calls.each_pair { |id, call| yield id, call }
+    def <<(call)
+      link call
+      self[call.id] = call
+      current_actor
     end
 
-    def to_a
-      calls.values
+    def remove_inactive_call(call)
+      if call_is_dead?(call) != nil
+        call_id = key call
+        delete call_id if call_id
+      elsif call.respond_to?(:id)
+        delete call.id
+      else
+        delete call
+      end
     end
 
-    def to_h
-      calls
-    end
-
-    def method_missing(m, *args)
-      atomically { calls.send m.to_sym, *args }
+    def with_tag(tag)
+      values.find_all do |call|
+        call.tagged_with? tag
+      end
     end
 
     private
 
-    def atomically(&block)
-      semaphore.synchronize(&block)
+    def call_is_dead?(call)
+      !call.alive?
+    rescue NoMethodError
     end
 
+    def call_died(call, reason)
+      return unless reason
+      catching_standard_errors do
+        call_id = key call
+        remove_inactive_call call
+        PunchblockPlugin.client.execute_command Punchblock::Command::Hangup.new, :async => true, :call_id => call_id
+      end
+    end
   end
 end

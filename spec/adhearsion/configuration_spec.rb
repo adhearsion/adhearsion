@@ -1,296 +1,310 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
-module ConfigurationTestHelper
-  def default_config(&block)
-    Adhearsion::Configuration.new do |config|
-      config.enable_asterisk
-      yield config if block_given?
-    end
-  end
-end
+describe Adhearsion::Configuration do
 
-describe "Configuration defaults" do
-  include ConfigurationTestHelper
-  attr_reader :config
-
-  before(:each) do
-    @config = default_config
-  end
-
-  it "incoming calls are accepted by default" do
-    config.automatically_accept_incoming_calls.should be true
-  end
-
-  it "calls are ended when hung up" do
-    config.end_call_on_hangup.should be true
-  end
-
-  it "if an error occurs, a call is hungup" do
-    config.end_call_on_error.should be true
-  end
-
-  it "asterisk is enabled by default" do
-    config.asterisk_enabled?.should be true
-  end
-
-  it "default asterisk configuration is available" do
-    config.asterisk.kind_of?(Adhearsion::Configuration::AsteriskConfiguration).should be true
-  end
-
-  it "database access is NOT enabled by default" do
-    config.database_enabled?.should be false
-  end
-
-  it "ldap access is NOT enabled by default" do
-    config.ldap_enabled?.should be false
-  end
-
-  it "AMI is NOT enabled by default" do
-    config.asterisk.ami_enabled?.should be false
-  end
-
-  it "Drb is NOT enabled by default" do
-    config.drb_enabled?.should be false
-  end
-
-  it "XMPP is NOT enabled by default" do
-    config.xmpp_enabled?.should be false
-  end
-end
-
-describe "Asterisk AGI configuration defaults" do
-  attr_reader :config
-
-  before(:each) do
-    @config = Adhearsion::Configuration::AsteriskConfiguration.new
-  end
-
-  it "asterisk configuration sets default listening port" do
-    config.listening_port.should be Adhearsion::Configuration::AsteriskConfiguration.default_listening_port
-  end
-
-  it "asterisk configuration sets default listening host" do
-    config.listening_host.should == Adhearsion::Configuration::AsteriskConfiguration.default_listening_host
-  end
-end
-
-describe 'Logging configuration' do
-
-  attr_reader :config
-
-  before :each do
-    @config = Adhearsion::Configuration.new
-    Adhearsion::Logging.start
-  end
-
-  after :each do
-    Adhearsion::Logging.reset
-  end
-
-  it 'the logging level should translate from symbols into Logging constants' do
-    Adhearsion::Logging.logging_level.should_not be Adhearsion::Logging::WARN
-    config.logging :level => :warn
-    Adhearsion::Logging.logging_level.should be Adhearsion::Logging::WARN
-  end
-
-  it 'outputters should be settable' do
-    Adhearsion::Logging.outputters.length.should eql(1)
-    config.logging :outputters => ::Logging.appenders.stdout
-    Adhearsion::Logging.outputters.should == [::Logging.appenders.stdout]
-  end
-
-  it 'formatter should be settable' do
-    Adhearsion::Logging.formatter.class.should == ::Logging::Layouts::Basic
-    config.logging :formatter => ::Logging::Layouts.pattern({:pattern => '[%d] %-5l %c: %m\n'})
-    Adhearsion::Logging.formatter.class.should == ::Logging::Layouts.pattern
-  end
-
-  it 'a global formatter should be settable' do
-    Adhearsion::Logging.formatter.class.should == ::Logging::Layouts::Basic
-    config.logging :formatter => ::Logging::Layouts.pattern({:pattern => '[%d] %-5l %c: %m\n'})
-    Adhearsion::Logging.formatter.class.should == ::Logging::Layouts.pattern
-  end
-
-end
-
-describe "AMI configuration defaults" do
-  attr_reader :config
-
-  before(:each) do
-    @config = Adhearsion::Configuration::AsteriskConfiguration::AMIConfiguration.new
-  end
-
-  it "ami configuration sets default port" do
-    config.port.should be Adhearsion::Configuration::AsteriskConfiguration::AMIConfiguration.default_port
-  end
-
-  it "ami allows you to configure a username and a password, both of which default to nil" do
-    config.username.should be nil
-    config.password.should be nil
-  end
-end
-
-describe "Rails configuration defaults" do
-  it "should require the path to the Rails app in the constructor" do
-    config = Adhearsion::Configuration::RailsConfiguration.new :path => "path here doesn't matter right now", :env => :development
-    config.rails_root.should_not be nil
-  end
-
-  it "should expand_path() the first constructor parameter" do
-    rails_root = "gui"
-    flexmock(File).should_receive(:expand_path).once.with(rails_root)
-    config = Adhearsion::Configuration::RailsConfiguration.new :path => rails_root, :env => :development
-  end
-end
-
-describe "Database configuration defaults" do
-
-  before(:each) do
-    Adhearsion.send(:remove_const, :AHN_CONFIG) if Adhearsion.const_defined?(:AHN_CONFIG)
-    Adhearsion::Configuration.configure {}
-  end
-
-  it "should store the constructor's argument in connection_options()" do
-    sample_options = { :adapter => "sqlite3", :dbfile => "foo.sqlite3" }
-    config = Adhearsion::Configuration::DatabaseConfiguration.new(sample_options)
-    config.connection_options.should be sample_options
-  end
-  it "should remove the :orm key from the connection options" do
-    sample_options = { :orm => :active_record, :adapter => "mysql", :host => "::1",
-                       :user => "a", :pass => "b", :database => "ahn" }
-    config = Adhearsion::Configuration::DatabaseConfiguration.new(sample_options.clone)
-    config.orm.should be sample_options.delete(:orm)
-    config.connection_options.should == sample_options
-  end
-end
-
-describe "XMPP configuration defaults" do
-  attr_reader :config
-
-  it "xmpp configuration sets default port when server is set, but no port" do
-    config = Adhearsion::Configuration::XMPPConfiguration.new :jid => "test@example.com", :password => "somepassword", :server => "example.com"
-    config.port.should be Adhearsion::Configuration::XMPPConfiguration.default_port
-  end
-
-  it "should raise when port is specified, but no server" do
-    begin
-      config = Adhearsion::Configuration::XMPPConfiguration.new :jid => "test@example.com", :password => "somepassword", :port => "5223"
-    rescue ArgumentError => e
-      e.message.should == "Must supply a :server argument as well as :port to the XMPP initializer!"
-    end
-  end
-end
-
-describe "Punchblock configuration" do
-  describe "with config specified" do
+  describe "when initializing the config instance" do
     subject do
-      Adhearsion::Configuration::PunchblockConfiguration.new(:username => 'userb@127.0.0.1', :password => 'abc123', :wire_logger => Adhearsion::Logging.get_logger(::Adhearsion::Punchblock), :transport_logger => Adhearsion::Logging.get_logger(::Adhearsion::Punchblock), :auto_reconnect => false).connection_options
+      Adhearsion::Configuration.new
     end
 
-    it { subject[:username].should == 'userb@127.0.0.1' }
-    it { subject[:password].should == 'abc123' }
-    it { subject[:wire_logger].should == Adhearsion::Logging.get_logger(::Adhearsion::Punchblock) }
-    it { subject[:transport_logger].should == Adhearsion::Logging.get_logger(::Adhearsion::Punchblock) }
-    it { subject[:auto_reconnect].should == false }
+    it "should have an empty configuration for the platform" do
+      subject.should respond_to :platform
+    end
+
+    it "should have a platform configuration object" do
+      subject.platform.should be_instance_of Loquacious::Configuration
+    end
+
+    it "should initialize root to nil" do
+      subject.platform.root.should be_nil
+    end
+
+    it "should initialize logging to level info" do
+      subject.platform.logging.level.should be == :info
+    end
+
+    it "should allow to update a config value" do
+      subject.platform.environment.should be == :development
+      subject.platform.environment = :production
+      subject.platform.environment.should be == :production
+    end
+
+    it "should allow to create new config values" do
+      subject.platform.bar = "foo"
+      subject.platform.bar.should be == "foo"
+    end
   end
 
-  describe "with defaults" do
+  describe "when initializing the config instance with specific values" do
     subject do
-      Adhearsion::Configuration::PunchblockConfiguration.new.connection_options
-    end
-
-    it { subject[:username].should == 'usera@127.0.0.1' }
-    it { subject[:password].should == '1' }
-    it { subject[:wire_logger].should == Adhearsion::Logging.get_logger(::Adhearsion::Punchblock) }
-    it { subject[:transport_logger].should == Adhearsion::Logging.get_logger(::Adhearsion::Punchblock) }
-    it { subject[:auto_reconnect].should == true }
-  end
-end
-
-describe "Configuration scenarios" do
-  include ConfigurationTestHelper
-
-  it "enabling AMI using all its defaults" do
-    config = enable_ami
-
-    config.asterisk.ami_enabled?.should be true
-    config.asterisk.ami.should be_a_kind_of Adhearsion::Configuration::AsteriskConfiguration::AMIConfiguration
-  end
-
-  it "enabling AMI with custom configuration overrides the defaults" do
-    overridden_port = 911
-    config = enable_ami :port => overridden_port
-    config.asterisk.ami.port.should be overridden_port
-  end
-
-  it "enabling Drb without any configuration" do
-    config = enable_drb
-    config.drb.should_not be nil
-    config.drb.should be_a_kind_of Adhearsion::Configuration::DrbConfiguration
-  end
-
-  it "enabling Drb with a port specified sets the port" do
-    target_port = 911
-    config = enable_drb :port => target_port
-    config.drb.port.should == target_port
-  end
-
-  private
-    def enable_ami(*overrides)
-      default_config do |config|
-        config.asterisk.enable_ami(*overrides)
+      Adhearsion::Configuration.new do
+        root "foo", :desc => "Adhearsion application root folder"
+        environment :development, :desc => "Active environment. Supported values: development, production, staging, test"
       end
     end
 
-    def enable_drb(*overrides)
-      default_config do |config|
-        config.enable_drb *overrides
+    it "should return the root value" do
+      subject.platform.root.should be == "foo"
+    end
+
+    it "should return the environment value" do
+      subject.platform.environment.should be == :development
+    end
+
+    it "should return a description for the platform configuration" do
+      Adhearsion.config.description(:platform).should be_instance_of String
+    end
+
+    it "should allow to update a config value" do
+      subject.platform.environment.should be == :development
+      subject.platform.environment = :production
+      subject.platform.environment.should be == :production
+    end
+
+    it "should allow to create new config values" do
+      subject.platform.bar = "bazz"
+      subject.platform.bar.should be == "bazz"
+    end
+  end
+
+  describe "when configuring a non existing object" do
+    it "should raise a ConfigurationError" do
+      lambda {
+        Adhearsion.config.foo.bar = "bazz"
+      }.should raise_error Adhearsion::Configuration::ConfigurationError, "Invalid plugin foo"
+    end
+  end
+
+  describe "when accessing the platform configuration" do
+    after do
+      Adhearsion.config = nil
+    end
+
+    subject{ Adhearsion.config[:platform] }
+
+    it "should return the valid platform configuration object" do
+      subject.should be_instance_of ::Loquacious::Configuration
+    end
+
+    it "should allow to retrieve any platform configuration value" do
+      subject.environment.should be == :development
+    end
+
+    describe "if configuration has a named environment" do
+
+      let :config_obj do
+        Adhearsion::Configuration.new
+      end
+
+      let :env_values do
+        config_obj.valid_environments.inject({}) do |hash, k|
+          hash[k] = hash.keys.length
+          hash
+        end
+      end
+
+      let :config_object do
+        config_obj do
+          my_level(-1, :desc => "An index to check the environment value is being retrieved")
+        end
+      end
+
+      subject do
+        config_object.production do |env|
+          env.platform.my_level = 0
+        end
+        config_object.development do |env|
+          env.platform.my_level = 1
+        end
+        config_object.staging do |env|
+          env.platform.my_level = 2
+        end
+        config_object.test do |env|
+          env.platform.my_level = 3
+        end
+        config_object
+      end
+
+      it "should return by default the development value" do
+        subject.platform.my_level.should be == 1
+      end
+
+      [:staging, :production, :test].each do |env|
+        it "should return the #{env.to_s} value when environment set to #{env.to_s}" do
+          config_object.platform.environment = env
+          subject.platform.my_level.should be == env_values[env]
+        end
       end
     end
-end
-
-describe "AHN_CONFIG" do
-  before(:each) do
-    Adhearsion.send(:remove_const, :AHN_CONFIG) if Adhearsion.const_defined?(:AHN_CONFIG)
   end
 
-  it "Running configure sets configuration to Adhearsion::AHN_CONFIG" do
-    Adhearsion.const_defined?(:AHN_CONFIG).should be false
-    Adhearsion::Configuration.configure do |config|
-      # Nothing needs to happen here
+  describe "while defining the environment" do
+
+    after do
+      ENV['AHN_ENV'] = nil
+      Adhearsion.config = nil
     end
 
-    Adhearsion.const_defined?(:AHN_CONFIG).should be true
-    Adhearsion::AHN_CONFIG.should be_a_kind_of(Adhearsion::Configuration)
-  end
-end
+    it "should return 'development' by default" do
+      Adhearsion.config.platform.environment.should be == :development
+    end
 
-describe "DRb configuration" do
-  it "should not add any ACL rules when :raw_acl is passed in" do
-    config = Adhearsion::Configuration::DrbConfiguration.new :raw_acl => :this_is_an_acl
-    config.acl.should be :this_is_an_acl
+    [:development, :production, :staging, :test].each do |env|
+      it "should respond to #{env.to_s}" do
+        Adhearsion.config.should respond_to(env)
+      end
+    end
+
+    context "when the ENV value is valid" do
+      [:production, :staging, :test].each do |env|
+        it "should override the environment value with #{env.to_s} when set in ENV value" do
+          ENV['AHN_ENV'] = env.to_s
+          Adhearsion.config.platform.environment.should be == env
+        end
+      end
+    end
+
+    it "should not override the default environment with the ENV value if valid" do
+      ENV['AHN_ENV'] = "invalid_value"
+      Adhearsion.config.platform.environment.should be == :development
+    end
+
+    it "should allow to add a new environment" do
+      Adhearsion.config.valid_environment?(:another_environment).should be == false
+      Adhearsion.environments << :another_environment
+      Adhearsion.config.valid_environment?(:another_environment).should be == true
+    end
+
   end
 
-  it "should, by default, allow only localhost connections" do
-    config = Adhearsion::Configuration::DrbConfiguration.new
-    config.acl.should == %w[allow 127.0.0.1]
-  end
+  describe "while retrieving configuration descriptions" do
+    before do
+      Adhearsion.config = nil
+    end
 
-  it "should add ACL 'deny' rules before 'allow' rules" do
-    config = Adhearsion::Configuration::DrbConfiguration.new :allow => %w[1.1.1.1  2.2.2.2],
-                                                             :deny  => %w[9.9.9.9]
-    config.acl.should == %w[deny 9.9.9.9 allow 1.1.1.1 allow 2.2.2.2]
-  end
+    subject { Adhearsion.config }
 
-  it "should allow both an Array and a String to be passed as an allow/deny ACL rule" do
-    config = Adhearsion::Configuration::DrbConfiguration.new :allow => "1.1.1.1", :deny => "9.9.9.9"
-    config.acl.should == %w[deny 9.9.9.9 allow 1.1.1.1]
-  end
+    it "should retrieve a string with the platform configuration" do
+      desc = subject.description :platform, :show_values => false
+      desc.length.should be > 0
+      desc.should match(/^.*environment.*$/)
+      desc.should match(/^.*root.*$/)
+    end
 
-  it "should have a default host and port" do
-    config = Adhearsion::Configuration::DrbConfiguration.new
-    config.host.should_not be nil
-    config.port.should_not be nil
-  end
+    it "should retrieve a string with the platform configuration and values" do
+      desc = subject.description :platform
+      desc.length.should be > 0
+      desc.should match(/^.*environment.*:development.*$/)
+      desc.should match(/^.*root.*$/)
+    end
 
+    describe "if there are plugins installed" do
+      before do
+        Adhearsion::Logging.silence!
+
+        Class.new Adhearsion::Plugin do
+          config :my_plugin do
+            name     "user"     , :desc => "name to authenticate user"
+            password "password" , :desc => "authentication password"
+            host     "localhost", :desc => "valid IP or hostname"
+          end
+        end
+      end
+
+      describe "retrieving configuration for the plugin" do
+        context "via a method" do
+          subject { Adhearsion.config.my_plugin }
+
+          it "should have the correct values" do
+            subject[:name].should be == 'user'
+            subject[:password].should be == 'password'
+            subject[:host].should be == 'localhost'
+          end
+        end
+
+        context "using the hash accessor syntax" do
+          subject { Adhearsion.config[:my_plugin] }
+
+          it "should have the correct values" do
+            subject[:name].should be == 'user'
+            subject[:password].should be == 'password'
+            subject[:host].should be == 'localhost'
+          end
+        end
+
+        context "when config has named environments" do
+          subject do
+            Adhearsion.config do |c|
+              c.production do |env|
+                env.my_plugin.name = "production"
+              end
+              c.development do |env|
+                env.my_plugin.name = "development"
+              end
+              c.staging do |env|
+                env.my_plugin.name = "staging"
+              end
+              c.test do |env|
+                env.my_plugin.name = "test"
+              end
+            end
+            Adhearsion.config[:my_plugin]
+          end
+
+          it "should return the development value by default" do
+            Adhearsion.config # initialize
+            subject.name.should be == "development"
+          end
+
+          [:development, :staging, :production, :test].each do |env|
+            it "should return the #{env.to_s} value when environment is set to #{env.to_s}" do
+              Adhearsion.config.platform.environment = env
+              subject.name.should be == env.to_s
+            end
+          end
+        end
+      end
+
+      it "should retrieve a valid plugin description" do
+        desc = subject.description :my_plugin
+        desc.length.should be > 0
+        desc.should match(/^.*name.*user.*$/)
+        desc.should match(/^.*password.*password.*$/)
+        desc.should match(/^.*host.*localhost.*$/)
+      end
+
+      it "should retrieve a valid plugin description with no values" do
+        desc = subject.description :my_plugin, :show_values => false
+        desc.length.should be > 0
+        desc.should match(/^.*name.*$/)
+        desc.should match(/^.*password.*$/)
+        desc.should match(/^.*host.*$/)
+      end
+
+      it "should retrieve both platform and plugin configuration" do
+        desc = subject.description :all
+        desc.length.should be > 0
+        desc.should match(/^.*environment.*:development.*$/)
+        desc.should match(/^.*root.*$/)
+        desc.should match(/^.*name.*user.*$/)
+        desc.should match(/^.*password.*password.*$/)
+        desc.should match(/^.*host.*localhost.*$/)
+      end
+
+      it "should retrieve both platform and plugin configuration with no values" do
+        desc = subject.description :all, :show_values => false
+        desc.length.should be > 0
+        desc.should match(/^.*Configuration for platform.*$/)
+        desc.should match(/^.*environment.*$/)
+        desc.should match(/^.*root.*$/)
+        desc.should match(/^.*Configuration for my_plugin.*$/)
+        desc.should match(/^.*name.*$/)
+        desc.should match(/^.*password.*$/)
+        desc.should match(/^.*host.*$/)
+      end
+    end
+
+  end
 end

@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+# This command will automatically be run when you run "ahn" with the Adhearsion gem installed from the root of your application.
+
+require File.expand_path('../../config/environment',  __FILE__)
+
+require 'adhearsion'
+require 'adhearsion/cli_commands'
+
+Adhearsion::CLI::AhnCommand.start

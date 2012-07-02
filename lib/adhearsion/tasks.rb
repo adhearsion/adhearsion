@@ -1,17 +1,18 @@
-require 'rake/testtask'
-require 'adhearsion'
-require 'adhearsion/tasks/components'
-require 'adhearsion/tasks/database'
-require 'adhearsion/tasks/testing'
-require 'adhearsion/tasks/generating'
-require 'adhearsion/tasks/lint'
-require 'adhearsion/tasks/deprecations'
+# encoding: utf-8
 
-namespace :adhearsion do
-  desc "Dump useful information about this application's adhearsion environment"
-  task :about do
-    puts "Adhearsion version: #{Adhearsion::VERSION::STRING}"
-  end
+require 'adhearsion'
+
+Dir[File.join(File.dirname(__FILE__), "tasks/*.rb")].each do |file|
+  require file
 end
 
-task :default => "adhearsion:about"
+Adhearsion::Plugin.load_tasks
+
+puts "\nAdhearsion configured environment: #{Adhearsion.config.platform.environment}\n" unless ARGV.empty?
+
+desc "Dump useful information about this application's Adhearsion environment"
+task :about do
+  puts "Adhearsion version: #{Adhearsion::VERSION}"
+end
+
+task :default => :about

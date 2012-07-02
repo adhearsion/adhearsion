@@ -1,15 +1,27 @@
-.DS_Store
-pkg
+# Gem related stuff
+*.gem
+/pkg
+/.bundle
+/Gemfile.lock
+/vendor
+
+# Testing stuff
+/coverage
+/spec/reports
+*.log
+/adhearsion.pid
+
+# RBX stuff
+/.rbx/
+
+# Editor temp/backup files
 *~
 .*.sw?
-.yardoc
-nbproject
-vendor
-Gemfile.lock
-.bundle
-.rvmrc
-coverage
-spec/reports
-doc
-/.rbx/
-example.log
+
+# General
+/nbproject
+.DS_Store
+/.rvmrc
+/.yardoc
+/doc
+/tmp

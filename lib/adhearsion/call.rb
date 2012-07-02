@@ -1,3 +1,6 @@
+# encoding: utf-8
+
+require 'has_guarded_handlers'
 require 'thread'
 
 module Adhearsion
@@ -6,51 +9,87 @@ module Adhearsion
   #
   class Call
 
+    Hangup          = Class.new Adhearsion::Error
+    CommandTimeout  = Class.new Adhearsion::Error
+    ExpiredError    = Class.new Celluloid::DeadActorError
+
+    include Celluloid
     include HasGuardedHandlers
 
-    attr_accessor :offer, :originating_voip_platform, :context, :client, :end_reason, :commands
+    def self.new(*args, &block)
+      super.tap do |proxy|
+        def proxy.method_missing(*args)
+          super
+        rescue Celluloid::DeadActorError
+          raise ExpiredError, "This call is expired and is no longer accessible"
+        end
+
+        def proxy.join(*args)
+          Actor.call @mailbox, :join, *args
+        end
+      end
+    end
+
+    # @private
+    attr_accessor :offer, :client, :end_reason, :commands, :controllers
+
+    attr_accessor :variables
+
+    delegate :[], :[]=, :to => :variables
+    delegate :to, :from, :to => :offer, :allow_nil => true
 
     def initialize(offer = nil)
-      if offer
-        @offer      = offer
-        @client = offer.client
-      end
-
-      @tag_mutex        = Mutex.new
-      @tags             = []
-      @context          = :adhearsion
-      @end_reason_mutex = Mutex.new
-      end_reason        = nil
-      @commands         = CommandRegistry.new
-      set_originating_voip_platform!
-
       register_initial_handlers
+
+      @tags         = []
+      @commands     = CommandRegistry.new
+      @variables    = {}
+      @controllers  = []
+      @end_reason   = nil
+
+      self << offer if offer
     end
 
+    #
+    # @return [String, nil] The globally unique ID for the call
+    #
     def id
-      @offer.call_id
+      offer.target_call_id if offer
     end
 
+    #
+    # @return [Array] The set of labels with which this call has been tagged.
+    #
     def tags
-      @tag_mutex.synchronize { @tags.clone }
+      @tags.clone
     end
 
-    # This may still be a symbol, but no longer requires the tag to be a symbol although beware
-    # that using a symbol would create a memory leak if used improperly
+    #
+    # Tag a call with an arbitrary label
+    #
     # @param [String, Symbol] label String or Symbol with which to tag this call
+    #
     def tag(label)
-      raise ArgumentError, "Tag must be a String or Symbol" unless [String, Symbol].include?(label.class)
-      @tag_mutex.synchronize { @tags << label }
+      abort ArgumentError.new "Tag must be a String or Symbol" unless [String, Symbol].include?(label.class)
+      @tags << label
     end
 
-    def remove_tag(symbol)
-      @tag_mutex.synchronize do
-        @tags.reject! { |tag| tag == symbol }
-      end
+    #
+    # Remove a label
+    #
+    # @param [String, Symbol] label
+    #
+    def remove_tag(label)
+      @tags.reject! { |tag| tag == label }
     end
 
-    def tagged_with?(symbol)
-      @tag_mutex.synchronize { @tags.include? symbol }
+    #
+    # Establish if the call is tagged with the provided label
+    #
+    # @param [String, Symbol] label
+    #
+    def tagged_with?(label)
+      @tags.include? label
     end
 
     def register_event_handler(*guards, &block)
@@ -58,31 +97,97 @@ module Adhearsion
     end
 
     def deliver_message(message)
-      trigger_handler :event, message
+      logger.debug "Receiving message: #{message.inspect}"
+      catching_standard_errors { trigger_handler :event, message }
     end
     alias << deliver_message
 
+    # @private
     def register_initial_handlers
+      register_event_handler Punchblock::Event::Offer do |offer|
+        @offer  = offer
+        @client = offer.client
+        throw :pass
+      end
+
+      register_event_handler Punchblock::HasHeaders do |event|
+        variables.merge! event.headers_hash
+        throw :pass
+      end
+
+      on_joined do |event|
+        target = event.call_id || event.mixer_name
+        signal :joined, target
+      end
+
+      on_unjoined do |event|
+        target = event.call_id || event.mixer_name
+        signal :unjoined, target
+      end
+
       on_end do |event|
-        hangup
-        @end_reason_mutex.synchronize { @end_reason = event.reason }
+        logger.info "Call ended"
+        clear_from_active_calls
+        @end_reason = event.reason
         commands.terminate
+        after(after_end_hold_time) { current_actor.terminate! }
       end
     end
 
-    def on_end(&block)
-      register_event_handler :class => Punchblock::Event::End do |event|
+    # @private
+    def after_end_hold_time
+      30
+    end
+
+    ##
+    # Registers a callback for when this call is joined to another call or a mixer
+    #
+    # @param [Call, String, Hash, nil] target the target to guard on. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
+    # @option target [String] call_id The call ID to guard on
+    # @option target [String] mixer_name The mixer name to guard on
+    #
+    def on_joined(target = nil, &block)
+      register_event_handler Punchblock::Event::Joined, *guards_for_target(target) do |event|
         block.call event
         throw :pass
       end
     end
 
+    ##
+    # Registers a callback for when this call is unjoined from another call or a mixer
+    #
+    # @param [Call, String, Hash, nil] target the target to guard on. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
+    # @option target [String] call_id The call ID to guard on
+    # @option target [String] mixer_name The mixer name to guard on
+    #
+    def on_unjoined(target = nil, &block)
+      register_event_handler Punchblock::Event::Unjoined, *guards_for_target(target) do |event|
+        block.call event
+        throw :pass
+      end
+    end
+
+    # @private
+    def guards_for_target(target)
+      target ? [join_options_with_target(target)] : []
+    end
+
+    def on_end(&block)
+      register_event_handler Punchblock::Event::End do |event|
+        block.call event
+        throw :pass
+      end
+    end
+
+    #
+    # @return [Boolean] if the call is currently active or not (disconnected)
+    #
     def active?
-      @end_reason_mutex.synchronize { !end_reason }
+      !end_reason
     end
 
     def accept(headers = nil)
-      write_and_await_response Punchblock::Command::Accept.new(:headers => headers)
+      @accept_command ||= write_and_await_response Punchblock::Command::Accept.new(:headers => headers)
     end
 
     def answer(headers = nil)
@@ -93,96 +198,164 @@ module Adhearsion
       write_and_await_response Punchblock::Command::Reject.new(:reason => reason, :headers => headers)
     end
 
-    def hangup!(headers = nil)
-      return unless active?
-      @end_reason_mutex.synchronize { @end_reason = true }
+    def hangup(headers = nil)
+      return false unless active?
+      logger.info "Hanging up"
+      @end_reason = true
       write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
     end
 
-    def hangup
-      Adhearsion.remove_inactive_call self
+    # @private
+    def clear_from_active_calls
+      Adhearsion.active_calls.remove_inactive_call current_actor
     end
 
-    def join(other_call_id)
-      write_and_await_response Punchblock::Command::Join.new :other_call_id => other_call_id
+    ##
+    # Joins this call to another call or a mixer
+    #
+    # @param [Call, String, Hash] target the target to join to. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
+    # @option target [String] call_id The call ID to join to
+    # @option target [String] mixer_name The mixer to join to
+    # @param [Hash, Optional] options further options to be joined with
+    #
+    def join(target, options = {})
+      command = Punchblock::Command::Join.new options.merge(join_options_with_target(target))
+      write_and_await_response command
     end
 
-    # Lock the socket for a command.  Can be used to allow the console to take
-    # control of the thread in between AGI commands coming from the dialplan.
-    def with_command_lock
-      @command_monitor ||= Monitor.new
-      @command_monitor.synchronize { yield }
+    ##
+    # Unjoins this call from another call or a mixer
+    #
+    # @param [Call, String, Hash] target the target to unjoin from. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
+    # @option target [String] call_id The call ID to unjoin from
+    # @option target [String] mixer_name The mixer to unjoin from
+    #
+    def unjoin(target)
+      command = Punchblock::Command::Unjoin.new join_options_with_target(target)
+      write_and_await_response command
     end
 
+    # @private
+    def join_options_with_target(target)
+      case target
+      when Call
+        { :call_id => target.id }
+      when String
+        { :call_id => target }
+      when Hash
+        abort ArgumentError.new "You cannot specify both a call ID and mixer name" if target.has_key?(:call_id) && target.has_key?(:mixer_name)
+        target
+      else
+        abort ArgumentError.new "Don't know how to join to #{target.inspect}"
+      end
+    end
+
+    def wait_for_joined(expected_target)
+      target = nil
+      until target == expected_target do
+        target = wait :joined
+      end
+    end
+
+    def wait_for_unjoined(expected_target)
+      target = nil
+      until target == expected_target do
+        target = wait :unjoined
+      end
+    end
+
+    def mute
+      write_and_await_response Punchblock::Command::Mute.new
+    end
+
+    def unmute
+      write_and_await_response Punchblock::Command::Unmute.new
+    end
+
+    # @private
     def write_and_await_response(command, timeout = 60)
       commands << command
       write_command command
-      response = command.response timeout
-      raise response if response.is_a? Exception
-      command
-    end
 
-    def write_command(command)
-      raise Hangup unless active? || command.is_a?(Punchblock::Command::Hangup)
-      client.execute_command command, :call_id => id
-    end
-    
-    # Logger per instance to log the call_id
-    def logger
-      @logger ||= Adhearsion::Logging::get_logger(self.class.to_s.concat(" ").concat(logger_id))
-    end
-
-    # Sanitize the offer id
-    def logger_id
-      Adhearsion::Logging.sanitized_logger_name(id)
-    end
-
-    def variables
-      offer.headers_hash
-    end
-
-    def define_variable_accessors(recipient = self)
-      variables.each do |key, value|
-        define_singleton_accessor_with_pair key, value, recipient
-      end
-    end
-
-    private
-
-    def define_singleton_accessor_with_pair(key, value, recipient = self)
-      recipient.metaclass.send :attr_accessor, key unless recipient.class.respond_to?("#{key}=")
-      recipient.metaclass.send :public, key, "#{key}=".to_sym
-      recipient.send "#{key}=", value
-    end
-
-    def set_originating_voip_platform!
-      # TODO: Determine this from the headers somehow
-      self.originating_voip_platform = :punchblock
-    end
-
-    class CommandRegistry
-      include Enumerable
-
-      def initialize
-        @commands = []
-      end
-
-      def self.synchronized_delegate(*args)
-        args.each do |method_name|
-          class_eval <<-EOS
-            def #{method_name}(*args, &block)
-              synchronize { @commands.__send__ #{method_name.inspect}, *args, &block }
-            end
-          EOS
+      case (response = command.response timeout)
+      when Punchblock::ProtocolError
+        if response.name == :item_not_found
+          abort Hangup.new(@end_reason)
+        else
+          abort response
         end
+      when Exception
+        abort response
       end
 
-      synchronized_delegate :empty?, :<<, :delete, :each
+      command
+    rescue Timeout::Error
+      abort CommandTimeout.new(command.to_s)
+    end
 
+    # @private
+    def write_command(command)
+      abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
+      variables.merge! command.headers_hash if command.respond_to? :headers_hash
+      logger.debug "Executing command #{command.inspect}"
+      client.execute_command command, :call_id => id, :async => true
+    end
+
+    # @private
+    def logger_id
+      "#{self.class}: #{id}"
+    end
+
+    # @private
+    def to_ary
+      [current_actor]
+    end
+
+    # @private
+    def inspect
+      attrs = [:offer, :end_reason, :commands, :variables, :controllers, :to, :from].map do |attr|
+        "#{attr}=#{send(attr).inspect}"
+      end
+      "#<#{self.class}:#{id} #{attrs.join ', '}>"
+    end
+
+    def execute_controller(controller = nil, completion_callback = nil, &block)
+      raise ArgumentError if controller && block_given?
+      call = current_actor
+      controller ||= CallController.new call, &block
+      Thread.new do
+        catching_standard_errors do
+          begin
+            CallController.exec controller
+          ensure
+            completion_callback.call call if completion_callback
+          end
+        end
+      end.tap { |t| Adhearsion::Process.important_threads << t }
+    end
+
+    # @private
+    def register_controller(controller)
+      @controllers << controller
+    end
+
+    # @private
+    def pause_controllers
+      controllers.each(&:pause!)
+    end
+
+    # @private
+    def resume_controllers
+      controllers.each(&:resume!)
+    end
+
+    # @private
+    class CommandRegistry < ThreadSafeArray
       def terminate
         hangup = Hangup.new
         each { |command| command.response = hangup if command.requested? }
       end
     end
+
   end
 end

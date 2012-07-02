@@ -1,92 +1,123 @@
-# Check the Ruby version
-STDERR.puts "WARNING: You are running Adhearsion on an unsupported version of Ruby (Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE})! Please upgrade to at least Ruby v1.9.2, JRuby 1.6.4 or Rubinius 2.0." if RUBY_VERSION < "1.9.2"
+# encoding: utf-8
 
-$: << File.expand_path(File.dirname(__FILE__))
+abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE})! Please upgrade to at least Ruby v1.9.2, JRuby 1.6.5 or Rubinius 2.0." if RUBY_VERSION < "1.9.2"
 
 %w{
-  rubygems
-  bundler/setup
-
   active_support/all
-  uuid
-  future-resource
   punchblock
-  ostruct
   ruby_speech
   countdownlatch
-  has_guarded_handlers
-  girl_friday
+  loquacious
+  celluloid
 
-  adhearsion/foundation/all
+  adhearsion/version
+  adhearsion/foundation
 }.each { |f| require f }
 
 module Adhearsion
   extend ActiveSupport::Autoload
 
-  autoload :Asterisk
+  Error = Class.new StandardError
+
+  autoload :Process
   autoload :Call
+  autoload :CallController
   autoload :Calls
-  autoload :Commands
-  autoload :Components
   autoload :Configuration
   autoload :Console
-  autoload :Constants
   autoload :Conveniences
-  autoload :DialPlan
   autoload :Dispatcher
-  autoload :DSL
   autoload :Events
+  autoload :Generators
   autoload :Initializer
   autoload :Logging
   autoload :OutboundCall
-  autoload :Punchblock
-  autoload :Version
-
-  # Sets up the Gem require path.
-  AHN_INSTALL_DIR = File.expand_path(File.dirname(__FILE__) + "/..")
-  AHN_CONFIG = Configuration.new
-
-  ##
-  # This Array holds all the Threads whose life matters. Adhearsion will not exit until all of these have died.
-  #
-  IMPORTANT_THREADS = []
-
-  mattr_accessor :status
+  autoload :Plugin
+  autoload :Router
 
   class << self
 
-    ##
-    # Shuts down the framework.
     #
-    def shutdown!
-      if self.status == :stopping
-        # This is the second shutdown request we've received while attempting
-        # to shut down gracefully.  At this point, let's pull the plug...
-        logger.warn "Shutting down immediately at #{Time.now}"
-        exit
-      end
-      logger.info "Shutting down gracefully at #{Time.now}."
-      self.status = :stopping
-      Events.trigger_immediately :shutdown
-      exit
+    # Sets the application path
+    # @param[String|Pathname] The application path to set
+    #
+    def root=(path)
+      Adhearsion.config[:platform].root = path.nil? ? nil : File.expand_path(path)
+    end
+
+    #
+    # Returns the current application path
+    # @return [Pathname] The application path
+    #
+    def root
+      Adhearsion.config[:platform].root
+    end
+
+    #
+    # @deprecated Use #root= instead
+    #
+    def ahn_root=(path)
+      Adhearsion.deprecated "#Adhearsion.root="
+      Adhearsion.root = path
+    end
+
+    def config(&block)
+      @config ||= initialize_config
+      block_given? and yield @config
+      @config
+    end
+
+    def deprecated(new_method)
+      logger.info "#{caller[0]} - This method is deprecated, please use #{new_method}."
+      logger.warn caller.join("\n")
+    end
+
+    def initialize_config
+      _config = Configuration.new
+      env = ENV['AHN_ENV'] || ENV['RAILS_ENV']
+      env = env.to_sym if env.respond_to? :to_sym
+      env = nil unless _config.valid_environment? env
+      _config.platform.environment = env if env
+      _config
+    end
+
+    def environments
+      config.valid_environments
+    end
+
+    def config=(config)
+      @config = config
+    end
+
+    def router(&block)
+      @router ||= Router.new(&block || Proc.new {})
+    end
+
+    def router=(other)
+      @router = other
     end
 
     def active_calls
-      @calls ||= Calls.new
-    end
-
-    def receive_call_from(offer)
-      Call.new(offer).tap do |call|
-        active_calls << call
+      if instance_variable_defined?(:@calls) && @calls.alive?
+        @calls
+      else
+        @calls = Calls.new
       end
     end
 
-    def remove_inactive_call(call)
-      active_calls.remove_inactive_call(call)
+    def status
+      Adhearsion::Process.state_name
     end
   end
+end
 
-  Hangup = Class.new StandardError # At the moment, we'll just use this to end a call-handling Thread
-  PlaybackError = Class.new StandardError # Represents failure to play audio, such as when the sound file cannot be found
-  RecordError = Class.new StandardError # Represents failure to record such as when a file cannot be written.
+Celluloid.exception_handler { |e| Adhearsion::Events.trigger :exception, e }
+
+module Celluloid
+  class << self
+    undef :logger
+    def logger
+      ::Logging.logger['Celluloid']
+    end
+  end
 end

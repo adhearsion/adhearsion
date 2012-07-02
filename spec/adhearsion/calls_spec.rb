@@ -1,69 +1,129 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 module Adhearsion
   describe Calls do
-    describe "Active Calls" do
-      let(:typical_call) { Adhearsion::Call.new mock_offer }
+    let(:call) { Adhearsion::Call.new new_offer }
 
-      after do
-        Adhearsion.active_calls.clear!
-      end
-
-      it 'can add a call to the active calls list' do
-        Adhearsion.active_calls.any?.should == false
-        Adhearsion.active_calls << typical_call
-        Adhearsion.active_calls.size.should == 1
-      end
-
-      it 'Can find active call by unique ID' do
-        Adhearsion.active_calls << typical_call
-        Adhearsion.active_calls.find(typical_call.id).should_not == nil
-      end
+    let(:number_of_calls) { 10 }
+    let :calls do
+      Array.new(number_of_calls) { Adhearsion::Call.new new_offer }
     end
 
-    it 'the #<< method should add a Call to the Hash with its id' do
-      id = rand
-      call = Adhearsion::Call.new mock_offer(id)
+    def new_offer(call_id = nil, headers = {})
+      Punchblock::Event::Offer.new :target_call_id => call_id || random_call_id, :headers => headers
+    end
+
+    it 'can create a call and add it to the collection' do
+      subject.any?.should be == false
+      call = subject.from_offer new_offer
+      call.should be_a Adhearsion::Call
+      subject.size.should be == 1
+      subject[call.id].should be call
+    end
+
+    it '#size should return the number of calls in the collection' do
+      subject.size.should be == 0
       subject << call
-      hash = subject.instance_variable_get("@calls")
-      hash.empty?.should_not == true
-      hash[id].should be call
+      subject.size.should be == 1
     end
 
-    it '#size should return the size of the Hash' do
-      subject.size.should == 0
-      subject << Adhearsion::Call.new(mock_offer)
-      subject.size.should == 1
-    end
+    describe "removing a call" do
+      let(:deleted_call) { calls[number_of_calls / 2] }
 
-    it '#remove_inactive_call should delete the call in the Hash' do
-      number_of_calls = 10
-      calls = Array.new(number_of_calls) { Adhearsion::Call.new mock_offer }
-      calls.each { |call| subject << call }
+      before { calls.each { |call| subject << call } }
 
-      deleted_call = calls[number_of_calls / 2]
-      subject.remove_inactive_call deleted_call
-      subject.size.should == number_of_calls - 1
-    end
+      context "by call object" do
+        before { subject.remove_inactive_call deleted_call }
 
-    it '#find should pull the Call from the Hash using the id' do
-      id = rand
-      call_database = flexmock "a mock Hash in which calls are stored"
-      call_database.should_receive(:[]).once.with(id)
-      flexmock(subject).should_receive(:calls).once.and_return(call_database)
-      subject.find id
+        it "should remove the call from the collection" do
+          subject.size.should be == number_of_calls - 1
+          subject[deleted_call.id].should be_nil
+        end
+      end
+
+      context "by dead call object" do
+        before do
+          @call_id = deleted_call.id
+          deleted_call.terminate
+          deleted_call.should_not be_alive
+          subject.remove_inactive_call deleted_call
+        end
+
+        it "should remove the call from the collection" do
+          subject.size.should be == number_of_calls - 1
+          subject[@call_id].should be_nil
+        end
+      end
+
+      context "by ID" do
+        before { subject.remove_inactive_call deleted_call.id }
+
+        it "should remove the call from the collection" do
+          subject.size.should be == number_of_calls - 1
+          subject[deleted_call.id].should be_nil
+        end
+      end
     end
 
     it "finding calls by a tag" do
-      Adhearsion.active_calls.clear!
-
-      calls = Array.new(5) { Adhearsion::Call.new mock_offer }
       calls.each { |call| subject << call }
 
       tagged_call = calls.last
       tagged_call.tag :moderator
 
-      subject.with_tag(:moderator).should == [tagged_call]
+      subject.with_tag(:moderator).should be == [tagged_call]
+    end
+
+    describe "#<<" do
+      it "should allow chaining" do
+        subject << Call.new(new_offer) << Call.new(new_offer)
+        subject.size.should be == 2
+      end
+    end
+
+    describe "when a call in the collection crashes" do
+      let(:wrapped_object) { call.wrapped_object }
+
+      before do
+        def wrapped_object.crash_me
+          raise StandardError, "Someone crashed me"
+        end
+      end
+
+      def crash
+        lambda { call.crash_me }.should raise_error(StandardError, "Someone crashed me")
+        sleep 0.5
+      end
+
+      it "is removed from the collection" do
+        call_id = call.id
+        size_before = subject.size
+
+        subject << call
+        subject.size.should be > size_before
+        subject[call_id].should be call
+
+        crash
+        subject.size.should be == size_before
+        subject[call_id].should be_nil
+      end
+
+      it "is sends a hangup command for the call" do
+        call_id = call.id
+        flexmock PunchblockPlugin, :client => flexmock('Client')
+        flexmock(PunchblockPlugin.client).should_receive(:execute_command).once.with(Punchblock::Command::Hangup.new, :async => true, :call_id => call_id)
+
+        subject << call
+
+        crash
+      end
+
+      it "shuts down the actor" do
+        crash
+        call.should_not be_alive
+      end
     end
   end
 end

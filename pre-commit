@@ -1,0 +1,15 @@
+#!/bin/bash
+rake encodeify
+
+# avoid committing :focus on rspec examples
+focus=', :focus'
+result=$(git grep -n -a "$focus" -- */**/*_spec.rb)
+
+if [ "$result" != '' ]; then
+  echo ""
+  echo "Refusing to commit a :focus tag in specs: "
+  echo ""
+  echo $result
+  echo ""
+  exit 1
+fi

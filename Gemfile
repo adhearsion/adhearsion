@@ -1,8 +1,3 @@
-source "http://rubygems.org"
+source :rubygems
 
 gemspec
-
-if RUBY_PLATFORM =~ /darwin/
-  gem 'growl_notify'
-  gem 'rb-fsevent'
-end
