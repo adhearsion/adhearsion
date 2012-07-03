@@ -1,4 +1,6 @@
 support/1.x.x
+ - Fix #speak bug in which tts text with "|" or "," would break under the :unimrcp engine
+
 1.2.6
   - Bugfix: Adhearsion was not explicitly closing dialplan.rb or events.rb files when loading them. This caused file descriptors to remain open on JRuby even though they were GC'd by CRuby.
 

@@ -926,11 +926,15 @@ module Adhearsion
               # app_unimrcp strips quotes, which will already be stripped by the AGI parser.
               # To work around this bug, we have to actually quote the arguments twice, once
               # in this method and again inside #execute.
+              #
               # Example from the logs:
-              # AGI Input: EXEC MRCPSynth "<speak xmlns=\"http://www.w3.org/2001/10/synthesis\" version=\"1.0\" xml:lang=\"en-US\"> <voice name=\"Paul\"> <prosody rate=\"1.0\">Howdy, stranger. How are you today?</prosody> </voice> </speak>"
-              # [Aug  3 13:39:02] VERBOSE[8495] logger.c:     -- AGI Script Executing Application: (MRCPSynth) Options: (<speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="en-US"> <voice name="Paul"> <prosody rate="1.0">Howdy, stranger. How are you today?</prosody> </voice> </speak>)
-              # [Aug  3 13:39:02] NOTICE[8495] app_unimrcp.c: Text to synthesize is: <speak xmlns=http://www.w3.org/2001/10/synthesis version=1.0 xml:lang=en-US> <voice name=Paul> <prosody rate=1.0>Howdy, stranger. How are you today?</prosody> </voice> </speak>
-              command = ['MRCPSynth', text.gsub(/["\\]/) { |m| "\\#{m}" }]
+              # (ruby):                    speak '<speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="en-US"> <voice name="Paul"> <prosody rate="1.0">Howdy, stranger. How are you today?</prosody> </voice> </speak>'
+              # adhearsion.log:            >>> EXEC MRCPSynth "<speak xmlns=\\\"http://www.w3.org/2001/10/synthesis\\\" version=\\\"1.0\\\" xml:lang=\\\"en-US\\\"> <voice name=\\\"Paul\\\"> <prosody rate=\\\"1.0\\\">Howdy\\, stranger. How are you today?</prosody> </voice> </speak>"
+              # asterisk/messages:         -- AGI Script Executing Application: (MRCPSynth) Options: (<speak xmlns=\"http://www.w3.org/2001/10/synthesis\" version=\"1.0\" xml:lang=\"en-US\"> <voice name=\"Paul\"> <prosody rate=\"1.0\">Howdy\, stranger. How are you today?</prosody> </voice> </speak>)
+              #                            [Jul  3 11:19:28] NOTICE[19533]: app_unimrcp.c:4480 app_synth_exec: Text to synthesize is: <speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="en-US"> <voice name="Paul"> <prosody rate="1.0">Howdy, stranger. How are you today?</prosody> </voice> </speak>
+              # Voiceware(TM) MRCP Server: |2012-07-03 11:19:28|0000|LOG_DETAIL|3124|SessionResourceThread> Text to do TTS> <speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="en-US"> <voice name="Paul"> <prosody rate="1.0">Howdy, stranger. How are you today?</prosody> </voice> </speak>
+              delimiter = Regexp.escape AHN_CONFIG.asterisk.argument_delimiter
+              command = ['MRCPSynth', text.gsub(/["\\#{delimiter}]/) { |m| "\\#{m}" }]
               args = []
               if options[:interrupt_digits]
                 args << "i=#{options[:interrupt_digits]}"
