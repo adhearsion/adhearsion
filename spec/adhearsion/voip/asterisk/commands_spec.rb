@@ -3009,6 +3009,41 @@ describe "speak command" do
       @speech_engines.unimrcp(mock_call, '<speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="en-US"> <voice name="Paul"> <prosody rate="1.0">Howdy, stranger. How are you today?</prosody> </voice> </speak>')
     end
 
+    context 'given funny characters in the TTS string' do
+      let(:asterisk_config) { flexmock 'An asterisk config' }
+
+      shared_examples_for 'a tts engine' do
+        it 'escapes asterisk argument delimiters' do
+          asterisk_config.should_receive(:argument_delimiter).and_return argument_delimiter
+          flexmock(Adhearsion::AHN_CONFIG).should_receive(:asterisk).and_return asterisk_config
+          mock_call.should_receive(:raw_response).once.with(raw_response).and_return pbx_success_response
+          @speech_engines.unimrcp mock_call, text, :interrupt_digits => 'any'
+        end
+      end
+
+      describe 'using asterisk 1.8' do
+        let(:argument_delimiter) { ',' }
+
+        context 'with a back-slash in the text' do
+          let(:text) { '\\' }
+          let(:raw_response) { 'EXEC MRCPSynth "\\\\\\\\","i=any"' }
+          it_behaves_like 'a tts engine'
+        end
+
+        context 'with a forward-slash in the text' do
+          let(:text) { '/' }
+          let(:raw_response) { 'EXEC MRCPSynth "/","i=any"' }
+          it_behaves_like 'a tts engine'
+        end
+
+        context 'with a single-quote in the text' do
+          let(:text) { "It's a dangerous business going out your front door." }
+          let(:raw_response) { %Q{EXEC MRCPSynth "It's a dangerous business going out your front door.","i=any"} }
+          it_behaves_like 'a tts engine'
+        end
+      end
+    end
+
     context "with barge in digits set" do
       it "should pass the i option for MRCPSynth" do
         mock_call.should_receive(:execute).with('MRCPSynth', 'hello', 'i=any').once.and_return pbx_result_response 0
