@@ -2988,11 +2988,6 @@ describe "speak command" do
       @output.read.should == "GET VARIABLE \"SWIFT_DTMF\"\n"
     end
 
-    it "should properly escape double-quotes (for XML) in the TTS string" do
-      mock_call.should_receive(:raw_response).once.with('EXEC MRCPSynth "<speak xmlns=\\\\\"http://www.w3.org/2001/10/synthesis\\\\\" version=\\\\\"1.0\\\\\" xml:lang=\\\\\"en-US\\\\\"> <voice name=\\\\\"Paul\\\\\"> <prosody rate=\\\\\"1.0\\\\\">Howdy, stranger. How are you today?</prosody> </voice> </speak>"').and_return pbx_success_response
-      @speech_engines.unimrcp(mock_call, '<speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="en-US"> <voice name="Paul"> <prosody rate="1.0">Howdy, stranger. How are you today?</prosody> </voice> </speak>')
-    end
-
     context "with barge in digits set" do
       it "should return the digit when :interruptible = true" do
         mock_call.should_receive(:execute).once.with('Swift', 'hello', 1, 1).and_return pbx_success_response
@@ -3007,6 +3002,11 @@ describe "speak command" do
       pbx_should_respond_with_success
       mock_call.should_receive(:execute).with('MRCPSynth', 'hello').once.and_return pbx_success_response
       @speech_engines.unimrcp(mock_call, 'hello')
+    end
+
+    it "should properly escape double-quotes (for XML) in the TTS string" do
+      mock_call.should_receive(:raw_response).once.with('EXEC MRCPSynth "<speak xmlns=\\\\\"http://www.w3.org/2001/10/synthesis\\\\\" version=\\\\\"1.0\\\\\" xml:lang=\\\\\"en-US\\\\\"> <voice name=\\\\\"Paul\\\\\"> <prosody rate=\\\\\"1.0\\\\\">Howdy, stranger. How are you today?</prosody> </voice> </speak>"').and_return pbx_success_response
+      @speech_engines.unimrcp(mock_call, '<speak xmlns="http://www.w3.org/2001/10/synthesis" version="1.0" xml:lang="en-US"> <voice name="Paul"> <prosody rate="1.0">Howdy, stranger. How are you today?</prosody> </voice> </speak>')
     end
 
     context "with barge in digits set" do
