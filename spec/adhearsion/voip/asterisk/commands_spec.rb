@@ -3010,6 +3010,7 @@ describe "speak command" do
     end
 
     context 'given funny characters in the TTS string' do
+      let(:default_text) { '|Pipes| and clubs may break my bones, but words never hurt.' }
       let(:asterisk_config) { flexmock 'An asterisk config' }
 
       shared_examples_for 'a tts engine' do
@@ -3021,8 +3022,24 @@ describe "speak command" do
         end
       end
 
+      describe 'using asterisk 1.4' do
+        let(:argument_delimiter) { '|' }
+
+        context 'with the argument delimiter in the text' do
+          let(:text) { default_text }
+          let(:raw_response) { 'EXEC MRCPSynth "\\\\|Pipes\\\\| and clubs may break my bones, but words never hurt."|"i=any"' }
+          it_behaves_like 'a tts engine'
+        end
+      end
+
       describe 'using asterisk 1.8' do
         let(:argument_delimiter) { ',' }
+
+        context 'with the argument delimiter in the text' do
+          let(:text) { default_text }
+          let(:raw_response) { 'EXEC MRCPSynth "|Pipes| and clubs may break my bones\\\\, but words never hurt.","i=any"' }
+          it_behaves_like 'a tts engine'
+        end
 
         context 'with a back-slash in the text' do
           let(:text) { '\\' }
