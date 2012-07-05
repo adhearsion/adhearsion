@@ -26,7 +26,7 @@ module Adhearsion
       #   @param [Hash] options see below
       #
       # @option options [String] :from the caller id to be used when the call is placed. It is advised you properly adhere to the
-      #   policy of VoIP termination providers with respect to caller id values.
+      #   policy of VoIP termination providers with respect to caller id values. Defaults to the caller ID of the dialing call, so for normal bridging scenarios, you do not need to set this.
       #
       # @option options [Numeric] :for this option can be thought of best as a timeout.
       #   i.e. timeout after :for if no one answers the call
