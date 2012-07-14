@@ -7,6 +7,7 @@
   * Feature: Added `CallController#safely` which will catch and log `StandardError` in a call controller, but will not allow it to crash the controller
   * Bugfix: All output methods will now raise `Adhearsion::CallController::Output::PlaybackError` when output fails, instead of failing silently
   * Feature: Allow `Call#execute_controller` to take a block instead of a controller instance. Simplifies event-based execution of simple controllers (eg whisper into a call).
+  * Bugfix: `CallController#hangup` now prevents further execution of the controller
   * Bugfix: Calls which do not match any routes are rejected with an error
   * Bugfix: Calls are not accepted until a matching route is found
 
