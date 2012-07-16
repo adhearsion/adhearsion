@@ -131,6 +131,7 @@ module Adhearsion
         @end_reason = event.reason
         commands.terminate
         after(after_end_hold_time) { current_actor.terminate! }
+        throw :pass
       end
     end
 
