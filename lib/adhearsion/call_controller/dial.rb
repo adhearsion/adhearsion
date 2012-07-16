@@ -31,6 +31,8 @@ module Adhearsion
       # @option options [Numeric] :for this option can be thought of best as a timeout.
       #   i.e. timeout after :for if no one answers the call
       #
+      # @option options [CallController] :confirm the controller to execute on answered outbound calls to give an opportunity to screen the call. The calls will be joined if the outbound call is still active after this controller completes.
+      #
       # @example Make a call to the PSTN using my SIP provider for VoIP termination
       #   dial "SIP/19095551001@my.sip.voip.terminator.us"
       #
@@ -68,6 +70,8 @@ module Adhearsion
 
           _for = @options.delete :for
           @options[:timeout] ||= _for if _for
+
+          @confirmation_controller = @options.delete :confirm
         end
 
         def run
@@ -83,6 +87,11 @@ module Adhearsion
         def prep_calls
           @calls = @targets.map do |target, specific_options|
             new_call = OutboundCall.new
+
+            new_call.on_end do |event|
+              @latch.countdown! unless new_call["dial_countdown_#{@call.id}"]
+              status.error! if event.reason == :error
+            end
 
             new_call.on_answer do |event|
               @calls.each do |call_to_hangup, _|
@@ -100,14 +109,16 @@ module Adhearsion
                 @latch.countdown!
               end
 
-              logger.debug "#dial joining call #{new_call.id} to #{@call.id}"
-              new_call.join @call
-              status.answer!
-            end
+              if @confirmation_controller
+                new_call.execute_controller @confirmation_controller.new(new_call), lambda { |call| call.signal :confirmed }
+                new_call.wait :confirmed
+              end
 
-            new_call.on_end do |event|
-              @latch.countdown! unless new_call["dial_countdown_#{@call.id}"]
-              status.error! if event.reason == :error
+              if new_call.alive? && new_call.active?
+                logger.debug "#dial joining call #{new_call.id} to #{@call.id}"
+                new_call.join @call
+                status.answer!
+              end
             end
 
             [new_call, target, specific_options]
