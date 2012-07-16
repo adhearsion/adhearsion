@@ -375,7 +375,7 @@ module Adhearsion
           end
         end
 
-        describe "with a confirmation controller" do# , focus: true do
+        describe "with a confirmation controller" do
           let(:confirmation_controller) do
             latch = confirmation_latch
             Class.new(Adhearsion::CallController) do
@@ -441,7 +441,6 @@ module Adhearsion
               latch.wait(1).should be_false
 
               other_mock_call << mock_answered
-              # other_mock_call << mock_end
 
               latch.wait(1).should be_true
             end
