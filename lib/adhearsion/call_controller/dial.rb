@@ -70,6 +70,8 @@ module Adhearsion
 
           _for = @options.delete :for
           @options[:timeout] ||= _for if _for
+
+          @confirmation_controller = @options.delete :confirm
         end
 
         def run
@@ -107,8 +109,8 @@ module Adhearsion
                 @latch.countdown!
               end
 
-              if @options[:confirm]
-                new_call.execute_controller @options[:confirm].new(new_call), lambda { |call| call.signal :confirmed }
+              if @confirmation_controller
+                new_call.execute_controller @confirmation_controller.new(new_call), lambda { |call| call.signal :confirmed }
                 new_call.wait :confirmed
               end
 
