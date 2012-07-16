@@ -51,21 +51,21 @@ module Adhearsion
           dial_thread.join.should be_true
         end
 
+        let(:options) { { :foo => :bar } }
+
+        def dial_in_thread
+          Thread.new do
+            status = subject.dial to, options
+            latch.countdown!
+            status
+          end
+        end
+
         describe "without a block" do
           before do
             flexmock(other_mock_call).should_receive(:dial).once.with(to, options)
             flexmock(other_mock_call).should_receive(:hangup).once
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
-          end
-
-          let(:options) { { :foo => :bar } }
-
-          def dial_in_thread
-            Thread.new do
-              status = subject.dial to, options
-              latch.countdown!
-              status
-            end
           end
 
           it "blocks the original controller until the new call ends" do
@@ -372,6 +372,79 @@ module Adhearsion
             t.join
             status = t.value
             status.result.should be == :timeout
+          end
+        end
+
+        describe "with a confirmation controller" do# , focus: true do
+          let(:confirmation_controller) do
+            latch = confirmation_latch
+            Class.new(Adhearsion::CallController) do
+              @@confirmation_latch = latch
+
+              def run
+                @@confirmation_latch.countdown!
+                call['confirm'] || hangup
+              end
+            end
+          end
+
+          let(:confirmation_latch) { CountDownLatch.new 1 }
+
+          let(:options) { {:confirm => confirmation_controller} }
+
+          before do
+            flexmock(other_mock_call).should_receive(:dial).once
+            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+          end
+
+          context "when an outbound call is answered" do
+            it "should execute the specified confirmation controller" do
+              flexmock(other_mock_call).should_receive(:hangup).twice.and_return do
+                other_mock_call << mock_end
+              end
+              other_mock_call['confirm'] = false
+
+              dial_in_thread
+
+              latch.wait(0.1).should be_false
+
+              other_mock_call << mock_answered
+
+              confirmation_latch.wait(1).should be_true
+              latch.wait(2).should be_true
+            end
+
+            it "should join the calls if the call is still active after execution of the call controller" do
+              flexmock(other_mock_call).should_receive(:hangup).once
+              other_mock_call['confirm'] = true
+              flexmock(other_mock_call).should_receive(:join).once.with(call)
+
+              dial_in_thread
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_answered
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+            end
+
+            it "should not join the calls if the call is not active after execution of the call controller" do
+              flexmock(other_mock_call).should_receive(:hangup).twice.and_return do
+                other_mock_call << mock_end
+              end
+              other_mock_call['confirm'] = false
+              flexmock(other_mock_call).should_receive(:join).never.with(call)
+
+              dial_in_thread
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_answered
+              # other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+            end
           end
         end
       end#describe #dial
