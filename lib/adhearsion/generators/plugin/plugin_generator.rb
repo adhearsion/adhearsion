@@ -12,6 +12,7 @@ module Adhearsion
 
       def create_plugin
         @plugin_file = @plugin_name.underscore
+        @plugin_name = @plugin_name.camelize
         self.destination_root = '.'
 
         empty_directory @plugin_file
