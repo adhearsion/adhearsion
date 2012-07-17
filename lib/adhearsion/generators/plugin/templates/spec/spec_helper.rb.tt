@@ -1,5 +1,4 @@
 require 'adhearsion'
-require 'mocha'
 require '<%= @plugin_file %>'
 
 RSpec.configure do |config|
