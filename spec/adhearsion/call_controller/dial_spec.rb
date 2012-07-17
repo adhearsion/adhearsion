@@ -419,7 +419,7 @@ module Adhearsion
               other_mock_call['confirm'] = true
               flexmock(other_mock_call).should_receive(:join).once.with(call)
 
-              dial_in_thread
+              t = dial_in_thread
 
               latch.wait(1).should be_false
 
@@ -427,6 +427,10 @@ module Adhearsion
               other_mock_call << mock_end
 
               latch.wait(1).should be_true
+
+              t.join
+              status = t.value
+              status.result.should be == :answer
             end
 
             it "should not join the calls if the call is not active after execution of the call controller" do
@@ -436,13 +440,17 @@ module Adhearsion
               other_mock_call['confirm'] = false
               flexmock(other_mock_call).should_receive(:join).never.with(call)
 
-              dial_in_thread
+              t = dial_in_thread
 
               latch.wait(1).should be_false
 
               other_mock_call << mock_answered
 
               latch.wait(1).should be_true
+
+              t.join
+              status = t.value
+              status.result.should be == :unconfirmed
             end
           end
         end

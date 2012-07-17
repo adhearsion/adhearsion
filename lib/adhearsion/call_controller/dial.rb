@@ -110,6 +110,7 @@ module Adhearsion
               end
 
               if @confirmation_controller
+                status.unconfirmed!
                 new_call.execute_controller @confirmation_controller.new(new_call), lambda { |call| call.signal :confirmed }
                 new_call.wait :confirmed
               end
@@ -181,6 +182,11 @@ module Adhearsion
         # @private
         def error!
           @result ||= :error
+        end
+
+        # @private
+        def unconfirmed!
+          @result ||= :unconfirmed
         end
       end
 
