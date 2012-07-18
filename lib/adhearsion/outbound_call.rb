@@ -55,14 +55,14 @@ module Adhearsion
     end
 
     def run_router_on_answer
-      register_event_handler :class => Punchblock::Event::Answered do |event|
+      register_event_handler Punchblock::Event::Answered do |event|
         run_router
         throw :pass
       end
     end
 
     def on_answer(&block)
-      register_event_handler :class => Punchblock::Event::Answered do |event|
+      register_event_handler Punchblock::Event::Answered do |event|
         block.call event
         throw :pass
       end
