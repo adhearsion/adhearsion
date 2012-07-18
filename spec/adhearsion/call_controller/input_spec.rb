@@ -164,7 +164,7 @@ module Adhearsion
 
         it "executes failure hook and returns :failure if menu fails" do
           menu_instance.should_receive(:should_continue?).and_return(false)
-          menu_instance.should_receive(:execute_failure_hook)
+          menu_instance.should_receive(:execute_failure_hook).once
           result = subject.menu sound_files
           result.menu.should be menu_instance
           result.response.should be response
@@ -173,8 +173,8 @@ module Adhearsion
         it "executes invalid hook if input is invalid" do
           menu_instance.should_receive(:should_continue?).twice.and_return(true)
           menu_instance.should_receive(:continue).and_return(result_invalid, result_done)
-          menu_instance.should_receive(:execute_invalid_hook)
-          menu_instance.should_receive(:restart!)
+          menu_instance.should_receive(:execute_invalid_hook).once
+          menu_instance.should_receive(:restart!).once
           result = subject.menu sound_files
           result.menu.should be menu_instance
           result.response.should be response
@@ -184,8 +184,8 @@ module Adhearsion
           menu_instance.should_receive(:should_continue?).twice.and_return(true)
           menu_instance.should_receive(:continue).and_return(result_get_another_or_timeout, result_done)
           subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return(nil)
-          menu_instance.should_receive(:execute_timeout_hook)
-          menu_instance.should_receive(:restart!)
+          menu_instance.should_receive(:execute_timeout_hook).once
+          menu_instance.should_receive(:restart!).once
           subject.menu sound_files
         end
 
@@ -193,7 +193,7 @@ module Adhearsion
           menu_instance.should_receive(:should_continue?).twice.and_return(true)
           menu_instance.should_receive(:continue).and_return(result_get_another_or_timeout, result_done)
           subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return("1")
-          menu_instance.should_receive(:<<).with("1")
+          menu_instance.should_receive(:<<).with("1").once
           subject.menu sound_files
         end
 
@@ -201,14 +201,14 @@ module Adhearsion
           menu_instance.should_receive(:should_continue?).and_return(true)
           menu_instance.should_receive(:continue).and_return(result_get_another_or_finish)
           subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return(nil)
-          subject.should_receive(:jump_to).with(:match_object, :extension => :new_extension)
+          subject.should_receive(:jump_to).with(:match_object, :extension => :new_extension).once
           subject.menu sound_files
         end
 
         it "jumps to payload when result is found" do
           menu_instance.should_receive(:should_continue?).and_return(true)
           menu_instance.should_receive(:continue).and_return(result_found)
-          subject.should_receive(:jump_to).with(:match_object, :extension => :new_extension)
+          subject.should_receive(:jump_to).with(:match_object, :extension => :new_extension).once
           result = subject.menu sound_files
           result.menu.should be menu_instance
           result.response.should be response
@@ -238,11 +238,8 @@ module Adhearsion
           let(:result_get_another_or_finish)  { MenuDSL::Menu::MenuGetAnotherDigitOrFinish.new(:match_object, :new_extension) }
           let(:result_found)                  { MenuDSL::Menu::MenuResultFound.new(:match_object, :new_extension) }
 
-          let(:status)    { :foo }
-          let(:response)  { '1234' }
-
           before do
-            flexmock menu_instance, :status => status, :result => response
+            flexmock menu_instance
             flexmock(MenuDSL::Menu).should_receive(:new).and_return(menu_instance)
           end
 
@@ -250,35 +247,36 @@ module Adhearsion
             menu_instance.should_receive(:continue).and_return(result_done)
             result = subject.ask sound_files
             result.menu.should be menu_instance
-            result.response.should be response
+            result.response.should == ''
           end
 
           it "exits the function if MenuTerminated" do
             menu_instance.should_receive(:continue).and_return(result_terminated)
             result = subject.ask sound_files
             result.menu.should be menu_instance
-            result.response.should be response
+            result.response.should == ''
           end
 
           it "exits the function if MenuLimitReached" do
             menu_instance.should_receive(:continue).and_return(result_limit_reached)
             result = subject.ask sound_files
             result.menu.should be menu_instance
-            result.response.should be response
+            result.response.should == ''
           end
 
           it "plays audio, then executes timeout hook if input times out" do
             menu_instance.should_receive(:continue).and_return(result_get_another_or_timeout, result_done)
-            subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return(nil)
-            menu_instance.should_receive(:execute_timeout_hook)
-            menu_instance.should_receive(:restart!)
-            subject.ask sound_files
+            subject.should_receive(:play_sound_files_for_menu).once.with(menu_instance, sound_files).and_return(nil)
+            result = subject.ask sound_files
+            result.menu.should be menu_instance
+            result.response.should == ''
+            result.status.should be :timeout
           end
 
           it "plays audio, then adds digit to digit buffer if input is received" do
             menu_instance.should_receive(:continue).and_return(result_get_another_or_timeout, result_done)
-            subject.should_receive(:play_sound_files_for_menu).with(menu_instance, sound_files).and_return("1")
-            menu_instance.should_receive(:<<).with("1")
+            subject.should_receive(:play_sound_files_for_menu).once.with(menu_instance, sound_files).and_return("1")
+            menu_instance.should_receive(:<<).with("1").once
             subject.ask sound_files
           end
         end
