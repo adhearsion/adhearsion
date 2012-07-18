@@ -15,6 +15,7 @@
   * Bugfix: Give sensible dependency defaults for generated plugins
   * Bugfix: Mocha-fail in generated plugins
   * Bugfix: Plugins generated with a snake_case name did not have the appropriate constants camelized
+  * Bugfix: `CallController#dial` should not create outbound calls if the dialing party hangs up before it executes
 
 # [2.0.1](https://github.com/adhearsion/adhearsion/compare/v2.0.0...v2.0.1) - [2012-06-04](https://rubygems.org/gems/adhearsion/versions/2.0.1)
   * Bugfix: Avoid infinitely recursive exception handlers

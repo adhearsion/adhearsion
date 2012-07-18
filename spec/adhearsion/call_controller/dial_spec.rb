@@ -166,6 +166,21 @@ module Adhearsion
           end
         end
 
+        describe "when the caller has already hung up" do
+          before do
+            call << mock_end
+          end
+
+          it "should raise Call::Hangup" do
+            expect { subject.dial to, options }.to raise_error(Call::Hangup)
+          end
+
+          it "should not make any outbound calls" do
+            flexmock(OutboundCall).should_receive(:new).never
+            expect { subject.dial to, options }.to raise_error
+          end
+        end
+
         describe "with multiple third parties specified" do
           let(:options) { {} }
           let(:other_options) { options }

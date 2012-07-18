@@ -56,6 +56,7 @@ module Adhearsion
         attr_accessor :status
 
         def initialize(to, options, latch, call)
+          raise Call::Hangup unless call.alive? && call.active?
           @options, @latch, @call = options, latch, call
           @targets = to.respond_to?(:has_key?) ? to : Array(to)
           set_defaults
