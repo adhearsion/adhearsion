@@ -8,6 +8,10 @@ module Adhearsion
         def to_s
           response
         end
+
+        def inspect
+          "#<Adhearsion::CallController::Input::Result response=#{response.inspect}, status=#{status.inspect}>"
+        end
       end
 
       #
