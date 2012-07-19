@@ -34,7 +34,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'rake'
   s.add_runtime_dependency 'ruby_speech', ["~> 1.0"]
   s.add_runtime_dependency 'thor'
-  s.add_runtime_dependency 'uuid'
 
   s.add_development_dependency 'aruba', "~> 0.4"
   s.add_development_dependency 'ci_reporter'

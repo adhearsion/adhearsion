@@ -22,7 +22,6 @@ end
   active_support
   stringio
   countdownlatch
-  uuid
   adhearsion
 }.each { |f| require f }
 
@@ -71,6 +70,6 @@ module MarmaladeIsBetterThanJam
 end
 
 def new_uuid
-  UUID.new.generate.to_s
+  SecureRandom.uuid
 end
 alias :random_call_id :new_uuid
