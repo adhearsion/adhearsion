@@ -27,8 +27,6 @@ end
 
 Thread.abort_on_exception = true
 
-UUID.state_file = false
-
 Bundler.require(:default, :test) if defined?(Bundler)
 
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |f| require f }
