@@ -201,7 +201,6 @@ module Adhearsion
 
     [ :answer,
       :reject,
-      :hangup,
       :mute,
       :unmute].each do |method_name|
       describe "##{method_name}" do
@@ -210,6 +209,14 @@ module Adhearsion
           flexmock(subject.call).should_receive(method_name).once.ordered
           subject.send method_name
         end
+      end
+    end
+
+    describe "#hangup" do
+      it "delegates to the call, blocking first until it is allowed to execute" do
+        flexmock(subject).should_receive(:block_until_resumed).once.ordered
+        flexmock(subject.call).should_receive(:hangup).once.ordered
+        lambda { subject.send :hangup }.should raise_error Call::Hangup
       end
     end
 
@@ -418,7 +425,7 @@ describe ExampleCallController do
   it "should execute the after_call callbacks after the call is hung up" do
     subject.should_receive(:join_to_conference).once.ordered
     subject.should_receive(:clean_up_models).twice.ordered
-    subject.should_receive(:foobar).once.ordered
+    subject.should_receive(:foobar).never
     subject.execute!
   end
 

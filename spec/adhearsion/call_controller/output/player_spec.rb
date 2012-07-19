@@ -43,6 +43,12 @@ module Adhearsion
             expect_component_execution Punchblock::Component::Output.new(:ssml => content), Adhearsion::Error
             lambda { subject.output content }.should raise_error(PlaybackError)
           end
+
+          it "raises a Playback Error if the component ends due to an error" do
+            e = Call::Hangup.new
+            expect_component_execution Punchblock::Component::Output.new(:ssml => content), e
+            lambda { subject.output content }.should raise_error(e)
+          end
         end
 
         describe "#play_ssml" do

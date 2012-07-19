@@ -91,6 +91,10 @@ module Adhearsion
           digit_buffer.clear!
         end
 
+        def timeout!
+          @status = :timeout
+        end
+
         def execute_invalid_hook
           builder.execute_hook_for :invalid, digit_buffer_string
         end

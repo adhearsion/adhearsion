@@ -7,9 +7,9 @@ module Adhearsion
     delegate :to, :from, :to => :dial_command, :allow_nil => true
 
     class << self
-      def originate(to, opts = {})
+      def originate(to, opts = {}, &controller_block)
         new.tap do |call|
-          call.run_router_on_answer
+          call.execute_controller_or_router_on_answer opts.delete(:controller), &controller_block
           call.dial to, opts
         end
       end
@@ -55,16 +55,25 @@ module Adhearsion
     end
 
     def run_router_on_answer
-      register_event_handler :class => Punchblock::Event::Answered do |event|
+      register_event_handler Punchblock::Event::Answered do |event|
         run_router
         throw :pass
       end
     end
 
     def on_answer(&block)
-      register_event_handler :class => Punchblock::Event::Answered do |event|
+      register_event_handler Punchblock::Event::Answered do |event|
         block.call event
         throw :pass
+      end
+    end
+
+    def execute_controller_or_router_on_answer(controller, &controller_block)
+      if controller || controller_block
+        route = Router::Route.new 'inbound', controller, &controller_block
+        on_answer { route.dispatcher.call current_actor }
+      else
+        run_router_on_answer
       end
     end
   end

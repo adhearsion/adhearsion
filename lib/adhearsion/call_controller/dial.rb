@@ -26,10 +26,12 @@ module Adhearsion
       #   @param [Hash] options see below
       #
       # @option options [String] :from the caller id to be used when the call is placed. It is advised you properly adhere to the
-      #   policy of VoIP termination providers with respect to caller id values.
+      #   policy of VoIP termination providers with respect to caller id values. Defaults to the caller ID of the dialing call, so for normal bridging scenarios, you do not need to set this.
       #
       # @option options [Numeric] :for this option can be thought of best as a timeout.
       #   i.e. timeout after :for if no one answers the call
+      #
+      # @option options [CallController] :confirm the controller to execute on answered outbound calls to give an opportunity to screen the call. The calls will be joined if the outbound call is still active after this controller completes.
       #
       # @example Make a call to the PSTN using my SIP provider for VoIP termination
       #   dial "SIP/19095551001@my.sip.voip.terminator.us"
@@ -54,6 +56,7 @@ module Adhearsion
         attr_accessor :status
 
         def initialize(to, options, latch, call)
+          raise Call::Hangup unless call.alive? && call.active?
           @options, @latch, @call = options, latch, call
           @targets = to.respond_to?(:has_key?) ? to : Array(to)
           set_defaults
@@ -68,6 +71,8 @@ module Adhearsion
 
           _for = @options.delete :for
           @options[:timeout] ||= _for if _for
+
+          @confirmation_controller = @options.delete :confirm
         end
 
         def run
@@ -83,6 +88,11 @@ module Adhearsion
         def prep_calls
           @calls = @targets.map do |target, specific_options|
             new_call = OutboundCall.new
+
+            new_call.on_end do |event|
+              @latch.countdown! unless new_call["dial_countdown_#{@call.id}"]
+              status.error! if event.reason == :error
+            end
 
             new_call.on_answer do |event|
               @calls.each do |call_to_hangup, _|
@@ -100,14 +110,17 @@ module Adhearsion
                 @latch.countdown!
               end
 
-              logger.debug "#dial joining call #{new_call.id} to #{@call.id}"
-              new_call.join @call
-              status.answer!
-            end
+              if @confirmation_controller
+                status.unconfirmed!
+                new_call.execute_controller @confirmation_controller.new(new_call), lambda { |call| call.signal :confirmed }
+                new_call.wait :confirmed
+              end
 
-            new_call.on_end do |event|
-              @latch.countdown! unless new_call["dial_countdown_#{@call.id}"]
-              status.error! if event.reason == :error
+              if new_call.alive? && new_call.active?
+                logger.debug "#dial joining call #{new_call.id} to #{@call.id}"
+                new_call.join @call
+                status.answer!
+              end
             end
 
             [new_call, target, specific_options]
@@ -170,6 +183,11 @@ module Adhearsion
         # @private
         def error!
           @result ||= :error
+        end
+
+        # @private
+        def unconfirmed!
+          @result ||= :unconfirmed
         end
       end
 

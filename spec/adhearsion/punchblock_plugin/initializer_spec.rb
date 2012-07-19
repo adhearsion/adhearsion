@@ -221,10 +221,6 @@ module Adhearsion
         context "when when Adhearsion::Process is in :running" do
           let(:process_state) { :running }
 
-          it "should accept the call" do
-            mock_call.should_receive(:accept).once
-          end
-
           it "should execute the dispatcher provided by the router" do
             controller = Class.new
             Adhearsion.router do
