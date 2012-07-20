@@ -19,10 +19,8 @@ module Adhearsion
             username = Blather::JID.new username
             username = Blather::JID.new username.node, username.domain, resource unless username.resource
             username = username.to_s
-            port = 5222
             Punchblock::Connection::XMPP
           when :asterisk
-            port = 5038
             Punchblock::Connection::Asterisk
           end
 
@@ -31,7 +29,7 @@ module Adhearsion
             :password           => self.config.password,
             :connection_timeout => self.config.connection_timeout,
             :host               => self.config.host,
-            :port               => self.config.port.nil? ? port : self.config.port,
+            :port               => self.config.port,
             :root_domain        => self.config.root_domain,
             :calls_domain       => self.config.calls_domain,
             :mixers_domain      => self.config.mixers_domain,
