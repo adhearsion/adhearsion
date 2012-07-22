@@ -23,24 +23,30 @@ module Adhearsion
         !guarded? guards, call
       end
 
-      def dispatcher
-        @dispatcher ||= lambda do |call, callback = nil|
-          controller = if target.respond_to?(:call)
-            CallController.new call, &target
-          else
-            target.new call
-          end
-
-          call.accept
-
-          call.execute_controller controller, lambda { |call_actor|
-            begin
-              call_actor.hangup
-            rescue Call::Hangup
-            end
-            callback.call if callback
-          }
+      def dispatch(call, callback = nil)
+        controller = if target.respond_to?(:call)
+          CallController.new call, &target
+        else
+          target.new call
         end
+
+        call.accept if accepting?
+
+        call.execute_controller controller, lambda { |call_actor|
+          begin
+            call_actor.hangup
+          rescue Call::Hangup
+          end
+          callback.call if callback
+        }
+      end
+
+      def evented?
+        false
+      end
+
+      def accepting?
+        true
       end
 
       def inspect

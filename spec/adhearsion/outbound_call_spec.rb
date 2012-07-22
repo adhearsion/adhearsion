@@ -36,8 +36,7 @@ module Adhearsion
         flexmock(mock_call.wrapped_object).should_receive(:dial).once
 
         mock_dispatcher = flexmock 'dispatcher'
-        mock_dispatcher.should_receive(:call).once.with mock_call
-        flexmock(Adhearsion.router).should_receive(:handle).once.with(mock_call).and_return mock_dispatcher
+        flexmock(Adhearsion.router).should_receive(:handle).once.with(mock_call)
 
         OutboundCall.originate(to) << Punchblock::Event::Answered.new
       end

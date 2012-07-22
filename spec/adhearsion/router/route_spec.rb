@@ -14,6 +14,11 @@ module Adhearsion
           ]
         end
 
+        subject { Route.new name }
+
+        it { should_not be_evented }
+        it { should be_accepting }
+
         describe "with a class target and guards" do
           let(:target) { CallController }
 
@@ -112,17 +117,17 @@ module Adhearsion
 
           it "should accept the call" do
             flexmock(call).should_receive(:accept).once
-            route.dispatcher.call call
+            route.dispatch call
           end
 
           it "should instruct the call to use an instance of the controller" do
             flexmock(call).should_receive(:execute_controller).once.with controller, Proc
-            route.dispatcher.call call
+            route.dispatch call
           end
 
           it "should hangup the call after all controllers have executed" do
             flexmock(call).should_receive(:hangup).once
-            route.dispatcher.call call, lambda { latch.countdown! }
+            route.dispatch call, lambda { latch.countdown! }
             latch.wait(2).should be true
           end
 
@@ -131,7 +136,7 @@ module Adhearsion
 
             it "should not raise an exception" do
               lambda do
-                route.dispatcher.call call, lambda { latch.countdown! }
+                route.dispatch call, lambda { latch.countdown! }
                 latch.wait(2).should be true
               end.should_not raise_error
             end
@@ -149,7 +154,7 @@ module Adhearsion
             flexmock(call).should_receive(:execute_controller).once.with(CallController, Proc).and_return do |controller|
               controller.block.call.should be == :foobar
             end
-            route.dispatcher.call call
+            route.dispatch call
           end
         end
       end

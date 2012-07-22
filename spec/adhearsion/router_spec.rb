@@ -53,6 +53,64 @@ module Adhearsion
           subject[2].guards.should be == []
           subject[2].target.should be_a Proc
         end
+
+        context "as evented" do
+          let(:router) do
+            Router.new do
+              route 'calls from fred', FooBarController, :from => 'fred'
+              evented do
+                route 'catchall' do |call|
+                  :foo
+                end
+              end
+            end
+          end
+
+          it "should create a route which is evented" do
+            subject[0].should_not be_evented
+            subject[1].should be_evented
+          end
+        end
+
+        context "as unaccepting" do
+          let(:router) do
+            Router.new do
+              route 'calls from fred', FooBarController, :from => 'fred'
+              unaccepting do
+                route 'catchall' do |call|
+                  :foo
+                end
+              end
+            end
+          end
+
+          it "should create a route with is unaccepting" do
+            subject[0].should be_accepting
+            subject[1].should_not be_accepting
+          end
+        end
+
+        context "as combined evented/unaccepting" do
+          let(:router) do
+            Router.new do
+              route 'calls from fred', FooBarController, :from => 'fred'
+              unaccepting do
+                evented do
+                  route 'catchall' do |call|
+                    :foo
+                  end
+                end
+              end
+            end
+          end
+
+          it "should create a route which is evented and unaccepting" do
+            subject[0].should be_accepting
+            subject[0].should_not be_evented
+            subject[1].should be_evented
+            subject[1].should_not be_accepting
+          end
+        end
       end
 
       describe "matching a call" do
@@ -99,8 +157,9 @@ module Adhearsion
         let(:call) { flexmock 'Adhearsion::Call', :id => 'abc123' }
         let(:route) { subject.routes.first }
 
-        it "should return the route's dispatcher" do
-          subject.handle(call).should be route.dispatcher
+        it "should dispatch via the route" do
+          flexmock(route).should_receive(:dispatch).once.with call
+          subject.handle call
         end
 
         context "when there are no routes" do
@@ -112,7 +171,7 @@ module Adhearsion
 
           it "should return a dispatcher which rejects the call as an error" do
             call.should_receive(:reject).once.with(:error)
-            subject.handle(call).call call
+            subject.handle call
           end
         end
 
@@ -127,7 +186,7 @@ module Adhearsion
 
           it "should return a dispatcher which rejects the call as an error" do
             call.should_receive(:reject).once.with(:error)
-            subject.handle(call).call call
+            subject.handle call
           end
         end
       end

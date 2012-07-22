@@ -140,8 +140,7 @@ module Adhearsion
               logger.info "Declining call because the process is not yet running."
               call.reject :decline
             when :running
-              dispatcher = Adhearsion.router.handle call
-              dispatcher.call call
+              Adhearsion.router.handle call
             else
               call.reject :error
             end

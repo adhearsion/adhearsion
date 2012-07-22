@@ -41,7 +41,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'flexmock'
   s.add_development_dependency 'guard-cucumber'
   s.add_development_dependency 'guard-rspec'
-  s.add_development_dependency 'rspec', ["~> 2.7.0"]
+  s.add_development_dependency 'rspec', ["~> 2.11.0"]
   s.add_development_dependency 'ruby_gntp'
   s.add_development_dependency 'simplecov'
   s.add_development_dependency 'simplecov-rcov'

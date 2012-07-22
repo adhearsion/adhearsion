@@ -164,7 +164,7 @@ module Adhearsion
 
         it 'should preserve a Punchblock::ProtocolError exception and give up' do
           mock_client.should_receive(:run).and_raise Punchblock::ProtocolError
-          expect { Initializer.connect_to_server }.should raise_error Punchblock::ProtocolError
+          expect { Initializer.connect_to_server }.to raise_error Punchblock::ProtocolError
         end
 
         it 'should not attempt to reconnect if Adhearsion is shutting down' do
@@ -210,13 +210,11 @@ module Adhearsion
         context "when when Adhearsion::Process is in :running" do
           let(:process_state) { :running }
 
-          it "should execute the dispatcher provided by the router" do
-            controller = Class.new
+          it "should dispatch via the router" do
             Adhearsion.router do
-              route 'foobar', controller
+              route 'foobar', Class.new
             end
-            first_route = Adhearsion.router.routes.first
-            flexmock(first_route.dispatcher).should_receive(:call).once.with mock_call
+            flexmock(Adhearsion.router).should_receive(:handle).once.with mock_call
           end
         end
 
