@@ -5,6 +5,7 @@ module Adhearsion
     extend ActiveSupport::Autoload
 
     autoload :EventedRoute
+    autoload :OpenendedRoute
     autoload :Route
     autoload :UnacceptingRoute
 
@@ -43,6 +44,10 @@ module Adhearsion
 
       def unaccepting(&block)
         filtered_routes UnacceptingRoute, &block
+      end
+
+      def openended(&block)
+        filtered_routes OpenendedRoute, &block
       end
 
       def filtered_routes(mixin, &block)

@@ -90,6 +90,24 @@ module Adhearsion
           end
         end
 
+        context "as openended" do
+          let(:router) do
+            Router.new do
+              route 'calls from fred', FooBarController, :from => 'fred'
+              openended do
+                route 'catchall' do |call|
+                  :foo
+                end
+              end
+            end
+          end
+
+          it "should create a route which is openended" do
+            subject[0].should_not be_openended
+            subject[1].should be_openended
+          end
+        end
+
         context "as combined evented/unaccepting" do
           let(:router) do
             Router.new do

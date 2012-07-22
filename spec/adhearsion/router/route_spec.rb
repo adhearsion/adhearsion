@@ -131,6 +131,16 @@ module Adhearsion
             latch.wait(2).should be true
           end
 
+          context 'with the :ahn_prevent_hangup call variable set' do
+            before { call[:ahn_prevent_hangup] = true }
+
+            it "should not hangup the call after controller execution" do
+              flexmock(call).should_receive(:hangup).never
+              route.dispatch call, lambda { latch.countdown! }
+              latch.wait(2).should be true
+            end
+          end
+
           context "if hangup raises a Call::Hangup" do
             before { flexmock(call).should_receive(:hangup).once.and_raise Call::Hangup }
 

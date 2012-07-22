@@ -34,7 +34,11 @@ module Adhearsion
 
         call.execute_controller controller, lambda { |call_actor|
           begin
-            call_actor.hangup
+            if call_actor[:ahn_prevent_hangup]
+              logger.info "Call routing completed, keeping the call alive at controller/router request."
+            else
+              call_actor.hangup
+            end
           rescue Call::Hangup
           end
           callback.call if callback
@@ -47,6 +51,10 @@ module Adhearsion
 
       def accepting?
         true
+      end
+
+      def openended?
+        false
       end
 
       def inspect
