@@ -16,7 +16,7 @@ module Adhearsion
       username            "usera@127.0.0.1", :desc => "Authentication credentials"
       password            "1"              , :desc => "Authentication credentials"
       host                nil              , :desc => "Host punchblock needs to connect (where rayo/asterisk/freeswitch is located)"
-      port                nil              , :transform => Proc.new { |v| PunchblockPlugin.validate_number v }, :desc => "Port punchblock needs to connect (by default 5038 for Asterisk, 8021 for FreeSWITCH, 5222 for Rayo)"
+      port                Proc.new { PunchblockPlugin.default_port_for_platform platform }, :transform => Proc.new { |v| PunchblockPlugin.validate_number v }, :desc => "Port punchblock needs to connect"
       root_domain         nil              , :desc => "The root domain at which to address the server"
       calls_domain        nil              , :desc => "The domain at which to address calls"
       mixers_domain       nil              , :desc => "The domain at which to address mixers"
@@ -41,6 +41,15 @@ module Adhearsion
       def validate_number(value)
         return 1.0/0.0 if ["Infinity", 1.0/0.0].include? value
         value.to_i
+      end
+
+      def default_port_for_platform(platform)
+        case platform
+          when :freeswitch then 8021
+          when :asterisk then 5038
+          when :xmpp then 5222
+          else nil
+        end
       end
 
       def execute_component(command, timeout = 60)
