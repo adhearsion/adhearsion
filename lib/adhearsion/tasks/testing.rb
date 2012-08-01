@@ -47,9 +47,9 @@ namespace :test do
     end
 
     def task_type_for(component_path)
-      if Dir.exists?("#{component_path}/test")
+      if File.exists?("#{component_path}/test")
         :test_unit
-      elsif Dir.exists?("#{component_path}/spec")
+      elsif File.exists?("#{component_path}/spec")
         :rspec
       end
     end
