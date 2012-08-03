@@ -222,7 +222,6 @@ module Adhearsion
 
       #
       # Plays a single output, not only files, accepting interruption by one of the digits specified
-      # Currently still stops execution, will be fixed soon in Punchblock
       #
       # @param [Object] String or Hash specifying output and options
       # @param [String] String with the digits that are allowed to interrupt output
