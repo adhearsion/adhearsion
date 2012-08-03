@@ -33,7 +33,8 @@ module Adhearsion
     end
 
     def dial(to, options = {})
-      options.merge! :to => to
+      options = options.dup
+      options[:to] = to
       if options[:timeout]
         wait_timeout = options[:timeout]
         options[:timeout] = options[:timeout] * 1000

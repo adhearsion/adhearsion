@@ -138,6 +138,14 @@ module Adhearsion
         subject.dial to, :from => from
         Adhearsion.active_calls[call_id].should be subject
       end
+
+      it "should not modify the provided options" do
+        options = {:from => from}
+        original_options = Marshal.load(Marshal.dump(options))
+        options.should == original_options
+        subject.dial to, options
+        options.should == original_options
+      end
     end
 
     describe "basic control commands" do
