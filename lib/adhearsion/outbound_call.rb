@@ -72,7 +72,7 @@ module Adhearsion
     def execute_controller_or_router_on_answer(controller, &controller_block)
       if controller || controller_block
         route = Router::Route.new 'inbound', controller, &controller_block
-        on_answer { route.dispatcher.call current_actor }
+        on_answer { route.dispatch current_actor }
       else
         run_router_on_answer
       end
