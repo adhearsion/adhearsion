@@ -186,6 +186,17 @@ module Adhearsion
         end
       end
 
+      describe 'using FreeSWITCH' do
+        let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift} }
+
+        it 'should start an Asterisk PB connection' do
+          flexmock(Punchblock::Connection::Freeswitch).should_receive(:new).once.with(overrides).and_return do
+            flexmock 'Client', :event_handler= => true
+          end
+          initialize_punchblock overrides.merge(:platform => :freeswitch)
+        end
+      end
+
       it 'should place events from Punchblock into the event handler' do
         flexmock(Events.instance).should_receive(:trigger).once.with(:punchblock, offer)
         initialize_punchblock

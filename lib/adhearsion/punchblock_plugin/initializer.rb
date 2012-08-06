@@ -22,6 +22,8 @@ module Adhearsion
             Punchblock::Connection::XMPP
           when :asterisk
             Punchblock::Connection::Asterisk
+          when :freeswitch
+            Punchblock::Connection::Freeswitch
           end
 
           connection_options = {

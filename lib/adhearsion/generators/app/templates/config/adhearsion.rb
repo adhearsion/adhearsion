@@ -33,7 +33,14 @@ Adhearsion.config do |config|
   # config.punchblock.platform = :asterisk # Use Asterisk
   # config.punchblock.username = "" # Your AMI username
   # config.punchblock.password = "" # Your AMI password
-  # config.punchblock.host     = "127.0.0.1" # Your AMI host
+  # config.punchblock.host = "127.0.0.1" # Your AMI host
+
+  ##
+  # Use with FreeSWITCH
+  #
+  # config.punchblock.platform = :freeswitch # Use FreeSWITCH
+  # config.punchblock.password = "" # Your Inbound EventSocket password
+  # config.punchblock.host = "127.0.0.1" # Your IES host
 end
 
 Adhearsion::Events.draw do
