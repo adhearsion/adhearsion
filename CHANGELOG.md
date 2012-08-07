@@ -4,9 +4,9 @@
 
 ## Features
   * Initial support for FreeSWITCH
-  * CallController#record now has an :interruptible option that allows recording to be stopped by pressing any DTMF key
-  * Adhearsion.root and Adhearsion.root= are now available to return the root path to the application. Adhearsion.ahn_root= is deprecated.
-  * Adhearsion.deprecated added for internal use to clearly mark deprecated methods.
+  * `CallController#record` now has an `:interruptible` option that allows recording to be stopped by pressing any DTMF key
+  * `Adhearsion.root` and `Adhearsion.root=` are now available to return the root path to the application. `Adhearsion.ahn_root=` is deprecated.
+  * `Adhearsion.deprecated` added for internal use to clearly mark deprecated methods.
   * Added `Call#on_joined` and `Call#on_unjoined` for easily registering joined/unjoined handlers
   * Permit asynchronous output using bang version of methods (eg `CallController#play!`). return an output component, which can be stopped.
   * Added `CallController#safely` which will catch and log `StandardError` in a call controller, but will not allow it to crash the controller
