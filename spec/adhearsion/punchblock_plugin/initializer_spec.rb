@@ -20,6 +20,7 @@ module Adhearsion
           config.reconnect_attempts = 1.0/0.0
           config.reconnect_timer    = 5
           config.media_engine       = nil
+          config.default_voice      = nil
         end
       end
 
@@ -39,6 +40,7 @@ module Adhearsion
           config.reconnect_attempts = options[:reconnect_attempts] if options.has_key?(:reconnect_attempts)
           config.reconnect_timer    = options[:reconnect_timer] if options.has_key?(:reconnect_timer)
           config.media_engine       = options[:media_engine] if options.has_key?(:media_engine)
+          config.default_voice      = options[:default_voice] if options.has_key?(:default_voice)
         end
 
         Initializer.init
@@ -97,6 +99,10 @@ module Adhearsion
         it "should properly set the media_engine value" do
           subject.media_engine.should be == nil
         end
+
+        it "should properly set the default_voice value" do
+          subject.default_voice.should be == nil
+        end
       end
 
       it "starts the client with the correct resource" do
@@ -109,7 +115,7 @@ module Adhearsion
       end
 
       it "starts the client with any overridden settings" do
-        overrides = {:username => 'userb@127.0.0.1/foo', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift}
+        overrides = {:username => 'userb@127.0.0.1/foo', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift, :default_voice => :hal}
 
         flexmock(Punchblock::Connection::XMPP).should_receive(:new).once.with(overrides).and_return do
           flexmock 'Client', :event_handler= => true
@@ -176,7 +182,7 @@ module Adhearsion
       end
 
       describe 'using Asterisk' do
-        let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift} }
+        let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift, :default_voice => :hal} }
 
         it 'should start an Asterisk PB connection' do
           flexmock(Punchblock::Connection::Asterisk).should_receive(:new).once.with(overrides).and_return do
@@ -187,7 +193,7 @@ module Adhearsion
       end
 
       describe 'using FreeSWITCH' do
-        let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift} }
+        let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift, :default_voice => :hal} }
 
         it 'should start an Asterisk PB connection' do
           flexmock(Punchblock::Connection::Freeswitch).should_receive(:new).once.with(overrides).and_return do
