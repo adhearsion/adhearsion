@@ -1,27 +1,30 @@
 # develop
 
 # [2.1.0](https://github.com/adhearsion/adhearsion/compare/v2.0.1...v2.1.0) - [2012-08-07](https://rubygems.org/gems/adhearsion/versions/2.1.0)
+
+## Features
+  * Initial support for FreeSWITCH
   * CallController#record now has an :interruptible option that allows recording to be stopped by pressing any DTMF key
   * Adhearsion.root and Adhearsion.root= are now available to return the root path to the application. Adhearsion.ahn_root= is deprecated.
   * Adhearsion.deprecated added for internal use to clearly mark deprecated methods.
-  * Feature: Added `Call#on_joined` and `Call#on_unjoined` for easily registering joined/unjoined handlers
-  * Feature: Permit asynchronous output using bang version of methods (eg `CallController#play!`). return an output component, which can be stopped.
-  * Feature: Added `CallController#safely` which will catch and log `StandardError` in a call controller, but will not allow it to crash the controller
-  * Feature: Added the possibility to specify a confirmation controller on `#dial` operations
-  * Feature: Allow specifying a controller to run when originating an outbound call
-  * Feature: Allow `Call#execute_controller` to take a block instead of a controller instance. Simplifies event-based execution of simple controllers (eg whisper into a call).
-  * Feature: Initial support for FreeSWITCH
+  * Added `Call#on_joined` and `Call#on_unjoined` for easily registering joined/unjoined handlers
+  * Permit asynchronous output using bang version of methods (eg `CallController#play!`). return an output component, which can be stopped.
+  * Added `CallController#safely` which will catch and log `StandardError` in a call controller, but will not allow it to crash the controller
+  * Added the possibility to specify a confirmation controller on `#dial` operations
+  * Allow specifying a controller to run when originating an outbound call
+  * Allow `Call#execute_controller` to take a block instead of a controller instance. Simplifies event-based execution of simple controllers (eg whisper into a call).
 
-  * Bugfix: All output methods will now raise `Adhearsion::CallController::Output::PlaybackError` when output fails, instead of failing silently
-  * Bugfix: `CallController#hangup` now prevents further execution of the controller
-  * Bugfix: Calls which do not match any routes are rejected with an error
-  * Bugfix: Calls are not accepted until a matching route is found
-  * Bugfix: Give sensible dependency defaults for generated plugins
-  * Bugfix: Mocha-fail in generated plugins
-  * Bugfix: Plugins generated with a snake_case name did not have the appropriate constants camelized
-  * Bugfix: `CallController#dial` should not create outbound calls if the dialing party hangs up before it executes
-  * Bugfix: `CallController#ask` should not loop on timeout
-  * Bugfix: Default AMI port for Asterisk
+## Bugfixes
+  * All output methods will now raise `Adhearsion::CallController::Output::PlaybackError` when output fails, instead of failing silently
+  * `CallController#hangup` now prevents further execution of the controller
+  * Calls which do not match any routes are rejected with an error
+  * Calls are not accepted until a matching route is found
+  * Give sensible dependency defaults for generated plugins
+  * Fixed mocha-fail in generated plugins
+  * Plugins generated with a snake_case name did not have the appropriate constants camelized
+  * `CallController#dial` no longer creates outbound calls if the dialing party hangs up before it executes
+  * `CallController#ask` no longer loops on timeout
+  * Correct default port for Asterisk
 
 # [2.0.1](https://github.com/adhearsion/adhearsion/compare/v2.0.0...v2.0.1) - [2012-06-04](https://rubygems.org/gems/adhearsion/versions/2.0.1)
   * Bugfix: Avoid infinitely recursive exception handlers
