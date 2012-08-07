@@ -13,6 +13,10 @@
   * Added the possibility to specify a confirmation controller on `#dial` operations
   * Allow specifying a controller to run when originating an outbound call
   * Allow `Call#execute_controller` to take a block instead of a controller instance. Simplifies event-based execution of simple controllers (eg whisper into a call).
+  * Allow route modifiers such that they:
+    ** Do not accept calls that match
+    ** Do not execute a controller
+    ** Do not hangup after controller execution
 
 ## Bugfixes
   * All output methods will now raise `Adhearsion::CallController::Output::PlaybackError` when output fails, instead of failing silently
