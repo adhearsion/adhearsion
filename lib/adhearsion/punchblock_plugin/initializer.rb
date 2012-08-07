@@ -19,9 +19,11 @@ module Adhearsion
             username = Blather::JID.new username
             username = Blather::JID.new username.node, username.domain, resource unless username.resource
             username = username.to_s
-            ::Punchblock::Connection::XMPP
+            Punchblock::Connection::XMPP
           when :asterisk
-            ::Punchblock::Connection::Asterisk
+            Punchblock::Connection::Asterisk
+          when :freeswitch
+            Punchblock::Connection::Freeswitch
           end
 
           connection_options = {
@@ -33,11 +35,12 @@ module Adhearsion
             :root_domain        => self.config.root_domain,
             :calls_domain       => self.config.calls_domain,
             :mixers_domain      => self.config.mixers_domain,
-            :media_engine       => self.config.media_engine
+            :media_engine       => self.config.media_engine,
+            :default_voice      => self.config.default_voice
           }
 
           self.connection = connection_class.new connection_options
-          self.client = ::Punchblock::Client.new :connection => connection
+          self.client = Punchblock::Client.new :connection => connection
 
           # Tell the Punchblock connection that we are ready to process calls.
           Events.register_callback :after_initialization do
@@ -60,12 +63,12 @@ module Adhearsion
             handle_event event
           end
 
-          Events.punchblock ::Punchblock::Connection::Connected do |event|
+          Events.punchblock Punchblock::Connection::Connected do |event|
             logger.info "Connected to Punchblock server"
             self.attempts = 0
           end
 
-          Events.punchblock ::Punchblock::Event::Offer do |offer|
+          Events.punchblock Punchblock::Event::Offer do |offer|
             dispatch_offer offer
           end
 
@@ -87,7 +90,7 @@ module Adhearsion
           m = Mutex.new
           blocker = ConditionVariable.new
 
-          Events.punchblock ::Punchblock::Connection::Connected do
+          Events.punchblock Punchblock::Connection::Connected do
             Adhearsion::Process.booted
             m.synchronize { blocker.broadcast }
           end
@@ -109,7 +112,7 @@ module Adhearsion
           begin
             logger.info "Starting connection to server"
             client.run
-          rescue ::Punchblock::DisconnectedError => e
+          rescue Punchblock::DisconnectedError => e
             # We only care about disconnects if the process is up or booting
             return unless [:booting, :running].include? Adhearsion::Process.state_name
 
@@ -126,7 +129,7 @@ module Adhearsion
             logger.error "Connection lost. Attempting reconnect #{self.attempts} of #{self.config.reconnect_attempts}"
             sleep self.config.reconnect_timer
             retry
-          rescue ::Punchblock::ProtocolError => e
+          rescue Punchblock::ProtocolError => e
             logger.fatal "The connection failed due to a protocol error: #{e.name}."
             raise e
           end
@@ -140,9 +143,7 @@ module Adhearsion
               logger.info "Declining call because the process is not yet running."
               call.reject :decline
             when :running
-              call.accept
-              dispatcher = Adhearsion.router.handle call
-              dispatcher.call call
+              Adhearsion.router.handle call
             else
               call.reject :error
             end

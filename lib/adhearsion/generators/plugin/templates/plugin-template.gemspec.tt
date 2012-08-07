@@ -20,15 +20,11 @@ Gem::Specification.new do |s|
   s.test_files    = Dir.glob("{spec}/**/*")
   s.require_paths = ["lib"]
 
-  s.add_runtime_dependency %q<adhearsion>, [">= <%= Adhearsion::VERSION %>"]
+  s.add_runtime_dependency %q<adhearsion>, ["~> <%= Adhearsion::VERSION.split('.')[0..1].join('.') %>"]
   s.add_runtime_dependency %q<activesupport>, [">= 3.0.10"]
 
-  s.add_development_dependency %q<bundler>, ["~> 1.0.0"]
-  s.add_development_dependency %q<rspec>, [">= 2.5.0"]
-  s.add_development_dependency %q<ci_reporter>, [">= 1.6.3"]
-  s.add_development_dependency %q<simplecov>, [">= 0"]
-  s.add_development_dependency %q<simplecov-rcov>, [">= 0"]
-  s.add_development_dependency %q<yard>, ["~> 0.6.0"]
+  s.add_development_dependency %q<bundler>, ["~> 1.0"]
+  s.add_development_dependency %q<rspec>, ["~> 2.5"]
   s.add_development_dependency %q<rake>, [">= 0"]
   s.add_development_dependency %q<mocha>, [">= 0"]
   s.add_development_dependency %q<guard-rspec>

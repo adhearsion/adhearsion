@@ -139,8 +139,9 @@ module Adhearsion
     #
     def hangup(headers = nil)
       block_until_resumed
-      hangup_response = call.hangup headers
-      after_call unless hangup_response == false
+      call.hangup headers
+      after_call
+      raise Call::Hangup
     end
 
     # @private
@@ -220,6 +221,8 @@ module Adhearsion
         call.wait_for_unjoined waiter
       end
     end
+
+    alias :safely :catching_standard_errors
 
     # @private
     def block_until_resumed

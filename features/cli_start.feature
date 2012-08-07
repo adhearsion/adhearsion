@@ -18,7 +18,6 @@ Feature: Adhearsion Ahn CLI (start)
     And I run `ahn start` interactively
     And I wait for output to contain "Starting connection to server"
     Then the output should contain "Adhearsion::Console: Launching Adhearsion Console"
-    And the output should contain "AHN>"
     And the output should contain "Adhearsion shut down"
 
   Scenario: Command start with only path works properly
@@ -27,5 +26,4 @@ Feature: Adhearsion Ahn CLI (start)
     When I run `ahn start path/somewhere` interactively
     And I wait for output to contain "Starting connection to server"
     Then the output should contain "Adhearsion::Console: Launching Adhearsion Console"
-    And the output should contain "AHN>"
     And the output should contain "Adhearsion shut down"

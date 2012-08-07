@@ -1,11 +1,13 @@
 # encoding: utf-8
 
-class Object
+module Adhearsion::Safely
   def catching_standard_errors(l = logger, &block)
-    begin
-      yield
-    rescue StandardError => e
-      Adhearsion::Events.trigger :exception, [e, l]
-    end
+    yield
+  rescue StandardError => e
+    Adhearsion::Events.trigger :exception, [e, l]
   end
+end
+
+class Object
+  include Adhearsion::Safely
 end

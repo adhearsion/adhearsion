@@ -26,10 +26,12 @@ module Adhearsion
       #   @param [Hash] options see below
       #
       # @option options [String] :from the caller id to be used when the call is placed. It is advised you properly adhere to the
-      #   policy of VoIP termination providers with respect to caller id values.
+      #   policy of VoIP termination providers with respect to caller id values. Defaults to the caller ID of the dialing call, so for normal bridging scenarios, you do not need to set this.
       #
       # @option options [Numeric] :for this option can be thought of best as a timeout.
       #   i.e. timeout after :for if no one answers the call
+      #
+      # @option options [CallController] :confirm the controller to execute on answered outbound calls to give an opportunity to screen the call. The calls will be joined if the outbound call is still active after this controller completes.
       #
       # @example Make a call to the PSTN using my SIP provider for VoIP termination
       #   dial "SIP/19095551001@my.sip.voip.terminator.us"
@@ -43,77 +45,112 @@ module Adhearsion
       # @return [DialStatus] the status of the dial operation
       #
       def dial(to, options = {}, latch = nil)
-        targets = to.respond_to?(:has_key?) ? to : Array(to)
+        dial = Dial.new to, options, latch, call
+        dial.run
+        dial.await_completion
+        dial.cleanup_calls
+        dial.status
+      end
 
-        status = DialStatus.new
+      class Dial
+        attr_accessor :status
 
-        latch ||= CountDownLatch.new targets.size
+        def initialize(to, options, latch, call)
+          raise Call::Hangup unless call.alive? && call.active?
+          @options, @latch, @call = options, latch, call
+          @targets = to.respond_to?(:has_key?) ? to : Array(to)
+          set_defaults
+        end
 
-        call.on_end { |_| latch.countdown! until latch.count == 0 }
+        def set_defaults
+          @status = DialStatus.new
 
-        _for = options.delete :for
-        options[:timeout] ||= _for if _for
+          @latch ||= CountDownLatch.new @targets.size
 
-        options[:from] ||= call.from
+          @options[:from] ||= @call.from
 
-        calls = targets.map do |target, specific_options|
-          new_call = OutboundCall.new
+          _for = @options.delete :for
+          @options[:timeout] ||= _for if _for
 
-          new_call.on_answer do |event|
-            calls.each do |call_to_hangup, _|
-              begin
-                next if call_to_hangup.id == new_call.id
-                logger.debug "#dial hanging up call #{call_to_hangup.id} because this call has been answered by another channel"
-                call_to_hangup.hangup
-              rescue Celluloid::DeadActorError
-                # This actor may previously have been shut down due to the call ending
+          @confirmation_controller = @options.delete :confirm
+        end
+
+        def run
+          track_originating_call
+          prep_calls
+          place_calls
+        end
+
+        def track_originating_call
+          @call.on_end { |_| @latch.countdown! until @latch.count == 0 }
+        end
+
+        def prep_calls
+          @calls = @targets.map do |target, specific_options|
+            new_call = OutboundCall.new
+
+            new_call.on_end do |event|
+              @latch.countdown! unless new_call["dial_countdown_#{@call.id}"]
+              status.error! if event.reason == :error
+            end
+
+            new_call.on_answer do |event|
+              @calls.each do |call_to_hangup, _|
+                begin
+                  next if call_to_hangup.id == new_call.id
+                  logger.debug "#dial hanging up call #{call_to_hangup.id} because this call has been answered by another channel"
+                  call_to_hangup.hangup
+                rescue Celluloid::DeadActorError
+                  # This actor may previously have been shut down due to the call ending
+                end
+              end
+
+              new_call.on_unjoined @call do |unjoined|
+                new_call["dial_countdown_#{@call.id}"] = true
+                @latch.countdown!
+              end
+
+              if @confirmation_controller
+                status.unconfirmed!
+                new_call.execute_controller @confirmation_controller.new(new_call), lambda { |call| call.signal :confirmed }
+                new_call.wait :confirmed
+              end
+
+              if new_call.alive? && new_call.active?
+                logger.debug "#dial joining call #{new_call.id} to #{@call.id}"
+                new_call.join @call
+                status.answer!
               end
             end
 
-            new_call.register_event_handler Punchblock::Event::Unjoined, :call_id => call.id do |unjoined|
-              new_call["dial_countdown_#{call.id}"] = true
-              latch.countdown!
-              throw :pass
+            [new_call, target, specific_options]
+          end
+
+          status.calls = @calls
+        end
+
+        def place_calls
+          @calls.map! do |call, target, specific_options|
+            local_options = @options.dup.deep_merge specific_options if specific_options
+            call.dial target, (local_options || @options)
+            call
+          end
+        end
+
+        def await_completion
+          @latch.wait(@options[:timeout]) || status.timeout!
+        end
+
+        def cleanup_calls
+          logger.debug "#dial finished. Hanging up #{@calls.size} outbound calls: #{@calls.map(&:id).join ", "}."
+          @calls.each do |outbound_call|
+            begin
+              outbound_call.hangup
+            rescue Celluloid::DeadActorError
+              # This actor may previously have been shut down due to the call ending
             end
-
-            logger.debug "#dial joining call #{new_call.id} to #{call.id}"
-            new_call.join call
-            status.answer!
-          end
-
-          new_call.on_end do |event|
-            latch.countdown! unless new_call["dial_countdown_#{call.id}"]
-
-            case event.reason
-            when :error
-              status.error!
-            end
-          end
-
-          [new_call, target, specific_options]
-        end
-
-        calls.map! do |call, target, specific_options|
-          local_options = options.dup.deep_merge specific_options if specific_options
-          call.dial target, (local_options || options)
-          call
-        end
-
-        status.calls = calls
-
-        no_timeout = latch.wait options[:timeout]
-        status.timeout! unless no_timeout
-
-        logger.debug "#dial finished. Hanging up #{calls.size} outbound calls: #{calls.map(&:id).join ", "}."
-        calls.each do |outbound_call|
-          begin
-            outbound_call.hangup
-          rescue Celluloid::DeadActorError
-            # This actor may previously have been shut down due to the call ending
           end
         end
-
-        status
       end
 
       class DialStatus
@@ -146,6 +183,11 @@ module Adhearsion
         # @private
         def error!
           @result ||= :error
+        end
+
+        # @private
+        def unconfirmed!
+          @result ||= :unconfirmed
         end
       end
 

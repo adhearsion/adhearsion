@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+require 'has_guarded_handlers'
 require 'thread'
 
 module Adhearsion
@@ -114,16 +115,14 @@ module Adhearsion
         throw :pass
       end
 
-      register_event_handler Punchblock::Event::Joined do |event|
+      on_joined do |event|
         target = event.call_id || event.mixer_name
         signal :joined, target
-        throw :pass
       end
 
-      register_event_handler Punchblock::Event::Unjoined do |event|
+      on_unjoined do |event|
         target = event.call_id || event.mixer_name
         signal :unjoined, target
-        throw :pass
       end
 
       on_end do |event|
@@ -132,12 +131,46 @@ module Adhearsion
         @end_reason = event.reason
         commands.terminate
         after(after_end_hold_time) { current_actor.terminate! }
+        throw :pass
       end
     end
 
     # @private
     def after_end_hold_time
       30
+    end
+
+    ##
+    # Registers a callback for when this call is joined to another call or a mixer
+    #
+    # @param [Call, String, Hash, nil] target the target to guard on. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
+    # @option target [String] call_id The call ID to guard on
+    # @option target [String] mixer_name The mixer name to guard on
+    #
+    def on_joined(target = nil, &block)
+      register_event_handler Punchblock::Event::Joined, *guards_for_target(target) do |event|
+        block.call event
+        throw :pass
+      end
+    end
+
+    ##
+    # Registers a callback for when this call is unjoined from another call or a mixer
+    #
+    # @param [Call, String, Hash, nil] target the target to guard on. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
+    # @option target [String] call_id The call ID to guard on
+    # @option target [String] mixer_name The mixer name to guard on
+    #
+    def on_unjoined(target = nil, &block)
+      register_event_handler Punchblock::Event::Unjoined, *guards_for_target(target) do |event|
+        block.call event
+        throw :pass
+      end
+    end
+
+    # @private
+    def guards_for_target(target)
+      target ? [join_options_with_target(target)] : []
     end
 
     def on_end(&block)
@@ -233,11 +266,11 @@ module Adhearsion
     end
 
     def mute
-      write_and_await_response ::Punchblock::Command::Mute.new
+      write_and_await_response Punchblock::Command::Mute.new
     end
 
     def unmute
-      write_and_await_response ::Punchblock::Command::Unmute.new
+      write_and_await_response Punchblock::Command::Unmute.new
     end
 
     # @private
@@ -287,8 +320,10 @@ module Adhearsion
       "#<#{self.class}:#{id} #{attrs.join ', '}>"
     end
 
-    def execute_controller(controller, completion_callback = nil)
+    def execute_controller(controller = nil, completion_callback = nil, &block)
+      raise ArgumentError if controller && block_given?
       call = current_actor
+      controller ||= CallController.new call, &block
       Thread.new do
         catching_standard_errors do
           begin

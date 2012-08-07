@@ -15,6 +15,19 @@ and setup a user in `manager.conf` with read/write access to `all`.
 
 If you are using Asterisk 1.8, you will need to add an additional context with the name `adhearsion-redirect`. On Asterisk 10 and above this is auto-provisioned.
 
+## FreeSWITCH
+
+* Ensure that mod_event_socket is installed, and configure it in autoload_configs/event_socket.conf.xml to taste
+* Add an extension to your dialplan like so:
+
+```xml
+<extension name='Adhearsion'>
+  <condition field="destination_number" expression="^10$">
+    <action application='park'/>
+  </condition>
+</extension>
+```
+
 ## Voxeo PRISM
 
 Install the [rayo-server](https://github.com/rayo/rayo-server) app into PRISM 11 and follow the [configuration guide](https://github.com/rayo/rayo-server/wiki/Single-node-and-cluster-configuration-reference).

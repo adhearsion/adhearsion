@@ -1,5 +1,8 @@
 # encoding: utf-8
 
+require 'has_guarded_handlers'
+require 'girl_friday'
+
 module Adhearsion
   class Events
 

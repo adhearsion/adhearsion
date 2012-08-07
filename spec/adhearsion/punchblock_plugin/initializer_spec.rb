@@ -20,6 +20,7 @@ module Adhearsion
           config.reconnect_attempts = 1.0/0.0
           config.reconnect_timer    = 5
           config.media_engine       = nil
+          config.default_voice      = nil
         end
       end
 
@@ -39,6 +40,7 @@ module Adhearsion
           config.reconnect_attempts = options[:reconnect_attempts] if options.has_key?(:reconnect_attempts)
           config.reconnect_timer    = options[:reconnect_timer] if options.has_key?(:reconnect_timer)
           config.media_engine       = options[:media_engine] if options.has_key?(:media_engine)
+          config.default_voice      = options[:default_voice] if options.has_key?(:default_voice)
         end
 
         Initializer.init
@@ -52,7 +54,7 @@ module Adhearsion
       end
 
       let(:call_id)   { rand }
-      let(:offer)     { ::Punchblock::Event::Offer.new.tap { |o| o.target_call_id = call_id } }
+      let(:offer)     { Punchblock::Event::Offer.new.tap { |o| o.target_call_id = call_id } }
       let(:mock_call) { flexmock('Call', :id => call_id).tap { |call| call.should_ignore_missing } }
 
       describe "starts the client with the default values" do
@@ -97,21 +99,25 @@ module Adhearsion
         it "should properly set the media_engine value" do
           subject.media_engine.should be == nil
         end
+
+        it "should properly set the default_voice value" do
+          subject.default_voice.should be == nil
+        end
       end
 
       it "starts the client with the correct resource" do
         username = "usera@127.0.0.1/hostname-1234"
 
-        flexmock(::Punchblock::Connection::XMPP).should_receive(:new).once.with(FlexMock.hsh :username => username).and_return do
+        flexmock(Punchblock::Connection::XMPP).should_receive(:new).once.with(FlexMock.hsh :username => username).and_return do
           flexmock 'Client', :event_handler= => true
         end
         initialize_punchblock
       end
 
       it "starts the client with any overridden settings" do
-        overrides = {:username => 'userb@127.0.0.1/foo', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift}
+        overrides = {:username => 'userb@127.0.0.1/foo', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift, :default_voice => :hal}
 
-        flexmock(::Punchblock::Connection::XMPP).should_receive(:new).once.with(overrides).and_return do
+        flexmock(Punchblock::Connection::XMPP).should_receive(:new).once.with(overrides).and_return do
           flexmock 'Client', :event_handler= => true
         end
         initialize_punchblock overrides
@@ -122,12 +128,12 @@ module Adhearsion
           reset_default_config
           mock_connection = flexmock :mock_connection
           mock_connection.should_receive(:register_event_handler).once
-          flexmock(::Punchblock::Client).should_receive(:new).once.and_return mock_connection
+          flexmock(Punchblock::Client).should_receive(:new).once.and_return mock_connection
           flexmock(mock_connection).should_receive(:run).once
           t = Thread.new { Initializer.init; Initializer.run }
           t.join 5
           t.status.should be == "sleep"
-          Events.trigger_immediately :punchblock, ::Punchblock::Connection::Connected.new
+          Events.trigger_immediately :punchblock, Punchblock::Connection::Connected.new
           t.join
         end
       end
@@ -150,39 +156,50 @@ module Adhearsion
         it 'should reset the Adhearsion process state to "booting"' do
           Adhearsion::Process.booted
           Adhearsion::Process.state_name.should be == :running
-          mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
+          mock_client.should_receive(:run).and_raise Punchblock::DisconnectedError
           flexmock(Adhearsion::Process).should_receive(:reset).at_least.once
           Initializer.connect_to_server
         end
 
         it 'should retry the connection the specified number of times' do
           Initializer.config.reconnect_attempts = 3
-          mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
+          mock_client.should_receive(:run).and_raise Punchblock::DisconnectedError
           Initializer.connect_to_server
           Initializer.attempts.should be == 3
         end
 
         it 'should preserve a Punchblock::ProtocolError exception and give up' do
-          mock_client.should_receive(:run).and_raise ::Punchblock::ProtocolError
-          expect { Initializer.connect_to_server }.should raise_error ::Punchblock::ProtocolError
+          mock_client.should_receive(:run).and_raise Punchblock::ProtocolError
+          expect { Initializer.connect_to_server }.to raise_error Punchblock::ProtocolError
         end
 
         it 'should not attempt to reconnect if Adhearsion is shutting down' do
           Adhearsion::Process.booted
           Adhearsion::Process.shutdown
-          mock_client.should_receive(:run).and_raise ::Punchblock::DisconnectedError
-          Initializer.should_not raise_error ::Punchblock::DisconnectedError
+          mock_client.should_receive(:run).and_raise Punchblock::DisconnectedError
+          Initializer.should_not raise_error Punchblock::DisconnectedError
         end
       end
 
       describe 'using Asterisk' do
-        let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift} }
+        let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift, :default_voice => :hal} }
 
         it 'should start an Asterisk PB connection' do
-          flexmock(::Punchblock::Connection::Asterisk).should_receive(:new).once.with(overrides).and_return do
+          flexmock(Punchblock::Connection::Asterisk).should_receive(:new).once.with(overrides).and_return do
             flexmock 'Client', :event_handler= => true
           end
           initialize_punchblock overrides.merge(:platform => :asterisk)
+        end
+      end
+
+      describe 'using FreeSWITCH' do
+        let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift, :default_voice => :hal} }
+
+        it 'should start an Asterisk PB connection' do
+          flexmock(Punchblock::Connection::Freeswitch).should_receive(:new).once.with(overrides).and_return do
+            flexmock 'Client', :event_handler= => true
+          end
+          initialize_punchblock overrides.merge(:platform => :freeswitch)
         end
       end
 
@@ -210,17 +227,11 @@ module Adhearsion
         context "when when Adhearsion::Process is in :running" do
           let(:process_state) { :running }
 
-          it "should accept the call" do
-            mock_call.should_receive(:accept).once
-          end
-
-          it "should execute the dispatcher provided by the router" do
-            controller = Class.new
+          it "should dispatch via the router" do
             Adhearsion.router do
-              route 'foobar', controller
+              route 'foobar', Class.new
             end
-            first_route = Adhearsion.router.routes.first
-            flexmock(first_route.dispatcher).should_receive(:call).once.with mock_call
+            flexmock(Adhearsion.router).should_receive(:handle).once.with mock_call
           end
         end
 
