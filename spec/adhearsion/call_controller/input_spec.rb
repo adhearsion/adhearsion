@@ -269,7 +269,7 @@ module Adhearsion
             subject.should_receive(:play_sound_files_for_menu).once.with(menu_instance, sound_files).and_return(nil)
             result = subject.ask sound_files
             result.menu.should be menu_instance
-            result.response.should == ''
+            result.response.should be == ''
             result.status.should be :timeout
           end
 

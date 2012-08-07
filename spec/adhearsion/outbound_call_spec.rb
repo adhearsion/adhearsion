@@ -35,7 +35,6 @@ module Adhearsion
       it "should run through the router when the call is answered" do
         flexmock(mock_call.wrapped_object).should_receive(:dial).once
 
-        mock_dispatcher = flexmock 'dispatcher'
         flexmock(Adhearsion.router).should_receive(:handle).once.with(mock_call)
 
         OutboundCall.originate(to) << Punchblock::Event::Answered.new
@@ -141,9 +140,9 @@ module Adhearsion
       it "should not modify the provided options" do
         options = {:from => from}
         original_options = Marshal.load(Marshal.dump(options))
-        options.should == original_options
+        options.should be == original_options
         subject.dial to, options
-        options.should == original_options
+        options.should be == original_options
       end
     end
 
