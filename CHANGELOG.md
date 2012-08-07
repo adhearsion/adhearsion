@@ -4,19 +4,19 @@
 
 ## Features
   * Initial support for FreeSWITCH
-  * `CallController#record` now has an `:interruptible` option that allows recording to be stopped by pressing any DTMF key
-  * `Adhearsion.root` and `Adhearsion.root=` are now available to return the root path to the application. `Adhearsion.ahn_root=` is deprecated.
-  * `Adhearsion.deprecated` added for internal use to clearly mark deprecated methods.
-  * Added `Call#on_joined` and `Call#on_unjoined` for easily registering joined/unjoined handlers
-  * Permit asynchronous output using bang version of methods (eg `CallController#play!`), returning an output component, which can be stopped.
-  * Added `CallController#safely` which will catch and log `StandardError` in a call controller, but will not allow it to crash the controller
   * Added the possibility to specify a confirmation controller on `#dial` operations
   * Allow specifying a controller to run when originating an outbound call
-  * Allow `Call#execute_controller` to take a block instead of a controller instance. Simplifies event-based execution of simple controllers (eg whisper into a call).
+  * Allow `Call#execute_controller` to take a block instead of a controller instance. Simplifies event-based execution of simple controllers (eg whisper into a call)
   * Allow route modifiers such that they:
     * Do not accept calls that match
     * Do not execute a controller
     * Do not hangup after controller execution
+  * Permit asynchronous output using bang version of methods (eg `CallController#play!`), returning an output component, which can be stopped
+  * Added `CallController#safely` which will catch and log `StandardError` in a call controller, but will not allow it to crash the controller
+  * `CallController#record` now has an `:interruptible` option that allows recording to be stopped by pressing any DTMF key
+  * Added `Call#on_joined` and `Call#on_unjoined` for easily registering joined/unjoined handlers
+  * `Adhearsion.root` and `Adhearsion.root=` are now available to return the root path to the application. `Adhearsion.ahn_root=` is deprecated
+  * `Adhearsion.deprecated` added for internal use to clearly mark deprecated methods
 
 ## Bugfixes
   * All output methods will now raise `Adhearsion::CallController::Output::PlaybackError` when output fails, instead of failing silently
