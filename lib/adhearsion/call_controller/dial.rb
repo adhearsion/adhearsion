@@ -139,6 +139,7 @@ module Adhearsion
 
         def await_completion
           @latch.wait(@options[:timeout]) || status.timeout!
+          @latch.wait if status.result == :answer
         end
 
         def cleanup_calls

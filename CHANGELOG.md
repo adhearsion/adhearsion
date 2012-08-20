@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Bugfix: #dial timeout now does not place an upper limit on the duration of a bridged call
 
 # [2.1.0](https://github.com/adhearsion/adhearsion/compare/v2.0.1...v2.1.0) - [2012-08-07](https://rubygems.org/gems/adhearsion/versions/2.1.0)
 
