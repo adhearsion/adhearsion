@@ -8,6 +8,10 @@ module Adhearsion
         def to_s
           response
         end
+
+        def inspect
+          "#<Adhearsion::CallController::Input::Result response=#{response.inspect}, status=#{status.inspect}>"
+        end
       end
 
       #
@@ -46,12 +50,21 @@ module Adhearsion
         menu_instance.validate :basic
         result_of_menu = nil
 
-        until MenuDSL::Menu::MenuResultDone === result_of_menu
-          result_of_menu = menu_instance.continue
+        catch :finish do
+          until MenuDSL::Menu::MenuResultDone === result_of_menu
+            raise unless menu_instance.should_continue?
 
-          if result_of_menu.is_a?(MenuDSL::Menu::MenuGetAnotherDigit)
-            next_digit = play_sound_files_for_menu menu_instance, sound_files
-            menu_instance << next_digit if next_digit
+            result_of_menu = menu_instance.continue
+
+            if result_of_menu.is_a?(MenuDSL::Menu::MenuGetAnotherDigit)
+              next_digit = play_sound_files_for_menu menu_instance, sound_files
+              if next_digit
+                menu_instance << next_digit
+              else
+                menu_instance.timeout!
+                throw :finish
+              end
+            end
           end
         end
 

@@ -46,7 +46,7 @@ module Adhearsion
       context "by dead call object" do
         before do
           @call_id = deleted_call.id
-          deleted_call.terminate
+          deleted_call.kill
           deleted_call.should_not be_alive
           subject.remove_inactive_call deleted_call
         end

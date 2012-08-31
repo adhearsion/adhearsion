@@ -166,6 +166,21 @@ module Adhearsion
           end
         end
 
+        describe "when the caller has already hung up" do
+          before do
+            call << mock_end
+          end
+
+          it "should raise Call::Hangup" do
+            expect { subject.dial to, options }.to raise_error(Call::Hangup)
+          end
+
+          it "should not make any outbound calls" do
+            flexmock(OutboundCall).should_receive(:new).never
+            expect { subject.dial to, options }.to raise_error
+          end
+        end
+
         describe "with multiple third parties specified" do
           let(:options) { {} }
           let(:other_options) { options }
@@ -372,6 +387,38 @@ module Adhearsion
             t.join
             status = t.value
             status.result.should be == :timeout
+          end
+
+          describe "if someone answers before the timeout elapses" do
+            it "should not abort until the far end hangs up" do
+              flexmock(other_mock_call).should_receive(:dial).once.with(to, hsh(:timeout => timeout))
+              flexmock(other_mock_call).should_receive(:join).once.with(call)
+              flexmock(other_mock_call).should_receive(:hangup).once
+              flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+
+              time = Time.now
+
+              t = Thread.new do
+                status = subject.dial to, :timeout => timeout
+                latch.countdown!
+                status
+              end
+
+              latch.wait(2).should be_false
+
+              other_mock_call << mock_answered
+
+              latch.wait(2).should be_false
+
+              other_mock_call << mock_end
+
+              latch.wait(0.1).should be_true
+              time = Time.now - time
+              time.to_i.should be > timeout
+              t.join
+              status = t.value
+              status.result.should be == :answer
+            end
           end
         end
 

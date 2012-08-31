@@ -20,6 +20,7 @@ Adhearsion rests above a lower-level telephony platform, for example [Asterisk](
 * Ruby 1.9.2+ or JRuby 1.6.7+
 * A VoIP platform:
   * Asterisk 1.8+
+  * FreeSWITCH
   * Prism 11+ with rayo-server
 * An interest in building cool new things
 

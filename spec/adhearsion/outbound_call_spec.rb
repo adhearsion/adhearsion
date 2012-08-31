@@ -22,24 +22,56 @@ module Adhearsion
 
       let(:mock_call) { OutboundCall.new }
 
-      it "should dial the call to the correct endpoint and return it" do
+      before do
         mock_call
         flexmock(OutboundCall).should_receive(:new).and_return mock_call
+      end
+
+      it "should dial the call to the correct endpoint and return it" do
         flexmock(mock_call.wrapped_object).should_receive(:dial).with(to, :from => 'foo').once
         OutboundCall.originate(to, :from => 'foo').should be mock_call
       end
 
       it "should run through the router when the call is answered" do
-        mock_call
-
-        flexmock(OutboundCall).should_receive(:new).and_return mock_call
         flexmock(mock_call.wrapped_object).should_receive(:dial).once
 
-        mock_dispatcher = flexmock 'dispatcher'
-        mock_dispatcher.should_receive(:call).once.with mock_call
-        flexmock(Adhearsion.router).should_receive(:handle).once.with(mock_call).and_return mock_dispatcher
+        flexmock(Adhearsion.router).should_receive(:handle).once.with(mock_call)
 
-        OutboundCall.originate(to).deliver_message Punchblock::Event::Answered.new
+        OutboundCall.originate(to) << Punchblock::Event::Answered.new
+      end
+
+      context "when a controller class is specified for the call" do
+        let(:controller)  { CallController }
+
+        it "should execute the controller on the call when it is answered" do
+          flexmock(mock_call).should_receive(:dial).once.with(to, {})
+          flexmock(mock_call).should_receive(:execute_controller).once.with controller, Proc
+          call = OutboundCall.originate to, :controller => controller
+          call << Punchblock::Event::Answered.new
+        end
+
+        it "should hangup the call after all controllers have executed" do
+          flexmock(mock_call).should_receive(:dial).once
+          flexmock(mock_call).should_receive(:hangup).once
+
+          call = OutboundCall.originate to, :controller => controller
+          call << Punchblock::Event::Answered.new
+          sleep 0.5
+        end
+      end
+
+      context "when given a block" do
+        it "should execute the block as a controller on the call when it is answered" do
+          flexmock(mock_call).should_receive(:dial).once.with(to, {})
+          flexmock(mock_call).should_receive(:execute_controller).once.with(CallController, Proc).and_return do |controller|
+            controller.block.call.should be == :foobar
+          end
+
+          call = OutboundCall.originate to do
+            :foobar
+          end
+          call << Punchblock::Event::Answered.new
+        end
       end
     end
 
@@ -103,6 +135,14 @@ module Adhearsion
         Adhearsion.active_calls.clear!
         subject.dial to, :from => from
         Adhearsion.active_calls[call_id].should be subject
+      end
+
+      it "should not modify the provided options" do
+        options = {:from => from}
+        original_options = Marshal.load(Marshal.dump(options))
+        options.should be == original_options
+        subject.dial to, options
+        options.should be == original_options
       end
     end
 

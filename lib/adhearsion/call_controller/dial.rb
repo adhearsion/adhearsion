@@ -56,6 +56,7 @@ module Adhearsion
         attr_accessor :status
 
         def initialize(to, options, latch, call)
+          raise Call::Hangup unless call.alive? && call.active?
           @options, @latch, @call = options, latch, call
           @targets = to.respond_to?(:has_key?) ? to : Array(to)
           set_defaults
@@ -138,6 +139,7 @@ module Adhearsion
 
         def await_completion
           @latch.wait(@options[:timeout]) || status.timeout!
+          @latch.wait if status.result == :answer
         end
 
         def cleanup_calls

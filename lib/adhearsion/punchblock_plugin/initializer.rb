@@ -22,6 +22,8 @@ module Adhearsion
             Punchblock::Connection::XMPP
           when :asterisk
             Punchblock::Connection::Asterisk
+          when :freeswitch
+            Punchblock::Connection::Freeswitch
           end
 
           connection_options = {
@@ -33,7 +35,8 @@ module Adhearsion
             :root_domain        => self.config.root_domain,
             :calls_domain       => self.config.calls_domain,
             :mixers_domain      => self.config.mixers_domain,
-            :media_engine       => self.config.media_engine
+            :media_engine       => self.config.media_engine,
+            :default_voice      => self.config.default_voice
           }
 
           self.connection = connection_class.new connection_options
@@ -140,8 +143,7 @@ module Adhearsion
               logger.info "Declining call because the process is not yet running."
               call.reject :decline
             when :running
-              dispatcher = Adhearsion.router.handle call
-              dispatcher.call call
+              Adhearsion.router.handle call
             else
               call.reject :error
             end
