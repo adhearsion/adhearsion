@@ -8,7 +8,6 @@ describe <%= @controller_name %> do
 
   it "should have empty metadata" do
     subject.metadata.should eq({})
-    subject.run
   end
 
 end
