@@ -7,6 +7,20 @@ module Adhearsion
     delegate :to, :from, :to => :dial_command, :allow_nil => true
 
     class << self
+      #
+      # Create a new outbound call
+      #
+      # By default, the call will enter the router when it is answered, similar to incoming calls. Alternatively, a controller may be specified.
+      #
+      # @param [String] to the URI of the party to dial
+      # @param [Hash] opts modifier options
+      # @option opts [Class] :controller the controller to execute when the call is answered
+      # @yield Call controller routine in block form
+      #
+      # @return [OutboundCall] the ringing call
+      #
+      # @see #dial for more possible options
+      #
       def originate(to, opts = {}, &controller_block)
         new.tap do |call|
           call.execute_controller_or_router_on_answer opts.delete(:controller), &controller_block
@@ -32,6 +46,16 @@ module Adhearsion
     def reject(*args)
     end
 
+    #
+    # Dial out an existing outbound call
+    #
+    # @param [String] to the URI of the party to dial
+    # @param [Hash] options modifier options
+    # @option options [String, Optional] :from what to set the Caller ID to
+    # @option options [Integer, Optional] :timeout in seconds
+    # @option options [Hash, Optional] :headers SIP headers to attach to
+    #   the new call.
+    #
     def dial(to, options = {})
       options = options.dup
       options[:to] = to
