@@ -322,17 +322,8 @@ module Adhearsion
 
     def execute_controller(controller = nil, completion_callback = nil, &block)
       raise ArgumentError, "Cannot supply a controller and a block at the same time" if controller && block_given?
-      call = current_actor
-      controller ||= CallController.new call, &block
-      Thread.new do
-        catching_standard_errors do
-          begin
-            CallController.exec controller
-          ensure
-            completion_callback.call call if completion_callback
-          end
-        end
-      end.tap { |t| Adhearsion::Process.important_threads << t }
+      controller ||= CallController.new current_actor, &block
+      controller.bg_exec completion_callback
     end
 
     # @private

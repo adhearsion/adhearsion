@@ -177,7 +177,7 @@ module Adhearsion
         call.should_receive(:answer).once.ordered
         subject.should_receive(:after).never.ordered
 
-        CallController.exec subject
+        subject.exec
       end
 
       it "should execute after_call callbacks before passing control" do
@@ -185,7 +185,7 @@ module Adhearsion
         subject.should_receive(:foobar).once.ordered
         call.should_receive(:answer).once.ordered
 
-        CallController.exec subject
+        subject.exec
       end
     end
 
