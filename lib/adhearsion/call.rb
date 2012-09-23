@@ -321,7 +321,7 @@ module Adhearsion
     end
 
     def execute_controller(controller = nil, completion_callback = nil, &block)
-      raise ArgumentError if controller && block_given?
+      raise ArgumentError, "Cannot supply a controller and a block at the same time" if controller && block_given?
       call = current_actor
       controller ||= CallController.new call, &block
       Thread.new do
