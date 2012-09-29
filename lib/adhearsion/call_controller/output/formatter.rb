@@ -25,11 +25,20 @@ module Adhearsion
               :time
             when Numeric, /^\d+$/
               :numeric
-            when /^\//, URI.regexp
+            when /^\//, ->(string) { uri? string }
               :audio
             else
               :text
             end
+          end
+
+          def uri?(string)
+            uri = URI.parse string
+            !!uri.scheme
+          rescue URI::BadURIError
+            false
+          rescue URI::InvalidURIError
+            false
           end
 
           #

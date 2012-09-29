@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Bugfix: Output controller methods no longer falsely detect a string with a colon as a URI for an audio file
 
 # [2.1.2](https://github.com/adhearsion/adhearsion/compare/v2.1.1...v2.1.2) - [2012-09-16](https://rubygems.org/gems/adhearsion/versions/2.1.2)
   * Bugfix: Celluloid 0.12.x dependency now disallowed due to incompatible API changes.
