@@ -21,11 +21,11 @@ module Adhearsion
       # @option options [Boolean, Optional] :async Execute asynchronously. Defaults to false
       # @option options [Boolean, Optional] :start_beep Indicates whether subsequent record will be preceded with a beep. Default is true.
       # @option options [Boolean, Optional] :start_paused Whether subsequent record will start in PAUSE mode. Default is false.
-      # @option options [String, Optional] :max_duration Indicates the maximum duration (milliseconds) for a recording.
+      # @option options [String, Optional] :max_duration Indicates the maximum duration (seconds) for a recording.
       # @option options [String, Optional] :format File format used during recording.
       # @option options [String, Optional] :format File format used during recording.
-      # @option options [String, Optional] :initial_timeout Controls how long (milliseconds) the recognizer should wait after the end of the prompt for the caller to speak before sending a Recorder event.
-      # @option options [String, Optional] :final_timeout Controls the length (milliseconds) of a period of silence after callers have spoken to conclude they finished.
+      # @option options [String, Optional] :initial_timeout Controls how long (seconds) the recognizer should wait after the end of the prompt for the caller to speak before sending a Recorder event.
+      # @option options [String, Optional] :final_timeout Controls the length (seconds) of a period of silence after callers have spoken to conclude they finished.
       # @option options [Boolean, Optional] :interruptible Allows the recording to be terminated by any single DTMF key, default is false
       #
       # @return Punchblock::Component::Record
@@ -35,6 +35,9 @@ module Adhearsion
         interruptible = options.delete :interruptible
         interrupt_key = '0123456789#*'
         stopper_component = nil
+        [:max_duration, :initial_timeout, :final_timeout].each do |k|
+          options[k] = options[k].to_i * 1000 if options[k]
+        end
 
         component = Punchblock::Component::Record.new options
         component.register_event_handler Punchblock::Event::Complete do |event|

@@ -8,19 +8,23 @@ module Adhearsion
       include CallControllerTestHelpers
 
       describe "#record" do
+        let(:max_duration) { 5 }
         let(:options) do
           {
             :start_beep => true,
-            :max_duration => 5000
+            :max_duration => max_duration
           }
         end
-        let(:component) { Punchblock::Component::Record.new options }
+        let(:parsed_options) do
+          options.merge(max_duration: max_duration * 1000)
+        end
+        let(:component) { Punchblock::Component::Record.new parsed_options }
         let(:response)  { Punchblock::Event::Complete.new }
 
         describe "with :async => true and an :on_complete callback" do
           before do
             component
-            flexmock(Punchblock::Component::Record).should_receive(:new).once.with(options).and_return component
+            flexmock(Punchblock::Component::Record).should_receive(:new).once.with(parsed_options).and_return component
             expect_message_waiting_for_response component
             @rec = Queue.new
             subject.record(options.merge(async: true)) { |rec| @rec.push rec }
@@ -63,7 +67,7 @@ module Adhearsion
         describe "with :async => false" do
           before do
             component
-            flexmock(Punchblock::Component::Record).should_receive(:new).once.with(options).and_return component
+            flexmock(Punchblock::Component::Record).should_receive(:new).once.with(parsed_options).and_return component
             expect_component_execution component
             @rec = Queue.new
             subject.record(options.merge(:async => false)) { |rec| @rec.push rec }
@@ -113,7 +117,7 @@ module Adhearsion
         describe "check for the return value" do
           it "returns a Record component" do
             component
-            flexmock(Punchblock::Component::Record).should_receive(:new).once.with(options).and_return component
+            flexmock(Punchblock::Component::Record).should_receive(:new).once.with(parsed_options).and_return component
             expect_component_execution component
             subject.record(options.merge(:async => false)).should be == component
             component.request!
