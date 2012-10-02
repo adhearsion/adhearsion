@@ -323,6 +323,7 @@ module Adhearsion
     def execute_controller(controller = nil, completion_callback = nil, &block)
       raise ArgumentError, "Cannot supply a controller and a block at the same time" if controller && block_given?
       controller ||= CallController.new current_actor, &block
+      logger.info "Executing controller #{controller.inspect}"
       controller.bg_exec completion_callback
     end
 
