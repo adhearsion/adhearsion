@@ -264,7 +264,7 @@ module Adhearsion
 
     # @private
     def inspect
-      "#<#{self.class} call=#{call.id}, metadata=#{metadata.inspect}>"
+      "#<#{self.class} call=#{call.alive? ? call.id : ''}, metadata=#{metadata.inspect}>"
     end
   end#class
 end
