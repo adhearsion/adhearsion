@@ -55,7 +55,7 @@ module Adhearsion
 
       let(:call_id)   { rand }
       let(:offer)     { Punchblock::Event::Offer.new.tap { |o| o.target_call_id = call_id } }
-      let(:mock_call) { flexmock('Call', :id => call_id).tap { |call| call.should_ignore_missing } }
+      let(:mock_call) { flexmock Call.new, :id => call_id }
 
       describe "starts the client with the default values" do
         subject { initialize_punchblock }
