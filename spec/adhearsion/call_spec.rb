@@ -735,20 +735,21 @@ module Adhearsion
 
       describe "#execute_controller" do
         let(:latch)           { CountDownLatch.new 1 }
-        let(:mock_controller) { flexmock 'CallController' }
+        let(:mock_controller) { flexmock CallController.new(subject) }
 
         before do
           flexmock subject.wrapped_object, :write_and_await_response => true
         end
 
-        it "should call #execute on the controller instance" do
-          flexmock(CallController).should_receive(:exec).once.with mock_controller
+        it "should call #bg_exec on the controller instance" do
+          mock_controller.should_receive(:exec).once
           subject.execute_controller mock_controller, lambda { |call| latch.countdown! }
           latch.wait(3).should be_true
         end
 
         it "should use the passed block as a controller if none is specified" do
-          flexmock(CallController).should_receive(:exec).once.with CallController
+          mock_controller.should_receive(:exec).once
+          flexmock(CallController).should_receive(:new).once.and_return mock_controller
           subject.execute_controller nil, lambda { |call| latch.countdown! } do
             foo
           end

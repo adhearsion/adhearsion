@@ -20,11 +20,25 @@ module Adhearsion
           end
 
           def detect_type(output)
-            result = nil
-            result = :time if [Date, Time, DateTime].include? output.class
-            result = :numeric if output.kind_of?(Numeric) || output =~ /^\d+$/
-            result = :audio if !result && (/^\//.match(output.to_s) || URI::regexp.match(output.to_s))
-            result ||= :text
+            case output
+            when Date, Time, DateTime
+              :time
+            when Numeric, /^\d+$/
+              :numeric
+            when /^\//, ->(string) { uri? string }
+              :audio
+            else
+              :text
+            end
+          end
+
+          def uri?(string)
+            uri = URI.parse string
+            !!uri.scheme
+          rescue URI::BadURIError
+            false
+          rescue URI::InvalidURIError
+            false
           end
 
           #

@@ -41,12 +41,7 @@ module Adhearsion
       # @param [CallController] controller
       #
       def exec(controller)
-        new_controller = catch :pass_controller do
-          controller.execute!
-          nil
-        end
-
-        exec new_controller if new_controller
+        controller.exec
       end
 
       #
@@ -74,6 +69,32 @@ module Adhearsion
     #
     def initialize(call, metadata = nil, &block)
       @call, @metadata, @block = call, metadata || {}, block
+    end
+
+    #
+    # Execute the controller, allowing passing control to another controller
+    #
+    def exec(controller = self)
+      new_controller = catch :pass_controller do
+        controller.execute!
+        nil
+      end
+
+      exec new_controller if new_controller
+    end
+
+    def bg_exec(completion_callback = nil)
+      Thread.new do
+        catching_standard_errors do
+          exec_with_callback completion_callback
+        end
+      end.tap { |t| Adhearsion::Process.important_threads << t }
+    end
+
+    def exec_with_callback(completion_callback = nil)
+      exec
+    ensure
+      completion_callback.call call if completion_callback
     end
 
     # @private
@@ -243,7 +264,7 @@ module Adhearsion
 
     # @private
     def inspect
-      "#<#{self.class} call=#{call.id}, metadata=#{metadata.inspect}>"
+      "#<#{self.class} call=#{call.alive? ? call.id : ''}, metadata=#{metadata.inspect}>"
     end
   end#class
 end

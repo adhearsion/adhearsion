@@ -118,6 +118,7 @@ module Adhearsion
 
               if new_call.alive? && new_call.active?
                 logger.debug "#dial joining call #{new_call.id} to #{@call.id}"
+                @call.answer
                 new_call.join @call
                 status.answer!
               end

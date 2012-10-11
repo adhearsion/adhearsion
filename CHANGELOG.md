@@ -1,5 +1,13 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
+# [2.1.3](https://github.com/adhearsion/adhearsion/compare/v2.1.2...v2.1.3) - [2012-10-11](https://rubygems.org/gems/adhearsion/versions/2.1.3)
+  * Bugfix: Originating call is now answered before joining calls using `CallController#dial`
+  * Bugfix: Output controller methods no longer falsely detect a string with a colon as a URI for an audio file
+  * Bugfix: `CallController#record` takes timeout in seconds instead of milliseconds
+  * Bugfix: Generating controllers given lower case names now works properly
+  * Update: Bump Celluloid dependency
+  * CS: Log when a controller is executed on a call
+
 # [2.1.2](https://github.com/adhearsion/adhearsion/compare/v2.1.1...v2.1.2) - [2012-09-16](https://rubygems.org/gems/adhearsion/versions/2.1.2)
   * Bugfix: Celluloid 0.12.x dependency now disallowed due to incompatible API changes.
   * Bugfix: Generated Gemfiles no longer pessimistically locked. Matches promise of SemVer compliance.

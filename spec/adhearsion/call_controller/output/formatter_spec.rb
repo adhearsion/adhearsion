@@ -79,9 +79,10 @@ module Adhearsion
             subject.detect_type(number).should be :numeric
           end
 
-          it "returns text as a fallback" do
-            output = "Hello"
-            subject.detect_type(output).should be :text
+          ["Foo", "Foo bar", "The answer: foo", "The answer could be foo/bar"].each do |string|
+            it "detects '#{string}' as text" do
+              subject.detect_type(string).should be :text
+            end
           end
         end
       end

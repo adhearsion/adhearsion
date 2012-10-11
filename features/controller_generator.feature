@@ -17,3 +17,18 @@ Feature: Adhearsion controller generator
 
     And the file "lib/test_controller.rb" should contain "class TestController < Adhearsion::CallController"
     And the file "spec/test_controller_spec.rb" should contain "describe TestController"
+
+  Scenario: Generate a controller with lower-case name
+    When I run `ahn create path/somewhere`
+    And I cd to "path/somewhere"
+    And I run `ahn generate controller test_controller`
+    Then the following directories should exist:
+      | lib                           |
+      | spec                          |
+
+    And the following files should exist:
+      | lib/test_controller.rb         |
+      | spec/test_controller_spec.rb |
+
+    And the file "lib/test_controller.rb" should contain "class TestController < Adhearsion::CallController"
+    And the file "spec/test_controller_spec.rb" should contain "describe TestController"
