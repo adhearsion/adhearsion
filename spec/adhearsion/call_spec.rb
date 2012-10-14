@@ -43,8 +43,6 @@ module Adhearsion
     its(:id)      { should be == call_id }
     its(:to)      { should be == to }
     its(:from)    { should be == from }
-    its(:offer)   { should be offer }
-    its(:client)  { should be mock_client }
 
     its(:after_end_hold_time) { should be == 30 }
 

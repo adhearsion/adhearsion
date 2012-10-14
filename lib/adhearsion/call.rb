@@ -26,10 +26,7 @@ module Adhearsion
       end
     end
 
-    # @private
-    attr_accessor :offer, :client, :end_reason, :commands, :controllers
-
-    attr_accessor :variables
+    attr_reader :end_reason, :commands, :controllers, :variables
 
     delegate :[], :[]=, :to => :variables
     delegate :to, :from, :to => :offer, :allow_nil => true
@@ -337,6 +334,10 @@ module Adhearsion
     def resume_controllers
       controllers.each(&:resume!)
     end
+
+    private
+
+    attr_accessor :offer, :client
 
     # @private
     class CommandRegistry < ThreadSafeArray
