@@ -39,6 +39,7 @@ module Adhearsion
       @variables    = {}
       @controllers  = []
       @end_reason   = nil
+      @peers        = {}
 
       self << offer if offer
     end
@@ -85,6 +86,14 @@ module Adhearsion
       @tags.include? label
     end
 
+    #
+    # Hash of joined peers
+    # @return [Hash<String => Adhearsion::Call>]
+    #
+    def peers
+      @peers.clone
+    end
+
     def register_event_handler(*guards, &block)
       register_handler :event, *guards, &block
     end
@@ -110,11 +119,13 @@ module Adhearsion
 
       on_joined do |event|
         target = event.call_id || event.mixer_name
+        @peers[target] = Adhearsion.active_calls[target]
         signal :joined, target
       end
 
       on_unjoined do |event|
         target = event.call_id || event.mixer_name
+        @peers.delete target
         signal :unjoined, target
       end
 

@@ -271,6 +271,49 @@ module Adhearsion
       end
     end
 
+    context "peer registry" do
+      let(:other_call_id) { 'foobar' }
+      let(:other_call) { flexmock Call.new, :id => other_call_id }
+
+      let :joined_event do
+        Punchblock::Event::Joined.new :call_id => other_call_id
+      end
+
+      let :unjoined_event do
+        Punchblock::Event::Unjoined.new :call_id => other_call_id
+      end
+
+      context "when we know about the joined call" do
+        before { Adhearsion.active_calls << other_call }
+
+        it "should add the peer to its registry" do
+          subject << joined_event
+          subject.peers.should == {'foobar' => other_call}
+        end
+      end
+
+      context "when we don't know about the joined call" do
+        it "should add a nil entry to its registry" do
+          subject << joined_event
+          subject.peers.should == {'foobar' => nil}
+        end
+      end
+
+      it "should not return the same registry every call" do
+        subject.peers.should_not be subject.peers
+      end
+
+      context "when being unjoined from a previously joined call" do
+        before { subject << joined_event }
+
+        it "should remove the peer from its registry" do
+          subject.peers.should_not == {}
+          subject << unjoined_event
+          subject.peers.should == {}
+        end
+      end
+    end
+
     describe "#<<" do
       describe "with a Punchblock End" do
         let :end_event do
