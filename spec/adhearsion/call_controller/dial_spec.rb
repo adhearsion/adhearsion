@@ -436,6 +436,10 @@ module Adhearsion
               @@confirmation_latch = latch
 
               def run
+                # Copy metadata onto call variables so we can assert it later. Ugly hack
+                metadata.each_pair do |key, value|
+                  call[key] = value
+                end
                 @@confirmation_latch.countdown!
                 call['confirm'] || hangup
               end
@@ -449,6 +453,28 @@ module Adhearsion
           before do
             flexmock(other_mock_call).should_receive(:dial).once
             flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+          end
+
+          context "with confirmation controller metadata specified" do
+            let(:options) { {:confirm => confirmation_controller, :confirm_metadata => {:foo => 'bar'}} }
+
+            it "should set the metadata on the controller" do
+              flexmock(other_mock_call).should_receive(:hangup).twice.and_return do
+                other_mock_call << mock_end
+              end
+              other_mock_call['confirm'] = false
+
+              dial_in_thread
+
+              latch.wait(0.1).should be_false
+
+              other_mock_call << mock_answered
+
+              confirmation_latch.wait(1).should be_true
+              latch.wait(2).should be_true
+
+              other_mock_call[:foo].should == 'bar'
+            end
           end
 
           context "when an outbound call is answered" do

@@ -32,6 +32,7 @@ module Adhearsion
       #   i.e. timeout after :for if no one answers the call
       #
       # @option options [CallController] :confirm the controller to execute on answered outbound calls to give an opportunity to screen the call. The calls will be joined if the outbound call is still active after this controller completes.
+      # @option options [Hash] :confirm_metadata Metadata to set on the confirmation controller before executing it.
       #
       # @example Make a call to the PSTN using my SIP provider for VoIP termination
       #   dial "SIP/19095551001@my.sip.voip.terminator.us"
@@ -73,6 +74,7 @@ module Adhearsion
           @options[:timeout] ||= _for if _for
 
           @confirmation_controller = @options.delete :confirm
+          @confirmation_metadata = @options.delete :confirm_metadata
         end
 
         def run
@@ -112,7 +114,7 @@ module Adhearsion
 
               if @confirmation_controller
                 status.unconfirmed!
-                new_call.execute_controller @confirmation_controller.new(new_call), lambda { |call| call.signal :confirmed }
+                new_call.execute_controller @confirmation_controller.new(new_call, @confirmation_metadata), lambda { |call| call.signal :confirmed }
                 new_call.wait :confirmed
               end
 
