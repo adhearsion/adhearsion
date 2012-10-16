@@ -25,9 +25,9 @@ module Adhearsion
 
       def dispatch(call, callback = nil)
         controller = if target.respond_to?(:call)
-          CallController.new call, &target
+          CallController.new call, controller_metadata, &target
         else
-          target.new call
+          target.new call, controller_metadata
         end
 
         call.accept if accepting?
@@ -43,6 +43,14 @@ module Adhearsion
           end
           callback.call if callback
         }
+      end
+
+      def controller_metadata=(metadata)
+        @controller_metadata = metadata
+      end
+
+      def controller_metadata
+        @controller_metadata || {}
       end
 
       def evented?
