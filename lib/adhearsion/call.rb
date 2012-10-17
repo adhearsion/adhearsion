@@ -23,17 +23,10 @@ module Adhearsion
         rescue Celluloid::DeadActorError
           raise ExpiredError, "This call is expired and is no longer accessible"
         end
-
-        def proxy.join(*args)
-          Actor.call @mailbox, :join, *args
-        end
       end
     end
 
-    # @private
-    attr_accessor :offer, :client, :end_reason, :commands, :controllers
-
-    attr_accessor :variables
+    attr_reader :end_reason, :commands, :controllers, :variables
 
     delegate :[], :[]=, :to => :variables
     delegate :to, :from, :to => :offer, :allow_nil => true
@@ -46,6 +39,7 @@ module Adhearsion
       @variables    = {}
       @controllers  = []
       @end_reason   = nil
+      @peers        = {}
 
       self << offer if offer
     end
@@ -92,6 +86,14 @@ module Adhearsion
       @tags.include? label
     end
 
+    #
+    # Hash of joined peers
+    # @return [Hash<String => Adhearsion::Call>]
+    #
+    def peers
+      @peers.clone
+    end
+
     def register_event_handler(*guards, &block)
       register_handler :event, *guards, &block
     end
@@ -117,11 +119,13 @@ module Adhearsion
 
       on_joined do |event|
         target = event.call_id || event.mixer_name
+        @peers[target] = Adhearsion.active_calls[target]
         signal :joined, target
       end
 
       on_unjoined do |event|
         target = event.call_id || event.mixer_name
+        @peers.delete target
         signal :unjoined, target
       end
 
@@ -341,6 +345,10 @@ module Adhearsion
     def resume_controllers
       controllers.each(&:resume!)
     end
+
+    private
+
+    attr_accessor :offer, :client
 
     # @private
     class CommandRegistry < ThreadSafeArray

@@ -1,4 +1,7 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Feature: Track peer calls when joining
+  * Feature: Allow specifying controller metadata when originating outbound calls
+  * Feature: Allow specifying confirmation controller metadata to `CallController#dial`
 
 # [2.1.3](https://github.com/adhearsion/adhearsion/compare/v2.1.2...v2.1.3) - [2012-10-11](https://rubygems.org/gems/adhearsion/versions/2.1.3)
   * Bugfix: Originating call is now answered before joining calls using `CallController#dial`

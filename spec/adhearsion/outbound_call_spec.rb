@@ -58,6 +58,15 @@ module Adhearsion
           call << Punchblock::Event::Answered.new
           sleep 0.5
         end
+
+        context "with controller metadata specified" do
+          it "should set the metadata on the controller" do
+            flexmock(mock_call).should_receive(:dial).once.with(to, {})
+            flexmock(mock_call).should_receive(:execute_controller).once.with(FlexMock.on { |c| c.is_a?(controller) && c.metadata == {:foo => 'bar'}}, Proc)
+            call = OutboundCall.originate to, :controller => controller, :controller_metadata => {:foo => 'bar'}
+            call << Punchblock::Event::Answered.new
+          end
+        end
       end
 
       context "when given a block" do

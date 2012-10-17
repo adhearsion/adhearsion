@@ -15,6 +15,7 @@ module Adhearsion
       # @param [String] to the URI of the party to dial
       # @param [Hash] opts modifier options
       # @option opts [Class] :controller the controller to execute when the call is answered
+      # @option opts [Hash] :controller_metadata key-value pairs of metadata to set on the controller
       # @yield Call controller routine in block form
       #
       # @return [OutboundCall] the ringing call
@@ -23,7 +24,7 @@ module Adhearsion
       #
       def originate(to, opts = {}, &controller_block)
         new.tap do |call|
-          call.execute_controller_or_router_on_answer opts.delete(:controller), &controller_block
+          call.execute_controller_or_router_on_answer opts.delete(:controller), opts.delete(:controller_metadata), &controller_block
           call.dial to, opts
         end
       end
@@ -93,9 +94,10 @@ module Adhearsion
       end
     end
 
-    def execute_controller_or_router_on_answer(controller, &controller_block)
+    def execute_controller_or_router_on_answer(controller, metadata = {}, &controller_block)
       if controller || controller_block
         route = Router::Route.new 'inbound', controller, &controller_block
+        route.controller_metadata = metadata
         on_answer { route.dispatch current_actor }
       else
         run_router_on_answer
