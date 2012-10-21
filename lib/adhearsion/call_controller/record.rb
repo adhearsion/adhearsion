@@ -23,7 +23,6 @@ module Adhearsion
       # @option options [Boolean, Optional] :start_paused Whether subsequent record will start in PAUSE mode. Default is false.
       # @option options [String, Optional] :max_duration Indicates the maximum duration (seconds) for a recording.
       # @option options [String, Optional] :format File format used during recording.
-      # @option options [String, Optional] :format File format used during recording.
       # @option options [String, Optional] :initial_timeout Controls how long (seconds) the recognizer should wait after the end of the prompt for the caller to speak before sending a Recorder event.
       # @option options [String, Optional] :final_timeout Controls the length (seconds) of a period of silence after callers have spoken to conclude they finished.
       # @option options [Boolean, Optional] :interruptible Allows the recording to be terminated by any single DTMF key, default is false
