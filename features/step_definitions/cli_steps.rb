@@ -22,16 +22,6 @@ When /^I wait (\d+) seconds?$/ do |arg1|
   sleep arg1.to_i
 end
 
-# TODO: Remove after pull request is merged in cucumber.rb from Aruba
-When /^I wait for (?:output|stdout) to contain "([^"]*)"$/ do |expected|
-  Timeout::timeout(exit_timeout) do
-    loop do
-      break if assert_partial_output_interactive(expected)
-      sleep 0.1
-    end
-  end
-end
-
 Given /^that I create a valid app under "([^"]*)"$/ do |path|
   steps %Q{
     When I run `ahn create #{path}`
