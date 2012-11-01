@@ -307,9 +307,9 @@ module Adhearsion
         before { subject << joined_event }
 
         it "should remove the peer from its registry" do
-          subject.peers.should_not == {}
+          subject.peers.should_not eql({})
           subject << unjoined_event
-          subject.peers.should == {}
+          subject.peers.should eql({})
         end
       end
     end
