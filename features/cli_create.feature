@@ -12,6 +12,7 @@ Feature: Adhearsion Ahn CLI (Create)
       | Rakefile              |
       | config/adhearsion.rb  |
       | config/environment.rb |
+      | spec/spec_helper.rb   |
     And the file "config/adhearsion.rb" should contain "Adhearsion.router"
     Then the exit status should be 0
 
