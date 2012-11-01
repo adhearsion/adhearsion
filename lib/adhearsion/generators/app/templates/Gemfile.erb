@@ -13,3 +13,7 @@ gem "adhearsion", "~> <%= Adhearsion::VERSION.split('.')[0,2].join('.') %>"
 # gem 'adhearsion-ldap'
 # gem 'adhearsion-xmpp'
 # gem 'adhearsion-drb'
+
+group :development, :test do
+  gem 'rspec'
+end
