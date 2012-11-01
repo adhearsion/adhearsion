@@ -50,7 +50,8 @@ module Adhearsion
       end
 
       def controller_metadata
-        @controller_metadata || {}
+        return {} unless instance_variable_defined?(:@controller_metadata)
+        @controller_metadata
       end
 
       def evented?

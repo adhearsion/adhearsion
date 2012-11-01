@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require 'spec_helper'
+
 describe <%= @controller_name.camelcase %> do
 
   let(:mock_call) { mock 'Call', :to => '1112223333', :from => "2223334444" }
