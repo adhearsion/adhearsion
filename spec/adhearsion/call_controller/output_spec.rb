@@ -7,12 +7,12 @@ module Adhearsion
     describe Output do
       include CallControllerTestHelpers
 
-      def expect_ssml_output(ssml)
-        expect_component_execution Punchblock::Component::Output.new(:ssml => ssml)
+      def expect_ssml_output(ssml, options = {})
+        expect_component_execution Punchblock::Component::Output.new(options.merge(:ssml => ssml))
       end
 
-      def expect_async_ssml_output(ssml)
-        expect_message_waiting_for_response Punchblock::Component::Output.new(:ssml => ssml)
+      def expect_async_ssml_output(ssml, options = {})
+        expect_message_waiting_for_response Punchblock::Component::Output.new(options.merge(:ssml => ssml))
       end
 
       describe "#player" do
@@ -680,6 +680,19 @@ module Adhearsion
           end
         end
 
+        describe "with a default voice set" do
+          before { Adhearsion.config.platform.default_voice = 'foo' }
+
+          it 'sets the voice on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_ssml_output ssml, voice: 'foo'
+            subject.say(str)
+          end
+
+          after { Adhearsion.config.platform.default_voice = nil }
+        end
+
         describe "converts the argument to a string" do
           it 'calls output with a string' do
             argument = 123
@@ -712,6 +725,19 @@ module Adhearsion
             expect_async_ssml_output ssml
             subject.say!(str).should be_a Punchblock::Component::Output
           end
+        end
+
+        describe "with a default voice set" do
+          before { Adhearsion.config.platform.default_voice = 'foo' }
+
+          it 'sets the voice on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_async_ssml_output ssml, voice: 'foo'
+            subject.say!(str)
+          end
+
+          after { Adhearsion.config.platform.default_voice = nil }
         end
 
         describe "converts the argument to a string" do
