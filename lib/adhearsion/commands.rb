@@ -91,7 +91,6 @@ USAGE
             if args.size.zero?
               raise CommandHandler::UnknownCommand.new("Must specify something to create!")
             elsif args.size == 1
-              require 'adhearsion/generators'
               require 'adhearsion/generators/app/app_generator'
               Adhearsion::Generators::AppGenerator.start
             elsif args.size == 2
