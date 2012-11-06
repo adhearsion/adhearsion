@@ -304,7 +304,7 @@ module Adhearsion
       abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
       variables.merge! command.headers_hash if command.respond_to? :headers_hash
       logger.debug "Executing command #{command.inspect}"
-      @client.execute_command command, :call_id => id, :async => true
+      client.execute_command command, :call_id => id, :async => true
     end
 
     # @private
@@ -351,6 +351,10 @@ module Adhearsion
 
     def offer
       @offer
+    end
+
+    def client
+      @client
     end
 
     # @private
