@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+$testing = true
+
 unless ENV['SKIP_RCOV']
   require 'simplecov'
   require 'simplecov-rcov'
