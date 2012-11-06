@@ -13,16 +13,19 @@ module Adhearsion
     describe '#execute_component' do
       let(:message)     { Punchblock::Command::Accept.new }
       let(:response)    { :foo }
-      let(:mock_client) { flexmock 'Client', :execute_command => true }
+      let(:mock_client) { flexmock 'Client' }
+
+      let(:execute_expectation) { PunchblockPlugin.client.should_receive(:execute_command).once }
 
       before do
         PunchblockPlugin::Initializer.client = mock_client
         flexmock message, :execute! => true
         message.response = response
+        execute_expectation
       end
 
       it "writes a command to the client" do
-        flexmock(PunchblockPlugin.client).should_receive(:execute_command).once.with(message, :async => true)
+        execute_expectation.with(message, :async => true)
         PunchblockPlugin.execute_component message
       end
 
