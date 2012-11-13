@@ -8,7 +8,7 @@ module Adhearsion
       include CallControllerTestHelpers
 
       describe "#record" do
-        let(:max_duration) { 5 }
+        let(:max_duration) { 5.5 }
         let(:options) do
           {
             :start_beep => true,

@@ -35,7 +35,7 @@ module Adhearsion
         interrupt_key = '0123456789#*'
         stopper_component = nil
         [:max_duration, :initial_timeout, :final_timeout].each do |k|
-          options[k] = options[k].to_i * 1000 if options[k]
+          options[k] = options[k] * 1000 if options[k]
         end
 
         component = Punchblock::Component::Record.new options
