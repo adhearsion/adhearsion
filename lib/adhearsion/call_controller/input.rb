@@ -215,7 +215,7 @@ module Adhearsion
           }
 
         reason = input_component.complete_event.reason
-        result = reason.respond_to?(:interpretation) ? reason.interpretation : nil
+        result = reason.respond_to?(:utterance) ? reason.utterance : nil
         parse_single_dtmf result
       end
 

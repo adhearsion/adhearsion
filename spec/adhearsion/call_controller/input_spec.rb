@@ -65,7 +65,7 @@ module Adhearsion
 
         def expect_component_complete_event
           complete_event = Punchblock::Event::Complete.new
-          flexmock(complete_event).should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
+          flexmock(complete_event).should_receive(:reason => flexmock(:utterance => 'dtmf-5', :name => :input))
           flexmock(Punchblock::Component::Input).new_instances do |input|
             input.should_receive(:complete?).and_return(false)
             input.should_receive(:complete_event).and_return(complete_event)
