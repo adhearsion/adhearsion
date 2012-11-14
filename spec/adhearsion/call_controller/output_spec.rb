@@ -619,19 +619,19 @@ module Adhearsion
                                            :grammar => { :value => grammar.to_s }
         }
 
+        def expect_component_complete_event
+          complete_event = Punchblock::Event::Complete.new
+          flexmock(complete_event).should_receive(:reason => flexmock(:utterance => 'dtmf-5'))
+          flexmock(Punchblock::Component::Input).new_instances do |input|
+            input.should_receive(:complete?).and_return(false)
+            input.should_receive(:complete_event).and_return(complete_event)
+          end
+        end
+
         #test does pass and method works, but not sure if the empty method is a good idea
         it "plays the correct output" do
           def controller.write_and_await_response(input_component)
             # it is actually a no-op here
-          end
-
-          def expect_component_complete_event
-            complete_event = Punchblock::Event::Complete.new
-            flexmock(complete_event).should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
-            flexmock(Punchblock::Component::Input).new_instances do |input|
-              input.should_receive(:complete?).and_return(false)
-              input.should_receive(:complete_event).and_return(complete_event)
-            end
           end
 
           expect_component_complete_event
@@ -640,19 +640,8 @@ module Adhearsion
         end
 
         it "returns a single digit amongst the allowed when pressed" do
-          flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
-
           def controller.write_and_await_response(input_component)
             input_component.trigger_event_handler Punchblock::Event::Complete.new
-          end
-
-          def expect_component_complete_event
-            complete_event = Punchblock::Event::Complete.new
-            flexmock(complete_event).should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
-            flexmock(Punchblock::Component::Input).new_instances do |input|
-              input.should_receive(:complete?).and_return(false)
-              input.should_receive(:complete_event).and_return(complete_event)
-            end
           end
 
           expect_component_complete_event

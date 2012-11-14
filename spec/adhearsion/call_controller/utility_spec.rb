@@ -56,8 +56,20 @@ module Adhearsion
           subject.parse_single_dtmf("dtmf-star").should be == '*'
         end
 
+        it "correctly returns * as *" do
+          subject.parse_single_dtmf("*").should be == '*'
+        end
+
         it "correctly returns pound as #" do
           subject.parse_single_dtmf("dtmf-pound").should be == '#'
+        end
+
+        it "correctly returns # as #" do
+          subject.parse_single_dtmf("#").should be == '#'
+        end
+
+        it "correctly parses digits without the dtmf- prefix" do
+          subject.parse_single_dtmf('1').should be == '1'
         end
 
         it "correctly returns nil when input is nil" do
