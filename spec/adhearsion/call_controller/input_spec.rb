@@ -63,9 +63,11 @@ module Adhearsion
           )
         }
 
+        let(:utterance) { 'dtmf-5' }
+
         def expect_component_complete_event
           complete_event = Punchblock::Event::Complete.new
-          flexmock(complete_event).should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
+          flexmock(complete_event).should_receive(:reason => flexmock(:utterance => utterance, :name => :input))
           flexmock(Punchblock::Component::Input).new_instances do |input|
             input.should_receive(:complete?).and_return(false)
             input.should_receive(:complete_event).and_return(complete_event)
@@ -82,6 +84,16 @@ module Adhearsion
           expect_component_complete_event
           subject.should_receive(:execute_component_and_await_completion).once.with(Punchblock::Component::Input).and_return input_component
           subject.wait_for_digit(timeout).should be == '5'
+        end
+
+        context "when the utterance does not have dtmf- prefix" do
+          let(:utterance) { '5' }
+
+          it "returns the correct pressed digit" do
+            expect_component_complete_event
+            subject.should_receive(:execute_component_and_await_completion).once.with(Punchblock::Component::Input).and_return input_component
+            subject.wait_for_digit(timeout).should be == '5'
+          end
         end
 
         context "with a nil timeout" do

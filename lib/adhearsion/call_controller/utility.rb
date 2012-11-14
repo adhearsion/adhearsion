@@ -44,16 +44,23 @@ module Adhearsion
       end
 
       #
-      # Parses a single DTMF tone in the format dtmf-*
+      # Parses a DTMF tone string
       #
       # @param [String] the tone string to be parsed
-      # @return [String] the digit in case input was 0-9, * or # if star or pound respectively
+      # @return [String] the digits/*/# without any separation
       #
       # @private
       #
-      def parse_single_dtmf(result)
-        return if result.nil?
-        case tone = result.split('-')[1]
+      def parse_dtmf(dtmf)
+        return if dtmf.nil?
+        dtmf.split(' ').inject '' do |final, digit|
+          final << parse_dtmf_digit(digit)
+        end
+      end
+
+      # @private
+      def parse_dtmf_digit(digit)
+        case tone = digit.split('-').last
         when 'star'
           '*'
         when 'pound'

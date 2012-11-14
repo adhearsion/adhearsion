@@ -245,9 +245,8 @@ module Adhearsion
 
         stopper.stop! if stopper.executing?
         reason = stopper.complete_event.reason
-        result = reason.interpretation if reason.respond_to? :interpretation
-        return parse_single_dtmf result unless result.nil?
-        result
+        result = reason.respond_to?(:utterance) ? reason.utterance : nil
+        parse_dtmf result
       end
 
       # @private
