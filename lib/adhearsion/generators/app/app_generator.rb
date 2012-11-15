@@ -4,8 +4,8 @@ module Adhearsion
   module Generators
     class AppGenerator < Generator
 
-      BASEDIRS = %w( config lib script spec )
-      EMPTYDIRS = %w( spec/call_controllers spec/support )
+      BASEDIRS  = %w( config lib script spec )
+      EMPTYDIRS = %w( spec/support )
 
       def setup_project
         self.destination_root = @generator_name
