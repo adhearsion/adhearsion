@@ -45,10 +45,10 @@ module Adhearsion
     end
 
     def call_died(call, reason)
-      return unless reason
       catching_standard_errors do
         call_id = key call
         remove_inactive_call call
+        return unless reason
         PunchblockPlugin.client.execute_command Punchblock::Command::Hangup.new, :async => true, :call_id => call_id
       end
     end
