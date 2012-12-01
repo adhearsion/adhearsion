@@ -801,10 +801,14 @@ module Adhearsion
           lambda { subject.execute_controller(mock_controller) { foo } }.should raise_error(ArgumentError)
         end
 
-        it "should add the controller thread to the important threads" do
+        it "should add the controller thread to the important threads and remove it when it completes" do
           flexmock(CallController).should_receive(:exec)
-          controller_thread = subject.execute_controller mock_controller, lambda { |call| latch.countdown! }
+          controller_thread = subject.execute_controller nil, lambda { |call| latch.countdown! } do
+            sleep 1
+          end
           Adhearsion::Process.important_threads.should include controller_thread
+          latch.wait(2).should be_true
+          Adhearsion::Process.important_threads.should_not include controller_thread
         end
 
         it "should pass the exception to the events system" do
