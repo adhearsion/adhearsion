@@ -88,8 +88,7 @@ module Adhearsion
         catching_standard_errors do
           exec_with_callback completion_callback
         end
-        Adhearsion::Process.important_threads.delete Thread.current
-      end.tap { |t| Adhearsion::Process.important_threads << t }
+      end
     end
 
     def exec_with_callback(completion_callback = nil)
