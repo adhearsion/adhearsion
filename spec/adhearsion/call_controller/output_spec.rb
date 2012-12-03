@@ -71,8 +71,8 @@ module Adhearsion
 
         context "with a media engine" do
           let(:media_engine) { :native }
-          it "should use the specified media engine in the SSML" do
-            result_component = expect_ssml_output ssml, renderer: media_engine
+          it "should use the specified media engine in the component" do
+            expect_ssml_output ssml, renderer: media_engine
             subject.play_audio(audio_file, renderer: media_engine).should be true
           end
         end
@@ -105,6 +105,14 @@ module Adhearsion
           it 'places the fallback in the SSML doc' do
             expect_async_ssml_output ssml
             subject.play_audio!(audio_file, :fallback => fallback).should be_a Punchblock::Component::Output
+          end
+        end
+
+        context "with a media engine" do
+          let(:media_engine) { :native }
+          it "should use the specified media engine in the SSML" do
+            expect_async_ssml_output ssml, renderer: media_engine
+            subject.play_audio!(audio_file, renderer: media_engine).should be_a Punchblock::Component::Output
           end
         end
       end

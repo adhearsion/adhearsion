@@ -104,8 +104,8 @@ module Adhearsion
       #
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
-      def play_audio(file, options = nil)
-        renderer = (options || {}).delete :renderer
+      def play_audio(file, options = {})
+        renderer = options.delete :renderer
         player.play_ssml(Formatter.ssml_for_audio(file, options), renderer: renderer)
         true
       end
@@ -122,8 +122,9 @@ module Adhearsion
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       # @returns [Punchblock::Component::Output]
       #
-      def play_audio!(file, options = nil)
-        async_player.play_ssml Formatter.ssml_for_audio(file, options)
+      def play_audio!(file, options = {})
+        renderer = options.delete :renderer
+        async_player.play_ssml(Formatter.ssml_for_audio(file, options), renderer: renderer)
       end
 
       #
