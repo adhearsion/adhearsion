@@ -98,13 +98,15 @@ module Adhearsion
       # The Punchblock backend will have to handle cases like Asterisk where there is a fixed sounds directory.
       #
       # @param [String] file http:// URL or full disk path to the sound file
-      # @param [Hash] options Additional options to specify how exactly to say time specified.
+      # @param [Hash] options Additional options
       # @option options [String] :fallback The text to play if the file is not available
+      # @option options [Symbol] :renderer The media engine to use for rendering the file
       #
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
       def play_audio(file, options = nil)
-        player.play_ssml Formatter.ssml_for_audio(file, options)
+        renderer = (options || {}).delete :renderer
+        player.play_ssml(Formatter.ssml_for_audio(file, options), renderer: renderer)
         true
       end
 

@@ -68,6 +68,14 @@ module Adhearsion
             subject.play_audio(audio_file, :fallback => fallback).should be true
           end
         end
+
+        context "with a media engine" do
+          let(:media_engine) { :native }
+          it "should use the specified media engine in the SSML" do
+            result_component = expect_ssml_output ssml, renderer: media_engine
+            subject.play_audio(audio_file, renderer: media_engine).should be true
+          end
+        end
       end
 
       describe "#play_audio!" do
