@@ -44,8 +44,6 @@ module Adhearsion
     its(:to)      { should be == to }
     its(:from)    { should be == from }
 
-    its(:after_end_hold_time) { should be == 30 }
-
     describe "its variables" do
       context "with an offer with headers" do
         let(:headers)   { {:x_foo => 'bar'} }
@@ -348,7 +346,7 @@ module Adhearsion
         end
 
         it "shuts down the actor" do
-          flexmock subject.wrapped_object, :after_end_hold_time => 2
+          Adhearsion.config.platform.after_hangup_lifetime = 2
           subject << end_event
           sleep 2.1
           subject.should_not be_alive

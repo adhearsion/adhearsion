@@ -5,6 +5,7 @@
   * Feature: Set default voice on output components when specified in config
   * Feature: Be more flexible about DTMF utterance parsing
   * Feature: Added specs for the SimonGame
+  * Feautre: Allow configuring the lifetime of a call object after hangup
   * Bugfix: Generate sane spec defaults for new apps and controllers
   * Bugfix: `CallController#record` now allows partial-second timeouts
 
