@@ -140,6 +140,10 @@ module Adhearsion
       end
     end
 
+    def finalize
+      ::Logging::Repository.reset
+    end
+
     ##
     # Registers a callback for when this call is joined to another call or a mixer
     #
