@@ -83,7 +83,8 @@ module Adhearsion
     private
 
     def call_handler(handler, guards, event)
-      super && throw(:pass)
+      super
+      throw :pass
     end
 
     class ErrorHandler
