@@ -5,9 +5,11 @@
   * Feature: Set default voice on output components when specified in config
   * Feature: Be more flexible about DTMF utterance parsing
   * Feature: Added specs for the SimonGame
-  * Feautre: Allow configuring the lifetime of a call object after hangup
+  * Feature: Allow configuring the lifetime of a call object after hangup
   * Bugfix: Generate sane spec defaults for new apps and controllers
   * Bugfix: `CallController#record` now allows partial-second timeouts
+  * Bugfix: Ensure calls are removed from the active collection when they terminate cleanly
+  * Bugfix: Plug a big memory leak
 
 # [2.1.3](https://github.com/adhearsion/adhearsion/compare/v2.1.2...v2.1.3) - [2012-10-11](https://rubygems.org/gems/adhearsion/versions/2.1.3)
   * Bugfix: Originating call is now answered before joining calls using `CallController#dial`
