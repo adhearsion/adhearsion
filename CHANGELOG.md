@@ -6,6 +6,7 @@
   * Feature: Be more flexible about DTMF utterance parsing
   * Feature: Added specs for the SimonGame
   * Feature: Allow configuring the lifetime of a call object after hangup
+  * Feature: Support collections passed to `CallController#play`
   * Bugfix: Generate sane spec defaults for new apps and controllers
   * Bugfix: `CallController#record` now allows partial-second timeouts
   * Bugfix: Ensure calls are removed from the active collection when they terminate cleanly

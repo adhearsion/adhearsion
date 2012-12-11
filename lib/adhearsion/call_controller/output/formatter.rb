@@ -13,6 +13,8 @@ module Adhearsion
                 Formatter.ssml_for argument.delete(:value), argument
               when RubySpeech::SSML::Speak
                 argument
+              when lambda { |a| a.respond_to? :each }
+                ssml_for_collection argument
               else
                 Formatter.ssml_for argument
               end
