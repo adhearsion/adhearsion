@@ -413,7 +413,7 @@ module Adhearsion
           end
         end
 
-        describe "with an array containing a Date/DateTime/Time object and a hash" do
+        describe "with an hash containing a Date/DateTime/Time object and format options" do
           let(:date)      { Date.parse '2011-01-23' }
           let(:format)    { "d-m-y" }
           let(:strftime)  { "%d-%m%Y" }
