@@ -112,6 +112,23 @@ module Adhearsion
             subject.record(options.merge(:async => false, :interruptible => true)) { |rec| @rec.push rec }
           end
 
+          it "returns the digit used to interrupt" do
+            flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:name => :input, :utterance => "dtmf-4"))
+            def subject.write_and_await_response(input_component)
+              input_component.trigger_event_handler Punchblock::Event::Complete.new
+            end
+
+            complete_event = Punchblock::Event::Complete.new
+            flexmock(complete_event).should_receive(:reason => flexmock(:name => :input))
+            flexmock(Punchblock::Component::Input).new_instances do |input|
+              input.should_receive(:complete?).and_return(false)
+              input.should_receive(:complete_event).and_return(complete_event)
+            end
+            flexmock(Punchblock::Component::Record).new_instances.should_receive(:stop!)
+            subject.should_receive(:execute_component_and_await_completion).once.with(component)
+            retval = subject.record(options.merge(:async => false, :interruptible => true)) { |rec| @rec.push rec }
+            retval.interrupting_digit.should == "4"
+          end
         end
 
         describe "check for the return value" do
@@ -124,7 +141,6 @@ module Adhearsion
             component.execute!
           end
         end
-
       end
     end
   end

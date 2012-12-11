@@ -60,6 +60,13 @@ module Adhearsion
           execute_component_and_await_completion component
         end
         stopper_component.stop! if stopper_component && stopper_component.executing?
+        
+        if interruptible
+          reason = stopper_component.complete_event.reason
+          result = reason.respond_to?(:utterance) ? reason.utterance : nil
+          component.interrupting_digit = parse_dtmf result
+        end
+
         component
       end
     end
