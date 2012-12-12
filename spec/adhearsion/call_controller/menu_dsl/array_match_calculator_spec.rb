@@ -31,6 +31,15 @@ module Adhearsion
           match_case.exact_matches.should be == %w[*57]
         end
 
+        it "matching an array with a combination of Fixnums and Strings" do
+          calculator = ArrayMatchCalculator.new ['11',5,'14',115], match_payload
+          match_case = calculator.match '11'
+          match_case.exact_match?.should be true
+          match_case.potential_match?.should be true
+          match_case.exact_matches.should be == ['11']
+          match_case.potential_matches.should be == [115]
+        end
+
         it "matching empty array should never match" do
           calculator = ArrayMatchCalculator.new [], match_payload
           match_case = calculator.match '98'

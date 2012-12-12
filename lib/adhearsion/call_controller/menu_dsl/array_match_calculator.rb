@@ -8,12 +8,6 @@ module Adhearsion
         def initialize(pattern, match_payload, &block)
           super
           pattern.compact!
-          return if pattern.size == 0
-          @array_type = pattern.first.class
-          raise unless [String,Fixnum].include?(@array_type)
-          pattern.each do |rec|
-            raise unless rec.class == @array_type
-          end
         end
 
         def match(query)
@@ -22,14 +16,15 @@ module Adhearsion
           end
           args = { :query => query, :exact_matches => [], :potential_matches => [] }
           pattern.each do |pat|
-            if @array_type == Fixnum
+            case pat
+            when Fixnum
               numeric_query = coerce_to_numeric query
               if pat == numeric_query
                 args[:exact_matches] += [pat]
               elsif pat.to_s.starts_with? query.to_s
                 args[:potential_matches] += [pat]
               end
-            elsif @array_type == String
+            when String
               if pat == query.to_s
                 args[:exact_matches] += [pat]
               elsif pat.starts_with? query.to_s
