@@ -11,9 +11,6 @@ module Adhearsion
         end
 
         def match(query)
-          if pattern.size == 0
-            return new_calculated_match :query => query, :exact_matches => nil, :potential_matches => nil
-          end
           args = { :query => query, :exact_matches => [], :potential_matches => [] }
           pattern.each do |pat|
             case pat

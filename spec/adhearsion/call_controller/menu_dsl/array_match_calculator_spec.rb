@@ -45,10 +45,14 @@ module Adhearsion
           match_case = calculator.match '98'
           match_case.exact_match?.should_not be true
           match_case.potential_match?.should_not be true
+          match_case.exact_matches.should be == []
+          match_case.potential_matches.should be == []
 
           match_case = calculator.match '*2'
           match_case.exact_match?.should_not be true
           match_case.potential_match?.should_not be true
+          match_case.exact_matches.should be == []
+          match_case.potential_matches.should be == []
         end
 
         it "matching array with nil should skip nil field" do
