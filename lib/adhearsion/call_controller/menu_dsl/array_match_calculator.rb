@@ -3,9 +3,7 @@
 module Adhearsion
   class CallController
     module MenuDSL
-
       class ArrayMatchCalculator < MatchCalculator
-        @array_type = nil
 
         def initialize(pattern, match_payload)
           if pattern.size == 0
@@ -26,7 +24,6 @@ module Adhearsion
             return new_calculated_match :query => query, :exact_matches => nil, :potential_matches => nil
           end
           args = { :query => query, :exact_matches => [], :potential_matches => [] }
-          exact_match, potential_match = nil
           pattern.each do |pat|
             next if pat.nil?
             if @array_type == Fixnum
@@ -47,8 +44,7 @@ module Adhearsion
           new_calculated_match args
         end
 
-      end # class ArrayMatchCalculator
-
+      end
     end
   end
 end
