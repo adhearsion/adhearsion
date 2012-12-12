@@ -6,23 +6,18 @@ module Adhearsion
       class ArrayMatchCalculator < MatchCalculator
         def match(query)
           args = { :query => query, :exact_matches => [], :potential_matches => [] }
+
           pattern.compact.each do |pat|
-            case pat
-            when Fixnum
-              numeric_query = coerce_to_numeric query
-              if pat == numeric_query
-                args[:exact_matches] += [pat]
-              elsif pat.to_s.starts_with? query.to_s
-                args[:potential_matches] += [pat]
-              end
-            when String
-              if pat == query.to_s
-                args[:exact_matches] += [pat]
-              elsif pat.starts_with? query.to_s
-                args[:potential_matches] += [pat]
-              end
+            pattern_string  = pat.to_s
+            query_string    = query.to_s
+
+            if pattern_string == query_string
+              args[:exact_matches] << pat
+            elsif pattern_string.starts_with? query_string
+              args[:potential_matches] << pat
             end
           end
+
           new_calculated_match args
         end
       end
