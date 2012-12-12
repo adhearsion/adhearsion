@@ -56,7 +56,8 @@ module Adhearsion
         end
 
         it "matching array with nil should skip nil field" do
-          calculator = ArrayMatchCalculator.new [1,2,nil,5,10], match_payload
+          pattern = [1,2,nil,5,10]
+          calculator = ArrayMatchCalculator.new pattern, match_payload
           match_case = calculator.match '1'
           match_case.exact_match?.should be true
           match_case.potential_match?.should be true
@@ -66,6 +67,8 @@ module Adhearsion
           match_case = calculator.match '99'
           match_case.exact_match?.should_not be true
           match_case.potential_match?.should_not be true
+
+          pattern.should == [1,2,nil,5,10]
         end
       end
     end

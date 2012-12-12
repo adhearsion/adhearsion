@@ -4,15 +4,9 @@ module Adhearsion
   class CallController
     module MenuDSL
       class ArrayMatchCalculator < MatchCalculator
-
-        def initialize(pattern, match_payload, &block)
-          super
-          pattern.compact!
-        end
-
         def match(query)
           args = { :query => query, :exact_matches => [], :potential_matches => [] }
-          pattern.each do |pat|
+          pattern.compact.each do |pat|
             case pat
             when Fixnum
               numeric_query = coerce_to_numeric query
@@ -31,7 +25,6 @@ module Adhearsion
           end
           new_calculated_match args
         end
-
       end
     end
   end
