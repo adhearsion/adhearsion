@@ -11,7 +11,7 @@ module Adhearsion
         
         it "matching arrays with fixnums" do
           calculator = ArrayMatchCalculator.new [11,5,14,115], match_payload
-          match_case = calculator.match 11
+          match_case = calculator.match '11'
           match_case.exact_match?.should be true
           match_case.potential_match?.should be true
           match_case.exact_matches.should be == [11]
@@ -33,7 +33,7 @@ module Adhearsion
         
         it "matching empty array should never match" do
           calculator = ArrayMatchCalculator.new [], match_payload
-          match_case = calculator.match 98
+          match_case = calculator.match '98'
           match_case.exact_match?.should_not be true
           match_case.potential_match?.should_not be true
           
@@ -44,13 +44,13 @@ module Adhearsion
         
         it "matching array with nil should skip nil field" do
           calculator = ArrayMatchCalculator.new [1,2,nil,5,10], match_payload
-          match_case = calculator.match 1
+          match_case = calculator.match '1'
           match_case.exact_match?.should be true
           match_case.potential_match?.should be true
           match_case.exact_matches.should be == [1]
           match_case.potential_matches.should be == [10]
-          
-          match_case = calculator.match 99
+
+          match_case = calculator.match '99'
           match_case.exact_match?.should_not be true
           match_case.potential_match?.should_not be true
         end
