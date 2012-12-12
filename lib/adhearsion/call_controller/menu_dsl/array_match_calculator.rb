@@ -5,18 +5,15 @@ module Adhearsion
     module MenuDSL
       class ArrayMatchCalculator < MatchCalculator
 
-        def initialize(pattern, match_payload)
-          if pattern.size == 0
-            super
-            return
-          end
+        def initialize(pattern, match_payload, &block)
+          super
+          pattern.compact!
+          return if pattern.size == 0
           @array_type = pattern.first.class
           raise unless [String,Fixnum].include?(@array_type)
           pattern.each do |rec|
-            next if rec.nil?
             raise unless rec.class == @array_type
           end
-          super
         end
 
         def match(query)
@@ -25,7 +22,6 @@ module Adhearsion
           end
           args = { :query => query, :exact_matches => [], :potential_matches => [] }
           pattern.each do |pat|
-            next if pat.nil?
             if @array_type == Fixnum
               numeric_query = coerce_to_numeric query
               if pat == numeric_query
