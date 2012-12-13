@@ -14,7 +14,7 @@ describe Adhearsion do
       Adhearsion.config[:platform].root.should be_nil
     end
   end
-  
+
   describe "#root" do
     it "should return the set root" do
       Adhearsion.root = "./"
