@@ -106,6 +106,8 @@ module Adhearsion
       end
     end
 
+    #
+    # @return [Adhearsion::Statistics] a statistics aggregator object capable of producing stats dumps
     def statistics
       if instance_variable_defined?(:@statistics) && @statistics.alive?
         @statistics

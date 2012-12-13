@@ -10,22 +10,30 @@ module Adhearsion
       @calls_dialed = @calls_offered = @calls_routed = @calls_rejected = 0
     end
 
+    #
+    # Create a point-time dump of process statistics
+    #
+    # @return [Adhearsion::Statistics::Dump]
     def dump
       Dump.new timestamp: Time.now, call_counts: dump_call_counts
     end
 
+    # @private
     def register_call_dialed
       @calls_dialed += 1
     end
 
+    # @private
     def register_call_offered
       @calls_offered += 1
     end
 
+    # @private
     def register_call_routed
       @calls_routed += 1
     end
 
+    # @private
     def register_call_rejected
       @calls_rejected += 1
     end
@@ -36,10 +44,20 @@ module Adhearsion
       {dialed: @calls_dialed, offered: @calls_offered, routed: @calls_routed, rejected: @calls_rejected, active: Adhearsion.active_calls.count}
     end
 
+    #
+    # A point-time dump of process statistics
     class Dump
       include Comparable
 
-      attr_reader :timestamp, :call_counts
+      #
+      # @attribute
+      # @return [Time] the time at which this dump was generated
+      attr_reader :timestamp
+
+      #
+      # @attribute
+      # @return [Hash] hash of call counts during the lifetime of the process.
+      attr_reader :call_counts
 
       def initialize(opts = {})
         @timestamp = opts[:timestamp]
