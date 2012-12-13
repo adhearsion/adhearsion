@@ -21,7 +21,7 @@ module Adhearsion
       # @raises [PlaybackError] if the given argument could not be played
       #
       def say(text, options = {})
-        player.play_ssml(text, options) || player.output(Formatter.ssml_for_text(text.to_s), options)
+        player.play_ssml(text, options) || player.output(output_formatter.ssml_for_text(text.to_s), options)
       end
       alias :speak :say
 
@@ -34,7 +34,7 @@ module Adhearsion
       # @raises [PlaybackError] if the given argument could not be played
       #
       def say!(text, options = {})
-        async_player.play_ssml(text, options) || async_player.output(Formatter.ssml_for_text(text.to_s), options)
+        async_player.play_ssml(text, options) || async_player.output(output_formatter.ssml_for_text(text.to_s), options)
       end
       alias :speak! :say!
 
@@ -61,7 +61,7 @@ module Adhearsion
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
       def play(*arguments)
-        player.play_ssml Formatter.ssml_for_collection(arguments)
+        player.play_ssml output_formatter.ssml_for_collection(arguments)
         true
       end
 
@@ -89,7 +89,7 @@ module Adhearsion
       # @returns [Punchblock::Component::Output]
       #
       def play!(*arguments)
-        async_player.play_ssml Formatter.ssml_for_collection(arguments)
+        async_player.play_ssml output_formatter.ssml_for_collection(arguments)
       end
 
       #
@@ -104,7 +104,7 @@ module Adhearsion
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
       def play_audio(file, options = nil)
-        player.play_ssml Formatter.ssml_for_audio(file, options)
+        player.play_ssml output_formatter.ssml_for_audio(file, options)
         true
       end
 
@@ -121,7 +121,7 @@ module Adhearsion
       # @returns [Punchblock::Component::Output]
       #
       def play_audio!(file, options = nil)
-        async_player.play_ssml Formatter.ssml_for_audio(file, options)
+        async_player.play_ssml output_formatter.ssml_for_audio(file, options)
       end
 
       #
@@ -141,7 +141,7 @@ module Adhearsion
       #
       def play_time(time, options = {})
         raise ArgumentError unless [Date, Time, DateTime].include?(time.class) && options.is_a?(Hash)
-        player.play_ssml Formatter.ssml_for_time(time, options)
+        player.play_ssml output_formatter.ssml_for_time(time, options)
         true
       end
 
@@ -163,7 +163,7 @@ module Adhearsion
       #
       def play_time!(time, options = {})
         raise ArgumentError unless [Date, Time, DateTime].include?(time.class) && options.is_a?(Hash)
-        async_player.play_ssml Formatter.ssml_for_time(time, options)
+        async_player.play_ssml output_formatter.ssml_for_time(time, options)
       end
 
       #
@@ -177,7 +177,7 @@ module Adhearsion
       #
       def play_numeric(number)
         raise ArgumentError unless number.kind_of?(Numeric) || number =~ /^\d+$/
-        player.play_ssml Formatter.ssml_for_numeric(number)
+        player.play_ssml output_formatter.ssml_for_numeric(number)
         true
       end
 
@@ -193,7 +193,7 @@ module Adhearsion
       #
       def play_numeric!(number)
         raise ArgumentError unless number.kind_of?(Numeric) || number =~ /^\d+$/
-        async_player.play_ssml Formatter.ssml_for_numeric(number)
+        async_player.play_ssml output_formatter.ssml_for_numeric(number)
       end
 
       #
@@ -236,7 +236,7 @@ module Adhearsion
             :value => grammar_accept(digits)
           }
 
-        player.output Formatter.ssml_for(argument) do |output_component|
+        player.output output_formatter.ssml_for(argument) do |output_component|
           stopper.register_event_handler Punchblock::Event::Complete do |event|
             output_component.stop! unless output_component.complete?
           end
@@ -257,6 +257,13 @@ module Adhearsion
       # @private
       def async_player
         @async_player ||= AsyncPlayer.new(self)
+      end
+
+      #
+      # @return [Formatter] an output formatter for the preparation of SSML documents for submission to the engine
+      #
+      def output_formatter
+        Formatter.new
       end
     end # Output
   end # CallController
