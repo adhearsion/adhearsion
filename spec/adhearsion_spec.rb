@@ -92,6 +92,26 @@ describe Adhearsion do
     end
   end
 
+  describe "#statistics" do
+    it "should be a statistics aggregator" do
+      Adhearsion.statistics.should be_a Adhearsion::Statistics
+    end
+
+    it "should return the same instance each time" do
+      Adhearsion.statistics.should be Adhearsion.statistics
+    end
+
+    it "should create a new aggregator if the existing one dies" do
+      original = Adhearsion.statistics
+      original.terminate
+      original.should_not be_alive
+
+      current = Adhearsion.statistics
+      current.should be_alive
+      current.should_not be original
+    end
+  end
+
   describe "#status" do
     it "should be the process status name" do
       Adhearsion.status.should be == :booting

@@ -146,6 +146,11 @@ module Adhearsion
         Adhearsion.active_calls[call_id].should be subject
       end
 
+      it "should bump the dialed call stat" do
+        flexmock(Adhearsion.statistics).should_receive(:register_call_dialed).once
+        subject.dial to, :from => from
+      end
+
       it "should not modify the provided options" do
         options = {:from => from}
         original_options = Marshal.load(Marshal.dump(options))

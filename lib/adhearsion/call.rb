@@ -110,6 +110,7 @@ module Adhearsion
       register_event_handler Punchblock::Event::Offer do |offer|
         @offer  = offer
         @client = offer.client
+        Adhearsion.statistics.register_call_offered
         throw :pass
       end
 
@@ -193,6 +194,7 @@ module Adhearsion
 
     def accept(headers = nil)
       @accept_command ||= write_and_await_response Punchblock::Command::Accept.new(:headers => headers)
+      Adhearsion.statistics.register_call_routed
     end
 
     def answer(headers = nil)
@@ -201,6 +203,7 @@ module Adhearsion
 
     def reject(reason = :busy, headers = nil)
       write_and_await_response Punchblock::Command::Reject.new(:reason => reason, :headers => headers)
+      Adhearsion.statistics.register_call_rejected
     end
 
     def hangup(headers = nil)

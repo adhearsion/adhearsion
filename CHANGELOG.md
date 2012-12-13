@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Feature: Statistics API providing counts of calls dialed, offered, rejected, routed and active
   * Feature: Track peer calls when joining
   * Feature: Allow specifying controller metadata when originating outbound calls
   * Feature: Allow specifying confirmation controller metadata to `CallController#dial`
