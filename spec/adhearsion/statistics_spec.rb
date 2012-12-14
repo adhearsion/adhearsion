@@ -13,7 +13,7 @@ describe Adhearsion::Statistics do
 
   it "should listen for dialed call events and increment the dialed call count" do
     subject
-    Adhearsion::Events.trigger_immediately :call_dialed
+    Adhearsion::Events.trigger_immediately :call_dialed, :foo_call
     subject.dump.call_counts.should == {dialed: 1, offered: 0, routed: 0, rejected: 0, active: 0}
   end
 
@@ -25,13 +25,13 @@ describe Adhearsion::Statistics do
 
   it "should listen for routed call events and increment the routed call count" do
     subject
-    Adhearsion::Events.trigger_immediately :call_routed
+    Adhearsion::Events.trigger_immediately :call_routed, call: :foo, route: Adhearsion::Router::Route.new('my_route')
     subject.dump.call_counts.should == {dialed: 0, offered: 0, routed: 1, rejected: 0, active: 0}
   end
 
   it "should listen for rejected call events and increment the rejected call count" do
     subject
-    Adhearsion::Events.trigger_immediately :call_rejected
+    Adhearsion::Events.trigger_immediately :call_rejected, call: :foo, reason: :bar
     subject.dump.call_counts.should == {dialed: 0, offered: 0, routed: 0, rejected: 1, active: 0}
   end
 end
