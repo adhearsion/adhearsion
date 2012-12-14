@@ -115,6 +115,13 @@ module Adhearsion
           let(:controller)  { CallController }
           let(:route)       { Route.new 'foobar', controller }
 
+          it "should immediately fire the :call_routed event giving the call and route" do
+            flexmock(Adhearsion::Events).should_receive(:trigger_immediately).once.with(:call_routed, call: call, route: route)
+            flexmock(call).should_receive(:hangup).once
+            route.dispatch call, lambda { latch.countdown! }
+            latch.wait(2).should be true
+          end
+
           it "should accept the call" do
             flexmock(call).should_receive(:accept).once
             route.dispatch call, lambda { latch.countdown! }

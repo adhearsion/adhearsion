@@ -542,12 +542,6 @@ module Adhearsion
             subject.accept
           end
         end
-
-        it "should immediately fire the :call_routed event giving the call" do
-          expect_message_waiting_for_response Punchblock::Command::Accept.new
-          flexmock(Adhearsion::Events).should_receive(:trigger_immediately).once.with(:call_routed, subject)
-          subject.accept
-        end
       end
 
       describe '#answer' do

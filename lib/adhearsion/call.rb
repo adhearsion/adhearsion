@@ -194,7 +194,6 @@ module Adhearsion
 
     def accept(headers = nil)
       @accept_command ||= write_and_await_response Punchblock::Command::Accept.new(:headers => headers)
-      Adhearsion::Events.trigger_immediately :call_routed, current_actor
     end
 
     def answer(headers = nil)
