@@ -15,6 +15,12 @@ describe Adhearsion::Statistics::Dump do
     dump.call_counts.should == counts
   end
 
+  it "should have a hash of call counts by route" do
+    counts = {"my route" => 1, "your route" => 10}
+    dump = Adhearsion::Statistics::Dump.new calls_by_route: counts
+    dump.calls_by_route.should == counts
+  end
+
   it "should be equal to another dump if they share the same timestamp" do
     origin_time = Time.now
     dump1 = Adhearsion::Statistics::Dump.new timestamp: origin_time
