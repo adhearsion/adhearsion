@@ -34,6 +34,13 @@ describe Adhearsion::Initializer do
       end
     end
 
+    it "should start the stats aggregator" do
+      flexmock(Adhearsion).should_receive(:statistics).at_least.once
+      stub_behavior_for_initializer_with_no_path_changing_behavior do
+        Adhearsion::Initializer.start
+      end
+    end
+
     it "should create a pid file in the app's path when given 'true' as the pid_file hash key argument" do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
          flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once

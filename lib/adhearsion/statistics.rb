@@ -8,6 +8,11 @@ module Adhearsion
 
     def initialize
       @calls_dialed = @calls_offered = @calls_routed = @calls_rejected = 0
+
+      Events.punchblock(Punchblock::Event::Offer) { register_call_offered }
+      Events.call_dialed { register_call_dialed }
+      Events.call_rejected { register_call_rejected }
+      Events.call_routed { register_call_routed }
     end
 
     #

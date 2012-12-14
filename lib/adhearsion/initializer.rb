@@ -38,6 +38,7 @@ module Adhearsion
     end
 
     def start
+      Adhearsion.statistics
       resolve_pid_file_path
       load_lib_folder
       load_config_file

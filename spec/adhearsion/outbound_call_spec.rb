@@ -146,8 +146,8 @@ module Adhearsion
         Adhearsion.active_calls[call_id].should be subject
       end
 
-      it "should bump the dialed call stat" do
-        flexmock(Adhearsion.statistics).should_receive(:register_call_dialed).once
+      it "should immediately fire the :call_dialed event giving the call" do
+        flexmock(Adhearsion::Events).should_receive(:trigger_immediately).once.with(:call_dialed, subject)
         subject.dial to, :from => from
       end
 

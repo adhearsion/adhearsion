@@ -11,23 +11,27 @@ describe Adhearsion::Statistics do
     end
   end
 
-  it "should allow incrementing the dialed call count" do
-    subject.register_call_dialed
+  it "should listen for dialed call events and increment the dialed call count" do
+    subject
+    Adhearsion::Events.trigger_immediately :call_dialed
     subject.dump.call_counts.should == {dialed: 1, offered: 0, routed: 0, rejected: 0, active: 0}
   end
 
-  it "should allow incrementing the offered call count" do
-    subject.register_call_offered
+  it "should listen for call offer events and increment the offered call count" do
+    subject
+    Adhearsion::Events.trigger_immediately :punchblock, Punchblock::Event::Offer.new
     subject.dump.call_counts.should == {dialed: 0, offered: 1, routed: 0, rejected: 0, active: 0}
   end
 
-  it "should allow incrementing the routed call count" do
-    subject.register_call_routed
+  it "should listen for routed call events and increment the routed call count" do
+    subject
+    Adhearsion::Events.trigger_immediately :call_routed
     subject.dump.call_counts.should == {dialed: 0, offered: 0, routed: 1, rejected: 0, active: 0}
   end
 
-  it "should allow incrementing the rejected call count" do
-    subject.register_call_rejected
+  it "should listen for rejected call events and increment the rejected call count" do
+    subject
+    Adhearsion::Events.trigger_immediately :call_rejected
     subject.dump.call_counts.should == {dialed: 0, offered: 0, routed: 0, rejected: 1, active: 0}
   end
 end

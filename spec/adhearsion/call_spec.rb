@@ -543,9 +543,9 @@ module Adhearsion
           end
         end
 
-        it "should bump the routed call stat" do
+        it "should immediately fire the :call_routed event giving the call" do
           expect_message_waiting_for_response Punchblock::Command::Accept.new
-          flexmock(Adhearsion.statistics).should_receive(:register_call_routed).once
+          flexmock(Adhearsion::Events).should_receive(:trigger_immediately).once.with(:call_routed, subject)
           subject.accept
         end
       end
@@ -597,10 +597,10 @@ module Adhearsion
           end
         end
 
-        it "should bump the rejected call stat" do
-          expect_message_waiting_for_response Punchblock::Command::Reject.new(:reason => :busy)
-          flexmock(Adhearsion.statistics).should_receive(:register_call_rejected).once
-          subject.reject
+        it "should immediately fire the :call_rejected event giving the call and the reason" do
+          expect_message_waiting_for_response Punchblock::Command::Reject
+          flexmock(Adhearsion::Events).should_receive(:trigger_immediately).once.with(:call_rejected, :call => subject, :reason => :decline)
+          subject.reject :decline
         end
       end
 
