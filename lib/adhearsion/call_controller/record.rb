@@ -24,16 +24,13 @@ module Adhearsion
 
         def initialize(controller, options = {})
           @controller = controller
-          @stopper_component = nil
 
-          @async          = options.delete :async
-          @interruptible  = options.delete :interruptible
+          options = prep_options options
 
-          [:max_duration, :initial_timeout, :final_timeout].each do |k|
-            options[k] = options[k] * 1000 if options[k]
-          end
+          @async = options.delete :async
 
-          @record_component = Punchblock::Component::Record.new options
+          @stopper_component  = options.delete(:interruptible) ? setup_stopper : nil
+          @record_component   = Punchblock::Component::Record.new options
         end
 
         #
@@ -42,7 +39,7 @@ module Adhearsion
         # @return nil
         #
         def run
-          setup_stopper if @interruptible
+          execute_stopper
           execute_recording
           terminate_stopper
           nil
@@ -67,7 +64,11 @@ module Adhearsion
           @stopper_component.register_event_handler Punchblock::Event::Complete do |event|
             @record_component.stop! unless @record_component.complete?
           end
-          @controller.write_and_await_response @stopper_component
+          @stopper_component
+        end
+
+        def execute_stopper
+          @controller.write_and_await_response @stopper_component if @stopper_component
         end
 
         def execute_recording
@@ -80,6 +81,16 @@ module Adhearsion
 
         def terminate_stopper
           @stopper_component.stop! if @stopper_component && @stopper_component.executing?
+        end
+
+        def prep_options(opts)
+          options = opts.dup
+
+          [:max_duration, :initial_timeout, :final_timeout].each do |k|
+            options[k] = options[k] * 1000 if options[k]
+          end
+
+          options
         end
       end
 
