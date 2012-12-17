@@ -9,6 +9,7 @@
   * Feature: Support collections passed to `CallController#play`
   * Feature: Support arrays passed to `#match` in a `CallController#menu`
   * Feature: Output document formatter for a call controller is now overridable
+  * Feature: Refactored recording functionality into a Recorder class for easier implementation of specific APIs
   * Bugfix: Generate sane spec defaults for new apps and controllers
   * Bugfix: `CallController#record` now allows partial-second timeouts
   * Bugfix: Ensure calls are removed from the active collection when they terminate cleanly

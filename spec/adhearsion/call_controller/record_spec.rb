@@ -7,6 +7,127 @@ module Adhearsion
     describe Record do
       include CallControllerTestHelpers
 
+      describe Recorder do
+        let(:interruptible)     { false }
+        let(:async)             { false }
+        let(:component_options) { { :start_beep => true } }
+        let :options do
+          component_options.merge :interruptible => interruptible,
+            :async => async
+        end
+
+        let(:component) { Punchblock::Component::Record.new component_options }
+        let :stopper_grammar do
+          RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
+            rule id: 'inputdigits', scope: 'public' do
+              one_of do
+                item { '0' }
+                item { '1' }
+                item { '2' }
+                item { '3' }
+                item { '4' }
+                item { '5' }
+                item { '6' }
+                item { '7' }
+                item { '8' }
+                item { '9' }
+                item { '#' }
+                item { '*' }
+              end
+            end
+          end
+        end
+        let(:input_component) { Punchblock::Component::Input.new mode: :dtmf, grammar: { :value => stopper_grammar } }
+
+        subject { Recorder.new controller, options }
+
+        its(:record_component) { should == component }
+
+        context "when passing time related options" do
+          let :component_options do
+            { :max_duration => 5.5, :initial_timeout => 6.5, :final_timeout => 3.2 }
+          end
+
+          let :component do
+            Punchblock::Component::Record.new :max_duration => 5500,
+              :initial_timeout => 6500,
+              :final_timeout => 3200
+          end
+
+          it "takes seconds but sets milliseconds on the command" do
+            subject.record_component.should == component
+          end
+        end
+
+        describe "#run" do
+          context "with :async => false" do
+            it "executes the component synchronously" do
+              expect_component_execution subject.record_component
+              subject.run
+            end
+          end
+
+          context "with :async => true" do
+            let(:async) { true }
+
+            it "executes the component asynchronously" do
+              expect_message_waiting_for_response subject.record_component
+              subject.run
+            end
+          end
+
+          context "with :interruptible => false" do
+            its(:stopper_component) { should be_nil }
+
+            it "does not use an Input component" do
+              controller.should_receive(:execute_component_and_await_completion).once.with(component)
+              controller.should_receive(:write_and_await_response).never.with(input_component)
+              subject.run
+            end
+          end
+
+          context "with :interruptible => true" do
+            let(:interruptible) { true }
+
+            its(:stopper_component) { should == input_component }
+
+            describe "when the input component completes" do
+              let(:complete_event) { Punchblock::Event::Complete.new }
+
+              before do
+                subject.stopper_component.request!
+                subject.stopper_component.execute!
+              end
+
+              it "stops the recording" do
+                flexmock(subject.record_component).should_receive(:stop!).once
+                subject.stopper_component.trigger_event_handler complete_event
+              end
+            end
+
+            describe "when the recording completes" do
+              it "stops the input component" do
+                controller.should_receive(:execute_component_and_await_completion).once.with(component)
+                controller.should_receive(:write_and_await_response).once.with(input_component)
+                flexmock(subject.stopper_component).should_receive(:stop!).once
+                subject.run
+              end
+            end
+          end
+        end
+
+        describe "setting completion handlers" do
+          let(:complete_event) { Punchblock::Event::Complete.new }
+
+          it "should execute those handlers when recording completes" do
+            foo = flexmock 'foo'
+            foo.should_receive(:call).once.with Punchblock::Event::Complete
+            subject.handle_record_completion { |e| foo.call e }
+            subject.record_component.trigger_event_handler complete_event
+          end
+        end
+      end
+
       describe "#record" do
         let(:max_duration) { 5.5 }
         let(:options) do
@@ -104,7 +225,7 @@ module Adhearsion
             complete_event = Punchblock::Event::Complete.new
             flexmock(complete_event).should_receive(:reason => flexmock(:name => :input))
             flexmock(Punchblock::Component::Input).new_instances do |input|
-              input.should_receive(:complete?).and_return(false)
+              input.should_receive(:complete?).and_return(true)
               input.should_receive(:complete_event).and_return(complete_event)
             end
             flexmock(Punchblock::Component::Record).new_instances.should_receive(:stop!)
