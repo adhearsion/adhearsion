@@ -8,16 +8,19 @@ describe Adhearsion::Statistics do
     flexmock(Adhearsion.active_calls).should_receive(:count).and_return 0
   end
 
+  after do
+    Adhearsion.router = nil
+  end
+
   describe "#dump" do
     it "should report 0 calls offered, routed, rejected, active & completed" do
       subject.dump.call_counts.should == {dialed: 0, offered: 0, routed: 0, rejected: 0, active: 0}
     end
 
     it "should report 0 calls for each route in the router" do
-      Adhearsion.router do
-        route 'your route', Adhearsion::CallController
-        route 'my route', Adhearsion::CallController
-      end
+      subject.dump.calls_by_route.should == {}
+      Adhearsion.router.route 'your route', Adhearsion::CallController
+      Adhearsion.router.route 'my route', Adhearsion::CallController
       subject.dump.calls_by_route.should == {'your route' => 0, 'my route' => 0}
     end
   end
@@ -36,10 +39,8 @@ describe Adhearsion::Statistics do
     let(:route) { Adhearsion::Router::Route.new('my route') }
 
     before do
-      Adhearsion.router do
-        route 'your route', Adhearsion::CallController
-        route 'my route', Adhearsion::CallController
-      end
+      Adhearsion.router.route 'your route', Adhearsion::CallController
+      Adhearsion.router.route 'my route', Adhearsion::CallController
 
       Adhearsion::Events.trigger_immediately :call_routed, call: :foo, route: route
     end
