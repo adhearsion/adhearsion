@@ -45,16 +45,36 @@ module Adhearsion
     def setup_event_handlers
       stats = current_actor
 
-      @event_handlers << [:punchblock, Events.punchblock(Punchblock::Event::Offer) { stats.register_call_offered }]
-      @event_handlers << [:call_dialed, Events.call_dialed { stats.register_call_dialed }]
-      @event_handlers << [:call_rejected, Events.call_rejected { stats.register_call_rejected }]
-      @event_handlers << [:call_routed, Events.call_routed { |data| stats.register_call_routed data }]
-    end
+      Events.punchblock(Punchblock::Event::Offer) do
+        begin
+          stats.register_call_offered
+        rescue Celluloid::DeadActorError
+        end
+        throw :pass
+      end
 
-    # @private
-    def finalize
-      @event_handlers.each do |type, event_handler|
-        Events.unregister_handler type, event_handler
+      Events.call_dialed do
+        begin
+          stats.register_call_dialed
+        rescue Celluloid::DeadActorError
+        end
+        throw :pass
+      end
+
+      Events.call_rejected do
+        begin
+          stats.register_call_rejected
+        rescue Celluloid::DeadActorError
+        end
+        throw :pass
+      end
+
+      Events.call_routed do |data|
+        begin
+          stats.register_call_routed data
+        rescue Celluloid::DeadActorError
+        end
+        throw :pass
       end
     end
 
