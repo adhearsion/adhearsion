@@ -110,7 +110,6 @@ module Adhearsion
       register_event_handler Punchblock::Event::Offer do |offer|
         @offer  = offer
         @client = offer.client
-        Adhearsion.statistics.register_call_offered
         throw :pass
       end
 

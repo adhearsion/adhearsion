@@ -82,21 +82,11 @@ module Adhearsion
           let(:headers)   { nil }
           its(:variables) { should be == {} }
         end
-
-        it "should bump the offered call stat" do
-          flexmock(Adhearsion.statistics).should_receive(:register_call_offered).once
-          subject
-        end
       end
 
       context "without an offer" do
         let(:offer)     { nil }
         its(:variables) { should be == {} }
-
-        it "should not bump the offered call stat" do
-          flexmock(Adhearsion.statistics).should_receive(:register_call_offered).never
-          subject
-        end
       end
     end
 
