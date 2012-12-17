@@ -2,7 +2,7 @@
   * Feature: Statistics API providing counts of calls dialed, offered, rejected, routed and active
 
     ```ruby
-    Adhearsion.statistics.dump # => #<Adhearsion::Statistics::Dump:0x007fca634d0460 @call_counts={:dialed=>0, :offered=>18, :routed=>6, :rejected=>0, :active=>0}, @calls_by_route={"Sesame Street"=>3, "Mr. Rogers Neighborhood"=>2, "default"=>1}, @timestamp=2012-12-17 10:31:05 -0500>
+    Adhearsion.statistics.dump # => #<Adhearsion::Statistics::Dump timestamp=2012-12-17 10:31:05 -0500, call_counts={:dialed=>0, :offered=>18, :routed=>6, :rejected=>0, :active=>0}, calls_by_route={"Sesame Street"=>3, "Mr. Rogers Neighborhood"=>2, "default"=>1}>
     ```
   * Feature: Accessor for peer calls when bridged
 

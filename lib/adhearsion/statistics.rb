@@ -77,6 +77,11 @@ module Adhearsion
       end
     end
 
+    def to_s
+      "#<#{self.class} dump=#{dump}>"
+    end
+    alias :inspect :to_s
+
     private
 
     def dump_call_counts
@@ -120,6 +125,14 @@ module Adhearsion
       def <=>(other)
         timestamp <=> other.timestamp
       end
+
+      def to_s
+        attrs = [:timestamp, :call_counts, :calls_by_route].map do |attr|
+          "#{attr}=#{send(attr).inspect}"
+        end
+        "#<#{self.class} #{attrs.join ', '}>"
+      end
+      alias :inspect :to_s
     end
   end
 end
