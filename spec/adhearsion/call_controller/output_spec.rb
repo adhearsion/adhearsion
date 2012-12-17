@@ -689,7 +689,7 @@ module Adhearsion
         end
 
         describe "with a default voice set" do
-          before { Adhearsion.config.platform.default_voice = 'foo' }
+          before { Adhearsion.config.punchblock.default_voice = 'foo' }
 
           it 'sets the voice on the output component' do
             str = "Hello world"
@@ -698,7 +698,7 @@ module Adhearsion
             subject.say(str)
           end
 
-          after { Adhearsion.config.platform.default_voice = nil }
+          after { Adhearsion.config.punchblock.default_voice = nil }
         end
 
         describe "converts the argument to a string" do
@@ -736,7 +736,7 @@ module Adhearsion
         end
 
         describe "with a default voice set" do
-          before { Adhearsion.config.platform.default_voice = 'foo' }
+          before { Adhearsion.config.punchblock.default_voice = 'foo' }
 
           it 'sets the voice on the output component' do
             str = "Hello world"
@@ -745,7 +745,7 @@ module Adhearsion
             subject.say!(str)
           end
 
-          after { Adhearsion.config.platform.default_voice = nil }
+          after { Adhearsion.config.punchblock.default_voice = nil }
         end
 
         describe "converts the argument to a string" do

@@ -19,7 +19,7 @@ module Adhearsion
 
         def new_output(options)
           defaults = {}
-          default_voice = Adhearsion.config.platform[:default_voice]
+          default_voice = Adhearsion.config.punchblock[:default_voice]
           defaults[:voice] = default_voice if default_voice
 
           Punchblock::Component::Output.new defaults.merge(options)

@@ -22,7 +22,7 @@
   * Feature: Set default voice on output components when specified in config
 
     ```ruby
-    config.platform.default_voice = 'kal'
+    config.punchblock.default_voice = 'kal'
     ```
   * Feature: Be more flexible about DTMF utterance parsing
   * Feature: Added specs for the SimonGame
