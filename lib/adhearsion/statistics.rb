@@ -9,7 +9,6 @@ module Adhearsion
     def initialize
       @calls_dialed = @calls_offered = @calls_routed = @calls_rejected = 0
       @calls_by_route = Hash.new { |h,k| h[k] = 0 }
-      @event_handlers = []
     end
 
     #
