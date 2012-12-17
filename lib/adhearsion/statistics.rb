@@ -9,14 +9,7 @@ module Adhearsion
     def initialize
       @calls_dialed = @calls_offered = @calls_routed = @calls_rejected = 0
       @calls_by_route = Hash.new { |h,k| h[k] = 0 }
-
-      Events.punchblock(Punchblock::Event::Offer) { register_call_offered }
-      Events.call_dialed { register_call_dialed }
-      Events.call_rejected { register_call_rejected }
-      Events.call_routed do |data|
-        register_call_routed
-        @calls_by_route[data[:route].name] += 1
-      end
+      @event_handlers = []
     end
 
     #
@@ -38,13 +31,31 @@ module Adhearsion
     end
 
     # @private
-    def register_call_routed
+    def register_call_routed(data)
       @calls_routed += 1
+      @calls_by_route[data[:route].name] += 1
     end
 
     # @private
     def register_call_rejected
       @calls_rejected += 1
+    end
+
+    # @private
+    def setup_event_handlers
+      stats = current_actor
+
+      @event_handlers << [:punchblock, Events.punchblock(Punchblock::Event::Offer) { stats.register_call_offered }]
+      @event_handlers << [:call_dialed, Events.call_dialed { stats.register_call_dialed }]
+      @event_handlers << [:call_rejected, Events.call_rejected { stats.register_call_rejected }]
+      @event_handlers << [:call_routed, Events.call_routed { |data| stats.register_call_routed data }]
+    end
+
+    # @private
+    def finalize
+      @event_handlers.each do |type, event_handler|
+        Events.unregister_handler type, event_handler
+      end
     end
 
     private

@@ -4,7 +4,7 @@ require 'spec_helper'
 
 describe Adhearsion::Statistics do
   before do
-    subject
+    subject.setup_event_handlers
     flexmock(Adhearsion.active_calls).should_receive(:count).and_return 0
   end
 

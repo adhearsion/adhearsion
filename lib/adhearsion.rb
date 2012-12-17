@@ -112,7 +112,7 @@ module Adhearsion
       if instance_variable_defined?(:@statistics) && @statistics.alive?
         @statistics
       else
-        @statistics = Statistics.new
+        @statistics = Statistics.new.tap(&:setup_event_handlers)
       end
     end
 
