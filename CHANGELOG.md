@@ -1,15 +1,80 @@
 # [develop](https://github.com/adhearsion/adhearsion)
   * Feature: Track peer calls when joining
+
+    ```ruby
+    call.peers # => {"0f4h382j290k09k" => #<Adhearsion::Call ...>}
+    ```
   * Feature: Allow specifying controller metadata when originating outbound calls
+
+    ```ruby
+    Adhearsion::OutboundCall.originate 'foo@bar.com', controller: FooBarController, controller_metadata: {foo: 'bar'}
+    ```
   * Feature: Allow specifying confirmation controller metadata to `CallController#dial`
+
+    ```ruby
+    dial 'foo@bar.com', confirm: ConfirmationController, confirm_metadata: {foo: 'bar'}
+    ```
   * Feature: Set default voice on output components when specified in config
+
+    ```ruby
+    config.platform.default_voice = 'kal'
+    ```
   * Feature: Be more flexible about DTMF utterance parsing
   * Feature: Added specs for the SimonGame
-  * Feature: Allow configuring the lifetime of a call object after hangup
+  * Feature: Allow configuring the lifetime of a call object after hangup. This makes it possible to control the number of call objects (and therefore threads) in use by Adhearsion, by expiring them earlier or later than the 30 second default (as measured from the point at which the call disconnects).
+
+    ```ruby
+    config.platform.after_hangup_lifetime = 10
+    ```
   * Feature: Support collections passed to `CallController#play`
+    ```ruby
+    recordings = ['one', 'two', 'three']
+    play recordings
+    ````
   * Feature: Support arrays passed to `#match` in a `CallController#menu`
+    ```ruby
+    possible_digits = [1,2,3,4]
+    menu 'foobar' do
+      match possible_digits, FooController
+    end
+    ```
   * Feature: Output document formatter for a call controller is now overridable
+    ```ruby
+    # Replacement formatter designed to render all TTS extra slow
+    class MyFormatter < Adhearsion::CallController::Output::Formatter
+      def ssml_for_text(argument, options = {})
+        RubySpeech::SSML.draw do
+          prosody rate: 'x-slow' do
+            argument
+          end
+        end
+      end
+    end
+
+    class MyController < Adhearsion::CallController
+      def run
+        speak "This will be sloooooow"
+      end
+
+      def output_formatter
+        MyFormatter.new
+      end
+    end
+    ```
   * Feature: Refactored recording functionality into a Recorder class for easier implementation of specific APIs
+    ```ruby
+    # Alternative #record implementation, returning the input component also
+    def record(options = {})
+      recorder = Recorder.new self, options
+
+      recorder.handle_record_completion do |event|
+        catching_standard_errors { yield event if block_given? }
+      end
+
+      recorder.run
+      [recorder.record_component, recorder.stopper_component]
+    end
+    ```
   * Bugfix: Generate sane spec defaults for new apps and controllers
   * Bugfix: `CallController#record` now allows partial-second timeouts
   * Bugfix: Ensure calls are removed from the active collection when they terminate cleanly
