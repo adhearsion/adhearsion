@@ -1,4 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+
+# [2.2.0](https://github.com/adhearsion/adhearsion/compare/v2.1.3...v2.2.0) - [2012-12-17](https://rubygems.org/gems/adhearsion/versions/2.2.0)
   * Feature: Statistics API providing counts of calls dialed, offered, rejected, routed and active
 
     ```ruby
