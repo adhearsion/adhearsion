@@ -106,13 +106,25 @@ module Adhearsion
             end
 
             describe "when the recording completes" do
-              it "stops the input component"
+              it "stops the input component" do
+                controller.should_receive(:execute_component_and_await_completion).once.with(component)
+                controller.should_receive(:write_and_await_response).once.with(input_component)
+                flexmock(subject.stopper_component).should_receive(:stop!).once
+                subject.run
+              end
             end
           end
         end
 
         describe "setting completion handlers" do
-          it "should execute those handlers when recording completes"
+          let(:complete_event) { Punchblock::Event::Complete.new }
+
+          it "should execute those handlers when recording completes" do
+            foo = flexmock 'foo'
+            foo.should_receive(:call).once.with Punchblock::Event::Complete
+            subject.handle_record_completion { |e| foo.call e }
+            subject.record_component.trigger_event_handler complete_event
+          end
         end
       end
 
@@ -213,7 +225,7 @@ module Adhearsion
             complete_event = Punchblock::Event::Complete.new
             flexmock(complete_event).should_receive(:reason => flexmock(:name => :input))
             flexmock(Punchblock::Component::Input).new_instances do |input|
-              input.should_receive(:complete?).and_return(false)
+              input.should_receive(:complete?).and_return(true)
               input.should_receive(:complete_event).and_return(complete_event)
             end
             flexmock(Punchblock::Component::Record).new_instances.should_receive(:stop!)

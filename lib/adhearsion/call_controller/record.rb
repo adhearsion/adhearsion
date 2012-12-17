@@ -80,7 +80,7 @@ module Adhearsion
         end
 
         def terminate_stopper
-          @stopper_component.stop! if @stopper_component && @stopper_component.executing?
+          @stopper_component.stop! if @stopper_component && !@stopper_component.complete?
         end
 
         def prep_options(opts)
