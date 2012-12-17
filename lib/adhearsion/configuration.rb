@@ -53,8 +53,6 @@ module Adhearsion
           __
         }
 
-        default_voice nil, :transform => Proc.new { |v| v.to_sym }, :desc => "The default TTS voice to use."
-
         after_hangup_lifetime 30, :transform => Proc.new { |v| v.to_i }, :desc => <<-__
           Lifetime of a call after it has hung up
         __
