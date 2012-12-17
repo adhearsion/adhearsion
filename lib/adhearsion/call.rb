@@ -201,6 +201,7 @@ module Adhearsion
 
     def reject(reason = :busy, headers = nil)
       write_and_await_response Punchblock::Command::Reject.new(:reason => reason, :headers => headers)
+      Adhearsion::Events.trigger_immediately :call_rejected, call: current_actor, reason: reason
     end
 
     def hangup(headers = nil)
