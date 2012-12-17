@@ -58,6 +58,15 @@ module Adhearsion
           call << Punchblock::Event::Answered.new
           sleep 0.5
         end
+
+        context "with controller metadata specified" do
+          it "should set the metadata on the controller" do
+            flexmock(mock_call).should_receive(:dial).once.with(to, {})
+            flexmock(mock_call).should_receive(:execute_controller).once.with(FlexMock.on { |c| c.is_a?(controller) && c.metadata == {:foo => 'bar'}}, Proc)
+            call = OutboundCall.originate to, :controller => controller, :controller_metadata => {:foo => 'bar'}
+            call << Punchblock::Event::Answered.new
+          end
+        end
       end
 
       context "when given a block" do
@@ -135,6 +144,11 @@ module Adhearsion
         Adhearsion.active_calls.clear!
         subject.dial to, :from => from
         Adhearsion.active_calls[call_id].should be subject
+      end
+
+      it "should immediately fire the :call_dialed event giving the call" do
+        flexmock(Adhearsion::Events).should_receive(:trigger_immediately).once.with(:call_dialed, subject)
+        subject.dial to, :from => from
       end
 
       it "should not modify the provided options" do

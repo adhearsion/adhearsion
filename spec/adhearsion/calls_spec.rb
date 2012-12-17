@@ -83,6 +83,19 @@ module Adhearsion
       end
     end
 
+    describe "when a call in the collection terminates cleanly" do
+      it "is removed from the collection" do
+        call_id = call.id
+        size_before = subject.size
+
+        subject << call
+        call.terminate
+
+        subject.size.should be == size_before
+        subject[call_id].should be_nil
+      end
+    end
+
     describe "when a call in the collection crashes" do
       let(:wrapped_object) { call.wrapped_object }
 

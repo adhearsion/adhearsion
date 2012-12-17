@@ -34,6 +34,7 @@ module Adhearsion
   autoload :OutboundCall
   autoload :Plugin
   autoload :Router
+  autoload :Statistics
 
   class << self
 
@@ -102,6 +103,16 @@ module Adhearsion
         @calls
       else
         @calls = Calls.new
+      end
+    end
+
+    #
+    # @return [Adhearsion::Statistics] a statistics aggregator object capable of producing stats dumps
+    def statistics
+      if instance_variable_defined?(:@statistics) && @statistics.alive?
+        @statistics
+      else
+        @statistics = Statistics.new.tap(&:setup_event_handlers)
       end
     end
 

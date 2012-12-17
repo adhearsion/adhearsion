@@ -43,47 +43,45 @@ module Adhearsion
     its(:id)      { should be == call_id }
     its(:to)      { should be == to }
     its(:from)    { should be == from }
-    its(:offer)   { should be offer }
-    its(:client)  { should be mock_client }
-
-    its(:after_end_hold_time) { should be == 30 }
 
     describe "its variables" do
-      context "with an offer with headers" do
-        let(:headers)   { {:x_foo => 'bar'} }
-        its(:variables) { should be == headers }
+      context "with an offer" do
+        context "with headers" do
+          let(:headers)   { {:x_foo => 'bar'} }
+          its(:variables) { should be == headers }
 
-        it "should be made available via []" do
-          subject[:x_foo].should be == 'bar'
-        end
+          it "should be made available via []" do
+            subject[:x_foo].should be == 'bar'
+          end
 
-        it "should be alterable using []=" do
-          subject[:x_foo] = 'baz'
-          subject[:x_foo].should be == 'baz'
-        end
+          it "should be alterable using []=" do
+            subject[:x_foo] = 'baz'
+            subject[:x_foo].should be == 'baz'
+          end
 
-        context "when receiving an event with headers" do
-          let(:event) { Punchblock::Event::End.new :headers => {:x_bar => 'foo'} }
+          context "when receiving an event with headers" do
+            let(:event) { Punchblock::Event::End.new :headers => {:x_bar => 'foo'} }
 
-          it "should merge later headers" do
-            subject << event
-            subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
+            it "should merge later headers" do
+              subject << event
+              subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
+            end
+          end
+
+          context "when sending a command with headers" do
+            let(:command) { Punchblock::Command::Accept.new :headers => {:x_bar => 'foo'} }
+
+            it "should merge later headers" do
+              subject.write_command command
+              subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
+            end
           end
         end
 
-        context "when sending a command with headers" do
-          let(:command) { Punchblock::Command::Accept.new :headers => {:x_bar => 'foo'} }
-
-          it "should merge later headers" do
-            subject.write_command command
-            subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
-          end
+        context "without headers" do
+          let(:headers)   { nil }
+          its(:variables) { should be == {} }
         end
-      end
-
-      context "with an offer without headers" do
-        let(:headers)   { nil }
-        its(:variables) { should be == {} }
       end
 
       context "without an offer" do
@@ -273,6 +271,49 @@ module Adhearsion
       end
     end
 
+    context "peer registry" do
+      let(:other_call_id) { 'foobar' }
+      let(:other_call) { flexmock Call.new, :id => other_call_id }
+
+      let :joined_event do
+        Punchblock::Event::Joined.new :call_id => other_call_id
+      end
+
+      let :unjoined_event do
+        Punchblock::Event::Unjoined.new :call_id => other_call_id
+      end
+
+      context "when we know about the joined call" do
+        before { Adhearsion.active_calls << other_call }
+
+        it "should add the peer to its registry" do
+          subject << joined_event
+          subject.peers.should == {'foobar' => other_call}
+        end
+      end
+
+      context "when we don't know about the joined call" do
+        it "should add a nil entry to its registry" do
+          subject << joined_event
+          subject.peers.should == {'foobar' => nil}
+        end
+      end
+
+      it "should not return the same registry every call" do
+        subject.peers.should_not be subject.peers
+      end
+
+      context "when being unjoined from a previously joined call" do
+        before { subject << joined_event }
+
+        it "should remove the peer from its registry" do
+          subject.peers.should_not eql({})
+          subject << unjoined_event
+          subject.peers.should eql({})
+        end
+      end
+    end
+
     describe "#<<" do
       describe "with a Punchblock End" do
         let :end_event do
@@ -307,7 +348,7 @@ module Adhearsion
         end
 
         it "shuts down the actor" do
-          flexmock subject.wrapped_object, :after_end_hold_time => 2
+          Adhearsion.config.platform.after_hangup_lifetime = 2
           subject << end_event
           sleep 2.1
           subject.should_not be_alive
@@ -539,6 +580,12 @@ module Adhearsion
             subject.reject nil, headers
           end
         end
+
+        it "should immediately fire the :call_rejected event giving the call and the reason" do
+          expect_message_waiting_for_response Punchblock::Command::Reject
+          flexmock(Adhearsion::Events).should_receive(:trigger_immediately).once.with(:call_rejected, :call => subject, :reason => :decline)
+          subject.reject :decline
+        end
       end
 
       describe "#hangup" do
@@ -758,12 +805,6 @@ module Adhearsion
 
         it "should raise ArgumentError if both a controller and a block are passed" do
           lambda { subject.execute_controller(mock_controller) { foo } }.should raise_error(ArgumentError)
-        end
-
-        it "should add the controller thread to the important threads" do
-          flexmock(CallController).should_receive(:exec)
-          controller_thread = subject.execute_controller mock_controller, lambda { |call| latch.countdown! }
-          Adhearsion::Process.important_threads.should include controller_thread
         end
 
         it "should pass the exception to the events system" do

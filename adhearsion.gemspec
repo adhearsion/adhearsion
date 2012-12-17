@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'ffi', ["~> 1.0"]
   s.add_runtime_dependency 'future-resource', ["~> 1.0"]
   s.add_runtime_dependency 'girl_friday'
-  s.add_runtime_dependency 'has-guarded-handlers', ["~> 1.1"]
+  s.add_runtime_dependency 'has-guarded-handlers', ["~> 1.5"]
   s.add_runtime_dependency 'jruby-openssl' if RUBY_PLATFORM == 'java'
   s.add_runtime_dependency 'logging', ["~> 1.8"]
   s.add_runtime_dependency 'pry'

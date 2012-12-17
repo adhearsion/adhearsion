@@ -26,7 +26,8 @@ module Adhearsion
 
           it "should not accept the call" do
             flexmock(call).should_receive(:accept).never
-            route.dispatch call
+            route.dispatch call, lambda { latch.countdown! }
+            latch.wait(2).should be true
           end
 
           it "should instruct the call to use an instance of the controller" do

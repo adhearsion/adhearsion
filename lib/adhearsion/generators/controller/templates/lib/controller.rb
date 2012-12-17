@@ -3,4 +3,4 @@
 class <%= @controller_name.camelcase %> < Adhearsion::CallController
   def run
   end
-end  
+end

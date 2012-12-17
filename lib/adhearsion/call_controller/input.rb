@@ -79,7 +79,7 @@ module Adhearsion
       # invalid input, retries and timeouts, and final failures.
       #
       # @example A complete example of the method is as follows:
-      #   ask "Welcome, ", "/opt/sounds/menu-prompt.mp3", :tries => 2, :timeout => 10 do
+      #   menu "Welcome, ", "/opt/sounds/menu-prompt.mp3", :tries => 2, :timeout => 10 do
       #     match 1, OperatorController
       #
       #     match 10..19 do
@@ -114,7 +114,7 @@ module Adhearsion
       #
       # #validator runs its block on each digit being collected. If it returns true, the collection is terminated.
       #
-      # Execution of the current context resumes after #ask finishes. If you wish to jump to an entirely different controller, use #pass.
+      # Execution of the current context resumes after #menu finishes. If you wish to jump to an entirely different controller, use #pass.
       # Menu will return :failed if failure was reached, or :done if a match was executed.
       #
       # @param [Object] args A list of outputs to play, as accepted by #play
@@ -215,8 +215,8 @@ module Adhearsion
           }
 
         reason = input_component.complete_event.reason
-        result = reason.respond_to?(:interpretation) ? reason.interpretation : nil
-        parse_single_dtmf result
+        result = reason.respond_to?(:utterance) ? reason.utterance : nil
+        parse_dtmf result
       end
 
       # @private

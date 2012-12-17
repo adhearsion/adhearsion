@@ -38,9 +38,10 @@ module Adhearsion
     end
 
     def start
+      Adhearsion.statistics
       resolve_pid_file_path
       load_lib_folder
-      load_config
+      load_config_file
       initialize_log_paths
       daemonize! if should_daemonize?
       start_logging
@@ -165,7 +166,7 @@ module Adhearsion
       true
     end
 
-    def load_config
+    def load_config_file
       require "#{Adhearsion.config.root}/config/adhearsion.rb"
     end
 

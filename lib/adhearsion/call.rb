@@ -23,17 +23,10 @@ module Adhearsion
         rescue Celluloid::DeadActorError
           raise ExpiredError, "This call is expired and is no longer accessible"
         end
-
-        def proxy.join(*args)
-          Actor.call @mailbox, :join, *args
-        end
       end
     end
 
-    # @private
-    attr_accessor :offer, :client, :end_reason, :commands, :controllers
-
-    attr_accessor :variables
+    attr_reader :end_reason, :commands, :controllers, :variables
 
     delegate :[], :[]=, :to => :variables
     delegate :to, :from, :to => :offer, :allow_nil => true
@@ -41,11 +34,13 @@ module Adhearsion
     def initialize(offer = nil)
       register_initial_handlers
 
+      @offer        = nil
       @tags         = []
       @commands     = CommandRegistry.new
       @variables    = {}
       @controllers  = []
       @end_reason   = nil
+      @peers        = {}
 
       self << offer if offer
     end
@@ -92,6 +87,14 @@ module Adhearsion
       @tags.include? label
     end
 
+    #
+    # Hash of joined peers
+    # @return [Hash<String => Adhearsion::Call>]
+    #
+    def peers
+      @peers.clone
+    end
+
     def register_event_handler(*guards, &block)
       register_handler :event, *guards, &block
     end
@@ -117,11 +120,13 @@ module Adhearsion
 
       on_joined do |event|
         target = event.call_id || event.mixer_name
+        @peers[target] = Adhearsion.active_calls[target]
         signal :joined, target
       end
 
       on_unjoined do |event|
         target = event.call_id || event.mixer_name
+        @peers.delete target
         signal :unjoined, target
       end
 
@@ -130,14 +135,13 @@ module Adhearsion
         clear_from_active_calls
         @end_reason = event.reason
         commands.terminate
-        after(after_end_hold_time) { current_actor.terminate! }
+        after(Adhearsion.config.platform.after_hangup_lifetime) { current_actor.terminate! }
         throw :pass
       end
     end
 
-    # @private
-    def after_end_hold_time
-      30
+    def finalize
+      ::Logging::Repository.reset
     end
 
     ##
@@ -197,6 +201,7 @@ module Adhearsion
 
     def reject(reason = :busy, headers = nil)
       write_and_await_response Punchblock::Command::Reject.new(:reason => reason, :headers => headers)
+      Adhearsion::Events.trigger_immediately :call_rejected, call: current_actor, reason: reason
     end
 
     def hangup(headers = nil)
@@ -340,6 +345,16 @@ module Adhearsion
     # @private
     def resume_controllers
       controllers.each(&:resume!)
+    end
+
+    private
+
+    def offer
+      @offer
+    end
+
+    def client
+      @client
     end
 
     # @private

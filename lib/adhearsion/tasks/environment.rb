@@ -7,7 +7,7 @@ task :environment do
     Adhearsion.config # load default config vlaues
     initializer = Adhearsion::Initializer.new
     initializer.load_lib_folder
-    initializer.load_config
+    initializer.load_config_file
   rescue Exception => ex
     STDERR.puts "\nError while loading application configuration file: #{ex}"
   end

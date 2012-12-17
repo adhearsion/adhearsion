@@ -1,6 +1,9 @@
 # encoding: utf-8
 
 class SimonGame < Adhearsion::CallController
+
+  attr_accessor :number, :attempt
+
   def run
     answer
     reset

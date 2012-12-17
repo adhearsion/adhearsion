@@ -7,12 +7,12 @@ module Adhearsion
     describe Output do
       include CallControllerTestHelpers
 
-      def expect_ssml_output(ssml)
-        expect_component_execution Punchblock::Component::Output.new(:ssml => ssml)
+      def expect_ssml_output(ssml, options = {})
+        expect_component_execution Punchblock::Component::Output.new(options.merge(:ssml => ssml))
       end
 
-      def expect_async_ssml_output(ssml)
-        expect_message_waiting_for_response Punchblock::Component::Output.new(:ssml => ssml)
+      def expect_async_ssml_output(ssml, options = {})
+        expect_message_waiting_for_response Punchblock::Component::Output.new(options.merge(:ssml => ssml))
       end
 
       describe "#player" do
@@ -350,6 +350,25 @@ module Adhearsion
           end
         end
 
+        describe "with a collection of arguments" do
+          let(:args) { ["/foo/bar.wav", 1, Time.now] }
+          let :ssml do
+            file = args[0]
+            n = args[1].to_s
+            t = args[2].to_s
+            RubySpeech::SSML.draw do
+              audio :src => file
+              say_as(:interpret_as => 'cardinal') { n }
+              say_as(:interpret_as => 'time') { t }
+            end
+          end
+
+          it 'plays all arguments in one document' do
+            expect_ssml_output ssml
+            subject.play(args).should be true
+          end
+        end
+
         describe "with a number" do
           let(:argument) { 123 }
 
@@ -413,7 +432,7 @@ module Adhearsion
           end
         end
 
-        describe "with an array containing a Date/DateTime/Time object and a hash" do
+        describe "with an hash containing a Date/DateTime/Time object and format options" do
           let(:date)      { Date.parse '2011-01-23' }
           let(:format)    { "d-m-y" }
           let(:strftime)  { "%d-%m%Y" }
@@ -619,19 +638,19 @@ module Adhearsion
                                            :grammar => { :value => grammar.to_s }
         }
 
+        def expect_component_complete_event
+          complete_event = Punchblock::Event::Complete.new
+          flexmock(complete_event).should_receive(:reason => flexmock(:utterance => 'dtmf-5'))
+          flexmock(Punchblock::Component::Input).new_instances do |input|
+            input.should_receive(:complete?).and_return(false)
+            input.should_receive(:complete_event).and_return(complete_event)
+          end
+        end
+
         #test does pass and method works, but not sure if the empty method is a good idea
         it "plays the correct output" do
           def controller.write_and_await_response(input_component)
             # it is actually a no-op here
-          end
-
-          def expect_component_complete_event
-            complete_event = Punchblock::Event::Complete.new
-            flexmock(complete_event).should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
-            flexmock(Punchblock::Component::Input).new_instances do |input|
-              input.should_receive(:complete?).and_return(false)
-              input.should_receive(:complete_event).and_return(complete_event)
-            end
           end
 
           expect_component_complete_event
@@ -640,19 +659,8 @@ module Adhearsion
         end
 
         it "returns a single digit amongst the allowed when pressed" do
-          flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
-
           def controller.write_and_await_response(input_component)
             input_component.trigger_event_handler Punchblock::Event::Complete.new
-          end
-
-          def expect_component_complete_event
-            complete_event = Punchblock::Event::Complete.new
-            flexmock(complete_event).should_receive(:reason => flexmock(:interpretation => 'dtmf-5', :name => :input))
-            flexmock(Punchblock::Component::Input).new_instances do |input|
-              input.should_receive(:complete?).and_return(false)
-              input.should_receive(:complete_event).and_return(complete_event)
-            end
           end
 
           expect_component_complete_event
@@ -678,6 +686,19 @@ module Adhearsion
             expect_ssml_output ssml
             subject.say(str).should be_a Punchblock::Component::Output
           end
+        end
+
+        describe "with a default voice set" do
+          before { Adhearsion.config.punchblock.default_voice = 'foo' }
+
+          it 'sets the voice on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_ssml_output ssml, voice: 'foo'
+            subject.say(str)
+          end
+
+          after { Adhearsion.config.punchblock.default_voice = nil }
         end
 
         describe "converts the argument to a string" do
@@ -712,6 +733,19 @@ module Adhearsion
             expect_async_ssml_output ssml
             subject.say!(str).should be_a Punchblock::Component::Output
           end
+        end
+
+        describe "with a default voice set" do
+          before { Adhearsion.config.punchblock.default_voice = 'foo' }
+
+          it 'sets the voice on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_async_ssml_output ssml, voice: 'foo'
+            subject.say!(str)
+          end
+
+          after { Adhearsion.config.punchblock.default_voice = nil }
         end
 
         describe "converts the argument to a string" do

@@ -24,10 +24,12 @@ module Adhearsion
       end
 
       def dispatch(call, callback = nil)
+        Adhearsion::Events.trigger_immediately :call_routed, call: call, route: self
+
         controller = if target.respond_to?(:call)
-          CallController.new call, &target
+          CallController.new call, controller_metadata, &target
         else
-          target.new call
+          target.new call, controller_metadata
         end
 
         call.accept if accepting?
@@ -43,6 +45,15 @@ module Adhearsion
           end
           callback.call if callback
         }
+      end
+
+      def controller_metadata=(metadata)
+        @controller_metadata = metadata
+      end
+
+      def controller_metadata
+        return {} unless instance_variable_defined?(:@controller_metadata)
+        @controller_metadata
       end
 
       def evented?

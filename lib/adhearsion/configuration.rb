@@ -52,6 +52,10 @@ module Adhearsion
             A log formatter to apply to all active outputters. If nil, the Adhearsion default formatter will be used.
           __
         }
+
+        after_hangup_lifetime 30, :transform => Proc.new { |v| v.to_i }, :desc => <<-__
+          Lifetime of a call after it has hung up
+        __
       end
 
       Loquacious::Configuration.for :platform, &block if block_given?
