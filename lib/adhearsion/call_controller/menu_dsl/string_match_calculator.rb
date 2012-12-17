@@ -3,23 +3,23 @@
 module Adhearsion
   class CallController
     module MenuDSL
-
       class StringMatchCalculator < MatchCalculator
 
         def match(query)
           args = { :query => query, :exact_matches => nil, :potential_matches => nil }
 
-          if pattern == query.to_s
+          pattern_string  = pattern.to_s
+          query_string    = query.to_s
+
+          if pattern_string == query_string
             args[:exact_matches] = [pattern]
-          elsif pattern.starts_with? query.to_s
+          elsif pattern_string.starts_with? query_string
             args[:potential_matches] = [pattern]
           end
 
           new_calculated_match args
         end
-
-      end # class StringMatchCalculator
-
+      end
     end
   end
 end

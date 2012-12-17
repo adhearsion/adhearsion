@@ -13,6 +13,7 @@ module Adhearsion
       autoload :FixnumMatchCalculator
       autoload :RangeMatchCalculator
       autoload :StringMatchCalculator
+      autoload :ArrayMatchCalculator
       autoload :MenuBuilder
       autoload :Menu
     end
