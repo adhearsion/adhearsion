@@ -24,6 +24,8 @@ module Adhearsion
       end
 
       def dispatch(call, callback = nil)
+        Adhearsion::Events.trigger_immediately :call_routed, call: call, route: self
+
         controller = if target.respond_to?(:call)
           CallController.new call, controller_metadata, &target
         else

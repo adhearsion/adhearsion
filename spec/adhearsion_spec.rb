@@ -14,7 +14,7 @@ describe Adhearsion do
       Adhearsion.config[:platform].root.should be_nil
     end
   end
-  
+
   describe "#root" do
     it "should return the set root" do
       Adhearsion.root = "./"
@@ -87,6 +87,26 @@ describe Adhearsion do
       original.should_not be_alive
 
       current = Adhearsion.active_calls
+      current.should be_alive
+      current.should_not be original
+    end
+  end
+
+  describe "#statistics" do
+    it "should be a statistics aggregator" do
+      Adhearsion.statistics.should be_a Adhearsion::Statistics
+    end
+
+    it "should return the same instance each time" do
+      Adhearsion.statistics.should be Adhearsion.statistics
+    end
+
+    it "should create a new aggregator if the existing one dies" do
+      original = Adhearsion.statistics
+      original.terminate
+      original.should_not be_alive
+
+      current = Adhearsion.statistics
       current.should be_alive
       current.should_not be original
     end
