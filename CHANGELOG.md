@@ -8,6 +8,7 @@
   * Feautre: Allow configuring the lifetime of a call object after hangup
   * Bugfix: Generate sane spec defaults for new apps and controllers
   * Bugfix: `CallController#record` now allows partial-second timeouts
+  * Feature: Refactored recording functionality into a Recorder class for easier implementation of specific APIs
 
 # [2.1.3](https://github.com/adhearsion/adhearsion/compare/v2.1.2...v2.1.3) - [2012-10-11](https://rubygems.org/gems/adhearsion/versions/2.1.3)
   * Bugfix: Originating call is now answered before joining calls using `CallController#dial`

@@ -20,7 +20,7 @@ module Adhearsion
       # @option options [Boolean, Optional] :interruptible Allows the recording to be terminated by any single DTMF key, default is false
       #
       class Recorder
-        attr_accessor :record_component
+        attr_accessor :record_component, :stopper_component
 
         def initialize(controller, options = {})
           @controller = controller

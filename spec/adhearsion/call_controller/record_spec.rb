@@ -7,6 +7,95 @@ module Adhearsion
     describe Record do
       include CallControllerTestHelpers
 
+      describe "Recorder" do
+        let(:max_duration) { 5.5 }
+        let(:options) do
+          {
+            :start_beep => true,
+            :max_duration => max_duration
+          }
+        end
+        let(:parsed_options) do
+          options.merge(max_duration: max_duration * 1000)
+        end
+        let(:component) { Punchblock::Component::Record.new parsed_options }
+        let(:response)  { Punchblock::Event::Complete.new }
+
+        describe "#initialize" do
+          it "creates the Record component and assigns it to the accessor" do
+            recorder = Recorder.new subject, options
+            flexmock(Punchblock::Component::Record).should_receive(:new).once.with(parsed_options).and_return component
+            recorder.record_component.should be_a Punchblock::Component::Record
+          end
+        end
+
+        describe "#run" do
+          let(:interruptible) { false }
+          let(:async) { false }
+          let(:recorder) { flexmock(Recorder.new subject, options.merge(:interruptible => interruptible, :async => async)) }
+          let(:input_component) { Punchblock::Component::Input.new }
+
+          context "with :async => false" do
+            it "executes the component synchronously" do
+              flexmock(Punchblock::Component::Record).should_receive(:new).with(parsed_options).and_return component
+              expect_component_execution component
+              recorder.run
+            end
+          end
+
+          context "with :async => true" do
+            let(:async) { true }
+            it "executes the component asynchronously" do
+              flexmock(Punchblock::Component::Record).should_receive(:new).with(parsed_options).and_return component
+               expect_message_waiting_for_response component
+              recorder.run
+            end
+          end
+
+          context "with :interruptible => false" do
+            it "does not call #setup_stopper" do
+              recorder.should_receive(:setup_stopper).never
+              recorder.should_receive(:execute_recording).once
+              recorder.should_receive(:terminate_stopper).once
+              recorder.run
+            end
+            it "does not use an Input component" do
+              subject.should_receive(:execute_component_and_await_completion).once.with(component)
+              subject.should_receive(:write_and_await_response).never.with(input_component)
+              recorder.run
+            end
+          end
+
+          context "with :interruptible => true" do
+            let(:interruptible) { true }
+            it "does call #setup_stopper" do
+              recorder.should_receive(:setup_stopper).once
+              recorder.should_receive(:execute_recording).once
+              recorder.should_receive(:terminate_stopper).once
+              recorder.run
+            end
+            
+            it "stops the recording" do
+              flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:name => :input))
+
+              def subject.write_and_await_response(input_component)
+                input_component.trigger_event_handler Punchblock::Event::Complete.new
+              end
+
+              complete_event = Punchblock::Event::Complete.new
+              flexmock(complete_event).should_receive(:reason => flexmock(:name => :input))
+              flexmock(Punchblock::Component::Input).new_instances do |input|
+                input.should_receive(:complete?).and_return(false)
+                input.should_receive(:complete_event).and_return(complete_event)
+              end
+              flexmock(Punchblock::Component::Record).new_instances.should_receive(:stop!)
+              subject.should_receive(:execute_component_and_await_completion).once.with(component)
+              recorder.run
+            end
+          end
+        end
+      end
+
       describe "#record" do
         let(:max_duration) { 5.5 }
         let(:options) do
