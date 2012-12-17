@@ -84,13 +84,11 @@ module Adhearsion
         end
 
         def prep_options(opts)
-          options = opts.dup
-
-          [:max_duration, :initial_timeout, :final_timeout].each do |k|
-            options[k] = options[k] * 1000 if options[k]
+          opts.dup.tap do |options|
+            [:max_duration, :initial_timeout, :final_timeout].each do |k|
+              options[k] = options[k] * 1000 if options[k]
+            end
           end
-
-          options
         end
       end
 
