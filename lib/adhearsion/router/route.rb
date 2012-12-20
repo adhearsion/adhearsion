@@ -8,6 +8,7 @@ module Adhearsion
       include HasGuardedHandlers
 
       attr_reader :name, :target, :guards
+      attr_accessor :controller_metadata
 
       def initialize(name, target = nil, *guards, &block)
         @name = name
@@ -17,6 +18,7 @@ module Adhearsion
           @target, @guards = target, guards
         end
         @guards.compact!
+        @controller_metadata = {}
       end
 
       def match?(call)
@@ -45,15 +47,6 @@ module Adhearsion
           end
           callback.call if callback
         }
-      end
-
-      def controller_metadata=(metadata)
-        @controller_metadata = metadata
-      end
-
-      def controller_metadata
-        return {} unless instance_variable_defined?(:@controller_metadata)
-        @controller_metadata
       end
 
       def evented?
