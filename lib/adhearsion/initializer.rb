@@ -38,12 +38,12 @@ module Adhearsion
     end
 
     def start
-      Adhearsion.statistics
       resolve_pid_file_path
       load_lib_folder
       load_config_file
       initialize_log_paths
       daemonize! if should_daemonize?
+      Adhearsion.statistics
       start_logging
       debugging_log
       launch_console if need_console?
