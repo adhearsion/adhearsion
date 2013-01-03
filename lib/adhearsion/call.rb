@@ -135,14 +135,13 @@ module Adhearsion
         clear_from_active_calls
         @end_reason = event.reason
         commands.terminate
-        after(after_end_hold_time) { current_actor.terminate! }
+        after(Adhearsion.config.platform.after_hangup_lifetime) { current_actor.terminate! }
         throw :pass
       end
     end
 
-    # @private
-    def after_end_hold_time
-      30
+    def finalize
+      ::Logging::Repository.reset
     end
 
     ##
@@ -202,6 +201,7 @@ module Adhearsion
 
     def reject(reason = :busy, headers = nil)
       write_and_await_response Punchblock::Command::Reject.new(:reason => reason, :headers => headers)
+      Adhearsion::Events.trigger_immediately :call_rejected, call: current_actor, reason: reason
     end
 
     def hangup(headers = nil)

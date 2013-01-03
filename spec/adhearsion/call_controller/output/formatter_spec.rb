@@ -6,9 +6,7 @@ module Adhearsion
   class CallController
     module Output
       describe Formatter do
-        subject { Formatter }
-
-        describe ".ssml_for" do
+        describe "#ssml_for" do
           let(:prompt) { "Please stand by" }
 
           let(:ssml) do
@@ -24,7 +22,7 @@ module Adhearsion
           end
         end
 
-        describe ".ssml_for_collection" do
+        describe "#ssml_for_collection" do
           let(:collection) { ["/foo/bar.wav", 1, Time.now] }
           let :ssml do
             file = collection[0]
@@ -42,7 +40,7 @@ module Adhearsion
           end
         end
 
-        describe ".detect_type" do
+        describe "#detect_type" do
           it "detects an HTTP path" do
             http_path = "http://adhearsion.com/sounds/hello.mp3"
             subject.detect_type(http_path).should be :audio

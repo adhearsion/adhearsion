@@ -44,44 +44,44 @@ module Adhearsion
     its(:to)      { should be == to }
     its(:from)    { should be == from }
 
-    its(:after_end_hold_time) { should be == 30 }
-
     describe "its variables" do
-      context "with an offer with headers" do
-        let(:headers)   { {:x_foo => 'bar'} }
-        its(:variables) { should be == headers }
+      context "with an offer" do
+        context "with headers" do
+          let(:headers)   { {:x_foo => 'bar'} }
+          its(:variables) { should be == headers }
 
-        it "should be made available via []" do
-          subject[:x_foo].should be == 'bar'
-        end
+          it "should be made available via []" do
+            subject[:x_foo].should be == 'bar'
+          end
 
-        it "should be alterable using []=" do
-          subject[:x_foo] = 'baz'
-          subject[:x_foo].should be == 'baz'
-        end
+          it "should be alterable using []=" do
+            subject[:x_foo] = 'baz'
+            subject[:x_foo].should be == 'baz'
+          end
 
-        context "when receiving an event with headers" do
-          let(:event) { Punchblock::Event::End.new :headers => {:x_bar => 'foo'} }
+          context "when receiving an event with headers" do
+            let(:event) { Punchblock::Event::End.new :headers => {:x_bar => 'foo'} }
 
-          it "should merge later headers" do
-            subject << event
-            subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
+            it "should merge later headers" do
+              subject << event
+              subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
+            end
+          end
+
+          context "when sending a command with headers" do
+            let(:command) { Punchblock::Command::Accept.new :headers => {:x_bar => 'foo'} }
+
+            it "should merge later headers" do
+              subject.write_command command
+              subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
+            end
           end
         end
 
-        context "when sending a command with headers" do
-          let(:command) { Punchblock::Command::Accept.new :headers => {:x_bar => 'foo'} }
-
-          it "should merge later headers" do
-            subject.write_command command
-            subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
-          end
+        context "without headers" do
+          let(:headers)   { nil }
+          its(:variables) { should be == {} }
         end
-      end
-
-      context "with an offer without headers" do
-        let(:headers)   { nil }
-        its(:variables) { should be == {} }
       end
 
       context "without an offer" do
@@ -348,7 +348,7 @@ module Adhearsion
         end
 
         it "shuts down the actor" do
-          flexmock subject.wrapped_object, :after_end_hold_time => 2
+          Adhearsion.config.platform.after_hangup_lifetime = 2
           subject << end_event
           sleep 2.1
           subject.should_not be_alive
@@ -579,6 +579,12 @@ module Adhearsion
             expect_message_waiting_for_response on { |c| c.is_a?(Punchblock::Command::Reject) && c.headers_hash == headers }
             subject.reject nil, headers
           end
+        end
+
+        it "should immediately fire the :call_rejected event giving the call and the reason" do
+          expect_message_waiting_for_response Punchblock::Command::Reject
+          flexmock(Adhearsion::Events).should_receive(:trigger_immediately).once.with(:call_rejected, :call => subject, :reason => :decline)
+          subject.reject :decline
         end
       end
 

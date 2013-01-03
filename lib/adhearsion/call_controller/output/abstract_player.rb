@@ -17,13 +17,9 @@ module Adhearsion
           end
         end
 
-        def play_ssml_for(*args)
-          play_ssml Formatter.ssml_for(args)
-        end
-
         def new_output(options)
           defaults = {}
-          default_voice = Adhearsion.config.platform[:default_voice]
+          default_voice = Adhearsion.config.punchblock[:default_voice]
           defaults[:voice] = default_voice if default_voice
 
           Punchblock::Component::Output.new defaults.merge(options)

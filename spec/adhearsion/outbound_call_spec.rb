@@ -146,6 +146,11 @@ module Adhearsion
         Adhearsion.active_calls[call_id].should be subject
       end
 
+      it "should immediately fire the :call_dialed event giving the call" do
+        flexmock(Adhearsion::Events).should_receive(:trigger_immediately).once.with(:call_dialed, subject)
+        subject.dial to, :from => from
+      end
+
       it "should not modify the provided options" do
         options = {:from => from}
         original_options = Marshal.load(Marshal.dump(options))

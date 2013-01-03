@@ -366,6 +366,25 @@ module Adhearsion
           end
         end
 
+        describe "with a collection of arguments" do
+          let(:args) { ["/foo/bar.wav", 1, Time.now] }
+          let :ssml do
+            file = args[0]
+            n = args[1].to_s
+            t = args[2].to_s
+            RubySpeech::SSML.draw do
+              audio :src => file
+              say_as(:interpret_as => 'cardinal') { n }
+              say_as(:interpret_as => 'time') { t }
+            end
+          end
+
+          it 'plays all arguments in one document' do
+            expect_ssml_output ssml
+            subject.play(args).should be true
+          end
+        end
+
         describe "with a number" do
           let(:argument) { 123 }
 
@@ -429,7 +448,7 @@ module Adhearsion
           end
         end
 
-        describe "with an array containing a Date/DateTime/Time object and a hash" do
+        describe "with an hash containing a Date/DateTime/Time object and format options" do
           let(:date)      { Date.parse '2011-01-23' }
           let(:format)    { "d-m-y" }
           let(:strftime)  { "%d-%m%Y" }
@@ -686,7 +705,7 @@ module Adhearsion
         end
 
         describe "with a default voice set" do
-          before { Adhearsion.config.platform.default_voice = 'foo' }
+          before { Adhearsion.config.punchblock.default_voice = 'foo' }
 
           it 'sets the voice on the output component' do
             str = "Hello world"
@@ -695,7 +714,7 @@ module Adhearsion
             subject.say(str)
           end
 
-          after { Adhearsion.config.platform.default_voice = nil }
+          after { Adhearsion.config.punchblock.default_voice = nil }
         end
 
         describe "converts the argument to a string" do
@@ -733,7 +752,7 @@ module Adhearsion
         end
 
         describe "with a default voice set" do
-          before { Adhearsion.config.platform.default_voice = 'foo' }
+          before { Adhearsion.config.punchblock.default_voice = 'foo' }
 
           it 'sets the voice on the output component' do
             str = "Hello world"
@@ -742,7 +761,7 @@ module Adhearsion
             subject.say!(str)
           end
 
-          after { Adhearsion.config.platform.default_voice = nil }
+          after { Adhearsion.config.punchblock.default_voice = nil }
         end
 
         describe "converts the argument to a string" do
