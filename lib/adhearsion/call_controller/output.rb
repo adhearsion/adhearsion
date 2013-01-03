@@ -106,7 +106,7 @@ module Adhearsion
       #
       def play_audio(file, options = {})
         renderer = options.delete :renderer
-        player.play_ssml(Formatter.ssml_for_audio(file, options), renderer: renderer)
+        player.play_ssml(output_formatter.ssml_for_audio(file, options), renderer: renderer)
         true
       end
 
@@ -124,7 +124,7 @@ module Adhearsion
       #
       def play_audio!(file, options = {})
         renderer = options.delete :renderer
-        async_player.play_ssml(Formatter.ssml_for_audio(file, options), renderer: renderer)
+        async_player.play_ssml(output_formatter.ssml_for_audio(file, options), renderer: renderer)
       end
 
       #
