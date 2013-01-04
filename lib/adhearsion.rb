@@ -5,9 +5,6 @@ abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby
 %w{
   active_support/all
   punchblock
-  ruby_speech
-  countdownlatch
-  loquacious
   celluloid
 
   adhearsion/version

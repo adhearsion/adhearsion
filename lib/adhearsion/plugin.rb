@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require 'loquacious'
+
 module Adhearsion
 
   # Plugin is the core of extension of Adhearsion framework and provides the easiest

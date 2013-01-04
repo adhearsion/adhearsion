@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require 'spec_helper'
+require 'ruby_speech'
 
 module Adhearsion
   class CallController
