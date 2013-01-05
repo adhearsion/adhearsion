@@ -96,21 +96,18 @@ module Adhearsion
     end
 
     def active_calls
-      if instance_variable_defined?(:@calls) && @calls.alive?
-        @calls
-      else
-        @calls = Calls.new
-      end
+      Celluloid::Actor[:active_calls] || Calls.supervise_as(:active_calls)
+      Celluloid::Actor[:active_calls]
     end
 
     #
     # @return [Adhearsion::Statistics] a statistics aggregator object capable of producing stats dumps
     def statistics
-      if instance_variable_defined?(:@statistics) && @statistics.alive?
-        @statistics
-      else
-        @statistics = Statistics.new.tap(&:setup_event_handlers)
+      unless Celluloid::Actor[:statistics]
+        Statistics.supervise_as :statistics
+        Statistics.setup_event_handlers
       end
+      Celluloid::Actor[:statistics]
     end
 
     def status

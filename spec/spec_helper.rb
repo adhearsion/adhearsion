@@ -43,10 +43,6 @@ RSpec.configure do |config|
   config.before :each do
     Adhearsion.router = nil
   end
-
-  config.after :each do
-    Celluloid.shutdown
-  end
 end
 
 Adhearsion::Events.exeption do |e|
