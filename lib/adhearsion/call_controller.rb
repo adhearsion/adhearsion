@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require 'countdownlatch'
+
 module Adhearsion
   class CallController
     extend ActiveSupport::Autoload
