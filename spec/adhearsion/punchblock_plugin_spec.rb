@@ -38,7 +38,7 @@ module Adhearsion
           slow_command.response = response
         end
         PunchblockPlugin.execute_component slow_command
-        (Time.now - starting_time).should >= 0.5
+        (Time.now - starting_time).should >= 0.4
       end
 
       describe "with a successful response" do
