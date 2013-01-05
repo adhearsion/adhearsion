@@ -299,10 +299,10 @@ module Adhearsion
         before { subject.pause! }
 
         it "should unblock when the controller is unpaused" do
-          t1 = t2 = nil
+          t2 = nil
           latch = CountDownLatch.new 1
+          t1 = Time.now
           Thread.new do
-            t1 = Time.now
             subject.block_until_resumed
             t2 = Time.now
             latch.countdown!
