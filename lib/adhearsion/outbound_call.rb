@@ -76,8 +76,7 @@ module Adhearsion
 
     def run_router
       catching_standard_errors do
-        dispatcher = Adhearsion.router.handle current_actor
-        dispatcher.call current_actor
+        Adhearsion.router.handle current_actor
       end
     end
 

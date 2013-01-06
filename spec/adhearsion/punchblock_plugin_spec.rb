@@ -32,13 +32,13 @@ module Adhearsion
       it "blocks until a response is received" do
         slow_command = Punchblock::Command::Dial.new
         slow_command.request!
+        starting_time = Time.now
         Thread.new do
           sleep 0.5
           slow_command.response = response
         end
-        starting_time = Time.now
         PunchblockPlugin.execute_component slow_command
-        (Time.now - starting_time).should >= 0.5
+        (Time.now - starting_time).should >= 0.4
       end
 
       describe "with a successful response" do

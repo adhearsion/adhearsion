@@ -9,11 +9,11 @@ module Adhearsion
 
       let(:to) { 'sip:foo@bar.com' }
       let(:other_call_id)   { new_uuid }
-      let(:other_mock_call) { flexmock OutboundCall.new, :id => other_call_id }
+      let(:other_mock_call) { flexmock OutboundCall.new, :id => other_call_id, :write_command => true }
 
       let(:second_to)               { 'sip:baz@bar.com' }
       let(:second_other_call_id)    { new_uuid }
-      let(:second_other_mock_call)  { flexmock OutboundCall.new, :id => second_other_call_id }
+      let(:second_other_mock_call)  { flexmock OutboundCall.new, :id => second_other_call_id, :write_command => true }
 
       let(:mock_answered) { Punchblock::Event::Answered.new }
 
@@ -349,7 +349,7 @@ module Adhearsion
 
           context "when a call is answered and joined, and the other ends with an error" do
             it "has an overall dial status of :answer" do
-            flexmock(call).should_receive(:answer).once
+              flexmock(call).should_receive(:answer).once
               flexmock(other_mock_call).should_receive(:join).once.with(call)
               flexmock(second_other_mock_call).should_receive(:hangup).once
 

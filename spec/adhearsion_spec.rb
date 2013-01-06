@@ -86,6 +86,8 @@ describe Adhearsion do
       original.terminate
       original.should_not be_alive
 
+      sleep 0.25
+
       current = Adhearsion.active_calls
       current.should be_alive
       current.should_not be original
@@ -105,6 +107,8 @@ describe Adhearsion do
       original = Adhearsion.statistics
       original.terminate
       original.should_not be_alive
+
+      sleep 0.25
 
       current = Adhearsion.statistics
       current.should be_alive
