@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Bugfix: No longer crash logging randomly
   * Bugfix: Correctly route outbound calls
   * Bugfix: Handle calls when daemonized correctly
   * Bugfix: Test suites now pass on JRuby and Ruby 2.0.0
