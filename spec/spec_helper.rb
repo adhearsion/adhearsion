@@ -40,6 +40,10 @@ RSpec.configure do |config|
   config.run_all_when_everything_filtered = true
   config.color_enabled = true
 
+  config.before :suite do
+    Adhearsion::Logging.start Adhearsion::Logging.default_appenders, :trace, Adhearsion.config.platform.logging.formatter
+  end
+
   config.before :each do
     Adhearsion.router = nil
   end
@@ -49,8 +53,6 @@ Adhearsion::Events.exeption do |e|
   puts e.message
   puts e.backtrace.join("\n")
 end
-
-Adhearsion::Logging.silence!
 
 # Test modules for #mixin methods
 module TestBiscuit
