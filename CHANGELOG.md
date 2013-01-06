@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Feature: Allow specifying exact input digits to recognize for interrupting a recording
 
 # [2.2.1](https://github.com/adhearsion/adhearsion/compare/v2.2.0...v2.2.1) - [2013-01-06](https://rubygems.org/gems/adhearsion/versions/2.2.1)
   * Bugfix: No longer crash logging randomly
