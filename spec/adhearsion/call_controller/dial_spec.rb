@@ -349,7 +349,7 @@ module Adhearsion
 
           context "when a call is answered and joined, and the other ends with an error" do
             it "has an overall dial status of :answer" do
-            flexmock(call).should_receive(:answer).once
+              flexmock(call).should_receive(:answer).once
               flexmock(other_mock_call).should_receive(:join).once.with(call)
               flexmock(second_other_mock_call).should_receive(:hangup).once
 
