@@ -50,8 +50,6 @@ Adhearsion::Events.exeption do |e|
   puts e.backtrace.join("\n")
 end
 
-Adhearsion::Logging.silence!
-
 # Test modules for #mixin methods
 module TestBiscuit
   def throwadogabone
