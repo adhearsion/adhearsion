@@ -224,14 +224,16 @@ module Adhearsion
           end
         end
 
-        context "when when Adhearsion::Process is in :running" do
-          let(:process_state) { :running }
+        [ :running, :stopping ].each do |state|
+          context "when when Adhearsion::Process is in :#{state}" do
+            let(:process_state) { state }
 
-          it "should dispatch via the router" do
-            Adhearsion.router do
-              route 'foobar', Class.new
+            it "should dispatch via the router" do
+              Adhearsion.router do
+                route 'foobar', Class.new
+              end
+              flexmock(Adhearsion.router).should_receive(:handle).once.with mock_call
             end
-            flexmock(Adhearsion.router).should_receive(:handle).once.with mock_call
           end
         end
 
