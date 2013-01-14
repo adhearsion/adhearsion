@@ -335,6 +335,9 @@ module Adhearsion
       end
 
       describe '#play' do
+        let(:extra_options) do
+          { renderer: :native }
+        end
         describe "with a single string" do
           let(:audio_file) { "/foo/bar.wav" }
           let :ssml do
@@ -345,6 +348,11 @@ module Adhearsion
           it 'plays the audio file' do
             expect_ssml_output ssml
             subject.play(audio_file).should be true
+          end
+
+          it 'plays the audio file with the specified extra options if present' do
+            expect_ssml_output ssml, extra_options
+            subject.play(audio_file, extra_options).should be true
           end
         end
 
@@ -363,6 +371,12 @@ module Adhearsion
 
           it 'plays all arguments in one document' do
             expect_ssml_output ssml
+            subject.play(*args).should be true
+          end
+
+          it 'plays all arguments in one document with the extra options if present' do
+            expect_ssml_output ssml, extra_options
+            args << extra_options
             subject.play(*args).should be true
           end
         end
@@ -479,6 +493,9 @@ module Adhearsion
       end
 
       describe '#play!' do
+        let(:extra_options) do
+          { renderer: :native }
+        end
         describe "with a single string" do
           let(:audio_file) { "/foo/bar.wav" }
           let :ssml do
@@ -489,6 +506,11 @@ module Adhearsion
           it 'plays the audio file' do
             expect_async_ssml_output ssml
             subject.play!(audio_file).should be_a Punchblock::Component::Output
+          end
+
+          it 'plays the audio file with the specified extra options if present' do
+            expect_async_ssml_output ssml, extra_options
+            subject.play!(audio_file, extra_options)
           end
         end
 
@@ -508,6 +530,12 @@ module Adhearsion
           it 'plays all arguments in one document' do
             expect_async_ssml_output ssml
             subject.play!(*args).should be_a Punchblock::Component::Output
+          end
+
+          it 'plays all arguments in one document with the extra options if present' do
+            expect_async_ssml_output ssml, extra_options
+            args << extra_options
+            subject.play!(*args)
           end
         end
 

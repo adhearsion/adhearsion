@@ -61,7 +61,12 @@ module Adhearsion
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
       def play(*arguments)
-        player.play_ssml output_formatter.ssml_for_collection(arguments)
+        if arguments.last.is_a?(Hash) && arguments.count > 1
+          options = arguments.pop
+        else
+          options = {}
+        end
+        player.play_ssml output_formatter.ssml_for_collection(arguments), options
         true
       end
 
@@ -89,7 +94,12 @@ module Adhearsion
       # @returns [Punchblock::Component::Output]
       #
       def play!(*arguments)
-        async_player.play_ssml output_formatter.ssml_for_collection(arguments)
+        if arguments.last.is_a?(Hash) && arguments.count > 1
+          options = arguments.pop
+        else
+          options = {}
+        end
+        async_player.play_ssml output_formatter.ssml_for_collection(arguments), options
       end
 
       #
