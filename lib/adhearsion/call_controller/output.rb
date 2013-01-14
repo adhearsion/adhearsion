@@ -61,11 +61,7 @@ module Adhearsion
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
       def play(*arguments)
-        if arguments.last.is_a?(Hash) && arguments.count > 1
-          options = arguments.pop
-        else
-          options = {}
-        end
+        options = process_output_options arguments
         player.play_ssml output_formatter.ssml_for_collection(arguments), options
         true
       end
@@ -94,11 +90,7 @@ module Adhearsion
       # @returns [Punchblock::Component::Output]
       #
       def play!(*arguments)
-        if arguments.last.is_a?(Hash) && arguments.count > 1
-          options = arguments.pop
-        else
-          options = {}
-        end
+        options = process_output_options arguments
         async_player.play_ssml output_formatter.ssml_for_collection(arguments), options
       end
 
@@ -227,11 +219,7 @@ module Adhearsion
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
       def interruptible_play(*outputs)
-        if outputs.last.is_a?(Hash) && outputs.count > 1
-          options = outputs.pop
-        else
-          options = {}
-        end
+        options = process_output_options outputs 
         outputs.find do |output|
           digit = stream_file output, '0123456789#*', options
           return digit if digit
@@ -275,6 +263,11 @@ module Adhearsion
       # @private
       def async_player
         @async_player ||= AsyncPlayer.new(self)
+      end
+
+      # @private
+      def process_output_options(arguments)
+        arguments.last.is_a?(Hash) && arguments.count > 1 ? arguments.pop : {}
       end
 
       #

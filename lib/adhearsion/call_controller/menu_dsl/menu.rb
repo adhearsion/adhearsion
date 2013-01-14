@@ -22,7 +22,7 @@ module Adhearsion
           @interruptible        = options.has_key?(:interruptible) ? options[:interruptible] : true
           @builder              = MenuDSL::MenuBuilder.new
           @terminated           = false
-          @renderer                = options[:renderer]
+          @renderer             = options[:renderer]
 
           @builder.build(&block) if block
 

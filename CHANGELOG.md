@@ -1,5 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
-  * Feature: #play and #play! now support the renderer option
+  * Feature: #menu, #interruptible_play, #ask, #play and #play! now support the renderer option
 
 # [2.2.1](https://github.com/adhearsion/adhearsion/compare/v2.2.0...v2.2.1) - [2013-01-06](https://rubygems.org/gems/adhearsion/versions/2.2.1)
   * Bugfix: No longer crash logging randomly
@@ -91,7 +91,6 @@
     ```
   * Bugfix: Generate sane spec defaults for new apps and controllers
   * Bugfix: `CallController#record` now allows partial-second timeouts
-  * Feature: Added the ability to specify a renderer to #play_audio and #play_audio!
   * Bugfix: Ensure calls are removed from the active collection when they terminate cleanly
   * Bugfix: Plug a big memory leak
 

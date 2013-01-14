@@ -188,13 +188,9 @@ module Adhearsion
         digit = nil
         if sound_files.any? && menu_instance.digit_buffer_empty?
           if menu_instance.interruptible
-            digit = interruptible_play(*sound_files)
+            digit = interruptible_play(*sound_files, renderer: menu_instance.renderer)
           else
-            if menu_instance.renderer
-              play(*sound_files, renderer: menu_instance.renderer)
-            else
-              play(*sound_files)
-            end
+            play(*sound_files, renderer: menu_instance.renderer)
           end
         end
         digit || wait_for_digit(menu_instance.timeout)
