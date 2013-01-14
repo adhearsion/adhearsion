@@ -3,12 +3,19 @@
 require 'spec_helper'
 
 describe Adhearsion::Statistics do
+  before(:all) do
+    Adhearsion::Statistics.setup_event_handlers
+  end
+
+  subject { Celluloid::Actor[:statistics] }
+
   before do
-    subject.setup_event_handlers
+    Celluloid::Actor[:statistics] = described_class.new
     flexmock(Adhearsion.active_calls).should_receive(:count).and_return 0
   end
 
   after do
+    Celluloid::Actor.clear_registry
     Adhearsion.router = nil
   end
 

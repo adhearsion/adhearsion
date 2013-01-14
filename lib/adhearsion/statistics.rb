@@ -6,6 +6,41 @@ module Adhearsion
 
     exclusive
 
+    # @private
+    def self.setup_event_handlers
+      Events.punchblock(Punchblock::Event::Offer) do
+        begin
+          Celluloid::Actor[:statistics].register_call_offered
+        ensure
+          throw :pass
+        end
+      end
+
+      Events.call_dialed do
+        begin
+          Celluloid::Actor[:statistics].register_call_dialed
+        ensure
+          throw :pass
+        end
+      end
+
+      Events.call_rejected do
+        begin
+          Celluloid::Actor[:statistics].register_call_rejected
+        ensure
+          throw :pass
+        end
+      end
+
+      Events.call_routed do |data|
+        begin
+          Celluloid::Actor[:statistics].register_call_routed data
+        ensure
+          throw :pass
+        end
+      end
+    end
+
     def initialize
       @calls_dialed = @calls_offered = @calls_routed = @calls_rejected = 0
       @calls_by_route = Hash.new { |h,k| h[k] = 0 }
@@ -38,43 +73,6 @@ module Adhearsion
     # @private
     def register_call_rejected
       @calls_rejected += 1
-    end
-
-    # @private
-    def setup_event_handlers
-      stats = current_actor
-
-      Events.punchblock(Punchblock::Event::Offer) do
-        begin
-          stats.register_call_offered
-        rescue Celluloid::DeadActorError
-        end
-        throw :pass
-      end
-
-      Events.call_dialed do
-        begin
-          stats.register_call_dialed
-        rescue Celluloid::DeadActorError
-        end
-        throw :pass
-      end
-
-      Events.call_rejected do
-        begin
-          stats.register_call_rejected
-        rescue Celluloid::DeadActorError
-        end
-        throw :pass
-      end
-
-      Events.call_routed do |data|
-        begin
-          stats.register_call_routed data
-        rescue Celluloid::DeadActorError
-        end
-        throw :pass
-      end
     end
 
     def to_s

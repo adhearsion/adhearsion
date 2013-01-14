@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require 'loquacious'
+
 module Adhearsion
   class Configuration
 

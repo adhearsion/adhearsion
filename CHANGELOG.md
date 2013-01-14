@@ -1,5 +1,11 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
+# [2.2.1](https://github.com/adhearsion/adhearsion/compare/v2.2.0...v2.2.1) - [2013-01-06](https://rubygems.org/gems/adhearsion/versions/2.2.1)
+  * Bugfix: No longer crash logging randomly
+  * Bugfix: Correctly route outbound calls
+  * Bugfix: Handle calls when daemonized correctly
+  * Bugfix: Test suites now pass on JRuby and Ruby 2.0.0
+
 # [2.2.0](https://github.com/adhearsion/adhearsion/compare/v2.1.3...v2.2.0) - [2012-12-17](https://rubygems.org/gems/adhearsion/versions/2.2.0)
   * Feature: Statistics API providing counts of calls dialed, offered, rejected, routed and active
 
