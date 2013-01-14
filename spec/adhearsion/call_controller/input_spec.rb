@@ -34,6 +34,15 @@ module Adhearsion
             subject.play_sound_files_for_menu(menu_instance, sound_files).should be == '1'
           end
         end
+
+        context "with a renderer specified and not interruptible" do
+          let(:options) { { :renderer => :native, :interruptible => false } }
+          it "should pass the renderer option to #play" do
+            subject.should_receive(:play).with(sound_file, {:renderer => :native}).and_return true
+            subject.should_receive(:wait_for_digit).with(menu_instance.timeout).and_return("1")
+            subject.play_sound_files_for_menu(menu_instance, sound_files).should be == '1'
+          end
+        end
       end#play_sound_files_for_menu
 
       describe "#wait_for_digit" do

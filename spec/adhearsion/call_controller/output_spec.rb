@@ -635,6 +635,7 @@ module Adhearsion
         let(:output1)       { "one two" }
         let(:output2)       { "three four" }
         let(:non_existing)  { "http://adhearsion.com/nonexistingfile.mp3" }
+        let(:extra_options) { {renderer: :native } }
 
         it "plays two outputs in succession" do
           subject.should_receive(:stream_file).twice
@@ -646,6 +647,13 @@ module Adhearsion
           subject.should_receive(:stream_file).once.and_return(2)
           digit = subject.interruptible_play output1, output2
           digit.should be == 2
+        end
+
+        it "passes options on to #stream_file" do
+          subject.should_receive(:stream_file).once.with(output1, '0123456789#*', extra_options)
+          subject.should_receive(:stream_file).once.with(output2, '0123456789#*', extra_options)
+          digit = subject.interruptible_play output1, output2, extra_options
+          digit.should be_nil
         end
 
         it 'raises an exception when output is unsuccessful' do
@@ -712,6 +720,19 @@ module Adhearsion
           flexmock(Punchblock::Component::Output).new_instances.should_receive(:stop!)
           expect_component_execution output_component
           subject.stream_file(prompt, allowed_digits).should be == '5'
+        end
+
+        context "with output options passed in" do
+          let(:extra_options) { {renderer: :native } }
+          it "plays the correct output with options" do
+            def controller.write_and_await_response(input_component)
+              # it is actually a no-op here
+            end
+
+            expect_component_complete_event
+            expect_component_execution Punchblock::Component::Output.new({:ssml => ssml.to_s}.merge(extra_options))
+            subject.stream_file prompt, allowed_digits, extra_options
+          end
         end
       end
 

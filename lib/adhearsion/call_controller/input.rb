@@ -190,7 +190,11 @@ module Adhearsion
           if menu_instance.interruptible
             digit = interruptible_play(*sound_files)
           else
-            play(*sound_files)
+            if menu_instance.renderer
+              play(*sound_files, renderer: menu_instance.renderer)
+            else
+              play(*sound_files)
+            end
           end
         end
         digit || wait_for_digit(menu_instance.timeout)

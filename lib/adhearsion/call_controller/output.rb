@@ -227,8 +227,13 @@ module Adhearsion
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
       def interruptible_play(*outputs)
+        if outputs.last.is_a?(Hash) && outputs.count > 1
+          options = outputs.pop
+        else
+          options = {}
+        end
         outputs.find do |output|
-          digit = stream_file output
+          digit = stream_file output, '0123456789#*', options
           return digit if digit
         end
       end
@@ -242,14 +247,14 @@ module Adhearsion
       # @return [String, nil] The pressed digit, or nil if nothing was pressed
       # @private
       #
-      def stream_file(argument, digits = '0123456789#*')
+      def stream_file(argument, digits = '0123456789#*', output_options = {})
         result = nil
         stopper = Punchblock::Component::Input.new :mode => :dtmf,
           :grammar => {
             :value => grammar_accept(digits)
           }
 
-        player.output output_formatter.ssml_for(argument) do |output_component|
+        player.output output_formatter.ssml_for(argument), output_options do |output_component|
           stopper.register_event_handler Punchblock::Event::Complete do |event|
             output_component.stop! unless output_component.complete?
           end

@@ -117,6 +117,22 @@ module Adhearsion
               end
             end
 
+            context 'when renderer is not specified' do
+              it 'should have a nil renderer' do
+                subject.renderer.should be nil
+              end
+            end
+
+            context 'when renderer is specified' do
+              let(:options) {
+                {:renderer => :native}
+              }
+
+              it 'should have the specified renderer' do
+                subject.renderer.should == :native
+              end
+            end
+
             context 'when matchers are specified' do
               subject do
                 Menu.new do
