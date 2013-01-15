@@ -69,6 +69,14 @@ module Adhearsion
             subject.play_audio(audio_file, :fallback => fallback).should be true
           end
         end
+
+        context "with a media engine" do
+          let(:media_engine) { :native }
+          it "should use the specified media engine in the component" do
+            expect_ssml_output ssml, renderer: media_engine
+            subject.play_audio(audio_file, renderer: media_engine).should be true
+          end
+        end
       end
 
       describe "#play_audio!" do
@@ -98,6 +106,14 @@ module Adhearsion
           it 'places the fallback in the SSML doc' do
             expect_async_ssml_output ssml
             subject.play_audio!(audio_file, :fallback => fallback).should be_a Punchblock::Component::Output
+          end
+        end
+
+        context "with a media engine" do
+          let(:media_engine) { :native }
+          it "should use the specified media engine in the SSML" do
+            expect_async_ssml_output ssml, renderer: media_engine
+            subject.play_audio!(audio_file, renderer: media_engine).should be_a Punchblock::Component::Output
           end
         end
       end
@@ -319,6 +335,9 @@ module Adhearsion
       end
 
       describe '#play' do
+        let(:extra_options) do
+          { renderer: :native }
+        end
         describe "with a single string" do
           let(:audio_file) { "/foo/bar.wav" }
           let :ssml do
@@ -329,6 +348,11 @@ module Adhearsion
           it 'plays the audio file' do
             expect_ssml_output ssml
             subject.play(audio_file).should be true
+          end
+
+          it 'plays the audio file with the specified extra options if present' do
+            expect_ssml_output ssml, extra_options
+            subject.play(audio_file, extra_options).should be true
           end
         end
 
@@ -347,6 +371,12 @@ module Adhearsion
 
           it 'plays all arguments in one document' do
             expect_ssml_output ssml
+            subject.play(*args).should be true
+          end
+
+          it 'plays all arguments in one document with the extra options if present' do
+            expect_ssml_output ssml, extra_options
+            args << extra_options
             subject.play(*args).should be true
           end
         end
@@ -463,6 +493,9 @@ module Adhearsion
       end
 
       describe '#play!' do
+        let(:extra_options) do
+          { renderer: :native }
+        end
         describe "with a single string" do
           let(:audio_file) { "/foo/bar.wav" }
           let :ssml do
@@ -473,6 +506,11 @@ module Adhearsion
           it 'plays the audio file' do
             expect_async_ssml_output ssml
             subject.play!(audio_file).should be_a Punchblock::Component::Output
+          end
+
+          it 'plays the audio file with the specified extra options if present' do
+            expect_async_ssml_output ssml, extra_options
+            subject.play!(audio_file, extra_options)
           end
         end
 
@@ -492,6 +530,12 @@ module Adhearsion
           it 'plays all arguments in one document' do
             expect_async_ssml_output ssml
             subject.play!(*args).should be_a Punchblock::Component::Output
+          end
+
+          it 'plays all arguments in one document with the extra options if present' do
+            expect_async_ssml_output ssml, extra_options
+            args << extra_options
+            subject.play!(*args)
           end
         end
 
@@ -591,6 +635,7 @@ module Adhearsion
         let(:output1)       { "one two" }
         let(:output2)       { "three four" }
         let(:non_existing)  { "http://adhearsion.com/nonexistingfile.mp3" }
+        let(:extra_options) { {renderer: :native } }
 
         it "plays two outputs in succession" do
           subject.should_receive(:stream_file).twice
@@ -602,6 +647,13 @@ module Adhearsion
           subject.should_receive(:stream_file).once.and_return(2)
           digit = subject.interruptible_play output1, output2
           digit.should be == 2
+        end
+
+        it "passes options on to #stream_file" do
+          subject.should_receive(:stream_file).once.with(output1, '0123456789#*', extra_options)
+          subject.should_receive(:stream_file).once.with(output2, '0123456789#*', extra_options)
+          digit = subject.interruptible_play output1, output2, extra_options
+          digit.should be_nil
         end
 
         it 'raises an exception when output is unsuccessful' do
@@ -668,6 +720,19 @@ module Adhearsion
           flexmock(Punchblock::Component::Output).new_instances.should_receive(:stop!)
           expect_component_execution output_component
           subject.stream_file(prompt, allowed_digits).should be == '5'
+        end
+
+        context "with output options passed in" do
+          let(:extra_options) { {renderer: :native } }
+          it "plays the correct output with options" do
+            def controller.write_and_await_response(input_component)
+              # it is actually a no-op here
+            end
+
+            expect_component_complete_event
+            expect_component_execution Punchblock::Component::Output.new({:ssml => ssml.to_s}.merge(extra_options))
+            subject.stream_file prompt, allowed_digits, extra_options
+          end
         end
       end
 

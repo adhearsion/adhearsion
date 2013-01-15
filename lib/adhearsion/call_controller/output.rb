@@ -61,7 +61,8 @@ module Adhearsion
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
       def play(*arguments)
-        player.play_ssml output_formatter.ssml_for_collection(arguments)
+        options = process_output_options arguments
+        player.play_ssml output_formatter.ssml_for_collection(arguments), options
         true
       end
 
@@ -89,7 +90,8 @@ module Adhearsion
       # @returns [Punchblock::Component::Output]
       #
       def play!(*arguments)
-        async_player.play_ssml output_formatter.ssml_for_collection(arguments)
+        options = process_output_options arguments
+        async_player.play_ssml output_formatter.ssml_for_collection(arguments), options
       end
 
       #
@@ -98,13 +100,15 @@ module Adhearsion
       # The Punchblock backend will have to handle cases like Asterisk where there is a fixed sounds directory.
       #
       # @param [String] file http:// URL or full disk path to the sound file
-      # @param [Hash] options Additional options to specify how exactly to say time specified.
+      # @param [Hash] options Additional options
       # @option options [String] :fallback The text to play if the file is not available
+      # @option options [Symbol] :renderer The media engine to use for rendering the file
       #
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
-      def play_audio(file, options = nil)
-        player.play_ssml output_formatter.ssml_for_audio(file, options)
+      def play_audio(file, options = {})
+        renderer = options.delete :renderer
+        player.play_ssml(output_formatter.ssml_for_audio(file, options), renderer: renderer)
         true
       end
 
@@ -120,8 +124,9 @@ module Adhearsion
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       # @returns [Punchblock::Component::Output]
       #
-      def play_audio!(file, options = nil)
-        async_player.play_ssml output_formatter.ssml_for_audio(file, options)
+      def play_audio!(file, options = {})
+        renderer = options.delete :renderer
+        async_player.play_ssml(output_formatter.ssml_for_audio(file, options), renderer: renderer)
       end
 
       #
@@ -214,8 +219,9 @@ module Adhearsion
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
       def interruptible_play(*outputs)
+        options = process_output_options outputs 
         outputs.find do |output|
-          digit = stream_file output
+          digit = stream_file output, '0123456789#*', options
           return digit if digit
         end
       end
@@ -229,14 +235,14 @@ module Adhearsion
       # @return [String, nil] The pressed digit, or nil if nothing was pressed
       # @private
       #
-      def stream_file(argument, digits = '0123456789#*')
+      def stream_file(argument, digits = '0123456789#*', output_options = {})
         result = nil
         stopper = Punchblock::Component::Input.new :mode => :dtmf,
           :grammar => {
             :value => grammar_accept(digits)
           }
 
-        player.output output_formatter.ssml_for(argument) do |output_component|
+        player.output output_formatter.ssml_for(argument), output_options do |output_component|
           stopper.register_event_handler Punchblock::Event::Complete do |event|
             output_component.stop! unless output_component.complete?
           end
@@ -257,6 +263,11 @@ module Adhearsion
       # @private
       def async_player
         @async_player ||= AsyncPlayer.new(self)
+      end
+
+      # @private
+      def process_output_options(arguments)
+        arguments.last.is_a?(Hash) && arguments.count > 1 ? arguments.pop : {}
       end
 
       #
