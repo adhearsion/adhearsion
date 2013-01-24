@@ -125,6 +125,7 @@ module Adhearsion
     #
     # @param [Class] controller_class The class of controller to execute
     # @param [Hash] metadata generic key-value storage applicable to the controller
+    # @return The return value of the controller's run method
     #
     def invoke(controller_class, metadata = nil)
       controller = controller_class.new call, metadata
