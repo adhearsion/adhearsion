@@ -94,7 +94,7 @@ module Adhearsion
       class InvokeController < CallController
         def run
           before
-          invoke second_controller, :foo => 'bar'
+          metadata[:invoke_result] = invoke second_controller, :foo => 'bar'
           after
         end
 
@@ -124,6 +124,12 @@ module Adhearsion
         subject.should_receive(:after).once.ordered
 
         subject.execute!
+      end
+
+      it "should return the outer controller's run method return value" do
+        flexmock(SecondController).new_instances.should_receive(:run).once.and_return(:run_result)
+        subject.execute!
+        subject.metadata[:invoke_result].should be == :run_result
       end
 
       it "should invoke the new controller with metadata" do
