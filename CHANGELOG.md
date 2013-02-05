@@ -1,5 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
-  * Feature: Allow specifying a renderer per invocation of #menu, #interruptible_play, #ask, #play and #play!
+  * Feature: Allow specifying a renderer per invocation of `#menu`, `#interruptible_play`, `#ask`, `#play` and `#play!`
+
     ```ruby
     play 'tt-monkeys', renderer: :native
     ```
