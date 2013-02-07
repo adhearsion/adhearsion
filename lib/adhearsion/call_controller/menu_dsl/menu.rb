@@ -63,9 +63,8 @@ module Adhearsion
           return get_another_digit_or_timeout! if digit_buffer_empty?
 
           return menu_terminated! if @terminated
-          return menu_limit_reached! if limit && digit_buffer.size >= limit
-
           return menu_validator_terminated! if execute_validator_hook
+          return menu_limit_reached! if limit && digit_buffer.size >= limit
 
           calculated_matches = builder.calculate_matches_for digit_buffer_string
 
