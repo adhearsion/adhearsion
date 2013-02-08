@@ -363,6 +363,24 @@ module Adhearsion
                   menu_instance.result.should be == '242'
                 end
               end
+
+              context "when a digit limit and validator is defined" do
+                let(:menu_instance) do
+                  Menu.new options.merge(:limit => 3) do
+                    validator { |buffer| buffer == "242" }
+                  end
+                end
+
+                it "applies the validator before checking the digit limit" do
+                  menu_instance << 2
+                  menu_instance << 4
+                  menu_instance << 2
+                  menu_instance.continue.should be_a Menu::MenuValidatorTerminated
+                  menu_instance.continue.should be_a Menu::MenuResultDone
+                  menu_instance.status.should be == :validator_terminated
+                  menu_instance.result.should be == '242'
+                end
+              end
             end
 
           end#continue
