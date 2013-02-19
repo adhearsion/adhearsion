@@ -5,6 +5,7 @@
     play 'tt-monkeys', renderer: :native
     ```
 
+  * Feature: Make it possible to disable punchblock connection by way of settings
   * Bugfix: Run input validations before length check so we always return the more appropriate response
 
 # [2.2.1](https://github.com/adhearsion/adhearsion/compare/v2.2.0...v2.2.1) - [2013-01-06](https://rubygems.org/gems/adhearsion/versions/2.2.1)
