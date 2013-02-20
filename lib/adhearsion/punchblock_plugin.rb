@@ -29,11 +29,11 @@ module Adhearsion
     end
 
     init :punchblock do
-      Initializer.init if Adhearsion.config[:punchblock].enabled
+      Initializer.init if config.enabled
     end
 
     run :punchblock do
-      Initializer.run if Adhearsion.config[:punchblock].enabled
+      Initializer.run if config.enabled
     end
 
     class << self
