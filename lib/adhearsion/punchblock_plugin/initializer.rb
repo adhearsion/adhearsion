@@ -109,30 +109,28 @@ module Adhearsion
         end
 
         def connect_to_server
-          begin
-            logger.info "Starting connection to server"
-            client.run
-          rescue Punchblock::DisconnectedError => e
-            # We only care about disconnects if the process is up or booting
-            return unless [:booting, :running].include? Adhearsion::Process.state_name
+          logger.info "Starting connection to server"
+          client.run
+        rescue Punchblock::DisconnectedError => e
+          # We only care about disconnects if the process is up or booting
+          return unless [:booting, :running].include? Adhearsion::Process.state_name
 
-            Adhearsion::Process.reset unless Adhearsion::Process.state_name == :booting
+          Adhearsion::Process.reset unless Adhearsion::Process.state_name == :booting
 
-            self.attempts += 1
+          self.attempts += 1
 
-            if self.attempts >= self.config.reconnect_attempts
-              logger.fatal "Connection lost. Connection retry attempts exceeded."
-              Adhearsion::Process.stop!
-              return
-            end
-
-            logger.error "Connection lost. Attempting reconnect #{self.attempts} of #{self.config.reconnect_attempts}"
-            sleep self.config.reconnect_timer
-            retry
-          rescue Punchblock::ProtocolError => e
-            logger.fatal "The connection failed due to a protocol error: #{e.name}."
-            raise e
+          if self.attempts >= self.config.reconnect_attempts
+            logger.fatal "Connection lost. Connection retry attempts exceeded."
+            Adhearsion::Process.stop!
+            return
           end
+
+          logger.error "Connection lost. Attempting reconnect #{self.attempts} of #{self.config.reconnect_attempts}"
+          sleep self.config.reconnect_timer
+          retry
+        rescue Punchblock::ProtocolError => e
+          logger.fatal "The connection failed due to a protocol error: #{e.name}."
+          raise e
         end
 
         def dispatch_offer(offer)
