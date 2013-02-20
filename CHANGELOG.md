@@ -7,6 +7,7 @@
 
   * Feature: Make it possible to disable punchblock connection by way of settings
   * Bugfix: Run input validations before length check so we always return the more appropriate response
+  * Bugfix: Plugin initializers now run in the context of the plugin class, not nil
 
 # [2.2.1](https://github.com/adhearsion/adhearsion/compare/v2.2.0...v2.2.1) - [2013-01-06](https://rubygems.org/gems/adhearsion/versions/2.2.1)
   * Bugfix: No longer crash logging randomly

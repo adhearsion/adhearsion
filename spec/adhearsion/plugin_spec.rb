@@ -146,7 +146,7 @@ describe Adhearsion::Plugin do
       it "should add a initializer when Plugin defines it" do
         FooBar = Class.new Adhearsion::Plugin do
           init :foo_bar do
-            FooBar.log "foo bar"
+            log "foo bar"
           end
           def self.log
           end
@@ -245,7 +245,7 @@ describe Adhearsion::Plugin do
       it "should add a runner when Plugin defines it" do
         FooBar = Class.new Adhearsion::Plugin do
           run :foo_bar do
-            FooBar.log "foo bar"
+            log "foo bar"
           end
           def self.log
           end

@@ -192,7 +192,7 @@ module Adhearsion
         name = plugin_name unless name
         block_given? or raise ArgumentError, "A block must be passed while defining the Plugin initialization process"
         opts[:after] ||= initializers.last.name unless initializers.empty? || initializers.find { |i| i.name == opts[:before] }
-        Adhearsion::Plugin.initializers << Initializer.new(name, nil, opts, &Proc.new)
+        Adhearsion::Plugin.initializers << Initializer.new(name, self, opts, &Proc.new)
       end
 
       # Class method that will be used by subclasses to run the plugin
@@ -204,7 +204,7 @@ module Adhearsion
         name = plugin_name unless name
         block_given? or raise ArgumentError, "A block must be passed while defining the Plugin run process"
         opts[:after] ||= runners.last.name unless runners.empty? || runners.find { |i| i.name == opts[:before] }
-        Adhearsion::Plugin.runners << Initializer.new(name, nil, opts, &Proc.new)
+        Adhearsion::Plugin.runners << Initializer.new(name, self, opts, &Proc.new)
       end
 
       def count
