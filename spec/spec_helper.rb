@@ -46,6 +46,7 @@ RSpec.configure do |config|
 
   config.before :each do
     Adhearsion.router = nil
+    flexmock(::Process).should_receive(:exit).with_no_args.zero_or_more_times
   end
 end
 
