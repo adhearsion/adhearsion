@@ -85,6 +85,7 @@ module Adhearsion
       Console.stop
 
       logger.info "Adhearsion shut down"
+      ::Process.exit
     end
 
     def stop_when_zero_calls
