@@ -359,7 +359,7 @@ module Adhearsion
           end
         end
 
-        let(:error) do |error|
+        let(:error) do
           Punchblock::Event::Complete::Error.new.tap do |e|
             e << details
           end
