@@ -354,15 +354,11 @@ module Adhearsion
 
       describe "with an error response" do
         let(:response) do
-          Punchblock::Event::Complete.new.tap do |complete|
-            complete << error
-          end
+          Punchblock::Event::Complete.new :reason => error
         end
 
         let(:error) do
-          Punchblock::Event::Complete::Error.new.tap do |e|
-            e << details
-          end
+          Punchblock::Event::Complete::Error.new :details => details
         end
 
         let(:details) { "Oh noes, it's all borked" }
