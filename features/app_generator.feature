@@ -42,7 +42,7 @@ Feature: Adhearsion App Generator
     And the file "Rakefile" should contain "adhearsion/tasks"
     And the file "Gemfile" should contain each of these content parts:
     """
-    source :rubygems
+    source 'https://rubygems.org
     gem 'adhearsion-asterisk'
     """
     And the file "lib/simon_game.rb" should contain "class SimonGame"
