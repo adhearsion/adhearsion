@@ -30,7 +30,7 @@ module Adhearsion
     end
 
     after do
-      Adhearsion.active_calls.clear!
+      Adhearsion.active_calls.clear
     end
 
     it { should respond_to :<< }

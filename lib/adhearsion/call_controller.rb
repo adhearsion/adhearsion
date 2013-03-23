@@ -101,7 +101,7 @@ module Adhearsion
 
     # @private
     def execute!(*options)
-      call.register_controller! self
+      call.async.register_controller self
       execute_callbacks :before_call
       run
     rescue Call::Hangup

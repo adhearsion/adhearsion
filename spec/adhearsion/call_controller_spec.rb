@@ -114,7 +114,7 @@ module Adhearsion
       before do
         flexmock subject, :execute_component_and_await_completion => nil
         flexmock call.wrapped_object, :write_and_await_response => nil
-        flexmock call, :register_controller! => nil
+        flexmock call, :register_controller => nil
         flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
       end
 
@@ -172,7 +172,7 @@ module Adhearsion
 
       before do
         flexmock call.wrapped_object, :write_and_await_response => nil
-        flexmock call, :register_controller! => nil
+        flexmock call, :register_controller => nil
         flexmock subject, :execute_component_and_await_completion => nil
         flexmock(SecondController).new_instances.should_receive(:md_check).once.with :foo => 'bar'
         flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
