@@ -20,17 +20,24 @@ module Adhearsion
 
     # This method causes the current running process to become a daemon
     def daemonize(log_file = '/dev/null')
-      oldmode = 0
       srand # Split rand streams between spawning and daemonized process
-      safefork and exit # Fork and exit from the parent
+
+      # Fork, then exit when the child has exited below
+      if pid = safefork
+        ::Process.wait pid
+        exit
+      end
 
       # Detach from the controlling terminal
       raise 'Cannot detach from controlled terminal' unless sess_id = ::Process.setsid
 
       # Prevent the possibility of acquiring a controlling terminal
-      if oldmode.zero?
-        trap 'SIGHUP', 'IGNORE'
-        exit if safefork
+      # Fork again, allow a PID file to be written, then exit
+      trap 'SIGHUP', 'IGNORE'
+
+      if pid = safefork
+        yield pid if block_given?
+        exit
       end
 
       Dir.chdir "/"   # Release old working directory
@@ -39,7 +46,7 @@ module Adhearsion
       STDIN.reopen "/dev/null"
       STDOUT.reopen '/dev/null', "a"
       STDERR.reopen log_file, "a"
-      oldmode ? sess_id : 0
+      return sess_id
     end
   end
 end
