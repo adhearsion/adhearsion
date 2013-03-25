@@ -50,7 +50,7 @@ module Adhearsion
       it "should hang up active calls" do
         3.times do
           fake_call = flexmock Call.new, :id => random_call_id
-          flexmock(fake_call).should_receive(:hangup!).once
+          flexmock(fake_call).should_receive(:hangup).once
           Adhearsion.active_calls << fake_call
         end
 

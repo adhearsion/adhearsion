@@ -117,6 +117,22 @@ module Adhearsion
               end
             end
 
+            context 'when renderer is not specified' do
+              it 'should have a nil renderer' do
+                subject.renderer.should be nil
+              end
+            end
+
+            context 'when renderer is specified' do
+              let(:options) {
+                {:renderer => :native}
+              }
+
+              it 'should have the specified renderer' do
+                subject.renderer.should == :native
+              end
+            end
+
             context 'when matchers are specified' do
               subject do
                 Menu.new do
@@ -340,6 +356,24 @@ module Adhearsion
                   menu_instance << 4
                   menu_instance.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout
                   menu_instance.status.should be == :potential
+                  menu_instance << 2
+                  menu_instance.continue.should be_a Menu::MenuValidatorTerminated
+                  menu_instance.continue.should be_a Menu::MenuResultDone
+                  menu_instance.status.should be == :validator_terminated
+                  menu_instance.result.should be == '242'
+                end
+              end
+
+              context "when a digit limit and validator is defined" do
+                let(:menu_instance) do
+                  Menu.new options.merge(:limit => 3) do
+                    validator { |buffer| buffer == "242" }
+                  end
+                end
+
+                it "applies the validator before checking the digit limit" do
+                  menu_instance << 2
+                  menu_instance << 4
                   menu_instance << 2
                   menu_instance.continue.should be_a Menu::MenuValidatorTerminated
                   menu_instance.continue.should be_a Menu::MenuResultDone

@@ -135,7 +135,7 @@ module Adhearsion
         clear_from_active_calls
         @end_reason = event.reason
         commands.terminate
-        after(Adhearsion.config.platform.after_hangup_lifetime) { current_actor.terminate! }
+        after(Adhearsion.config.platform.after_hangup_lifetime) { terminate }
         throw :pass
       end
     end

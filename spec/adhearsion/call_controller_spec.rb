@@ -94,7 +94,7 @@ module Adhearsion
       class InvokeController < CallController
         def run
           before
-          invoke second_controller, :foo => 'bar'
+          metadata[:invoke_result] = invoke second_controller, :foo => 'bar'
           after
         end
 
@@ -114,7 +114,7 @@ module Adhearsion
       before do
         flexmock subject, :execute_component_and_await_completion => nil
         flexmock call.wrapped_object, :write_and_await_response => nil
-        flexmock call, :register_controller! => nil
+        flexmock call, :register_controller => nil
         flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
       end
 
@@ -124,6 +124,12 @@ module Adhearsion
         subject.should_receive(:after).once.ordered
 
         subject.execute!
+      end
+
+      it "should return the outer controller's run method return value" do
+        flexmock(SecondController).new_instances.should_receive(:run).once.and_return(:run_result)
+        subject.execute!
+        subject.metadata[:invoke_result].should be == :run_result
       end
 
       it "should invoke the new controller with metadata" do
@@ -166,7 +172,7 @@ module Adhearsion
 
       before do
         flexmock call.wrapped_object, :write_and_await_response => nil
-        flexmock call, :register_controller! => nil
+        flexmock call, :register_controller => nil
         flexmock subject, :execute_component_and_await_completion => nil
         flexmock(SecondController).new_instances.should_receive(:md_check).once.with :foo => 'bar'
         flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
@@ -348,15 +354,11 @@ module Adhearsion
 
       describe "with an error response" do
         let(:response) do
-          Punchblock::Event::Complete.new.tap do |complete|
-            complete << error
-          end
+          Punchblock::Event::Complete.new :reason => error
         end
 
-        let(:error) do |error|
-          Punchblock::Event::Complete::Error.new.tap do |e|
-            e << details
-          end
+        let(:error) do
+          Punchblock::Event::Complete::Error.new :details => details
         end
 
         let(:details) { "Oh noes, it's all borked" }

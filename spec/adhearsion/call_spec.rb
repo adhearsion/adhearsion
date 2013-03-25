@@ -30,7 +30,7 @@ module Adhearsion
     end
 
     after do
-      Adhearsion.active_calls.clear!
+      Adhearsion.active_calls.clear
     end
 
     it { should respond_to :<< }
@@ -236,9 +236,7 @@ module Adhearsion
 
       describe "for end events" do
         let :event do
-          Punchblock::Event::End.new.tap do |e|
-            flexmock e, :reason => :hangup
-          end
+          Punchblock::Event::End.new :reason => :hangup
         end
 
         it "should trigger any on_end callbacks set" do
@@ -317,9 +315,7 @@ module Adhearsion
     describe "#<<" do
       describe "with a Punchblock End" do
         let :end_event do
-          Punchblock::Event::End.new.tap do |e|
-            flexmock e, :reason => :hangup
-          end
+          Punchblock::Event::End.new :reason => :hangup
         end
 
         it "should mark the call as ended" do

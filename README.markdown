@@ -17,7 +17,7 @@ Adhearsion rests above a lower-level telephony platform, for example [Asterisk](
 
 ## Requirements
 
-* Ruby 1.9.2+ or JRuby 1.6.7+
+* Ruby 1.9.2+ or JRuby 1.7.0+
 * A VoIP platform:
   * Asterisk 1.8+
   * FreeSWITCH
@@ -61,7 +61,7 @@ Original author: [Jay Phillips](https://github.com/jicksta)
 
 ### Contributions
 
-Adhearsion has a set of [contribution guidelines](https://github.com/adhearsion/adhearsion/wiki/Contributing) which help to smooth the contribution process.
+Adhearsion has a set of [contribution guidelines](http://adhearsion.com/docs/contributing) which help to smooth the contribution process.
 There is a pre-commit hook that runs encoding checks available in pre-commit. To use it, please copy it to .git/hooks/pre-commit and make it executable.
 
 ### Copyright

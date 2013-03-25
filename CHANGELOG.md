@@ -1,5 +1,19 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
+# [2.3.0](https://github.com/adhearsion/adhearsion/compare/v2.2.1...v2.3.0) - [2013-03-25](https://rubygems.org/gems/adhearsion/versions/2.3.0)
+  * Feature: Allow specifying a renderer per invocation of `#menu`, `#interruptible_play`, `#ask`, `#play` and `#play!`
+
+    ```ruby
+    play 'tt-monkeys', renderer: :native
+    ```
+
+  * Feature: Make it possible to disable punchblock connection by way of settings
+  * Feature: Allow specifying exact input digits to recognize for interrupting a recording
+  * Bugfix: Run input validations before length check so we always return the more appropriate response
+  * Bugfix: Plugin initializers now run in the context of the plugin class, not nil
+  * Bugfix: Write PID without race conditions (#266)
+  * CS: Prevent Celluloid deprecation warnings
+
 # [2.2.1](https://github.com/adhearsion/adhearsion/compare/v2.2.0...v2.2.1) - [2013-01-06](https://rubygems.org/gems/adhearsion/versions/2.2.1)
   * Bugfix: No longer crash logging randomly
   * Bugfix: Correctly route outbound calls

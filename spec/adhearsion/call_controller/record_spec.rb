@@ -117,6 +117,24 @@ module Adhearsion
           end
         end
 
+        context "with :interruptible => '123'" do
+          let(:interruptible) { '123' }
+
+          let :stopper_grammar do
+            RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
+              rule id: 'inputdigits', scope: 'public' do
+                one_of do
+                  item { '1' }
+                  item { '2' }
+                  item { '3' }
+                end
+              end
+            end
+          end
+
+          its(:stopper_component) { should == input_component }
+        end
+
         describe "setting completion handlers" do
           let(:complete_event) { Punchblock::Event::Complete.new }
 

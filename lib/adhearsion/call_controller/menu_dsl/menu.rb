@@ -11,7 +11,7 @@ module Adhearsion
 
         InvalidStructureError = Class.new Adhearsion::Error
 
-        attr_reader :builder, :timeout, :tries_count, :max_number_of_tries, :terminator, :limit, :interruptible, :status
+        attr_reader :builder, :timeout, :tries_count, :max_number_of_tries, :terminator, :limit, :interruptible, :status, :renderer
 
         def initialize(options = {}, &block)
           @tries_count          = 0 # Counts the number of tries the menu's been executed
@@ -22,6 +22,7 @@ module Adhearsion
           @interruptible        = options.has_key?(:interruptible) ? options[:interruptible] : true
           @builder              = MenuDSL::MenuBuilder.new
           @terminated           = false
+          @renderer             = options[:renderer]
 
           @builder.build(&block) if block
 
@@ -62,9 +63,8 @@ module Adhearsion
           return get_another_digit_or_timeout! if digit_buffer_empty?
 
           return menu_terminated! if @terminated
-          return menu_limit_reached! if limit && digit_buffer.size >= limit
-
           return menu_validator_terminated! if execute_validator_hook
+          return menu_limit_reached! if limit && digit_buffer.size >= limit
 
           calculated_matches = builder.calculate_matches_for digit_buffer_string
 

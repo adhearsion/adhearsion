@@ -7,6 +7,7 @@ module Adhearsion
     autoload :Initializer
 
     config :punchblock do
+      enabled             true             , :transform => Proc.new { |v| v == 'true' }, :desc => "Enable or disable Punchblock connectivity to a Voice server"
       platform            :xmpp            , :transform => Proc.new { |v| v.to_sym }, :desc => <<-__
         Platform punchblock shall use to connect to the Telephony provider. Currently supported values:
         - :xmpp
@@ -28,11 +29,11 @@ module Adhearsion
     end
 
     init :punchblock do
-      Initializer.init
+      Initializer.init if config.enabled
     end
 
     run :punchblock do
-      Initializer.run
+      Initializer.run if config.enabled
     end
 
     class << self

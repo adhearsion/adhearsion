@@ -54,7 +54,7 @@ module Adhearsion
       end
 
       let(:call_id)   { rand }
-      let(:offer)     { Punchblock::Event::Offer.new.tap { |o| o.target_call_id = call_id } }
+      let(:offer)     { Punchblock::Event::Offer.new :target_call_id => call_id }
       let(:mock_call) { flexmock Call.new, :id => call_id }
 
       describe "starts the client with the default values" do
@@ -224,14 +224,16 @@ module Adhearsion
           end
         end
 
-        context "when when Adhearsion::Process is in :running" do
-          let(:process_state) { :running }
+        [ :running, :stopping ].each do |state|
+          context "when when Adhearsion::Process is in :#{state}" do
+            let(:process_state) { state }
 
-          it "should dispatch via the router" do
-            Adhearsion.router do
-              route 'foobar', Class.new
+            it "should dispatch via the router" do
+              Adhearsion.router do
+                route 'foobar', Class.new
+              end
+              flexmock(Adhearsion.router).should_receive(:handle).once.with mock_call
             end
-            flexmock(Adhearsion.router).should_receive(:handle).once.with mock_call
           end
         end
 

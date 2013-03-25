@@ -188,11 +188,11 @@ module Adhearsion
       # @param opts Hash
       #     * :before specify the plugin to be loaded before another plugin
       #     * :after  specify the plugin to be loaded after another plugin
-      def init(name = nil, opts = {})
+      def init(name = nil, opts = {}, &block)
         name = plugin_name unless name
         block_given? or raise ArgumentError, "A block must be passed while defining the Plugin initialization process"
         opts[:after] ||= initializers.last.name unless initializers.empty? || initializers.find { |i| i.name == opts[:before] }
-        Adhearsion::Plugin.initializers << Initializer.new(name, nil, opts, &Proc.new)
+        Adhearsion::Plugin.initializers << Initializer.new(name, self, opts, &block)
       end
 
       # Class method that will be used by subclasses to run the plugin
@@ -200,11 +200,11 @@ module Adhearsion
       # @param opts Hash
       #     * :before specify the plugin to be loaded before another plugin
       #     * :after  specify the plugin to be loaded after another plugin
-      def run(name = nil, opts = {})
+      def run(name = nil, opts = {}, &block)
         name = plugin_name unless name
         block_given? or raise ArgumentError, "A block must be passed while defining the Plugin run process"
         opts[:after] ||= runners.last.name unless runners.empty? || runners.find { |i| i.name == opts[:before] }
-        Adhearsion::Plugin.runners << Initializer.new(name, nil, opts, &Proc.new)
+        Adhearsion::Plugin.runners << Initializer.new(name, self, opts, &block)
       end
 
       def count
