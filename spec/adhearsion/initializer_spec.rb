@@ -58,6 +58,7 @@ describe Adhearsion::Initializer do
 
     it "should create a pid file in the app's path by default when daemonizing" do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
+        flexmock(Adhearsion::CustomDaemonizer).should_receive(:daemonize).and_yield
         flexmock(File).should_receive(:open).once.with(File.join(path, 'adhearsion.pid'), 'w', Proc)
         ahn = Adhearsion::Initializer.start :mode => :daemon
         ahn.pid_file[0, path.size].should be == path

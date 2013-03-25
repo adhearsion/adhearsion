@@ -8,7 +8,7 @@ module Adhearsion
 
     # Try to fork if at all possible retrying every 5 sec if the
     # maximum process limit for the system has been reached
-    def safefork
+    def self.safefork
       begin
         pid = fork
         return pid if pid
@@ -19,7 +19,7 @@ module Adhearsion
     end
 
     # This method causes the current running process to become a daemon
-    def daemonize(log_file = '/dev/null')
+    def self.daemonize(log_file = '/dev/null')
       srand # Split rand streams between spawning and daemonized process
 
       # Fork, then exit when the child has exited below
