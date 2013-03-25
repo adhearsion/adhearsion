@@ -6,6 +6,7 @@
     ```
 
   * Feature: Make it possible to disable punchblock connection by way of settings
+  * Feature: Allow specifying exact input digits to recognize for interrupting a recording
   * Bugfix: Run input validations before length check so we always return the more appropriate response
   * Bugfix: Plugin initializers now run in the context of the plugin class, not nil
   * Bugfix: Write PID without race conditions (#266)
