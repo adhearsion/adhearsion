@@ -42,13 +42,18 @@ module Adhearsion
       load_lib_folder
       load_config_file
       initialize_log_paths
-      daemonize! if should_daemonize?
+
+      if should_daemonize?
+        daemonize!
+      else
+        create_pid_file
+      end
+
       Adhearsion.statistics
       start_logging
       debugging_log
       launch_console if need_console?
       catch_termination_signal
-      create_pid_file
       set_ahn_proc_name
       initialize_exception_logger
       update_rails_env_var
@@ -218,9 +223,9 @@ module Adhearsion
 
     def daemonize!
       logger.info "Daemonizing now!"
-      logger.debug "Creating PID file #{pid_file}"
-      extend Adhearsion::CustomDaemonizer
-      daemonize resolve_log_file_path
+      Adhearsion::CustomDaemonizer.daemonize resolve_log_file_path do |pid|
+        create_pid_file pid
+      end
     end
 
     def launch_console
@@ -261,11 +266,13 @@ module Adhearsion
       end
     end
 
-    def create_pid_file
+    def create_pid_file(pid = nil)
       return unless pid_file
 
+      logger.debug "Creating PID file #{pid_file}"
+
       File.open pid_file, 'w' do |file|
-        file.puts ::Process.pid
+        file.puts pid || ::Process.pid
       end
 
       Events.register_callback :shutdown do
