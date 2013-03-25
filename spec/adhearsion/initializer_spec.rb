@@ -67,7 +67,8 @@ describe Adhearsion::Initializer do
 
     it "should NOT create a pid file in the app's path when daemonizing and :pid_file is given as false" do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
-        ahn = Adhearsion::Initializer.start :daemon => true, :pid_file => false
+        flexmock(Adhearsion::CustomDaemonizer).should_receive(:daemonize).and_yield
+        ahn = Adhearsion::Initializer.start :mode => :daemon, :pid_file => false
         ahn.pid_file.should be nil
       end
     end
