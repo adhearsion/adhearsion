@@ -223,7 +223,6 @@ module Adhearsion
 
     def daemonize!
       logger.info "Daemonizing now!"
-      logger.debug "Creating PID file #{pid_file}"
       Adhearsion::CustomDaemonizer.daemonize resolve_log_file_path do |pid|
         create_pid_file pid
       end
@@ -269,6 +268,8 @@ module Adhearsion
 
     def create_pid_file(pid = nil)
       return unless pid_file
+
+      logger.debug "Creating PID file #{pid_file}"
 
       File.open pid_file, 'w' do |file|
         file.puts pid || ::Process.pid
