@@ -1,4 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+
+# [2.3.0](https://github.com/adhearsion/adhearsion/compare/v2.2.1...v2.3.0) - [2013-03-25](https://rubygems.org/gems/adhearsion/versions/2.3.0)
   * Feature: Allow specifying a renderer per invocation of `#menu`, `#interruptible_play`, `#ask`, `#play` and `#play!`
 
     ```ruby
