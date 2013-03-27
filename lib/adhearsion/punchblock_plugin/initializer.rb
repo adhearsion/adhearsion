@@ -150,7 +150,7 @@ module Adhearsion
 
         def dispatch_call_event(event)
           if call = Adhearsion.active_calls[event.target_call_id]
-            call.deliver_message! event
+            call.async.deliver_message event
           else
             logger.error "Event received for inactive call #{event.target_call_id}: #{event.inspect}"
           end

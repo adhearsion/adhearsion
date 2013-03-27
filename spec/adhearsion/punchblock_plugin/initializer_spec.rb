@@ -277,7 +277,7 @@ module Adhearsion
           end
 
           it "should place the event in the call's inbox" do
-            mock_call.should_receive(:deliver_message!).once.with(mock_event)
+            mock_call.async.should_receive(:deliver_message).once.with(mock_event)
             Initializer.dispatch_call_event mock_event
           end
         end
