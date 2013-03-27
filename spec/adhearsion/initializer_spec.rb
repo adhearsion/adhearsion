@@ -84,28 +84,28 @@ describe Adhearsion::Initializer do
 
     it "should resolve the log file path to daemonize" do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
-         File.should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w').at_least(:once)
-         ahn = Adhearsion::Initializer.start :pid_file => true
-         ahn.resolve_log_file_path.should be == path + Adhearsion.config.platform.logging.outputters[0]
+        File.should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w').at_least(:once)
+        ahn = Adhearsion::Initializer.start :pid_file => true
+        ahn.resolve_log_file_path.should be == path + Adhearsion.config.platform.logging.outputters[0]
       end
     end
 
     it "should resolve the log file path to daemonize when outputters is an Array" do
       Adhearsion.config.platform.logging.outputters = ["log/my_application.log", "log/adhearsion.log"]
       stub_behavior_for_initializer_with_no_path_changing_behavior do
-         File.should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w').at_least(:once)
-         ahn = Adhearsion::Initializer.start :pid_file => true
-         ahn.resolve_log_file_path.should be == path + Adhearsion.config.platform.logging.outputters[0]
+        File.should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w').at_least(:once)
+        ahn = Adhearsion::Initializer.start :pid_file => true
+        ahn.resolve_log_file_path.should be == path + Adhearsion.config.platform.logging.outputters[0]
       end
     end
 
     it "should return a valid appenders array" do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
-         File.should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w').at_least(:once)
-         ahn = Adhearsion::Initializer.start :pid_file => true
-         appenders = ahn.init_get_logging_appenders
-         appenders.should have(2).items
-         appenders[1].should be_instance_of Logging::Appenders::Stdout
+        File.should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w').at_least(:once)
+        ahn = Adhearsion::Initializer.start :pid_file => true
+        appenders = ahn.init_get_logging_appenders
+        appenders.should have(2).items
+        appenders[1].should be_instance_of Logging::Appenders::Stdout
       end
     end
 
