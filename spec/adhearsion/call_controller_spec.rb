@@ -30,18 +30,18 @@ module Adhearsion
 
     describe "execution on a call" do
       before do
-        flexmock subject, :execute_component_and_await_completion => nil
-        flexmock call.wrapped_object, :write_and_await_response => nil
+        subject.stub :execute_component_and_await_completion => nil
+        call.wrapped_object.stub :write_and_await_response => nil
       end
 
       it "catches Hangup exceptions and logs the hangup" do
-        subject.should_receive(:run).once.and_raise(Call::Hangup).ordered
-        flexmock(subject.logger).should_receive(:info).once.with(/Call was hung up/).ordered
+        subject.should_receive(:run).once.ordered.and_raise(Call::Hangup)
+        subject.logger.should_receive(:info).once.with(/Call was hung up/).ordered
         subject.execute!
       end
 
       it "catches standard errors, triggering an exception event" do
-        subject.should_receive(:run).once.and_raise(StandardError).ordered
+        subject.should_receive(:run).once.ordered.and_raise(StandardError)
         latch = CountDownLatch.new 1
         ex = lo = nil
         Events.exception do |e, l|
@@ -62,7 +62,7 @@ module Adhearsion
         its(:block) { should be block }
 
         it "should execute the block in the context of the controller" do
-          flexmock subject, :value => :bar
+          subject.stub :value => :bar
           subject.should_receive(:foo).once.with(:bar)
           subject.run
         end
@@ -112,10 +112,10 @@ module Adhearsion
       subject { InvokeController.new call }
 
       before do
-        flexmock subject, :execute_component_and_await_completion => nil
-        flexmock call.wrapped_object, :write_and_await_response => nil
-        flexmock call, :register_controller => nil
-        flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
+        subject.stub :execute_component_and_await_completion => nil
+        call.wrapped_object.stub :write_and_await_response => nil
+        call.stub :register_controller => nil
+        Events.should_receive(:trigger).with(:exception, Exception).never
       end
 
       it "should invoke another controller before returning to the current controller" do
@@ -127,13 +127,13 @@ module Adhearsion
       end
 
       it "should return the outer controller's run method return value" do
-        flexmock(SecondController).new_instances.should_receive(:run).once.and_return(:run_result)
+        SecondController.any_instance.should_receive(:run).once.and_return(:run_result)
         subject.execute!
         subject.metadata[:invoke_result].should be == :run_result
       end
 
       it "should invoke the new controller with metadata" do
-        flexmock(SecondController).new_instances.should_receive(:md_check).once.with :foo => 'bar'
+        SecondController.any_instance.should_receive(:md_check).once.with :foo => 'bar'
         subject.execute!
       end
 
@@ -171,11 +171,11 @@ module Adhearsion
       subject { PassController.new call }
 
       before do
-        flexmock call.wrapped_object, :write_and_await_response => nil
-        flexmock call, :register_controller => nil
-        flexmock subject, :execute_component_and_await_completion => nil
-        flexmock(SecondController).new_instances.should_receive(:md_check).once.with :foo => 'bar'
-        flexmock(Events).should_receive(:trigger).with(:exception, Exception).never
+        call.wrapped_object.stub :write_and_await_response => nil
+        call.stub :register_controller => nil
+        subject.stub :execute_component_and_await_completion => nil
+        SecondController.any_instance.should_receive(:md_check).once.with :foo => 'bar'
+        Events.should_receive(:trigger).with(:exception, Exception).never
       end
 
       it "should cease execution of the current controller, and instruct the call to execute another" do
@@ -199,8 +199,8 @@ module Adhearsion
       let(:message) { Punchblock::Command::Accept.new }
 
       it "delegates to the call, blocking first until it is allowed to execute" do
-        flexmock(subject).should_receive(:block_until_resumed).once.ordered
-        flexmock(subject.call).should_receive(:write_and_await_response).once.ordered.with(message)
+        subject.should_receive(:block_until_resumed).once.ordered
+        subject.call.should_receive(:write_and_await_response).once.ordered.with(message)
         subject.write_and_await_response message
       end
     end
@@ -211,8 +211,8 @@ module Adhearsion
       :unmute].each do |method_name|
       describe "##{method_name}" do
         it "delegates to the call, blocking first until it is allowed to execute" do
-          flexmock(subject).should_receive(:block_until_resumed).once.ordered
-          flexmock(subject.call).should_receive(method_name).once.ordered
+          subject.should_receive(:block_until_resumed).once.ordered
+          subject.call.should_receive(method_name).once.ordered
           subject.send method_name
         end
       end
@@ -220,16 +220,16 @@ module Adhearsion
 
     describe "#hangup" do
       it "delegates to the call, blocking first until it is allowed to execute" do
-        flexmock(subject).should_receive(:block_until_resumed).once.ordered
-        flexmock(subject.call).should_receive(:hangup).once.ordered
+        subject.should_receive(:block_until_resumed).once.ordered
+        subject.call.should_receive(:hangup).once.ordered
         lambda { subject.send :hangup }.should raise_error Call::Hangup
       end
     end
 
     describe "#join" do
       it "delegates to the call, blocking first until it is allowed to execute, and unblocking when an unjoined event is received" do
-        flexmock(subject).should_receive(:block_until_resumed).once.ordered
-        flexmock(subject.call).should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:call_id => 'call1')
+        subject.should_receive(:block_until_resumed).once.ordered
+        subject.call.should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:call_id => 'call1')
         latch = CountDownLatch.new 1
         Thread.new do
           subject.join 'call1', :foo => :bar
@@ -244,8 +244,8 @@ module Adhearsion
 
       context "with a mixer" do
         it "delegates to the call, blocking first until it is allowed to execute, and unblocking when an unjoined event is received" do
-          flexmock(subject).should_receive(:block_until_resumed).once.ordered
-          flexmock(subject.call).should_receive(:join).once.with({:mixer_name => 'foobar', :foo => :bar}, {}).ordered.and_return Punchblock::Command::Join.new(:mixer_name => 'foobar')
+          subject.should_receive(:block_until_resumed).once.ordered
+          subject.call.should_receive(:join).once.with({:mixer_name => 'foobar', :foo => :bar}, {}).ordered.and_return Punchblock::Command::Join.new(:mixer_name => 'foobar')
           latch = CountDownLatch.new 1
           Thread.new do
             subject.join :mixer_name => 'foobar', :foo => :bar
@@ -261,8 +261,8 @@ module Adhearsion
 
       context "with :async => true" do
         it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
-          flexmock(subject).should_receive(:block_until_resumed).once.ordered
-          flexmock(subject.call).should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:call_id => 'call1')
+          subject.should_receive(:block_until_resumed).once.ordered
+          subject.call.should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:call_id => 'call1')
           latch = CountDownLatch.new 1
           Thread.new do
             subject.join 'call1', :foo => :bar, :async => true
@@ -275,8 +275,8 @@ module Adhearsion
 
         context "with a mixer" do
           it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
-            flexmock(subject).should_receive(:block_until_resumed).once.ordered
-            flexmock(subject.call).should_receive(:join).once.with({:mixer_name => 'foobar', :foo => :bar}, {}).ordered.and_return Punchblock::Command::Join.new(:mixer_name => 'foobar')
+            subject.should_receive(:block_until_resumed).once.ordered
+            subject.call.should_receive(:join).once.with({:mixer_name => 'foobar', :foo => :bar}, {}).ordered.and_return Punchblock::Command::Join.new(:mixer_name => 'foobar')
             latch = CountDownLatch.new 1
             Thread.new do
               subject.join :mixer_name => 'foobar', :foo => :bar, :async => true
@@ -414,8 +414,8 @@ describe ExampleCallController do
   include CallControllerTestHelpers
 
   before do
-    flexmock subject, :execute_component_and_await_completion => nil
-    flexmock call.wrapped_object, :write_and_await_response => nil
+    subject.stub :execute_component_and_await_completion => nil
+    call.wrapped_object.stub :write_and_await_response => nil
   end
 
   it "should execute the before_call callbacks before processing the call" do
@@ -432,8 +432,8 @@ describe ExampleCallController do
   end
 
   it "should capture errors in callbacks" do
-    subject.should_receive(:setup_models).and_raise StandardError
-    subject.should_receive(:clean_up_models).and_raise StandardError
+    subject.should_receive(:setup_models).twice.and_raise StandardError
+    subject.should_receive(:clean_up_models).twice.and_raise StandardError
     latch = CountDownLatch.new 4
     Adhearsion::Events.exception do |e, l|
       e.should be_a StandardError

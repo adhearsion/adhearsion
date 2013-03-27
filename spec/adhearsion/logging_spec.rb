@@ -34,14 +34,14 @@ describe Adhearsion::Logging do
   it "should log to the Object logger when given arguments" do
     message = "o hai. ur home erly."
     foo = Foo.new
-    flexmock(::Logging.logger[Foo]).should_receive(:info).once.with(message)
+    ::Logging.logger[Foo].should_receive(:info).once.with(message)
     foo.logger.info message
   end
 
   it "should log to the Object logger when given arguments (II)" do
     message = "o hai. ur home erly."
     bar = Foo::Bar.new
-    flexmock(::Logging.logger[Foo::Bar]).should_receive(:info).once.with(message)
+    ::Logging.logger[Foo::Bar].should_receive(:info).once.with(message)
     bar.logger.info message
   end
 
@@ -86,7 +86,7 @@ describe Adhearsion::Logging do
   end
 
   it 'should reopen logfiles' do
-    flexmock(::Logging).should_receive(:reopen).once
+    ::Logging.should_receive(:reopen).once
     Adhearsion::Logging.reopen_logs
   end
 

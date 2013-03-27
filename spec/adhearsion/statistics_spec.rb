@@ -11,7 +11,7 @@ describe Adhearsion::Statistics do
 
   before do
     Celluloid::Actor[:statistics] = described_class.new
-    flexmock(Adhearsion.active_calls).should_receive(:count).and_return 0
+    Adhearsion.active_calls.stub count: 0
   end
 
   after do

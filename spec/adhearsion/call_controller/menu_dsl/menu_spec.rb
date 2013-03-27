@@ -153,8 +153,8 @@ module Adhearsion
               its(:builder) { should be_a MenuBuilder }
 
               it "should evaluate the block on the builder object" do
-                mock_menu_builder = flexmock(MenuBuilder.new)
-                flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
+                mock_menu_builder = MenuBuilder.new
+                MenuBuilder.should_receive(:new).and_return(mock_menu_builder)
                 mock_menu_builder.should_receive(:match).once.with(1)
                 Menu.new { match 1 }
               end
@@ -212,8 +212,8 @@ module Adhearsion
 
           describe "#execute_invalid_hook" do
             it "calls the builder's execute_hook_for with :invalid" do
-              mock_menu_builder = flexmock(MenuBuilder.new)
-              flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
+              mock_menu_builder = MenuBuilder.new
+              MenuBuilder.should_receive(:new).and_return(mock_menu_builder)
               mock_menu_builder.should_receive(:execute_hook_for).with(:invalid, "")
               menu_instance = Menu.new
               menu_instance.execute_invalid_hook
@@ -222,8 +222,8 @@ module Adhearsion
 
           describe "#execute_timeout_hook" do
             it "calls the builder's execute_hook_for with :timeout" do
-              mock_menu_builder = flexmock(MenuBuilder.new)
-              flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
+              mock_menu_builder = MenuBuilder.new
+              MenuBuilder.should_receive(:new).and_return(mock_menu_builder)
               mock_menu_builder.should_receive(:execute_hook_for).with(:timeout, "")
               menu_instance = Menu.new
               menu_instance.execute_timeout_hook
@@ -232,8 +232,8 @@ module Adhearsion
 
           describe "#execute_failure_hook" do
             it "calls the builder's execute_hook_for with :failure" do
-              mock_menu_builder = flexmock(MenuBuilder.new)
-              flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
+              mock_menu_builder = MenuBuilder.new
+              MenuBuilder.should_receive(:new).and_return(mock_menu_builder)
               mock_menu_builder.should_receive(:execute_hook_for).with(:failure, "")
               menu_instance = Menu.new
               menu_instance.execute_failure_hook
@@ -242,8 +242,8 @@ module Adhearsion
 
           describe "#execute_validator_hook" do
             it "calls the builder's execute_hook_for with :validator" do
-              mock_menu_builder = flexmock(MenuBuilder.new)
-              flexmock(MenuBuilder).should_receive(:new).and_return(mock_menu_builder)
+              mock_menu_builder = MenuBuilder.new
+              MenuBuilder.should_receive(:new).and_return(mock_menu_builder)
               mock_menu_builder.should_receive(:execute_hook_for).with(:validator, "")
               menu_instance = Menu.new
               menu_instance.execute_validator_hook

@@ -692,12 +692,7 @@ module Adhearsion
         }
 
         def expect_component_complete_event
-          complete_event = Punchblock::Event::Complete.new
-          flexmock(complete_event).should_receive(:reason => flexmock(:utterance => 'dtmf-5'))
-          flexmock(Punchblock::Component::Input).new_instances do |input|
-            input.should_receive(:complete?).and_return(false)
-            input.should_receive(:complete_event).and_return(complete_event)
-          end
+          expect_input_component_complete_event 'dtmf-5'
         end
 
         #test does pass and method works, but not sure if the empty method is a good idea
@@ -717,7 +712,7 @@ module Adhearsion
           end
 
           expect_component_complete_event
-          flexmock(Punchblock::Component::Output).new_instances.should_receive(:stop!)
+          Punchblock::Component::Output.any_instance.should_receive(:stop!)
           expect_component_execution output_component
           subject.stream_file(prompt, allowed_digits).should be == '5'
         end

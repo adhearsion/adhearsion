@@ -21,7 +21,7 @@ module Adhearsion
       o = nil
       latch = CountDownLatch.new 1
 
-      flexmock(Events.instance).should_receive(:handle_message).and_return do |message|
+      Events.instance.should_receive(:handle_message).and_return do |message|
         t = message.type
         o = message.object
         latch.countdown!
@@ -38,7 +38,7 @@ module Adhearsion
       t = nil
       o = nil
 
-      flexmock(Events.instance).should_receive(:handle_message).and_return do |message|
+      Events.instance.should_receive(:handle_message).and_return do |message|
         sleep 0.25
         t = message.type
         o = message.object
@@ -65,7 +65,7 @@ module Adhearsion
     end
 
     it "should handle exceptions in event processing by raising the exception as an event" do
-      flexmock(Events.instance).should_receive(:trigger).with(:exception, ExceptionClass).once
+      Events.instance.should_receive(:trigger).with(:exception, kind_of(ExceptionClass)).once
 
       Events.register_handler :event, EventClass do |event|
         raise ExceptionClass

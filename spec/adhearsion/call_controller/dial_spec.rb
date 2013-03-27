@@ -9,28 +9,29 @@ module Adhearsion
 
       let(:to) { 'sip:foo@bar.com' }
       let(:other_call_id)   { new_uuid }
-      let(:other_mock_call) { flexmock OutboundCall.new, :id => other_call_id, :write_command => true }
+      let(:other_mock_call) { OutboundCall.new }
 
       let(:second_to)               { 'sip:baz@bar.com' }
       let(:second_other_call_id)    { new_uuid }
-      let(:second_other_mock_call)  { flexmock OutboundCall.new, :id => second_other_call_id, :write_command => true }
+      let(:second_other_mock_call)  { OutboundCall.new }
 
       let(:mock_answered) { Punchblock::Event::Answered.new }
 
       let(:latch) { CountDownLatch.new 1 }
 
+      before do
+        other_mock_call.stub id: other_call_id, write_command: true
+        second_other_mock_call.stub id: second_other_call_id, write_command: true
+      end
+
       def mock_end(reason = :hangup)
-        flexmock Punchblock::Event::End.new, :reason => reason
+        Punchblock::Event::End.new.tap { |event| event.stub reason: reason }
       end
 
       describe "#dial" do
-        before do
-          other_mock_call
-        end
-
         it "should dial the call to the correct endpoint and return a dial status object" do
-          flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
-          flexmock(other_mock_call).should_receive(:dial).with(to, :from => 'foo').once
+          OutboundCall.should_receive(:new).and_return other_mock_call
+          other_mock_call.should_receive(:dial).with(to, :from => 'foo').once
           dial_thread = Thread.new do
             subject.dial(to, :from => 'foo').should be_a Dial::DialStatus
           end
@@ -40,9 +41,9 @@ module Adhearsion
         end
 
         it "should default the caller ID to that of the original call" do
-          flexmock call, :from => 'sip:foo@bar.com'
-          flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
-          flexmock(other_mock_call).should_receive(:dial).with(to, :from => 'sip:foo@bar.com').once
+          call.stub :from => 'sip:foo@bar.com'
+          OutboundCall.should_receive(:new).and_return other_mock_call
+          other_mock_call.should_receive(:dial).with(to, :from => 'sip:foo@bar.com').once
           dial_thread = Thread.new do
             subject.dial to
           end
@@ -63,9 +64,9 @@ module Adhearsion
 
         describe "without a block" do
           before do
-            flexmock(other_mock_call).should_receive(:dial).once.with(to, options)
-            flexmock(other_mock_call).should_receive(:hangup).once
-            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+            other_mock_call.should_receive(:dial).once.with(to, options)
+            other_mock_call.should_receive(:hangup).once
+            OutboundCall.should_receive(:new).and_return other_mock_call
           end
 
           it "blocks the original controller until the new call ends" do
@@ -89,8 +90,8 @@ module Adhearsion
           end
 
           it "joins the new call to the existing one on answer" do
-            flexmock(call).should_receive(:answer).once
-            flexmock(other_mock_call).should_receive(:join).once.with(call)
+            call.should_receive(:answer).once
+            other_mock_call.should_receive(:join).once.with(call)
 
             dial_in_thread
 
@@ -103,8 +104,8 @@ module Adhearsion
           end
 
           it "hangs up the new call when the dial unblocks" do
-            flexmock(call).should_receive(:answer).once
-            flexmock(other_mock_call).should_receive(:join).once.with(call)
+            call.should_receive(:answer).once
+            other_mock_call.should_receive(:join).once.with(call)
 
             dial_in_thread
 
@@ -150,8 +151,8 @@ module Adhearsion
 
           context "when the call is answered and joined" do
             it "has an overall dial status of :answer" do
-              flexmock(call).should_receive(:answer).once
-              flexmock(other_mock_call).should_receive(:join).once.with(call)
+              call.should_receive(:answer).once
+              other_mock_call.should_receive(:join).once.with(call)
 
               t = dial_in_thread
 
@@ -179,7 +180,7 @@ module Adhearsion
           end
 
           it "should not make any outbound calls" do
-            flexmock(OutboundCall).should_receive(:new).never
+            OutboundCall.should_receive(:new).never
             expect { subject.dial to, options }.to raise_error
           end
         end
@@ -190,16 +191,14 @@ module Adhearsion
           let(:second_other_options) { options }
 
           before do
-            second_other_mock_call
+            OutboundCall.should_receive(:new).and_return other_mock_call, second_other_mock_call
 
-            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call, second_other_mock_call
+            other_mock_call.should_receive(:dial).once.with(to, other_options)
+            other_mock_call.should_receive(:hangup).once
 
-            flexmock(other_mock_call).should_receive(:dial).once.with(to, other_options)
-            flexmock(other_mock_call).should_receive(:hangup).once
-
-            flexmock(second_other_mock_call).should_receive(:dial).once.with(second_to, second_other_options)
-            flexmock(second_other_mock_call).should_receive(:join).never
-            flexmock(second_other_mock_call).should_receive(:hangup).once
+            second_other_mock_call.should_receive(:dial).once.with(second_to, second_other_options)
+            second_other_mock_call.should_receive(:join).never
+            second_other_mock_call.should_receive(:hangup).once
           end
 
           def dial_in_thread
@@ -211,9 +210,9 @@ module Adhearsion
           end
 
           it "dials all parties and joins the first one to answer, hanging up the rest" do
-            flexmock(call).should_receive(:answer).once
-            flexmock(other_mock_call).should_receive(:join).once.with(call)
-            flexmock(second_other_mock_call).should_receive(:hangup).once
+            call.should_receive(:answer).once
+            other_mock_call.should_receive(:join).once.with(call)
+            second_other_mock_call.should_receive(:hangup).once
 
             t = dial_in_thread
 
@@ -236,9 +235,9 @@ module Adhearsion
           end
 
           it "unblocks when the joined call unjoins, allowing it to proceed further" do
-            flexmock(call).should_receive(:answer).once
-            flexmock(other_mock_call).should_receive(:join).once.with(call)
-            flexmock(second_other_mock_call).should_receive(:hangup).once
+            call.should_receive(:answer).once
+            other_mock_call.should_receive(:join).once.with(call)
+            second_other_mock_call.should_receive(:hangup).once
 
             t = dial_in_thread
 
@@ -349,9 +348,9 @@ module Adhearsion
 
           context "when a call is answered and joined, and the other ends with an error" do
             it "has an overall dial status of :answer" do
-              flexmock(call).should_receive(:answer).once
-              flexmock(other_mock_call).should_receive(:join).once.with(call)
-              flexmock(second_other_mock_call).should_receive(:hangup).once
+              call.should_receive(:answer).once
+              other_mock_call.should_receive(:join).once.with(call)
+              second_other_mock_call.should_receive(:hangup).once
 
               t = dial_in_thread
 
@@ -375,9 +374,9 @@ module Adhearsion
           let(:timeout) { 3 }
 
           it "should abort the dial after the specified timeout" do
-            flexmock(other_mock_call).should_receive(:dial).once
-            flexmock(other_mock_call).should_receive(:hangup).once
-            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+            other_mock_call.should_receive(:dial).once
+            other_mock_call.should_receive(:hangup).once
+            OutboundCall.should_receive(:new).and_return other_mock_call
 
             time = Time.now
 
@@ -397,11 +396,11 @@ module Adhearsion
 
           describe "if someone answers before the timeout elapses" do
             it "should not abort until the far end hangs up" do
-              flexmock(other_mock_call).should_receive(:dial).once.with(to, hsh(:timeout => timeout))
-              flexmock(call).should_receive(:answer).once
-              flexmock(other_mock_call).should_receive(:join).once.with(call)
-              flexmock(other_mock_call).should_receive(:hangup).once
-              flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+              other_mock_call.should_receive(:dial).once.with(to, hash_including(:timeout => timeout))
+              call.should_receive(:answer).once
+              other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.should_receive(:hangup).once
+              OutboundCall.should_receive(:new).and_return other_mock_call
 
               time = Time.now
 
@@ -451,15 +450,15 @@ module Adhearsion
           let(:options) { {:confirm => confirmation_controller} }
 
           before do
-            flexmock(other_mock_call).should_receive(:dial).once
-            flexmock(OutboundCall).should_receive(:new).and_return other_mock_call
+            other_mock_call.should_receive(:dial).once
+            OutboundCall.should_receive(:new).and_return other_mock_call
           end
 
           context "with confirmation controller metadata specified" do
             let(:options) { {:confirm => confirmation_controller, :confirm_metadata => {:foo => 'bar'}} }
 
             it "should set the metadata on the controller" do
-              flexmock(other_mock_call).should_receive(:hangup).twice.and_return do
+              other_mock_call.should_receive(:hangup).twice.and_return do
                 other_mock_call << mock_end
               end
               other_mock_call['confirm'] = false
@@ -479,7 +478,7 @@ module Adhearsion
 
           context "when an outbound call is answered" do
             it "should execute the specified confirmation controller" do
-              flexmock(other_mock_call).should_receive(:hangup).twice.and_return do
+              other_mock_call.should_receive(:hangup).twice.and_return do
                 other_mock_call << mock_end
               end
               other_mock_call['confirm'] = false
@@ -495,10 +494,10 @@ module Adhearsion
             end
 
             it "should join the calls if the call is still active after execution of the call controller" do
-              flexmock(other_mock_call).should_receive(:hangup).once
+              other_mock_call.should_receive(:hangup).once
               other_mock_call['confirm'] = true
-              flexmock(call).should_receive(:answer).once
-              flexmock(other_mock_call).should_receive(:join).once.with(call)
+              call.should_receive(:answer).once
+              other_mock_call.should_receive(:join).once.with(call)
 
               t = dial_in_thread
 
@@ -515,12 +514,12 @@ module Adhearsion
             end
 
             it "should not join the calls if the call is not active after execution of the call controller" do
-              flexmock(other_mock_call).should_receive(:hangup).twice.and_return do
+              other_mock_call.should_receive(:hangup).twice.and_return do
                 other_mock_call << mock_end
               end
               other_mock_call['confirm'] = false
-              flexmock(call).should_receive(:answer).never
-              flexmock(other_mock_call).should_receive(:join).never.with(call)
+              call.should_receive(:answer).never
+              other_mock_call.should_receive(:join).never.with(call)
 
               t = dial_in_thread
 

@@ -11,7 +11,7 @@ module Adhearsion
 
         describe "#build" do
           it "sets the context and instance_eval's the block" do
-            flexmock(subject).should_receive(:foo).with(:bar)
+            subject.should_receive(:foo).with(:bar)
             subject.build do
               foo :bar
             end
@@ -34,18 +34,18 @@ module Adhearsion
           end
 
           it "creates a pattern based on a payload" do
-            flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with("1", Object)
+            MenuDSL::MatchCalculator.should_receive(:build_with_pattern).with("1", Object)
             subject.match "1", Object
           end
 
           it "creates a pattern based on a block" do
-            flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with("1", nil, match_block)
+            MenuDSL::MatchCalculator.should_receive(:build_with_pattern).with("1", nil, &match_block)
             subject.match("1", &match_block)
           end
 
           it "creates multiple patterns if multiple arguments are passed in" do
-            flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with(1, Object)
-            flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with(2, Object)
+            MenuDSL::MatchCalculator.should_receive(:build_with_pattern).with(1, Object)
+            MenuDSL::MatchCalculator.should_receive(:build_with_pattern).with(2, Object)
             subject.match(1, 2, Object)
           end
         end#match
@@ -68,7 +68,7 @@ module Adhearsion
           let(:expected_pattern) { MenuDSL::MatchCalculator.build_with_pattern("1", Object) }
 
           it "returns the generated patterns" do
-            flexmock(MenuDSL::MatchCalculator).should_receive(:build_with_pattern).with("1", Object).and_return(expected_pattern)
+            MenuDSL::MatchCalculator.should_receive(:build_with_pattern).with("1", Object).at_least(:once).and_return(expected_pattern)
             subject.match("1", Object)
             subject.weighted_match_calculators.should be == [expected_pattern]
           end
