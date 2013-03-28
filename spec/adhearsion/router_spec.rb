@@ -9,6 +9,9 @@ module Adhearsion
     describe 'a new router' do
       subject { Router.new {} }
 
+      let(:call) { mock 'Adhearsion::Call' }
+      before { call.stub id: 'abc123' }
+
       it "should make the router available to the block" do
         foo = nil
         Router.new do
@@ -150,17 +153,17 @@ module Adhearsion
         subject { router.match call }
 
         context 'with a call from fred' do
-          let(:call) { flexmock 'Adhearsion::Call', :from => 'fred' }
+          before { call.stub :from => 'fred' }
           its(:name) { should be == 'calls from fred' }
         end
 
         context 'with a call from paul' do
-          let(:call) { flexmock 'Adhearsion::Call', :from => 'paul' }
+          before { call.stub :from => 'paul' }
           its(:name) { should be == 'calls from paul' }
         end
 
         context 'with a call from frank' do
-          let(:call) { flexmock 'Adhearsion::Call', :from => 'frank' }
+          before { call.stub :from => 'frank' }
           its(:name) { should be == 'catchall' }
         end
       end
@@ -172,11 +175,10 @@ module Adhearsion
           end
         end
 
-        let(:call) { flexmock 'Adhearsion::Call', :id => 'abc123' }
         let(:route) { subject.routes.first }
 
         it "should dispatch via the route" do
-          flexmock(route).should_receive(:dispatch).once.with call
+          route.should_receive(:dispatch).once.with call
           subject.handle call
         end
 
@@ -184,8 +186,6 @@ module Adhearsion
           subject do
             Router.new {}
           end
-
-          let(:call) { flexmock 'Adhearsion::Call', :id => 'abc123' }
 
           it "should return a dispatcher which rejects the call as an error" do
             call.should_receive(:reject).once.with(:error)
@@ -200,7 +200,7 @@ module Adhearsion
             end
           end
 
-          let(:call) { flexmock 'Adhearsion::Call', :id => 'abc123', :to => 'bar' }
+          before { call.stub to: 'bar' }
 
           it "should return a dispatcher which rejects the call as an error" do
             call.should_receive(:reject).once.with(:error)

@@ -18,25 +18,25 @@ module Adhearsion
 
         let(:latch) { CountDownLatch.new 1 }
 
-        before { flexmock(call.wrapped_object).should_receive :write_and_await_response }
+        before { call.wrapped_object.stub :write_and_await_response }
 
         context "via a call controller" do
           let(:controller)  { CallController }
           subject(:route)   { Route.new 'foobar', controller }
 
           it "should accept the call" do
-            flexmock(call).should_receive(:accept).once
+            call.should_receive(:accept).once
             route.dispatch call, lambda { latch.countdown! }
             latch.wait(2).should be true
           end
 
           it "should instruct the call to use an instance of the controller" do
-            flexmock(call).should_receive(:execute_controller).once.with controller, Proc
+            call.should_receive(:execute_controller).once.with kind_of(controller), kind_of(Proc)
             route.dispatch call
           end
 
           it "should not hangup the call after all controllers have executed" do
-            flexmock(call).should_receive(:hangup).never
+            call.should_receive(:hangup).never
             route.dispatch call, lambda { latch.countdown! }
             latch.wait(2).should be true
           end
@@ -50,7 +50,7 @@ module Adhearsion
           end
 
           it "should instruct the call to use a CallController with the correct block" do
-            flexmock(call).should_receive(:execute_controller).once.with(CallController, Proc).and_return do |controller|
+            call.should_receive(:execute_controller).once.with(kind_of(CallController), kind_of(Proc)).and_return do |controller|
               controller.block.call.should be == :foobar
             end
             route.dispatch call

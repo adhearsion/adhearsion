@@ -87,12 +87,7 @@ module Adhearsion
         let(:utterance) { 'dtmf-5' }
 
         def expect_component_complete_event
-          complete_event = Punchblock::Event::Complete.new
-          flexmock(complete_event).should_receive(:reason => flexmock(:utterance => utterance, :name => :input))
-          flexmock(Punchblock::Component::Input).new_instances do |input|
-            input.should_receive(:complete?).and_return(false)
-            input.should_receive(:complete_event).and_return(complete_event)
-          end
+          expect_input_component_complete_event utterance
         end
 
         it "sends the correct input component" do
@@ -103,7 +98,7 @@ module Adhearsion
 
         it "returns the correct pressed digit" do
           expect_component_complete_event
-          subject.should_receive(:execute_component_and_await_completion).once.with(Punchblock::Component::Input).and_return input_component
+          subject.should_receive(:execute_component_and_await_completion).once.with(kind_of(Punchblock::Component::Input)).and_return input_component
           subject.wait_for_digit(timeout).should be == '5'
         end
 
@@ -112,7 +107,7 @@ module Adhearsion
 
           it "returns the correct pressed digit" do
             expect_component_complete_event
-            subject.should_receive(:execute_component_and_await_completion).once.with(Punchblock::Component::Input).and_return input_component
+            subject.should_receive(:execute_component_and_await_completion).once.with(kind_of(Punchblock::Component::Input)).and_return input_component
             subject.wait_for_digit(timeout).should be == '5'
           end
         end
@@ -130,13 +125,13 @@ module Adhearsion
       end # wait_for_digit
 
       describe "#jump_to" do
-        let(:match_object) { flexmock(Class.new) }
+        let(:match_object) { Class.new }
         let(:overrides) { Hash.new(:extension => "1") }
         let(:block) { Proc.new {} }
 
         it "calls instance_exec if the match object has a block" do
-          match_object.should_receive(:block).and_return(block)
-          subject.should_receive(:instance_exec).with(overrides[:extension], block)
+          match_object.stub(:block => block)
+          subject.should_receive(:instance_exec).with(overrides[:extension], &block)
           subject.jump_to(match_object, overrides)
         end
 
@@ -167,8 +162,8 @@ module Adhearsion
         let(:response) { '1234' }
 
         before do
-          flexmock menu_instance, :status => status, :result => response
-          flexmock(MenuDSL::Menu).should_receive(:new).and_return(menu_instance)
+          menu_instance.stub :status => status, :result => response
+          MenuDSL::Menu.should_receive(:new).and_return(menu_instance)
         end
 
         it "exits the function if MenuResultDone" do
@@ -272,8 +267,8 @@ module Adhearsion
           let(:result_found)                  { MenuDSL::Menu::MenuResultFound.new(:match_object, :new_extension) }
 
           before do
-            flexmock menu_instance
-            flexmock(MenuDSL::Menu).should_receive(:new).and_return(menu_instance)
+            menu_instance
+            MenuDSL::Menu.should_receive(:new).and_return(menu_instance)
           end
 
           it "exits the function if MenuResultDone" do
@@ -298,7 +293,7 @@ module Adhearsion
           end
 
           it "plays audio, then executes timeout hook if input times out" do
-            menu_instance.should_receive(:continue).and_return(result_get_another_or_timeout, result_done)
+            menu_instance.should_receive(:continue).and_return(result_get_another_or_timeout)
             subject.should_receive(:play_sound_files_for_menu).once.with(menu_instance, sound_files).and_return(nil)
             result = subject.ask sound_files
             result.menu.should be menu_instance

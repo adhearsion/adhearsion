@@ -9,7 +9,7 @@ module Adhearsion
       describe Player do
         include CallControllerTestHelpers
 
-        let(:controller) { flexmock new_controller }
+        let(:controller) { new_controller }
 
         subject { Player.new controller }
 

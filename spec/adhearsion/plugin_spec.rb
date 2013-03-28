@@ -11,6 +11,10 @@ describe Adhearsion::Plugin do
     defined?(FooBar) and Object.send(:remove_const, :"FooBar")
   end
 
+  before do
+    Adhearsion::PunchblockPlugin::Initializer.stub :start => true
+  end
+
   describe "inheritance" do
     after do
       defined?(FooBar) and Object.send(:remove_const, :"FooBar")
@@ -139,7 +143,6 @@ describe Adhearsion::Plugin do
 
         # 1 => Punchblock. Must be empty once punchblock initializer is an external Plugin
         Adhearsion::Plugin.initializers.should have(1).initializers
-        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
         Adhearsion::Plugin.init_plugins
       end
 
@@ -152,9 +155,8 @@ describe Adhearsion::Plugin do
           end
         end
 
-        flexmock(FooBar).should_receive(:log).once
+        FooBar.should_receive(:log).once
         Adhearsion::Plugin.initializers.length.should be 1
-        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
         Adhearsion::Plugin.init_plugins
       end
 
@@ -179,8 +181,7 @@ describe Adhearsion::Plugin do
           end
         end
 
-        flexmock(FooBar).should_receive(:log).times(3)
-        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
+        FooBar.should_receive(:log).exactly(3).times
         Adhearsion::Plugin.init_plugins
       end
 
@@ -238,7 +239,6 @@ describe Adhearsion::Plugin do
 
         # May become 1 if Punchblock defines a runner.
         Adhearsion::Plugin.runners.should have(0).runners
-        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
         Adhearsion::Plugin.run_plugins
       end
 
@@ -251,9 +251,8 @@ describe Adhearsion::Plugin do
           end
         end
 
-        flexmock(FooBar).should_receive(:log).once
+        FooBar.should_receive(:log).once
         Adhearsion::Plugin.runners.length.should be 1
-        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
         Adhearsion::Plugin.run_plugins
       end
 
@@ -278,8 +277,7 @@ describe Adhearsion::Plugin do
           end
         end
 
-        flexmock(FooBar).should_receive(:log).times(3)
-        flexmock(Adhearsion::PunchblockPlugin::Initializer).should_receive(:start).and_return true
+        FooBar.should_receive(:log).exactly(3).times
         Adhearsion::Plugin.run_plugins
       end
 
@@ -375,7 +373,7 @@ describe Adhearsion::Plugin do
         def self.foo
         end
       end
-      flexmock(FooBar).should_receive(:foo).once
+      FooBar.should_receive(:foo).once
       Adhearsion::Plugin.load_tasks
     end
 

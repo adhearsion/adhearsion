@@ -101,7 +101,7 @@ module Adhearsion
               end
 
               it "stops the recording" do
-                flexmock(subject.record_component).should_receive(:stop!).once
+                subject.record_component.should_receive(:stop!).once
                 subject.stopper_component.trigger_event_handler complete_event
               end
             end
@@ -110,7 +110,7 @@ module Adhearsion
               it "stops the input component" do
                 controller.should_receive(:execute_component_and_await_completion).once.with(component)
                 controller.should_receive(:write_and_await_response).once.with(input_component)
-                flexmock(subject.stopper_component).should_receive(:stop!).once
+                subject.stopper_component.should_receive(:stop!).once
                 subject.run
               end
             end
@@ -139,8 +139,8 @@ module Adhearsion
           let(:complete_event) { Punchblock::Event::Complete.new }
 
           it "should execute those handlers when recording completes" do
-            foo = flexmock 'foo'
-            foo.should_receive(:call).once.with Punchblock::Event::Complete
+            foo = mock 'foo'
+            foo.should_receive(:call).once.with kind_of(Punchblock::Event::Complete)
             subject.handle_record_completion { |e| foo.call e }
             subject.record_component.trigger_event_handler complete_event
           end
@@ -164,7 +164,7 @@ module Adhearsion
         describe "with :async => true and an :on_complete callback" do
           before do
             component
-            flexmock(Punchblock::Component::Record).should_receive(:new).once.with(parsed_options).and_return component
+            Punchblock::Component::Record.should_receive(:new).once.with(parsed_options).and_return component
             expect_message_waiting_for_response component
             @rec = Queue.new
             subject.record(options.merge(async: true)) { |rec| @rec.push rec }
@@ -184,7 +184,7 @@ module Adhearsion
           before do
             TestException = Class.new StandardError
             component
-            flexmock(Punchblock::Component::Record).should_receive(:new).once.with({}).and_return component
+            Punchblock::Component::Record.should_receive(:new).once.with({}).and_return component
           end
 
           it "should pass the exception to the events system" do
@@ -207,7 +207,7 @@ module Adhearsion
         describe "with :async => false" do
           before do
             component
-            flexmock(Punchblock::Component::Record).should_receive(:new).once.with(parsed_options).and_return component
+            Punchblock::Component::Record.should_receive(:new).once.with(parsed_options).and_return component
             expect_component_execution component
             @rec = Queue.new
             subject.record(options.merge(:async => false)) { |rec| @rec.push rec }
@@ -233,21 +233,14 @@ module Adhearsion
         end
 
         describe "with :interruptible => true" do
-          let(:input_component) { Punchblock::Component::Input.new }
           it "stops the recording" do
-            flexmock(Punchblock::Event::Complete).new_instances.should_receive(:reason => flexmock(:name => :input))
-
             def subject.write_and_await_response(input_component)
               input_component.trigger_event_handler Punchblock::Event::Complete.new
             end
 
-            complete_event = Punchblock::Event::Complete.new
-            flexmock(complete_event).should_receive(:reason => flexmock(:name => :input))
-            flexmock(Punchblock::Component::Input).new_instances do |input|
-              input.should_receive(:complete?).and_return(true)
-              input.should_receive(:complete_event).and_return(complete_event)
-            end
-            flexmock(Punchblock::Component::Record).new_instances.should_receive(:stop!)
+            expect_input_component_complete_event 'dtmf-5'
+
+            Punchblock::Component::Record.any_instance.should_receive(:stop!)
             subject.should_receive(:execute_component_and_await_completion).once.with(component)
             subject.record(options.merge(:async => false, :interruptible => true)) { |rec| @rec.push rec }
           end
@@ -257,7 +250,7 @@ module Adhearsion
         describe "check for the return value" do
           it "returns a Record component" do
             component
-            flexmock(Punchblock::Component::Record).should_receive(:new).once.with(parsed_options).and_return component
+            Punchblock::Component::Record.should_receive(:new).once.with(parsed_options).and_return component
             expect_component_execution component
             subject.record(options.merge(:async => false)).should be == component
             component.request!

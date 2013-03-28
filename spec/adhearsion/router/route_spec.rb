@@ -109,32 +109,32 @@ module Adhearsion
 
         let(:latch) { CountDownLatch.new 1 }
 
-        before { flexmock(call.wrapped_object).should_receive :write_and_await_response }
+        before { call.wrapped_object.should_receive :write_and_await_response }
 
         context "via a call controller" do
           let(:controller)  { CallController }
           let(:route)       { Route.new 'foobar', controller }
 
           it "should immediately fire the :call_routed event giving the call and route" do
-            flexmock(Adhearsion::Events).should_receive(:trigger_immediately).once.with(:call_routed, call: call, route: route)
-            flexmock(call).should_receive(:hangup).once
+            Adhearsion::Events.should_receive(:trigger_immediately).once.with(:call_routed, call: call, route: route)
+            call.should_receive(:hangup).once
             route.dispatch call, lambda { latch.countdown! }
             latch.wait(2).should be true
           end
 
           it "should accept the call" do
-            flexmock(call).should_receive(:accept).once
+            call.should_receive(:accept).once
             route.dispatch call, lambda { latch.countdown! }
             latch.wait(2).should be true
           end
 
           it "should instruct the call to use an instance of the controller" do
-            flexmock(call).should_receive(:execute_controller).once.with controller, Proc
+            call.should_receive(:execute_controller).once.with kind_of(controller), kind_of(Proc)
             route.dispatch call
           end
 
           it "should hangup the call after all controllers have executed" do
-            flexmock(call).should_receive(:hangup).once
+            call.should_receive(:hangup).once
             route.dispatch call, lambda { latch.countdown! }
             latch.wait(2).should be true
           end
@@ -143,14 +143,14 @@ module Adhearsion
             before { call[:ahn_prevent_hangup] = true }
 
             it "should not hangup the call after controller execution" do
-              flexmock(call).should_receive(:hangup).never
+              call.should_receive(:hangup).never
               route.dispatch call, lambda { latch.countdown! }
               latch.wait(2).should be true
             end
           end
 
           context "if hangup raises a Call::Hangup" do
-            before { flexmock(call).should_receive(:hangup).once.and_raise Call::Hangup }
+            before { call.should_receive(:hangup).once.and_raise Call::Hangup }
 
             it "should not raise an exception" do
               lambda do
@@ -169,7 +169,7 @@ module Adhearsion
           end
 
           it "should instruct the call to use a CallController with the correct block" do
-            flexmock(call).should_receive(:execute_controller).once.with(CallController, Proc).and_return do |controller|
+            call.should_receive(:execute_controller).once.with(kind_of(CallController), kind_of(Proc)).and_return do |controller|
               controller.block.call.should be == :foobar
             end
             route.dispatch call

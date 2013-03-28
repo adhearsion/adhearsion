@@ -2,7 +2,8 @@
 
 def mock_offer(id = nil, headers = {})
   id ||= rand
-  flexmock("Offer: #{id}", :call_id => id, :headers_hash => headers).tap do |offer|
-    offer.should_ignore_missing
+  mock("Offer: #{id}").tap do |offer|
+    offer.stub :call_id => id, :headers_hash => headers
+    offer.as_null_object
   end
 end

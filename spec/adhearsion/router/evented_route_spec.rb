@@ -24,7 +24,7 @@ module Adhearsion
           end
 
           it "should yield the call to the block" do
-            flexmock(call).should_receive(:foo).once
+            call.should_receive(:foo).once
             route.dispatch call
           end
         end

@@ -1,8 +1,6 @@
 # encoding: utf-8
 
 module CallControllerTestHelpers
-  include FlexMock::ArgumentTypes
-
   def self.included(test_case)
     test_case.let(:call_id)     { new_uuid }
     test_case.let(:call)        { Adhearsion::Call.new }
@@ -12,9 +10,7 @@ module CallControllerTestHelpers
     test_case.subject { controller }
 
     test_case.before do
-      flexmock subject
-      flexmock controller
-      flexmock call, :write_command => true, :id => call_id
+      call.stub :write_command => true, :id => call_id
     end
   end
 
@@ -28,8 +24,9 @@ module CallControllerTestHelpers
     end.new call, :doo => :dah, &block
   end
 
-  def expect_message_waiting_for_response(message, fail = false)
-    expectation = controller.should_receive(:write_and_await_response).once.with message
+  def expect_message_waiting_for_response(message = nil, fail = false, &block)
+    expectation = controller.should_receive(:write_and_await_response, &block).once
+    expectation = expectation.with message if message
     if fail
       expectation.and_raise fail
     else
@@ -38,7 +35,7 @@ module CallControllerTestHelpers
   end
 
   def expect_message_of_type_waiting_for_response(message)
-    controller.should_receive(:write_and_await_response).once.with(message.class).and_return message
+    controller.should_receive(:write_and_await_response).once.with(kind_of(message.class)).and_return message
   end
 
   def expect_component_execution(component, fail = false)
@@ -48,5 +45,11 @@ module CallControllerTestHelpers
     else
       expectation.and_return component
     end
+  end
+
+  def expect_input_component_complete_event(utterance)
+    complete_event = Punchblock::Event::Complete.new
+    complete_event.stub reason: mock(utterance: utterance, name: :input)
+    Punchblock::Component::Input.any_instance.stub(complete?: true, complete_event: complete_event)
   end
 end

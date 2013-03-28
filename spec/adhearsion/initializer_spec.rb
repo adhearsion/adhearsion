@@ -12,9 +12,8 @@ describe Adhearsion::Initializer do
   describe "#start" do
     before do
       ::Logging.reset
-      flexmock(Adhearsion::Logging).should_receive(:start).once.and_return('')
-      flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
-      flexmock(::Logging::Appenders).should_receive(:file).and_return(nil)
+      Adhearsion::Logging.should_receive(:start).once.and_return('')
+      ::Logging::Appenders.stub(:file => nil)
       Adhearsion.config = nil
     end
 
@@ -35,7 +34,7 @@ describe Adhearsion::Initializer do
     end
 
     it "should start the stats aggregator" do
-      flexmock(Adhearsion).should_receive(:statistics).at_least.once
+      Adhearsion.should_receive(:statistics).at_least(:once)
       stub_behavior_for_initializer_with_no_path_changing_behavior do
         Adhearsion::Initializer.start
       end
@@ -43,7 +42,7 @@ describe Adhearsion::Initializer do
 
     it "should create a pid file in the app's path when given 'true' as the pid_file hash key argument" do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
-        flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
+        File.should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w').at_least(:once)
         ahn = Adhearsion::Initializer.start :pid_file => true
         ahn.pid_file[0, path.length].should be == path
       end
@@ -58,8 +57,8 @@ describe Adhearsion::Initializer do
 
     it "should create a pid file in the app's path by default when daemonizing" do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
-        flexmock(Adhearsion::CustomDaemonizer).should_receive(:daemonize).and_yield
-        flexmock(File).should_receive(:open).once.with(File.join(path, 'adhearsion.pid'), 'w', Proc)
+        Adhearsion::CustomDaemonizer.should_receive(:daemonize).and_yield '123'
+        File.should_receive(:open).once.with(File.join(path, 'adhearsion.pid'), 'w')
         ahn = Adhearsion::Initializer.start :mode => :daemon
         ahn.pid_file[0, path.size].should be == path
       end
@@ -67,7 +66,7 @@ describe Adhearsion::Initializer do
 
     it "should NOT create a pid file in the app's path when daemonizing and :pid_file is given as false" do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
-        flexmock(Adhearsion::CustomDaemonizer).should_receive(:daemonize).and_yield
+        Adhearsion::CustomDaemonizer.should_receive(:daemonize).and_yield '123'
         ahn = Adhearsion::Initializer.start :mode => :daemon, :pid_file => false
         ahn.pid_file.should be nil
       end
@@ -85,55 +84,55 @@ describe Adhearsion::Initializer do
 
     it "should resolve the log file path to daemonize" do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
-         flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
-         ahn = Adhearsion::Initializer.start :pid_file => true
-         ahn.resolve_log_file_path.should be == path + Adhearsion.config.platform.logging.outputters[0]
+        File.should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w').at_least(:once)
+        ahn = Adhearsion::Initializer.start :pid_file => true
+        ahn.resolve_log_file_path.should be == path + Adhearsion.config.platform.logging.outputters[0]
       end
     end
 
     it "should resolve the log file path to daemonize when outputters is an Array" do
       Adhearsion.config.platform.logging.outputters = ["log/my_application.log", "log/adhearsion.log"]
       stub_behavior_for_initializer_with_no_path_changing_behavior do
-         flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
-         ahn = Adhearsion::Initializer.start :pid_file => true
-         ahn.resolve_log_file_path.should be == path + Adhearsion.config.platform.logging.outputters[0]
+        File.should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w').at_least(:once)
+        ahn = Adhearsion::Initializer.start :pid_file => true
+        ahn.resolve_log_file_path.should be == path + Adhearsion.config.platform.logging.outputters[0]
       end
     end
 
     it "should return a valid appenders array" do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
-         flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
-         ahn = Adhearsion::Initializer.start :pid_file => true
-         appenders = ahn.init_get_logging_appenders
-         appenders.should have(2).items
-         appenders[1].should be_instance_of Logging::Appenders::Stdout
+        File.should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w').at_least(:once)
+        ahn = Adhearsion::Initializer.start :pid_file => true
+        appenders = ahn.init_get_logging_appenders
+        appenders.should have(2).items
+        appenders[1].should be_instance_of Logging::Appenders::Stdout
       end
     end
 
     it "should initialize properly the log paths" do
       ahn = stub_behavior_for_initializer_with_no_path_changing_behavior do
-        flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
+        File.should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w').at_least(:once)
         Adhearsion::Initializer.start :pid_file => true
       end
-      flexmock(Dir).should_receive(:mkdir).with("log/")
+      Dir.should_receive(:mkdir).with("log/")
       ahn.initialize_log_paths
     end
 
     it "should initialize properly the log paths when outputters is an array" do
       Adhearsion.config.platform.logging.outputters = ["log/my_application.log", "log/test/adhearsion.log"]
       ahn = stub_behavior_for_initializer_with_no_path_changing_behavior do
-        flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
+        File.should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w').at_least(:once)
         Adhearsion::Initializer.start :pid_file => true
       end
-      flexmock(Dir).should_receive(:mkdir).with("log/").twice
-      flexmock(Dir).should_receive(:mkdir).with("log/test/").once
+      Dir.should_receive(:mkdir).with("log/").twice
+      Dir.should_receive(:mkdir).with("log/test/").once
       ahn.initialize_log_paths
     end
 
     it "should set the adhearsion proc name" do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
-        flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
-        flexmock(Adhearsion::LinuxProcName).should_receive(:set_proc_name).with(Adhearsion.config.platform.process_name)
+        File.should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w').at_least(:once)
+        Adhearsion::LinuxProcName.should_receive(:set_proc_name).with(Adhearsion.config.platform.process_name)
         Adhearsion::Initializer.start :pid_file => true
       end
     end
@@ -149,8 +148,7 @@ describe Adhearsion::Initializer do
   describe "Initializing logger" do
     before do
       ::Logging.reset
-      flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
-      flexmock(::Logging::Appenders).should_receive(:file).and_return(nil)
+      ::Logging::Appenders.should_receive(:file).and_return(nil)
       Adhearsion.config = nil
     end
 
@@ -163,8 +161,8 @@ describe Adhearsion::Initializer do
 
     it "should start logging with valid parameters" do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
-        flexmock(File).should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w', Proc).at_least.once
-        flexmock(Adhearsion::Logging).should_receive(:start).once.with(Array, :info, nil).and_return('')
+        File.should_receive(:open).with(File.join(path, 'adhearsion.pid'), 'w').at_least(:once)
+        Adhearsion::Logging.should_receive(:start).once.with(kind_of(Array), :info, nil).and_return('')
         Adhearsion::Initializer.start :pid_file => true
       end
     end
@@ -176,7 +174,7 @@ describe Adhearsion::Initializer do
     end
 
     it "should load the contents of lib directory" do
-      flexmock(Dir).should_receive(:chdir).with(File.join(path, "lib"), Proc).and_return []
+      Dir.should_receive(:chdir).with(File.join(path, "lib")).and_return []
       Adhearsion::Initializer.new.load_lib_folder
     end
 
@@ -192,7 +190,8 @@ describe Adhearsion::Initializer do
 
     it "should load the contents of the preconfigured directory" do
       Adhearsion.config.platform.lib = "foo"
-      flexmock(Dir).should_receive(:chdir).with("/any/ole/path/foo", Proc).and_return []
+      File.stub directory?: true
+      Dir.should_receive(:chdir).with(File.join(path, "foo")).and_return []
       Adhearsion::Initializer.new.load_lib_folder
     end
   end
@@ -203,9 +202,8 @@ describe "Updating RAILS_ENV variable" do
 
   before do
     ::Logging.reset
-    flexmock(Adhearsion::Logging).should_receive(:start).once.and_return('')
-    flexmock(::Logging::Appenders::File).should_receive(:assert_valid_logfile).and_return(true)
-    flexmock(::Logging::Appenders).should_receive(:file).and_return(nil)
+    Adhearsion::Logging.should_receive(:start).once.and_return('')
+    ::Logging::Appenders.should_receive(:file).and_return(nil)
     Adhearsion.config = nil
   end
 

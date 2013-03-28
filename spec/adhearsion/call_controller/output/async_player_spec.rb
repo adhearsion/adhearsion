@@ -9,7 +9,7 @@ module Adhearsion
       describe AsyncPlayer do
         include CallControllerTestHelpers
 
-        let(:controller) { flexmock new_controller }
+        let(:controller) { new_controller }
 
         subject { AsyncPlayer.new controller }
 
@@ -43,9 +43,9 @@ module Adhearsion
             response = Punchblock::Event::Complete.new
             response.reason = Punchblock::Event::Complete::Error.new
             component = Punchblock::Component::Output.new(:ssml => content)
-            flexmock subject, :new_output => component
+            subject.stub :new_output => component
             expect_message_waiting_for_response component
-            flexmock(controller.logger).should_receive(:error).once
+            controller.logger.should_receive(:error).once
             subject.output content
             component.request!
             component.execute!

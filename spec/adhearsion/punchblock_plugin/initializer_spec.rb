@@ -26,7 +26,7 @@ module Adhearsion
 
       def initialize_punchblock(options = {})
         reset_default_config
-        flexmock(Initializer).should_receive(:connect)
+        Initializer.stub(:connect)
         Adhearsion.config.punchblock do |config|
           config.platform           = options[:platform] if options.has_key?(:platform)
           config.username           = options[:username] if options.has_key?(:username)
@@ -47,15 +47,18 @@ module Adhearsion
         Adhearsion.config[:punchblock]
       end
 
-      before do
-        Events.refresh!
-        flexmock Adhearsion::Process, :fqdn => 'hostname'
-        flexmock ::Process, :pid => 1234
-      end
+      let(:call_id)     { rand }
+      let(:offer)       { Punchblock::Event::Offer.new :target_call_id => call_id }
+      let(:mock_call)   { Call.new }
+      let(:mock_client) { mock 'Client' }
 
-      let(:call_id)   { rand }
-      let(:offer)     { Punchblock::Event::Offer.new :target_call_id => call_id }
-      let(:mock_call) { flexmock Call.new, :id => call_id }
+      before do
+        mock_call.stub :id => call_id
+        mock_client.stub :event_handler= => true
+        Events.refresh!
+        Adhearsion::Process.stub :fqdn => 'hostname'
+        ::Process.stub :pid => 1234
+      end
 
       describe "starts the client with the default values" do
         subject { initialize_punchblock }
@@ -108,28 +111,24 @@ module Adhearsion
       it "starts the client with the correct resource" do
         username = "usera@127.0.0.1/hostname-1234"
 
-        flexmock(Punchblock::Connection::XMPP).should_receive(:new).once.with(FlexMock.hsh :username => username).and_return do
-          flexmock 'Client', :event_handler= => true
-        end
+        Punchblock::Connection::XMPP.should_receive(:new).once.with(hash_including :username => username).and_return mock_client
         initialize_punchblock
       end
 
       it "starts the client with any overridden settings" do
         overrides = {:username => 'userb@127.0.0.1/foo', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift, :default_voice => :hal}
 
-        flexmock(Punchblock::Connection::XMPP).should_receive(:new).once.with(overrides).and_return do
-          flexmock 'Client', :event_handler= => true
-        end
+        Punchblock::Connection::XMPP.should_receive(:new).once.with(overrides).and_return mock_client
         initialize_punchblock overrides
       end
 
       describe "#connect" do
         it 'should block until the connection is established' do
           reset_default_config
-          mock_connection = flexmock :mock_connection
+          mock_connection = mock :mock_connection
           mock_connection.should_receive(:register_event_handler).once
-          flexmock(Punchblock::Client).should_receive(:new).once.and_return mock_connection
-          flexmock(mock_connection).should_receive(:run).once
+          Punchblock::Client.should_receive(:new).once.and_return mock_connection
+          mock_connection.should_receive(:run).once
           t = Thread.new { Initializer.init; Initializer.run }
           t.join 5
           t.status.should be == "sleep"
@@ -139,14 +138,12 @@ module Adhearsion
       end
 
       describe '#connect_to_server' do
-        let(:mock_client) { flexmock :client }
-
         before :each do
           Adhearsion::Process.reset
           Initializer.config = reset_default_config
           Initializer.config.reconnect_attempts = 1
-          flexmock(Adhearsion::Logging.get_logger(Initializer)).should_receive(:fatal).at_most.once
-          flexmock(Initializer).should_receive(:client).and_return mock_client
+          Adhearsion::Logging.get_logger(Initializer).should_receive(:fatal).at_most(:once)
+          Initializer.stub(:client).and_return mock_client
         end
 
         after :each do
@@ -156,27 +153,27 @@ module Adhearsion
         it 'should reset the Adhearsion process state to "booting"' do
           Adhearsion::Process.booted
           Adhearsion::Process.state_name.should be == :running
-          mock_client.should_receive(:run).and_raise Punchblock::DisconnectedError
-          flexmock(Adhearsion::Process).should_receive(:reset).at_least.once
+          mock_client.stub(:run).and_raise Punchblock::DisconnectedError
+          Adhearsion::Process.should_receive(:reset).at_least(:once)
           Initializer.connect_to_server
         end
 
         it 'should retry the connection the specified number of times' do
           Initializer.config.reconnect_attempts = 3
-          mock_client.should_receive(:run).and_raise Punchblock::DisconnectedError
+          mock_client.stub(:run).and_raise Punchblock::DisconnectedError
           Initializer.connect_to_server
           Initializer.attempts.should be == 3
         end
 
         it 'should preserve a Punchblock::ProtocolError exception and give up' do
-          mock_client.should_receive(:run).and_raise Punchblock::ProtocolError
+          mock_client.stub(:run).and_raise Punchblock::ProtocolError
           expect { Initializer.connect_to_server }.to raise_error Punchblock::ProtocolError
         end
 
         it 'should not attempt to reconnect if Adhearsion is shutting down' do
           Adhearsion::Process.booted
           Adhearsion::Process.shutdown
-          mock_client.should_receive(:run).and_raise Punchblock::DisconnectedError
+          mock_client.stub(:run).and_raise Punchblock::DisconnectedError
           Initializer.should_not raise_error Punchblock::DisconnectedError
         end
       end
@@ -185,9 +182,7 @@ module Adhearsion
         let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift, :default_voice => :hal} }
 
         it 'should start an Asterisk PB connection' do
-          flexmock(Punchblock::Connection::Asterisk).should_receive(:new).once.with(overrides).and_return do
-            flexmock 'Client', :event_handler= => true
-          end
+          Punchblock::Connection::Asterisk.should_receive(:new).once.with(overrides).and_return mock_client
           initialize_punchblock overrides.merge(:platform => :asterisk)
         end
       end
@@ -196,15 +191,13 @@ module Adhearsion
         let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift, :default_voice => :hal} }
 
         it 'should start an Asterisk PB connection' do
-          flexmock(Punchblock::Connection::Freeswitch).should_receive(:new).once.with(overrides).and_return do
-            flexmock 'Client', :event_handler= => true
-          end
+          Punchblock::Connection::Freeswitch.should_receive(:new).once.with(overrides).and_return mock_client
           initialize_punchblock overrides.merge(:platform => :freeswitch)
         end
       end
 
       it 'should place events from Punchblock into the event handler' do
-        flexmock(Events.instance).should_receive(:trigger).once.with(:punchblock, offer)
+        Events.instance.should_receive(:trigger).once.with(:punchblock, offer)
         initialize_punchblock
         Initializer.client.handle_event offer
       end
@@ -212,8 +205,8 @@ module Adhearsion
       describe "dispatching an offer" do
         before do
           initialize_punchblock
-          flexmock(Adhearsion::Process).should_receive(:state_name).once.and_return process_state
-          flexmock(Adhearsion.active_calls).should_receive(:from_offer).once.and_return mock_call
+          Adhearsion::Process.should_receive(:state_name).once.and_return process_state
+          Adhearsion.active_calls.should_receive(:from_offer).once.and_return mock_call
         end
 
         context "when the Adhearsion::Process is :booting" do
@@ -232,7 +225,7 @@ module Adhearsion
               Adhearsion.router do
                 route 'foobar', Class.new
               end
-              flexmock(Adhearsion.router).should_receive(:handle).once.with mock_call
+              Adhearsion.router.should_receive(:handle).once.with mock_call
             end
           end
         end
@@ -257,8 +250,10 @@ module Adhearsion
       end
 
       describe "dispatching a component event" do
-        let(:component)   { flexmock 'ComponentNode' }
-        let(:mock_event)  { flexmock 'Event', :target_call_id => call_id, :source => component }
+        let(:component)   { mock 'ComponentNode' }
+        let(:mock_event)  { mock 'Event' }
+
+        before { mock_event.stub target_call_id: call_id, source: component }
 
         before do
           initialize_punchblock
@@ -271,7 +266,9 @@ module Adhearsion
       end
 
       describe "dispatching a call event" do
-        let(:mock_event)  { flexmock 'Event', :target_call_id => call_id }
+        let(:mock_event)  { mock 'Event' }
+
+        before { mock_event.stub target_call_id: call_id }
 
         describe "with an active call" do
           before do
@@ -280,16 +277,14 @@ module Adhearsion
           end
 
           it "should place the event in the call's inbox" do
-            mock_call.should_receive(:deliver_message!).once.with(mock_event)
+            mock_call.async.should_receive(:deliver_message).once.with(mock_event)
             Initializer.dispatch_call_event mock_event
           end
         end
 
         describe "with an inactive call" do
-          let(:mock_event) { flexmock 'Event', :target_call_id => call_id }
-
           it "should log an error" do
-            flexmock(Adhearsion::Logging.get_logger(Initializer)).should_receive(:error).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
+            Adhearsion::Logging.get_logger(Initializer).should_receive(:error).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
             Initializer.dispatch_call_event mock_event
           end
         end

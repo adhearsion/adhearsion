@@ -10,7 +10,7 @@ end
 
 module Adhearsion
   describe Call do
-    let(:mock_client) { flexmock('Client').tap(&:should_ignore_missing) }
+    let(:mock_client) { mock('Client').as_null_object }
 
     let(:call_id) { rand }
     let(:headers) { nil }
@@ -26,7 +26,7 @@ module Adhearsion
     subject { Adhearsion::Call.new offer }
 
     before do
-      flexmock(offer).should_receive(:client).and_return(mock_client)
+      offer.stub(:client).and_return(mock_client)
     end
 
     after do
@@ -97,16 +97,16 @@ module Adhearsion
     end
 
     it 'allows the registration of event handlers which are called when messages are delivered' do
-      event = flexmock 'Event'
+      event = mock 'Event'
       event.should_receive(:foo?).and_return true
-      response = flexmock 'Response'
+      response = mock 'Response'
       response.should_receive(:call).once
       subject.register_event_handler(:foo?) { response.call }
       subject << event
     end
 
     describe "event handlers" do
-      let(:response) { flexmock 'Response' }
+      let(:response) { mock 'Response' }
 
       describe "for joined events" do
         context "joined to another call" do
@@ -178,7 +178,8 @@ module Adhearsion
 
           it "should trigger any on_unjoined callbacks set for the matching call" do
             response.should_receive(:call).once.with(event)
-            call = flexmock Call.new, :id => 'foobar'
+            call = Call.new
+            call.stub :id => 'foobar'
             subject.on_unjoined(call) { |event| response.call event }
             subject << event
           end
@@ -227,7 +228,8 @@ module Adhearsion
 
           it "should not trigger any on_unjoined callbacks set for the matching call" do
             response.should_receive(:call).never
-            call = flexmock Call.new, :id => 'foobar'
+            call = Call.new
+            call.stub :id => 'foobar'
             subject.on_unjoined(call) { |event| response.call event }
             subject << event
           end
@@ -271,7 +273,9 @@ module Adhearsion
 
     context "peer registry" do
       let(:other_call_id) { 'foobar' }
-      let(:other_call) { flexmock Call.new, :id => other_call_id }
+      let(:other_call) { Call.new }
+
+      before { other_call.stub :id => other_call_id }
 
       let :joined_event do
         Punchblock::Event::Joined.new :call_id => other_call_id
@@ -329,7 +333,7 @@ module Adhearsion
         end
 
         it "should instruct the command registry to terminate" do
-          flexmock(subject.commands).should_receive(:terminate).once
+          subject.commands.should_receive(:terminate).once
           subject << end_event
         end
 
@@ -401,18 +405,17 @@ module Adhearsion
     end
 
     describe "#write_command" do
-      let(:mock_command) { flexmock('Command') }
+      let(:mock_command) { mock('Command') }
 
       it "should asynchronously write the command to the Punchblock connection" do
-        mock_client = flexmock('Client')
-        flexmock(subject.wrapped_object).should_receive(:client).once.and_return mock_client
+        subject.wrapped_object.should_receive(:client).once.and_return mock_client
         mock_client.should_receive(:execute_command).once.with(mock_command, :call_id => subject.id, :async => true).and_return true
         subject.write_command mock_command
       end
 
       describe "with a hungup call" do
         before do
-          flexmock(subject.wrapped_object).should_receive(:active?).and_return(false)
+          subject.wrapped_object.should_receive(:active?).and_return(false)
         end
 
         it "should raise a Hangup exception" do
@@ -434,12 +437,12 @@ module Adhearsion
       let(:response) { :foo }
 
       before do
-        flexmock(message).should_receive(:execute!).and_return true
+        message.should_receive(:execute!).and_return true
         message.response = response
       end
 
       it "writes a command to the call" do
-        flexmock(subject.wrapped_object).should_receive(:write_command).once.with(message)
+        subject.wrapped_object.should_receive(:write_command).once.with(message)
         subject.write_and_await_response message
       end
 
@@ -471,7 +474,7 @@ module Adhearsion
         let(:response) { new_exception.new }
 
         it "raises the error" do
-          flexmock(Events).should_receive(:trigger).never
+          Events.should_receive(:trigger).never
           lambda { subject.write_and_await_response message }.should raise_error new_exception
         end
 
@@ -479,7 +482,7 @@ module Adhearsion
           let(:response) { new_exception.new.setup :item_not_found }
 
           it "should raise a Hangup exception" do
-            flexmock(Events).should_receive(:trigger).never
+            Events.should_receive(:trigger).never
             lambda { subject.write_and_await_response message }.should raise_error Call::Hangup
           end
         end
@@ -499,10 +502,14 @@ module Adhearsion
     end
 
     describe "basic control commands" do
-      include FlexMock::ArgumentTypes
-
-      def expect_message_waiting_for_response(message)
-        flexmock(subject.wrapped_object).should_receive(:write_and_await_response).once.with(message).and_return(message)
+      def expect_message_waiting_for_response(message = nil, fail = false, &block)
+        expectation = subject.wrapped_object.should_receive(:write_and_await_response, &block).once
+        expectation = expectation.with message if message
+        if fail
+          expectation.and_raise fail
+        else
+          expectation.and_return message
+        end
       end
 
       describe '#accept' do
@@ -564,7 +571,9 @@ module Adhearsion
 
         describe "with no headers" do
           it 'should send a Reject message' do
-            expect_message_waiting_for_response on { |c| c.is_a?(Punchblock::Command::Reject) && c.headers_hash == {} }
+            expect_message_waiting_for_response do |c|
+              c.is_a?(Punchblock::Command::Reject) && c.headers_hash == {}
+            end
             subject.reject
           end
         end
@@ -572,14 +581,16 @@ module Adhearsion
         describe "with headers set" do
           it 'should send a Hangup message with the correct headers' do
             headers = {:foo => 'bar'}
-            expect_message_waiting_for_response on { |c| c.is_a?(Punchblock::Command::Reject) && c.headers_hash == headers }
+            expect_message_waiting_for_response do |c|
+              c.is_a?(Punchblock::Command::Reject) && c.headers_hash == headers
+            end
             subject.reject nil, headers
           end
         end
 
         it "should immediately fire the :call_rejected event giving the call and the reason" do
-          expect_message_waiting_for_response Punchblock::Command::Reject
-          flexmock(Adhearsion::Events).should_receive(:trigger_immediately).once.with(:call_rejected, :call => subject, :reason => :decline)
+          expect_message_waiting_for_response kind_of(Punchblock::Command::Reject)
+          Adhearsion::Events.should_receive(:trigger_immediately).once.with(:call_rejected, :call => subject, :reason => :decline)
           subject.reject :decline
         end
       end
@@ -587,11 +598,11 @@ module Adhearsion
       describe "#hangup" do
         describe "if the call is not active" do
           before do
-            flexmock(subject.wrapped_object).should_receive(:active?).and_return false
+            subject.wrapped_object.should_receive(:active?).and_return false
           end
 
           it "should do nothing and return false" do
-            flexmock(subject).should_receive(:write_and_await_response).never
+            subject.should_receive(:write_and_await_response).never
             subject.hangup.should be false
           end
         end
@@ -629,7 +640,9 @@ module Adhearsion
 
         context "with a call" do
           let(:call_id) { rand.to_s }
-          let(:target)  { flexmock Call.new, :id => call_id }
+          let(:target)  { described_class.new }
+
+          before { target.stub id: call_id }
 
           it "should send a join command joining to the provided call ID" do
             expect_join_with_options :call_id => call_id
@@ -714,7 +727,9 @@ module Adhearsion
 
         context "with a call" do
           let(:call_id) { rand.to_s }
-          let(:target)  { flexmock Call.new, :id => call_id }
+          let(:target)  { described_class.new }
+
+          before { target.stub id: call_id }
 
           it "should send an unjoin command unjoining from the provided call ID" do
             expect_unjoin_with_options :call_id => call_id
@@ -778,10 +793,10 @@ module Adhearsion
 
       describe "#execute_controller" do
         let(:latch)           { CountDownLatch.new 1 }
-        let(:mock_controller) { flexmock CallController.new(subject) }
+        let(:mock_controller) { CallController.new(subject) }
 
         before do
-          flexmock subject.wrapped_object, :write_and_await_response => true
+          subject.wrapped_object.stub :write_and_await_response => true
         end
 
         it "should call #bg_exec on the controller instance" do
@@ -792,7 +807,7 @@ module Adhearsion
 
         it "should use the passed block as a controller if none is specified" do
           mock_controller.should_receive(:exec).once
-          flexmock(CallController).should_receive(:new).once.and_return mock_controller
+          CallController.should_receive(:new).once.and_return mock_controller
           subject.execute_controller nil, lambda { |call| latch.countdown! } do
             foo
           end
@@ -816,7 +831,6 @@ module Adhearsion
         end
 
         it "should execute a callback after the controller executes" do
-          flexmock(CallController).should_receive(:exec)
           foo = nil
           subject.execute_controller mock_controller, lambda { |call| foo = call; latch.countdown! }
           latch.wait(3).should be_true
@@ -832,8 +846,8 @@ module Adhearsion
       end
 
       context "with two controllers registered" do
-        let(:controller1) { flexmock 'CallController1' }
-        let(:controller2) { flexmock 'CallController2' }
+        let(:controller1) { mock 'CallController1' }
+        let(:controller2) { mock 'CallController2' }
 
         before { subject.controllers << controller1 << controller2 }
 

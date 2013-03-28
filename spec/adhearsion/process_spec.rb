@@ -13,8 +13,8 @@ module Adhearsion
     end
 
     it 'should trigger :stop_requested events on #shutdown' do
-      flexmock(Events).should_receive(:trigger_immediately).once.with(:stop_requested).ordered
-      flexmock(Events).should_receive(:trigger_immediately).once.with(:shutdown).ordered
+      Events.should_receive(:trigger_immediately).once.with(:stop_requested).ordered
+      Events.should_receive(:trigger_immediately).once.with(:shutdown).ordered
       Adhearsion::Process.booted
       Adhearsion::Process.shutdown
       sleep 0.2
@@ -25,11 +25,11 @@ module Adhearsion
       calls = ThreadSafeArray.new
       3.times do
         fake_call = Object.new
-        flexmock(fake_call).should_receive(:hangup).once
+        fake_call.should_receive(:hangup).once
         calls << fake_call
       end
-      flexmock(Adhearsion).should_receive(:active_calls).and_return calls
-      flexmock(Adhearsion::Process.instance).should_receive(:final_shutdown).once
+      Adhearsion.should_receive(:active_calls).and_return calls
+      Adhearsion::Process.instance.should_receive(:final_shutdown).once
       calls = []
       3.times do
         calls << Thread.new do
@@ -42,15 +42,16 @@ module Adhearsion
     end
 
     it 'should terminate the process immediately on #force_stop' do
-      flexmock(::Process).should_receive(:exit).with(1).once.and_return true
+      ::Process.should_receive(:exit).with(1).once.and_return true
       Adhearsion::Process.force_stop
     end
 
     describe "#final_shutdown" do
       it "should hang up active calls" do
         3.times do
-          fake_call = flexmock Call.new, :id => random_call_id
-          flexmock(fake_call).should_receive(:hangup).once
+          fake_call = Call.new
+          fake_call.stub :id => random_call_id
+          fake_call.should_receive(:hangup).once
           Adhearsion.active_calls << fake_call
         end
 
@@ -62,9 +63,9 @@ module Adhearsion
       it "should trigger shutdown handlers synchronously" do
         foo = lambda { |b| b }
 
-        flexmock(foo).should_receive(:[]).once.with(:a).ordered
-        flexmock(foo).should_receive(:[]).once.with(:b).ordered
-        flexmock(foo).should_receive(:[]).once.with(:c).ordered
+        foo.should_receive(:[]).once.with(:a).ordered
+        foo.should_receive(:[]).once.with(:b).ordered
+        foo.should_receive(:[]).once.with(:c).ordered
 
         Events.shutdown { sleep 2; foo[:a] }
         Events.shutdown { sleep 1; foo[:b] }
@@ -74,7 +75,7 @@ module Adhearsion
       end
 
       it "should stop the console" do
-        flexmock(Console).should_receive(:stop).once
+        Console.should_receive(:stop).once
         Adhearsion::Process.final_shutdown
       end
     end
@@ -88,13 +89,13 @@ module Adhearsion
       Adhearsion::Process.state_name.should be :rejecting
       Adhearsion::Process.shutdown
       Adhearsion::Process.state_name.should be :stopped
-      flexmock(Adhearsion::Process.instance).should_receive(:die_now!).once
+      Adhearsion::Process.instance.should_receive(:die_now!).once
       Adhearsion::Process.shutdown
       sleep 0.2
     end
 
     it 'should forcibly kill the Adhearsion process on :force_stop' do
-      flexmock(::Process).should_receive(:exit).once.with(1)
+      ::Process.should_receive(:exit).once.with(1)
       Adhearsion::Process.force_stop
     end
   end

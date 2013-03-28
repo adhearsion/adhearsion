@@ -38,7 +38,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'aruba', "~> 0.4"
   s.add_development_dependency 'ci_reporter'
   s.add_development_dependency 'cucumber'
-  s.add_development_dependency 'flexmock'
   s.add_development_dependency 'guard-cucumber'
   s.add_development_dependency 'guard-rspec'
   s.add_development_dependency 'rspec', ["~> 2.11"]

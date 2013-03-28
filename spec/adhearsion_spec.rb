@@ -41,7 +41,7 @@ describe Adhearsion do
 
     it "should execute a block" do
       foo = Object.new
-      flexmock(foo).should_receive(:bar).once
+      foo.should_receive(:bar).once
       Adhearsion.config do |config|
         foo.bar
       end
