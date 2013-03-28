@@ -66,4 +66,4 @@ There is a pre-commit hook that runs encoding checks available in pre-commit. To
 
 ### Copyright
 
-Copyright (c) 2012 Adhearsion Foundation Inc. MIT LICENSE (see LICENSE for details).
+Copyright (c) 2013 Adhearsion Foundation Inc. MIT LICENSE (see LICENSE for details).
