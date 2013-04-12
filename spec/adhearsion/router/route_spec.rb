@@ -159,6 +159,23 @@ module Adhearsion
               end.should_not raise_error
             end
           end
+
+          context "if the call is dead when trying to clear it up" do
+            let :controller do
+              Class.new CallController do
+                def run
+                  call.terminate
+                end
+              end
+            end
+
+            it "should not raise an exception" do
+              lambda do
+                route.dispatch call, lambda { latch.countdown! }
+                latch.wait(2).should be true
+              end.should_not raise_error
+            end
+          end
         end
 
         context "via a block" do

@@ -43,7 +43,7 @@ module Adhearsion
             else
               call_actor.hangup
             end
-          rescue Call::Hangup
+          rescue Call::Hangup, Call::ExpiredError
           end
           callback.call if callback
         }
