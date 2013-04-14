@@ -15,7 +15,7 @@ class SimonGame < Adhearsion::CallController
   end
 
   def random_number
-    rand(10).to_s
+    rand(1..9).to_s
   end
 
   def update_number
