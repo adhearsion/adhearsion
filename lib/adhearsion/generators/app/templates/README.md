@@ -23,6 +23,8 @@ If you are using Asterisk 1.8, you will need to add an additional context with t
 ```xml
 <extension name='Adhearsion'>
   <condition field="destination_number" expression="^10$">
+    <action application="set" data="hangup_after_bridge=false"/>
+    <action application="set" data="park_after_bridge=true"/>
     <action application='park'/>
   </condition>
 </extension>
