@@ -4,7 +4,6 @@ require 'timeout'
 
 Then /^I should see the usage message$/ do
   steps %Q{
-    Then the output should contain "Tasks:"
     Then the output should contain "ahn create"
     Then the output should contain "ahn start"
     Then the output should contain "ahn daemon"
