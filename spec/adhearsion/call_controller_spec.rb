@@ -381,6 +381,40 @@ module Adhearsion
         (Time.now - starting_time).should > 0.5
       end
     end
+
+    describe "equality" do
+      context "when of the same type, operating on the same call, with the same metadata" do
+        let(:other) { CallController.new call, metadata }
+
+        it "should be equal" do
+          subject.should == other
+        end
+      end
+
+      context "when of a different type" do
+        let(:other) { Class.new(CallController).new call, metadata }
+
+        it "should not be equal" do
+          subject.should_not == other
+        end
+      end
+
+      context "when operating on a different call" do
+        let(:other) { CallController.new Call.new, metadata }
+
+        it "should not be equal" do
+          subject.should_not == other
+        end
+      end
+
+      context "with different metadata" do
+        let(:other) { CallController.new call, something: 'else' }
+
+        it "should not be equal" do
+          subject.should_not == other
+        end
+      end
+    end
   end
 end
 

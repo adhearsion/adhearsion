@@ -269,5 +269,10 @@ module Adhearsion
     def inspect
       "#<#{self.class} call=#{call.alive? ? call.id : ''}, metadata=#{metadata.inspect}>"
     end
+
+    def eql?(other)
+      other.instance_of?(self.class) && call == other.call && metadata == other.metadata
+    end
+    alias :== :eql?
   end#class
 end

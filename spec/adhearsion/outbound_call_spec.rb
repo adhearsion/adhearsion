@@ -62,9 +62,8 @@ module Adhearsion
         context "with controller metadata specified" do
           it "should set the metadata on the controller" do
             mock_call.should_receive(:dial).once.with(to, {})
-            mock_call.should_receive(:execute_controller).once do |c|
-              c.is_a?(controller) && c.metadata == {:foo => 'bar'}
-            end
+            expected_controller = controller.new mock_call, foo: 'bar'
+            mock_call.should_receive(:execute_controller).with(expected_controller, kind_of(Proc)).once
             call = OutboundCall.originate to, :controller => controller, :controller_metadata => {:foo => 'bar'}
             call << Punchblock::Event::Answered.new
           end
