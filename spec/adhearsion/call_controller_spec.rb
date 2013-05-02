@@ -28,6 +28,15 @@ module Adhearsion
     its(:logger)    { should be call.logger }
     its(:variables) { should be call.variables }
 
+    context "when the call is dead" do
+      before { call.terminate }
+
+      it "should use an unnamed logger" do
+        subject.logger.should be_a ::Logging::Logger
+        subject.logger.name.should == "Adhearsion::CallController"
+      end
+    end
+
     describe "execution on a call" do
       before do
         subject.stub :execute_component_and_await_completion => nil

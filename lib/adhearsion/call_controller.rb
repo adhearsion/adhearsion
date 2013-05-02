@@ -60,7 +60,7 @@ module Adhearsion
     attr_reader :block
 
     delegate :[], :[]=, :to => :@metadata
-    delegate :variables, :logger, :to => :call
+    delegate :variables, :to => :call
 
     #
     # Create a new instance
@@ -274,5 +274,11 @@ module Adhearsion
       other.instance_of?(self.class) && call == other.call && metadata == other.metadata
     end
     alias :== :eql?
+
+    def logger
+      call.logger
+    rescue Celluloid::DeadActorError
+      super
+    end
   end#class
 end
