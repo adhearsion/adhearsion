@@ -1,4 +1,9 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Bugfix: Correctly register readiness to handle calls with VoIP platform.
+  * Bugfix: Don't raise when the router tries to clear up after a CallController which outlived its Call actor.
+  * Bugfix: Don't share metadata between all controllers invoked by a route. This was causing concurrent mutation bugs and all sorts of weirdness.
+  * Bugfix: Ensure that a CallController can still log safely even if its Call (and therefore scoped logger) is gone.
+  * Bugfix: Fix some spec false positives and failures due to dependency changes.
 
 # [2.3.1](https://github.com/adhearsion/adhearsion/compare/v2.3.0...v2.3.1) - [2013-03-28](https://rubygems.org/gems/adhearsion/versions/2.3.1)
   * Bugfix: Fix a leftover Celluloid deprecation warning
