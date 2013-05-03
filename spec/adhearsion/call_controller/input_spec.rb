@@ -310,13 +310,13 @@ module Adhearsion
         end
 
         context "with a block passed" do
-          it "should set that block as the buffer validator" do
-            foo = nil
-            subject.should_receive(:play_sound_files_for_menu).and_return("1")
-            subject.ask sound_files, :limit => 0 do |buffer|
-              foo = :bar
-            end.menu.execute_validator_hook
-            foo.should be == :bar
+          it "validates the buffer using that block, terminating on something truthy" do
+            subject.should_receive(:play_sound_files_for_menu).twice.and_return("1")
+            result = subject.ask sound_files, limit: 3 do |buffer|
+              buffer == '11'
+            end
+            result.status.should == :validator_terminated
+            result.response.should == '11'
           end
         end
 
