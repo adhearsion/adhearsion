@@ -54,6 +54,7 @@ module Adhearsion
 
       before do
         mock_call.stub :id => call_id
+        mock_client.as_null_object
         mock_client.stub :event_handler= => true
         Events.refresh!
         Adhearsion::Process.stub :fqdn => 'hostname'
