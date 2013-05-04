@@ -20,6 +20,6 @@ Feature: Adhearsion Ahn CLI (Create)
     When I run `ahn create`
     Then the output should contain:
     """
-    ahn create requires at least 1 argument: "ahn create /path/to/directory".
+    no arguments
     """
     And the exit status should be 1

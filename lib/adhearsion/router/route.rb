@@ -18,7 +18,7 @@ module Adhearsion
           @target, @guards = target, guards
         end
         @guards.compact!
-        @controller_metadata = {}
+        @controller_metadata = nil
       end
 
       def match?(call)
@@ -43,7 +43,7 @@ module Adhearsion
             else
               call_actor.hangup
             end
-          rescue Call::Hangup
+          rescue Call::Hangup, Call::ExpiredError
           end
           callback.call if callback
         }

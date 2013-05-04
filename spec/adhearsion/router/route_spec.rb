@@ -109,7 +109,7 @@ module Adhearsion
 
         let(:latch) { CountDownLatch.new 1 }
 
-        before { call.wrapped_object.should_receive :write_and_await_response }
+        before { call.wrapped_object.stub :write_and_await_response }
 
         context "via a call controller" do
           let(:controller)  { CallController }
@@ -139,6 +139,26 @@ module Adhearsion
             latch.wait(2).should be true
           end
 
+          context "when the CallController mutates its metadata" do
+            let :controller do
+              Class.new CallController do
+                def run
+                  metadata[:foo] = 'bar'
+                end
+              end
+            end
+
+            before do
+              route.dispatch call
+            end
+
+            it "gives the next call fresh metadata" do
+              expected_controller = controller.new call, nil
+              call.should_receive(:execute_controller).once.with expected_controller, kind_of(Proc)
+              route.dispatch call
+            end
+          end
+
           context 'with the :ahn_prevent_hangup call variable set' do
             before { call[:ahn_prevent_hangup] = true }
 
@@ -151,6 +171,23 @@ module Adhearsion
 
           context "if hangup raises a Call::Hangup" do
             before { call.should_receive(:hangup).once.and_raise Call::Hangup }
+
+            it "should not raise an exception" do
+              lambda do
+                route.dispatch call, lambda { latch.countdown! }
+                latch.wait(2).should be true
+              end.should_not raise_error
+            end
+          end
+
+          context "if the call is dead when trying to clear it up" do
+            let :controller do
+              Class.new CallController do
+                def run
+                  call.terminate
+                end
+              end
+            end
 
             it "should not raise an exception" do
               lambda do

@@ -36,11 +36,8 @@ module Adhearsion
         end
 
         def uri?(string)
-          uri = URI.parse string
-          !!uri.scheme
-        rescue URI::BadURIError
-          false
-        rescue URI::InvalidURIError
+          !! URI.parse(string).scheme
+        rescue URI::BadURIError, URI::InvalidURIError
           false
         end
 

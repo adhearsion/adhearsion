@@ -1,21 +1,13 @@
 # encoding: utf-8
 
-require 'timeout'
-
 Then /^I should see the usage message$/ do
   steps %Q{
-    Then the output should contain "Tasks:"
     Then the output should contain "ahn create"
     Then the output should contain "ahn start"
     Then the output should contain "ahn daemon"
     Then the output should contain "ahn version"
     Then the output should contain "ahn help"
   }
-end
-
-# TODO: Remove after pull request is merged in cucumber.rb from Aruba
-When /^I terminate the interactive process$/ do
-  terminate_processes!
 end
 
 When /^I wait (\d+) seconds?$/ do |arg1|

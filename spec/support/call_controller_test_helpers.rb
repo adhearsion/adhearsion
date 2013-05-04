@@ -5,6 +5,7 @@ module CallControllerTestHelpers
     test_case.let(:call_id)     { new_uuid }
     test_case.let(:call)        { Adhearsion::Call.new }
     test_case.let(:block)       { nil }
+    test_case.let(:metadata)    { {doo: :dah} }
     test_case.let(:controller)  { new_controller test_case.describes }
 
     test_case.subject { controller }
@@ -21,7 +22,7 @@ module CallControllerTestHelpers
       target
     when Module, nil
       Class.new Adhearsion::CallController
-    end.new call, :doo => :dah, &block
+    end.new call, metadata, &block
   end
 
   def expect_message_waiting_for_response(message = nil, fail = false, &block)

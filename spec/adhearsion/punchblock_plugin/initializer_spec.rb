@@ -54,6 +54,7 @@ module Adhearsion
 
       before do
         mock_call.stub :id => call_id
+        mock_client.as_null_object
         mock_client.stub :event_handler= => true
         Events.refresh!
         Adhearsion::Process.stub :fqdn => 'hostname'
@@ -190,7 +191,7 @@ module Adhearsion
       describe 'using FreeSWITCH' do
         let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :connection_timeout => 20, :root_domain => 'foo.com', :calls_domain => 'call.foo.com', :mixers_domain => 'mixer.foo.com', :media_engine => :swift, :default_voice => :hal} }
 
-        it 'should start an Asterisk PB connection' do
+        it 'should start a FreeSWITCH PB connection' do
           Punchblock::Connection::Freeswitch.should_receive(:new).once.with(overrides).and_return mock_client
           initialize_punchblock overrides.merge(:platform => :freeswitch)
         end

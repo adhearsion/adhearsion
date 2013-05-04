@@ -43,7 +43,7 @@ module Adhearsion
           self.client = Punchblock::Client.new :connection => connection
 
           # Tell the Punchblock connection that we are ready to process calls.
-          Events.register_callback :after_initialization do
+          Events.register_callback :after_initialized do
             connection.ready!
           end
 
