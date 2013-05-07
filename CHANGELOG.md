@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Feature: Add Call#wait_for_end, which blocks until the call ends and returns its end reason
 
 # [2.3.2](https://github.com/adhearsion/adhearsion/compare/v2.3.1...v2.3.2) - [2013-05-03](https://rubygems.org/gems/adhearsion/versions/2.3.2)
   * Bugfix: Correctly register readiness to handle calls with VoIP platform.
