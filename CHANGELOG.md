@@ -1,6 +1,9 @@
 # [develop](https://github.com/adhearsion/adhearsion)
   * Feature: Add Call#wait_for_end, which blocks until the call ends and returns its end reason
 
+# [2.3.3](https://github.com/adhearsion/adhearsion/compare/v2.3.2...v2.3.3) - [2013-05-08](https://rubygems.org/gems/adhearsion/versions/2.3.3)
+  * Bugfix: Support Celluloid 0.14's new block semantics
+
 # [2.3.2](https://github.com/adhearsion/adhearsion/compare/v2.3.1...v2.3.2) - [2013-05-03](https://rubygems.org/gems/adhearsion/versions/2.3.2)
   * Bugfix: Correctly register readiness to handle calls with VoIP platform.
   * Bugfix: Don't raise when the router tries to clear up after a CallController which outlived its Call actor.

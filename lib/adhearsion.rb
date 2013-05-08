@@ -16,13 +16,11 @@ module Adhearsion
 
   Error = Class.new StandardError
 
-  autoload :Process
   autoload :Call
   autoload :CallController
   autoload :Calls
   autoload :Configuration
   autoload :Console
-  autoload :Conveniences
   autoload :Dispatcher
   autoload :Events
   autoload :Generators
@@ -30,6 +28,7 @@ module Adhearsion
   autoload :Logging
   autoload :OutboundCall
   autoload :Plugin
+  autoload :Process
   autoload :Router
   autoload :Statistics
 
