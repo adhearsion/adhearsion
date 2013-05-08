@@ -2,6 +2,8 @@
 
 module Adhearsion
   class OutboundCall < Call
+    execute_block_on_receiver :register_handler, :register_tmp_handler, :register_handler_with_priority, :register_event_handler, :on_joined, :on_unjoined, :on_end, :execute_controller, :on_answer, :execute_controller_or_router_on_answer
+
     attr_reader :dial_command
 
     delegate :to, :from, :to => :dial_command, :allow_nil => true
