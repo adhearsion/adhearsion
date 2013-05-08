@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Bugfix: Hold back on updating to Celluloid 0.14.x due to breaking changes
 
 # [2.3.2](https://github.com/adhearsion/adhearsion/compare/v2.3.1...v2.3.2) - [2013-05-03](https://rubygems.org/gems/adhearsion/versions/2.3.2)
   * Bugfix: Correctly register readiness to handle calls with VoIP platform.
