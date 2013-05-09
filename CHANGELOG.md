@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Bugfix: Process signals safely in the main thread
 
 # [2.3.3](https://github.com/adhearsion/adhearsion/compare/v2.3.2...v2.3.3) - [2013-05-08](https://rubygems.org/gems/adhearsion/versions/2.3.3)
   * Bugfix: Support Celluloid 0.14's new block semantics

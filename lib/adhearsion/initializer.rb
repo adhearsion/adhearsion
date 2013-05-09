@@ -130,24 +130,40 @@ module Adhearsion
     end
 
     def catch_termination_signal
-      %w'INT TERM'.each do |process_signal|
-        trap process_signal do
-          logger.info "Received SIG#{process_signal}. Shutting down."
-          Adhearsion::Process.shutdown
+      self_read, self_write = IO.pipe
+
+      %w(INT TERM HUP ALRM ABRT).each do |sig|
+        trap sig do
+          self_write.puts sig
         end
       end
 
-      trap 'HUP' do
+      Thread.new do
+        begin
+          while readable_io = IO.select([self_read])
+            signal = readable_io.first[0].gets.strip
+            handle_signal signal
+          end
+        rescue => e
+          logger.error "Crashed reading signals"
+          logger.error e
+          exit 1
+        end
+      end
+    end
+
+    def handle_signal(signal)
+      case signal
+      when 'INT', 'TERM'
+        logger.info "Received SIG#{signal}. Shutting down."
+        Adhearsion::Process.shutdown
+      when 'HUP'
         logger.debug "Received SIGHUP. Reopening logfiles."
         Adhearsion::Logging.reopen_logs
-      end
-
-      trap 'ALRM' do
+      when 'ALRM'
         logger.debug "Received SIGALRM. Toggling trace logging."
         Adhearsion::Logging.toggle_trace!
-      end
-
-      trap 'ABRT' do
+      when 'ABRT'
         logger.info "Received ABRT signal. Forcing stop."
         Adhearsion::Process.force_stop
       end
