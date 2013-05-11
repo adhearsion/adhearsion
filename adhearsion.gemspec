@@ -24,7 +24,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'countdownlatch'
   s.add_runtime_dependency 'deep_merge'
   s.add_runtime_dependency 'ffi', ["~> 1.0"]
-  s.add_runtime_dependency 'future-resource', ["~> 1.0"]
   s.add_runtime_dependency 'girl_friday'
   s.add_runtime_dependency 'has-guarded-handlers', ["~> 1.5"]
   s.add_runtime_dependency 'jruby-openssl' if RUBY_PLATFORM == 'java'
