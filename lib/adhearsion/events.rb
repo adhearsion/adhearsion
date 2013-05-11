@@ -15,8 +15,8 @@ module Adhearsion
         instance.send method_name, *args, &block
       end
 
-      def respond_to?(method_name)
-        instance.respond_to?(method_name) || super
+      def respond_to_missing?(method_name)
+        instance.respond_to? method_name
       end
 
       def instance
@@ -73,9 +73,8 @@ module Adhearsion
       register_handler method_name, *args, &block
     end
 
-    def respond_to?(method_name)
-      return true if instance_variable_defined?(:@handlers) && @handlers.has_key?(method_name)
-      super
+    def respond_to_missing?(method_name)
+      instance_variable_defined?(:@handlers) && @handlers.has_key?(method_name)
     end
 
     alias :register_callback :register_handler
