@@ -86,7 +86,7 @@ module Adhearsion
     end
 
     def bg_exec(completion_callback = nil)
-      Thread.new do
+      Celluloid.internal_pool.get do
         catching_standard_errors do
           exec_with_callback completion_callback
         end
