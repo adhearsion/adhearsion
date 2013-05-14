@@ -93,6 +93,14 @@ module Adhearsion
       Events.clear_handlers :event, EventClass
     end
 
+    it "should respond_to? any methods corresponding to classes for which handlers are defined" do
+      Events.register_handler :event_type_1 do |event|
+      end
+
+      Events.should respond_to(:event_type_1)
+      Events.should_not respond_to(:event_type_2)
+    end
+
     describe '#draw' do
       it "should allow registering handlers by type" do
         result = nil
