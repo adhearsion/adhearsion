@@ -107,6 +107,8 @@ module Adhearsion
 
           # Wait for the connection to establish
           m.synchronize { blocker.wait m }
+
+          throw :boot_aborted if self.attempts >= self.config.reconnect_attempts
         end
 
         def connect_to_server
