@@ -42,6 +42,7 @@ module Adhearsion
       @variables    = {}
       @controllers  = []
       @end_reason   = nil
+      @end_blocker  = Celluloid::Condition.new
       @peers        = {}
 
       self << offer if offer
@@ -97,6 +98,18 @@ module Adhearsion
       @peers.clone
     end
 
+    #
+    # Wait for the call to end. Returns immediately if the call has already ended, else blocks until it does so.
+    # @return [Symbol] the reason for the call ending
+    #
+    def wait_for_end
+      if end_reason
+        end_reason
+      else
+        @end_blocker.wait
+      end
+    end
+
     def register_event_handler(*guards, &block)
       register_handler :event, *guards, &block
     end
@@ -136,6 +149,7 @@ module Adhearsion
         logger.info "Call ended"
         clear_from_active_calls
         @end_reason = event.reason
+        @end_blocker.signal event.reason
         commands.terminate
         after(Adhearsion.config.platform.after_hangup_lifetime) { terminate }
         throw :pass

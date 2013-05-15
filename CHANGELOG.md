@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Feature: Add Call#wait_for_end, which blocks until the call ends and returns its end reason
 
 # [2.3.4](https://github.com/adhearsion/adhearsion/compare/v2.3.3...v2.3.4) - [2013-05-14](https://rubygems.org/gems/adhearsion/versions/2.3.4)
   * Bugfix: Process signals safely in the main thread - fixes shutdown on Ruby 2.0
