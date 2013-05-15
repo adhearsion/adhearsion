@@ -1,5 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
-  * Bugfix: Process signals safely in the main thread
+  * Bugfix: Process signals safely in the main thread - fixes shutdown on Ruby 2.0
   * Bugfix: Expose the cert store directory in Punchblock config
 
 # [2.3.3](https://github.com/adhearsion/adhearsion/compare/v2.3.2...v2.3.3) - [2013-05-08](https://rubygems.org/gems/adhearsion/versions/2.3.3)
