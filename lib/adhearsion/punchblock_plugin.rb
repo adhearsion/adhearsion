@@ -18,6 +18,7 @@ module Adhearsion
       password            "1"              , :desc => "Authentication credentials"
       host                nil              , :desc => "Host punchblock needs to connect (where rayo/asterisk/freeswitch is located)"
       port                Proc.new { PunchblockPlugin.default_port_for_platform platform }, :transform => Proc.new { |v| PunchblockPlugin.validate_number v }, :desc => "Port punchblock needs to connect"
+      certs_directory     nil              , :desc => "Directory containing certificates for securing the connection."
       root_domain         nil              , :desc => "The root domain at which to address the server"
       calls_domain        nil              , :desc => "The domain at which to address calls"
       mixers_domain       nil              , :desc => "The domain at which to address mixers"

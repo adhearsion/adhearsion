@@ -38,33 +38,35 @@ module Adhearsion
     end
 
     def start
-      resolve_pid_file_path
-      load_lib_folder
-      load_config_file
-      initialize_log_paths
+      catch :boot_aborted do
+        resolve_pid_file_path
+        load_lib_folder
+        load_config_file
+        initialize_log_paths
 
-      if should_daemonize?
-        daemonize!
-      else
-        create_pid_file
+        if should_daemonize?
+          daemonize!
+        else
+          create_pid_file
+        end
+
+        Adhearsion.statistics
+        start_logging
+        debugging_log
+        launch_console if need_console?
+        catch_termination_signal
+        set_ahn_proc_name
+        initialize_exception_logger
+        update_rails_env_var
+        init_plugins
+
+        run_plugins
+        trigger_after_initialized_hooks
+
+        Adhearsion::Process.booted if Adhearsion.status == :booting
+
+        logger.info "Adhearsion v#{Adhearsion::VERSION} initialized in \"#{Adhearsion.config.platform.environment}\"!" if Adhearsion.status == :running
       end
-
-      Adhearsion.statistics
-      start_logging
-      debugging_log
-      launch_console if need_console?
-      catch_termination_signal
-      set_ahn_proc_name
-      initialize_exception_logger
-      update_rails_env_var
-      init_plugins
-
-      run_plugins
-      trigger_after_initialized_hooks
-
-      Adhearsion::Process.booted if Adhearsion.status == :booting
-
-      logger.info "Adhearsion v#{Adhearsion::VERSION} initialized in \"#{Adhearsion.config.platform.environment}\"!" if Adhearsion.status == :running
 
       # This method will block until all important threads have finished.
       # When it does, the process will exit.
@@ -130,24 +132,40 @@ module Adhearsion
     end
 
     def catch_termination_signal
-      %w'INT TERM'.each do |process_signal|
-        trap process_signal do
-          logger.info "Received SIG#{process_signal}. Shutting down."
-          Adhearsion::Process.shutdown
+      self_read, self_write = IO.pipe
+
+      %w(INT TERM HUP ALRM ABRT).each do |sig|
+        trap sig do
+          self_write.puts sig
         end
       end
 
-      trap 'HUP' do
+      Thread.new do
+        begin
+          while readable_io = IO.select([self_read])
+            signal = readable_io.first[0].gets.strip
+            handle_signal signal
+          end
+        rescue => e
+          logger.error "Crashed reading signals"
+          logger.error e
+          exit 1
+        end
+      end
+    end
+
+    def handle_signal(signal)
+      case signal
+      when 'INT', 'TERM'
+        logger.info "Received SIG#{signal}. Shutting down."
+        Adhearsion::Process.shutdown
+      when 'HUP'
         logger.debug "Received SIGHUP. Reopening logfiles."
         Adhearsion::Logging.reopen_logs
-      end
-
-      trap 'ALRM' do
+      when 'ALRM'
         logger.debug "Received SIGALRM. Toggling trace logging."
         Adhearsion::Logging.toggle_trace!
-      end
-
-      trap 'ABRT' do
+      when 'ABRT'
         logger.info "Received ABRT signal. Forcing stop."
         Adhearsion::Process.force_stop
       end

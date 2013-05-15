@@ -32,6 +32,7 @@ module Adhearsion
             :connection_timeout => self.config.connection_timeout,
             :host               => self.config.host,
             :port               => self.config.port,
+            :certs              => self.config.certs_directory,
             :root_domain        => self.config.root_domain,
             :calls_domain       => self.config.calls_domain,
             :mixers_domain      => self.config.mixers_domain,
@@ -106,6 +107,8 @@ module Adhearsion
 
           # Wait for the connection to establish
           m.synchronize { blocker.wait m }
+
+          throw :boot_aborted if self.attempts >= self.config.reconnect_attempts
         end
 
         def connect_to_server

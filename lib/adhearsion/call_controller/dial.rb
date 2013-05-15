@@ -34,7 +34,7 @@ module Adhearsion
       #   i.e. timeout after :for if no one answers the call
       #
       # @option options [CallController] :confirm the controller to execute on answered outbound calls to give an opportunity to screen the call. The calls will be joined if the outbound call is still active after this controller completes.
-      # @option options [Hash] :confirm_metadata Metadata to set on the confirmation controller before executing it.
+      # @option options [Hash] :confirm_metadata Metadata to set on the confirmation controller before executing it. This is shared between all calls if dialing multiple endpoints; if you care about it being mutated, you should provide an immutable value (using eg https://github.com/harukizaemon/hamster).
       #
       # @example Make a call to the PSTN using my SIP provider for VoIP termination
       #   dial "SIP/19095551001@my.sip.voip.terminator.us"
