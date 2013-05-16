@@ -27,12 +27,18 @@ module Adhearsion
             subject.output content, :start_paused => true
           end
 
-          it "yields the component to the block before executing it" do
-            component = Punchblock::Component::Output.new :ssml => content, :start_paused => true
-            expect_component_execution component
+          it "yields the component to the block before waiting for it to finish" do
+            component = Punchblock::Component::Output.new :ssml => content
+
+            controller.should_receive(:execute_component_and_await_completion).once.with(component).and_yield(:foo)
+
+            @foo = nil
+
             subject.output content do |comp|
-              comp.start_paused = true
+              @foo = comp
             end
+
+            @foo.should == :foo
           end
 
           it "raises a PlaybackError if the component fails to start" do

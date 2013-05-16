@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Bugfix: Fix race conditions in barging in before output start is acknowledged
 
 # [2.3.4](https://github.com/adhearsion/adhearsion/compare/v2.3.3...v2.3.4) - [2013-05-14](https://rubygems.org/gems/adhearsion/versions/2.3.4)
   * Bugfix: Process signals safely in the main thread - fixes shutdown on Ruby 2.0
