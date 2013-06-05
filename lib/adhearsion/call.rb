@@ -2,6 +2,7 @@
 
 require 'has_guarded_handlers'
 require 'thread'
+require 'active_support/hash_with_indifferent_access'
 
 module Adhearsion
   ##
@@ -39,7 +40,7 @@ module Adhearsion
       @offer        = nil
       @tags         = []
       @commands     = CommandRegistry.new
-      @variables    = {}
+      @variables    = HashWithIndifferentAccess.new
       @controllers  = []
       @end_reason   = nil
       @peers        = {}
@@ -116,7 +117,7 @@ module Adhearsion
       end
 
       register_event_handler Punchblock::HasHeaders do |event|
-        variables.merge! event.headers_hash
+        merge_headers event.headers
         throw :pass
       end
 
@@ -300,7 +301,7 @@ module Adhearsion
     # @private
     def write_command(command)
       abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
-      variables.merge! command.headers_hash if command.respond_to? :headers_hash
+      merge_headers command.headers if command.respond_to? :headers
       logger.debug "Executing command #{command.inspect}"
       client.execute_command command, :call_id => id, :async => true
     end
@@ -353,6 +354,12 @@ module Adhearsion
 
     def client
       @client
+    end
+
+    def merge_headers(headers)
+      headers.each do |name, value|
+        variables[name.downcase.gsub('-', '_')] = value
+      end
     end
 
     # @private

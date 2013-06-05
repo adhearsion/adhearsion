@@ -47,8 +47,8 @@ module Adhearsion
     describe "its variables" do
       context "with an offer" do
         context "with headers" do
-          let(:headers)   { {:x_foo => 'bar'} }
-          its(:variables) { should be == headers }
+          let(:headers)   { {'X-foo' => 'bar'} }
+          its(:variables) { should be == {'x_foo' => 'bar'} }
 
           it "should be made available via []" do
             subject[:x_foo].should be == 'bar'
@@ -60,20 +60,20 @@ module Adhearsion
           end
 
           context "when receiving an event with headers" do
-            let(:event) { Punchblock::Event::End.new :headers => {:x_bar => 'foo'} }
+            let(:event) { Punchblock::Event::End.new :headers => {'X-bar' => 'foo'} }
 
             it "should merge later headers" do
               subject << event
-              subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
+              subject.variables.should be == {'x_foo' => 'bar', 'x_bar' => 'foo'}
             end
           end
 
           context "when sending a command with headers" do
-            let(:command) { Punchblock::Command::Accept.new :headers => {:x_bar => 'foo'} }
+            let(:command) { Punchblock::Command::Accept.new :headers => {'X-bar' => 'foo'} }
 
             it "should merge later headers" do
               subject.write_command command
-              subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
+              subject.variables.should be == {'x_foo' => 'bar', 'x_bar' => 'foo'}
             end
           end
         end
@@ -572,7 +572,7 @@ module Adhearsion
         describe "with no headers" do
           it 'should send a Reject message' do
             expect_message_waiting_for_response do |c|
-              c.is_a?(Punchblock::Command::Reject) && c.headers_hash == {}
+              c.is_a?(Punchblock::Command::Reject) && c.headers == {}
             end
             subject.reject
           end
@@ -582,7 +582,7 @@ module Adhearsion
           it 'should send a Hangup message with the correct headers' do
             headers = {:foo => 'bar'}
             expect_message_waiting_for_response do |c|
-              c.is_a?(Punchblock::Command::Reject) && c.headers_hash == headers
+              c.is_a?(Punchblock::Command::Reject) && c.headers == headers
             end
             subject.reject nil, headers
           end
