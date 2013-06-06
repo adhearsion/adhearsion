@@ -66,6 +66,15 @@ module Adhearsion
               subject << event
               subject.variables.should be == {'x_foo' => 'bar', 'x_bar' => 'foo'}
             end
+
+            context "with have symbol names" do
+              let(:event) { Punchblock::Event::End.new :headers => {:x_bar => 'foo'} }
+
+              it "should merge later headers" do
+                subject << event
+                subject.variables.should be == {'x_foo' => 'bar', 'x_bar' => 'foo'}
+              end
+            end
           end
 
           context "when sending a command with headers" do

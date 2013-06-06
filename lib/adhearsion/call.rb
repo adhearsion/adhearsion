@@ -358,7 +358,7 @@ module Adhearsion
 
     def merge_headers(headers)
       headers.each do |name, value|
-        variables[name.downcase.gsub('-', '_')] = value
+        variables[name.to_s.downcase.gsub('-', '_')] = value
       end
     end
 
