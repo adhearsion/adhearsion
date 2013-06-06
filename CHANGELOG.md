@@ -1,5 +1,9 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
+# [2.3.5](https://github.com/adhearsion/adhearsion/compare/v2.3.4...v2.3.5) - [2013-06-06](https://rubygems.org/gems/adhearsion/versions/2.3.5)
+  * Bugfix: Fix race conditions in barging in before output start is acknowledged
+  * Performance enhancement: Use Celluloid's thread pool for call controller threads to reduce thread setup overhead
+
 # [2.3.4](https://github.com/adhearsion/adhearsion/compare/v2.3.3...v2.3.4) - [2013-05-14](https://rubygems.org/gems/adhearsion/versions/2.3.4)
   * Bugfix: Process signals safely in the main thread - fixes shutdown on Ruby 2.0
   * Bugfix: Expose the cert store directory in Punchblock config

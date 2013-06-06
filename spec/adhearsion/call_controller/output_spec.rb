@@ -697,9 +697,7 @@ module Adhearsion
 
         #test does pass and method works, but not sure if the empty method is a good idea
         it "plays the correct output" do
-          def controller.write_and_await_response(input_component)
-            # it is actually a no-op here
-          end
+          controller.stub(:write_and_await_response)
 
           expect_component_complete_event
           expect_component_execution Punchblock::Component::Output.new(:ssml => ssml.to_s)
@@ -707,22 +705,23 @@ module Adhearsion
         end
 
         it "returns a single digit amongst the allowed when pressed" do
-          def controller.write_and_await_response(input_component)
+          controller.should_receive(:write_and_await_response).with(kind_of(Punchblock::Component::Input)) do |input_component|
             input_component.trigger_event_handler Punchblock::Event::Complete.new
           end
 
-          expect_component_complete_event
+          controller.should_receive(:write_and_await_response).once.with(kind_of(Punchblock::Component::Output))
+
           Punchblock::Component::Output.any_instance.should_receive(:stop!)
-          expect_component_execution output_component
+          Punchblock::Component::Output.any_instance.should_receive(:complete_event).and_return mock('complete', reason: mock('Reason'))
+          expect_input_component_complete_event 'dtmf-5'
+
           subject.stream_file(prompt, allowed_digits).should be == '5'
         end
 
         context "with output options passed in" do
           let(:extra_options) { {renderer: :native } }
           it "plays the correct output with options" do
-            def controller.write_and_await_response(input_component)
-              # it is actually a no-op here
-            end
+            controller.stub(:write_and_await_response)
 
             expect_component_complete_event
             expect_component_execution Punchblock::Component::Output.new({:ssml => ssml.to_s}.merge(extra_options))
