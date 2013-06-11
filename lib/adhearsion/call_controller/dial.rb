@@ -124,7 +124,7 @@ module Adhearsion
                 logger.debug "#dial joining call #{new_call.id} to #{@call.id}"
                 @call.answer
                 new_call.join @call
-                status.answer!
+                status.answer!(new_call)
               end
             end
 
@@ -161,7 +161,7 @@ module Adhearsion
 
       class DialStatus
         # The collection of calls created during the dial operation
-        attr_accessor :calls
+        attr_accessor :calls, :joined_call
 
         # @private
         def initialize
@@ -177,7 +177,8 @@ module Adhearsion
         end
 
         # @private
-        def answer!
+        def answer!(call)
+          @joined_call = call
           @result = :answer
         end
 
