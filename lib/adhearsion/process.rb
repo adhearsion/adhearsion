@@ -6,7 +6,7 @@ require 'socket'
 
 module Adhearsion
   class Process
-    include Singleton
+    include Celluloid
 
     state_machine :initial => :booting do
       before_transition :log_state_change
@@ -59,7 +59,7 @@ module Adhearsion
     attr_accessor :important_threads
 
     def initialize
-      @important_threads = ThreadSafeArray.new
+      @important_threads = []
       super
     end
 

@@ -9,15 +9,3 @@ class Object
   end
 end
 
-class ThreadSafeArray < BasicObject
-  def initialize
-    @mutex = ::Mutex.new
-    @array = []
-  end
-
-  def method_missing(method, *args, &block)
-    @mutex.synchronize do
-      @array.send method, *args, &block
-    end
-  end
-end
