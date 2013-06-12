@@ -122,13 +122,13 @@ module Adhearsion
       end
 
       on_joined do |event|
-        target = event.call_id || event.mixer_name
+        target = event.call_uri || event.mixer_name
         @peers[target] = Adhearsion.active_calls[target]
         signal :joined, target
       end
 
       on_unjoined do |event|
-        target = event.call_id || event.mixer_name
+        target = event.call_uri || event.mixer_name
         @peers.delete target
         signal :unjoined, target
       end
@@ -244,9 +244,9 @@ module Adhearsion
     def join_options_with_target(target)
       case target
       when Call
-        { :call_id => target.id }
+        { :call_uri => target.id }
       when String
-        { :call_id => target }
+        { :call_uri => target }
       when Hash
         abort ArgumentError.new "You cannot specify both a call ID and mixer name" if target.has_key?(:call_id) && target.has_key?(:mixer_name)
         target

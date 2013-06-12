@@ -120,7 +120,7 @@ module Adhearsion
       describe "for joined events" do
         context "joined to another call" do
           let :event do
-            Punchblock::Event::Joined.new :call_id => 'foobar'
+            Punchblock::Event::Joined.new call_uri: 'foobar'
           end
 
           it "should trigger any on_joined callbacks set for the matching call ID" do
@@ -170,7 +170,7 @@ module Adhearsion
       describe "for unjoined events" do
         context "unjoined from another call" do
           let :event do
-            Punchblock::Event::Unjoined.new :call_id => 'foobar'
+            Punchblock::Event::Unjoined.new call_uri: 'foobar'
           end
 
           it "should trigger any on_unjoined callbacks set for the matching call ID" do
@@ -287,11 +287,11 @@ module Adhearsion
       before { other_call.stub :id => other_call_id }
 
       let :joined_event do
-        Punchblock::Event::Joined.new :call_id => other_call_id
+        Punchblock::Event::Joined.new call_uri: other_call_id
       end
 
       let :unjoined_event do
-        Punchblock::Event::Unjoined.new :call_id => other_call_id
+        Punchblock::Event::Unjoined.new call_uri: other_call_id
       end
 
       context "when we know about the joined call" do
