@@ -33,7 +33,7 @@ module Adhearsion
       set_prompt
       Pry.config.command_prefix = "%"
       if libedit?
-        logger.error "Cannot start. You are running Adhearsion on Ruby with libedit. You must use readline for the console to work."
+        logger.error "Unable to launch Adhearsion Console: This version of Ruby is using libedit. You must use readline for the console to work."
       else
         logger.info "Launching Adhearsion Console"
         @pry_thread = Thread.current
