@@ -30,7 +30,7 @@ module Adhearsion
       end
     end
 
-    attr_reader :end_reason, :commands, :controllers, :variables, :start_time, :end_time
+    attr_reader :end_reason, :controllers, :variables, :start_time, :end_time
 
     delegate :[], :[]=, :to => :variables
     delegate :to, :from, :to => :offer, :allow_nil => true
@@ -123,6 +123,10 @@ module Adhearsion
     end
     alias << deliver_message
 
+    def commands
+      @commands.clone
+    end
+
     # @private
     def register_initial_handlers
       register_event_handler Punchblock::Event::Offer do |offer|
@@ -156,7 +160,7 @@ module Adhearsion
         clear_from_active_calls
         @end_reason = event.reason
         @end_blocker.broadcast event.reason
-        commands.terminate
+        @commands.terminate
         after(Adhearsion.config.platform.after_hangup_lifetime) { terminate }
         throw :pass
       end
@@ -309,7 +313,7 @@ module Adhearsion
 
     # @private
     def write_and_await_response(command, timeout = 60)
-      commands << command
+      @commands << command
       write_command command
 
       response = defer { command.response timeout }
@@ -328,7 +332,7 @@ module Adhearsion
     rescue Timeout::Error
       abort CommandTimeout.new(command.to_s)
     ensure
-      commands.delete command
+      @commands.delete command
     end
 
     # @private
@@ -399,7 +403,7 @@ module Adhearsion
     end
 
     # @private
-    class CommandRegistry < ThreadSafeArray
+    class CommandRegistry < Array
       def terminate
         hangup = Hangup.new
         each { |command| command.response = hangup if command.requested? }
