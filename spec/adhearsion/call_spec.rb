@@ -366,6 +366,33 @@ module Adhearsion
       end
     end
 
+    describe "#wait_for_end" do
+      let :end_event do
+        Punchblock::Event::End.new reason: :hangup
+      end
+
+      context "when the call has already ended" do
+        before { subject << end_event }
+
+        it "should return the end reason" do
+          subject.wait_for_end.should == :hangup
+        end
+      end
+
+      context "when the call has not yet ended" do
+        it "should block until the call ends and return the end reason" do
+          fut = subject.future.wait_for_end
+
+          sleep 0.5
+          fut.should_not be_ready
+
+          subject << end_event
+
+          fut.value.should == :hangup
+        end
+      end
+    end
+
     describe "tagging a call" do
       it 'with a single Symbol' do
         lambda {
