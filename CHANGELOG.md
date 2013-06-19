@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+ * Bugfix: Removed unnecessary Mocha reference from generated plugin
 
 # [2.3.5](https://github.com/adhearsion/adhearsion/compare/v2.3.4...v2.3.5) - [2013-06-06](https://rubygems.org/gems/adhearsion/versions/2.3.5)
   * Bugfix: Fix race conditions in barging in before output start is acknowledged
