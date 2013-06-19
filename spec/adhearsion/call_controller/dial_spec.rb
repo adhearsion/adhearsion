@@ -244,7 +244,7 @@ module Adhearsion
             latch.wait(1).should be_false
 
             other_mock_call << mock_answered
-            other_mock_call << Punchblock::Event::Unjoined.new(:call_id => call.id)
+            other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
 
             latch.wait(1).should be_false
 

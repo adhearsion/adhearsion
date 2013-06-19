@@ -10,7 +10,7 @@ module Adhearsion
         # @raises [PlaybackError] if (one of) the given argument(s) could not be played
         #
         def output(content, options = {})
-          options.merge! :ssml => content.to_s
+          options.merge! :ssml => content
           component = new_output options
           component.register_event_handler Punchblock::Event::Complete do |event|
             controller.logger.error event if event.reason.is_a?(Punchblock::Event::Complete::Error)
