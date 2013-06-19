@@ -57,7 +57,7 @@ module Adhearsion
           let(:ssml) { RubySpeech::SSML.draw { string "BOO" } }
 
           it 'executes an Output with the correct ssml' do
-            component = Punchblock::Component::Output.new :ssml => ssml.to_s
+            component = Punchblock::Component::Output.new :ssml => ssml
             expect_message_waiting_for_response component
             subject.play_ssml ssml
           end

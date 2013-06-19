@@ -2,6 +2,7 @@
 
 require 'has_guarded_handlers'
 require 'thread'
+require 'active_support/hash_with_indifferent_access'
 
 module Adhearsion
   ##
@@ -39,7 +40,7 @@ module Adhearsion
       @offer        = nil
       @tags         = []
       @commands     = CommandRegistry.new
-      @variables    = {}
+      @variables    = HashWithIndifferentAccess.new
       @controllers  = []
       @end_reason   = nil
       @peers        = {}
@@ -116,18 +117,18 @@ module Adhearsion
       end
 
       register_event_handler Punchblock::HasHeaders do |event|
-        variables.merge! event.headers_hash
+        merge_headers event.headers
         throw :pass
       end
 
       on_joined do |event|
-        target = event.call_id || event.mixer_name
+        target = event.call_uri || event.mixer_name
         @peers[target] = Adhearsion.active_calls[target]
         signal :joined, target
       end
 
       on_unjoined do |event|
-        target = event.call_id || event.mixer_name
+        target = event.call_uri || event.mixer_name
         @peers.delete target
         signal :unjoined, target
       end
@@ -243,9 +244,9 @@ module Adhearsion
     def join_options_with_target(target)
       case target
       when Call
-        { :call_id => target.id }
+        { :call_uri => target.id }
       when String
-        { :call_id => target }
+        { :call_uri => target }
       when Hash
         abort ArgumentError.new "You cannot specify both a call ID and mixer name" if target.has_key?(:call_id) && target.has_key?(:mixer_name)
         target
@@ -300,7 +301,7 @@ module Adhearsion
     # @private
     def write_command(command)
       abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
-      variables.merge! command.headers_hash if command.respond_to? :headers_hash
+      merge_headers command.headers if command.respond_to? :headers
       logger.debug "Executing command #{command.inspect}"
       client.execute_command command, :call_id => id, :async => true
     end
@@ -353,6 +354,12 @@ module Adhearsion
 
     def client
       @client
+    end
+
+    def merge_headers(headers)
+      headers.each do |name, value|
+        variables[name.to_s.downcase.gsub('-', '_')] = value
+      end
     end
 
     # @private

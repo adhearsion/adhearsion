@@ -10,7 +10,7 @@ module Adhearsion
         # @raises [PlaybackError] if (one of) the given argument(s) could not be played
         #
         def output(content, options = {}, &block)
-          options.merge! :ssml => content.to_s
+          options.merge! :ssml => content
           component = new_output options
           if block
             controller.execute_component_and_await_completion component, &block
