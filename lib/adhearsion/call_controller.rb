@@ -274,11 +274,5 @@ module Adhearsion
       other.instance_of?(self.class) && call == other.call && metadata == other.metadata
     end
     alias :== :eql?
-
-    def logger
-      call.logger
-    rescue Celluloid::DeadActorError
-      super
-    end
   end#class
 end

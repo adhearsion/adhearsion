@@ -321,11 +321,6 @@ module Adhearsion
     end
 
     # @private
-    def logger_id
-      "#{self.class}: #{id}"
-    end
-
-    # @private
     def to_ary
       [current_actor]
     end

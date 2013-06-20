@@ -13,7 +13,7 @@ module Adhearsion
       end
 
       def logger_id
-        self
+        self.class
       end
     end
 
