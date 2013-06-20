@@ -522,6 +522,11 @@ module Adhearsion
         subject.commands.should_not be_empty
       end
 
+      it "removes the command from the registry after execution" do
+        subject.write_and_await_response message
+        subject.commands.should be_empty
+      end
+
       it "blocks until a response is received" do
         slow_command = Punchblock::Command::Dial.new
         slow_command.request!

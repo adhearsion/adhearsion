@@ -327,6 +327,8 @@ module Adhearsion
       command
     rescue Timeout::Error
       abort CommandTimeout.new(command.to_s)
+    ensure
+      commands.delete command
     end
 
     # @private
@@ -341,7 +343,6 @@ module Adhearsion
     def logger_id
       "#{self.class}: #{id}"
     end
-
     # @private
     def to_ary
       [current_actor]
