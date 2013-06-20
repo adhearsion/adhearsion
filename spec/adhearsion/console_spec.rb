@@ -15,15 +15,17 @@ module Adhearsion
       end
     end
 
-    describe 'testing for libedit vs. readline' do
-      it 'should return true when detecting readline' do
-        Readline.should_receive(:emacs_editing_mode).once.and_return true
-        Console.libedit?.should be false
-      end
+    unless defined? JRUBY_VERSION # These tests are not valid on JRuby
+      describe 'testing for readline' do
+        it 'should return false when detecting readline' do
+          Readline.should_receive(:emacs_editing_mode).once.and_return true
+          Console.cruby_with_readline?.should be true
+        end
 
-      it 'should return false when detecting libedit' do
-        Readline.should_receive(:emacs_editing_mode).once.and_raise NotImplementedError
-        Console.libedit?.should be true
+        it 'should return true when detecting libedit' do
+          Readline.should_receive(:emacs_editing_mode).once.and_raise NotImplementedError
+          Console.cruby_with_readline?.should be false
+        end
       end
     end
 
