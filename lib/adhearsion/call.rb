@@ -293,7 +293,6 @@ module Adhearsion
 
     # @private
     def write_and_await_response(command, timeout = 60)
-      commands << command
       write_command command
 
       case (response = command.response timeout)
