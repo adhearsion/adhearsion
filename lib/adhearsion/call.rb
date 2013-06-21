@@ -18,6 +18,7 @@ module Adhearsion
     include HasGuardedHandlers
 
     execute_block_on_receiver :register_handler, :register_tmp_handler, :register_handler_with_priority, :register_event_handler, :on_joined, :on_unjoined, :on_end, :execute_controller
+    finalizer :finalize
 
     def self.new(*args, &block)
       super.tap do |proxy|
@@ -374,6 +375,10 @@ module Adhearsion
       headers.each do |name, value|
         variables[name.to_s.downcase.gsub('-', '_')] = value
       end
+    end
+
+    def finalize
+      ::Logging::Repository.instance.delete logger_id
     end
 
     # @private

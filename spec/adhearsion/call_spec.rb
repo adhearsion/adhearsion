@@ -905,6 +905,14 @@ module Adhearsion
           end
         end
       end
+
+      describe "after termination" do
+        it "should delete its logger" do
+          logger = subject.logger
+          subject.terminate
+          ::Logging::Repository.instance[logger.name].should be_nil
+        end
+      end
     end
 
     describe Call::CommandRegistry do
