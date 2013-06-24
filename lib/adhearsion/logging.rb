@@ -80,7 +80,7 @@ module Adhearsion
 
         ::Logging.logger.root.level = level
 
-        formatter = formatter if formatter
+        self.formatter = formatter if formatter
       end
 
       def default_appenders
