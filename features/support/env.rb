@@ -8,7 +8,7 @@ require 'aruba/cucumber'
 require 'adhearsion'
 
 Before do
-  @aruba_timeout_seconds = ENV['ARUBA_TIMEOUT'] || RUBY_PLATFORM == 'java' ? 60 : 30
+  @aruba_timeout_seconds = ENV['ARUBA_TIMEOUT'].to_i || (RUBY_PLATFORM == 'java' ? 60 : 30)
   ENV['AHN_PUNCHBLOCK_RECONNECT_ATTEMPTS'] = '0'
   ENV['AHN_PUNCHBLOCK_PORT'] = '1'
 end
