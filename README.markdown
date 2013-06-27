@@ -24,6 +24,12 @@ Adhearsion rests above a lower-level telephony platform, for example [Asterisk](
   * Prism 11+ with rayo-server
 * An interest in building cool new things
 
+\* Support for Ruby 1.9.2 is deprecated, and requires locking your application to ActiveSupport 3.x as follows:
+
+```ruby
+gem 'active_support', '~> 3.0'
+```
+
 ## Install
 
 `gem install adhearsion`
