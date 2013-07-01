@@ -388,7 +388,7 @@ module Adhearsion
 
             latch.wait
             time = Time.now - time
-            time.to_i.should be == timeout
+            time.round.should be == timeout
             t.join
             status = t.value
             status.result.should be == :timeout
