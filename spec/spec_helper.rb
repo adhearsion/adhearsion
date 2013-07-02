@@ -40,7 +40,7 @@ RSpec.configure do |config|
   config.color_enabled = true
 
   config.mock_with :rspec do |mocks|
-    mocks.add_stub_and_should_receive_to Celluloid::AbstractProxy
+    mocks.add_stub_and_should_receive_to Celluloid::AbstractProxy, ThreadSafeArray
   end
 
   config.before :suite do
