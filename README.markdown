@@ -59,7 +59,14 @@ Visit [Adhearsion's website](http://adhearsion.com) for code examples and more i
 
 If you're having trouble, you may want to try asking your question on the IRC channel (#adhearsion on irc.freenode.net), [mailing list](http://groups.google.com/group/adhearsion) or, if you've found a bug, report it on the [bug tracker](https://github.com/adhearsion/adhearsion/issues).
 
-## Author
+## Related Projects
+
+These Open Source projects are also maintained by members of the Adhearsion team and may be useful when developing Adhearsion apps:
+
+* [Telephony-Dev-Box](https://github.com/mojolingo/Telephony-Dev-Box) is a system for creating virtual machines that will preconfigure Adhearsion, Asterisk, FreeSWITCH and PRISM together.  Just add a SIP client and start calling your app!
+* [SippyCup](https://github.com/bklang/sippy_cup) makes generating [SIPp](http://sipp.sourceforge.net/) profiles and RTP media easy.  Useful for load testing your apps and telephony infrastructure.
+
+## Authors
 
 Core team:
 
