@@ -14,16 +14,10 @@ module Adhearsion
           self.config = Adhearsion.config[:punchblock]
 
           username = self.config.username
-          connection_class = case (self.config.platform || :xmpp)
-          when :xmpp
+          if (self.config.platform || :xmpp) == :xmpp
             username = Blather::JID.new username
             username = Blather::JID.new username.node, username.domain, resource unless username.resource
             username = username.to_s
-            Punchblock::Connection::XMPP
-          when :asterisk
-            Punchblock::Connection::Asterisk
-          when :freeswitch
-            Punchblock::Connection::Freeswitch
           end
 
           connection_options = {
@@ -40,8 +34,7 @@ module Adhearsion
             :default_voice      => self.config.default_voice
           }
 
-          self.connection = connection_class.new connection_options
-          self.client = Punchblock::Client.new :connection => connection
+          self.client = Punchblock.client_with_connection self.config.platform, connection_options
 
           # Tell the Punchblock connection that we are ready to process calls.
           Events.register_callback :after_initialized do
