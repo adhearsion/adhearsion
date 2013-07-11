@@ -5,7 +5,7 @@ require 'blather'
 module Adhearsion
   class PunchblockPlugin
     class Initializer
-      cattr_accessor :config, :client, :connection, :dispatcher, :attempts
+      cattr_accessor :config, :client, :dispatcher, :attempts
 
       self.attempts = 0
 
@@ -162,6 +162,10 @@ module Adhearsion
 
         def resource
           [Adhearsion::Process.fqdn, ::Process.pid].join '-'
+        end
+
+        def connection
+          client.connection
         end
       end
     end # Punchblock
