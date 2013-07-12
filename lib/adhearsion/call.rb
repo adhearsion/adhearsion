@@ -151,7 +151,7 @@ module Adhearsion
         logger.info "Call ended"
         clear_from_active_calls
         @end_reason = event.reason
-        @end_blocker.signal event.reason
+        @end_blocker.broadcast event.reason
         commands.terminate
         after(Adhearsion.config.platform.after_hangup_lifetime) { terminate }
         throw :pass
