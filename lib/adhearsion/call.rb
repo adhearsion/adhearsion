@@ -2,6 +2,7 @@
 
 require 'has_guarded_handlers'
 require 'thread'
+require 'active_support/hash_with_indifferent_access'
 
 module Adhearsion
   ##
@@ -17,6 +18,7 @@ module Adhearsion
     include HasGuardedHandlers
 
     execute_block_on_receiver :register_handler, :register_tmp_handler, :register_handler_with_priority, :register_event_handler, :on_joined, :on_unjoined, :on_end, :execute_controller
+    finalizer :finalize
 
     def self.new(*args, &block)
       super.tap do |proxy|
@@ -39,9 +41,10 @@ module Adhearsion
       @offer        = nil
       @tags         = []
       @commands     = CommandRegistry.new
-      @variables    = {}
+      @variables    = HashWithIndifferentAccess.new
       @controllers  = []
       @end_reason   = nil
+      @end_blocker  = Celluloid::Condition.new
       @peers        = {}
 
       self << offer if offer
@@ -97,6 +100,18 @@ module Adhearsion
       @peers.clone
     end
 
+    #
+    # Wait for the call to end. Returns immediately if the call has already ended, else blocks until it does so.
+    # @return [Symbol] the reason for the call ending
+    #
+    def wait_for_end
+      if end_reason
+        end_reason
+      else
+        @end_blocker.wait
+      end
+    end
+
     def register_event_handler(*guards, &block)
       register_handler :event, *guards, &block
     end
@@ -116,18 +131,18 @@ module Adhearsion
       end
 
       register_event_handler Punchblock::HasHeaders do |event|
-        variables.merge! event.headers_hash
+        merge_headers event.headers
         throw :pass
       end
 
       on_joined do |event|
-        target = event.call_id || event.mixer_name
+        target = event.call_uri || event.mixer_name
         @peers[target] = Adhearsion.active_calls[target]
         signal :joined, target
       end
 
       on_unjoined do |event|
-        target = event.call_id || event.mixer_name
+        target = event.call_uri || event.mixer_name
         @peers.delete target
         signal :unjoined, target
       end
@@ -136,6 +151,7 @@ module Adhearsion
         logger.info "Call ended"
         clear_from_active_calls
         @end_reason = event.reason
+        @end_blocker.broadcast event.reason
         commands.terminate
         after(Adhearsion.config.platform.after_hangup_lifetime) { terminate }
         throw :pass
@@ -243,9 +259,9 @@ module Adhearsion
     def join_options_with_target(target)
       case target
       when Call
-        { :call_id => target.id }
+        { :call_uri => target.id }
       when String
-        { :call_id => target }
+        { :call_uri => target }
       when Hash
         abort ArgumentError.new "You cannot specify both a call ID and mixer name" if target.has_key?(:call_id) && target.has_key?(:mixer_name)
         target
@@ -300,7 +316,7 @@ module Adhearsion
     # @private
     def write_command(command)
       abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
-      variables.merge! command.headers_hash if command.respond_to? :headers_hash
+      merge_headers command.headers if command.respond_to? :headers
       logger.debug "Executing command #{command.inspect}"
       client.execute_command command, :call_id => id, :async => true
     end
@@ -353,6 +369,16 @@ module Adhearsion
 
     def client
       @client
+    end
+
+    def merge_headers(headers)
+      headers.each do |name, value|
+        variables[name.to_s.downcase.gsub('-', '_')] = value
+      end
+    end
+
+    def finalize
+      ::Logging::Repository.instance.delete logger_id
     end
 
     # @private

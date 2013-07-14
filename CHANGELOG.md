@@ -1,5 +1,8 @@
 # [develop](https://github.com/adhearsion/adhearsion)
   * Feature: Add joined call attribute to dial status
+  * Feature: Add Call#wait_for_end, which blocks until the call ends and returns its end reason
+  * Bugfix: Removed unnecessary Mocha reference from generated plugin
+  * Bugfix: Call loggers should be deleted after a call finishes
 
 # [2.3.5](https://github.com/adhearsion/adhearsion/compare/v2.3.4...v2.3.5) - [2013-06-06](https://rubygems.org/gems/adhearsion/versions/2.3.5)
   * Bugfix: Fix race conditions in barging in before output start is acknowledged

@@ -2,21 +2,8 @@
 
 $testing = true
 
-unless ENV['SKIP_RCOV']
-  require 'simplecov'
-  require 'simplecov-rcov'
-  class SimpleCov::Formatter::MergedFormatter
-    def format(result)
-      SimpleCov::Formatter::HTMLFormatter.new.format(result)
-      SimpleCov::Formatter::RcovFormatter.new.format(result)
-    end
-  end
-  SimpleCov.formatter = SimpleCov::Formatter::MergedFormatter
-  SimpleCov.start do
-    add_filter "/vendor/"
-    add_filter "/spec/"
-  end
-end
+require 'coveralls'
+Coveralls.wear!
 
 %w{
   bundler/setup
@@ -38,6 +25,10 @@ RSpec.configure do |config|
   config.filter_run :focus => true
   config.run_all_when_everything_filtered = true
   config.color_enabled = true
+
+  config.mock_with :rspec do |mocks|
+    mocks.add_stub_and_should_receive_to Celluloid::AbstractProxy, ThreadSafeArray
+  end
 
   config.before :suite do
     Adhearsion::Logging.start Adhearsion::Logging.default_appenders, :trace, Adhearsion.config.platform.logging.formatter

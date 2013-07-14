@@ -245,9 +245,9 @@ module Adhearsion
           latch.countdown!
         end
         latch.wait(1).should be false
-        subject.call << Punchblock::Event::Joined.new(:call_id => 'call1')
+        subject.call << Punchblock::Event::Joined.new(call_uri: 'call1')
         latch.wait(1).should be false
-        subject.call << Punchblock::Event::Unjoined.new(:call_id => 'call1')
+        subject.call << Punchblock::Event::Unjoined.new(call_uri: 'call1')
         latch.wait(1).should be true
       end
 
@@ -278,7 +278,7 @@ module Adhearsion
             latch.countdown!
           end
           latch.wait(1).should be false
-          subject.call << Punchblock::Event::Joined.new(:call_id => 'call1')
+          subject.call << Punchblock::Event::Joined.new(call_uri: 'call1')
           latch.wait(1).should be true
         end
 

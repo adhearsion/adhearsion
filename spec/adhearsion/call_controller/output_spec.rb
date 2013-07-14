@@ -700,7 +700,7 @@ module Adhearsion
           controller.stub(:write_and_await_response)
 
           expect_component_complete_event
-          expect_component_execution Punchblock::Component::Output.new(:ssml => ssml.to_s)
+          expect_component_execution Punchblock::Component::Output.new(:ssml => ssml)
           subject.stream_file prompt, allowed_digits
         end
 
@@ -724,7 +724,7 @@ module Adhearsion
             controller.stub(:write_and_await_response)
 
             expect_component_complete_event
-            expect_component_execution Punchblock::Component::Output.new({:ssml => ssml.to_s}.merge(extra_options))
+            expect_component_execution Punchblock::Component::Output.new({:ssml => ssml}.merge(extra_options))
             subject.stream_file prompt, allowed_digits, extra_options
           end
         end

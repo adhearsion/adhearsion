@@ -32,13 +32,13 @@ module Adhearsion
     def run
       set_prompt
       Pry.config.command_prefix = "%"
-      if libedit?
-        logger.error "Cannot start. You are running Adhearsion on Ruby with libedit. You must use readline for the console to work."
-      else
+      if jruby? || cruby_with_readline?
         logger.info "Launching Adhearsion Console"
         @pry_thread = Thread.current
         pry
         logger.info "Adhearsion Console exiting"
+      else
+        logger.error "Unable to launch Adhearsion Console: This version of Ruby is using libedit. You must use readline for the console to work."
       end
     end
 
@@ -101,14 +101,18 @@ module Adhearsion
       pry
     end
 
-    def libedit?
+    def cruby_with_readline?
       begin
         # If NotImplemented then this might be libedit
         Readline.emacs_editing_mode
-        false
-      rescue NotImplementedError
         true
+      rescue NotImplementedError
+        false
       end
+    end
+
+    def jruby?
+      defined? JRUBY_VERSION
     end
 
     private
