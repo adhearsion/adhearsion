@@ -166,6 +166,7 @@ module Adhearsion
               t.join
               status = t.value
               status.result.should be == :answer
+              status.joined_call.should eq(other_mock_call)
             end
           end
         end
