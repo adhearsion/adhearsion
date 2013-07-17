@@ -30,7 +30,7 @@ module Adhearsion
       end
     end
 
-    attr_reader :end_reason, :commands, :controllers, :variables
+    attr_reader :end_reason, :commands, :controllers, :variables, :start_time, :end_time
 
     delegate :[], :[]=, :to => :variables
     delegate :to, :from, :to => :offer, :allow_nil => true
@@ -46,6 +46,7 @@ module Adhearsion
       @end_reason   = nil
       @end_blocker  = Celluloid::Condition.new
       @peers        = {}
+      @duration     = nil
 
       self << offer if offer
     end
@@ -127,6 +128,7 @@ module Adhearsion
       register_event_handler Punchblock::Event::Offer do |offer|
         @offer  = offer
         @client = offer.client
+        @start_time = Time.now
         throw :pass
       end
 
@@ -149,12 +151,25 @@ module Adhearsion
 
       on_end do |event|
         logger.info "Call ended"
+        @end_time = Time.now
+        @duration = @end_time - @start_time if @start_time
         clear_from_active_calls
         @end_reason = event.reason
         @end_blocker.broadcast event.reason
         commands.terminate
         after(Adhearsion.config.platform.after_hangup_lifetime) { terminate }
         throw :pass
+      end
+    end
+
+    # @return [Float] The call duration until the current time, or until the call was disconnected, whichever is earlier
+    def duration
+      if @duration
+        @duration
+      elsif @start_time
+        Time.now - @start_time
+      else
+        0.0
       end
     end
 

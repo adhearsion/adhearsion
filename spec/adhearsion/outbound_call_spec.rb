@@ -16,6 +16,7 @@ module Adhearsion
     end
 
     its(:client) { should be mock_client }
+    its(:start_time) { should be nil }
 
     describe ".originate" do
       let(:to) { 'sip:foo@bar.com' }
@@ -95,6 +96,25 @@ module Adhearsion
           response.should_receive(:call).once.with(event)
           subject.on_answer { |event| response.call event }
           subject << event
+        end
+
+        it "should record the call start time" do
+          originate_time = Time.local(2008, 9, 1, 12, 0, 0)
+          Timecop.freeze originate_time
+          subject.duration.should == 0.0
+
+          mid_point_time = Time.local(2008, 9, 1, 12, 0, 20)
+          Timecop.freeze mid_point_time
+          subject.duration.should == 0.0
+
+          answer_time = Time.local(2008, 9, 1, 12, 0, 40)
+          Timecop.freeze answer_time
+          subject << event
+          subject.start_time.should == answer_time
+
+          later_time = Time.local(2008, 9, 1, 12, 0, 50)
+          Timecop.freeze later_time
+          subject.duration.should == 10.0
         end
       end
     end

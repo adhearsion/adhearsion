@@ -1,6 +1,7 @@
 # [develop](https://github.com/adhearsion/adhearsion)
   * Feature: Add Call#wait_for_end, which blocks until the call ends and returns its end reason
   * Feature: Add joined call attribute to dial status
+  * Feature: Track call start/end time and duration
   * Bugfix: Removed unnecessary Mocha reference from generated plugin
   * Bugfix: Call loggers should be deleted after a call finishes
 
