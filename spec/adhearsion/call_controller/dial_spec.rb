@@ -591,7 +591,7 @@ module Adhearsion
             end
           end
         end
-      end#describe #dial
+      end
     end
   end
 end
