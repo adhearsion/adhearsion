@@ -10,6 +10,7 @@ Coveralls.wear!
   active_support
   stringio
   countdownlatch
+  timecop
   adhearsion
 }.each { |f| require f }
 
@@ -36,6 +37,10 @@ RSpec.configure do |config|
 
   config.before :each do
     Adhearsion.router = nil
+  end
+
+  config.after :each do
+    Timecop.return
   end
 end
 
