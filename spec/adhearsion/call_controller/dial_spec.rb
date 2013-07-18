@@ -38,6 +38,7 @@ module Adhearsion
             status.should be_a Dial::DialStatus
             joined_status = status.joins[status.calls.first]
             joined_status.duration.should == 0.0
+            joined_status.result.should == :no_answer
           end
           sleep 0.1
           other_mock_call << mock_end
@@ -150,6 +151,10 @@ module Adhearsion
               t.join
               status = t.value
               status.result.should be == :error
+
+              joined_status = status.joins[status.calls.first]
+              joined_status.duration.should == 0.0
+              joined_status.result.should == :error
             end
           end
 
@@ -171,6 +176,9 @@ module Adhearsion
               status = t.value
               status.result.should be == :answer
               status.joined_call.should eq(other_mock_call)
+
+              joined_status = status.joins[status.calls.first]
+              joined_status.result.should == :joined
             end
 
             it "records the duration of the join" do
@@ -554,6 +562,7 @@ module Adhearsion
 
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 42.0
+              joined_status.result.should == :joined
             end
 
             it "should not join the calls if the call is not active after execution of the call controller" do
@@ -578,6 +587,7 @@ module Adhearsion
 
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 0.0
+              joined_status.result.should == :unconfirmed
             end
           end
         end

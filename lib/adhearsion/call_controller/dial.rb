@@ -93,11 +93,15 @@ module Adhearsion
           @calls = @targets.map do |target, specific_options|
             new_call = OutboundCall.new
 
-            status.joins[new_call] = JoinStatus.new
+            join_status = JoinStatus.new
+            status.joins[new_call] = join_status
 
             new_call.on_end do |event|
               @latch.countdown! unless new_call["dial_countdown_#{@call.id}"]
-              status.error! if event.reason == :error
+              if event.reason == :error
+                status.error!
+                join_status.errored!
+              end
             end
 
             new_call.on_answer do |event|
@@ -113,12 +117,13 @@ module Adhearsion
 
               new_call.on_unjoined @call do |unjoined|
                 new_call["dial_countdown_#{@call.id}"] = true
-                status.joins[new_call].ended
+                join_status.ended
                 @latch.countdown!
               end
 
               if @confirmation_controller
                 status.unconfirmed!
+                join_status.unconfirmed!
                 new_call.execute_controller @confirmation_controller.new(new_call, @confirmation_metadata), lambda { |call| call.signal :confirmed }
                 new_call.wait :confirmed
               end
@@ -126,7 +131,7 @@ module Adhearsion
               if new_call.alive? && new_call.active?
                 logger.debug "#dial joining call #{new_call.id} to #{@call.id}"
                 @call.answer
-                status.joins[new_call].started
+                join_status.started
                 new_call.join @call
                 status.answer!(new_call)
               end
@@ -213,6 +218,18 @@ module Adhearsion
         # Time at which the join was broken
         attr_accessor :end_time
 
+        def initialize
+          @result = :no_answer
+        end
+
+        # The result of the attempt to join calls
+        # Can be:
+        # * :joined - The calls were sucessfully joined
+        # * :no_answer - The attempt to dial the third-party was cancelled before they answered
+        # * :unconfirmed - The callee did not complete confirmation
+        # * :error - The call ended with some error
+        attr_reader :result
+
         # The duration for which the calls were joined. Does not include time spent in confirmation controllers or after being separated.
         def duration
           if start_time && end_time
@@ -222,8 +239,17 @@ module Adhearsion
           end
         end
 
+        def errored!
+          @result = :error
+        end
+
+        def unconfirmed!
+          @result = :unconfirmed
+        end
+
         def started
           @start_time = Time.now
+          @result = :joined
         end
 
         def ended
