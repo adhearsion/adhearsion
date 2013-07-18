@@ -93,6 +93,8 @@ module Adhearsion
           @calls = @targets.map do |target, specific_options|
             new_call = OutboundCall.new
 
+            status.joins[new_call] = JoinStatus.new
+
             new_call.on_end do |event|
               @latch.countdown! unless new_call["dial_countdown_#{@call.id}"]
               status.error! if event.reason == :error
@@ -111,6 +113,7 @@ module Adhearsion
 
               new_call.on_unjoined @call do |unjoined|
                 new_call["dial_countdown_#{@call.id}"] = true
+                status.joins[new_call].ended
                 @latch.countdown!
               end
 
@@ -123,6 +126,7 @@ module Adhearsion
               if new_call.alive? && new_call.active?
                 logger.debug "#dial joining call #{new_call.id} to #{@call.id}"
                 @call.answer
+                status.joins[new_call].started
                 new_call.join @call
                 status.answer!(new_call)
               end
@@ -163,9 +167,13 @@ module Adhearsion
         # The collection of calls created during the dial operation
         attr_accessor :calls, :joined_call
 
+        # A collection of status objects indexed by call. Provides status on the joins such as duration
+        attr_accessor :joins
+
         # @private
         def initialize
           @result = nil
+          @joins = {}
         end
 
         #
@@ -195,6 +203,31 @@ module Adhearsion
         # @private
         def unconfirmed!
           @result ||= :unconfirmed
+        end
+      end
+
+      class JoinStatus
+        # The time at which the calls were joined
+        attr_accessor :start_time
+
+        # Time at which the join was broken
+        attr_accessor :end_time
+
+        # The duration for which the calls were joined. Does not include time spent in confirmation controllers or after being separated.
+        def duration
+          if start_time && end_time
+            end_time - start_time
+          else
+            0.0
+          end
+        end
+
+        def started
+          @start_time = Time.now
+        end
+
+        def ended
+          @end_time = Time.now
         end
       end
 

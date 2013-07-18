@@ -33,7 +33,11 @@ module Adhearsion
           OutboundCall.should_receive(:new).and_return other_mock_call
           other_mock_call.should_receive(:dial).with(to, :from => 'foo').once
           dial_thread = Thread.new do
-            subject.dial(to, :from => 'foo').should be_a Dial::DialStatus
+            status = subject.dial(to, :from => 'foo')
+
+            status.should be_a Dial::DialStatus
+            joined_status = status.joins[status.calls.first]
+            joined_status.duration.should == 0.0
           end
           sleep 0.1
           other_mock_call << mock_end
@@ -167,6 +171,34 @@ module Adhearsion
               status = t.value
               status.result.should be == :answer
               status.joined_call.should eq(other_mock_call)
+            end
+
+            it "records the duration of the join" do
+              call.should_receive(:answer).once
+              other_mock_call.should_receive(:join).once.with(call)
+
+              t = dial_in_thread
+
+              sleep 0.5
+
+              base_time = Time.local(2008, 9, 1, 12, 0, 0)
+              Timecop.freeze base_time
+
+              other_mock_call << mock_answered
+
+              base_time = Time.local(2008, 9, 1, 12, 0, 37)
+              Timecop.freeze base_time
+              other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+
+              t.join
+              status = t.value
+              status.result.should be == :answer
+              status.joined_call.should eq(other_mock_call)
+              joined_status = status.joins[status.calls.first]
+              joined_status.duration.should == 37.0
             end
           end
         end
@@ -504,7 +536,14 @@ module Adhearsion
 
               latch.wait(1).should be_false
 
+              base_time = Time.local(2008, 9, 1, 12, 0, 0)
+              Timecop.freeze base_time
+
               other_mock_call << mock_answered
+
+              base_time = Time.local(2008, 9, 1, 12, 0, 42)
+              Timecop.freeze base_time
+              other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
               other_mock_call << mock_end
 
               latch.wait(1).should be_true
@@ -512,6 +551,9 @@ module Adhearsion
               t.join
               status = t.value
               status.result.should be == :answer
+
+              joined_status = status.joins[status.calls.first]
+              joined_status.duration.should == 42.0
             end
 
             it "should not join the calls if the call is not active after execution of the call controller" do
@@ -533,6 +575,9 @@ module Adhearsion
               t.join
               status = t.value
               status.result.should be == :unconfirmed
+
+              joined_status = status.joins[status.calls.first]
+              joined_status.duration.should == 0.0
             end
           end
         end
