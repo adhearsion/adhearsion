@@ -44,6 +44,12 @@ module Adhearsion
     its(:to)      { should be == to }
     its(:from)    { should be == from }
 
+    it "should mark its start time" do
+      base_time = Time.local(2008, 9, 1, 12, 0, 0)
+      Timecop.freeze base_time
+      subject.start_time.should == base_time
+    end
+
     describe "its variables" do
       context "with an offer" do
         context "with headers" do
@@ -339,6 +345,35 @@ module Adhearsion
         it "should set the end reason" do
           subject << end_event
           subject.end_reason.should be == :hangup
+        end
+
+        it "should set the end time" do
+          finish_time = Time.local(2008, 9, 1, 12, 1, 3)
+          Timecop.freeze finish_time
+          subject.end_time.should == nil
+          subject << end_event
+          subject.end_time.should == finish_time
+        end
+
+        it "should set the call duration" do
+          start_time = Time.local(2008, 9, 1, 12, 0, 0)
+          Timecop.freeze start_time
+          subject
+
+          mid_point_time = Time.local(2008, 9, 1, 12, 0, 37)
+          Timecop.freeze mid_point_time
+
+          subject.duration.should == 37.0
+
+          finish_time = Time.local(2008, 9, 1, 12, 1, 3)
+          Timecop.freeze finish_time
+
+          subject << end_event
+
+          future_time = Time.local(2008, 9, 1, 12, 2, 3)
+          Timecop.freeze finish_time
+
+          subject.duration.should == 63.0
         end
 
         it "should instruct the command registry to terminate" do

@@ -76,6 +76,12 @@ module Adhearsion
       end
     end
 
+    # @private
+    def register_initial_handlers
+      super
+      on_answer { |event| @start_time = Time.now }
+    end
+
     def run_router
       catching_standard_errors do
         Adhearsion.router.handle current_actor
