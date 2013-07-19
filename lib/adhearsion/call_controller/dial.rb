@@ -47,8 +47,8 @@ module Adhearsion
       #
       # @return [DialStatus] the status of the dial operation
       #
-      def dial(to, options = {}, latch = nil)
-        dial = Dial.new to, options, latch, call
+      def dial(to, options = {})
+        dial = Dial.new to, options, call
         dial.run
         dial.await_completion
         dial.cleanup_calls
@@ -58,9 +58,9 @@ module Adhearsion
       class Dial
         attr_accessor :status
 
-        def initialize(to, options, latch, call)
+        def initialize(to, options, call)
           raise Call::Hangup unless call.alive? && call.active?
-          @options, @latch, @call = options, latch, call
+          @options, @call = options, call
           @targets = to.respond_to?(:has_key?) ? to : Array(to)
           set_defaults
         end
@@ -68,7 +68,7 @@ module Adhearsion
         def set_defaults
           @status = DialStatus.new
 
-          @latch ||= CountDownLatch.new @targets.size
+          @latch = CountDownLatch.new @targets.size
 
           @options[:from] ||= @call.from
 
