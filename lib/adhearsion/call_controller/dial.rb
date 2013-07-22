@@ -33,7 +33,7 @@ module Adhearsion
       # @option options [Numeric] :for this option can be thought of best as a timeout.
       #   i.e. timeout after :for if no one answers the call
       #
-      # @option options [CallController] :confirm the controller to execute on answered outbound calls to give an opportunity to screen the call. The calls will be joined if the outbound call is still active after this controller completes.
+      # @option options [CallController] :confirm the controller to execute on the first outbound call to be answered, to give an opportunity to screen the call. The calls will be joined if the outbound call is still active after this controller completes.
       # @option options [Hash] :confirm_metadata Metadata to set on the confirmation controller before executing it. This is shared between all calls if dialing multiple endpoints; if you care about it being mutated, you should provide an immutable value (using eg https://github.com/harukizaemon/hamster).
       #
       # @example Make a call to the PSTN using my SIP provider for VoIP termination
@@ -55,10 +55,15 @@ module Adhearsion
         dial.status
       end
 
-      # Alias for #dial
+      # Dial one or more third parties and join one to this call after execution of a confirmation controller.
+      # Confirmation will be attempted on all answered calls, and calls will be allowed to progress through confirmation in parallel. The first to complete confirmation will be joined to the A-leg, with the others being hung up.
       # @see #dial
       def dial_and_confirm(to, options = {})
-        dial to, options
+        dial = ParallelConfirmationDial.new to, options, call
+        dial.run
+        dial.await_completion
+        dial.cleanup_calls
+        dial.status
       end
 
       class Dial
@@ -111,15 +116,7 @@ module Adhearsion
             end
 
             new_call.on_answer do |event|
-              @calls.each do |call_to_hangup, _|
-                begin
-                  next if call_to_hangup.id == new_call.id
-                  logger.debug "#dial hanging up call #{call_to_hangup.id} because this call has been answered by another channel"
-                  call_to_hangup.hangup
-                rescue Celluloid::DeadActorError
-                  # This actor may previously have been shut down due to the call ending
-                end
-              end
+              pre_confirmation_tasks new_call
 
               new_call.on_unjoined @call do |unjoined|
                 new_call["dial_countdown_#{@call.id}"] = true
@@ -134,8 +131,9 @@ module Adhearsion
                 new_call.wait :confirmed
               end
 
-              if new_call.alive? && new_call.active?
+              if new_call.alive? && new_call.active? && status.result != :answer
                 logger.debug "#dial joining call #{new_call.id} to #{@call.id}"
+                pre_join_tasks new_call
                 @call.answer
                 join_status.started
                 new_call.join @call
@@ -171,6 +169,38 @@ module Adhearsion
               # This actor may previously have been shut down due to the call ending
             end
           end
+        end
+
+        private
+
+        def pre_confirmation_tasks(call)
+          hangup_all_except call
+        end
+
+        def pre_join_tasks(call)
+        end
+
+        def hangup_all_except(call)
+          @calls.each do |call_to_hangup, _|
+            begin
+              next if call_to_hangup.id == call.id
+              logger.debug "#dial hanging up call #{call_to_hangup.id} because this call has been answered by another channel"
+              call_to_hangup.hangup
+            rescue Celluloid::DeadActorError
+              # This actor may previously have been shut down due to the call ending
+            end
+          end
+        end
+      end
+
+      class ParallelConfirmationDial < Dial
+        private
+
+        def pre_confirmation_tasks(call)
+        end
+
+        def pre_join_tasks(call)
+          hangup_all_except call
         end
       end
 
