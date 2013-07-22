@@ -20,8 +20,8 @@ module Adhearsion
       let(:latch) { CountDownLatch.new 1 }
 
       before do
-        other_mock_call.stub id: other_call_id, write_command: true
-        second_other_mock_call.stub id: second_other_call_id, write_command: true
+        other_mock_call.wrapped_object.stub id: other_call_id, write_command: true
+        second_other_mock_call.wrapped_object.stub id: second_other_call_id, write_command: true
       end
 
       def mock_end(reason = :hangup_command)
