@@ -1222,6 +1222,15 @@ module Adhearsion
 
           context "when multiple calls are made" do
             let(:confirmation_latch) { CountDownLatch.new 2 }
+            let(:apology_controller) do
+              Class.new(Adhearsion::CallController) do
+                def run
+                  logger.info "Apologising..."
+                  call['apology_done'] = true
+                end
+              end
+            end
+            let(:options) { {confirm: confirmation_controller, apology: apology_controller} }
 
             before do
               OutboundCall.should_receive(:new).and_return other_mock_call, second_other_mock_call
@@ -1268,6 +1277,8 @@ module Adhearsion
                 other_mock_call.async.deliver_message mock_end
 
                 latch.wait(2).should be_true
+
+                second_other_mock_call['apology_done'].should be_true
 
                 t.join
                 status = t.value

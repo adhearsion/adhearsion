@@ -57,6 +57,9 @@ module Adhearsion
 
       # Dial one or more third parties and join one to this call after execution of a confirmation controller.
       # Confirmation will be attempted on all answered calls, and calls will be allowed to progress through confirmation in parallel. The first to complete confirmation will be joined to the A-leg, with the others being hung up.
+      #
+      # @option options [CallController] :apology controller to execute on calls which lose the race to complete confirmation before they are hung up
+      #
       # @see #dial
       def dial_and_confirm(to, options = {})
         dial = ParallelConfirmationDial.new to, options, call
@@ -177,18 +180,20 @@ module Adhearsion
         private
 
         def pre_confirmation_tasks(call)
-          hangup_all_except call
+          on_all_except call do |target_call|
+            logger.debug "#dial hanging up call #{target_call.id} because this call has been answered by another channel"
+            target_call.hangup
+          end
         end
 
         def pre_join_tasks(call)
         end
 
-        def hangup_all_except(call)
-          @calls.each do |call_to_hangup, _|
+        def on_all_except(call)
+          @calls.each do |target_call, _|
             begin
-              next if call_to_hangup.id == call.id
-              logger.debug "#dial hanging up call #{call_to_hangup.id} because this call has been answered by another channel"
-              call_to_hangup.hangup
+              next if target_call.id == call.id
+              yield target_call
             rescue Celluloid::DeadActorError
               # This actor may previously have been shut down due to the call ending
             end
@@ -197,13 +202,26 @@ module Adhearsion
       end
 
       class ParallelConfirmationDial < Dial
+        def set_defaults
+          super
+          @apology_controller = @options.delete :apology
+        end
+
         private
 
         def pre_confirmation_tasks(call)
         end
 
         def pre_join_tasks(call)
-          hangup_all_except call
+          on_all_except call do |target_call|
+            if @apology_controller
+              logger.debug "#dial apologising to call #{target_call.id} because this call has been answered by another channel"
+              target_call.async.execute_controller @apology_controller.new(target_call), ->(call) { call.hangup }
+            else
+              logger.debug "#dial hanging up call #{target_call.id} because this call has been answered by another channel"
+              target_call.hangup
+            end
+          end
         end
       end
 
