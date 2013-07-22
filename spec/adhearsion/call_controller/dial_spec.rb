@@ -490,13 +490,13 @@ module Adhearsion
 
           let(:options) { {:confirm => confirmation_controller} }
 
-          before do
-            other_mock_call.should_receive(:dial).once
-            OutboundCall.should_receive(:new).and_return other_mock_call
-          end
-
           context "with confirmation controller metadata specified" do
             let(:options) { {:confirm => confirmation_controller, :confirm_metadata => {:foo => 'bar'}} }
+
+            before do
+              other_mock_call.should_receive(:dial).once
+              OutboundCall.should_receive(:new).and_return other_mock_call
+            end
 
             it "should set the metadata on the controller" do
               other_mock_call.should_receive(:hangup).twice.and_return do
@@ -518,6 +518,11 @@ module Adhearsion
           end
 
           context "when an outbound call is answered" do
+            before do
+              other_mock_call.should_receive(:dial).once
+              OutboundCall.should_receive(:new).and_return other_mock_call
+            end
+
             it "should execute the specified confirmation controller" do
               other_mock_call.should_receive(:hangup).twice.and_return do
                 other_mock_call << mock_end
@@ -588,6 +593,56 @@ module Adhearsion
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 0.0
               joined_status.result.should == :unconfirmed
+            end
+          end
+
+          context "when multiple calls are made" do
+            before do
+              OutboundCall.should_receive(:new).and_return other_mock_call, second_other_mock_call
+            end
+
+            def dial_in_thread
+              Thread.new do
+                status = subject.dial [to, second_to], options
+                latch.countdown!
+                status
+              end
+            end
+
+            context "when one answers" do
+              it "should only execute the confirmation controller on the first call to answer, immediately hanging up all others" do
+                other_mock_call['confirm'] = true
+                call.should_receive(:answer).once
+
+                other_mock_call.should_receive(:dial).once.with(to, from: nil)
+                other_mock_call.should_receive(:join).once.with(call)
+                other_mock_call.should_receive(:hangup).once
+
+                second_other_mock_call.should_receive(:dial).once.with(second_to, from: nil)
+                second_other_mock_call.should_receive(:join).never
+                second_other_mock_call.should_receive(:execute_controller).never
+                second_other_mock_call.should_receive(:hangup).twice.and_return do
+                  second_other_mock_call << mock_end(:foo)
+                end
+
+                t = dial_in_thread
+
+                latch.wait(1).should be_false
+
+                other_mock_call << mock_answered
+                confirmation_latch.wait(1).should be_true
+
+                other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                other_mock_call << mock_end
+
+                latch.wait(2).should be_true
+
+                t.join
+                status = t.value
+                status.should be_a Dial::DialStatus
+                status.should have(2).calls
+                status.calls.each { |c| c.should be_a OutboundCall }
+              end
             end
           end
         end
