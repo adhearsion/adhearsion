@@ -24,7 +24,7 @@ module Adhearsion
         second_other_mock_call.stub id: second_other_call_id, write_command: true
       end
 
-      def mock_end(reason = :hangup)
+      def mock_end(reason = :hangup_command)
         Punchblock::Event::End.new.tap { |event| event.stub reason: reason }
       end
 
