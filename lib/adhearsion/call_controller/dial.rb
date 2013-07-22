@@ -55,6 +55,12 @@ module Adhearsion
         dial.status
       end
 
+      # Alias for #dial
+      # @see #dial
+      def dial_and_confirm(to, options = {})
+        dial to, options
+      end
+
       class Dial
         attr_accessor :status
 
