@@ -138,6 +138,9 @@ module Adhearsion
                 join_status.started
                 new_call.join @call
                 status.answer!(new_call)
+              elsif status.result == :answer
+                logger.debug "Lost confirmation race"
+                join_status.lost_confirmation!
               end
             end
 
@@ -263,6 +266,7 @@ module Adhearsion
         # * :joined - The calls were sucessfully joined
         # * :no_answer - The attempt to dial the third-party was cancelled before they answered
         # * :unconfirmed - The callee did not complete confirmation
+        # * :lost_confirmation - The callee completed confirmation, but was beaten by another
         # * :error - The call ended with some error
         attr_reader :result
 
@@ -281,6 +285,10 @@ module Adhearsion
 
         def unconfirmed!
           @result = :unconfirmed
+        end
+
+        def lost_confirmation!
+          @result = :lost_confirmation
         end
 
         def started

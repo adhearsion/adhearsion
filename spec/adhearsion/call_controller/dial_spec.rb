@@ -1240,7 +1240,7 @@ module Adhearsion
                 other_mock_call['confirm'] = true
                 other_mock_call['confirmation_delay'] = 1
                 second_other_mock_call['confirm'] = true
-                second_other_mock_call['confirmation_delay'] = 3
+                second_other_mock_call['confirmation_delay'] = 1.3
 
                 call.should_receive(:answer).once
 
@@ -1275,6 +1275,8 @@ module Adhearsion
                 status.should have(2).calls
                 status.calls.each { |c| c.should be_a OutboundCall }
                 status.result.should be == :answer
+                status.joins[other_mock_call].result.should == :joined
+                status.joins[second_other_mock_call].result.should == :lost_confirmation
               end
             end
           end
