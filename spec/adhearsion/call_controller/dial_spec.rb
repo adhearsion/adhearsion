@@ -1226,11 +1226,12 @@ module Adhearsion
               Class.new(Adhearsion::CallController) do
                 def run
                   logger.info "Apologising..."
+                  call['apology_metadata'] = metadata
                   call['apology_done'] = true
                 end
               end
             end
-            let(:options) { {confirm: confirmation_controller, apology: apology_controller} }
+            let(:options) { {confirm: confirmation_controller, confirm_metadata: {'foo' => 'bar'}, apology: apology_controller} }
 
             before do
               OutboundCall.should_receive(:new).and_return other_mock_call, second_other_mock_call
@@ -1279,6 +1280,7 @@ module Adhearsion
                 latch.wait(2).should be_true
 
                 second_other_mock_call['apology_done'].should be_true
+                second_other_mock_call['apology_metadata'].should == {'foo' => 'bar'}
 
                 t.join
                 status = t.value

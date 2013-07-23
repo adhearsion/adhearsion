@@ -216,7 +216,7 @@ module Adhearsion
           on_all_except call do |target_call|
             if @apology_controller
               logger.debug "#dial apologising to call #{target_call.id} because this call has been answered by another channel"
-              target_call.async.execute_controller @apology_controller.new(target_call), ->(call) { call.hangup }
+              target_call.async.execute_controller @apology_controller.new(target_call, @confirmation_metadata), ->(call) { call.hangup }
             else
               logger.debug "#dial hanging up call #{target_call.id} because this call has been answered by another channel"
               target_call.hangup
