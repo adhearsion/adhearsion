@@ -135,14 +135,13 @@ module Adhearsion
               end
 
               if new_call.alive? && new_call.active? && status.result != :answer
-                logger.debug "#dial joining call #{new_call.id} to #{@call.id}"
+                logger.info "#dial joining call #{new_call.id} to #{@call.id}"
                 pre_join_tasks new_call
                 @call.answer
                 join_status.started
                 new_call.join @call
                 status.answer!(new_call)
               elsif status.result == :answer
-                logger.debug "Lost confirmation race"
                 join_status.lost_confirmation!
               end
             end
@@ -167,7 +166,7 @@ module Adhearsion
         end
 
         def cleanup_calls
-          logger.debug "#dial finished. Hanging up #{@calls.size} outbound calls: #{@calls.map(&:id).join ", "}."
+          logger.info "#dial finished. Hanging up #{@calls.size} outbound calls: #{@calls.map(&:id).join ", "}."
           @calls.each do |outbound_call|
             begin
               outbound_call.hangup
@@ -181,7 +180,7 @@ module Adhearsion
 
         def pre_confirmation_tasks(call)
           on_all_except call do |target_call|
-            logger.debug "#dial hanging up call #{target_call.id} because this call has been answered by another channel"
+            logger.info "#dial hanging up call #{target_call.id} because this call has been answered by another channel"
             target_call.hangup
           end
         end
@@ -215,10 +214,10 @@ module Adhearsion
         def pre_join_tasks(call)
           on_all_except call do |target_call|
             if @apology_controller
-              logger.debug "#dial apologising to call #{target_call.id} because this call has been answered by another channel"
+              logger.info "#dial apologising to call #{target_call.id} because this call has been confirmed by another channel"
               target_call.async.execute_controller @apology_controller.new(target_call, @confirmation_metadata), ->(call) { call.hangup }
             else
-              logger.debug "#dial hanging up call #{target_call.id} because this call has been answered by another channel"
+              logger.info "#dial hanging up call #{target_call.id} because this call has been confirmed by another channel"
               target_call.hangup
             end
           end
