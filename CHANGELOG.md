@@ -3,6 +3,7 @@
   * Feature: Add joined call attribute to dial status
   * Feature: Track call start/end time and duration
   * Feature: Add per-call join duration and disposition to DialStatus
+  * Feature: Add `CallController#dial_and_confirm` which allows parallel confirmation of outbound calls
   * Bugfix: Removed unnecessary Mocha reference from generated plugin
   * Bugfix: Call loggers should be deleted after a call finishes
 

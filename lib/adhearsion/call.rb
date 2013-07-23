@@ -150,7 +150,7 @@ module Adhearsion
       end
 
       on_end do |event|
-        logger.info "Call ended"
+        logger.info "Call ended due to #{event.reason}"
         @end_time = Time.now
         @duration = @end_time - @start_time if @start_time
         clear_from_active_calls
