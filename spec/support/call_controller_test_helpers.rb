@@ -50,7 +50,7 @@ module CallControllerTestHelpers
 
   def expect_input_component_complete_event(utterance)
     complete_event = Punchblock::Event::Complete.new
-    complete_event.stub reason: mock(utterance: utterance, name: :input)
+    complete_event.stub reason: double(utterance: utterance, name: :input)
     Punchblock::Component::Input.any_instance.stub(complete?: true, complete_event: complete_event)
   end
 end

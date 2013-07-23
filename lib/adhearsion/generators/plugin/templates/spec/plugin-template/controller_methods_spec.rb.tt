@@ -8,7 +8,7 @@ module <%= @plugin_name %>
         include <%= @plugin_name %>::ControllerMethods
       end
 
-      let(:mock_call) { mock 'Call' }
+      let(:mock_call) { double 'Call' }
 
       subject do
         TestController.new mock_call

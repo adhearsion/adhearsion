@@ -712,7 +712,7 @@ module Adhearsion
           controller.should_receive(:write_and_await_response).once.with(kind_of(Punchblock::Component::Output))
 
           Punchblock::Component::Output.any_instance.should_receive(:stop!)
-          Punchblock::Component::Output.any_instance.should_receive(:complete_event).and_return mock('complete', reason: mock('Reason'))
+          Punchblock::Component::Output.any_instance.should_receive(:complete_event).and_return double('complete', reason: double('Reason'))
           expect_input_component_complete_event 'dtmf-5'
 
           subject.stream_file(prompt, allowed_digits).should be == '5'

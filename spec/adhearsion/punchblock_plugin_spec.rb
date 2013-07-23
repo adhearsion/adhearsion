@@ -13,7 +13,7 @@ module Adhearsion
     describe '#execute_component' do
       let(:message)     { Punchblock::Command::Accept.new }
       let(:response)    { :foo }
-      let(:mock_client) { mock 'Client' }
+      let(:mock_client) { double 'Client' }
 
       let(:execute_expectation) { PunchblockPlugin.client.should_receive(:execute_command).once }
 

@@ -139,7 +139,7 @@ module Adhearsion
           let(:complete_event) { Punchblock::Event::Complete.new }
 
           it "should execute those handlers when recording completes" do
-            foo = mock 'foo'
+            foo = double 'foo'
             foo.should_receive(:call).once.with kind_of(Punchblock::Event::Complete)
             subject.handle_record_completion { |e| foo.call e }
             subject.record_component.trigger_event_handler complete_event

@@ -125,7 +125,7 @@ module Adhearsion
 
       it "is sends a hangup command for the call" do
         call_id = call.id
-        PunchblockPlugin.stub :client => mock('Client')
+        PunchblockPlugin.stub :client => double('Client')
         PunchblockPlugin.client.should_receive(:execute_command).once.with(Punchblock::Command::Hangup.new, :async => true, :call_id => call_id)
 
         subject << call

@@ -10,7 +10,7 @@ end
 
 module Adhearsion
   describe Call do
-    let(:mock_client) { mock('Client').as_null_object }
+    let(:mock_client) { double('Client').as_null_object }
 
     let(:call_id) { rand }
     let(:headers) { nil }
@@ -112,16 +112,16 @@ module Adhearsion
     end
 
     it 'allows the registration of event handlers which are called when messages are delivered' do
-      event = mock 'Event'
+      event = double 'Event'
       event.should_receive(:foo?).and_return true
-      response = mock 'Response'
+      response = double 'Response'
       response.should_receive(:call).once
       subject.register_event_handler(:foo?) { response.call }
       subject << event
     end
 
     describe "event handlers" do
-      let(:response) { mock 'Response' }
+      let(:response) { double 'Response' }
 
       describe "for joined events" do
         context "joined to another call" do
@@ -476,7 +476,7 @@ module Adhearsion
     end
 
     describe "#write_command" do
-      let(:mock_command) { mock('Command') }
+      let(:mock_command) { double('Command') }
 
       it "should asynchronously write the command to the Punchblock connection" do
         subject.wrapped_object.should_receive(:client).once.and_return mock_client
@@ -917,8 +917,8 @@ module Adhearsion
       end
 
       context "with two controllers registered" do
-        let(:controller1) { mock 'CallController1' }
-        let(:controller2) { mock 'CallController2' }
+        let(:controller1) { double 'CallController1' }
+        let(:controller2) { double 'CallController2' }
 
         before { subject.controllers << controller1 << controller2 }
 

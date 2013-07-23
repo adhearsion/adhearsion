@@ -9,7 +9,7 @@ module Adhearsion
     its(:id) { should be_nil }
     its(:variables) { should be == {} }
 
-    let(:mock_client) { mock 'Punchblock Client' }
+    let(:mock_client) { double 'Punchblock Client' }
 
     before do
       PunchblockPlugin::Initializer.client = mock_client
@@ -87,7 +87,7 @@ module Adhearsion
     end
 
     describe "event handlers" do
-      let(:response) { mock 'Response' }
+      let(:response) { double 'Response' }
 
       describe "for answered events" do
         let(:event) { Punchblock::Event::Answered.new }

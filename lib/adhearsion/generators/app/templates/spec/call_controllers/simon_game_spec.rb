@@ -9,7 +9,7 @@ describe SimonGame do
   let(:long_response)     { OpenStruct.new(:response => "55555") }
   let(:long_number)       { "55555"                              }
 
-  let(:mock_call) { mock 'Call' }
+  let(:mock_call) { double 'Call' }
   subject { SimonGame.new(mock_call) }
 
   describe "#random_number" do 

@@ -52,7 +52,7 @@ module Adhearsion
       let(:call_id)     { rand }
       let(:offer)       { Punchblock::Event::Offer.new :target_call_id => call_id }
       let(:mock_call)   { Call.new }
-      let(:mock_client) { mock 'Client' }
+      let(:mock_client) { double 'Client' }
 
       before do
         mock_call.stub :id => call_id
@@ -130,7 +130,7 @@ module Adhearsion
       describe "#connect" do
         it 'should block until the connection is established' do
           reset_default_config
-          mock_connection = mock :mock_connection
+          mock_connection = double :mock_connection
           mock_connection.should_receive(:register_event_handler).once
           Punchblock::Client.should_receive(:new).once.and_return mock_connection
           mock_connection.should_receive(:run).once
@@ -255,8 +255,8 @@ module Adhearsion
       end
 
       describe "dispatching a component event" do
-        let(:component)   { mock 'ComponentNode' }
-        let(:mock_event)  { mock 'Event' }
+        let(:component)   { double 'ComponentNode' }
+        let(:mock_event)  { double 'Event' }
 
         before { mock_event.stub target_call_id: call_id, source: component }
 
@@ -271,7 +271,7 @@ module Adhearsion
       end
 
       describe "dispatching a call event" do
-        let(:mock_event)  { mock 'Event' }
+        let(:mock_event)  { double 'Event' }
 
         before { mock_event.stub target_call_id: call_id }
 
