@@ -130,8 +130,9 @@ module Adhearsion
               if @confirmation_controller
                 status.unconfirmed!
                 join_status.unconfirmed!
-                new_call.execute_controller @confirmation_controller.new(new_call, @confirmation_metadata), lambda { |call| call.signal :confirmed }
-                new_call.wait :confirmed
+                condition = Celluloid::Condition.new
+                new_call.execute_controller @confirmation_controller.new(new_call, @confirmation_metadata), lambda { |call| condition.broadcast }
+                condition.wait
               end
 
               if new_call.alive? && new_call.active? && status.result != :answer
