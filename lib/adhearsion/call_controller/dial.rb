@@ -166,8 +166,14 @@ module Adhearsion
         end
 
         def cleanup_calls
-          logger.info "#dial finished. Hanging up #{@calls.size} outbound calls: #{@calls.map(&:id).join ", "}."
-          @calls.each do |outbound_call|
+          calls_to_hangup = @calls.map do |call|
+            begin
+              [call.id, call] if call.active?
+            rescue Celluloid::DeadActorError
+            end
+          end.compact
+          logger.info "#dial finished. Hanging up #{calls_to_hangup.size} outbound calls which are still active: #{calls_to_hangup.map(&:first).join ", "}."
+          calls_to_hangup.each do |id, outbound_call|
             begin
               outbound_call.hangup
             rescue Celluloid::DeadActorError

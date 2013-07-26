@@ -70,7 +70,6 @@ module Adhearsion
         describe "without a block" do
           before do
             other_mock_call.should_receive(:dial).once.with(to, options)
-            other_mock_call.should_receive(:hangup).once
             OutboundCall.should_receive(:new).and_return other_mock_call
           end
 
@@ -85,6 +84,7 @@ module Adhearsion
           end
 
           it "unblocks the original controller if the original call ends" do
+            other_mock_call.should_receive(:hangup).once
             dial_in_thread
 
             latch.wait(1).should be_false
@@ -111,6 +111,7 @@ module Adhearsion
           it "hangs up the new call when the dial unblocks" do
             call.should_receive(:answer).once
             other_mock_call.should_receive(:join).once.with(call)
+            other_mock_call.should_receive(:hangup).once
 
             dial_in_thread
 
@@ -235,11 +236,9 @@ module Adhearsion
             OutboundCall.should_receive(:new).and_return other_mock_call, second_other_mock_call
 
             other_mock_call.should_receive(:dial).once.with(to, other_options)
-            other_mock_call.should_receive(:hangup).once
 
             second_other_mock_call.should_receive(:dial).once.with(second_to, second_other_options)
             second_other_mock_call.should_receive(:join).never
-            second_other_mock_call.should_receive(:hangup).once
           end
 
           def dial_in_thread
@@ -253,7 +252,9 @@ module Adhearsion
           it "dials all parties and joins the first one to answer, hanging up the rest" do
             call.should_receive(:answer).once
             other_mock_call.should_receive(:join).once.with(call)
-            second_other_mock_call.should_receive(:hangup).once
+            second_other_mock_call.should_receive(:hangup).once.and_return do
+              second_other_mock_call << mock_end
+            end
 
             t = dial_in_thread
 
@@ -261,10 +262,6 @@ module Adhearsion
 
             other_mock_call << mock_answered
             other_mock_call << mock_end
-
-            latch.wait(1).should be_false
-
-            second_other_mock_call << mock_end
 
             latch.wait(2).should be_true
 
@@ -278,7 +275,10 @@ module Adhearsion
           it "unblocks when the joined call unjoins, allowing it to proceed further" do
             call.should_receive(:answer).once
             other_mock_call.should_receive(:join).once.with(call)
-            second_other_mock_call.should_receive(:hangup).once
+            other_mock_call.should_receive(:hangup).once
+            second_other_mock_call.should_receive(:hangup).once.and_return do
+              second_other_mock_call << mock_end
+            end
 
             t = dial_in_thread
 
@@ -286,10 +286,6 @@ module Adhearsion
 
             other_mock_call << mock_answered
             other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
-
-            latch.wait(1).should be_false
-
-            second_other_mock_call << mock_end
 
             latch.wait(2).should be_true
 
@@ -391,7 +387,9 @@ module Adhearsion
             it "has an overall dial status of :answer" do
               call.should_receive(:answer).once
               other_mock_call.should_receive(:join).once.with(call)
-              second_other_mock_call.should_receive(:hangup).once
+              second_other_mock_call.should_receive(:hangup).once.and_return do
+                second_other_mock_call << mock_end(:error)
+              end
 
               t = dial_in_thread
 
@@ -399,8 +397,6 @@ module Adhearsion
 
               other_mock_call << mock_answered
               other_mock_call << mock_end
-
-              second_other_mock_call << mock_end(:error)
 
               latch.wait(1).should be_true
 
@@ -440,7 +436,6 @@ module Adhearsion
               other_mock_call.should_receive(:dial).once.with(to, hash_including(:timeout => timeout))
               call.should_receive(:answer).once
               other_mock_call.should_receive(:join).once.with(call)
-              other_mock_call.should_receive(:hangup).once
               OutboundCall.should_receive(:new).and_return other_mock_call
 
               time = Time.now
@@ -499,7 +494,7 @@ module Adhearsion
             end
 
             it "should set the metadata on the controller" do
-              other_mock_call.should_receive(:hangup).twice.and_return do
+              other_mock_call.should_receive(:hangup).once.and_return do
                 other_mock_call << mock_end
               end
               other_mock_call['confirm'] = false
@@ -524,7 +519,7 @@ module Adhearsion
             end
 
             it "should execute the specified confirmation controller" do
-              other_mock_call.should_receive(:hangup).twice.and_return do
+              other_mock_call.should_receive(:hangup).once.and_return do
                 other_mock_call << mock_end
               end
               other_mock_call['confirm'] = false
@@ -571,7 +566,7 @@ module Adhearsion
             end
 
             it "should not join the calls if the call is not active after execution of the call controller" do
-              other_mock_call.should_receive(:hangup).twice.and_return do
+              other_mock_call.should_receive(:hangup).once.and_return do
                 other_mock_call << mock_end
               end
               other_mock_call['confirm'] = false
@@ -621,7 +616,7 @@ module Adhearsion
                 second_other_mock_call.should_receive(:dial).once.with(second_to, from: nil)
                 second_other_mock_call.should_receive(:join).never
                 second_other_mock_call.should_receive(:execute_controller).never
-                second_other_mock_call.should_receive(:hangup).twice.and_return do
+                second_other_mock_call.should_receive(:hangup).once.and_return do
                   second_other_mock_call << mock_end(:foo)
                 end
 
@@ -691,7 +686,6 @@ module Adhearsion
         describe "without a block" do
           before do
             other_mock_call.should_receive(:dial).once.with(to, options)
-            other_mock_call.should_receive(:hangup).once
             OutboundCall.should_receive(:new).and_return other_mock_call
           end
 
@@ -706,6 +700,7 @@ module Adhearsion
           end
 
           it "unblocks the original controller if the original call ends" do
+            other_mock_call.should_receive(:hangup).once
             dial_in_thread
 
             latch.wait(1).should be_false
@@ -730,6 +725,7 @@ module Adhearsion
           end
 
           it "hangs up the new call when the dial unblocks" do
+            other_mock_call.should_receive(:hangup).once
             call.should_receive(:answer).once
             other_mock_call.should_receive(:join).once.with(call)
 
@@ -856,11 +852,9 @@ module Adhearsion
             OutboundCall.should_receive(:new).and_return other_mock_call, second_other_mock_call
 
             other_mock_call.should_receive(:dial).once.with(to, other_options)
-            other_mock_call.should_receive(:hangup).once
 
             second_other_mock_call.should_receive(:dial).once.with(second_to, second_other_options)
             second_other_mock_call.should_receive(:join).never
-            second_other_mock_call.should_receive(:hangup).once
           end
 
           def dial_in_thread
@@ -874,7 +868,9 @@ module Adhearsion
           it "dials all parties and joins the first one to answer, hanging up the rest" do
             call.should_receive(:answer).once
             other_mock_call.should_receive(:join).once.with(call)
-            second_other_mock_call.should_receive(:hangup).once
+            second_other_mock_call.should_receive(:hangup).once.and_return do
+              second_other_mock_call << mock_end
+            end
 
             t = dial_in_thread
 
@@ -882,10 +878,6 @@ module Adhearsion
 
             other_mock_call << mock_answered
             other_mock_call << mock_end
-
-            latch.wait(1).should be_false
-
-            second_other_mock_call << mock_end
 
             latch.wait(2).should be_true
 
@@ -899,7 +891,10 @@ module Adhearsion
           it "unblocks when the joined call unjoins, allowing it to proceed further" do
             call.should_receive(:answer).once
             other_mock_call.should_receive(:join).once.with(call)
-            second_other_mock_call.should_receive(:hangup).once
+            other_mock_call.should_receive(:hangup).once
+            second_other_mock_call.should_receive(:hangup).once.and_return do
+              second_other_mock_call << mock_end
+            end
 
             t = dial_in_thread
 
@@ -907,10 +902,6 @@ module Adhearsion
 
             other_mock_call << mock_answered
             other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
-
-            latch.wait(1).should be_false
-
-            second_other_mock_call << mock_end
 
             latch.wait(2).should be_true
 
@@ -1012,7 +1003,9 @@ module Adhearsion
             it "has an overall dial status of :answer" do
               call.should_receive(:answer).once
               other_mock_call.should_receive(:join).once.with(call)
-              second_other_mock_call.should_receive(:hangup).once
+              second_other_mock_call.should_receive(:hangup).once.and_return do
+                second_other_mock_call << mock_end(:error)
+              end
 
               t = dial_in_thread
 
@@ -1020,8 +1013,6 @@ module Adhearsion
 
               other_mock_call << mock_answered
               other_mock_call << mock_end
-
-              second_other_mock_call << mock_end(:error)
 
               latch.wait(1).should be_true
 
@@ -1061,7 +1052,6 @@ module Adhearsion
               other_mock_call.should_receive(:dial).once.with(to, hash_including(:timeout => timeout))
               call.should_receive(:answer).once
               other_mock_call.should_receive(:join).once.with(call)
-              other_mock_call.should_receive(:hangup).once
               OutboundCall.should_receive(:new).and_return other_mock_call
 
               time = Time.now
@@ -1123,7 +1113,7 @@ module Adhearsion
             end
 
             it "should set the metadata on the controller" do
-              other_mock_call.should_receive(:hangup).twice.and_return do
+              other_mock_call.should_receive(:hangup).once.and_return do
                 other_mock_call << mock_end
               end
               other_mock_call['confirm'] = false
@@ -1148,7 +1138,7 @@ module Adhearsion
             end
 
             it "should execute the specified confirmation controller" do
-              other_mock_call.should_receive(:hangup).twice.and_return do
+              other_mock_call.should_receive(:hangup).once.and_return do
                 other_mock_call << mock_end
               end
               other_mock_call['confirm'] = false
@@ -1195,7 +1185,7 @@ module Adhearsion
             end
 
             it "should not join the calls if the call is not active after execution of the call controller" do
-              other_mock_call.should_receive(:hangup).twice.and_return do
+              other_mock_call.should_receive(:hangup).once.and_return do
                 other_mock_call << mock_end
               end
               other_mock_call['confirm'] = false
@@ -1260,7 +1250,7 @@ module Adhearsion
 
                 second_other_mock_call.should_receive(:dial).once.with(second_to, from: nil)
                 second_other_mock_call.should_receive(:join).never
-                second_other_mock_call.should_receive(:hangup).twice.and_return do
+                second_other_mock_call.should_receive(:hangup).once.and_return do
                   second_other_mock_call.async.deliver_message mock_end
                 end
 
