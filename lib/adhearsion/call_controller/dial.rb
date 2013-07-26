@@ -172,6 +172,10 @@ module Adhearsion
             rescue Celluloid::DeadActorError
             end
           end.compact
+          if calls_to_hangup.size.zero?
+            logger.info "#dial finished with no remaining outbound calls"
+            return
+          end
           logger.info "#dial finished. Hanging up #{calls_to_hangup.size} outbound calls which are still active: #{calls_to_hangup.map(&:first).join ", "}."
           calls_to_hangup.each do |id, outbound_call|
             begin
