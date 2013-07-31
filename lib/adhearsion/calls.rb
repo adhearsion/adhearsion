@@ -49,6 +49,8 @@ module Adhearsion
         call_id = key call
         remove_inactive_call call
         return unless reason
+        Adhearsion::Events.trigger :exception, reason
+        logger.error "Call #{call_id} terminated abnormally due to #{reason}. Forcing hangup."
         PunchblockPlugin.client.execute_command Punchblock::Command::Hangup.new, :async => true, :call_id => call_id
       end
     end
