@@ -210,6 +210,103 @@ module Adhearsion
               joined_status.duration.should == 37.0
             end
           end
+
+          context "when a dial is split" do
+            before do
+              call.should_receive(:answer).once
+              other_mock_call.should_receive(:join).once.with(call)
+              call.stub(:unjoin).and_return do
+                call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+              end
+            end
+
+            it "should unjoin the calls" do
+              call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+              end
+
+              dial = Dial::Dial.new to, options, call
+              dial.run
+
+              waiter_thread = Thread.new do
+                dial.await_completion
+                latch.countdown!
+              end
+
+              sleep 0.5
+
+              other_mock_call << mock_answered
+
+              dial.split
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+
+              waiter_thread.join
+              dial.status.result.should be == :answer
+            end
+
+            it "should not unblock immediately" do
+              dial = Dial::Dial.new to, options, call
+              dial.run
+
+              waiter_thread = Thread.new do
+                dial.await_completion
+                latch.countdown!
+              end
+
+              sleep 0.5
+
+              other_mock_call << mock_answered
+
+              dial.split
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+
+              waiter_thread.join
+              dial.status.result.should be == :answer
+            end
+
+            it "should set end time" do
+              dial = Dial::Dial.new to, options, call
+              dial.run
+
+              waiter_thread = Thread.new do
+                dial.await_completion
+                latch.countdown!
+              end
+
+              sleep 0.5
+
+              base_time = Time.local(2008, 9, 1, 12, 0, 0)
+              Timecop.freeze base_time
+
+              other_mock_call << mock_answered
+
+              base_time = Time.local(2008, 9, 1, 12, 0, 37)
+              Timecop.freeze base_time
+              dial.split
+
+              base_time = Time.local(2008, 9, 1, 12, 0, 54)
+              Timecop.freeze base_time
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+
+              waiter_thread.join
+              status = dial.status
+              status.result.should be == :answer
+              status.joined_call.should eq(other_mock_call)
+              joined_status = status.joins[status.calls.first]
+              joined_status.duration.should == 37.0
+            end
+          end
         end
 
         describe "when the caller has already hung up" do

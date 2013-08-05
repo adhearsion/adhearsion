@@ -122,9 +122,11 @@ module Adhearsion
               pre_confirmation_tasks new_call
 
               new_call.on_unjoined @call do |unjoined|
-                new_call["dial_countdown_#{@call.id}"] = true
                 join_status.ended
-                @latch.countdown!
+                unless @splitting
+                  new_call["dial_countdown_#{@call.id}"] = true
+                  @latch.countdown!
+                end
               end
 
               if @confirmation_controller
@@ -158,6 +160,16 @@ module Adhearsion
             local_options = @options.dup.deep_merge specific_options if specific_options
             call.dial target, (local_options || @options)
             call
+          end
+        end
+
+        # Split calls party to the dial
+        # Marks the end time in the status of each join, but does not unblock #dial until one of the calls ends
+        def split
+          @splitting = true
+          calls_to_unjoin = @calls.each do |call|
+            logger.info "Unjoining peer #{call.id}"
+            @call.unjoin call.id
           end
         end
 
