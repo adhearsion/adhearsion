@@ -79,6 +79,10 @@ module Adhearsion
           set_defaults
         end
 
+        def inspect
+          "#<#{self.class} to=#{@to.inspect} options=#{@options.inspect}>"
+        end
+
         def set_defaults
           @status = DialStatus.new
 
@@ -165,11 +169,23 @@ module Adhearsion
 
         # Split calls party to the dial
         # Marks the end time in the status of each join, but does not unblock #dial until one of the calls ends
-        def split
+        # Optionally executes call controllers on calls once split, where 'current_dial' is available in controller metadata in order to perform further operations on the Dial, including rejoining and termination.
+        # @param [Hash] targets Target call controllers to execute on call legs once split
+        # @option options [Adhearsion::CallController] :main The call controller class to execute on the 'main' call leg (the one who initiated the #dial)
+        # @option options [Adhearsion::CallController] :others The call controller class to execute on the 'other' call legs (the ones created as a result of the #dial)
+        def split(targets = {})
           @splitting = true
           calls_to_unjoin = @calls.each do |call|
             logger.info "Unjoining peer #{call.id}"
             @call.unjoin call.id
+            if split_controller = targets[:others]
+              logger.info "Executing split controller #{split_controller} on #{call.id}"
+              call.execute_controller split_controller.new(call, 'current_dial' => self)
+            end
+          end
+          if split_controller = targets[:main]
+            logger.info "Executing split controller #{split_controller} on main call"
+            @call.execute_controller split_controller.new(@call, 'current_dial' => self)
           end
         end
 

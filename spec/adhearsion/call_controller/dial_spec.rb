@@ -306,6 +306,58 @@ module Adhearsion
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 37.0
             end
+
+            context "with new controllers specified" do
+              let(:split_latch) { CountDownLatch.new 2 }
+
+              let(:split_controller) do
+                latch = split_latch
+                Class.new(Adhearsion::CallController) do
+                  @@split_latch = latch
+
+                  def run
+                    call['hit_split_controller'] = self.class
+                    call['split_controller_metadata'] = metadata
+                    @@split_latch.countdown!
+                  end
+                end
+              end
+
+              let(:main_split_controller) { Class.new(split_controller) }
+              let(:others_split_controller) { Class.new(split_controller) }
+
+              it "should execute the :main controller on the originating call and :others on the outbound calls" do
+                dial = Dial::Dial.new to, options, call
+                dial.run
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_answered
+
+                dial.split main: main_split_controller, others: others_split_controller
+
+                latch.wait(1).should be_false
+                split_latch.wait(1).should be_true
+
+                call['hit_split_controller'].should == main_split_controller
+                call['split_controller_metadata']['current_dial'].should be dial
+
+                other_mock_call['hit_split_controller'].should == others_split_controller
+                other_mock_call['split_controller_metadata']['current_dial'].should be dial
+
+                other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+              end
+            end
           end
         end
 
