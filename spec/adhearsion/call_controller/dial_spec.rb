@@ -392,6 +392,42 @@ module Adhearsion
                 waiter_thread.join
                 dial.status.result.should be == :answer
               end
+
+              context "to a specified mixer" do
+                let(:mixer) { SecureRandom.uuid }
+
+                it "should join all calls to the mixer" do
+                  call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                    call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                    other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                  end
+
+                  dial = Dial::Dial.new to, options, call
+                  dial.run
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  other_mock_call << mock_answered
+
+                  dial.split
+
+                  call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  dial.rejoin mixer_name: mixer
+
+                  other_mock_call << mock_end
+
+                  latch.wait(1).should be_true
+
+                  waiter_thread.join
+                  dial.status.result.should be == :answer
+                end
+              end
             end
           end
         end

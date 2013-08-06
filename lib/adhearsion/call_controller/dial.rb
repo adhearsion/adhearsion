@@ -191,10 +191,16 @@ module Adhearsion
         end
 
         # Rejoin parties that were previously split
-        def rejoin
+        # @param [Call, String, Hash] target The target to join calls to. See Call#join for details.
+        def rejoin(target = nil)
+          if target
+            @call.join target
+          else
+            target = @call
+          end
           @calls.each do |call|
-            logger.info "Rejoining #{call.id} to #{@call.id}"
-            call.join @call
+            logger.info "Rejoining #{call.id} to #{target}"
+            call.join target
           end
         end
 
