@@ -1430,7 +1430,9 @@ module Adhearsion
 
                 other_mock_call.should_receive(:dial).once.with(to, from: nil)
                 other_mock_call.should_receive(:join).once.with(call)
-                other_mock_call.should_receive(:hangup).once
+                other_mock_call.should_receive(:hangup).once.and_return do
+                  other_mock_call.async.deliver_message mock_end
+                end
 
                 second_other_mock_call.should_receive(:dial).once.with(second_to, from: nil)
                 second_other_mock_call.should_receive(:join).never
@@ -1449,7 +1451,6 @@ module Adhearsion
                 sleep 2
 
                 other_mock_call.async.deliver_message Punchblock::Event::Unjoined.new(call_uri: call.id)
-                other_mock_call.async.deliver_message mock_end
 
                 latch.wait(2).should be_true
 
