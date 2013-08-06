@@ -176,7 +176,7 @@ module Adhearsion
         # @option options [Adhearsion::CallController] :others The call controller class to execute on the 'other' call legs (the ones created as a result of the #dial)
         def split(targets = {})
           @splitting = true
-          calls_to_unjoin = @calls.each do |call|
+          @calls.each do |call|
             logger.info "Unjoining peer #{call.id}"
             @call.unjoin call.id
             if split_controller = targets[:others]
