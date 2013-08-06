@@ -190,6 +190,14 @@ module Adhearsion
           end
         end
 
+        # Rejoin parties that were previously split
+        def rejoin
+          @calls.each do |call|
+            logger.info "Rejoining #{call.id} to #{@call.id}"
+            call.join @call
+          end
+        end
+
         def await_completion
           @latch.wait(@options[:timeout]) || status.timeout!
           @latch.wait if status.result == :answer
