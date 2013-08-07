@@ -71,7 +71,7 @@ module Adhearsion
       let(:call_id) { rand.to_s }
 
       before do
-        Adhearsion.active_calls.clear!
+        Adhearsion.active_calls.clear
         call.stub(:id => call_id)
       end
 
