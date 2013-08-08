@@ -181,7 +181,7 @@ module Adhearsion
           @splitting = true
           @calls.each do |call|
             logger.info "Unjoining peer #{call.id}"
-            @call.unjoin call.id
+            ignoring_missing_joins { @call.unjoin call.id }
             if split_controller = targets[:others]
               logger.info "Executing split controller #{split_controller} on #{call.id}"
               call.execute_controller split_controller.new(call, 'current_dial' => self), targets[:others_callback]
@@ -205,6 +205,18 @@ module Adhearsion
             logger.info "Rejoining #{call.id} to #{target}"
             call.join target
           end
+        end
+
+        # Merge another Dial into this one, joining all calls to a mixer
+        # @param [Dial] other the other dial operation to merge calls from
+        def merge(other)
+          mixer_name = SecureRandom.uuid
+
+          split
+          rejoin mixer_name: mixer_name
+
+          other.split
+          other.rejoin mixer_name: mixer_name
         end
 
         def await_completion
@@ -254,6 +266,12 @@ module Adhearsion
               # This actor may previously have been shut down due to the call ending
             end
           end
+        end
+
+        def ignoring_missing_joins
+          yield
+        rescue Punchblock::ProtocolError => e
+          raise unless e.name == :service_unavailable
         end
       end
 

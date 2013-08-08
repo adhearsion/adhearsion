@@ -430,6 +430,91 @@ module Adhearsion
                 end
               end
             end
+
+            context "when another dial is merged in" do
+              let(:second_root_call_id) { new_uuid }
+              let(:second_root_call)    { Adhearsion::Call.new }
+              let(:mixer)               { SecureRandom.uuid }
+
+              let(:dial)        { Dial::Dial.new to, options, call }
+              let(:other_dial)  { Dial::Dial.new second_to, options, second_root_call }
+
+              before do
+                second_root_call.stub write_command: true, id: second_root_call_id
+                OutboundCall.should_receive(:new).and_return second_other_mock_call
+                second_other_mock_call.should_receive(:join).once.with(second_root_call)
+                second_other_mock_call.should_receive(:dial).once.with(second_to, options)
+                second_root_call.should_receive(:answer).once
+
+                SecureRandom.stub uuid: mixer
+
+                dial.run
+                other_dial.run
+
+                other_mock_call << mock_answered
+                second_other_mock_call << mock_answered
+              end
+
+              it "should split calls, rejoin to a mixer, and rejoin other calls to mixer" do
+                call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                  call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                  other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                end
+                call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+
+                second_root_call.should_receive(:unjoin).once.ordered.with(second_other_mock_call.id).and_return do
+                  second_root_call << Punchblock::Event::Unjoined.new(call_uri: second_other_mock_call.id)
+                  second_other_mock_call << Punchblock::Event::Unjoined.new(call_uri: second_root_call.id)
+                end
+                second_root_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                second_other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+
+                dial.merge other_dial
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+              end
+
+              context "if the calls were not joined" do
+                it "should still join to mixer" do
+                  call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
+                  call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+
+                  second_root_call.should_receive(:unjoin).once.ordered.with(second_other_mock_call.id).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
+                  second_root_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  second_other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+
+                  dial.merge other_dial
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  other_mock_call << mock_end
+
+                  latch.wait(1).should be_true
+
+                  waiter_thread.join
+                  dial.status.result.should be == :answer
+                end
+              end
+            end
           end
         end
 
