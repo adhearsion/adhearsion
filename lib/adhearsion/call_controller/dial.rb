@@ -217,6 +217,9 @@ module Adhearsion
 
           other.split
           other.rejoin mixer_name: mixer_name
+
+          @calls.concat other.status.calls
+          @calls << other.root_call
         end
 
         def await_completion
@@ -243,6 +246,12 @@ module Adhearsion
               # This actor may previously have been shut down due to the call ending
             end
           end
+        end
+
+        protected
+
+        def root_call
+          @call
         end
 
         private

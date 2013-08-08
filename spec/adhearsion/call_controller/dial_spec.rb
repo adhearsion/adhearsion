@@ -487,6 +487,26 @@ module Adhearsion
                 dial.status.result.should be == :answer
               end
 
+              it "should add the merged calls to the returned status" do
+                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+                dial.merge other_dial
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+                dial.status.calls.should include(second_root_call, second_other_mock_call)
+              end
+
               context "if the calls were not joined" do
                 it "should still join to mixer" do
                   call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
