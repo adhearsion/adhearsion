@@ -1506,6 +1506,21 @@ module Adhearsion
           end
         end
       end
+
+      describe Dial::Dial do
+        subject { Dial::Dial.new to, {}, call }
+
+        describe "#prep_calls" do
+          it "yields all calls to the passed block" do
+            OutboundCall.should_receive(:new).and_return other_mock_call
+
+            gathered_calls = []
+            subject.prep_calls { |call| gathered_calls << call }
+
+            expect(gathered_calls).to include(other_mock_call)
+          end
+        end
+      end
     end
   end
 end

@@ -153,6 +153,8 @@ module Adhearsion
               end
             end
 
+            yield new_call if block_given?
+
             [new_call, target, specific_options]
           end
 

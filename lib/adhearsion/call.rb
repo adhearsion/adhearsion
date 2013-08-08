@@ -342,11 +342,6 @@ module Adhearsion
     end
 
     # @private
-    def to_ary
-      [current_actor]
-    end
-
-    # @private
     def inspect
       attrs = [:offer, :end_reason, :commands, :variables, :controllers, :to, :from].map do |attr|
         "#{attr}=#{send(attr).inspect}"
