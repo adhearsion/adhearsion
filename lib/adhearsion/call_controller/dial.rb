@@ -176,6 +176,7 @@ module Adhearsion
         # @option options [Adhearsion::CallController] :main The call controller class to execute on the 'main' call leg (the one who initiated the #dial)
         # @option options [Proc] :main_callback A block to call when the :main controller completes
         # @option options [Adhearsion::CallController] :others The call controller class to execute on the 'other' call legs (the ones created as a result of the #dial)
+        # @option options [Proc] :others_callback A block to call when the :others controller completes on an individual call
         def split(targets = {})
           @splitting = true
           @calls.each do |call|
@@ -183,7 +184,7 @@ module Adhearsion
             @call.unjoin call.id
             if split_controller = targets[:others]
               logger.info "Executing split controller #{split_controller} on #{call.id}"
-              call.execute_controller split_controller.new(call, 'current_dial' => self)
+              call.execute_controller split_controller.new(call, 'current_dial' => self), targets[:others_callback]
             end
           end
           if split_controller = targets[:main]

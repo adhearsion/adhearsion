@@ -340,8 +340,9 @@ module Adhearsion
                 other_mock_call << mock_answered
 
                 should_receive(:callback).once.with(call)
+                should_receive(:callback).once.with(other_mock_call)
 
-                dial.split main: main_split_controller, others: others_split_controller, main_callback: ->(call) { self.callback(call) }
+                dial.split main: main_split_controller, others: others_split_controller, main_callback: ->(call) { self.callback(call) }, others_callback: ->(call) { self.callback(call) }
 
                 latch.wait(1).should be_false
                 split_latch.wait(1).should be_true
