@@ -87,6 +87,7 @@ module Adhearsion
           @status = DialStatus.new
 
           @latch = CountDownLatch.new @targets.size
+          @waiters = [@latch]
 
           @options[:from] ||= @call.from
 
@@ -218,13 +219,20 @@ module Adhearsion
           other.split
           other.rejoin mixer_name: mixer_name
 
-          @calls.concat other.status.calls
-          @calls << other.root_call
+          calls_to_merge = other.status.calls + [other.root_call]
+          @calls.concat calls_to_merge
+
+          latch = CountDownLatch.new calls_to_merge.size
+          calls_to_merge.each do |call|
+            call.on_end { |event| latch.countdown! }
+          end
+          @waiters << latch
         end
 
         def await_completion
           @latch.wait(@options[:timeout]) || status.timeout!
-          @latch.wait if status.result == :answer
+          return unless status.result == :answer
+          @waiters.each(&:wait)
         end
 
         def cleanup_calls

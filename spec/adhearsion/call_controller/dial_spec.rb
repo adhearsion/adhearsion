@@ -480,6 +480,8 @@ module Adhearsion
                 sleep 0.5
 
                 other_mock_call << mock_end
+                second_root_call << mock_end
+                second_other_mock_call << mock_end
 
                 latch.wait(1).should be_true
 
@@ -499,12 +501,39 @@ module Adhearsion
                 sleep 0.5
 
                 other_mock_call << mock_end
+                second_root_call << mock_end
+                second_other_mock_call << mock_end
 
                 latch.wait(1).should be_true
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
                 dial.status.calls.should include(second_root_call, second_other_mock_call)
+              end
+
+              it "should not unblock until all joined calls end" do
+                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+
+                dial.merge other_dial
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_end
+                latch.wait(1).should be_false
+
+                second_other_mock_call << mock_end
+                latch.wait(1).should be_false
+
+                second_root_call << mock_end
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
               end
 
               context "if the calls were not joined" do
@@ -527,6 +556,8 @@ module Adhearsion
                   sleep 0.5
 
                   other_mock_call << mock_end
+                  second_root_call << mock_end
+                  second_other_mock_call << mock_end
 
                   latch.wait(1).should be_true
 
