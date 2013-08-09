@@ -186,6 +186,7 @@ module Adhearsion
         # @option options [Adhearsion::CallController] :others The call controller class to execute on the 'other' call legs (the ones created as a result of the #dial)
         # @option options [Proc] :others_callback A block to call when the :others controller completes on an individual call
         def split(targets = {})
+          logger.info "Splitting calls apart"
           @splitting = true
           @calls.each do |call|
             logger.info "Unjoining peer #{call.id}"
@@ -203,14 +204,12 @@ module Adhearsion
 
         # Rejoin parties that were previously split
         # @param [Call, String, Hash] target The target to join calls to. See Call#join for details.
-        def rejoin(target = nil)
-          if target
+        def rejoin(target = @call)
+          logger.info "Rejoining to #{target}"
+          unless target == @call
             @call.join target
-          else
-            target = @call
           end
           @calls.each do |call|
-            logger.info "Rejoining #{call.id} to #{target}"
             call.join target
           end
         end
@@ -218,6 +217,7 @@ module Adhearsion
         # Merge another Dial into this one, joining all calls to a mixer
         # @param [Dial] other the other dial operation to merge calls from
         def merge(other)
+          logger.info "Merging with #{other.inspect}"
           mixer_name = SecureRandom.uuid
 
           split
