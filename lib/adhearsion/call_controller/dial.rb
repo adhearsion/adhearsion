@@ -242,7 +242,6 @@ module Adhearsion
         end
 
         def cleanup_calls
-          return if @skip_cleanup
           calls_to_hangup = @calls.map do |call|
             begin
               [call.id, call] if call.active?
@@ -253,12 +252,16 @@ module Adhearsion
             logger.info "#dial finished with no remaining outbound calls"
             return
           end
-          logger.info "#dial finished. Hanging up #{calls_to_hangup.size} outbound calls which are still active: #{calls_to_hangup.map(&:first).join ", "}."
-          calls_to_hangup.each do |id, outbound_call|
-            begin
-              outbound_call.hangup
-            rescue Celluloid::DeadActorError
-              # This actor may previously have been shut down due to the call ending
+          if @skip_cleanup
+            logger.info "#dial finished. Leaving #{calls_to_hangup.size} outbound calls going which are still active: #{calls_to_hangup.map(&:first).join ", "}."
+          else
+            logger.info "#dial finished. Hanging up #{calls_to_hangup.size} outbound calls which are still active: #{calls_to_hangup.map(&:first).join ", "}."
+            calls_to_hangup.each do |id, outbound_call|
+              begin
+                outbound_call.hangup
+              rescue Celluloid::DeadActorError
+                # This actor may previously have been shut down due to the call ending
+              end
             end
           end
         end
