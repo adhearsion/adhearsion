@@ -107,7 +107,12 @@ module Adhearsion
         end
 
         def track_originating_call
-          @call.on_end { |_| @latch.countdown! until @latch.count == 0 }
+          @call.on_end do |_|
+            logger.info "Root call ended, unblocking everything..."
+            @waiters.each do |latch|
+              latch.countdown! until latch.count == 0
+            end
+          end
         end
 
         def prep_calls
