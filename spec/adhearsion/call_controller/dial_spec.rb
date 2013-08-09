@@ -108,7 +108,7 @@ module Adhearsion
             latch.wait(1).should be_true
           end
 
-          it "hangs up the new call when the dial unblocks" do
+          it "hangs up the new call when the root call ends" do
             call.should_receive(:answer).once
             other_mock_call.should_receive(:join).once.with(call)
             other_mock_call.should_receive(:hangup).once
@@ -1655,6 +1655,31 @@ module Adhearsion
             subject.prep_calls { |call| gathered_calls << call }
 
             expect(gathered_calls).to include(other_mock_call)
+          end
+        end
+
+        context "#skip_cleanup" do
+          it "allows the new call to continue after the root call ends" do
+            OutboundCall.should_receive(:new).and_return other_mock_call
+
+            call.stub answer: true
+            other_mock_call.stub dial: true, join: true
+            other_mock_call.should_receive(:hangup).never
+
+            subject.run
+
+            subject.skip_cleanup
+
+            Thread.new do
+              subject.await_completion
+              subject.cleanup_calls
+              latch.countdown!
+            end
+
+            other_mock_call << mock_answered
+            call << mock_end
+
+            latch.wait(1).should be_true
           end
         end
       end

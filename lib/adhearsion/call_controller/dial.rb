@@ -96,6 +96,8 @@ module Adhearsion
 
           @confirmation_controller = @options.delete :confirm
           @confirmation_metadata = @options.delete :confirm_metadata
+
+          @skip_cleanup = false
         end
 
         def run
@@ -235,7 +237,12 @@ module Adhearsion
           @waiters.each(&:wait)
         end
 
+        def skip_cleanup
+          @skip_cleanup = true
+        end
+
         def cleanup_calls
+          return if @skip_cleanup
           calls_to_hangup = @calls.map do |call|
             begin
               [call.id, call] if call.active?
