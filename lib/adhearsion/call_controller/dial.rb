@@ -216,9 +216,9 @@ module Adhearsion
           mixer_name = SecureRandom.uuid
 
           split
-          rejoin mixer_name: mixer_name
-
           other.split
+
+          rejoin mixer_name: mixer_name
           other.rejoin mixer_name: mixer_name
 
           calls_to_merge = other.status.calls + [other.root_call]

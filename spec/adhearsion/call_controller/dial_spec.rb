@@ -460,13 +460,14 @@ module Adhearsion
                   call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                   other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
                 end
-                call.should_receive(:join).once.ordered.with(mixer_name: mixer)
-                other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
-
                 second_root_call.should_receive(:unjoin).once.ordered.with(second_other_mock_call.id).and_return do
                   second_root_call << Punchblock::Event::Unjoined.new(call_uri: second_other_mock_call.id)
                   second_other_mock_call << Punchblock::Event::Unjoined.new(call_uri: second_root_call.id)
                 end
+
+                call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+
                 second_root_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
                 second_other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
 
@@ -539,10 +540,11 @@ module Adhearsion
               context "if the calls were not joined" do
                 it "should still join to mixer" do
                   call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
+                  second_root_call.should_receive(:unjoin).once.ordered.with(second_other_mock_call.id).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
+
                   call.should_receive(:join).once.ordered.with(mixer_name: mixer)
                   other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
 
-                  second_root_call.should_receive(:unjoin).once.ordered.with(second_other_mock_call.id).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
                   second_root_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
                   second_other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
 
