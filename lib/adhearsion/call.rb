@@ -312,7 +312,8 @@ module Adhearsion
       commands << command
       write_command command
 
-      case (response = command.response timeout)
+      response = defer { command.response timeout }
+      case response
       when Punchblock::ProtocolError
         if response.name == :item_not_found
           abort Hangup.new(@end_reason)
