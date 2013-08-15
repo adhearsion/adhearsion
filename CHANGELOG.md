@@ -4,6 +4,7 @@
   * Feature: Track call start/end time and duration
   * Feature: Add per-call join duration and disposition to DialStatus
   * Feature: Add `CallController#dial_and_confirm` which allows parallel confirmation of outbound calls
+  * Feature: Add `#originate` method to console as alias for `Adhearsion::OutboundCall.originate`
   * Bugfix: Removed unnecessary Mocha reference from generated plugin
   * Bugfix: Call loggers should be deleted after a call finishes
 
