@@ -534,6 +534,15 @@ module Adhearsion
         (Time.now - starting_time).should >= 0.5
       end
 
+      it "does not block the whole actor while waiting for a response" do
+        slow_command = Punchblock::Command::Dial.new
+        slow_command.request!
+        fut = subject.future.write_and_await_response slow_command
+        subject.id.should == call_id
+        slow_command.response = response
+        fut.value
+      end
+
       describe "with a successful response" do
         it "returns the executed command" do
           subject.write_and_await_response(message).should be message
