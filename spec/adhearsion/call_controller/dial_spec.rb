@@ -185,6 +185,7 @@ module Adhearsion
             it "records the duration of the join" do
               call.should_receive(:answer).once
               other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.stub hangup: true
 
               t = dial_in_thread
 
@@ -801,6 +802,7 @@ module Adhearsion
             it "records the duration of the join" do
               call.should_receive(:answer).once
               other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.stub hangup: true
 
               t = dial_in_thread
 
