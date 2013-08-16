@@ -1156,7 +1156,9 @@ module Adhearsion
             end
 
             it "should join the calls if the call is still active after execution of the call controller" do
-              other_mock_call.should_receive(:hangup).once
+              other_mock_call.should_receive(:hangup).once.and_return do
+                other_mock_call << mock_end
+              end
               other_mock_call['confirm'] = true
               call.should_receive(:answer).once
               other_mock_call.should_receive(:join).once.with(call)
@@ -1173,7 +1175,6 @@ module Adhearsion
               base_time = Time.local(2008, 9, 1, 12, 0, 42)
               Timecop.freeze base_time
               other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
-              other_mock_call << mock_end
 
               latch.wait(1).should be_true
 
