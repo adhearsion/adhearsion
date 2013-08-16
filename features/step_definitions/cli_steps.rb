@@ -19,6 +19,8 @@ Given /^that I create a valid app under "([^"]*)"$/ do |path|
     When I run `ahn create #{path}`
     Then there should be a valid adhearsion directory named "#{path}"
   }
+
+  remove_file "#{path}/Gemfile"
 end
 
 Then /^there should be a valid adhearsion directory named "([^"]*)"$/ do |path|
