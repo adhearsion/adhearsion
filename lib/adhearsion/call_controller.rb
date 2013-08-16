@@ -54,7 +54,11 @@ module Adhearsion
       end
     end
 
-    attr_reader :call, :metadata
+    # @return [Call] The call object on which the controller is executing
+    attr_reader :call
+
+    # @return [Hash] The controller's metadata provided at invocation
+    attr_reader :metadata
 
     # @private
     attr_reader :block
