@@ -15,6 +15,7 @@ Feature: Adhearsion Ahn CLI (start)
     Given that I create a valid app under "path/somewhere"
     When I cd to "path/somewhere"
     And I run `ahn start` interactively
+    And I type "exit"
     And I wait for output to contain "Starting connection to server"
     Then the output should contain "Adhearsion::Console: Launching Adhearsion Console"
     And the output should contain "Adhearsion shut down"
