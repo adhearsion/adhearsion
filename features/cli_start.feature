@@ -27,3 +27,11 @@ Feature: Adhearsion Ahn CLI (start)
     And I wait for output to contain "Starting connection to server"
     Then the output should contain "Adhearsion::Console: Launching Adhearsion Console"
     And the output should contain "Adhearsion shut down"
+
+  Scenario: Starting without the console
+    Given that I create a valid app under "path/somewhere"
+    When I cd to "path/somewhere"
+    And I run `ahn start --no-console` interactively
+    And I wait for output to contain "Starting connection to server"
+    Then the output should not contain "Adhearsion::Console: Launching Adhearsion Console"
+    And the output should contain "Adhearsion shut down"
