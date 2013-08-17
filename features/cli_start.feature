@@ -21,7 +21,8 @@ Feature: Adhearsion Ahn CLI (start)
     And the output should contain "Adhearsion shut down"
 
   Scenario: Command start with only path works properly
-    Given that I create a valid app under "path/somewhere"
+    Given JRuby skip test waiting for https://jira.codehaus.org/browse/JRUBY-6994
+    And that I create a valid app under "path/somewhere"
     When I run `ahn start path/somewhere` interactively
     And I wait for output to contain "Starting connection to server"
     Then the output should contain "Adhearsion::Console: Launching Adhearsion Console"
