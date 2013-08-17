@@ -12,10 +12,10 @@ Feature: Adhearsion Ahn CLI (start)
     And the exit status should be 1
 
   Scenario: Command start with no path inside of the app directory
-    Given that I create a valid app under "path/somewhere"
+    Given JRuby skip test because the console causes the process to never exit
+    And that I create a valid app under "path/somewhere"
     When I cd to "path/somewhere"
     And I run `ahn start` interactively
-    And I type "exit"
     And I wait for output to contain "Starting connection to server"
     Then the output should contain "Adhearsion::Console: Launching Adhearsion Console"
     And the output should contain "Adhearsion shut down"
