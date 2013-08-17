@@ -50,6 +50,12 @@ module Adhearsion
       subject.start_time.should == base_time
     end
 
+    describe "#commands" do
+      it "should use a duplicating accessor for the command registry" do
+        subject.commands.should_not be subject.commands
+      end
+    end
+
     describe "its variables" do
       context "with an offer" do
         context "with headers" do
@@ -377,8 +383,11 @@ module Adhearsion
         end
 
         it "should instruct the command registry to terminate" do
-          subject.commands.should_receive(:terminate).once
+          command = Punchblock::Command::Answer.new
+          command.request!
+          subject.future.write_and_await_response command
           subject << end_event
+          command.response(1).should be_a Call::Hangup
         end
 
         it "removes itself from the active calls" do
