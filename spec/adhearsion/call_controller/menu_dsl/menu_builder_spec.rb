@@ -16,6 +16,16 @@ module Adhearsion
               foo :bar
             end
           end
+
+          let(:foo) { :bar }
+
+          it "makes the block context available" do
+            doo = nil
+            subject.build do
+              doo = foo
+            end
+            doo.should == :bar
+          end
         end#build
 
         describe "#match" do
