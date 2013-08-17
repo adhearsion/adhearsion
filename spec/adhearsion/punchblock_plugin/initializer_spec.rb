@@ -179,7 +179,7 @@ module Adhearsion
           Adhearsion.process.booted
           Adhearsion.process.shutdown
           mock_client.stub(:run).and_raise Punchblock::DisconnectedError
-          Initializer.should_not raise_error Punchblock::DisconnectedError
+          Initializer.should_not raise_error
         end
       end
 
