@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 module Adhearsion
-  describe Adhearsion.process do
+  describe Adhearsion::Process do
     before :all do
       Adhearsion.active_calls.clear
     end
@@ -29,7 +29,7 @@ module Adhearsion
         calls << fake_call
       end
       expect(Adhearsion).to receive(:active_calls).and_return calls
-      expect(Adhearsion.process.instance).to receive(:final_shutdown).once
+      expect(subject).to receive(:final_shutdown).once
       blocking_threads = []
       3.times do
         blocking_threads << Thread.new do
@@ -37,13 +37,13 @@ module Adhearsion
           calls.pop
         end
       end
-      Adhearsion.process.stop_when_zero_calls
+      subject.stop_when_zero_calls
       blocking_threads.each { |thread| thread.join }
     end
 
     it 'should terminate the process immediately on #force_stop' do
       expect(::Process).to receive(:exit).with(1).once.and_return true
-      Adhearsion.process.force_stop
+      subject.force_stop
     end
 
     describe "#final_shutdown" do
@@ -55,7 +55,7 @@ module Adhearsion
           Adhearsion.active_calls << fake_call
         end
 
-        Adhearsion.process.final_shutdown
+        subject.final_shutdown
 
         Adhearsion.active_calls.clear
       end
@@ -71,32 +71,32 @@ module Adhearsion
         Events.shutdown { sleep 1; foo[:b] }
         Events.shutdown { foo[:c] }
 
-        Adhearsion.process.final_shutdown
+        subject.final_shutdown
       end
 
       it "should stop the console" do
         expect(Console).to receive(:stop).once
-        Adhearsion.process.final_shutdown
+        subject.final_shutdown
       end
     end
 
     it 'should handle subsequent :shutdown events in the correct order' do
-      Adhearsion.process.booted
-      expect(Adhearsion.process.state_name).to be :running
-      Adhearsion.process.shutdown
-      expect(Adhearsion.process.state_name).to be :stopping
-      Adhearsion.process.shutdown
-      expect(Adhearsion.process.state_name).to be :rejecting
-      Adhearsion.process.shutdown
-      expect(Adhearsion.process.state_name).to be :stopped
-      expect(Adhearsion.process.instance).to receive(:die_now!).once
-      Adhearsion.process.shutdown
+      subject.booted
+      expect(subject.state_name).to be :running
+      subject.shutdown
+      expect(subject.state_name).to be :stopping
+      subject.shutdown
+      expect(subject.state_name).to be :rejecting
+      subject.shutdown
+      expect(subject.state_name).to be :stopped
+      expect(subject.instance).to receive(:die_now!).once
+      subject.shutdown
       sleep 0.2
     end
 
     it 'should forcibly kill the Adhearsion process on :force_stop' do
       expect(::Process).to receive(:exit).once.with(1)
-      Adhearsion.process.force_stop
+      subject.force_stop
     end
 
     describe "#fqdn" do
