@@ -126,11 +126,11 @@ module Adhearsion
         path ||= Dir.pwd if in_app?
 
         raise PathRequired, ARGV[0] if path.nil? or path.empty?
-        raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?(path)
 
         Dir.chdir path do
+          raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?
           args = ARGV.dup
-          args[1] = File.expand_path path
+          args[1] = '.'
           ScriptAhnLoader.exec_script_ahn! args
         end
       end
