@@ -517,9 +517,9 @@ module Adhearsion
         subject.write_and_await_response message
       end
 
-      it "adds the command to the registry" do
+      it "removes the command from the registry after execution" do
         subject.write_and_await_response message
-        subject.commands.should_not be_empty
+        subject.commands.should be_empty
       end
 
       it "blocks until a response is received" do
@@ -534,13 +534,24 @@ module Adhearsion
         (Time.now - starting_time).should >= 0.5
       end
 
-      it "does not block the whole actor while waiting for a response" do
-        slow_command = Punchblock::Command::Dial.new
-        slow_command.request!
-        fut = subject.future.write_and_await_response slow_command
-        subject.id.should == call_id
-        slow_command.response = response
-        fut.value
+      context "while waiting for a response" do
+        let(:slow_command) { Punchblock::Command::Dial.new }
+
+        before { slow_command.request! }
+
+        it "does not block the whole actor while waiting for a response" do
+          fut = subject.future.write_and_await_response slow_command
+          subject.id.should == call_id
+          slow_command.response = response
+          fut.value
+        end
+
+        it "adds the command to the registry" do
+          subject.future.write_and_await_response slow_command
+          sleep 0.2
+          subject.commands.should_not be_empty
+          subject.commands.first.should be slow_command
+        end
       end
 
       describe "with a successful response" do
