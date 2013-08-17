@@ -55,8 +55,9 @@ module Adhearsion
       end
 
       desc "start </path/to/directory>", "Start the Adhearsion server in the foreground with a console"
+      method_option :noconsole, type: :boolean, aliases: %w{--no-console}
       def start(path = nil)
-        start_app path, :console
+        start_app path, options[:noconsole] ? :simple : :console
       end
 
       desc "daemon </path/to/directory>", "Start the Adhearsion server in the background"
