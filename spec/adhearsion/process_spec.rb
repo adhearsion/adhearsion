@@ -89,7 +89,7 @@ module Adhearsion
       expect(subject.state_name).to be :rejecting
       subject.shutdown
       expect(subject.state_name).to be :stopped
-      expect(subject.instance).to receive(:die_now!).once
+      ::Process.should_receive(:exit).once.with(1)
       subject.shutdown
       sleep 0.2
     end
