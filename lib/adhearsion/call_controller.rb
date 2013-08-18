@@ -168,7 +168,6 @@ module Adhearsion
     def hangup(headers = nil)
       block_until_resumed
       call.hangup headers
-      after_call
       raise Call::Hangup
     end
 
