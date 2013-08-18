@@ -160,17 +160,6 @@ module Adhearsion
       @after_call ||= execute_callbacks :after_call
     end
 
-    #
-    # Hangup the call, and execute after_call callbacks
-    #
-    # @param [Hash] headers
-    #
-    def hangup(headers = nil)
-      block_until_resumed
-      call.hangup headers
-      raise Call::Hangup
-    end
-
     # @private
     def write_and_await_response(command)
       block_until_resumed
@@ -199,6 +188,17 @@ module Adhearsion
     end
 
     #
+    # Hangup the call, and execute after_call callbacks
+    #
+    # @param [Hash] headers
+    #
+    def hangup(headers = nil)
+      block_until_resumed
+      call.hangup headers
+      raise Call::Hangup
+    end
+
+    #
     # Reject the call
     #
     # @see Call#reject
@@ -206,6 +206,7 @@ module Adhearsion
     def reject(*args)
       block_until_resumed
       call.reject(*args)
+      raise Call::Hangup
     end
 
     #
