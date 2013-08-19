@@ -16,7 +16,7 @@ module Adhearsion
       def create_rubygem_hook
         get_rubygem_vals
 
-        `curl -H 'Authorization:#{ENV['RUBYGEM_AUTH']}' \
+        puts `curl -H 'Authorization:#{ENV['RUBYGEM_AUTH']}' \
         -F 'gem_name=#{ENV['RUBYGEM_NAME']}' \
         -F 'url=http://www.ahnhub.com/gem' \
         https://rubygems.org/api/v1/web_hooks/fire`

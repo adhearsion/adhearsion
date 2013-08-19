@@ -6,7 +6,16 @@ Then /^I should see the usage message$/ do
     Then the output should contain "ahn start"
     Then the output should contain "ahn daemon"
     Then the output should contain "ahn version"
+    Then the output should contain "ahn plugin"
     Then the output should contain "ahn help"
+  }
+end
+
+Then /^I should see the plugin usage message$/ do
+  steps %Q{
+    Then the output should contain "ahn plugin create_ahnhub_hooks"
+    Then the output should contain "ahn plugin create_github_hook"
+    Then the output should contain "ahn plugin create_rubygem_hook"
   }
 end
 
@@ -57,3 +66,4 @@ When /^I terminate the process using the pid file "([^"]*)"$/ do |pidfile|
     sleep 1
   end
 end
+
