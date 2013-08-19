@@ -6,6 +6,7 @@
   * Feature: Add `CallController#dial_and_confirm` which allows parallel confirmation of outbound calls
   * Feature: Add `#originate` method to console as alias for `Adhearsion::OutboundCall.originate`
   * Feature: Allow the console to be disabled using `--no-console`
+  * Feature: Add CLI options to generate hooks for a plugin to register on [ahnhub.com](http://www.ahnhub.com)
   * Bugfix: Removed unnecessary Mocha reference from generated plugin
   * Bugfix: Call loggers should be deleted after a call finishes
   * Bugfix: A menu definition's block context is now available
