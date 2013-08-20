@@ -43,6 +43,8 @@ module Adhearsion
     its(:commands) { should be_empty }
 
     its(:id)      { should be == call_id }
+    its(:domain)  { should be == domain }
+    its(:uri)     { should be == "xmpp:#{call_id}@#{domain}" }
     its(:to)      { should be == to }
     its(:from)    { should be == from }
 
@@ -134,12 +136,26 @@ module Adhearsion
       describe "for joined events" do
         context "joined to another call" do
           let :event do
-            Punchblock::Event::Joined.new call_uri: 'foobar'
+            Punchblock::Event::Joined.new call_uri: 'xmpp:foobar@rayo.net'
           end
 
           it "should trigger any on_joined callbacks set for the matching call ID" do
             response.should_receive(:call).once.with(event)
-            subject.on_joined(:call_id => 'foobar') { |event| response.call event }
+            subject.on_joined(:call_uri => 'xmpp:foobar@rayo.net') { |event| response.call event }
+            subject << event
+          end
+
+          it "should trigger any on_joined callbacks set for the matching call ID as a string" do
+            response.should_receive(:call).once.with(event)
+            subject.on_joined('foobar') { |event| response.call event }
+            subject << event
+          end
+
+          it "should trigger any on_joined callbacks set for the matching call" do
+            response.should_receive(:call).once.with(event)
+            call = Call.new
+            call.wrapped_object.stub id: 'foobar', domain: 'rayo.net'
+            subject.on_joined(call) { |event| response.call event }
             subject << event
           end
 
@@ -178,18 +194,32 @@ module Adhearsion
             subject.on_joined(:call_id => 'foobar') { |event| response.call event }
             subject << event
           end
+
+          it "should not trigger any on_joined callbacks set for the matching call ID as a string" do
+            response.should_receive(:call).never
+            subject.on_joined('foobar') { |event| response.call event }
+            subject << event
+          end
+
+          it "should not trigger any on_joined callbacks set for the matching call" do
+            response.should_receive(:call).never
+            call = Call.new
+            call.stub :id => 'foobar'
+            subject.on_joined(call) { |event| response.call event }
+            subject << event
+          end
         end
       end
 
       describe "for unjoined events" do
         context "unjoined from another call" do
           let :event do
-            Punchblock::Event::Unjoined.new call_uri: 'foobar'
+            Punchblock::Event::Unjoined.new call_uri: 'xmpp:foobar@rayo.net'
           end
 
           it "should trigger any on_unjoined callbacks set for the matching call ID" do
             response.should_receive(:call).once.with(event)
-            subject.on_unjoined(:call_id => 'foobar') { |event| response.call event }
+            subject.on_unjoined(:call_uri => 'xmpp:foobar@rayo.net') { |event| response.call event }
             subject << event
           end
 
@@ -202,7 +232,7 @@ module Adhearsion
           it "should trigger any on_unjoined callbacks set for the matching call" do
             response.should_receive(:call).once.with(event)
             call = Call.new
-            call.stub :id => 'foobar'
+            call.wrapped_object.stub id: 'foobar', domain: 'rayo.net'
             subject.on_unjoined(call) { |event| response.call event }
             subject << event
           end
@@ -742,18 +772,20 @@ module Adhearsion
 
         context "with a call" do
           let(:call_id) { rand.to_s }
+          let(:domain)  { 'rayo.net' }
+          let(:uri)     { "xmpp:#{call_id}@#{domain}" }
           let(:target)  { described_class.new }
 
-          before { target.stub id: call_id }
+          before { target.wrapped_object.stub id: call_id, domain: domain }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options :call_id => call_id
+            expect_join_with_options call_uri: uri
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :call_id => call_id, :media => :bridge, :direction => :recv
+              expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
               subject.join target, :media => :bridge, :direction => :recv
             end
           end
@@ -763,30 +795,30 @@ module Adhearsion
           let(:target) { rand.to_s }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options :call_id => target
+            expect_join_with_options call_uri: "xmpp:#{target}@#{subject.domain}"
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :call_id => target, :media => :bridge, :direction => :recv
+              expect_join_with_options :call_uri => "xmpp:#{target}@#{subject.domain}", :media => :bridge, :direction => :recv
               subject.join target, :media => :bridge, :direction => :recv
             end
           end
         end
 
-        context "with a call ID as a hash key" do
+        context "with a call URI as a hash key" do
           let(:call_id) { rand.to_s }
-          let(:target)  { { :call_id => call_id } }
+          let(:target)  { { :call_uri => call_id } }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options :call_id => call_id
+            expect_join_with_options :call_uri => call_id
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :call_id => call_id, :media => :bridge, :direction => :recv
+              expect_join_with_options :call_uri => call_id, :media => :bridge, :direction => :recv
               subject.join target.merge({:media => :bridge, :direction => :recv})
             end
           end
@@ -812,10 +844,10 @@ module Adhearsion
         context "with a call ID and a mixer name as hash keys" do
           let(:call_id)     { rand.to_s }
           let(:mixer_name)  { rand.to_s }
-          let(:target)      { { :call_id => call_id, :mixer_name => mixer_name } }
+          let(:target)      { { :call_uri => call_id, :mixer_name => mixer_name } }
 
           it "should raise an ArgumentError" do
-            lambda { subject.join target }.should raise_error ArgumentError, /call ID and mixer name/
+            lambda { subject.join target }.should raise_error ArgumentError, /call URI and mixer name/
           end
         end
       end
@@ -829,12 +861,13 @@ module Adhearsion
 
         context "with a call" do
           let(:call_id) { rand.to_s }
+          let(:domain)  { 'rayo.net' }
           let(:target)  { described_class.new }
 
-          before { target.stub id: call_id }
+          before { target.wrapped_object.stub id: call_id, domain: domain }
 
           it "should send an unjoin command unjoining from the provided call ID" do
-            expect_unjoin_with_options :call_id => call_id
+            expect_unjoin_with_options call_uri: "xmpp:#{call_id}@#{domain}"
             subject.unjoin target
           end
         end
@@ -843,17 +876,17 @@ module Adhearsion
           let(:target) { rand.to_s }
 
           it "should send an unjoin command unjoining from the provided call ID" do
-            expect_unjoin_with_options :call_id => target
+            expect_unjoin_with_options call_uri: "xmpp:#{target}@#{subject.domain}"
             subject.unjoin target
           end
         end
 
-        context "with a call ID as a hash key" do
+        context "with a call URI as a hash key" do
           let(:call_id) { rand.to_s }
-          let(:target)  { { :call_id => call_id } }
+          let(:target)  { { call_uri: call_id } }
 
           it "should send an unjoin command unjoining from the provided call ID" do
-            expect_unjoin_with_options :call_id => call_id
+            expect_unjoin_with_options call_uri: call_id
             subject.unjoin target
           end
         end
@@ -868,13 +901,13 @@ module Adhearsion
           end
         end
 
-        context "with a call ID and a mixer name as hash keys" do
+        context "with a call URI and a mixer name as hash keys" do
           let(:call_id)     { rand.to_s }
           let(:mixer_name)  { rand.to_s }
-          let(:target)      { { :call_id => call_id, :mixer_name => mixer_name } }
+          let(:target)      { { call_uri: call_id, mixer_name: mixer_name } }
 
           it "should raise an ArgumentError" do
-            lambda { subject.unjoin target }.should raise_error ArgumentError, /call ID and mixer name/
+            lambda { subject.unjoin target }.should raise_error ArgumentError, /call URI and mixer name/
           end
         end
       end

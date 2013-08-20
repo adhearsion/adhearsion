@@ -66,6 +66,13 @@ module Adhearsion
     end
 
     #
+    # @return [String, nil] The uri at which the call resides
+    #
+    def uri
+      "xmpp:#{id}@#{domain}"
+    end
+
+    #
     # @return [Array] The set of labels with which this call has been tagged.
     #
     def tags
@@ -188,7 +195,7 @@ module Adhearsion
     # Registers a callback for when this call is joined to another call or a mixer
     #
     # @param [Call, String, Hash, nil] target the target to guard on. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
-    # @option target [String] call_id The call ID to guard on
+    # @option target [String] call_uri The call ID to guard on
     # @option target [String] mixer_name The mixer name to guard on
     #
     def on_joined(target = nil, &block)
@@ -202,7 +209,7 @@ module Adhearsion
     # Registers a callback for when this call is unjoined from another call or a mixer
     #
     # @param [Call, String, Hash, nil] target the target to guard on. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
-    # @option target [String] call_id The call ID to guard on
+    # @option target [String] call_uri The call ID to guard on
     # @option target [String] mixer_name The mixer name to guard on
     #
     def on_unjoined(target = nil, &block)
@@ -260,7 +267,7 @@ module Adhearsion
     # Joins this call to another call or a mixer
     #
     # @param [Call, String, Hash] target the target to join to. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
-    # @option target [String] call_id The call ID to join to
+    # @option target [String] call_uri The call ID to join to
     # @option target [String] mixer_name The mixer to join to
     # @param [Hash, Optional] options further options to be joined with
     #
@@ -273,7 +280,7 @@ module Adhearsion
     # Unjoins this call from another call or a mixer
     #
     # @param [Call, String, Hash] target the target to unjoin from. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
-    # @option target [String] call_id The call ID to unjoin from
+    # @option target [String] call_uri The call ID to unjoin from
     # @option target [String] mixer_name The mixer to unjoin from
     #
     def unjoin(target)
@@ -285,11 +292,11 @@ module Adhearsion
     def join_options_with_target(target)
       case target
       when Call
-        { :call_uri => target.id }
+        { :call_uri => target.uri }
       when String
-        { :call_uri => target }
+        { :call_uri => "xmpp:#{target}@#{domain}" }
       when Hash
-        abort ArgumentError.new "You cannot specify both a call ID and mixer name" if target.has_key?(:call_id) && target.has_key?(:mixer_name)
+        abort ArgumentError.new "You cannot specify both a call URI and mixer name" if target.has_key?(:call_uri) && target.has_key?(:mixer_name)
         target
       else
         abort ArgumentError.new "Don't know how to join to #{target.inspect}"
