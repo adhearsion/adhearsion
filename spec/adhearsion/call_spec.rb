@@ -12,14 +12,16 @@ module Adhearsion
   describe Call do
     let(:mock_client) { double('Client').as_null_object }
 
-    let(:call_id) { rand }
+    let(:call_id) { rand.to_s }
     let(:domain)  { 'rayo.net' }
     let(:headers) { nil }
     let(:to)      { 'sip:you@there.com' }
     let(:from)    { 'sip:me@here.com' }
+    let(:transport) { 'footransport' }
     let :offer do
       Punchblock::Event::Offer.new target_call_id: call_id,
                                    domain: domain,
+                                   transport: transport,
                                    to: to,
                                    from: from,
                                    headers: headers
@@ -44,9 +46,21 @@ module Adhearsion
 
     its(:id)      { should be == call_id }
     its(:domain)  { should be == domain }
-    its(:uri)     { should be == "xmpp:#{call_id}@#{domain}" }
+    its(:uri)     { should be == "footransport:#{call_id}@#{domain}" }
     its(:to)      { should be == to }
     its(:from)    { should be == from }
+
+    context "when the domain is nil" do
+      let(:domain) { nil }
+
+      its(:uri) { should be == "footransport:#{call_id}" }
+    end
+
+    context "when the transport is nil" do
+      let(:transport) { nil }
+
+      its(:uri) { should be == "#{call_id}@#{domain}" }
+    end
 
     it "should mark its start time" do
       base_time = Time.local(2008, 9, 1, 12, 0, 0)
@@ -131,6 +145,7 @@ module Adhearsion
     end
 
     describe "event handlers" do
+      before { pending }
       let(:response) { double 'Response' }
 
       describe "for joined events" do
@@ -773,10 +788,10 @@ module Adhearsion
         context "with a call" do
           let(:call_id) { rand.to_s }
           let(:domain)  { 'rayo.net' }
-          let(:uri)     { "xmpp:#{call_id}@#{domain}" }
+          let(:uri)     { "footransport:#{call_id}@#{domain}" }
           let(:target)  { described_class.new }
 
-          before { target.wrapped_object.stub id: call_id, domain: domain }
+          before { target.wrapped_object.stub uri: uri }
 
           it "should send a join command joining to the provided call ID" do
             expect_join_with_options call_uri: uri
@@ -795,13 +810,13 @@ module Adhearsion
           let(:target) { rand.to_s }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options call_uri: "xmpp:#{target}@#{subject.domain}"
+            expect_join_with_options call_uri: "footransport:#{target}@#{subject.domain}"
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :call_uri => "xmpp:#{target}@#{subject.domain}", :media => :bridge, :direction => :recv
+              expect_join_with_options :call_uri => "footransport:#{target}@#{subject.domain}", :media => :bridge, :direction => :recv
               subject.join target, :media => :bridge, :direction => :recv
             end
           end
@@ -862,12 +877,13 @@ module Adhearsion
         context "with a call" do
           let(:call_id) { rand.to_s }
           let(:domain)  { 'rayo.net' }
+          let(:uri)     { "footransport:#{call_id}@#{domain}" }
           let(:target)  { described_class.new }
 
-          before { target.wrapped_object.stub id: call_id, domain: domain }
+          before { target.wrapped_object.stub uri: uri }
 
           it "should send an unjoin command unjoining from the provided call ID" do
-            expect_unjoin_with_options call_uri: "xmpp:#{call_id}@#{domain}"
+            expect_unjoin_with_options call_uri: "footransport:#{call_id}@#{domain}"
             subject.unjoin target
           end
         end
@@ -876,7 +892,7 @@ module Adhearsion
           let(:target) { rand.to_s }
 
           it "should send an unjoin command unjoining from the provided call ID" do
-            expect_unjoin_with_options call_uri: "xmpp:#{target}@#{subject.domain}"
+            expect_unjoin_with_options call_uri: "footransport:#{target}@#{subject.domain}"
             subject.unjoin target
           end
         end

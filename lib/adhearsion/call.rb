@@ -69,7 +69,11 @@ module Adhearsion
     # @return [String, nil] The uri at which the call resides
     #
     def uri
-      "xmpp:#{id}@#{domain}"
+      s = ""
+      s << transport << ":" if transport
+      s << id
+      s << "@" << domain if domain
+      s
     end
 
     #
@@ -294,7 +298,7 @@ module Adhearsion
       when Call
         { :call_uri => target.uri }
       when String
-        { :call_uri => "xmpp:#{target}@#{domain}" }
+        { :call_uri => "#{transport}:#{target}@#{domain}" }
       when Hash
         abort ArgumentError.new "You cannot specify both a call URI and mixer name" if target.has_key?(:call_uri) && target.has_key?(:mixer_name)
         target
@@ -404,6 +408,10 @@ module Adhearsion
 
     def client
       @client
+    end
+
+    def transport
+      offer.transport if offer
     end
 
     def merge_headers(headers)

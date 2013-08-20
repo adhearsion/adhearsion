@@ -115,5 +115,11 @@ module Adhearsion
         run_router_on_answer
       end
     end
+
+    private
+
+    def transport
+      dial_command.transport if dial_command
+    end
   end
 end

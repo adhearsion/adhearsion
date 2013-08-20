@@ -122,16 +122,18 @@ module Adhearsion
     describe "#dial" do
       def expect_message_waiting_for_response(message)
         subject.wrapped_object.should_receive(:write_and_await_response).once.with(message, 60).and_return do
+          message.transport = transport
           message.target_call_id = call_id
           message.domain = domain
           message
         end
       end
 
-      let(:call_id) { 'abc123' }
-      let(:domain)  { 'rayo.net' }
-      let(:to)      { '+1800 555-0199' }
-      let(:from)    { '+1800 555-0122' }
+      let(:transport) { 'footransport' }
+      let(:call_id)   { 'abc123' }
+      let(:domain)    { 'rayo.net' }
+      let(:to)        { '+1800 555-0199' }
+      let(:from)      { '+1800 555-0122' }
 
       let(:expected_dial_command) { Punchblock::Command::Dial.new(:to => to, :from => from) }
 
@@ -146,6 +148,11 @@ module Adhearsion
       it "should set the dial command" do
         subject.dial to, :from => from
         subject.dial_command.should be == expected_dial_command
+      end
+
+      it "should set the URI from the reference" do
+        subject.dial to, :from => from
+        subject.uri.should be == "footransport:abc123@rayo.net"
       end
 
       it "should set the call ID from the reference" do
