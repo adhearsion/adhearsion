@@ -36,6 +36,10 @@ module Adhearsion
       dial_command.target_call_id if dial_command
     end
 
+    def domain
+      dial_command.domain if dial_command
+    end
+
     def client
       PunchblockPlugin::Initializer.client
     end
