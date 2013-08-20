@@ -50,6 +50,12 @@ module Adhearsion
     its(:to)      { should be == to }
     its(:from)    { should be == from }
 
+    context "when the ID is nil" do
+      let(:call_id) { nil }
+
+      its(:uri) { should be == nil }
+    end
+
     context "when the domain is nil" do
       let(:domain) { nil }
 

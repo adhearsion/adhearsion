@@ -69,6 +69,7 @@ module Adhearsion
     # @return [String, nil] The uri at which the call resides
     #
     def uri
+      return nil unless id
       s = ""
       s << transport << ":" if transport
       s << id

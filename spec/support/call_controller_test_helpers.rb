@@ -11,7 +11,7 @@ module CallControllerTestHelpers
     test_case.subject { controller }
 
     test_case.before do
-      call.stub :write_command => true, :id => call_id
+      call.wrapped_object.stub :write_command => true, :id => call_id
     end
   end
 
