@@ -352,7 +352,7 @@ module Adhearsion
 
     # @private
     def logger_id
-      "#{self.class}: #{id}"
+      "#{self.class}: #{id}@#{domain}"
     end
     # @private
     def to_ary
@@ -364,7 +364,7 @@ module Adhearsion
       attrs = [:offer, :end_reason, :commands, :variables, :controllers, :to, :from].map do |attr|
         "#{attr}=#{send(attr).inspect}"
       end
-      "#<#{self.class}:#{id} #{attrs.join ', '}>"
+      "#<#{self.class}:#{id}@#{domain} #{attrs.join ', '}>"
     end
 
     def execute_controller(controller = nil, completion_callback = nil, &block)
