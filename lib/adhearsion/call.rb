@@ -59,6 +59,13 @@ module Adhearsion
     end
 
     #
+    # @return [String, nil] The domain on which the call resides
+    #
+    def domain
+      offer.domain if offer
+    end
+
+    #
     # @return [Array] The set of labels with which this call has been tagged.
     #
     def tags
@@ -340,7 +347,7 @@ module Adhearsion
       abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
       merge_headers command.headers if command.respond_to? :headers
       logger.debug "Executing command #{command.inspect}"
-      client.execute_command command, :call_id => id, :async => true
+      client.execute_command command, call_id: id, domain: domain, async: true
     end
 
     # @private

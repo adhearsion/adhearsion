@@ -13,14 +13,16 @@ module Adhearsion
     let(:mock_client) { double('Client').as_null_object }
 
     let(:call_id) { rand }
+    let(:domain)  { 'rayo.net' }
     let(:headers) { nil }
     let(:to)      { 'sip:you@there.com' }
     let(:from)    { 'sip:me@here.com' }
     let :offer do
-      Punchblock::Event::Offer.new :target_call_id => call_id,
-                                   :to      => to,
-                                   :from    => from,
-                                   :headers => headers
+      Punchblock::Event::Offer.new target_call_id: call_id,
+                                   domain: domain,
+                                   to: to,
+                                   from: from,
+                                   headers: headers
     end
 
     subject { Adhearsion::Call.new offer }
@@ -489,7 +491,7 @@ module Adhearsion
 
       it "should asynchronously write the command to the Punchblock connection" do
         subject.wrapped_object.should_receive(:client).once.and_return mock_client
-        mock_client.should_receive(:execute_command).once.with(mock_command, :call_id => subject.id, :async => true).and_return true
+        mock_client.should_receive(:execute_command).once.with(mock_command, call_id: call_id, domain: domain, async: true).and_return true
         subject.write_command mock_command
       end
 
