@@ -59,6 +59,25 @@ module Adhearsion
     end
 
     #
+    # @return [String, nil] The domain on which the call resides
+    #
+    def domain
+      offer.domain if offer
+    end
+
+    #
+    # @return [String, nil] The uri at which the call resides
+    #
+    def uri
+      return nil unless id
+      s = ""
+      s << transport << ":" if transport
+      s << id
+      s << "@" << domain if domain
+      s
+    end
+
+    #
     # @return [Array] The set of labels with which this call has been tagged.
     #
     def tags
@@ -181,7 +200,7 @@ module Adhearsion
     # Registers a callback for when this call is joined to another call or a mixer
     #
     # @param [Call, String, Hash, nil] target the target to guard on. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
-    # @option target [String] call_id The call ID to guard on
+    # @option target [String] call_uri The call ID to guard on
     # @option target [String] mixer_name The mixer name to guard on
     #
     def on_joined(target = nil, &block)
@@ -195,7 +214,7 @@ module Adhearsion
     # Registers a callback for when this call is unjoined from another call or a mixer
     #
     # @param [Call, String, Hash, nil] target the target to guard on. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
-    # @option target [String] call_id The call ID to guard on
+    # @option target [String] call_uri The call ID to guard on
     # @option target [String] mixer_name The mixer name to guard on
     #
     def on_unjoined(target = nil, &block)
@@ -253,7 +272,7 @@ module Adhearsion
     # Joins this call to another call or a mixer
     #
     # @param [Call, String, Hash] target the target to join to. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
-    # @option target [String] call_id The call ID to join to
+    # @option target [String] call_uri The call ID to join to
     # @option target [String] mixer_name The mixer to join to
     # @param [Hash, Optional] options further options to be joined with
     #
@@ -266,7 +285,7 @@ module Adhearsion
     # Unjoins this call from another call or a mixer
     #
     # @param [Call, String, Hash] target the target to unjoin from. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
-    # @option target [String] call_id The call ID to unjoin from
+    # @option target [String] call_uri The call ID to unjoin from
     # @option target [String] mixer_name The mixer to unjoin from
     #
     def unjoin(target)
@@ -278,11 +297,11 @@ module Adhearsion
     def join_options_with_target(target)
       case target
       when Call
-        { :call_uri => target.id }
+        { :call_uri => target.uri }
       when String
-        { :call_uri => target }
+        { :call_uri => "#{transport}:#{target}@#{domain}" }
       when Hash
-        abort ArgumentError.new "You cannot specify both a call ID and mixer name" if target.has_key?(:call_id) && target.has_key?(:mixer_name)
+        abort ArgumentError.new "You cannot specify both a call URI and mixer name" if target.has_key?(:call_uri) && target.has_key?(:mixer_name)
         target
       else
         abort ArgumentError.new "Don't know how to join to #{target.inspect}"
@@ -340,12 +359,12 @@ module Adhearsion
       abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
       merge_headers command.headers if command.respond_to? :headers
       logger.debug "Executing command #{command.inspect}"
-      client.execute_command command, :call_id => id, :async => true
+      client.execute_command command, call_id: id, domain: domain, async: true
     end
 
     # @private
     def logger_id
-      "#{self.class}: #{id}"
+      "#{self.class}: #{id}@#{domain}"
     end
     # @private
     def to_ary
@@ -357,7 +376,7 @@ module Adhearsion
       attrs = [:offer, :end_reason, :commands, :variables, :controllers, :to, :from].map do |attr|
         "#{attr}=#{send(attr).inspect}"
       end
-      "#<#{self.class}:#{id} #{attrs.join ', '}>"
+      "#<#{self.class}:#{id}@#{domain} #{attrs.join ', '}>"
     end
 
     def execute_controller(controller = nil, completion_callback = nil, &block)
@@ -390,6 +409,10 @@ module Adhearsion
 
     def client
       @client
+    end
+
+    def transport
+      offer.transport if offer
     end
 
     def merge_headers(headers)
