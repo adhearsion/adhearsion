@@ -74,12 +74,7 @@ module Adhearsion
     # @param block to execute on the call
     #
     def initialize(call, metadata = nil, &block)
-      @call, @metadata = call, metadata || {}
-      self.block = block
-    end
-
-    def block=(other)
-      @block = other
+      @call, @metadata, @block = call, metadata || {}, block
     end
 
     def method_missing(method_name, *args, &block)
