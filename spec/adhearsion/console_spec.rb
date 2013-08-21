@@ -66,12 +66,21 @@ module Adhearsion
       end
     end
 
+    describe "#originate" do
+      it "should be an alias for Adhearsion::OutboundCall.originate" do
+        foo = nil
+        Adhearsion::OutboundCall.should_receive(:originate).once.with(:foo, :bar).and_yield
+        Console.originate(:foo, :bar) { foo = :bar}
+        foo.should == :bar
+      end
+    end
+
     describe "#take" do
       let(:call)    { Call.new }
       let(:call_id) { rand.to_s }
 
       before do
-        Adhearsion.active_calls.clear!
+        Adhearsion.active_calls.clear
         call.stub(:id => call_id)
       end
 

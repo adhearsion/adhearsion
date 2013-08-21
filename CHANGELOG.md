@@ -4,8 +4,13 @@
   * Feature: Track call start/end time and duration
   * Feature: Add per-call join duration and disposition to DialStatus
   * Feature: Add `CallController#dial_and_confirm` which allows parallel confirmation of outbound calls
+  * Feature: Add `#originate` method to console as alias for `Adhearsion::OutboundCall.originate`
+  * Feature: Allow the console to be disabled using `--no-console`
+  * Feature: Add CLI options to generate hooks for a plugin to register on [ahnhub.com](http://www.ahnhub.com)
   * Bugfix: Removed unnecessary Mocha reference from generated plugin
   * Bugfix: Call loggers should be deleted after a call finishes
+  * Bugfix: A menu definition's block context is now available
+  * Bugfix: Ensure call's command registry is not leaked outside the actor
 
 # [2.3.5](https://github.com/adhearsion/adhearsion/compare/v2.3.4...v2.3.5) - [2013-06-06](https://rubygems.org/gems/adhearsion/versions/2.3.5)
   * Bugfix: Fix race conditions in barging in before output start is acknowledged

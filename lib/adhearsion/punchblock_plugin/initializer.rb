@@ -28,8 +28,6 @@ module Adhearsion
             :port               => self.config.port,
             :certs              => self.config.certs_directory,
             :root_domain        => self.config.root_domain,
-            :calls_domain       => self.config.calls_domain,
-            :mixers_domain      => self.config.mixers_domain,
             :media_engine       => self.config.media_engine,
             :default_voice      => self.config.default_voice
           }

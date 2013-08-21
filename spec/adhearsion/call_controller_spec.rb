@@ -222,7 +222,6 @@ module Adhearsion
     end
 
     [ :answer,
-      :reject,
       :mute,
       :unmute].each do |method_name|
       describe "##{method_name}" do
@@ -234,11 +233,16 @@ module Adhearsion
       end
     end
 
-    describe "#hangup" do
-      it "delegates to the call, blocking first until it is allowed to execute" do
-        subject.should_receive(:block_until_resumed).once.ordered
-        subject.call.should_receive(:hangup).once.ordered
-        lambda { subject.send :hangup }.should raise_error Call::Hangup
+    [
+      :hangup,
+      :reject
+    ].each do |method_name|
+      describe "##{method_name}" do
+        it "delegates to the call, blocking first until it is allowed to execute, and raises Call::Hangup" do
+          subject.should_receive(:block_until_resumed).once.ordered
+          subject.call.should_receive(method_name).once.ordered
+          lambda { subject.send method_name }.should raise_error Call::Hangup
+        end
       end
     end
 

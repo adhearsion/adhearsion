@@ -65,6 +65,10 @@ module Adhearsion
       Adhearsion.active_calls
     end
 
+    def originate(*args, &block)
+      Adhearsion::OutboundCall.originate(*args, &block)
+    end
+
     def take(call = nil)
       case call
       when Call

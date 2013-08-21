@@ -77,6 +77,14 @@ module Adhearsion
           end
         end
 
+        def method_missing(method_name, *args, &block)
+          if @context
+            @context.send method_name, *args, &block
+          else
+            super
+          end
+        end
+
       end # class MenuBuilder
 
     end

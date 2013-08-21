@@ -6,7 +6,16 @@ Then /^I should see the usage message$/ do
     Then the output should contain "ahn start"
     Then the output should contain "ahn daemon"
     Then the output should contain "ahn version"
+    Then the output should contain "ahn plugin"
     Then the output should contain "ahn help"
+  }
+end
+
+Then /^I should see the plugin usage message$/ do
+  steps %Q{
+    Then the output should contain "ahn plugin create_ahnhub_hooks"
+    Then the output should contain "ahn plugin create_github_hook"
+    Then the output should contain "ahn plugin create_rubygem_hook"
   }
 end
 
@@ -19,6 +28,8 @@ Given /^that I create a valid app under "([^"]*)"$/ do |path|
     When I run `ahn create #{path}`
     Then there should be a valid adhearsion directory named "#{path}"
   }
+
+  remove_file "#{path}/Gemfile"
 end
 
 Then /^there should be a valid adhearsion directory named "([^"]*)"$/ do |path|
@@ -55,3 +66,4 @@ When /^I terminate the process using the pid file "([^"]*)"$/ do |pidfile|
     sleep 1
   end
 end
+
