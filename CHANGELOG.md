@@ -1,4 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+
+# [2.4.0.beta1](https://github.com/adhearsion/adhearsion/compare/v2.3.5...v2.4.0.beta1) - [2013-08-20](https://rubygems.org/gems/adhearsion/versions/2.4.0.beta1)
   * Feature: Add Call#wait_for_end, which blocks until the call ends and returns its end reason
   * Feature: Add joined call attribute to dial status
   * Feature: Track call start/end time and duration
