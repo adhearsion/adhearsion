@@ -13,6 +13,7 @@
   * Bugfix: Call loggers should be deleted after a call finishes
   * Bugfix: A menu definition's block context is now available
   * Bugfix: Ensure call's command registry is not leaked outside the actor
+  * Bugfix: An application's lib/ directory is now in the load path so dependencies may be reasolved more simply. You may now require 'foo.rb' instead of "#{Adhearsion.root}/lib/foo.rb"
 
 # [2.3.5](https://github.com/adhearsion/adhearsion/compare/v2.3.4...v2.3.5) - [2013-06-06](https://rubygems.org/gems/adhearsion/versions/2.3.5)
   * Bugfix: Fix race conditions in barging in before output start is acknowledged

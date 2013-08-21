@@ -180,6 +180,8 @@ module Adhearsion
       lib_folder = [Adhearsion.config.platform.root, Adhearsion.config.platform.lib].join '/'
       return false unless File.directory? lib_folder
 
+      $LOAD_PATH.unshift lib_folder
+
       Dir.chdir lib_folder do
         rbfiles = File.join "**", "*.rb"
         Dir.glob(rbfiles).each do |file|
