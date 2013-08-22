@@ -64,6 +64,8 @@ module Adhearsion
       end
 
       context "when a block is specified" do
+        let(:value) { :bar }
+
         let :block do
           Proc.new { foo value }
         end
@@ -72,6 +74,11 @@ module Adhearsion
 
         it "should execute the block in the context of the controller" do
           subject.stub :value => :bar
+          subject.should_receive(:foo).once.with(:bar)
+          subject.run
+        end
+
+        it "should make the block's context available" do
           subject.should_receive(:foo).once.with(:bar)
           subject.run
         end
