@@ -108,7 +108,7 @@ module Adhearsion
             latch.wait(1).should be_true
           end
 
-          it "hangs up the new call when the dial unblocks" do
+          it "hangs up the new call when the root call ends" do
             call.should_receive(:answer).once
             other_mock_call.should_receive(:join).once.with(call)
             other_mock_call.should_receive(:hangup).once
@@ -209,6 +209,390 @@ module Adhearsion
               status.joined_call.should eq(other_mock_call)
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 37.0
+            end
+          end
+
+          context "when a dial is split" do
+            before do
+              call.should_receive(:answer).once
+              other_mock_call.should_receive(:join).once.with(call)
+              call.stub(:unjoin).and_return do
+                call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+              end
+            end
+
+            it "should unjoin the calls" do
+              call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+              end
+
+              dial = Dial::Dial.new to, options, call
+              dial.run
+
+              waiter_thread = Thread.new do
+                dial.await_completion
+                latch.countdown!
+              end
+
+              sleep 0.5
+
+              other_mock_call << mock_answered
+
+              dial.split
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+
+              waiter_thread.join
+              dial.status.result.should be == :answer
+            end
+
+            it "should not unblock immediately" do
+              dial = Dial::Dial.new to, options, call
+              dial.run
+
+              waiter_thread = Thread.new do
+                dial.await_completion
+                latch.countdown!
+              end
+
+              sleep 0.5
+
+              other_mock_call << mock_answered
+
+              dial.split
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+
+              waiter_thread.join
+              dial.status.result.should be == :answer
+            end
+
+            it "should set end time" do
+              dial = Dial::Dial.new to, options, call
+              dial.run
+
+              waiter_thread = Thread.new do
+                dial.await_completion
+                latch.countdown!
+              end
+
+              sleep 0.5
+
+              base_time = Time.local(2008, 9, 1, 12, 0, 0)
+              Timecop.freeze base_time
+
+              other_mock_call << mock_answered
+
+              base_time = Time.local(2008, 9, 1, 12, 0, 37)
+              Timecop.freeze base_time
+              dial.split
+
+              base_time = Time.local(2008, 9, 1, 12, 0, 54)
+              Timecop.freeze base_time
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+
+              waiter_thread.join
+              status = dial.status
+              status.result.should be == :answer
+              status.joined_call.should eq(other_mock_call)
+              joined_status = status.joins[status.calls.first]
+              joined_status.duration.should == 37.0
+            end
+
+            context "with new controllers specified" do
+              let(:split_latch) { CountDownLatch.new 2 }
+
+              let(:split_controller) do
+                latch = split_latch
+                Class.new(Adhearsion::CallController) do
+                  @@split_latch = latch
+
+                  def run
+                    call['hit_split_controller'] = self.class
+                    call['split_controller_metadata'] = metadata
+                    @@split_latch.countdown!
+                  end
+                end
+              end
+
+              let(:main_split_controller) { Class.new(split_controller) }
+              let(:others_split_controller) { Class.new(split_controller) }
+
+              it "should execute the :main controller on the originating call and :others on the outbound calls" do
+                dial = Dial::Dial.new to, options, call
+                dial.run
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_answered
+
+                should_receive(:callback).once.with(call)
+                should_receive(:callback).once.with(other_mock_call)
+
+                dial.split main: main_split_controller, others: others_split_controller, main_callback: ->(call) { self.callback(call) }, others_callback: ->(call) { self.callback(call) }
+
+                latch.wait(1).should be_false
+                split_latch.wait(1).should be_true
+
+                call['hit_split_controller'].should == main_split_controller
+                call['split_controller_metadata']['current_dial'].should be dial
+
+                other_mock_call['hit_split_controller'].should == others_split_controller
+                other_mock_call['split_controller_metadata']['current_dial'].should be dial
+
+                other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+              end
+            end
+
+            context "when rejoining" do
+              it "should rejoin the calls" do
+                call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                  call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                  other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                end
+
+                dial = Dial::Dial.new to, options, call
+                dial.run
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_answered
+
+                dial.split
+
+                other_mock_call.should_receive(:join).once.ordered.with(call)
+                dial.rejoin
+
+                other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+              end
+
+              context "to a specified mixer" do
+                let(:mixer) { SecureRandom.uuid }
+
+                it "should join all calls to the mixer" do
+                  call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                    call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                    other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                  end
+
+                  dial = Dial::Dial.new to, options, call
+                  dial.run
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  other_mock_call << mock_answered
+
+                  dial.split
+
+                  call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  dial.rejoin mixer_name: mixer
+
+                  other_mock_call << mock_end
+
+                  latch.wait(1).should be_true
+
+                  waiter_thread.join
+                  dial.status.result.should be == :answer
+                end
+              end
+            end
+
+            context "when another dial is merged in" do
+              let(:second_root_call_id) { new_uuid }
+              let(:second_root_call)    { Adhearsion::Call.new }
+              let(:mixer)               { SecureRandom.uuid }
+
+              let(:dial)        { Dial::Dial.new to, options, call }
+              let(:other_dial)  { Dial::Dial.new second_to, options, second_root_call }
+
+              before do
+                second_root_call.stub write_command: true, id: second_root_call_id
+                OutboundCall.should_receive(:new).and_return second_other_mock_call
+                second_other_mock_call.should_receive(:join).once.with(second_root_call)
+                second_other_mock_call.should_receive(:dial).once.with(second_to, options)
+                second_root_call.should_receive(:answer).once
+
+                SecureRandom.stub uuid: mixer
+
+                dial.run
+                other_dial.run
+
+                other_mock_call << mock_answered
+                second_other_mock_call << mock_answered
+              end
+
+              it "should split calls, rejoin to a mixer, and rejoin other calls to mixer" do
+                call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                  call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                  other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                end
+                second_root_call.should_receive(:unjoin).once.ordered.with(second_other_mock_call.id).and_return do
+                  second_root_call << Punchblock::Event::Unjoined.new(call_uri: second_other_mock_call.id)
+                  second_other_mock_call << Punchblock::Event::Unjoined.new(call_uri: second_root_call.id)
+                end
+
+                call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+
+                second_root_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                second_other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+
+                dial.merge other_dial
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_end
+                second_root_call << mock_end
+                second_other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+              end
+
+              it "should add the merged calls to the returned status" do
+                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+                dial.merge other_dial
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_end
+                second_root_call << mock_end
+                second_other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+                dial.status.calls.should include(second_root_call, second_other_mock_call)
+              end
+
+              it "should not unblock until all joined calls end" do
+                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+
+                dial.merge other_dial
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_end
+                latch.wait(1).should be_false
+
+                second_other_mock_call << mock_end
+                latch.wait(1).should be_false
+
+                second_root_call << mock_end
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+              end
+
+              it "should cleanup merged calls when the root call ends" do
+                [call, other_mock_call, second_root_call, second_other_mock_call].each do |c|
+                  c.stub join: true, unjoin: true
+                end
+                [other_mock_call, second_root_call, second_other_mock_call].each do |c|
+                  c.should_receive(:hangup).once
+                end
+
+                dial.merge other_dial
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  dial.cleanup_calls
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                call << mock_end
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+              end
+
+              context "if the calls were not joined" do
+                it "should still join to mixer" do
+                  call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
+                  second_root_call.should_receive(:unjoin).once.ordered.with(second_other_mock_call.id).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
+
+                  call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+
+                  second_root_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  second_other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+
+                  dial.merge other_dial
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  other_mock_call << mock_end
+                  second_root_call << mock_end
+                  second_other_mock_call << mock_end
+
+                  latch.wait(1).should be_true
+
+                  waiter_thread.join
+                  dial.status.result.should be == :answer
+                end
+              end
             end
           end
         end
@@ -725,7 +1109,7 @@ module Adhearsion
             latch.wait(1).should be_true
           end
 
-          it "hangs up the new call when the dial unblocks" do
+          it "hangs up the new call when the root call ends" do
             other_mock_call.should_receive(:hangup).once
             call.should_receive(:answer).once
             other_mock_call.should_receive(:join).once.with(call)
@@ -826,6 +1210,390 @@ module Adhearsion
               status.joined_call.should eq(other_mock_call)
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 37.0
+            end
+          end
+
+          context "when a dial is split" do
+            before do
+              call.should_receive(:answer).once
+              other_mock_call.should_receive(:join).once.with(call)
+              call.stub(:unjoin).and_return do
+                call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+              end
+            end
+
+            it "should unjoin the calls" do
+              call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+              end
+
+              dial = Dial::ParallelConfirmationDial.new to, options, call
+              dial.run
+
+              waiter_thread = Thread.new do
+                dial.await_completion
+                latch.countdown!
+              end
+
+              sleep 0.5
+
+              other_mock_call << mock_answered
+
+              dial.split
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+
+              waiter_thread.join
+              dial.status.result.should be == :answer
+            end
+
+            it "should not unblock immediately" do
+              dial = Dial::ParallelConfirmationDial.new to, options, call
+              dial.run
+
+              waiter_thread = Thread.new do
+                dial.await_completion
+                latch.countdown!
+              end
+
+              sleep 0.5
+
+              other_mock_call << mock_answered
+
+              dial.split
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+
+              waiter_thread.join
+              dial.status.result.should be == :answer
+            end
+
+            it "should set end time" do
+              dial = Dial::ParallelConfirmationDial.new to, options, call
+              dial.run
+
+              waiter_thread = Thread.new do
+                dial.await_completion
+                latch.countdown!
+              end
+
+              sleep 0.5
+
+              base_time = Time.local(2008, 9, 1, 12, 0, 0)
+              Timecop.freeze base_time
+
+              other_mock_call << mock_answered
+
+              base_time = Time.local(2008, 9, 1, 12, 0, 37)
+              Timecop.freeze base_time
+              dial.split
+
+              base_time = Time.local(2008, 9, 1, 12, 0, 54)
+              Timecop.freeze base_time
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+
+              waiter_thread.join
+              status = dial.status
+              status.result.should be == :answer
+              status.joined_call.should eq(other_mock_call)
+              joined_status = status.joins[status.calls.first]
+              joined_status.duration.should == 37.0
+            end
+
+            context "with new controllers specified" do
+              let(:split_latch) { CountDownLatch.new 2 }
+
+              let(:split_controller) do
+                latch = split_latch
+                Class.new(Adhearsion::CallController) do
+                  @@split_latch = latch
+
+                  def run
+                    call['hit_split_controller'] = self.class
+                    call['split_controller_metadata'] = metadata
+                    @@split_latch.countdown!
+                  end
+                end
+              end
+
+              let(:main_split_controller) { Class.new(split_controller) }
+              let(:others_split_controller) { Class.new(split_controller) }
+
+              it "should execute the :main controller on the originating call and :others on the outbound calls" do
+                dial = Dial::ParallelConfirmationDial.new to, options, call
+                dial.run
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_answered
+
+                should_receive(:callback).once.with(call)
+                should_receive(:callback).once.with(other_mock_call)
+
+                dial.split main: main_split_controller, others: others_split_controller, main_callback: ->(call) { self.callback(call) }, others_callback: ->(call) { self.callback(call) }
+
+                latch.wait(1).should be_false
+                split_latch.wait(1).should be_true
+
+                call['hit_split_controller'].should == main_split_controller
+                call['split_controller_metadata']['current_dial'].should be dial
+
+                other_mock_call['hit_split_controller'].should == others_split_controller
+                other_mock_call['split_controller_metadata']['current_dial'].should be dial
+
+                other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+              end
+            end
+
+            context "when rejoining" do
+              it "should rejoin the calls" do
+                call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                  call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                  other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                end
+
+                dial = Dial::ParallelConfirmationDial.new to, options, call
+                dial.run
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_answered
+
+                dial.split
+
+                other_mock_call.should_receive(:join).once.ordered.with(call)
+                dial.rejoin
+
+                other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+              end
+
+              context "to a specified mixer" do
+                let(:mixer) { SecureRandom.uuid }
+
+                it "should join all calls to the mixer" do
+                  call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                    call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                    other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                  end
+
+                  dial = Dial::ParallelConfirmationDial.new to, options, call
+                  dial.run
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  other_mock_call << mock_answered
+
+                  dial.split
+
+                  call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  dial.rejoin mixer_name: mixer
+
+                  other_mock_call << mock_end
+
+                  latch.wait(1).should be_true
+
+                  waiter_thread.join
+                  dial.status.result.should be == :answer
+                end
+              end
+            end
+
+            context "when another dial is merged in" do
+              let(:second_root_call_id) { new_uuid }
+              let(:second_root_call)    { Adhearsion::Call.new }
+              let(:mixer)               { SecureRandom.uuid }
+
+              let(:dial)        { Dial::ParallelConfirmationDial.new to, options, call }
+              let(:other_dial)  { Dial::ParallelConfirmationDial.new second_to, options, second_root_call }
+
+              before do
+                second_root_call.stub write_command: true, id: second_root_call_id
+                OutboundCall.should_receive(:new).and_return second_other_mock_call
+                second_other_mock_call.should_receive(:join).once.with(second_root_call)
+                second_other_mock_call.should_receive(:dial).once.with(second_to, options)
+                second_root_call.should_receive(:answer).once
+
+                SecureRandom.stub uuid: mixer
+
+                dial.run
+                other_dial.run
+
+                other_mock_call << mock_answered
+                second_other_mock_call << mock_answered
+              end
+
+              it "should split calls, rejoin to a mixer, and rejoin other calls to mixer" do
+                call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                  call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                  other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                end
+                second_root_call.should_receive(:unjoin).once.ordered.with(second_other_mock_call.id).and_return do
+                  second_root_call << Punchblock::Event::Unjoined.new(call_uri: second_other_mock_call.id)
+                  second_other_mock_call << Punchblock::Event::Unjoined.new(call_uri: second_root_call.id)
+                end
+
+                call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+
+                second_root_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                second_other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+
+                dial.merge other_dial
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_end
+                second_root_call << mock_end
+                second_other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+              end
+
+              it "should add the merged calls to the returned status" do
+                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+                dial.merge other_dial
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_end
+                second_root_call << mock_end
+                second_other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+                dial.status.calls.should include(second_root_call, second_other_mock_call)
+              end
+
+              it "should not unblock until all joined calls end" do
+                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+
+                dial.merge other_dial
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_end
+                latch.wait(1).should be_false
+
+                second_other_mock_call << mock_end
+                latch.wait(1).should be_false
+
+                second_root_call << mock_end
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+              end
+
+              it "should cleanup merged calls when the root call ends" do
+                [call, other_mock_call, second_root_call, second_other_mock_call].each do |c|
+                  c.stub join: true, unjoin: true
+                end
+                [other_mock_call, second_root_call, second_other_mock_call].each do |c|
+                  c.should_receive(:hangup).once
+                end
+
+                dial.merge other_dial
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  dial.cleanup_calls
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                call << mock_end
+                latch.wait(1).should be_true
+
+                waiter_thread.join
+                dial.status.result.should be == :answer
+              end
+
+              context "if the calls were not joined" do
+                it "should still join to mixer" do
+                  call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
+                  second_root_call.should_receive(:unjoin).once.ordered.with(second_other_mock_call.id).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
+
+                  call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+
+                  second_root_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  second_other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+
+                  dial.merge other_dial
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  other_mock_call << mock_end
+                  second_root_call << mock_end
+                  second_other_mock_call << mock_end
+
+                  latch.wait(1).should be_true
+
+                  waiter_thread.join
+                  dial.status.result.should be == :answer
+                end
+              end
             end
           end
         end
@@ -1286,6 +2054,46 @@ module Adhearsion
                 status.joins[second_other_mock_call].result.should == :lost_confirmation
               end
             end
+          end
+        end
+      end
+
+      describe Dial::Dial do
+        subject { Dial::Dial.new to, {}, call }
+
+        describe "#prep_calls" do
+          it "yields all calls to the passed block" do
+            OutboundCall.should_receive(:new).and_return other_mock_call
+
+            gathered_calls = []
+            subject.prep_calls { |call| gathered_calls << call }
+
+            expect(gathered_calls).to include(other_mock_call)
+          end
+        end
+
+        context "#skip_cleanup" do
+          it "allows the new call to continue after the root call ends" do
+            OutboundCall.should_receive(:new).and_return other_mock_call
+
+            call.stub answer: true
+            other_mock_call.stub dial: true, join: true
+            other_mock_call.should_receive(:hangup).never
+
+            subject.run
+
+            subject.skip_cleanup
+
+            Thread.new do
+              subject.await_completion
+              subject.cleanup_calls
+              latch.countdown!
+            end
+
+            other_mock_call << mock_answered
+            call << mock_end
+
+            latch.wait(1).should be_true
           end
         end
       end

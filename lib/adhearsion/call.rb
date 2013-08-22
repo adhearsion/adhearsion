@@ -57,6 +57,7 @@ module Adhearsion
     def id
       offer.target_call_id if offer
     end
+    alias :to_s :id
 
     #
     # @return [String, nil] The domain on which the call resides
@@ -161,13 +162,27 @@ module Adhearsion
       end
 
       on_joined do |event|
-        target = event.call_uri || event.mixer_name
+        if event.call_uri
+          target = event.call_uri
+          type = :call
+        else
+          target = event.mixer_name
+          type = :mixer
+        end
+        logger.info "Joined to #{type} #{target}"
         @peers[target] = Adhearsion.active_calls[target]
         signal :joined, target
       end
 
       on_unjoined do |event|
-        target = event.call_uri || event.mixer_name
+        if event.call_uri
+          target = event.call_uri
+          type = :call
+        else
+          target = event.mixer_name
+          type = :mixer
+        end
+        logger.info "Unjoined from #{type} #{target}"
         @peers.delete target
         signal :unjoined, target
       end
@@ -277,6 +292,7 @@ module Adhearsion
     # @param [Hash, Optional] options further options to be joined with
     #
     def join(target, options = {})
+      logger.info "Joining to #{target}"
       command = Punchblock::Command::Join.new options.merge(join_options_with_target(target))
       write_and_await_response command
     end
@@ -289,6 +305,7 @@ module Adhearsion
     # @option target [String] mixer_name The mixer to unjoin from
     #
     def unjoin(target)
+      logger.info "Unjoining from #{target}"
       command = Punchblock::Command::Unjoin.new join_options_with_target(target)
       write_and_await_response command
     end
@@ -366,11 +383,6 @@ module Adhearsion
     def logger_id
       "#{self.class}: #{id}@#{domain}"
     end
-    # @private
-    def to_ary
-      [current_actor]
-    end
-
     # @private
     def inspect
       attrs = [:offer, :end_reason, :commands, :variables, :controllers, :to, :from].map do |attr|
