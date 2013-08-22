@@ -77,6 +77,15 @@ module Adhearsion
       @call, @metadata, @block = call, metadata || {}, block
     end
 
+    def method_missing(method_name, *args, &block)
+      if @block
+        block_context = eval "self", @block.binding
+        block_context.send method_name, *args, &block
+      else
+        super
+      end
+    end
+
     #
     # Execute the controller, allowing passing control to another controller
     #
