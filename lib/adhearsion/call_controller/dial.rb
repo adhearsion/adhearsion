@@ -83,23 +83,6 @@ module Adhearsion
           "#<#{self.class} to=#{@to.inspect} options=#{@options.inspect}>"
         end
 
-        def set_defaults
-          @status = DialStatus.new
-
-          @latch = CountDownLatch.new @targets.size
-          @waiters = [@latch]
-
-          @options[:from] ||= @call.from
-
-          _for = @options.delete :for
-          @options[:timeout] ||= _for if _for
-
-          @confirmation_controller = @options.delete :confirm
-          @confirmation_metadata = @options.delete :confirm_metadata
-
-          @skip_cleanup = false
-        end
-
         # Prep outbound calls, link call lifecycles and place outbound calls
         def run
           track_originating_call
@@ -294,6 +277,23 @@ module Adhearsion
 
         private
 
+        def set_defaults
+          @status = DialStatus.new
+
+          @latch = CountDownLatch.new @targets.size
+          @waiters = [@latch]
+
+          @options[:from] ||= @call.from
+
+          _for = @options.delete :for
+          @options[:timeout] ||= _for if _for
+
+          @confirmation_controller = @options.delete :confirm
+          @confirmation_metadata = @options.delete :confirm_metadata
+
+          @skip_cleanup = false
+        end
+
         def pre_confirmation_tasks(call)
           on_all_except call do |target_call|
             logger.info "#dial hanging up call #{target_call.id} because this call has been answered by another channel"
@@ -323,12 +323,12 @@ module Adhearsion
       end
 
       class ParallelConfirmationDial < Dial
+        private
+
         def set_defaults
           super
           @apology_controller = @options.delete :apology
         end
-
-        private
 
         def pre_confirmation_tasks(call)
         end
