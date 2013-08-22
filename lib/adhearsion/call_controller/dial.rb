@@ -100,12 +100,15 @@ module Adhearsion
           @skip_cleanup = false
         end
 
+        # Prep outbound calls, link call lifecycles and place outbound calls
         def run
           track_originating_call
           prep_calls
           place_calls
         end
 
+        #
+        # Links the lifecycle of the originating call to the Dial operation such that the Dial is unblocked when the originating call ends
         def track_originating_call
           @call.on_end do |_|
             logger.info "Root call ended, unblocking everything..."
@@ -115,6 +118,10 @@ module Adhearsion
           end
         end
 
+        #
+        # Prepares a set of OutboundCall actors to be dialed and links their lifecycles to the Dial operation
+        #
+        # @yield Each call to the passed block for further setup operations
         def prep_calls
           @calls = @targets.map do |target, specific_options|
             new_call = OutboundCall.new
@@ -169,6 +176,8 @@ module Adhearsion
           status.calls = @calls
         end
 
+        #
+        # Dials the set of outbound calls
         def place_calls
           @calls.map! do |call, target, specific_options|
             local_options = @options.dup.deep_merge specific_options if specific_options
@@ -236,16 +245,22 @@ module Adhearsion
           @waiters << latch
         end
 
+        #
+        # Block until the dial operation is completed by an appropriate quorum of the involved calls ending
         def await_completion
           @latch.wait(@options[:timeout]) || status.timeout!
           return unless status.result == :answer
           @waiters.each(&:wait)
         end
 
+        #
+        # Do not hangup outbound calls when the Dial operation finishes. This allows outbound calls to continue with other processing once they are unjoined.
         def skip_cleanup
           @skip_cleanup = true
         end
 
+        #
+        # Hangup any remaining calls
         def cleanup_calls
           calls_to_hangup = @calls.map do |call|
             begin
