@@ -22,7 +22,7 @@ Adhearsion.config do |config|
   end
 
   ##
-  # Use with Rayo (eg Voxeo PRISM)
+  # Use with Rayo (eg Voxeo PRISM or FreeSWITCH mod_rayo)
   #
   # config.punchblock.username = "" # Your XMPP JID for use with Rayo
   # config.punchblock.password = "" # Your XMPP password
@@ -36,7 +36,9 @@ Adhearsion.config do |config|
   # config.punchblock.host = "127.0.0.1" # Your AMI host
 
   ##
-  # Use with FreeSWITCH
+  # Use with FreeSWITCH via EventSocket
+  #
+  # This configuration is no longer recommended and mod_rayo is preferred
   #
   # config.punchblock.platform = :freeswitch # Use FreeSWITCH
   # config.punchblock.password = "" # Your Inbound EventSocket password
