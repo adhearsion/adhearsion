@@ -43,7 +43,7 @@ module Adhearsion
     end
 
     def stop
-      return unless instance_variable_defined?(:@pry_thread)
+      return unless instance_variable_defined?(:@pry_thread) && @pry_thread
       @pry_thread.kill
       @pry_thread = nil
       logger.info "Adhearsion Console shutting down"
