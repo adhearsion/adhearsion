@@ -76,6 +76,7 @@ module Adhearsion
           raise Call::Hangup unless call.alive? && call.active?
           @options, @call = options, call
           @targets = to.respond_to?(:has_key?) ? to : Array(to)
+          @call_targets = {}
           set_defaults
         end
 
@@ -151,9 +152,11 @@ module Adhearsion
               end
             end
 
+            @call_targets[new_call] = [target, specific_options]
+
             yield new_call if block_given?
 
-            [new_call, target, specific_options]
+            new_call
           end
 
           status.calls = @calls
@@ -162,10 +165,10 @@ module Adhearsion
         #
         # Dials the set of outbound calls
         def place_calls
-          @calls.map! do |call, target, specific_options|
+          @calls.each do |call|
+            target, specific_options = @call_targets[call]
             local_options = @options.dup.deep_merge specific_options if specific_options
             call.dial target, (local_options || @options)
-            call
           end
         end
 
@@ -305,7 +308,7 @@ module Adhearsion
         end
 
         def on_all_except(call)
-          @calls.each do |target_call, _|
+          @calls.each do |target_call|
             begin
               next if target_call.id == call.id
               yield target_call
