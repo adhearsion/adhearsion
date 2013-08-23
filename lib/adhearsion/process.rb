@@ -103,6 +103,8 @@ module Adhearsion
 
     def fqdn
       Socket.gethostbyname(Socket.gethostname).first
+    rescue SocketError
+      Socket.gethostname
     end
 
     def self.method_missing(method_name, *args, &block)
