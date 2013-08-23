@@ -176,7 +176,6 @@ module Adhearsion
               t.join
               status = t.value
               status.result.should be == :answer
-              status.joined_call.should eq(other_mock_call)
 
               joined_status = status.joins[status.calls.first]
               joined_status.result.should == :joined
@@ -206,7 +205,6 @@ module Adhearsion
               t.join
               status = t.value
               status.result.should be == :answer
-              status.joined_call.should eq(other_mock_call)
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 37.0
             end
@@ -303,7 +301,6 @@ module Adhearsion
               waiter_thread.join
               status = dial.status
               status.result.should be == :answer
-              status.joined_call.should eq(other_mock_call)
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 37.0
             end
@@ -1177,7 +1174,6 @@ module Adhearsion
               t.join
               status = t.value
               status.result.should be == :answer
-              status.joined_call.should eq(other_mock_call)
 
               joined_status = status.joins[status.calls.first]
               joined_status.result.should == :joined
@@ -1207,7 +1203,6 @@ module Adhearsion
               t.join
               status = t.value
               status.result.should be == :answer
-              status.joined_call.should eq(other_mock_call)
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 37.0
             end
@@ -1304,7 +1299,6 @@ module Adhearsion
               waiter_thread.join
               status = dial.status
               status.result.should be == :answer
-              status.joined_call.should eq(other_mock_call)
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 37.0
             end

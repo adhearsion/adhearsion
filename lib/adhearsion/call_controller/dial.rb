@@ -146,7 +146,7 @@ module Adhearsion
                 @call.answer
                 join_status.started
                 new_call.join @call
-                status.answer!(new_call)
+                status.answer!
               elsif status.result == :answer
                 join_status.lost_confirmation!
               end
@@ -351,7 +351,7 @@ module Adhearsion
 
       class DialStatus
         # The collection of calls created during the dial operation
-        attr_accessor :calls, :joined_call
+        attr_accessor :calls
 
         # A collection of status objects indexed by call. Provides status on the joins such as duration
         attr_accessor :joins
@@ -371,8 +371,7 @@ module Adhearsion
         end
 
         # @private
-        def answer!(call)
-          @joined_call = call
+        def answer!
           @result = :answer
         end
 
