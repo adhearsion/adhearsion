@@ -1,6 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
-# [2.4.0.beta1](https://github.com/adhearsion/adhearsion/compare/v2.3.5...v2.4.0.beta1) - [2013-08-20](https://rubygems.org/gems/adhearsion/versions/2.4.0.beta1)
+# [2.4.0.beta2](https://github.com/adhearsion/adhearsion/compare/v2.3.5...v2.4.0.beta2) - [2013-08-23](https://rubygems.org/gems/adhearsion/versions/2.4.0.beta2)
   * Deprecation: Ruby 1.9.2 support is deprecated and will be dropped in a future version of Adhearsion
   * Feature: Update to Punchblock 2.0 for JRuby compatibility, better performance and Rayo spec compliance
   * Feature: Add Call#wait_for_end, which blocks until the call ends and returns its end reason
