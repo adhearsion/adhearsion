@@ -6,6 +6,7 @@ module Adhearsion
 
       class Menu
 
+        NEVER_MATCH = /(?!x)x/
         DEFAULT_MAX_NUMBER_OF_TRIES = 1
         DEFAULT_TIMEOUT             = 5
 
@@ -17,10 +18,10 @@ module Adhearsion
           @tries_count          = 0 # Counts the number of tries the menu's been executed
           @timeout              = options[:timeout] || DEFAULT_TIMEOUT
           @max_number_of_tries  = options[:tries]   || DEFAULT_MAX_NUMBER_OF_TRIES
-          @terminator           = options[:terminator].to_s
           @limit                = options[:limit]
           @interruptible        = options.has_key?(:interruptible) ? options[:interruptible] : true
           @builder              = MenuDSL::MenuBuilder.new
+          @terminator           = build_terminator_regex(options[:terminator])
           @terminated           = false
           @renderer             = options[:renderer]
 
@@ -32,14 +33,14 @@ module Adhearsion
         def validate(mode = nil)
           case mode
           when :basic
-            @terminator.present? || !!@limit || raise(InvalidStructureError, "You must specify at least one of limit or terminator")
+            @terminator != NEVER_MATCH || !!@limit || raise(InvalidStructureError, "You must specify at least one of limit or terminator")
           else
             @builder.has_matchers? || raise(InvalidStructureError, "You must specify one or more matchers")
           end
         end
 
         def <<(other)
-          if other == terminator
+          if other =~ terminator
             @terminated = true
           else
             digit_buffer << other
@@ -57,6 +58,11 @@ module Adhearsion
 
         def digit_buffer_empty?
           digit_buffer.empty?
+        end
+
+        def build_terminator_regex(term_string)
+          return NEVER_MATCH unless term_string
+          Regexp.new term_string.to_s.gsub("*", "\\*")
         end
 
         def continue
