@@ -107,8 +107,8 @@ module Adhearsion
       context "when networking issues crop up" do
         before { Socket.stub(:gethostbyname).and_raise(SocketError) }
 
-        it "should still be a string" do
-          Adhearsion::Process.fqdn.should be_a String
+        it "should raise SocketError" do
+          expect { Adhearsion::Process.fqdn }.to raise_error(SocketError)
         end
       end
     end

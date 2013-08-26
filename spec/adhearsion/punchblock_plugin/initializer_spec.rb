@@ -110,6 +110,18 @@ module Adhearsion
         initialize_punchblock
       end
 
+      context "when the fqdn is not available" do
+        it "should use the local hostname instead" do
+          Adhearsion::Process.stub(:fqdn).and_raise SocketError
+          Socket.stub(:gethostname).and_return 'local_hostname'
+
+          username = "usera@127.0.0.1/local_hostname-1234"
+
+          Punchblock::Connection::XMPP.should_receive(:new).once.with(hash_including :username => username).and_return mock_client
+          initialize_punchblock
+        end
+      end
+
       it "starts the client with any overridden settings" do
         Punchblock::Connection::XMPP.should_receive(:new).once.with(username: 'userb@127.0.0.1/foo', password: '123', host: 'foo.bar.com', port: 200, certs: '/foo/bar', connection_timeout: 20, root_domain: 'foo.com', media_engine: :swift, default_voice: :hal).and_return mock_client
         initialize_punchblock username: 'userb@127.0.0.1/foo', password: '123', host: 'foo.bar.com', port: 200, certs_directory: '/foo/bar', connection_timeout: 20, root_domain: 'foo.com', media_engine: :swift, default_voice: :hal

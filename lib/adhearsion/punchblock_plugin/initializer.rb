@@ -159,7 +159,13 @@ module Adhearsion
         end
 
         def resource
-          [Adhearsion::Process.fqdn, ::Process.pid].join '-'
+          [machine_identifier, ::Process.pid].join '-'
+        end
+
+        def machine_identifier
+          Adhearsion::Process.fqdn
+        rescue SocketError
+          Socket.gethostname
         end
 
         def connection
