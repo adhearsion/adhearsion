@@ -478,9 +478,9 @@ module Adhearsion
 
                 sleep 0.5
 
-                other_mock_call << mock_end
-                second_root_call << mock_end
-                second_other_mock_call << mock_end
+                other_mock_call.async << mock_end
+                second_root_call.async << mock_end
+                second_other_mock_call.async << mock_end
 
                 latch.wait(1).should be_true
 
@@ -499,9 +499,9 @@ module Adhearsion
 
                 sleep 0.5
 
-                other_mock_call << mock_end
-                second_root_call << mock_end
-                second_other_mock_call << mock_end
+                other_mock_call.async << mock_end
+                second_root_call.async << mock_end
+                second_other_mock_call.async << mock_end
 
                 latch.wait(1).should be_true
 
@@ -580,9 +580,9 @@ module Adhearsion
 
                   sleep 0.5
 
-                  other_mock_call.async.deliver_message mock_end
-                  second_root_call.async.deliver_message mock_end
-                  second_other_mock_call.async.deliver_message mock_end
+                  other_mock_call.async << mock_end
+                  second_root_call.async << mock_end
+                  second_other_mock_call.async << mock_end
 
                   latch.wait(1).should be_true
 
@@ -1477,9 +1477,9 @@ module Adhearsion
 
                 sleep 0.5
 
-                other_mock_call << mock_end
-                second_root_call << mock_end
-                second_other_mock_call << mock_end
+                other_mock_call.async << mock_end
+                second_root_call.async << mock_end
+                second_other_mock_call.async << mock_end
 
                 latch.wait(1).should be_true
 
@@ -1498,9 +1498,9 @@ module Adhearsion
 
                 sleep 0.5
 
-                other_mock_call << mock_end
-                second_root_call << mock_end
-                second_other_mock_call << mock_end
+                other_mock_call.async << mock_end
+                second_root_call.async << mock_end
+                second_other_mock_call.async << mock_end
 
                 latch.wait(1).should be_true
 
@@ -1579,9 +1579,9 @@ module Adhearsion
 
                   sleep 0.5
 
-                  other_mock_call << mock_end
-                  second_root_call << mock_end
-                  second_other_mock_call << mock_end
+                  other_mock_call.async << mock_end
+                  second_root_call.async << mock_end
+                  second_other_mock_call.async << mock_end
 
                   latch.wait(1).should be_true
 
