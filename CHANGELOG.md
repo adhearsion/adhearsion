@@ -1,6 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
-# [2.4.0.beta2](https://github.com/adhearsion/adhearsion/compare/v2.3.5...v2.4.0.beta2) - [2013-08-23](https://rubygems.org/gems/adhearsion/versions/2.4.0.beta2)
+# [2.4.0.beta3](https://github.com/adhearsion/adhearsion/compare/v2.3.5...v2.4.0.beta3) - [2013-08-27](https://rubygems.org/gems/adhearsion/versions/2.4.0.beta3)
   * Deprecation: Ruby 1.9.2 support is deprecated and will be dropped in a future version of Adhearsion
   * Deprecation: Some media options from Punchblock config are now overriden by other core config, and will eventually be removed.
   * Deprecation: Core implementations of `CallController#ask` and `#menu` are deprecated, and will be replaced in future with those in [adhearsion-asr](http://github.com/adhearsion/adhearsion-asr). See http://adhearsion.com/docs/common_problems#toc_3 for details.
