@@ -761,6 +761,19 @@ module Adhearsion
           after { Adhearsion.config.punchblock.default_voice = nil }
         end
 
+        describe "with a default media engine set" do
+          before { Adhearsion.config.punchblock.media_engine = 'foo' }
+
+          it 'sets the voice on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_ssml_output ssml, renderer: 'foo'
+            subject.say(str)
+          end
+
+          after { Adhearsion.config.punchblock.media_engine = nil }
+        end
+
         describe "converts the argument to a string" do
           it 'calls output with a string' do
             argument = 123
@@ -806,6 +819,19 @@ module Adhearsion
           end
 
           after { Adhearsion.config.punchblock.default_voice = nil }
+        end
+
+        describe "with a default media engine set" do
+          before { Adhearsion.config.punchblock.media_engine = 'foo' }
+
+          it 'sets the voice on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_async_ssml_output ssml, renderer: 'foo'
+            subject.say!(str)
+          end
+
+          after { Adhearsion.config.punchblock.media_engine = nil }
         end
 
         describe "converts the argument to a string" do
