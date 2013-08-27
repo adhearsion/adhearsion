@@ -748,7 +748,7 @@ module Adhearsion
           end
         end
 
-        describe "with a default voice set" do
+        describe "with a default voice set in PB config" do
           before { Adhearsion.config.punchblock.default_voice = 'foo' }
 
           it 'sets the voice on the output component' do
@@ -761,10 +761,29 @@ module Adhearsion
           after { Adhearsion.config.punchblock.default_voice = nil }
         end
 
-        describe "with a default media engine set" do
+        describe "with a default voice set in core and PB config" do
+          before do
+            Adhearsion.config.punchblock.default_voice = 'foo'
+            Adhearsion.config.platform.media.default_voice = 'bar'
+          end
+
+          it 'prefers core config to set the voice on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_ssml_output ssml, voice: 'bar'
+            subject.say(str)
+          end
+
+          after do
+            Adhearsion.config.punchblock.default_voice = nil
+            Adhearsion.config.platform.media.default_voice = nil
+          end
+        end
+
+        describe "with a default media engine set in PB config" do
           before { Adhearsion.config.punchblock.media_engine = 'foo' }
 
-          it 'sets the voice on the output component' do
+          it 'sets the renderer on the output component' do
             str = "Hello world"
             ssml = RubySpeech::SSML.draw { string str }
             expect_ssml_output ssml, renderer: 'foo'
@@ -772,6 +791,25 @@ module Adhearsion
           end
 
           after { Adhearsion.config.punchblock.media_engine = nil }
+        end
+
+        describe "with a default renderer set in core and PB config" do
+          before do
+            Adhearsion.config.punchblock.media_engine = 'foo'
+            Adhearsion.config.platform.media.default_renderer = 'bar'
+          end
+
+          it 'prefers core config to set the renderer on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_ssml_output ssml, renderer: 'bar'
+            subject.say(str)
+          end
+
+          after do
+            Adhearsion.config.punchblock.media_engine = nil
+            Adhearsion.config.platform.media.default_renderer = nil
+          end
         end
 
         describe "converts the argument to a string" do
@@ -808,7 +846,7 @@ module Adhearsion
           end
         end
 
-        describe "with a default voice set" do
+        describe "with a default voice set in PB config" do
           before { Adhearsion.config.punchblock.default_voice = 'foo' }
 
           it 'sets the voice on the output component' do
@@ -821,10 +859,29 @@ module Adhearsion
           after { Adhearsion.config.punchblock.default_voice = nil }
         end
 
-        describe "with a default media engine set" do
+        describe "with a default voice set in core and PB config" do
+          before do
+            Adhearsion.config.punchblock.default_voice = 'foo'
+            Adhearsion.config.platform.media.default_voice = 'bar'
+          end
+
+          it 'prefers core config to set the voice on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_async_ssml_output ssml, voice: 'bar'
+            subject.say!(str)
+          end
+
+          after do
+            Adhearsion.config.punchblock.default_voice = nil
+            Adhearsion.config.platform.media.default_voice = nil
+          end
+        end
+
+        describe "with a default media engine set in PB config" do
           before { Adhearsion.config.punchblock.media_engine = 'foo' }
 
-          it 'sets the voice on the output component' do
+          it 'sets the renderer on the output component' do
             str = "Hello world"
             ssml = RubySpeech::SSML.draw { string str }
             expect_async_ssml_output ssml, renderer: 'foo'
@@ -832,6 +889,25 @@ module Adhearsion
           end
 
           after { Adhearsion.config.punchblock.media_engine = nil }
+        end
+
+        describe "with a default renderer set in core and PB config" do
+          before do
+            Adhearsion.config.punchblock.media_engine = 'foo'
+            Adhearsion.config.platform.media.default_renderer = 'bar'
+          end
+
+          it 'prefers core config to set the renderer on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_async_ssml_output ssml, renderer: 'bar'
+            subject.say!(str)
+          end
+
+          after do
+            Adhearsion.config.punchblock.media_engine = nil
+            Adhearsion.config.platform.media.default_renderer = nil
+          end
         end
 
         describe "converts the argument to a string" do
