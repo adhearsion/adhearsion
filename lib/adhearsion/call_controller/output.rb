@@ -38,6 +38,36 @@ module Adhearsion
       end
       alias :speak! :say!
 
+
+      # Speak characters using text-to-speech (TTS)
+      #
+      # @example Speak 'abc123' as 'ay bee cee one two three'
+      #   say_characters('abc123')
+      #
+      # @param [String, #to_s] characters The string of characters to be spoken
+      # @param [Hash] options A set of options for output
+      #
+      # @raises [PlaybackError] if the given argument could not be played
+      #
+      def say_characters(characters, options = {})
+        player.play_ssml output_formatter.ssml_for_characters(characters), options
+        true
+      end
+
+      # Speak characters using text-to-speech (TTS) and return as soon as it begins
+      #
+      # @example Speak 'abc123' as 'ay bee cee one two three'
+      #   say_characters!('abc123')
+      #
+      # @param [String, #to_s] characters The string of characters to be spoken
+      # @param [Hash] options A set of options for output
+      #
+      # @raises [PlaybackError] if the given argument could not be played
+      #
+      def say_characters!(characters, options = {})
+        async_player.play_ssml output_formatter.ssml_for_characters(characters), options
+      end
+
       #
       # Plays the specified sound file names. This method will handle Time/DateTime objects (e.g. Time.now),
       # Fixnums (e.g. 1000), Strings which are valid Fixnums (e.g "123"), and direct sound files. To specify how the Date/Time objects are said
@@ -219,7 +249,7 @@ module Adhearsion
       # @raises [PlaybackError] if (one of) the given argument(s) could not be played
       #
       def interruptible_play(*outputs)
-        options = process_output_options outputs 
+        options = process_output_options outputs
         outputs.find do |output|
           digit = stream_file output, '0123456789#*', options
           return digit if digit

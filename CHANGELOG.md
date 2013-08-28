@@ -13,6 +13,7 @@
   * Feature: Add `#originate` method to console as alias for `Adhearsion::OutboundCall.originate`
   * Feature: Allow the console to be disabled using `--no-console`
   * Feature: Add CLI commands to generate hooks for a plugin to register on [ahnhub.com](http://www.ahnhub.com)
+  * Feature: Add `#say_characters` method and an async cousin, `#say_characters!`
   * Bugfix: Removed unnecessary Mocha reference from generated plugin
   * Bugfix: Call loggers are deleted after a call finishes, fixing a memory leak
   * Bugfix: A menu definition's block context is now available
