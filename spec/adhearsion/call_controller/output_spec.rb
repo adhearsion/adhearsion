@@ -925,6 +925,62 @@ module Adhearsion
           subject.method(:speak!).should be == subject.method(:say!)
         end
       end
+
+      describe "#say_characters" do
+        context "with a string" do
+          let :ssml do
+            RubySpeech::SSML.draw do
+              say_as(interpret_as: 'characters') { "1234#abc" }
+            end
+          end
+
+          it 'plays the correct ssml' do
+            expect_ssml_output ssml
+            subject.say_characters('1234#abc').should be true
+          end
+        end
+
+        context "with a numeric" do
+          let :ssml do
+            RubySpeech::SSML.draw do
+              say_as(interpret_as: 'characters') { "1234" }
+            end
+          end
+
+          it 'plays the correct ssml' do
+            expect_ssml_output ssml
+            subject.say_characters(1234).should be true
+          end
+        end
+      end
+
+      describe "#say_characters!" do
+        context "with a string" do
+          let :ssml do
+            RubySpeech::SSML.draw do
+              say_as(interpret_as: 'characters') { "1234#abc" }
+            end
+          end
+
+          it 'plays the correct ssml' do
+            expect_async_ssml_output ssml
+            subject.say_characters!('1234#abc').should be_a Punchblock::Component::Output
+          end
+        end
+
+        context "with a numeric" do
+          let :ssml do
+            RubySpeech::SSML.draw do
+              say_as(interpret_as: 'characters') { "1234" }
+            end
+          end
+
+          it 'plays the correct ssml' do
+            expect_async_ssml_output ssml
+            subject.say_characters!(1234).should be_a Punchblock::Component::Output
+          end
+        end
+      end
     end
   end
 end
