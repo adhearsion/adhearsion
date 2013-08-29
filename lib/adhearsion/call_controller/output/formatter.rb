@@ -23,6 +23,7 @@ module Adhearsion
         end
 
         def detect_type(output)
+          output = output.gsub(/^{.+}/, '') if output.class == String
           case output
           when Date, Time, DateTime
             :time
