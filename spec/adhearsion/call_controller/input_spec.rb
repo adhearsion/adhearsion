@@ -166,6 +166,13 @@ module Adhearsion
           MenuDSL::Menu.should_receive(:new).and_return(menu_instance)
         end
 
+        it "logs a warning about dropped DTMF" do
+          menu_instance.should_receive(:continue).and_return(result_done)
+
+          call.logger.should_receive(:warn).with(/deprecated/)
+          subject.menu sound_files
+        end
+
         it "exits the function if MenuResultDone" do
           menu_instance.should_receive(:should_continue?).and_return(true)
           menu_instance.should_receive(:continue).and_return(result_done)
@@ -269,6 +276,13 @@ module Adhearsion
           before do
             menu_instance
             MenuDSL::Menu.should_receive(:new).and_return(menu_instance)
+          end
+
+          it "logs a warning about dropped DTMF" do
+            menu_instance.should_receive(:continue).and_return(result_done)
+
+            call.logger.should_receive(:warn).with(/deprecated/)
+            subject.ask sound_files
           end
 
           it "exits the function if MenuResultDone" do

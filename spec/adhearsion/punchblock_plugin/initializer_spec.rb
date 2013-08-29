@@ -18,8 +18,6 @@ module Adhearsion
           config.connection_timeout = 60
           config.reconnect_attempts = 1.0/0.0
           config.reconnect_timer    = 5
-          config.media_engine       = nil
-          config.default_voice      = nil
         end
       end
 
@@ -37,8 +35,6 @@ module Adhearsion
           config.connection_timeout = options[:connection_timeout] if options.has_key?(:connection_timeout)
           config.reconnect_attempts = options[:reconnect_attempts] if options.has_key?(:reconnect_attempts)
           config.reconnect_timer    = options[:reconnect_timer] if options.has_key?(:reconnect_timer)
-          config.media_engine       = options[:media_engine] if options.has_key?(:media_engine)
-          config.default_voice      = options[:default_voice] if options.has_key?(:default_voice)
         end
 
         Initializer.init
@@ -93,14 +89,6 @@ module Adhearsion
         it "should properly set the reconnect_timer value" do
           subject.reconnect_timer.should be == 5
         end
-
-        it "should properly set the media_engine value" do
-          subject.media_engine.should be == nil
-        end
-
-        it "should properly set the default_voice value" do
-          subject.default_voice.should be == nil
-        end
       end
 
       it "starts the client with the correct resource" do
@@ -110,9 +98,21 @@ module Adhearsion
         initialize_punchblock
       end
 
+      context "when the fqdn is not available" do
+        it "should use the local hostname instead" do
+          Adhearsion::Process.stub(:fqdn).and_raise SocketError
+          Socket.stub(:gethostname).and_return 'local_hostname'
+
+          username = "usera@127.0.0.1/local_hostname-1234"
+
+          Punchblock::Connection::XMPP.should_receive(:new).once.with(hash_including :username => username).and_return mock_client
+          initialize_punchblock
+        end
+      end
+
       it "starts the client with any overridden settings" do
-        Punchblock::Connection::XMPP.should_receive(:new).once.with(username: 'userb@127.0.0.1/foo', password: '123', host: 'foo.bar.com', port: 200, certs: '/foo/bar', connection_timeout: 20, root_domain: 'foo.com', media_engine: :swift, default_voice: :hal).and_return mock_client
-        initialize_punchblock username: 'userb@127.0.0.1/foo', password: '123', host: 'foo.bar.com', port: 200, certs_directory: '/foo/bar', connection_timeout: 20, root_domain: 'foo.com', media_engine: :swift, default_voice: :hal
+        Punchblock::Connection::XMPP.should_receive(:new).once.with(username: 'userb@127.0.0.1/foo', password: '123', host: 'foo.bar.com', port: 200, certs: '/foo/bar', connection_timeout: 20, root_domain: 'foo.com').and_return mock_client
+        initialize_punchblock username: 'userb@127.0.0.1/foo', password: '123', host: 'foo.bar.com', port: 200, certs_directory: '/foo/bar', connection_timeout: 20, root_domain: 'foo.com'
       end
 
       describe "#connect" do
@@ -172,7 +172,7 @@ module Adhearsion
       end
 
       describe 'using Asterisk' do
-        let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :certs => nil, :connection_timeout => 20, :root_domain => 'foo.com', :media_engine => :swift, :default_voice => :hal} }
+        let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :certs => nil, :connection_timeout => 20, :root_domain => 'foo.com'} }
 
         it 'should start an Asterisk PB connection' do
           Punchblock::Connection::Asterisk.should_receive(:new).once.with(overrides).and_return mock_client
@@ -181,7 +181,7 @@ module Adhearsion
       end
 
       describe 'using FreeSWITCH' do
-        let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :certs => nil, :connection_timeout => 20, :root_domain => 'foo.com', :media_engine => :swift, :default_voice => :hal} }
+        let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :certs => nil, :connection_timeout => 20, :root_domain => 'foo.com'} }
 
         it 'should start a FreeSWITCH PB connection' do
           Punchblock::Connection::Freeswitch.should_receive(:new).once.with(overrides).and_return mock_client

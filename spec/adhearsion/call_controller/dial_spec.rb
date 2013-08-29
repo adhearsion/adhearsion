@@ -176,7 +176,6 @@ module Adhearsion
               t.join
               status = t.value
               status.result.should be == :answer
-              status.joined_call.should eq(other_mock_call)
 
               joined_status = status.joins[status.calls.first]
               joined_status.result.should == :joined
@@ -206,7 +205,6 @@ module Adhearsion
               t.join
               status = t.value
               status.result.should be == :answer
-              status.joined_call.should eq(other_mock_call)
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 37.0
             end
@@ -303,7 +301,6 @@ module Adhearsion
               waiter_thread.join
               status = dial.status
               status.result.should be == :answer
-              status.joined_call.should eq(other_mock_call)
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 37.0
             end
@@ -481,9 +478,9 @@ module Adhearsion
 
                 sleep 0.5
 
-                other_mock_call << mock_end
-                second_root_call << mock_end
-                second_other_mock_call << mock_end
+                other_mock_call.async << mock_end
+                second_root_call.async << mock_end
+                second_other_mock_call.async << mock_end
 
                 latch.wait(1).should be_true
 
@@ -502,9 +499,9 @@ module Adhearsion
 
                 sleep 0.5
 
-                other_mock_call << mock_end
-                second_root_call << mock_end
-                second_other_mock_call << mock_end
+                other_mock_call.async << mock_end
+                second_root_call.async << mock_end
+                second_other_mock_call.async << mock_end
 
                 latch.wait(1).should be_true
 
@@ -583,9 +580,9 @@ module Adhearsion
 
                   sleep 0.5
 
-                  other_mock_call << mock_end
-                  second_root_call << mock_end
-                  second_other_mock_call << mock_end
+                  other_mock_call.async << mock_end
+                  second_root_call.async << mock_end
+                  second_other_mock_call.async << mock_end
 
                   latch.wait(1).should be_true
 
@@ -996,7 +993,9 @@ module Adhearsion
 
                 other_mock_call.should_receive(:dial).once.with(to, from: nil)
                 other_mock_call.should_receive(:join).once.with(call)
-                other_mock_call.should_receive(:hangup).once
+                other_mock_call.should_receive(:hangup).once.and_return do
+                  other_mock_call << mock_end
+                end
 
                 second_other_mock_call.should_receive(:dial).once.with(second_to, from: nil)
                 second_other_mock_call.should_receive(:join).never
@@ -1013,7 +1012,6 @@ module Adhearsion
                 confirmation_latch.wait(1).should be_true
 
                 other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
-                other_mock_call << mock_end
 
                 latch.wait(2).should be_true
 
@@ -1177,7 +1175,6 @@ module Adhearsion
               t.join
               status = t.value
               status.result.should be == :answer
-              status.joined_call.should eq(other_mock_call)
 
               joined_status = status.joins[status.calls.first]
               joined_status.result.should == :joined
@@ -1207,7 +1204,6 @@ module Adhearsion
               t.join
               status = t.value
               status.result.should be == :answer
-              status.joined_call.should eq(other_mock_call)
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 37.0
             end
@@ -1304,7 +1300,6 @@ module Adhearsion
               waiter_thread.join
               status = dial.status
               status.result.should be == :answer
-              status.joined_call.should eq(other_mock_call)
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 37.0
             end
@@ -1482,9 +1477,9 @@ module Adhearsion
 
                 sleep 0.5
 
-                other_mock_call << mock_end
-                second_root_call << mock_end
-                second_other_mock_call << mock_end
+                other_mock_call.async << mock_end
+                second_root_call.async << mock_end
+                second_other_mock_call.async << mock_end
 
                 latch.wait(1).should be_true
 
@@ -1503,9 +1498,9 @@ module Adhearsion
 
                 sleep 0.5
 
-                other_mock_call << mock_end
-                second_root_call << mock_end
-                second_other_mock_call << mock_end
+                other_mock_call.async << mock_end
+                second_root_call.async << mock_end
+                second_other_mock_call.async << mock_end
 
                 latch.wait(1).should be_true
 
@@ -1584,9 +1579,9 @@ module Adhearsion
 
                   sleep 0.5
 
-                  other_mock_call << mock_end
-                  second_root_call << mock_end
-                  second_other_mock_call << mock_end
+                  other_mock_call.async << mock_end
+                  second_root_call.async << mock_end
+                  second_other_mock_call.async << mock_end
 
                   latch.wait(1).should be_true
 

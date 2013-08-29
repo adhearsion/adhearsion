@@ -24,8 +24,8 @@ module Adhearsion
 
       desc "create_ahnhub_hooks", "Creates ahnhub hooks for both a rubygem and github repo"
       def create_ahnhub_hooks
-        create_github_hooks
-        create_rubygem_hooks
+        create_github_hook
+        create_rubygem_hook
       end
 
       protected

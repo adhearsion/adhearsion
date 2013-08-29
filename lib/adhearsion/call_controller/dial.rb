@@ -76,6 +76,7 @@ module Adhearsion
           raise Call::Hangup unless call.alive? && call.active?
           @options, @call = options, call
           @targets = to.respond_to?(:has_key?) ? to : Array(to)
+          @call_targets = {}
           set_defaults
         end
 
@@ -145,15 +146,17 @@ module Adhearsion
                 @call.answer
                 join_status.started
                 new_call.join @call
-                status.answer!(new_call)
+                status.answer!
               elsif status.result == :answer
                 join_status.lost_confirmation!
               end
             end
 
+            @call_targets[new_call] = [target, specific_options]
+
             yield new_call if block_given?
 
-            [new_call, target, specific_options]
+            new_call
           end
 
           status.calls = @calls
@@ -162,10 +165,10 @@ module Adhearsion
         #
         # Dials the set of outbound calls
         def place_calls
-          @calls.map! do |call, target, specific_options|
+          @calls.each do |call|
+            target, specific_options = @call_targets[call]
             local_options = @options.dup.deep_merge specific_options if specific_options
             call.dial target, (local_options || @options)
-            call
           end
         end
 
@@ -305,7 +308,7 @@ module Adhearsion
         end
 
         def on_all_except(call)
-          @calls.each do |target_call, _|
+          @calls.each do |target_call|
             begin
               next if target_call.id == call.id
               yield target_call
@@ -348,7 +351,7 @@ module Adhearsion
 
       class DialStatus
         # The collection of calls created during the dial operation
-        attr_accessor :calls, :joined_call
+        attr_accessor :calls
 
         # A collection of status objects indexed by call. Provides status on the joins such as duration
         attr_accessor :joins
@@ -368,8 +371,7 @@ module Adhearsion
         end
 
         # @private
-        def answer!(call)
-          @joined_call = call
+        def answer!
           @result = :answer
         end
 
