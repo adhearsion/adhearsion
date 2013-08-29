@@ -2,6 +2,7 @@
 
 require 'has_guarded_handlers'
 require 'thread'
+require 'active_support/hash_with_indifferent_access'
 
 module Adhearsion
   ##
@@ -17,6 +18,7 @@ module Adhearsion
     include HasGuardedHandlers
 
     execute_block_on_receiver :register_handler, :register_tmp_handler, :register_handler_with_priority, :register_event_handler, :on_joined, :on_unjoined, :on_end, :execute_controller
+    finalizer :finalize
 
     def self.new(*args, &block)
       super.tap do |proxy|
@@ -28,7 +30,20 @@ module Adhearsion
       end
     end
 
-    attr_reader :end_reason, :commands, :controllers, :variables
+    # @return [Symbol] the reason for the call ending
+    attr_reader :end_reason
+
+    # @return [Array<Adhearsion::CallController>] the set of call controllers executing on the call
+    attr_reader :controllers
+
+    # @return [Hash<String => String>] a collection of SIP headers set during the call
+    attr_reader :variables
+
+    # @return [Time] the time at which the call began. For inbound calls this is the time at which the call was offered to Adhearsion. For outbound calls it is the time at which the remote party answered.
+    attr_reader :start_time
+
+    # @return [Time] the time at which the call began. For inbound calls this is the time at which the call was offered to Adhearsion. For outbound calls it is the time at which the remote party answered.
+    attr_reader :end_time
 
     delegate :[], :[]=, :to => :variables
     delegate :to, :from, :to => :offer, :allow_nil => true
@@ -39,10 +54,12 @@ module Adhearsion
       @offer        = nil
       @tags         = []
       @commands     = CommandRegistry.new
-      @variables    = {}
+      @variables    = HashWithIndifferentAccess.new
       @controllers  = []
       @end_reason   = nil
+      @end_blocker  = Celluloid::Condition.new
       @peers        = {}
+      @duration     = nil
 
       self << offer if offer
     end
@@ -52,6 +69,26 @@ module Adhearsion
     #
     def id
       offer.target_call_id if offer
+    end
+    alias :to_s :id
+
+    #
+    # @return [String, nil] The domain on which the call resides
+    #
+    def domain
+      offer.domain if offer
+    end
+
+    #
+    # @return [String, nil] The uri at which the call resides
+    #
+    def uri
+      return nil unless id
+      s = ""
+      s << transport << ":" if transport
+      s << id
+      s << "@" << domain if domain
+      s
     end
 
     #
@@ -97,6 +134,18 @@ module Adhearsion
       @peers.clone
     end
 
+    #
+    # Wait for the call to end. Returns immediately if the call has already ended, else blocks until it does so.
+    # @return [Symbol] the reason for the call ending
+    #
+    def wait_for_end
+      if end_reason
+        end_reason
+      else
+        @end_blocker.wait
+      end
+    end
+
     def register_event_handler(*guards, &block)
       register_handler :event, *guards, &block
     end
@@ -107,38 +156,71 @@ module Adhearsion
     end
     alias << deliver_message
 
+    def commands
+      @commands.clone
+    end
+
     # @private
     def register_initial_handlers
       register_event_handler Punchblock::Event::Offer do |offer|
         @offer  = offer
         @client = offer.client
+        @start_time = Time.now
         throw :pass
       end
 
       register_event_handler Punchblock::HasHeaders do |event|
-        variables.merge! event.headers_hash
+        merge_headers event.headers
         throw :pass
       end
 
       on_joined do |event|
-        target = event.call_id || event.mixer_name
+        if event.call_uri
+          target = event.call_uri
+          type = :call
+        else
+          target = event.mixer_name
+          type = :mixer
+        end
+        logger.info "Joined to #{type} #{target}"
         @peers[target] = Adhearsion.active_calls[target]
         signal :joined, target
       end
 
       on_unjoined do |event|
-        target = event.call_id || event.mixer_name
+        if event.call_uri
+          target = event.call_uri
+          type = :call
+        else
+          target = event.mixer_name
+          type = :mixer
+        end
+        logger.info "Unjoined from #{type} #{target}"
         @peers.delete target
         signal :unjoined, target
       end
 
       on_end do |event|
-        logger.info "Call ended"
+        logger.info "Call ended due to #{event.reason}"
+        @end_time = Time.now
+        @duration = @end_time - @start_time if @start_time
         clear_from_active_calls
         @end_reason = event.reason
-        commands.terminate
+        @end_blocker.broadcast event.reason
+        @commands.terminate
         after(Adhearsion.config.platform.after_hangup_lifetime) { terminate }
         throw :pass
+      end
+    end
+
+    # @return [Float] The call duration until the current time, or until the call was disconnected, whichever is earlier
+    def duration
+      if @duration
+        @duration
+      elsif @start_time
+        Time.now - @start_time
+      else
+        0.0
       end
     end
 
@@ -146,7 +228,7 @@ module Adhearsion
     # Registers a callback for when this call is joined to another call or a mixer
     #
     # @param [Call, String, Hash, nil] target the target to guard on. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
-    # @option target [String] call_id The call ID to guard on
+    # @option target [String] call_uri The call ID to guard on
     # @option target [String] mixer_name The mixer name to guard on
     #
     def on_joined(target = nil, &block)
@@ -160,7 +242,7 @@ module Adhearsion
     # Registers a callback for when this call is unjoined from another call or a mixer
     #
     # @param [Call, String, Hash, nil] target the target to guard on. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
-    # @option target [String] call_id The call ID to guard on
+    # @option target [String] call_uri The call ID to guard on
     # @option target [String] mixer_name The mixer name to guard on
     #
     def on_unjoined(target = nil, &block)
@@ -218,11 +300,12 @@ module Adhearsion
     # Joins this call to another call or a mixer
     #
     # @param [Call, String, Hash] target the target to join to. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
-    # @option target [String] call_id The call ID to join to
+    # @option target [String] call_uri The call ID to join to
     # @option target [String] mixer_name The mixer to join to
     # @param [Hash, Optional] options further options to be joined with
     #
     def join(target, options = {})
+      logger.info "Joining to #{target}"
       command = Punchblock::Command::Join.new options.merge(join_options_with_target(target))
       write_and_await_response command
     end
@@ -231,10 +314,11 @@ module Adhearsion
     # Unjoins this call from another call or a mixer
     #
     # @param [Call, String, Hash] target the target to unjoin from. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
-    # @option target [String] call_id The call ID to unjoin from
+    # @option target [String] call_uri The call ID to unjoin from
     # @option target [String] mixer_name The mixer to unjoin from
     #
     def unjoin(target)
+      logger.info "Unjoining from #{target}"
       command = Punchblock::Command::Unjoin.new join_options_with_target(target)
       write_and_await_response command
     end
@@ -243,11 +327,11 @@ module Adhearsion
     def join_options_with_target(target)
       case target
       when Call
-        { :call_id => target.id }
+        { :call_uri => target.uri }
       when String
-        { :call_id => target }
+        { :call_uri => "#{transport}:#{target}@#{domain}" }
       when Hash
-        abort ArgumentError.new "You cannot specify both a call ID and mixer name" if target.has_key?(:call_id) && target.has_key?(:mixer_name)
+        abort ArgumentError.new "You cannot specify both a call URI and mixer name" if target.has_key?(:call_uri) && target.has_key?(:mixer_name)
         target
       else
         abort ArgumentError.new "Don't know how to join to #{target.inspect}"
@@ -278,10 +362,11 @@ module Adhearsion
 
     # @private
     def write_and_await_response(command, timeout = 60)
-      commands << command
+      @commands << command
       write_command command
 
-      case (response = command.response timeout)
+      response = defer { command.response timeout }
+      case response
       when Punchblock::ProtocolError
         if response.name == :item_not_found
           abort Hangup.new(@end_reason)
@@ -295,32 +380,28 @@ module Adhearsion
       command
     rescue Timeout::Error
       abort CommandTimeout.new(command.to_s)
+    ensure
+      @commands.delete command
     end
 
     # @private
     def write_command(command)
       abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
-      variables.merge! command.headers_hash if command.respond_to? :headers_hash
+      merge_headers command.headers if command.respond_to? :headers
       logger.debug "Executing command #{command.inspect}"
-      client.execute_command command, :call_id => id, :async => true
+      client.execute_command command, call_id: id, domain: domain, async: true
     end
 
     # @private
     def logger_id
-      "#{self.class}: #{id}"
+      "#{self.class}: #{id}@#{domain}"
     end
-
-    # @private
-    def to_ary
-      [current_actor]
-    end
-
     # @private
     def inspect
       attrs = [:offer, :end_reason, :commands, :variables, :controllers, :to, :from].map do |attr|
         "#{attr}=#{send(attr).inspect}"
       end
-      "#<#{self.class}:#{id} #{attrs.join ', '}>"
+      "#<#{self.class}:#{id}@#{domain} #{attrs.join ', '}>"
     end
 
     def execute_controller(controller = nil, completion_callback = nil, &block)
@@ -355,8 +436,22 @@ module Adhearsion
       @client
     end
 
+    def transport
+      offer.transport if offer
+    end
+
+    def merge_headers(headers)
+      headers.each do |name, value|
+        variables[name.to_s.downcase.gsub('-', '_')] = value
+      end
+    end
+
+    def finalize
+      ::Logging::Repository.instance.delete logger_id
+    end
+
     # @private
-    class CommandRegistry < ThreadSafeArray
+    class CommandRegistry < Array
       def terminate
         hangup = Hangup.new
         each { |command| command.response = hangup if command.requested? }

@@ -10,17 +10,21 @@ end
 
 module Adhearsion
   describe Call do
-    let(:mock_client) { mock('Client').as_null_object }
+    let(:mock_client) { double('Client').as_null_object }
 
-    let(:call_id) { rand }
+    let(:call_id) { rand.to_s }
+    let(:domain)  { 'rayo.net' }
     let(:headers) { nil }
     let(:to)      { 'sip:you@there.com' }
     let(:from)    { 'sip:me@here.com' }
+    let(:transport) { 'footransport' }
     let :offer do
-      Punchblock::Event::Offer.new :target_call_id => call_id,
-                                   :to      => to,
-                                   :from    => from,
-                                   :headers => headers
+      Punchblock::Event::Offer.new target_call_id: call_id,
+                                   domain: domain,
+                                   transport: transport,
+                                   to: to,
+                                   from: from,
+                                   headers: headers
     end
 
     subject { Adhearsion::Call.new offer }
@@ -41,14 +45,46 @@ module Adhearsion
     its(:commands) { should be_empty }
 
     its(:id)      { should be == call_id }
+    its(:domain)  { should be == domain }
+    its(:uri)     { should be == "footransport:#{call_id}@#{domain}" }
     its(:to)      { should be == to }
     its(:from)    { should be == from }
+
+    context "when the ID is nil" do
+      let(:call_id) { nil }
+
+      its(:uri) { should be == nil }
+    end
+
+    context "when the domain is nil" do
+      let(:domain) { nil }
+
+      its(:uri) { should be == "footransport:#{call_id}" }
+    end
+
+    context "when the transport is nil" do
+      let(:transport) { nil }
+
+      its(:uri) { should be == "#{call_id}@#{domain}" }
+    end
+
+    it "should mark its start time" do
+      base_time = Time.local(2008, 9, 1, 12, 0, 0)
+      Timecop.freeze base_time
+      subject.start_time.should == base_time
+    end
+
+    describe "#commands" do
+      it "should use a duplicating accessor for the command registry" do
+        subject.commands.should_not be subject.commands
+      end
+    end
 
     describe "its variables" do
       context "with an offer" do
         context "with headers" do
-          let(:headers)   { {:x_foo => 'bar'} }
-          its(:variables) { should be == headers }
+          let(:headers)   { {'X-foo' => 'bar'} }
+          its(:variables) { should be == {'x_foo' => 'bar'} }
 
           it "should be made available via []" do
             subject[:x_foo].should be == 'bar'
@@ -60,20 +96,29 @@ module Adhearsion
           end
 
           context "when receiving an event with headers" do
-            let(:event) { Punchblock::Event::End.new :headers => {:x_bar => 'foo'} }
+            let(:event) { Punchblock::Event::End.new :headers => {'X-bar' => 'foo'} }
 
             it "should merge later headers" do
               subject << event
-              subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
+              subject.variables.should be == {'x_foo' => 'bar', 'x_bar' => 'foo'}
+            end
+
+            context "with have symbol names" do
+              let(:event) { Punchblock::Event::End.new :headers => {:x_bar => 'foo'} }
+
+              it "should merge later headers" do
+                subject << event
+                subject.variables.should be == {'x_foo' => 'bar', 'x_bar' => 'foo'}
+              end
             end
           end
 
           context "when sending a command with headers" do
-            let(:command) { Punchblock::Command::Accept.new :headers => {:x_bar => 'foo'} }
+            let(:command) { Punchblock::Command::Accept.new :headers => {'X-bar' => 'foo'} }
 
             it "should merge later headers" do
               subject.write_command command
-              subject.variables.should be == {:x_foo => 'bar', :x_bar => 'foo'}
+              subject.variables.should be == {'x_foo' => 'bar', 'x_bar' => 'foo'}
             end
           end
         end
@@ -97,26 +142,41 @@ module Adhearsion
     end
 
     it 'allows the registration of event handlers which are called when messages are delivered' do
-      event = mock 'Event'
+      event = double 'Event'
       event.should_receive(:foo?).and_return true
-      response = mock 'Response'
+      response = double 'Response'
       response.should_receive(:call).once
       subject.register_event_handler(:foo?) { response.call }
       subject << event
     end
 
     describe "event handlers" do
-      let(:response) { mock 'Response' }
+      before { pending }
+      let(:response) { double 'Response' }
 
       describe "for joined events" do
         context "joined to another call" do
           let :event do
-            Punchblock::Event::Joined.new :call_id => 'foobar'
+            Punchblock::Event::Joined.new call_uri: 'xmpp:foobar@rayo.net'
           end
 
           it "should trigger any on_joined callbacks set for the matching call ID" do
             response.should_receive(:call).once.with(event)
-            subject.on_joined(:call_id => 'foobar') { |event| response.call event }
+            subject.on_joined(:call_uri => 'xmpp:foobar@rayo.net') { |event| response.call event }
+            subject << event
+          end
+
+          it "should trigger any on_joined callbacks set for the matching call ID as a string" do
+            response.should_receive(:call).once.with(event)
+            subject.on_joined('foobar') { |event| response.call event }
+            subject << event
+          end
+
+          it "should trigger any on_joined callbacks set for the matching call" do
+            response.should_receive(:call).once.with(event)
+            call = Call.new
+            call.wrapped_object.stub id: 'foobar', domain: 'rayo.net'
+            subject.on_joined(call) { |event| response.call event }
             subject << event
           end
 
@@ -155,18 +215,32 @@ module Adhearsion
             subject.on_joined(:call_id => 'foobar') { |event| response.call event }
             subject << event
           end
+
+          it "should not trigger any on_joined callbacks set for the matching call ID as a string" do
+            response.should_receive(:call).never
+            subject.on_joined('foobar') { |event| response.call event }
+            subject << event
+          end
+
+          it "should not trigger any on_joined callbacks set for the matching call" do
+            response.should_receive(:call).never
+            call = Call.new
+            call.stub :id => 'foobar'
+            subject.on_joined(call) { |event| response.call event }
+            subject << event
+          end
         end
       end
 
       describe "for unjoined events" do
         context "unjoined from another call" do
           let :event do
-            Punchblock::Event::Unjoined.new :call_id => 'foobar'
+            Punchblock::Event::Unjoined.new call_uri: 'xmpp:foobar@rayo.net'
           end
 
           it "should trigger any on_unjoined callbacks set for the matching call ID" do
             response.should_receive(:call).once.with(event)
-            subject.on_unjoined(:call_id => 'foobar') { |event| response.call event }
+            subject.on_unjoined(:call_uri => 'xmpp:foobar@rayo.net') { |event| response.call event }
             subject << event
           end
 
@@ -179,7 +253,7 @@ module Adhearsion
           it "should trigger any on_unjoined callbacks set for the matching call" do
             response.should_receive(:call).once.with(event)
             call = Call.new
-            call.stub :id => 'foobar'
+            call.wrapped_object.stub id: 'foobar', domain: 'rayo.net'
             subject.on_unjoined(call) { |event| response.call event }
             subject << event
           end
@@ -278,11 +352,11 @@ module Adhearsion
       before { other_call.stub :id => other_call_id }
 
       let :joined_event do
-        Punchblock::Event::Joined.new :call_id => other_call_id
+        Punchblock::Event::Joined.new call_uri: other_call_id
       end
 
       let :unjoined_event do
-        Punchblock::Event::Unjoined.new :call_id => other_call_id
+        Punchblock::Event::Unjoined.new call_uri: other_call_id
       end
 
       context "when we know about the joined call" do
@@ -332,9 +406,41 @@ module Adhearsion
           subject.end_reason.should be == :hangup
         end
 
-        it "should instruct the command registry to terminate" do
-          subject.commands.should_receive(:terminate).once
+        it "should set the end time" do
+          finish_time = Time.local(2008, 9, 1, 12, 1, 3)
+          Timecop.freeze finish_time
+          subject.end_time.should == nil
           subject << end_event
+          subject.end_time.should == finish_time
+        end
+
+        it "should set the call duration" do
+          start_time = Time.local(2008, 9, 1, 12, 0, 0)
+          Timecop.freeze start_time
+          subject
+
+          mid_point_time = Time.local(2008, 9, 1, 12, 0, 37)
+          Timecop.freeze mid_point_time
+
+          subject.duration.should == 37.0
+
+          finish_time = Time.local(2008, 9, 1, 12, 1, 3)
+          Timecop.freeze finish_time
+
+          subject << end_event
+
+          future_time = Time.local(2008, 9, 1, 12, 2, 3)
+          Timecop.freeze finish_time
+
+          subject.duration.should == 63.0
+        end
+
+        it "should instruct the command registry to terminate" do
+          command = Punchblock::Command::Answer.new
+          command.request!
+          subject.future.write_and_await_response command
+          subject << end_event
+          command.response(1).should be_a Call::Hangup
         end
 
         it "removes itself from the active calls" do
@@ -353,6 +459,33 @@ module Adhearsion
           sleep 2.1
           subject.should_not be_alive
           lambda { subject.id }.should raise_error Call::ExpiredError, /expired and is no longer accessible/
+        end
+      end
+    end
+
+    describe "#wait_for_end" do
+      let :end_event do
+        Punchblock::Event::End.new reason: :hangup
+      end
+
+      context "when the call has already ended" do
+        before { subject << end_event }
+
+        it "should return the end reason" do
+          subject.wait_for_end.should == :hangup
+        end
+      end
+
+      context "when the call has not yet ended" do
+        it "should block until the call ends and return the end reason" do
+          fut = subject.future.wait_for_end
+
+          sleep 0.5
+          fut.should_not be_ready
+
+          subject << end_event
+
+          fut.value.should == :hangup
         end
       end
     end
@@ -405,11 +538,11 @@ module Adhearsion
     end
 
     describe "#write_command" do
-      let(:mock_command) { mock('Command') }
+      let(:mock_command) { double('Command') }
 
       it "should asynchronously write the command to the Punchblock connection" do
         subject.wrapped_object.should_receive(:client).once.and_return mock_client
-        mock_client.should_receive(:execute_command).once.with(mock_command, :call_id => subject.id, :async => true).and_return true
+        mock_client.should_receive(:execute_command).once.with(mock_command, call_id: call_id, domain: domain, async: true).and_return true
         subject.write_command mock_command
       end
 
@@ -446,9 +579,9 @@ module Adhearsion
         subject.write_and_await_response message
       end
 
-      it "adds the command to the registry" do
+      it "removes the command from the registry after execution" do
         subject.write_and_await_response message
-        subject.commands.should_not be_empty
+        subject.commands.should be_empty
       end
 
       it "blocks until a response is received" do
@@ -461,6 +594,26 @@ module Adhearsion
         starting_time = Time.now
         subject.write_and_await_response slow_command
         (Time.now - starting_time).should >= 0.5
+      end
+
+      context "while waiting for a response" do
+        let(:slow_command) { Punchblock::Command::Dial.new }
+
+        before { slow_command.request! }
+
+        it "does not block the whole actor while waiting for a response" do
+          fut = subject.future.write_and_await_response slow_command
+          subject.id.should == call_id
+          slow_command.response = response
+          fut.value
+        end
+
+        it "adds the command to the registry" do
+          subject.future.write_and_await_response slow_command
+          sleep 0.2
+          subject.commands.should_not be_empty
+          subject.commands.first.should be slow_command
+        end
       end
 
       describe "with a successful response" do
@@ -572,7 +725,7 @@ module Adhearsion
         describe "with no headers" do
           it 'should send a Reject message' do
             expect_message_waiting_for_response do |c|
-              c.is_a?(Punchblock::Command::Reject) && c.headers_hash == {}
+              c.is_a?(Punchblock::Command::Reject) && c.headers == {}
             end
             subject.reject
           end
@@ -582,7 +735,7 @@ module Adhearsion
           it 'should send a Hangup message with the correct headers' do
             headers = {:foo => 'bar'}
             expect_message_waiting_for_response do |c|
-              c.is_a?(Punchblock::Command::Reject) && c.headers_hash == headers
+              c.is_a?(Punchblock::Command::Reject) && c.headers == headers
             end
             subject.reject nil, headers
           end
@@ -640,18 +793,20 @@ module Adhearsion
 
         context "with a call" do
           let(:call_id) { rand.to_s }
+          let(:domain)  { 'rayo.net' }
+          let(:uri)     { "footransport:#{call_id}@#{domain}" }
           let(:target)  { described_class.new }
 
-          before { target.stub id: call_id }
+          before { target.wrapped_object.stub uri: uri }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options :call_id => call_id
+            expect_join_with_options call_uri: uri
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :call_id => call_id, :media => :bridge, :direction => :recv
+              expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
               subject.join target, :media => :bridge, :direction => :recv
             end
           end
@@ -661,30 +816,30 @@ module Adhearsion
           let(:target) { rand.to_s }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options :call_id => target
+            expect_join_with_options call_uri: "footransport:#{target}@#{subject.domain}"
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :call_id => target, :media => :bridge, :direction => :recv
+              expect_join_with_options :call_uri => "footransport:#{target}@#{subject.domain}", :media => :bridge, :direction => :recv
               subject.join target, :media => :bridge, :direction => :recv
             end
           end
         end
 
-        context "with a call ID as a hash key" do
+        context "with a call URI as a hash key" do
           let(:call_id) { rand.to_s }
-          let(:target)  { { :call_id => call_id } }
+          let(:target)  { { :call_uri => call_id } }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options :call_id => call_id
+            expect_join_with_options :call_uri => call_id
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :call_id => call_id, :media => :bridge, :direction => :recv
+              expect_join_with_options :call_uri => call_id, :media => :bridge, :direction => :recv
               subject.join target.merge({:media => :bridge, :direction => :recv})
             end
           end
@@ -710,10 +865,10 @@ module Adhearsion
         context "with a call ID and a mixer name as hash keys" do
           let(:call_id)     { rand.to_s }
           let(:mixer_name)  { rand.to_s }
-          let(:target)      { { :call_id => call_id, :mixer_name => mixer_name } }
+          let(:target)      { { :call_uri => call_id, :mixer_name => mixer_name } }
 
           it "should raise an ArgumentError" do
-            lambda { subject.join target }.should raise_error ArgumentError, /call ID and mixer name/
+            lambda { subject.join target }.should raise_error ArgumentError, /call URI and mixer name/
           end
         end
       end
@@ -727,12 +882,14 @@ module Adhearsion
 
         context "with a call" do
           let(:call_id) { rand.to_s }
+          let(:domain)  { 'rayo.net' }
+          let(:uri)     { "footransport:#{call_id}@#{domain}" }
           let(:target)  { described_class.new }
 
-          before { target.stub id: call_id }
+          before { target.wrapped_object.stub uri: uri }
 
           it "should send an unjoin command unjoining from the provided call ID" do
-            expect_unjoin_with_options :call_id => call_id
+            expect_unjoin_with_options call_uri: "footransport:#{call_id}@#{domain}"
             subject.unjoin target
           end
         end
@@ -741,17 +898,17 @@ module Adhearsion
           let(:target) { rand.to_s }
 
           it "should send an unjoin command unjoining from the provided call ID" do
-            expect_unjoin_with_options :call_id => target
+            expect_unjoin_with_options call_uri: "footransport:#{target}@#{subject.domain}"
             subject.unjoin target
           end
         end
 
-        context "with a call ID as a hash key" do
+        context "with a call URI as a hash key" do
           let(:call_id) { rand.to_s }
-          let(:target)  { { :call_id => call_id } }
+          let(:target)  { { call_uri: call_id } }
 
           it "should send an unjoin command unjoining from the provided call ID" do
-            expect_unjoin_with_options :call_id => call_id
+            expect_unjoin_with_options call_uri: call_id
             subject.unjoin target
           end
         end
@@ -766,13 +923,13 @@ module Adhearsion
           end
         end
 
-        context "with a call ID and a mixer name as hash keys" do
+        context "with a call URI and a mixer name as hash keys" do
           let(:call_id)     { rand.to_s }
           let(:mixer_name)  { rand.to_s }
-          let(:target)      { { :call_id => call_id, :mixer_name => mixer_name } }
+          let(:target)      { { call_uri: call_id, mixer_name: mixer_name } }
 
           it "should raise an ArgumentError" do
-            lambda { subject.unjoin target }.should raise_error ArgumentError, /call ID and mixer name/
+            lambda { subject.unjoin target }.should raise_error ArgumentError, /call URI and mixer name/
           end
         end
       end
@@ -846,8 +1003,8 @@ module Adhearsion
       end
 
       context "with two controllers registered" do
-        let(:controller1) { mock 'CallController1' }
-        let(:controller2) { mock 'CallController2' }
+        let(:controller1) { double 'CallController1' }
+        let(:controller2) { double 'CallController2' }
 
         before { subject.controllers << controller1 << controller2 }
 
@@ -867,6 +1024,14 @@ module Adhearsion
 
             subject.resume_controllers
           end
+        end
+      end
+
+      describe "after termination" do
+        it "should delete its logger" do
+          logger = subject.logger
+          subject.terminate
+          ::Logging::Repository.instance[logger.name].should be_nil
         end
       end
     end

@@ -41,6 +41,8 @@ module Adhearsion
       # @see CallController#pass
       #
       def ask(*args, &block)
+        logger.warn "This implementation of #ask is deprecated due to issues with dropped DTMF. For a solution, see http://adhearsion.com/docs/common_problems#toc_3"
+
         options = args.last.kind_of?(Hash) ? args.pop : {}
         sound_files = args.flatten
 
@@ -129,6 +131,8 @@ module Adhearsion
       # @see CallController#pass
       #
       def menu(*args, &block)
+        logger.warn "This implementation of #menu is deprecated due to issues with dropped DTMF. For a solution, see http://adhearsion.com/docs/common_problems#toc_3"
+
         options = args.last.kind_of?(Hash) ? args.pop : {}
         sound_files = args.flatten
 

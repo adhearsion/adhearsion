@@ -9,7 +9,7 @@ module Adhearsion
     describe 'a new router' do
       subject { Router.new {} }
 
-      let(:call) { mock 'Adhearsion::Call' }
+      let(:call) { double 'Adhearsion::Call' }
       before { call.stub id: 'abc123' }
 
       it "should make the router available to the block" do

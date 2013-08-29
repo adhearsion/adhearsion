@@ -20,13 +20,11 @@ module Adhearsion
       port                Proc.new { PunchblockPlugin.default_port_for_platform platform }, :transform => Proc.new { |v| PunchblockPlugin.validate_number v }, :desc => "Port punchblock needs to connect"
       certs_directory     nil              , :desc => "Directory containing certificates for securing the connection."
       root_domain         nil              , :desc => "The root domain at which to address the server"
-      calls_domain        nil              , :desc => "The domain at which to address calls"
-      mixers_domain       nil              , :desc => "The domain at which to address mixers"
       connection_timeout  60               , :transform => Proc.new { |v| PunchblockPlugin.validate_number v }, :desc => "The amount of time to wait for a connection"
       reconnect_attempts  1.0/0.0          , :transform => Proc.new { |v| PunchblockPlugin.validate_number v }, :desc => "The number of times to (re)attempt connection to the server"
       reconnect_timer     5                , :transform => Proc.new { |v| PunchblockPlugin.validate_number v }, :desc => "Delay between connection attempts"
-      media_engine        nil              , :transform => Proc.new { |v| v.to_sym }, :desc => "The media engine to use. Defaults to platform default."
-      default_voice       nil              , :transform => Proc.new { |v| v.to_sym }, :desc => "The default TTS voice to use."
+      media_engine        nil              , :transform => Proc.new { |v| v.to_sym }, :desc => "The media engine to use. Defaults to platform default. This is deprecated, please see core media config options for forward compatability."
+      default_voice       nil              , :transform => Proc.new { |v| v.to_sym }, :desc => "The default TTS voice to use. This is deprecated, please see core media config options for forward compatability."
     end
 
     init :punchblock do

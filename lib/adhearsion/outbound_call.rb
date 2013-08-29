@@ -36,6 +36,10 @@ module Adhearsion
       dial_command.target_call_id if dial_command
     end
 
+    def domain
+      dial_command.domain if dial_command
+    end
+
     def client
       PunchblockPlugin::Initializer.client
     end
@@ -76,6 +80,12 @@ module Adhearsion
       end
     end
 
+    # @private
+    def register_initial_handlers
+      super
+      on_answer { |event| @start_time = Time.now }
+    end
+
     def run_router
       catching_standard_errors do
         Adhearsion.router.handle current_actor
@@ -104,6 +114,12 @@ module Adhearsion
       else
         run_router_on_answer
       end
+    end
+
+    private
+
+    def transport
+      dial_command.transport if dial_command
     end
   end
 end

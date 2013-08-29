@@ -1,3 +1,9 @@
+[![Gem Version](https://badge.fury.io/rb/adhearsion.png)](https://rubygems.org/gems/adhearsion)
+[![Build Status](https://secure.travis-ci.org/adhearsion/adhearsion.png?branch=develop)](http://travis-ci.org/adhearsion/adhearsion)
+[![Dependency Status](https://gemnasium.com/adhearsion/adhearsion.png?travis)](https://gemnasium.com/adhearsion/adhearsion)
+[![Code Climate](https://codeclimate.com/github/adhearsion/adhearsion.png)](https://codeclimate.com/github/adhearsion/adhearsion)
+[![Coverage Status](https://coveralls.io/repos/adhearsion/adhearsion/badge.png?branch=develop)](https://coveralls.io/r/adhearsion/adhearsion)
+
 # Adhearsion
 
 Adhearsion is an open-source voice application development framework. Adhearsion users write applications atop the framework with Ruby and **call into their code**.
@@ -21,8 +27,14 @@ Adhearsion rests above a lower-level telephony platform, for example [Asterisk](
 * A VoIP platform:
   * Asterisk 1.8+
   * FreeSWITCH
-  * Prism 11+ with rayo-server
+  * A Rayo server (Prism 11+ with rayo-server, or FreeSWITCH with mod_rayo)
 * An interest in building cool new things
+
+\* Support for Ruby 1.9.2 is deprecated, and requires locking your application to ActiveSupport 3.x as follows:
+
+```ruby
+gem 'active_support', '~> 3.0'
+```
 
 ## Install
 
@@ -47,7 +59,14 @@ Visit [Adhearsion's website](http://adhearsion.com) for code examples and more i
 
 If you're having trouble, you may want to try asking your question on the IRC channel (#adhearsion on irc.freenode.net), [mailing list](http://groups.google.com/group/adhearsion) or, if you've found a bug, report it on the [bug tracker](https://github.com/adhearsion/adhearsion/issues).
 
-## Author
+## Related Projects
+
+These Open Source projects are also maintained by members of the Adhearsion team and may be useful when developing Adhearsion apps:
+
+* [Telephony-Dev-Box](https://github.com/mojolingo/Telephony-Dev-Box) is a system for creating virtual machines that will preconfigure Adhearsion, Asterisk, FreeSWITCH and PRISM together.  Just add a SIP client and start calling your app!
+* [SippyCup](https://github.com/bklang/sippy_cup) makes generating [SIPp](http://sipp.sourceforge.net/) profiles and RTP media easy.  Useful for load testing your apps and telephony infrastructure.
+
+## Authors
 
 Core team:
 
@@ -66,4 +85,4 @@ There is a pre-commit hook that runs encoding checks available in pre-commit. To
 
 ### Copyright
 
-Copyright (c) 2013 Adhearsion Foundation Inc. MIT LICENSE (see LICENSE for details).
+Copyright (c) 2011-2013 Adhearsion Foundation Inc. MIT LICENSE (see LICENSE for details).

@@ -1,5 +1,31 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
+# [2.4.0](https://github.com/adhearsion/adhearsion/compare/v2.3.5...v2.4.0) - [2013-08-29](https://rubygems.org/gems/adhearsion/versions/2.4.0)
+  * Deprecation: Ruby 1.9.2 support is deprecated and will be dropped in a future version of Adhearsion
+  * Deprecation: Some media options from Punchblock config are now overriden by other core config, and will eventually be removed.
+  * Deprecation: Core implementations of `CallController#ask` and `#menu` are deprecated, and will be replaced in future with those in [adhearsion-asr](http://github.com/adhearsion/adhearsion-asr). See http://adhearsion.com/docs/common_problems#toc_3 for details.
+  * Feature: Update to Punchblock 2.0 for JRuby compatibility, better performance and Rayo spec compliance
+  * Feature: Add `Call#wait_for_end`, which blocks until the call ends and returns its end reason
+  * Feature: Track call start/end time and duration
+  * Feature: Add per-call join duration and disposition to `DialStatus`
+  * Feature: Add `CallController#dial_and_confirm` which allows parallel confirmation of outbound calls and apologies to losing parties
+  * Feature: Add `CallController::Dial::Dial#split`, `#rejoin`, `#merge` and `#skip_cleanup` to support conferencing and transfer use cases
+  * Feature: Add `#originate` method to console as alias for `Adhearsion::OutboundCall.originate`
+  * Feature: Allow the console to be disabled using `--no-console`
+  * Feature: Add CLI commands to generate hooks for a plugin to register on [ahnhub.com](http://www.ahnhub.com)
+  * Feature: Add `#say_characters` method and an async cousin, `#say_characters!`
+  * Bugfix: Removed unnecessary Mocha reference from generated plugin
+  * Bugfix: Call loggers are deleted after a call finishes, fixing a memory leak
+  * Bugfix: A menu definition's block context is now available
+  * Bugfix: Ensure call's command registry is not leaked outside the actor
+  * Bugfix: An application's `lib/` directory is now in the load path so dependencies may be reasolved more simply. You may now `require 'foo'` instead of `require "#{Adhearsion.root}/lib/foo.rb"`
+  * Bugfix: Resolve hostname to some local name when experiencing network issues
+  * Bugfix: Ensure smooth shutdown of console and XMPP connections
+  * Bugfix: Warn when booting Adhearsion with an invalid environment name
+  * Bugfix: `CallController#reject` now terminates a call controller in the same way as `#hangup`
+  * Bugfix: `Call` actors can now process other queries while waiting for responses to commands from a VoIP engine
+  * Bugfix: Allow the CLI to function on JRuby
+
 # [2.3.5](https://github.com/adhearsion/adhearsion/compare/v2.3.4...v2.3.5) - [2013-06-06](https://rubygems.org/gems/adhearsion/versions/2.3.5)
   * Bugfix: Fix race conditions in barging in before output start is acknowledged
   * Performance enhancement: Use Celluloid's thread pool for call controller threads to reduce thread setup overhead

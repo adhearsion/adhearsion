@@ -9,13 +9,14 @@ module Adhearsion
     its(:id) { should be_nil }
     its(:variables) { should be == {} }
 
-    let(:mock_client) { mock 'Punchblock Client' }
+    let(:mock_client) { double 'Punchblock Client' }
 
     before do
       PunchblockPlugin::Initializer.client = mock_client
     end
 
     its(:client) { should be mock_client }
+    its(:start_time) { should be nil }
 
     describe ".originate" do
       let(:to) { 'sip:foo@bar.com' }
@@ -86,7 +87,7 @@ module Adhearsion
     end
 
     describe "event handlers" do
-      let(:response) { mock 'Response' }
+      let(:response) { double 'Response' }
 
       describe "for answered events" do
         let(:event) { Punchblock::Event::Answered.new }
@@ -96,20 +97,43 @@ module Adhearsion
           subject.on_answer { |event| response.call event }
           subject << event
         end
+
+        it "should record the call start time" do
+          originate_time = Time.local(2008, 9, 1, 12, 0, 0)
+          Timecop.freeze originate_time
+          subject.duration.should == 0.0
+
+          mid_point_time = Time.local(2008, 9, 1, 12, 0, 20)
+          Timecop.freeze mid_point_time
+          subject.duration.should == 0.0
+
+          answer_time = Time.local(2008, 9, 1, 12, 0, 40)
+          Timecop.freeze answer_time
+          subject << event
+          subject.start_time.should == answer_time
+
+          later_time = Time.local(2008, 9, 1, 12, 0, 50)
+          Timecop.freeze later_time
+          subject.duration.should == 10.0
+        end
       end
     end
 
     describe "#dial" do
       def expect_message_waiting_for_response(message)
         subject.wrapped_object.should_receive(:write_and_await_response).once.with(message, 60).and_return do
+          message.transport = transport
           message.target_call_id = call_id
+          message.domain = domain
           message
         end
       end
 
-      let(:call_id) { 'abc123' }
-      let(:to)      { '+1800 555-0199' }
-      let(:from)    { '+1800 555-0122' }
+      let(:transport) { 'footransport' }
+      let(:call_id)   { 'abc123' }
+      let(:domain)    { 'rayo.net' }
+      let(:to)        { '+1800 555-0199' }
+      let(:from)      { '+1800 555-0122' }
 
       let(:expected_dial_command) { Punchblock::Command::Dial.new(:to => to, :from => from) }
 
@@ -126,9 +150,19 @@ module Adhearsion
         subject.dial_command.should be == expected_dial_command
       end
 
-      it "should set the call ID from the dial command" do
+      it "should set the URI from the reference" do
+        subject.dial to, :from => from
+        subject.uri.should be == "footransport:abc123@rayo.net"
+      end
+
+      it "should set the call ID from the reference" do
         subject.dial to, :from => from
         subject.id.should be == call_id
+      end
+
+      it "should set the call domain from the reference" do
+        subject.dial to, :from => from
+        subject.domain.should be == domain
       end
 
       it "should set the to from the dial command" do

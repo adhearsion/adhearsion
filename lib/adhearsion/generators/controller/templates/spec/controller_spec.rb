@@ -4,7 +4,7 @@ require 'spec_helper'
 
 describe <%= @controller_name.camelcase %> do
 
-  let(:mock_call) { mock 'Call', :to => '1112223333', :from => "2223334444" }
+  let(:mock_call) { double 'Call', :to => '1112223333', :from => "2223334444" }
   let(:metadata) { {} }
   subject { <%= @controller_name.camelcase %>.new(mock_call, metadata) }
 

@@ -54,7 +54,11 @@ module Adhearsion
       end
     end
 
-    attr_reader :call, :metadata
+    # @return [Call] The call object on which the controller is executing
+    attr_reader :call
+
+    # @return [Hash] The controller's metadata provided at invocation
+    attr_reader :metadata
 
     # @private
     attr_reader :block
@@ -71,6 +75,15 @@ module Adhearsion
     #
     def initialize(call, metadata = nil, &block)
       @call, @metadata, @block = call, metadata || {}, block
+    end
+
+    def method_missing(method_name, *args, &block)
+      if @block
+        block_context = eval "self", @block.binding
+        block_context.send method_name, *args, &block
+      else
+        super
+      end
     end
 
     #
@@ -105,7 +118,7 @@ module Adhearsion
       execute_callbacks :before_call
       run
     rescue Call::Hangup
-      logger.info "Call was hung up"
+      logger.info "Call was hung up while executing a controller"
     rescue SyntaxError, StandardError => e
       Events.trigger :exception, [e, logger]
     ensure
@@ -156,18 +169,6 @@ module Adhearsion
       @after_call ||= execute_callbacks :after_call
     end
 
-    #
-    # Hangup the call, and execute after_call callbacks
-    #
-    # @param [Hash] headers
-    #
-    def hangup(headers = nil)
-      block_until_resumed
-      call.hangup headers
-      after_call
-      raise Call::Hangup
-    end
-
     # @private
     def write_and_await_response(command)
       block_until_resumed
@@ -196,6 +197,17 @@ module Adhearsion
     end
 
     #
+    # Hangup the call, and execute after_call callbacks
+    #
+    # @param [Hash] headers
+    #
+    def hangup(headers = nil)
+      block_until_resumed
+      call.hangup headers
+      raise Call::Hangup
+    end
+
+    #
     # Reject the call
     #
     # @see Call#reject
@@ -203,6 +215,7 @@ module Adhearsion
     def reject(*args)
       block_until_resumed
       call.reject(*args)
+      raise Call::Hangup
     end
 
     #
@@ -238,7 +251,7 @@ module Adhearsion
       block_until_resumed
       async = (target.is_a?(Hash) ? target : options).delete :async
       join_command = call.join target, options
-      waiter = join_command.call_id || join_command.mixer_name
+      waiter = join_command.call_uri || join_command.mixer_name
       if async
         call.wait_for_joined waiter
       else

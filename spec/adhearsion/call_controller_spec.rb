@@ -64,6 +64,8 @@ module Adhearsion
       end
 
       context "when a block is specified" do
+        let(:value) { :bar }
+
         let :block do
           Proc.new { foo value }
         end
@@ -72,6 +74,11 @@ module Adhearsion
 
         it "should execute the block in the context of the controller" do
           subject.stub :value => :bar
+          subject.should_receive(:foo).once.with(:bar)
+          subject.run
+        end
+
+        it "should make the block's context available" do
           subject.should_receive(:foo).once.with(:bar)
           subject.run
         end
@@ -215,7 +222,6 @@ module Adhearsion
     end
 
     [ :answer,
-      :reject,
       :mute,
       :unmute].each do |method_name|
       describe "##{method_name}" do
@@ -227,11 +233,16 @@ module Adhearsion
       end
     end
 
-    describe "#hangup" do
-      it "delegates to the call, blocking first until it is allowed to execute" do
-        subject.should_receive(:block_until_resumed).once.ordered
-        subject.call.should_receive(:hangup).once.ordered
-        lambda { subject.send :hangup }.should raise_error Call::Hangup
+    [
+      :hangup,
+      :reject
+    ].each do |method_name|
+      describe "##{method_name}" do
+        it "delegates to the call, blocking first until it is allowed to execute, and raises Call::Hangup" do
+          subject.should_receive(:block_until_resumed).once.ordered
+          subject.call.should_receive(method_name).once.ordered
+          lambda { subject.send method_name }.should raise_error Call::Hangup
+        end
       end
     end
 
@@ -245,9 +256,9 @@ module Adhearsion
           latch.countdown!
         end
         latch.wait(1).should be false
-        subject.call << Punchblock::Event::Joined.new(:call_id => 'call1')
+        subject.call << Punchblock::Event::Joined.new(call_uri: 'call1')
         latch.wait(1).should be false
-        subject.call << Punchblock::Event::Unjoined.new(:call_id => 'call1')
+        subject.call << Punchblock::Event::Unjoined.new(call_uri: 'call1')
         latch.wait(1).should be true
       end
 
@@ -278,7 +289,7 @@ module Adhearsion
             latch.countdown!
           end
           latch.wait(1).should be false
-          subject.call << Punchblock::Event::Joined.new(:call_id => 'call1')
+          subject.call << Punchblock::Event::Joined.new(call_uri: 'call1')
           latch.wait(1).should be true
         end
 

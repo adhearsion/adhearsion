@@ -5,7 +5,7 @@ require 'blather'
 module Adhearsion
   class PunchblockPlugin
     class Initializer
-      cattr_accessor :config, :client, :connection, :dispatcher, :attempts
+      cattr_accessor :config, :client, :dispatcher, :attempts
 
       self.attempts = 0
 
@@ -14,16 +14,10 @@ module Adhearsion
           self.config = Adhearsion.config[:punchblock]
 
           username = self.config.username
-          connection_class = case (self.config.platform || :xmpp)
-          when :xmpp
+          if (self.config.platform || :xmpp) == :xmpp
             username = Blather::JID.new username
             username = Blather::JID.new username.node, username.domain, resource unless username.resource
             username = username.to_s
-            Punchblock::Connection::XMPP
-          when :asterisk
-            Punchblock::Connection::Asterisk
-          when :freeswitch
-            Punchblock::Connection::Freeswitch
           end
 
           connection_options = {
@@ -33,15 +27,10 @@ module Adhearsion
             :host               => self.config.host,
             :port               => self.config.port,
             :certs              => self.config.certs_directory,
-            :root_domain        => self.config.root_domain,
-            :calls_domain       => self.config.calls_domain,
-            :mixers_domain      => self.config.mixers_domain,
-            :media_engine       => self.config.media_engine,
-            :default_voice      => self.config.default_voice
+            :root_domain        => self.config.root_domain
           }
 
-          self.connection = connection_class.new connection_options
-          self.client = Punchblock::Client.new :connection => connection
+          self.client = Punchblock.client_with_connection self.config.platform, connection_options
 
           # Tell the Punchblock connection that we are ready to process calls.
           Events.register_callback :after_initialized do
@@ -168,7 +157,17 @@ module Adhearsion
         end
 
         def resource
-          [Adhearsion::Process.fqdn, ::Process.pid].join '-'
+          [machine_identifier, ::Process.pid].join '-'
+        end
+
+        def machine_identifier
+          Adhearsion::Process.fqdn
+        rescue SocketError
+          Socket.gethostname
+        end
+
+        def connection
+          client.connection
         end
       end
     end # Punchblock

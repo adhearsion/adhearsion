@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_runtime_dependency 'activesupport', ["~> 3.0"]
+  s.add_runtime_dependency 'activesupport', [">= 3.0.0", "< 5.0.0"]
   s.add_runtime_dependency 'adhearsion-loquacious', ["~> 1.9"]
   s.add_runtime_dependency 'bundler', ["~> 1.0"]
   s.add_runtime_dependency 'celluloid', ["~> 0.14"]
@@ -29,9 +29,9 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'jruby-openssl' if RUBY_PLATFORM == 'java'
   s.add_runtime_dependency 'logging', ["~> 1.8"]
   s.add_runtime_dependency 'pry'
-  s.add_runtime_dependency 'punchblock', ["~> 1.4"]
+  s.add_runtime_dependency 'punchblock', ["~> 2.0"]
   s.add_runtime_dependency 'rake'
-  s.add_runtime_dependency 'ruby_speech', ["~> 1.0"]
+  s.add_runtime_dependency 'ruby_speech', ["~> 2.0"]
   s.add_runtime_dependency 'thor', "~> 0.18.0"
 
   s.add_development_dependency 'aruba', "~> 0.5"
@@ -40,8 +40,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'guard-cucumber'
   s.add_development_dependency 'guard-rspec'
   s.add_development_dependency 'rspec', ["~> 2.11"]
-  s.add_development_dependency 'ruby_gntp'
   s.add_development_dependency 'simplecov'
   s.add_development_dependency 'simplecov-rcov'
   s.add_development_dependency 'yard'
+  s.add_development_dependency 'coveralls'
+  s.add_development_dependency 'timecop'
 end

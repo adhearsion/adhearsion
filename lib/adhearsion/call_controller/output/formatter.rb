@@ -8,7 +8,7 @@ module Adhearsion
       class Formatter
 
         def ssml_for_collection(collection)
-          collection.inject RubySpeech::SSML::Speak.new do |doc, argument|
+          collection.inject RubySpeech::SSML.draw do |doc, argument|
             doc + case argument
             when Hash
               ssml_for argument.delete(:value), argument
@@ -86,6 +86,12 @@ module Adhearsion
           fallback = (options || {}).delete :fallback
           RubySpeech::SSML.draw do
             audio(:src => argument) { fallback }
+          end
+        end
+
+        def ssml_for_characters(argument)
+          RubySpeech::SSML.draw do
+            say_as(interpret_as: 'characters') { string argument.to_s }
           end
         end
       end

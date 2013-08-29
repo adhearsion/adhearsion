@@ -7,6 +7,10 @@ module Adhearsion
 
     LOG_LEVELS = %w(TRACE DEBUG INFO WARN ERROR FATAL)
 
+    class ::Logging::Repository
+      def delete( key ) @h.delete(to_key(key)) end
+    end
+
     module HasLogger
       def logger
         ::Logging.logger[logger_id]
@@ -76,7 +80,7 @@ module Adhearsion
 
         ::Logging.logger.root.level = level
 
-        formatter = formatter if formatter
+        self.formatter = formatter if formatter
       end
 
       def default_appenders
