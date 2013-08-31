@@ -19,6 +19,7 @@ module Adhearsion
         empty_directory "lib/#{@plugin_file}"
         empty_directory "spec"
 
+        copy_file "gitignore", ".gitignore"
 
         template 'plugin-template.gemspec.tt', "#{@plugin_file}.gemspec"
         template 'Rakefile.tt', "Rakefile"
