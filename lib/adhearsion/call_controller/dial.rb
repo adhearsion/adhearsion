@@ -236,7 +236,9 @@ module Adhearsion
         def await_completion
           @latch.wait(@options[:timeout]) || status.timeout!
           return unless status.result == :answer
+          logger.debug "Main calls were completed, waiting for any added calls: #{@waiters.inspect}"
           @waiters.each(&:wait)
+          logger.debug "All calls were completed, unblocking."
         end
 
         #
