@@ -8,6 +8,7 @@ rvm:
   - ruby-head
 matrix:
   allow_failures:
+    - rvm: 1.9.2
     - rvm: rbx-19mode
     - rvm: ruby-head
 env: ARUBA_TIMEOUT=120 RAILS_ENV=development AHN_ENV=development
