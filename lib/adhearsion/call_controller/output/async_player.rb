@@ -14,6 +14,7 @@ module Adhearsion
           component = new_output options
           component.register_event_handler Punchblock::Event::Complete do |event|
             controller.logger.error event if event.reason.is_a?(Punchblock::Event::Complete::Error)
+            throw :pass
           end
           controller.write_and_await_response component
           component
