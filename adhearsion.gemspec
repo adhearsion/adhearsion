@@ -11,6 +11,8 @@ Gem::Specification.new do |s|
   s.homepage    = "http://adhearsion.com"
   s.summary     = "Adhearsion, open-source telephony development framework"
   s.description = "Adhearsion is an open-source telephony development framework"
+  
+  s.license = 'MIT'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
