@@ -158,7 +158,7 @@ module Adhearsion
 
     # Basic API for stopping all controller output
 
-    def stop_components(metadata = nil)
+    def stop_all_components(metadata = nil)
       logger.info "Stopping all controller components"
       @active_components.each do |component|
         begin
