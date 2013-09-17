@@ -47,7 +47,7 @@ module Adhearsion
 
             context 'when no terminator is set' do
               it "should have no terminator" do
-                subject.terminator.should be == ''
+                subject.terminator.should be == /(?!x)x/
               end
 
               it 'should not validate successfully' do
@@ -61,7 +61,7 @@ module Adhearsion
               }
 
               it 'should have the passed terminator' do
-                subject.terminator.should be == '3'
+                subject.terminator.should be == /3/
               end
 
               it 'should validate(:basic) successfully' do
@@ -316,8 +316,8 @@ module Adhearsion
                 let(:options) { { :terminator => '#' } }
 
                 it "buffers until the terminator is issued then returns a MenuTerminated and sets the status to :terminated, removing the terminator from the buffer" do
-                  menu_instance << 2
-                  menu_instance << 4
+                  menu_instance << '2'
+                  menu_instance << '4'
                   menu_instance.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout
                   menu_instance.status.should be == :potential
                   menu_instance << '#'
@@ -327,6 +327,30 @@ module Adhearsion
                   menu_instance.result.should be == '24'
                 end
               end
+
+              context "when multiple terminator digits are set" do
+                let(:options) { { :terminator => '*|#' } }
+
+                it "buffers until  one terminator is pushed" do
+                  menu_instance << '2'
+                  menu_instance << '4'
+                  menu_instance << '#'
+                  menu_instance.continue.should be_a Menu::MenuTerminated
+                  menu_instance.status.should be == :terminated
+                  menu_instance.result.should be == '24'
+                end
+
+                it "buffers until  one terminator is pushed" do
+                  menu_instance << '2'
+                  menu_instance << '4'
+                  menu_instance << '*'
+                  menu_instance.continue.should be_a Menu::MenuTerminated
+                  menu_instance.status.should be == :terminated
+                  menu_instance.result.should be == '24'
+                end
+              end
+
+
 
               context "when a digit limit is set" do
                 let(:options) { { :limit => 3 } }
