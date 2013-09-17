@@ -98,5 +98,19 @@ module Adhearsion
       ::Process.should_receive(:exit).once.with(1)
       Adhearsion::Process.force_stop
     end
+
+    describe "#fqdn" do
+      it "should be a string" do
+        Adhearsion::Process.fqdn.should be_a String
+      end
+
+      context "when networking issues crop up" do
+        before { Socket.stub(:gethostbyname).and_raise(SocketError) }
+
+        it "should raise SocketError" do
+          expect { Adhearsion::Process.fqdn }.to raise_error(SocketError)
+        end
+      end
+    end
   end
 end

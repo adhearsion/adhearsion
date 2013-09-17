@@ -30,9 +30,9 @@ module Adhearsion
     # Start the Adhearsion console
     #
     def run
-      set_prompt
-      Pry.config.command_prefix = "%"
       if jruby? || cruby_with_readline?
+        set_prompt
+        Pry.config.command_prefix = "%"
         logger.info "Launching Adhearsion Console"
         @pry_thread = Thread.current
         pry
@@ -43,7 +43,7 @@ module Adhearsion
     end
 
     def stop
-      return unless instance_variable_defined?(:@pry_thread)
+      return unless instance_variable_defined?(:@pry_thread) && @pry_thread
       @pry_thread.kill
       @pry_thread = nil
       logger.info "Adhearsion Console shutting down"

@@ -88,6 +88,12 @@ module Adhearsion
             audio(:src => argument) { fallback }
           end
         end
+
+        def ssml_for_characters(argument)
+          RubySpeech::SSML.draw do
+            say_as(interpret_as: 'characters') { string argument.to_s }
+          end
+        end
       end
     end
   end

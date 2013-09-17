@@ -27,7 +27,7 @@ Adhearsion rests above a lower-level telephony platform, for example [Asterisk](
 * A VoIP platform:
   * Asterisk 1.8+
   * FreeSWITCH
-  * Prism 11+ with rayo-server
+  * A Rayo server (Prism 11+ with rayo-server, or FreeSWITCH with mod_rayo)
 * An interest in building cool new things
 
 \* Support for Ruby 1.9.2 is deprecated, and requires locking your application to ActiveSupport 3.x as follows:

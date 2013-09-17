@@ -1,6 +1,10 @@
 source 'https://rubygems.org'
 
-gem "adhearsion", "~> <%= Adhearsion::VERSION.split('.')[0,2].join('.') %>"
+gem 'adhearsion', '~> <%= Adhearsion::VERSION.split('.')[0,2].join('.') %>'
+
+# This is here by default due to deprecation of #ask and #menu.
+# See http://adhearsion.com/docs/common_problems#toc_3 for details
+gem 'adhearsion-asr'
 
 #
 # Here are some example plugins you might like to use. Simply

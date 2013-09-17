@@ -30,7 +30,20 @@ module Adhearsion
       end
     end
 
-    attr_reader :end_reason, :controllers, :variables, :start_time, :end_time
+    # @return [Symbol] the reason for the call ending
+    attr_reader :end_reason
+
+    # @return [Array<Adhearsion::CallController>] the set of call controllers executing on the call
+    attr_reader :controllers
+
+    # @return [Hash<String => String>] a collection of SIP headers set during the call
+    attr_reader :variables
+
+    # @return [Time] the time at which the call began. For inbound calls this is the time at which the call was offered to Adhearsion. For outbound calls it is the time at which the remote party answered.
+    attr_reader :start_time
+
+    # @return [Time] the time at which the call began. For inbound calls this is the time at which the call was offered to Adhearsion. For outbound calls it is the time at which the remote party answered.
+    attr_reader :end_time
 
     delegate :[], :[]=, :to => :variables
     delegate :to, :from, :to => :offer, :allow_nil => true

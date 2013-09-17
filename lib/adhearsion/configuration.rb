@@ -58,6 +58,12 @@ module Adhearsion
         after_hangup_lifetime 30, :transform => Proc.new { |v| v.to_i }, :desc => <<-__
           Lifetime of a call after it has hung up
         __
+
+        desc "Media configuration"
+        media {
+          default_voice nil, desc: 'The default voice used for all output. Set nil to use platform default.'
+          default_renderer nil, desc: 'The default renderer used for all output. Set nil to use platform default.'
+        }
       end
 
       Loquacious::Configuration.for :platform, &block if block_given?

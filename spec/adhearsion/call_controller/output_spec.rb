@@ -748,7 +748,7 @@ module Adhearsion
           end
         end
 
-        describe "with a default voice set" do
+        describe "with a default voice set in PB config" do
           before { Adhearsion.config.punchblock.default_voice = 'foo' }
 
           it 'sets the voice on the output component' do
@@ -759,6 +759,57 @@ module Adhearsion
           end
 
           after { Adhearsion.config.punchblock.default_voice = nil }
+        end
+
+        describe "with a default voice set in core and PB config" do
+          before do
+            Adhearsion.config.punchblock.default_voice = 'foo'
+            Adhearsion.config.platform.media.default_voice = 'bar'
+          end
+
+          it 'prefers core config to set the voice on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_ssml_output ssml, voice: 'bar'
+            subject.say(str)
+          end
+
+          after do
+            Adhearsion.config.punchblock.default_voice = nil
+            Adhearsion.config.platform.media.default_voice = nil
+          end
+        end
+
+        describe "with a default media engine set in PB config" do
+          before { Adhearsion.config.punchblock.media_engine = 'foo' }
+
+          it 'sets the renderer on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_ssml_output ssml, renderer: 'foo'
+            subject.say(str)
+          end
+
+          after { Adhearsion.config.punchblock.media_engine = nil }
+        end
+
+        describe "with a default renderer set in core and PB config" do
+          before do
+            Adhearsion.config.punchblock.media_engine = 'foo'
+            Adhearsion.config.platform.media.default_renderer = 'bar'
+          end
+
+          it 'prefers core config to set the renderer on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_ssml_output ssml, renderer: 'bar'
+            subject.say(str)
+          end
+
+          after do
+            Adhearsion.config.punchblock.media_engine = nil
+            Adhearsion.config.platform.media.default_renderer = nil
+          end
         end
 
         describe "converts the argument to a string" do
@@ -795,7 +846,7 @@ module Adhearsion
           end
         end
 
-        describe "with a default voice set" do
+        describe "with a default voice set in PB config" do
           before { Adhearsion.config.punchblock.default_voice = 'foo' }
 
           it 'sets the voice on the output component' do
@@ -806,6 +857,57 @@ module Adhearsion
           end
 
           after { Adhearsion.config.punchblock.default_voice = nil }
+        end
+
+        describe "with a default voice set in core and PB config" do
+          before do
+            Adhearsion.config.punchblock.default_voice = 'foo'
+            Adhearsion.config.platform.media.default_voice = 'bar'
+          end
+
+          it 'prefers core config to set the voice on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_async_ssml_output ssml, voice: 'bar'
+            subject.say!(str)
+          end
+
+          after do
+            Adhearsion.config.punchblock.default_voice = nil
+            Adhearsion.config.platform.media.default_voice = nil
+          end
+        end
+
+        describe "with a default media engine set in PB config" do
+          before { Adhearsion.config.punchblock.media_engine = 'foo' }
+
+          it 'sets the renderer on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_async_ssml_output ssml, renderer: 'foo'
+            subject.say!(str)
+          end
+
+          after { Adhearsion.config.punchblock.media_engine = nil }
+        end
+
+        describe "with a default renderer set in core and PB config" do
+          before do
+            Adhearsion.config.punchblock.media_engine = 'foo'
+            Adhearsion.config.platform.media.default_renderer = 'bar'
+          end
+
+          it 'prefers core config to set the renderer on the output component' do
+            str = "Hello world"
+            ssml = RubySpeech::SSML.draw { string str }
+            expect_async_ssml_output ssml, renderer: 'bar'
+            subject.say!(str)
+          end
+
+          after do
+            Adhearsion.config.punchblock.media_engine = nil
+            Adhearsion.config.platform.media.default_renderer = nil
+          end
         end
 
         describe "converts the argument to a string" do
@@ -821,6 +923,62 @@ module Adhearsion
       describe "#speak!" do
         it "should be an alias for #say!" do
           subject.method(:speak!).should be == subject.method(:say!)
+        end
+      end
+
+      describe "#say_characters" do
+        context "with a string" do
+          let :ssml do
+            RubySpeech::SSML.draw do
+              say_as(interpret_as: 'characters') { "1234#abc" }
+            end
+          end
+
+          it 'plays the correct ssml' do
+            expect_ssml_output ssml
+            subject.say_characters('1234#abc').should be true
+          end
+        end
+
+        context "with a numeric" do
+          let :ssml do
+            RubySpeech::SSML.draw do
+              say_as(interpret_as: 'characters') { "1234" }
+            end
+          end
+
+          it 'plays the correct ssml' do
+            expect_ssml_output ssml
+            subject.say_characters(1234).should be true
+          end
+        end
+      end
+
+      describe "#say_characters!" do
+        context "with a string" do
+          let :ssml do
+            RubySpeech::SSML.draw do
+              say_as(interpret_as: 'characters') { "1234#abc" }
+            end
+          end
+
+          it 'plays the correct ssml' do
+            expect_async_ssml_output ssml
+            subject.say_characters!('1234#abc').should be_a Punchblock::Component::Output
+          end
+        end
+
+        context "with a numeric" do
+          let :ssml do
+            RubySpeech::SSML.draw do
+              say_as(interpret_as: 'characters') { "1234" }
+            end
+          end
+
+          it 'plays the correct ssml' do
+            expect_async_ssml_output ssml
+            subject.say_characters!(1234).should be_a Punchblock::Component::Output
+          end
         end
       end
     end

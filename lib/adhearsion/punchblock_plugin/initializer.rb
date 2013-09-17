@@ -27,9 +27,7 @@ module Adhearsion
             :host               => self.config.host,
             :port               => self.config.port,
             :certs              => self.config.certs_directory,
-            :root_domain        => self.config.root_domain,
-            :media_engine       => self.config.media_engine,
-            :default_voice      => self.config.default_voice
+            :root_domain        => self.config.root_domain
           }
 
           self.client = Punchblock.client_with_connection self.config.platform, connection_options
@@ -159,7 +157,13 @@ module Adhearsion
         end
 
         def resource
-          [Adhearsion::Process.fqdn, ::Process.pid].join '-'
+          [machine_identifier, ::Process.pid].join '-'
+        end
+
+        def machine_identifier
+          Adhearsion::Process.fqdn
+        rescue SocketError
+          Socket.gethostname
         end
 
         def connection

@@ -249,7 +249,7 @@ module Adhearsion
     end
 
     def launch_console
-      Adhearsion::Process.important_threads << Thread.new do
+      Thread.new do
         catching_standard_errors do
           Adhearsion::Console.run
         end
