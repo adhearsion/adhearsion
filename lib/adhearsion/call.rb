@@ -46,7 +46,12 @@ module Adhearsion
     attr_reader :end_time
 
     delegate :[], :[]=, :to => :variables
-    delegate :to, :from, :to => :offer, :allow_nil => true
+
+    # @return [String] the value of the To header from the signaling protocol
+    delegate :to, to: :offer, allow_nil: true
+
+    # @return [String] the value of the From header from the signaling protocol
+    delegate :from, to: :offer, allow_nil: true
 
     def initialize(offer = nil)
       register_initial_handlers
