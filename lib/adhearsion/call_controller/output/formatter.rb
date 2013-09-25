@@ -45,7 +45,7 @@ module Adhearsion
         # Generates SSML for the argument and options passed, using automatic detection
         # Directly returns the argument if it is already an SSML document
         #
-        # @param [String, Hash, RubySpeech::SSML::Speak] the argument with options as accepted by the play_ methods, or an SSML document
+        # @param [String, Hash, RubySpeech::SSML::Speak] args the argument with options as accepted by the play_ methods, or an SSML document
         # @return [RubySpeech::SSML::Speak] an SSML document
         #
         def ssml_for(*args)

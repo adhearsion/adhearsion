@@ -6,8 +6,8 @@ module Adhearsion
       class AsyncPlayer < AbstractPlayer
 
         #
-        # @yields The output component before executing it
-        # @raises [PlaybackError] if (one of) the given argument(s) could not be played
+        # @yield The output component before executing it
+        # @raise [PlaybackError] if (one of) the given argument(s) could not be played
         #
         def output(content, options = {})
           options.merge! :ssml => content

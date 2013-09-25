@@ -8,7 +8,7 @@ module Adhearsion
 
       # Utility method for DTMF GRXML grammars
       #
-      # @param [Integer] Number of digits to accept in the grammar.
+      # @param [Integer] digits Number of digits to accept in the grammar.
       # @return [RubySpeech::GRXML::Grammar] A grammar suitable for use in SSML prompts
       #
       # @private
@@ -27,7 +27,7 @@ module Adhearsion
 
       # Utility method to create a single-digit grammar to accept only some digits
       #
-      # @param [String] String representing the digits to accept
+      # @param [String] digits String representing the digits to accept
       # @return [RubySpeech::GRXML::Grammar] A grammar suitable for use in SSML prompts
       #
       # @private
@@ -48,7 +48,7 @@ module Adhearsion
       #
       # Parses a DTMF tone string
       #
-      # @param [String] the tone string to be parsed
+      # @param [String] dtmf the tone string to be parsed
       # @return [String] the digits/*/# without any separation
       #
       # @private

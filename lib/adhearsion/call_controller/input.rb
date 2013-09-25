@@ -40,10 +40,13 @@ module Adhearsion
       # @see Output#play
       # @see CallController#pass
       #
-      def ask(*args, &block)
+      def ask(*args, options, &block)
         logger.warn "This implementation of #ask is deprecated due to issues with dropped DTMF. For a solution, see http://adhearsion.com/docs/common_problems#toc_3"
 
-        options = args.last.kind_of?(Hash) ? args.pop : {}
+        unless options.is_a?(Hash)
+          args << options
+          options = {}
+        end
         sound_files = args.flatten
 
         menu_instance = MenuDSL::Menu.new options do
@@ -130,10 +133,13 @@ module Adhearsion
       # @see Output#play
       # @see CallController#pass
       #
-      def menu(*args, &block)
+      def menu(*args, options, &block)
         logger.warn "This implementation of #menu is deprecated due to issues with dropped DTMF. For a solution, see http://adhearsion.com/docs/common_problems#toc_3"
 
-        options = args.last.kind_of?(Hash) ? args.pop : {}
+        unless options.is_a?(Hash)
+          args << options
+          options = {}
+        end
         sound_files = args.flatten
 
         menu_instance = MenuDSL::Menu.new options, &block
@@ -203,7 +209,7 @@ module Adhearsion
       #
       # Waits for a single digit and returns it, or returns nil if nothing was pressed
       #
-      # @param [Integer] the timeout to wait before returning, in seconds. nil or -1 mean no timeout.
+      # @param [Integer] timeout the timeout to wait before returning, in seconds. nil or -1 mean no timeout.
       # @return [String, nil] the pressed key, or nil if timeout was reached.
       #
       # @private
