@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.homepage    = "http://adhearsion.com"
   s.summary     = "Adhearsion, open-source telephony development framework"
   s.description = "Adhearsion is an open-source telephony development framework"
-  
+
   s.license = 'MIT'
 
   s.files         = `git ls-files`.split("\n")
@@ -45,6 +45,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'simplecov'
   s.add_development_dependency 'simplecov-rcov'
   s.add_development_dependency 'yard'
+  s.add_development_dependency 'guard-yard'
   s.add_development_dependency 'coveralls'
   s.add_development_dependency 'timecop'
 end

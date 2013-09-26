@@ -29,7 +29,7 @@ end
 begin
   require 'yard'
   YARD::Rake::YardocTask.new do |t|
-    t.files = ['lib/**/*.rb'] + %w[README.markdown TODO.markdown LICENSE]
+    t.files = ['lib/**/*.rb']
   end
 rescue LoadError
   STDERR.puts "\nCould not require() YARD! Install with 'gem install yard' to get the 'yardoc' task\n\n"

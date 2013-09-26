@@ -15,8 +15,8 @@ module Adhearsion
         self.destination_root = '.'
         empty_directory 'lib'
         empty_directory 'spec'
-        template 'lib/controller.rb', "lib/#{@controller_name.underscore}.rb"
-        template 'spec/controller_spec.rb', "spec/#{@controller_name.underscore}_spec.rb"
+        template 'lib/controller.rb.erb', "lib/#{@controller_name.underscore}.rb"
+        template 'spec/controller_spec.rb.erb', "spec/#{@controller_name.underscore}_spec.rb"
       end
 
     end
