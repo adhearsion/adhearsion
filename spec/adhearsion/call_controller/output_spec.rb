@@ -12,8 +12,16 @@ module Adhearsion
         expect_component_execution Punchblock::Component::Output.new(options.merge(:ssml => ssml))
       end
 
+      def expect_multiple_ssml_output(documents, options = {})
+        expect_component_execution Punchblock::Component::Output.new(options.merge(render_documents: documents.map { |doc| {value: doc} }))
+      end
+
       def expect_async_ssml_output(ssml, options = {})
         expect_message_waiting_for_response Punchblock::Component::Output.new(options.merge(:ssml => ssml))
+      end
+
+      def expect_multiple_async_ssml_output(documents, options = {})
+        expect_message_waiting_for_response Punchblock::Component::Output.new(options.merge(render_documents: documents.map { |doc| {value: doc} }))
       end
 
       describe "#player" do
@@ -362,20 +370,26 @@ module Adhearsion
             file = args[0]
             n = args[1].to_s
             t = args[2].to_s
-            RubySpeech::SSML.draw do
-              audio :src => file
-              say_as(:interpret_as => 'cardinal') { n }
-              say_as(:interpret_as => 'time') { t }
-            end
+            [
+              RubySpeech::SSML.draw do
+                audio :src => file
+              end,
+              RubySpeech::SSML.draw do
+                say_as(:interpret_as => 'cardinal') { n }
+              end,
+              RubySpeech::SSML.draw do
+                say_as(:interpret_as => 'time') { t }
+              end
+            ]
           end
 
-          it 'plays all arguments in one document' do
-            expect_ssml_output ssml
+          it 'plays all arguments in separate documents' do
+            expect_multiple_ssml_output ssml
             subject.play(*args).should be true
           end
 
-          it 'plays all arguments in one document with the extra options if present' do
-            expect_ssml_output ssml, extra_options
+          it 'plays all arguments in separate documents with the extra options if present' do
+            expect_multiple_ssml_output ssml, extra_options
             args << extra_options
             subject.play(*args).should be true
           end
@@ -387,14 +401,20 @@ module Adhearsion
             file = args[0]
             n = args[1].to_s
             t = args[2].to_s
-            RubySpeech::SSML.draw do
-              audio :src => file
-              say_as(:interpret_as => 'cardinal') { n }
-              say_as(:interpret_as => 'time') { t }
-            end
+            [
+              RubySpeech::SSML.draw do
+                audio :src => file
+              end,
+              RubySpeech::SSML.draw do
+                say_as(:interpret_as => 'cardinal') { n }
+              end,
+              RubySpeech::SSML.draw do
+                say_as(:interpret_as => 'time') { t }
+              end
+            ]
           end
 
-          it 'plays all arguments in one document' do
+          it 'plays all arguments in separate documents' do
             expect_ssml_output ssml
             subject.play(args).should be true
           end
@@ -520,20 +540,26 @@ module Adhearsion
             file = args[0]
             n = args[1].to_s
             t = args[2].to_s
-            RubySpeech::SSML.draw do
-              audio :src => file
-              say_as(:interpret_as => 'cardinal') { n }
-              say_as(:interpret_as => 'time') { t }
-            end
+            [
+              RubySpeech::SSML.draw do
+                audio :src => file
+              end,
+              RubySpeech::SSML.draw do
+                say_as(:interpret_as => 'cardinal') { n }
+              end,
+              RubySpeech::SSML.draw do
+                say_as(:interpret_as => 'time') { t }
+              end
+            ]
           end
 
-          it 'plays all arguments in one document' do
-            expect_async_ssml_output ssml
+          it 'plays all arguments in separate documents' do
+            expect_multiple_async_ssml_output ssml
             subject.play!(*args).should be_a Punchblock::Component::Output
           end
 
-          it 'plays all arguments in one document with the extra options if present' do
-            expect_async_ssml_output ssml, extra_options
+          it 'plays all arguments in separate documents with the extra options if present' do
+            expect_multiple_async_ssml_output ssml, extra_options
             args << extra_options
             subject.play!(*args)
           end

@@ -15,28 +15,29 @@ module Adhearsion
 
         describe "#output" do
           let(:content) { RubySpeech::SSML.draw { string "BOO" } }
+          let(:documents) { [{ value: content }] }
 
           it "should execute an output component with the provided SSML content" do
             component = Punchblock::Component::Output.new :ssml => content
             expect_message_waiting_for_response component
-            subject.output content
+            subject.output documents
           end
 
           it "should allow extra options to be passed to the output component" do
             component = Punchblock::Component::Output.new :ssml => content, :start_paused => true
             expect_message_waiting_for_response component
-            subject.output content, :start_paused => true
+            subject.output documents, :start_paused => true
           end
 
           it "returns the component" do
             component = Punchblock::Component::Output.new :ssml => content
             expect_message_waiting_for_response component
-            subject.output(content).should be_a Punchblock::Component::Output
+            subject.output(documents).should be_a Punchblock::Component::Output
           end
 
           it "raises a PlaybackError if the component fails to start" do
             expect_message_waiting_for_response Punchblock::Component::Output.new(:ssml => content), Punchblock::ProtocolError
-            lambda { subject.output content }.should raise_error(PlaybackError)
+            lambda { subject.output documents }.should raise_error(PlaybackError)
           end
 
           it "logs the complete event if it is an error" do
@@ -46,7 +47,7 @@ module Adhearsion
             subject.stub :new_output => component
             expect_message_waiting_for_response component
             controller.logger.should_receive(:error).once
-            subject.output content
+            subject.output documents
             component.request!
             component.execute!
             component.trigger_event_handler response

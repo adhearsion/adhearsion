@@ -41,6 +41,30 @@ module Adhearsion
           end
         end
 
+        describe "#separate_ssml_for_collection" do
+          let(:collection) { ["/foo/bar.wav", 1, Time.now] }
+          let :ssml do
+            file = collection[0]
+            n = collection[1].to_s
+            t = collection[2].to_s
+            [
+              RubySpeech::SSML.draw do
+                audio :src => file
+              end,
+              RubySpeech::SSML.draw do
+                say_as(:interpret_as => 'cardinal') { n }
+              end,
+              RubySpeech::SSML.draw do
+                say_as(:interpret_as => 'time') { t }
+              end
+            ]
+          end
+
+          it "should create a collection of SSML documents" do
+            subject.separate_ssml_for_collection(collection).should be == ssml
+          end
+        end
+
         describe "#detect_type" do
           it "detects an HTTP path" do
             http_path = "http://adhearsion.com/sounds/hello.mp3"

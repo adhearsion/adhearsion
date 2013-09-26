@@ -15,16 +15,17 @@ module Adhearsion
 
         describe "#output" do
           let(:content) { RubySpeech::SSML.draw { string "BOO" } }
+          let(:documents) { [{ value: content }] }
 
           it "should execute an output component with the provided SSML content" do
             expect_component_execution Punchblock::Component::Output.new(:ssml => content)
-            subject.output content
+            subject.output documents
           end
 
           it "should allow extra options to be passed to the output component" do
             component = Punchblock::Component::Output.new :ssml => content, :start_paused => true
             expect_component_execution component
-            subject.output content, :start_paused => true
+            subject.output documents, :start_paused => true
           end
 
           it "yields the component to the block before waiting for it to finish" do
@@ -34,7 +35,7 @@ module Adhearsion
 
             @foo = nil
 
-            subject.output content do |comp|
+            subject.output documents do |comp|
               @foo = comp
             end
 
@@ -43,17 +44,17 @@ module Adhearsion
 
           it "raises a PlaybackError if the component fails to start" do
             expect_component_execution Punchblock::Component::Output.new(:ssml => content), Punchblock::ProtocolError
-            lambda { subject.output content }.should raise_error(PlaybackError)
+            lambda { subject.output documents }.should raise_error(PlaybackError)
           end
 
           it "raises a Playback Error if the component ends due to an error" do
             expect_component_execution Punchblock::Component::Output.new(:ssml => content), Adhearsion::Error
-            lambda { subject.output content }.should raise_error(PlaybackError)
+            lambda { subject.output documents }.should raise_error(PlaybackError)
           end
 
           it "raises a Call::Hangup exception if the component ends due to an error" do
             expect_component_execution Punchblock::Component::Output.new(:ssml => content), Call::Hangup
-            lambda { subject.output content }.should raise_error(Call::Hangup)
+            lambda { subject.output documents }.should raise_error(Call::Hangup)
           end
         end
 
