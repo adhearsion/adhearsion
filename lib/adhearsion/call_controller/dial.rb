@@ -184,12 +184,16 @@ module Adhearsion
           logger.info "Splitting calls apart"
           @splitting = true
           @calls.each do |call|
-            logger.info "Unjoining peer #{call.id}"
-            ignoring_missing_joins { @call.unjoin call.id }
+            logger.info "Unjoining peer #{call.id} from #{join_target.inspect}"
+            ignoring_missing_joins { call.unjoin join_target }
             if split_controller = targets[:others]
               logger.info "Executing split controller #{split_controller} on #{call.id}"
               call.execute_controller split_controller.new(call, 'current_dial' => self), targets[:others_callback]
             end
+          end
+          if join_target != @call
+            logger.info "Unjoining main call #{@call.id} from #{join_target.inspect}"
+            @call.unjoin join_target
           end
           if split_controller = targets[:main]
             logger.info "Executing split controller #{split_controller} on main call"
@@ -202,6 +206,7 @@ module Adhearsion
         def rejoin(target = @call)
           logger.info "Rejoining to #{target}"
           unless target == @call
+            @join_target = target
             @call.join target
           end
           @calls.each do |call|
@@ -281,6 +286,10 @@ module Adhearsion
         end
 
         private
+
+        def join_target
+          @join_target || @call
+        end
 
         def set_defaults
           @status = DialStatus.new

@@ -310,7 +310,7 @@ module Adhearsion
     # @param [Hash, Optional] options further options to be joined with
     #
     def join(target, options = {})
-      logger.info "Joining to #{target}"
+      logger.info "Joining to #{target.inspect}"
       command = Punchblock::Command::Join.new options.merge(join_options_with_target(target))
       write_and_await_response command
     end
@@ -323,7 +323,7 @@ module Adhearsion
     # @option target [String] mixer_name The mixer to unjoin from
     #
     def unjoin(target)
-      logger.info "Unjoining from #{target}"
+      logger.info "Unjoining from #{target.inspect}"
       command = Punchblock::Command::Unjoin.new join_options_with_target(target)
       write_and_await_response command
     end

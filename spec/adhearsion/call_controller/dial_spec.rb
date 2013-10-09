@@ -214,14 +214,14 @@ module Adhearsion
             before do
               call.should_receive(:answer).once
               other_mock_call.should_receive(:join).once.with(call)
-              call.stub(:unjoin).and_return do
+              other_mock_call.stub(:unjoin).and_return do
                 call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                 other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
               end
             end
 
             it "should unjoin the calls" do
-              call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+              other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_return do
                 call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                 other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
               end
@@ -362,7 +362,7 @@ module Adhearsion
 
             context "when rejoining" do
               it "should rejoin the calls" do
-                call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_return do
                   call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                   other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
                 end
@@ -396,7 +396,7 @@ module Adhearsion
                 let(:mixer) { SecureRandom.uuid }
 
                 it "should join all calls to the mixer" do
-                  call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                  other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_return do
                     call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                     other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
                   end
@@ -418,6 +418,46 @@ module Adhearsion
                   call.should_receive(:join).once.ordered.with(mixer_name: mixer)
                   other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
                   dial.rejoin mixer_name: mixer
+
+                  other_mock_call << mock_end
+
+                  latch.wait(1).should be_true
+
+                  waiter_thread.join
+                  dial.status.result.should be == :answer
+                end
+
+                it "#split should then unjoin calls from the mixer" do
+                  other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_return do
+                    call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                    other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                  end
+
+                  dial = Dial::Dial.new to, options, call
+                  dial.run
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  other_mock_call << mock_answered
+
+                  dial.split
+
+                  call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  dial.rejoin mixer_name: mixer
+
+                  other_mock_call.should_receive(:unjoin).once.ordered.with(mixer_name: mixer).and_return do
+                    other_mock_call << Punchblock::Event::Unjoined.new(mixer_name: mixer)
+                  end
+                  call.should_receive(:unjoin).once.ordered.with(mixer_name: mixer).and_return do
+                    call << Punchblock::Event::Unjoined.new(mixer_name: mixer)
+                  end
+                  dial.split
 
                   other_mock_call << mock_end
 
@@ -454,11 +494,11 @@ module Adhearsion
               end
 
               it "should split calls, rejoin to a mixer, and rejoin other calls to mixer" do
-                call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_return do
                   call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                   other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
                 end
-                second_root_call.should_receive(:unjoin).once.ordered.with(second_other_mock_call.id).and_return do
+                second_other_mock_call.should_receive(:unjoin).once.ordered.with(second_root_call).and_return do
                   second_root_call << Punchblock::Event::Unjoined.new(call_uri: second_other_mock_call.id)
                   second_other_mock_call << Punchblock::Event::Unjoined.new(call_uri: second_root_call.id)
                 end
@@ -562,8 +602,8 @@ module Adhearsion
 
               context "if the calls were not joined" do
                 it "should still join to mixer" do
-                  call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
-                  second_root_call.should_receive(:unjoin).once.ordered.with(second_other_mock_call.id).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
+                  other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
+                  second_other_mock_call.should_receive(:unjoin).once.ordered.with(second_root_call).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
 
                   call.should_receive(:join).once.ordered.with(mixer_name: mixer)
                   other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
@@ -1213,14 +1253,14 @@ module Adhearsion
             before do
               call.should_receive(:answer).once
               other_mock_call.should_receive(:join).once.with(call)
-              call.stub(:unjoin).and_return do
+              other_mock_call.stub(:unjoin).and_return do
                 call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                 other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
               end
             end
 
             it "should unjoin the calls" do
-              call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+              other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_return do
                 call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                 other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
               end
@@ -1361,7 +1401,7 @@ module Adhearsion
 
             context "when rejoining" do
               it "should rejoin the calls" do
-                call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_return do
                   call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                   other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
                 end
@@ -1395,7 +1435,7 @@ module Adhearsion
                 let(:mixer) { SecureRandom.uuid }
 
                 it "should join all calls to the mixer" do
-                  call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                  other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_return do
                     call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                     other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
                   end
@@ -1417,6 +1457,46 @@ module Adhearsion
                   call.should_receive(:join).once.ordered.with(mixer_name: mixer)
                   other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
                   dial.rejoin mixer_name: mixer
+
+                  other_mock_call << mock_end
+
+                  latch.wait(1).should be_true
+
+                  waiter_thread.join
+                  dial.status.result.should be == :answer
+                end
+
+                it "#split should then unjoin calls from the mixer" do
+                  other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_return do
+                    call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
+                    other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                  end
+
+                  dial = Dial::ParallelConfirmationDial.new to, options, call
+                  dial.run
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  other_mock_call << mock_answered
+
+                  dial.split
+
+                  call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  dial.rejoin mixer_name: mixer
+
+                  other_mock_call.should_receive(:unjoin).once.ordered.with(mixer_name: mixer).and_return do
+                    other_mock_call << Punchblock::Event::Unjoined.new(mixer_name: mixer)
+                  end
+                  call.should_receive(:unjoin).once.ordered.with(mixer_name: mixer).and_return do
+                    call << Punchblock::Event::Unjoined.new(mixer_name: mixer)
+                  end
+                  dial.split
 
                   other_mock_call << mock_end
 
@@ -1453,11 +1533,11 @@ module Adhearsion
               end
 
               it "should split calls, rejoin to a mixer, and rejoin other calls to mixer" do
-                call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_return do
+                other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_return do
                   call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                   other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
                 end
-                second_root_call.should_receive(:unjoin).once.ordered.with(second_other_mock_call.id).and_return do
+                second_other_mock_call.should_receive(:unjoin).once.ordered.with(second_root_call).and_return do
                   second_root_call << Punchblock::Event::Unjoined.new(call_uri: second_other_mock_call.id)
                   second_other_mock_call << Punchblock::Event::Unjoined.new(call_uri: second_root_call.id)
                 end
@@ -1561,8 +1641,8 @@ module Adhearsion
 
               context "if the calls were not joined" do
                 it "should still join to mixer" do
-                  call.should_receive(:unjoin).once.ordered.with(other_mock_call.id).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
-                  second_root_call.should_receive(:unjoin).once.ordered.with(second_other_mock_call.id).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
+                  other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
+                  second_other_mock_call.should_receive(:unjoin).once.ordered.with(second_root_call).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
 
                   call.should_receive(:join).once.ordered.with(mixer_name: mixer)
                   other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
