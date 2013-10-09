@@ -184,7 +184,7 @@ module Adhearsion
           logger.info "Splitting calls apart"
           @splitting = true
           @calls.each do |call|
-            logger.info "Unjoining peer #{call.id} from #{join_target.inspect}"
+            logger.info "Unjoining peer #{call.id} from #{join_target}"
             ignoring_missing_joins { call.unjoin join_target }
             if split_controller = targets[:others]
               logger.info "Executing split controller #{split_controller} on #{call.id}"
@@ -192,7 +192,7 @@ module Adhearsion
             end
           end
           if join_target != @call
-            logger.info "Unjoining main call #{@call.id} from #{join_target.inspect}"
+            logger.info "Unjoining main call #{@call.id} from #{join_target}"
             @call.unjoin join_target
           end
           if split_controller = targets[:main]
