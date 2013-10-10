@@ -45,6 +45,9 @@ module Adhearsion
     # @return [Time] the time at which the call began. For inbound calls this is the time at which the call was offered to Adhearsion. For outbound calls it is the time at which the remote party answered.
     attr_reader :end_time
 
+    # @return [Call] The call that spawned this call.
+    attr_reader :creator
+
     delegate :[], :[]=, :to => :variables
 
     # @return [String] the value of the To header from the signaling protocol
@@ -94,13 +97,6 @@ module Adhearsion
       s << id
       s << "@" << domain if domain
       s
-    end
-
-    #
-    # @return [Call] The call that spawned this call.
-    #
-    def parent
-      @parent_call
     end
 
     #

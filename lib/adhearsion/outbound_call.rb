@@ -32,8 +32,8 @@ module Adhearsion
       end
     end
 
-    def initialize(parent_call=nil)
-      @parent_call = parent_call
+    def initialize(parent_call = nil)
+      @creator = parent_call
       super
     end
 
