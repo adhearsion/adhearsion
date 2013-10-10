@@ -600,6 +600,79 @@ module Adhearsion
                 dial.status.result.should be == :answer
               end
 
+              it "should subsequently rejoin to a mixer" do
+                SecureRandom.stub uuid: 'foobar'
+                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+
+                dial.merge other_dial
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_end
+                latch.wait(1).should be_false
+
+                [call, other_mock_call, second_root_call, second_other_mock_call].each do |call|
+                  call.should_receive(:unjoin).once.with(mixer_name: 'foobar').and_return do
+                    call << Punchblock::Event::Unjoined.new(mixer_name: 'foobar')
+                  end
+                end
+
+                dial.split
+
+                [call, other_mock_call, second_root_call, second_other_mock_call].each do |call|
+                  call.should_receive(:join).once.with(mixer_name: 'foobar').and_return do
+                    call << Punchblock::Event::Joined.new(mixer_name: 'foobar')
+                  end
+                end
+
+                dial.rejoin
+              end
+
+              context "if a call hangs up" do
+                before { SecureRandom.stub uuid: 'foobar' }
+
+                it "should still allow splitting and rejoining" do
+                  [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+
+                  dial.merge other_dial
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  other_mock_call << mock_end
+                  latch.wait(1).should be_false
+
+                  [call, second_root_call, second_other_mock_call].each do |call|
+                    call.should_receive(:unjoin).once.with(mixer_name: 'foobar').and_return do
+                      call << Punchblock::Event::Unjoined.new(mixer_name: 'foobar')
+                    end
+                  end
+
+                  other_mock_call.should_receive(:unjoin).and_raise Adhearsion::Call::ExpiredError
+
+                  dial.split
+
+                  [call, second_root_call, second_other_mock_call].each do |call|
+                    call.should_receive(:join).once.with(mixer_name: 'foobar').and_return do
+                      call << Punchblock::Event::Joined.new(mixer_name: 'foobar')
+                    end
+                  end
+
+                  other_mock_call.should_receive(:join).and_raise Adhearsion::Call::Hangup
+
+                  dial.rejoin
+                end
+              end
+
               context "if the calls were not joined" do
                 it "should still join to mixer" do
                   other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
@@ -1637,6 +1710,79 @@ module Adhearsion
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
+              end
+
+              it "should subsequently rejoin to a mixer" do
+                SecureRandom.stub uuid: 'foobar'
+                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+
+                dial.merge other_dial
+
+                waiter_thread = Thread.new do
+                  dial.await_completion
+                  latch.countdown!
+                end
+
+                sleep 0.5
+
+                other_mock_call << mock_end
+                latch.wait(1).should be_false
+
+                [call, other_mock_call, second_root_call, second_other_mock_call].each do |call|
+                  call.should_receive(:unjoin).once.with(mixer_name: 'foobar').and_return do
+                    call << Punchblock::Event::Unjoined.new(mixer_name: 'foobar')
+                  end
+                end
+
+                dial.split
+
+                [call, other_mock_call, second_root_call, second_other_mock_call].each do |call|
+                  call.should_receive(:join).once.with(mixer_name: 'foobar').and_return do
+                    call << Punchblock::Event::Joined.new(mixer_name: 'foobar')
+                  end
+                end
+
+                dial.rejoin
+              end
+
+              context "if a call hangs up" do
+                before { SecureRandom.stub uuid: 'foobar' }
+
+                it "should still allow splitting and rejoining" do
+                  [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+
+                  dial.merge other_dial
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  other_mock_call << mock_end
+                  latch.wait(1).should be_false
+
+                  [call, second_root_call, second_other_mock_call].each do |call|
+                    call.should_receive(:unjoin).once.with(mixer_name: 'foobar').and_return do
+                      call << Punchblock::Event::Unjoined.new(mixer_name: 'foobar')
+                    end
+                  end
+
+                  other_mock_call.should_receive(:unjoin).and_raise Adhearsion::Call::ExpiredError
+
+                  dial.split
+
+                  [call, second_root_call, second_other_mock_call].each do |call|
+                    call.should_receive(:join).once.with(mixer_name: 'foobar').and_return do
+                      call << Punchblock::Event::Joined.new(mixer_name: 'foobar')
+                    end
+                  end
+
+                  other_mock_call.should_receive(:join).and_raise Adhearsion::Call::Hangup
+
+                  dial.rejoin
+                end
               end
 
               context "if the calls were not joined" do
