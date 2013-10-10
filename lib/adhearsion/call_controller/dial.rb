@@ -183,7 +183,13 @@ module Adhearsion
         def split(targets = {})
           logger.info "Splitting calls apart"
           @splitting = true
-          @calls.each do |call|
+          calls_to_split = @calls.map do |call|
+            ignoring_ended_calls do
+              [call.id, call] if call.active?
+            end
+          end.compact
+          logger.info "Splitting peer calls #{calls_to_split.map(&:first).join ", "}"
+          calls_to_split.each do |id, call|
             ignoring_ended_calls do
               logger.info "Unjoining peer #{call.id} from #{join_target}"
               ignoring_missing_joins { call.unjoin join_target }
