@@ -107,7 +107,8 @@ module Adhearsion
         #
         # @yield Each call to the passed block for further setup operations
         def prep_calls
-          @calls = @targets.map do |target, specific_options|
+          @calls = Set.new
+          @targets.map do |target, specific_options|
             new_call = OutboundCall.new
 
             join_status = JoinStatus.new
@@ -156,7 +157,7 @@ module Adhearsion
 
             yield new_call if block_given?
 
-            new_call
+            @calls << new_call
           end
 
           status.calls = @calls
@@ -239,7 +240,7 @@ module Adhearsion
           other.rejoin mixer_name: mixer_name
 
           calls_to_merge = other.status.calls + [other.root_call]
-          @calls.concat calls_to_merge
+          @calls.merge calls_to_merge
 
           latch = CountDownLatch.new calls_to_merge.size
           calls_to_merge.each do |call|
