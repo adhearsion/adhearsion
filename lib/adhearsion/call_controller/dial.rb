@@ -107,7 +107,8 @@ module Adhearsion
         #
         # @yield Each call to the passed block for further setup operations
         def prep_calls
-          @calls = @targets.map do |target, specific_options|
+          @calls = Set.new
+          @targets.map do |target, specific_options|
             new_call = OutboundCall.new
 
             join_status = JoinStatus.new
@@ -156,7 +157,7 @@ module Adhearsion
 
             yield new_call if block_given?
 
-            new_call
+            @calls << new_call
           end
 
           status.calls = @calls
@@ -183,29 +184,46 @@ module Adhearsion
         def split(targets = {})
           logger.info "Splitting calls apart"
           @splitting = true
-          @calls.each do |call|
-            logger.info "Unjoining peer #{call.id}"
-            ignoring_missing_joins { @call.unjoin call.id }
-            if split_controller = targets[:others]
-              logger.info "Executing split controller #{split_controller} on #{call.id}"
-              call.execute_controller split_controller.new(call, 'current_dial' => self), targets[:others_callback]
+          calls_to_split = @calls.map do |call|
+            ignoring_ended_calls do
+              [call.id, call] if call.active?
+            end
+          end.compact
+          logger.info "Splitting peer calls #{calls_to_split.map(&:first).join ", "}"
+          calls_to_split.each do |id, call|
+            ignoring_ended_calls do
+              logger.info "Unjoining peer #{call.id} from #{join_target}"
+              ignoring_missing_joins { call.unjoin join_target }
+              if split_controller = targets[:others]
+                logger.info "Executing split controller #{split_controller} on #{call.id}"
+                call.execute_controller split_controller.new(call, 'current_dial' => self), targets[:others_callback]
+              end
             end
           end
-          if split_controller = targets[:main]
-            logger.info "Executing split controller #{split_controller} on main call"
-            @call.execute_controller split_controller.new(@call, 'current_dial' => self), targets[:main_callback]
+          ignoring_ended_calls do
+            if join_target != @call
+              logger.info "Unjoining main call #{@call.id} from #{join_target}"
+              @call.unjoin join_target
+            end
+            if split_controller = targets[:main]
+              logger.info "Executing split controller #{split_controller} on main call"
+              @call.execute_controller split_controller.new(@call, 'current_dial' => self), targets[:main_callback]
+            end
           end
         end
 
         # Rejoin parties that were previously split
         # @param [Call, String, Hash] target The target to join calls to. See Call#join for details.
-        def rejoin(target = @call)
+        def rejoin(target = join_target)
           logger.info "Rejoining to #{target}"
-          unless target == @call
-            @call.join target
+          ignoring_ended_calls do
+            unless target == @call
+              @join_target = target
+              @call.join target
+            end
           end
           @calls.each do |call|
-            call.join target
+            ignoring_ended_calls { call.join target }
           end
         end
 
@@ -222,7 +240,7 @@ module Adhearsion
           other.rejoin mixer_name: mixer_name
 
           calls_to_merge = other.status.calls + [other.root_call]
-          @calls.concat calls_to_merge
+          @calls.merge calls_to_merge
 
           latch = CountDownLatch.new calls_to_merge.size
           calls_to_merge.each do |call|
@@ -251,9 +269,8 @@ module Adhearsion
         # Hangup any remaining calls
         def cleanup_calls
           calls_to_hangup = @calls.map do |call|
-            begin
+            ignoring_ended_calls do
               [call.id, call] if call.active?
-            rescue Celluloid::DeadActorError
             end
           end.compact
           if calls_to_hangup.size.zero?
@@ -265,11 +282,7 @@ module Adhearsion
           else
             logger.info "#dial finished. Hanging up #{calls_to_hangup.size} outbound calls which are still active: #{calls_to_hangup.map(&:first).join ", "}."
             calls_to_hangup.each do |id, outbound_call|
-              begin
-                outbound_call.hangup
-              rescue Celluloid::DeadActorError
-                # This actor may previously have been shut down due to the call ending
-              end
+              ignoring_ended_calls { outbound_call.hangup }
             end
           end
         end
@@ -281,6 +294,10 @@ module Adhearsion
         end
 
         private
+
+        def join_target
+          @join_target || @call
+        end
 
         def set_defaults
           @status = DialStatus.new
@@ -311,11 +328,9 @@ module Adhearsion
 
         def on_all_except(call)
           @calls.each do |target_call|
-            begin
+            ignoring_ended_calls do
               next if target_call.id == call.id
               yield target_call
-            rescue Celluloid::DeadActorError
-              # This actor may previously have been shut down due to the call ending
             end
           end
         end
@@ -324,6 +339,12 @@ module Adhearsion
           yield
         rescue Punchblock::ProtocolError => e
           raise unless e.name == :service_unavailable
+        end
+
+        def ignoring_ended_calls
+          yield
+        rescue Celluloid::DeadActorError, Adhearsion::Call::Hangup, Adhearsion::Call::ExpiredError
+          # This actor may previously have been shut down due to the call ending
         end
       end
 
