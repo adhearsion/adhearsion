@@ -99,7 +99,7 @@ module Adhearsion
       # Start a recording
       #
       # @example Record in a blocking way and use result
-      #   record_result = record :start_beep => true, :max_duration => 60_000
+      #   record_result = record :start_beep => true, :max_duration => 60
       #   logger.info "Recording saved to #{record_result.complete_event.recording.uri}"
       # @example Asynchronous recording, execution of the controller will continue
       #   record :async => true do |event|
