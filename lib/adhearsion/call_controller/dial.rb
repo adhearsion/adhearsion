@@ -109,7 +109,7 @@ module Adhearsion
         def prep_calls
           @calls = Set.new
           @targets.map do |target, specific_options|
-            new_call = OutboundCall.new
+            new_call = OutboundCall.new @call
 
             join_status = JoinStatus.new
             status.joins[new_call] = join_status

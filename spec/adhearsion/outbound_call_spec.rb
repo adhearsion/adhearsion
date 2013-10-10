@@ -4,6 +4,9 @@ require 'spec_helper'
 
 module Adhearsion
   describe OutboundCall do
+    subject { described_class.new originating_call }
+    let(:originating_call) { nil }
+
     it { should be_a Call }
 
     its(:id) { should be_nil }
@@ -17,11 +20,12 @@ module Adhearsion
 
     its(:client) { should be mock_client }
     its(:start_time) { should be nil }
+    its(:parent) { should be nil }
 
     describe ".originate" do
       let(:to) { 'sip:foo@bar.com' }
 
-      let(:mock_call) { OutboundCall.new }
+      let(:mock_call)        { OutboundCall.new }
 
       before do
         mock_call
@@ -173,6 +177,14 @@ module Adhearsion
       it "should set the 'from' from the dial command" do
         subject.dial to, :from => from
         subject.from.should be == from
+      end
+
+      context "with an originating call" do
+        let(:originating_call) { double 'Call' }
+        it "should set the parent call" do
+          subject.dial to, :from => from
+          subject.parent.should == originating_call
+        end
       end
 
       it "should add the call to the active calls registry" do

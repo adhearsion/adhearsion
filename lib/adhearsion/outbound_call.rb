@@ -32,6 +32,11 @@ module Adhearsion
       end
     end
 
+    def initialize(parent_call=nil)
+      @parent_call = parent_call
+      super
+    end
+
     def id
       dial_command.target_call_id if dial_command
     end

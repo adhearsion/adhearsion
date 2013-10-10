@@ -97,6 +97,13 @@ module Adhearsion
     end
 
     #
+    # @return [Call] The call that spawned this call.
+    #
+    def parent
+      @parent_call
+    end
+
+    #
     # @return [Array] The set of labels with which this call has been tagged.
     #
     def tags

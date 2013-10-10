@@ -30,7 +30,7 @@ module Adhearsion
 
       describe "#dial" do
         it "should dial the call to the correct endpoint and return a dial status object" do
-          OutboundCall.should_receive(:new).and_return other_mock_call
+          OutboundCall.should_receive(:new).with(call).and_return other_mock_call
           other_mock_call.should_receive(:dial).with(to, :from => 'foo').once
           dial_thread = Thread.new do
             status = subject.dial(to, :from => 'foo')
@@ -2284,7 +2284,7 @@ module Adhearsion
 
         describe "#prep_calls" do
           it "yields all calls to the passed block" do
-            OutboundCall.should_receive(:new).and_return other_mock_call
+            OutboundCall.should_receive(:new).with(call).and_return other_mock_call
 
             gathered_calls = []
             subject.prep_calls { |call| gathered_calls << call }
