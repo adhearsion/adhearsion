@@ -633,6 +633,84 @@ module Adhearsion
                 dial.rejoin
               end
 
+              describe "if splitting fails" do
+                it "should not add the merged calls to the returned status" do
+                  [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+                  other_dial.should_receive(:split).and_raise StandardError
+                  expect { dial.merge other_dial }.to raise_error(StandardError)
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  other_mock_call.async << mock_end
+                  second_root_call.async << mock_end
+                  second_other_mock_call.async << mock_end
+
+                  latch.wait(1).should be_true
+
+                  waiter_thread.join
+                  dial.status.result.should be == :answer
+                  dial.status.calls.should_not include(second_root_call, second_other_mock_call)
+                end
+
+                it "should unblock before all joined calls end" do
+                  [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+
+                  other_dial.should_receive(:split).and_raise StandardError
+                  expect { dial.merge other_dial }.to raise_error(StandardError)
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  other_mock_call << mock_end
+                  latch.wait(1).should be_true
+
+                  second_other_mock_call << mock_end
+                  latch.wait(1).should be_true
+
+                  second_root_call << mock_end
+                  latch.wait(1).should be_true
+
+                  waiter_thread.join
+                  dial.status.result.should be == :answer
+                end
+
+                it "should not cleanup merged calls when the root call ends" do
+                  [call, other_mock_call, second_root_call, second_other_mock_call].each do |c|
+                    c.stub join: true, unjoin: true
+                  end
+                  other_mock_call.should_receive(:hangup).once
+                  [second_root_call, second_other_mock_call].each do |c|
+                    c.should_receive(:hangup).never
+                  end
+
+                  other_dial.should_receive(:split).and_raise StandardError
+                  expect { dial.merge other_dial }.to raise_error(StandardError)
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    dial.cleanup_calls
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  call << mock_end
+                  latch.wait(1).should be_true
+
+                  waiter_thread.join
+                  dial.status.result.should be == :answer
+                end
+              end
+
               context "if a call hangs up" do
                 before { SecureRandom.stub uuid: 'foobar' }
 
