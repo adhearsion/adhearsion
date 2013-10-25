@@ -277,7 +277,7 @@ module Adhearsion
 
         describe "with an inactive call" do
           it "should log an warning" do
-            Adhearsion::Logging.get_logger(Initializer).should_receive(:warning).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
+            Adhearsion::Logging.get_logger(Initializer).should_receive(:warn).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
             Initializer.dispatch_call_event mock_event
           end
         end
