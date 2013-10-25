@@ -144,7 +144,7 @@ module Adhearsion
           if call = Adhearsion.active_calls[event.target_call_id]
             call.async.deliver_message event
           else
-            logger.warning "Event received for inactive call #{event.target_call_id}: #{event.inspect}"
+            logger.warn "Event received for inactive call #{event.target_call_id}: #{event.inspect}"
           end
         end
 
