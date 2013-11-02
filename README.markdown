@@ -24,16 +24,18 @@ Adhearsion rests above a lower-level telephony platform, for example [Asterisk](
 ## Requirements
 
 * Ruby 1.9.2+ or JRuby 1.7.0+
+* [ruby_speech dependencies](https://github.com/benlangfeld/ruby_speech#dependencies)
 * A VoIP platform:
   * Asterisk 1.8+
   * FreeSWITCH
   * A Rayo server (Prism 11+ with rayo-server, or FreeSWITCH with mod_rayo)
 * An interest in building cool new things
 
-Support for Ruby 1.9.2 is deprecated, and requires locking your application to ActiveSupport 3.x as follows:
-  ```ruby
-  gem 'active_support', '~> 3.0'
-  ```
+\* Support for Ruby 1.9.2 is deprecated, and requires locking your application to ActiveSupport 3.x as follows:
+
+```ruby
+gem 'active_support', '~> 3.0'
+```
 
 ## Install
 
