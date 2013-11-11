@@ -156,6 +156,20 @@ module Adhearsion
       throw :pass_controller, controller_class.new(call, metadata)
     end
 
+    # Basic API for stopping all controller output
+
+    def stop_all_components(metadata = nil)
+      logger.info "Stopping all controller components"
+      @active_components.each do |component|
+        begin
+          component.stop!
+        rescue Punchblock::Component::InvalidActionError
+        end
+      end
+    end
+
+	
+
     #
     # Cease execution of this controller, including any components it is executing, and pass to another.
     #
