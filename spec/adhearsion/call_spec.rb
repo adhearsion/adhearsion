@@ -49,6 +49,7 @@ module Adhearsion
     its(:uri)     { should be == "footransport:#{call_id}@#{domain}" }
     its(:to)      { should be == to }
     its(:from)    { should be == from }
+    its(:creator) { should be nil }
 
     context "when the ID is nil" do
       let(:call_id) { nil }

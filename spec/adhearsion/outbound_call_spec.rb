@@ -17,6 +17,7 @@ module Adhearsion
 
     its(:client) { should be mock_client }
     its(:start_time) { should be nil }
+    its(:creator) { should be nil }
 
     describe ".originate" do
       let(:to) { 'sip:foo@bar.com' }
@@ -173,6 +174,17 @@ module Adhearsion
       it "should set the 'from' from the dial command" do
         subject.dial to, :from => from
         subject.from.should be == from
+      end
+
+      context "with an originating call" do
+        let(:originating_call) { double 'Call' }
+
+        subject { described_class.new originating_call }
+
+        it "should set the parent call" do
+          subject.dial to, :from => from
+          subject.creator.should == originating_call
+        end
       end
 
       it "should add the call to the active calls registry" do
