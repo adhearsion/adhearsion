@@ -21,7 +21,7 @@ module Adhearsion
       # @raise [PlaybackError] if the given argument could not be played
       #
       def say(text, options = {})
-        player.play_ssml(text, options) || player.output(output_formatter.ssml_for_text(text.to_s), options)
+        player.play_ssml(text, options) || player.output([{value: output_formatter.ssml_for_text(text.to_s)}], options)
       end
       alias :speak :say
 
@@ -34,7 +34,7 @@ module Adhearsion
       # @raise [PlaybackError] if the given argument could not be played
       #
       def say!(text, options = {})
-        async_player.play_ssml(text, options) || async_player.output(output_formatter.ssml_for_text(text.to_s), options)
+        async_player.play_ssml(text, options) || async_player.output([{value: output_formatter.ssml_for_text(text.to_s)}], options)
       end
       alias :speak! :say!
 
@@ -92,7 +92,7 @@ module Adhearsion
       #
       def play(*outputs, options)
         options = process_output_options outputs, options
-        player.play_ssml output_formatter.ssml_for_collection(outputs), options
+        player.play_ssml_collection output_formatter.separate_ssml_for_collection(outputs), options
         true
       end
 
@@ -121,7 +121,7 @@ module Adhearsion
       #
       def play!(*outputs, options)
         options = process_output_options outputs, options
-        async_player.play_ssml output_formatter.ssml_for_collection(outputs), options
+        async_player.play_ssml_collection output_formatter.separate_ssml_for_collection(outputs), options
       end
 
       #
@@ -272,7 +272,7 @@ module Adhearsion
             :value => grammar_accept(digits)
           }
 
-        player.output output_formatter.ssml_for(argument), output_options do |output_component|
+        player.output [{value: output_formatter.ssml_for(argument)}], output_options do |output_component|
           stopper.register_event_handler Punchblock::Event::Complete do |event|
             output_component.stop! unless output_component.complete?
           end

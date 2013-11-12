@@ -9,16 +9,26 @@ module Adhearsion
 
         def ssml_for_collection(collection)
           collection.inject RubySpeech::SSML.draw do |doc, argument|
-            doc + case argument
-            when Hash
-              ssml_for argument.delete(:value), argument
-            when RubySpeech::SSML::Speak
-              argument
-            when lambda { |a| a.respond_to? :each }
-              ssml_for_collection argument
-            else
-              ssml_for argument
-            end
+            doc + collection_item(argument, :ssml_for_collection)
+          end
+        end
+
+        def separate_ssml_for_collection(collection)
+          collection.map do |argument|
+            collection_item argument, :separate_ssml_for_collection
+          end
+        end
+
+        def collection_item(argument, recurse_with)
+          case argument
+          when Hash
+            ssml_for argument.delete(:value), argument
+          when RubySpeech::SSML::Speak
+            argument
+          when lambda { |a| a.respond_to? :each }
+            send recurse_with, argument
+          else
+            ssml_for argument
           end
         end
 

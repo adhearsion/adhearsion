@@ -15,8 +15,12 @@ module Adhearsion
 
         def play_ssml(ssml, options = {})
           if [RubySpeech::SSML::Speak, Nokogiri::XML::Document].include? ssml.class
-            output ssml, options
+            output [{ value: ssml }], options
           end
+        end
+
+        def play_ssml_collection(collection, options = {})
+          output collection.map { |doc| { value: doc } }, options
         end
 
         def new_output(options)
