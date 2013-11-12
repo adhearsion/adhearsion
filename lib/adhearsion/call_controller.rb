@@ -75,6 +75,7 @@ module Adhearsion
     #
     def initialize(call, metadata = nil, &block)
       @call, @metadata, @block = call, metadata || {}, block
+      @active_components = []
     end
 
     def method_missing(method_name, *args, &block)
@@ -155,6 +156,36 @@ module Adhearsion
       throw :pass_controller, controller_class.new(call, metadata)
     end
 
+    #
+    # Stop execution of all the components currently running in the controller.
+    #
+    def stop_all_components
+      logger.info "Stopping all controller components"
+      @active_components.each do |component|
+        begin
+          component.stop!
+        rescue Punchblock::Component::InvalidActionError
+        end
+      end
+    end
+
+    #
+    # Cease execution of this controller, including any components it is executing, and pass to another.
+    #
+    # @param [Class] controller_class The class of controller to pass to
+    # @param [Hash] metadata generic key-value storage applicable to the controller
+    #
+    def hard_pass(controller_class, metadata = nil)
+      logger.info "Hard passing with active components #{@active_components.inspect}"
+      @active_components.each do |component|
+        begin
+          component.stop!
+        rescue Punchblock::Component::InvalidActionError
+        end
+      end
+      pass controller_class, metadata
+    end
+
     # @private
     def execute_callbacks(type)
       self.class.callbacks[type].each do |callback|
@@ -173,6 +204,12 @@ module Adhearsion
     def write_and_await_response(command)
       block_until_resumed
       call.write_and_await_response command
+      if command.is_a?(Punchblock::Component::ComponentNode)
+        command.register_event_handler Punchblock::Event::Complete do |event|
+          @active_components.delete command
+        end
+        @active_components << command
+      end
     end
 
     # @private
