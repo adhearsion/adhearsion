@@ -7,8 +7,8 @@ class SimonGame < Adhearsion::CallController
   def run
     answer
     reset
+    update_number
     loop do
-      update_number
       collect_attempt
       verify_attempt
     end
@@ -23,13 +23,15 @@ class SimonGame < Adhearsion::CallController
   end
 
   def collect_attempt
-    result = ask @number, :limit => @number.length
+    result = ask  "<say-as interpret-as='characters'>#{@number.split('').join(' ')}</say-as>", 
+                  :limit => @number.length
     @attempt = result.response
   end
 
   def verify_attempt
     if attempt_correct?
       speak 'good'
+      update_number
     else
       speak "#{@number.length - 1} times wrong, try again smarty"
       reset
