@@ -11,6 +11,7 @@ Feature: Adhearsion plugin generator
     | test_plugin/lib/test_plugin |
     | test_plugin/spec            |
     And the following files should exist:
+    | test_plugin/.gitignore                                  |
     | test_plugin/test_plugin.gemspec                         |
     | test_plugin/Rakefile                                    |
     | test_plugin/README.md                                   |
@@ -21,6 +22,7 @@ Feature: Adhearsion plugin generator
     | test_plugin/lib/test_plugin/controller_methods.rb       |
     | test_plugin/spec/spec_helper.rb                         |
     | test_plugin/spec/test_plugin/controller_methods_spec.rb |
+    And the file "test_plugin/.gitignore" should contain "Gemfile.lock"
     And the file "test_plugin/test_plugin.gemspec" should contain "test_plugin/version"
     And the file "test_plugin/README.md" should contain "TestPlugin"
     And the file "test_plugin/lib/test_plugin.rb" should contain each of these content parts:
@@ -62,6 +64,7 @@ Feature: Adhearsion plugin generator
     | test_plugin/lib/test_plugin |
     | test_plugin/spec            |
     And the following files should exist:
+    | test_plugin/.gitignore                                  |
     | test_plugin/test_plugin.gemspec                         |
     | test_plugin/Rakefile                                    |
     | test_plugin/README.md                                   |
@@ -72,6 +75,7 @@ Feature: Adhearsion plugin generator
     | test_plugin/lib/test_plugin/controller_methods.rb       |
     | test_plugin/spec/spec_helper.rb                         |
     | test_plugin/spec/test_plugin/controller_methods_spec.rb |
+    And the file "test_plugin/.gitignore" should contain "Gemfile.lock"
     And the file "test_plugin/test_plugin.gemspec" should contain "test_plugin/version"
     And the file "test_plugin/README.md" should contain "TestPlugin"
     And the file "test_plugin/lib/test_plugin.rb" should contain each of these content parts:
