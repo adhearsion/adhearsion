@@ -289,6 +289,64 @@ module Adhearsion
       end
     end
 
+    describe '#stop_all_components' do
+      let(:stop_controller) do
+        Class.new CallController do
+          attr_accessor :output1, :output2
+
+          def prep_output
+            @output1 = play! 'file://foo.wav'
+            @output2 = play! 'file://bar.wav'
+          end
+
+          def run
+            stop_all_components
+          end
+        end
+      end
+
+      subject { stop_controller.new call }
+
+      before do
+        call.wrapped_object.stub(:write_and_await_response).and_return do |command|
+          command.request!
+          command.execute!
+        end
+        call.stub register_controller: nil
+        Events.should_receive(:trigger).with(:exception, Exception).never
+        subject.prep_output
+      end
+
+      context "but not yet received a complete event" do
+          it "should terminate the components" do
+            subject.output1.should_receive(:stop!).once
+            subject.output2.should_receive(:stop!).once
+
+            subject.exec
+          end
+
+          context "and some fail to terminate" do
+            before { subject.output1.should_receive(:stop!).and_raise(Punchblock::Component::InvalidActionError) }
+
+            it "should terminate the others" do
+              subject.output2.should_receive(:stop!).once
+              subject.exec
+            end
+          end
+        end
+
+        context "when some have completed" do
+          before { subject.output1.trigger_event_handler Punchblock::Event::Complete.new }
+
+          it "should not terminate the completed components" do
+            subject.output1.should_receive(:stop!).never
+            subject.output2.should_receive(:stop!).once
+
+            subject.exec
+          end
+        end
+    end
+
     describe "#write_and_await_response" do
       let(:message) { Punchblock::Command::Accept.new }
 
