@@ -177,12 +177,7 @@ module Adhearsion
     #
     def hard_pass(controller_class, metadata = nil)
       logger.info "Hard passing with active components #{@active_components.inspect}"
-      @active_components.each do |component|
-        begin
-          component.stop!
-        rescue Punchblock::Component::InvalidActionError
-        end
-      end
+      stop_all_components
       pass controller_class, metadata
     end
 
