@@ -24,15 +24,17 @@ module Adhearsion
         end
 
         describe "#ssml_for_collection" do
-          let(:collection) { ["/foo/bar.wav", 1, Time.now] }
+          let(:collection) { ["/foo/bar.wav", 1, Time.now, '123*'] }
           let :ssml do
             file = collection[0]
             n = collection[1].to_s
             t = collection[2].to_s
+            c = collection[3].to_s
             RubySpeech::SSML.draw do
               audio :src => file
               say_as(:interpret_as => 'cardinal') { n }
               say_as(:interpret_as => 'time') { t }
+              say_as(:interpret_as => 'characters') { c }
             end
           end
 
@@ -76,6 +78,16 @@ module Adhearsion
           it "detects a Numeric object" do
             number = 123
             subject.detect_type(number).should be :numeric
+          end
+
+          it "detects a String of digits" do
+            number = '123'
+            subject.detect_type(number).should be :numeric
+          end
+
+          it "detects a String of characters" do
+            number = '123#'
+            subject.detect_type(number).should be :characters
           end
 
           ["Foo", "Foo bar", "The answer: foo", "The answer could be foo/bar"].each do |string|

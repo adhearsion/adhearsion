@@ -28,6 +28,8 @@ module Adhearsion
             :time
           when Numeric, /^\d+$/
             :numeric
+          when /^[\d\*\#]+$/
+            :characters
           when /^\//, ->(string) { uri? string }
             :audio
           else
@@ -89,7 +91,7 @@ module Adhearsion
           end
         end
 
-        def ssml_for_characters(argument)
+        def ssml_for_characters(argument, options = {})
           RubySpeech::SSML.draw do
             say_as(interpret_as: 'characters') { string argument.to_s }
           end

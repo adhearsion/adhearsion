@@ -357,15 +357,17 @@ module Adhearsion
         end
 
         describe "with multiple arguments" do
-          let(:args) { ["/foo/bar.wav", 1, Time.now] }
+          let(:args) { ["/foo/bar.wav", 1, Time.now, "123#"] }
           let :ssml do
             file = args[0]
             n = args[1].to_s
             t = args[2].to_s
+            c = args[3].to_s
             RubySpeech::SSML.draw do
               audio :src => file
               say_as(:interpret_as => 'cardinal') { n }
               say_as(:interpret_as => 'time') { t }
+              say_as(:interpret_as => 'characters') { c }
             end
           end
 
