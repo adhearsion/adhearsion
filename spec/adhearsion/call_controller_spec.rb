@@ -307,17 +307,18 @@ module Adhearsion
 
       subject { stop_controller.new call }
 
-      before do
-        call.wrapped_object.stub(:write_and_await_response).and_return do |command|
-          command.request!
-          command.execute!
+      context "when components have been executed on the controller" do
+        before do
+          call.wrapped_object.stub(:write_and_await_response).and_return do |command|
+            command.request!
+            command.execute!
+          end
+          call.stub register_controller: nil
+          Events.should_receive(:trigger).with(:exception, Exception).never
+          subject.prep_output
         end
-        call.stub register_controller: nil
-        Events.should_receive(:trigger).with(:exception, Exception).never
-        subject.prep_output
-      end
 
-      context "but not yet received a complete event" do
+        context "when they have not yet received a complete event" do
           it "should terminate the components" do
             subject.output1.should_receive(:stop!).once
             subject.output2.should_receive(:stop!).once
@@ -345,6 +346,7 @@ module Adhearsion
             subject.exec
           end
         end
+      end
     end
 
     describe "#write_and_await_response" do

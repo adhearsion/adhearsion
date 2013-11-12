@@ -156,9 +156,10 @@ module Adhearsion
       throw :pass_controller, controller_class.new(call, metadata)
     end
 
-    # Basic API for stopping all controller output
-
-    def stop_all_components(metadata = nil)
+    #
+    # Stop execution of all the components currently running in the controller.
+    #
+    def stop_all_components
       logger.info "Stopping all controller components"
       @active_components.each do |component|
         begin
@@ -167,8 +168,6 @@ module Adhearsion
         end
       end
     end
-
-	
 
     #
     # Cease execution of this controller, including any components it is executing, and pass to another.
