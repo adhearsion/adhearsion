@@ -71,7 +71,7 @@ module Adhearsion
 
     def initialize_config
       _config = Configuration.new
-      env = ENV['AHN_ENV'] || ENV['RAILS_ENV']
+      env = ENV['AHN_ENV'] || ENV['RAILS_ENV'] || :development
       env = env.to_sym if env.respond_to? :to_sym
       unless _config.valid_environment? env
         puts  "You tried to initialize with an invalid environment name #{env}. Valid values are #{_config.valid_environments}."
