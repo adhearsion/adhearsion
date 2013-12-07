@@ -43,7 +43,7 @@ Feature: Adhearsion App Generator
     And the file "Gemfile" should contain each of these content parts:
     """
     source 'https://rubygems.org
-    gem 'adhearsion-asterisk'
+    gem 'adhearsion-asr'
     """
     And the file "lib/simon_game.rb" should contain "class SimonGame"
     And the file "script/ahn" should contain "require 'adhearsion'"
