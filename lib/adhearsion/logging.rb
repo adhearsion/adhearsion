@@ -88,6 +88,7 @@ module Adhearsion
            'stdout',
            :layout => ::Logging.layouts.pattern(
              :pattern => adhearsion_pattern,
+             :date_pattern => "%Y-%m-%d %H:%M:%S.%L",
              :color_scheme => 'bright'
            ),
            :auto_flushing => 2,
