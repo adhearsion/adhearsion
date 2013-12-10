@@ -2,4 +2,4 @@
 
 require 'bundler'
 Bundler.setup
-Bundler.require
+Bundler.require(:default,ENV["AHN_ENV"].to_sym)
