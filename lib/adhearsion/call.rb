@@ -188,7 +188,8 @@ module Adhearsion
           type = :mixer
         end
         logger.info "Joined to #{type} #{target}"
-        @peers[target] = Adhearsion.active_calls[target]
+        call = Adhearsion.active_calls.with_uri(target)
+        @peers[call ? call.id : target] = call
         signal :joined, target
       end
 

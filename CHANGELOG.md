@@ -6,6 +6,7 @@
   * Bugfix: Ensure that hungup calls don't prevent dial splits/merges.
   * Bugfix: Ensure that merged dials which are split and rejoined all get rejoined to the mixer.
   * Feature: Detect something like "1234#" as characters instead of text
+  * Bugfix: Ensure that peers are correctly maintained - this was broken by Rayo moving to full call URIs in joined/unjoined events
 
 # [2.4.0](https://github.com/adhearsion/adhearsion/compare/v2.3.5...v2.4.0) - [2013-08-29](https://rubygems.org/gems/adhearsion/versions/2.4.0)
   * Deprecation: Ruby 1.9.2 support is deprecated and will be dropped in a future version of Adhearsion

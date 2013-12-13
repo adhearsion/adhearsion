@@ -347,20 +347,22 @@ module Adhearsion
 
     context "peer registry" do
       let(:other_call_id) { 'foobar' }
+      let(:other_call_uri) { 'xmpp:foobar@example.com' }
       let(:other_call) { Call.new }
 
-      before { other_call.stub :id => other_call_id }
+      before { other_call.stub :id => other_call_id, uri: other_call_uri }
 
       let :joined_event do
-        Punchblock::Event::Joined.new call_uri: other_call_id
+        Punchblock::Event::Joined.new call_uri: other_call_uri
       end
 
       let :unjoined_event do
-        Punchblock::Event::Unjoined.new call_uri: other_call_id
+        Punchblock::Event::Unjoined.new call_uri: other_call_uri
       end
 
       context "when we know about the joined call" do
         before { Adhearsion.active_calls << other_call }
+        after { Adhearsion.active_calls.remove_inactive_call other_call }
 
         it "should add the peer to its registry" do
           subject << joined_event
@@ -371,7 +373,7 @@ module Adhearsion
       context "when we don't know about the joined call" do
         it "should add a nil entry to its registry" do
           subject << joined_event
-          subject.peers.should == {'foobar' => nil}
+          subject.peers.should == {'xmpp:foobar@example.com' => nil}
         end
       end
 

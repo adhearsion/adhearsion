@@ -12,7 +12,7 @@ module Adhearsion
     end
 
     def new_offer(call_id = nil, headers = {})
-      Punchblock::Event::Offer.new :target_call_id => call_id || random_call_id, :headers => headers
+      Punchblock::Event::Offer.new domain: 'example.com', transport: 'xmpp', :target_call_id => call_id || random_call_id, :headers => headers
     end
 
     it 'can create a call and add it to the collection' do
@@ -37,15 +37,17 @@ module Adhearsion
       context "by call object" do
         before { subject.remove_inactive_call deleted_call }
 
-        it "should remove the call from the collection" do
+        it "should remove the call from the collection", focus: true do
           subject.size.should be == number_of_calls - 1
           subject[deleted_call.id].should be_nil
+          subject.with_uri(deleted_call.uri).should be_nil
         end
       end
 
       context "by dead call object" do
         before do
           @call_id = deleted_call.id
+          @call_uri = deleted_call.uri
           Celluloid::Actor.kill deleted_call
           deleted_call.should_not be_alive
           subject.remove_inactive_call deleted_call
@@ -54,6 +56,7 @@ module Adhearsion
         it "should remove the call from the collection" do
           subject.size.should be == number_of_calls - 1
           subject[@call_id].should be_nil
+          subject.with_uri(@call_uri).should be_nil
         end
       end
 
@@ -63,6 +66,7 @@ module Adhearsion
         it "should remove the call from the collection" do
           subject.size.should be == number_of_calls - 1
           subject[deleted_call.id].should be_nil
+          subject.with_uri(deleted_call.uri).should be_nil
         end
       end
     end
@@ -76,6 +80,12 @@ module Adhearsion
       subject.with_tag(:moderator).should be == [tagged_call]
     end
 
+    it "finding calls by uri" do
+      calls.each { |call| subject << call }
+
+      subject.with_uri(calls.last.uri).should be == calls.last
+    end
+
     describe "#<<" do
       it "should allow chaining" do
         subject << Call.new(new_offer) << Call.new(new_offer)
@@ -86,6 +96,7 @@ module Adhearsion
     describe "when a call in the collection terminates cleanly" do
       it "is removed from the collection" do
         call_id = call.id
+        call_uri = call.uri
         size_before = subject.size
 
         subject << call
@@ -93,6 +104,7 @@ module Adhearsion
 
         subject.size.should be == size_before
         subject[call_id].should be_nil
+        subject.with_uri(call_uri).should be_nil
       end
     end
 
@@ -112,15 +124,18 @@ module Adhearsion
 
       it "is removed from the collection" do
         call_id = call.id
+        call_uri = call.uri
         size_before = subject.size
 
         subject << call
         subject.size.should be > size_before
         subject[call_id].should be call
+        subject.with_uri(call_uri).should be call
 
         crash
         subject.size.should be == size_before
         subject[call_id].should be_nil
+        subject.with_uri(call_uri).should be_nil
       end
 
       it "is sends a hangup command for the call" do
