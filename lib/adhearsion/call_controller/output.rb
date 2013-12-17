@@ -21,6 +21,7 @@ module Adhearsion
       # @raise [PlaybackError] if the given argument could not be played
       #
       def say(text, options = {})
+        raise ArgumentError unless text
         player.play_ssml(text, options) || player.output(output_formatter.ssml_for_text(text.to_s), options)
       end
       alias :speak :say
@@ -34,6 +35,7 @@ module Adhearsion
       # @raise [PlaybackError] if the given argument could not be played
       #
       def say!(text, options = {})
+        raise ArgumentError unless text
         async_player.play_ssml(text, options) || async_player.output(output_formatter.ssml_for_text(text.to_s), options)
       end
       alias :speak! :say!

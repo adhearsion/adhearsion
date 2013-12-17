@@ -338,6 +338,13 @@ module Adhearsion
         let(:extra_options) do
           { renderer: :native }
         end
+
+        describe "with a nil argument" do
+          it "fails fast" do
+            expect { subject.play nil }.to raise_error ArgumentError
+          end
+        end
+
         describe "with a single string" do
           let(:audio_file) { "/foo/bar.wav" }
           let :ssml do
@@ -399,6 +406,12 @@ module Adhearsion
           it 'plays all arguments in one document' do
             expect_ssml_output ssml
             subject.play(args).should be true
+          end
+
+          context "that is empty" do
+            it "fails fast" do
+              expect { subject.play [] }.to raise_error ArgumentError
+            end
           end
         end
 
@@ -498,6 +511,13 @@ module Adhearsion
         let(:extra_options) do
           { renderer: :native }
         end
+
+        describe "with a nil argument" do
+          it "fails fast" do
+            expect { subject.play! nil }.to raise_error ArgumentError
+          end
+        end
+
         describe "with a single string" do
           let(:audio_file) { "/foo/bar.wav" }
           let :ssml do
@@ -733,6 +753,12 @@ module Adhearsion
       end
 
       describe "#say" do
+        describe "with a nil argument" do
+          it "fails fast" do
+            expect { subject.say nil }.to raise_error ArgumentError
+          end
+        end
+
         describe "with a RubySpeech document" do
           it 'plays the correct SSML' do
             ssml = RubySpeech::SSML.draw { string "Hello world" }
@@ -831,6 +857,12 @@ module Adhearsion
       end
 
       describe "#say!" do
+        describe "with a nil argument" do
+          it "fails fast" do
+            expect { subject.say! nil }.to raise_error ArgumentError
+          end
+        end
+
         describe "with a RubySpeech document" do
           it 'plays the correct SSML' do
             ssml = RubySpeech::SSML.draw { string "Hello world" }
