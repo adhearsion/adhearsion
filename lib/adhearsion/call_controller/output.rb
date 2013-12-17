@@ -11,6 +11,7 @@ module Adhearsion
       autoload :Player
 
       PlaybackError = Class.new Adhearsion::Error # Represents failure to play audio, such as when the sound file cannot be found
+      NoDocError = Class.new Adhearsion::Error # Represents failure to provide documents to playback
 
       #
       # Speak output using text-to-speech (TTS)
@@ -21,7 +22,7 @@ module Adhearsion
       # @raise [PlaybackError] if the given argument could not be played
       #
       def say(text, options = {})
-        raise ArgumentError unless text
+        return unless text
         player.play_ssml(text, options) || player.output(output_formatter.ssml_for_text(text.to_s), options)
       end
       alias :speak :say
@@ -35,7 +36,7 @@ module Adhearsion
       # @raise [PlaybackError] if the given argument could not be played
       #
       def say!(text, options = {})
-        raise ArgumentError unless text
+        return unless text
         async_player.play_ssml(text, options) || async_player.output(output_formatter.ssml_for_text(text.to_s), options)
       end
       alias :speak! :say!
@@ -94,8 +95,11 @@ module Adhearsion
       #
       def play(*outputs, options)
         options = process_output_options outputs, options
-        player.play_ssml output_formatter.ssml_for_collection(outputs), options
+        ssml = output_formatter.ssml_for_collection(outputs) || return
+        player.play_ssml ssml, options
         true
+      rescue NoDocError
+        false
       end
 
       #
@@ -123,7 +127,10 @@ module Adhearsion
       #
       def play!(*outputs, options)
         options = process_output_options outputs, options
-        async_player.play_ssml output_formatter.ssml_for_collection(outputs), options
+        ssml = output_formatter.ssml_for_collection(outputs) || return
+        async_player.play_ssml ssml, options
+      rescue NoDocError
+        false
       end
 
       #

@@ -9,7 +9,7 @@ module Adhearsion
 
         def ssml_for_collection(collection)
           collection = collection.compact
-          raise ArgumentError, "Must supply an argument" if collection.empty?
+          raise NoDocError if collection.empty?
 
           collection.inject RubySpeech::SSML.draw do |doc, argument|
             doc + case argument
@@ -62,7 +62,6 @@ module Adhearsion
         end
 
         def ssml_for_text(argument, options = {})
-          raise ArgumentError, "Must supply an argument" unless argument
           RubySpeech::SSML.draw { argument }
         end
 

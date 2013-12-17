@@ -340,8 +340,8 @@ module Adhearsion
         end
 
         describe "with a nil argument" do
-          it "fails fast" do
-            expect { subject.play nil }.to raise_error ArgumentError
+          it "is a noop" do
+            subject.play nil
           end
         end
 
@@ -409,8 +409,8 @@ module Adhearsion
           end
 
           context "that is empty" do
-            it "fails fast" do
-              expect { subject.play [] }.to raise_error ArgumentError
+            it "is a noop" do
+              subject.play []
             end
           end
         end
@@ -513,8 +513,8 @@ module Adhearsion
         end
 
         describe "with a nil argument" do
-          it "fails fast" do
-            expect { subject.play! nil }.to raise_error ArgumentError
+          it "is a noop" do
+            subject.play! nil
           end
         end
 
@@ -754,8 +754,8 @@ module Adhearsion
 
       describe "#say" do
         describe "with a nil argument" do
-          it "fails fast" do
-            expect { subject.say nil }.to raise_error ArgumentError
+          it "is a no-op" do
+            subject.say nil
           end
         end
 
@@ -858,8 +858,8 @@ module Adhearsion
 
       describe "#say!" do
         describe "with a nil argument" do
-          it "fails fast" do
-            expect { subject.say! nil }.to raise_error ArgumentError
+          it "is a noop" do
+            subject.say! nil
           end
         end
 
