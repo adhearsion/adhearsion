@@ -37,7 +37,7 @@ module Adhearsion
       context "by call object" do
         before { subject.remove_inactive_call deleted_call }
 
-        it "should remove the call from the collection", focus: true do
+        it "should remove the call from the collection" do
           subject.size.should be == number_of_calls - 1
           subject[deleted_call.id].should be_nil
           subject.with_uri(deleted_call.uri).should be_nil
