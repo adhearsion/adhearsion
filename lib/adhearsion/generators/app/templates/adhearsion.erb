@@ -24,16 +24,16 @@ Adhearsion.config do |config|
   ##
   # Use with Rayo (eg Voxeo PRISM or FreeSWITCH mod_rayo)
   #
-  # config.punchblock.username = "" # Your XMPP JID for use with Rayo
-  # config.punchblock.password = "" # Your XMPP password
+  # config.punchblock.username = "usera@freeswitch.local-dev.mojolingo.com" # Your XMPP JID for use with Rayo
+  # config.punchblock.password = "1" # Your XMPP password
 
   ##
   # Use with Asterisk
   #
   # config.punchblock.platform = :asterisk # Use Asterisk
-  # config.punchblock.username = "" # Your AMI username
-  # config.punchblock.password = "" # Your AMI password
-  # config.punchblock.host = "127.0.0.1" # Your AMI host
+  # config.punchblock.username = "manager" # Your AMI username
+  # config.punchblock.password = "password" # Your AMI password
+  # config.punchblock.host = "asterisk.local-dev.mojolingo.com" # Your AMI host
 
 <% unless options[:empty] %>
   ##
@@ -42,8 +42,8 @@ Adhearsion.config do |config|
   # This configuration is no longer recommended and mod_rayo is preferred
   #
   # config.punchblock.platform = :freeswitch # Use FreeSWITCH
-  # config.punchblock.password = "" # Your Inbound EventSocket password
-  # config.punchblock.host = "127.0.0.1" # Your IES host
+  # config.punchblock.password = "ClueCon" # Your Inbound EventSocket password
+  # config.punchblock.host = "freeswitch.local-dev.mojolingo.com" # Your IES host
 <% end %>
 end
 
