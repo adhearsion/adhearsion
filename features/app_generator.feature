@@ -15,17 +15,18 @@ Feature: Adhearsion App Generator
       | spec/support          |
 
     And the following files should exist:
-      | .gitignore            |
-      | .rspec                |
-      | config/adhearsion.rb  |
-      | config/environment.rb |
-      | Gemfile               |
-      | lib/simon_game.rb     |
-      | script/ahn            |
-      | spec/spec_helper.rb   |
-      | README.md             |
-      | Rakefile              |
-      | Procfile              |
+      | .gitignore                                |
+      | .rspec                                    |
+      | config/adhearsion.rb                      |
+      | config/environment.rb                     |
+      | Gemfile                                   |
+      | lib/simon_game.rb                         |
+      | script/ahn                                |
+      | spec/spec_helper.rb                       |
+      | spec/call_controllers/simon_game_spec.rb  |
+      | README.md                                 |
+      | Rakefile                                  |
+      | Procfile                                  |
 
     And the file "config/adhearsion.rb" should contain each of these content parts:
     """
@@ -47,3 +48,35 @@ Feature: Adhearsion App Generator
     """
     And the file "lib/simon_game.rb" should contain "class SimonGame"
     And the file "script/ahn" should contain "require 'adhearsion'"
+
+  Scenario: Generate application --empty
+    When I run `ahn create path/somewhere --empty`
+    And I cd to "path/somewhere"
+    Then the following directories should exist:
+      | lib                   |
+      | config                |
+      | script                |
+      | spec                  |
+      | spec/call_controllers |
+      | spec/support          |
+
+    And the following files should exist:
+      | .gitignore            |
+      | .rspec                |
+      | config/adhearsion.rb  |
+      | config/environment.rb |
+      | Gemfile               |
+      | script/ahn            |
+      | spec/spec_helper.rb   |
+      | README.md             |
+      | Rakefile              |
+      | Procfile              |
+
+    And the following files should not exist:
+      | lib/simon_game.rb                         |
+      | spec/call_controllers/simon_game_spec.rb  |
+
+    And the file "config/adhearsion.rb" should not contain each of these content parts:
+    """
+    # Register global handlers for events
+    """
