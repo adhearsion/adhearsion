@@ -19,6 +19,8 @@ module Adhearsion
 
       let(:latch) { CountDownLatch.new 1 }
 
+      let(:join_options) { options[:join_options] || {} }
+
       before do
         other_mock_call.wrapped_object.stub id: other_call_id, write_command: true
         second_other_mock_call.wrapped_object.stub id: second_other_call_id, write_command: true
@@ -96,7 +98,7 @@ module Adhearsion
 
           it "joins the new call to the existing one on answer" do
             call.should_receive(:answer).once
-            other_mock_call.should_receive(:join).once.with(call)
+            other_mock_call.should_receive(:join).once.with(call, {})
 
             dial_in_thread
 
@@ -115,7 +117,7 @@ module Adhearsion
             it "executes the callback prior to joining" do
               foo.should_receive(:bar).once.with(other_mock_call).ordered
               call.should_receive(:answer).once.ordered
-              other_mock_call.should_receive(:join).once.with(call).ordered
+              other_mock_call.should_receive(:join).once.with(call, {}).ordered
 
               dial_in_thread
 
@@ -141,7 +143,7 @@ module Adhearsion
               subject.should_receive(:play!).once.with(['file://tt-monkeys'], repeat_times: 0).and_return(component)
               component.should_receive(:stop!).twice
               call.should_receive(:answer).once.ordered
-              other_mock_call.should_receive(:join).once.with(call).ordered
+              other_mock_call.should_receive(:join).once.with(call, {}).ordered
 
               dial_in_thread
 
@@ -161,7 +163,7 @@ module Adhearsion
                 foo.should_receive(:bar).once.ordered
                 component.should_receive(:stop!).twice
                 call.should_receive(:answer).once.ordered
-                other_mock_call.should_receive(:join).once.with(call).ordered
+                other_mock_call.should_receive(:join).once.with(call, {}).ordered
 
                 dial_in_thread
 
@@ -192,7 +194,7 @@ module Adhearsion
 
           it "hangs up the new call when the root call ends" do
             call.should_receive(:answer).once
-            other_mock_call.should_receive(:join).once.with(call)
+            other_mock_call.should_receive(:join).once.with(call, {})
             other_mock_call.should_receive(:hangup).once
 
             dial_in_thread
@@ -244,7 +246,7 @@ module Adhearsion
           context "when the call is answered and joined" do
             it "has an overall dial status of :answer" do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.should_receive(:join).once.with(call, {})
 
               t = dial_in_thread
 
@@ -265,7 +267,7 @@ module Adhearsion
 
             it "records the duration of the join" do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.should_receive(:join).once.with(call, {})
               other_mock_call.stub hangup: true
 
               t = dial_in_thread
@@ -290,12 +292,35 @@ module Adhearsion
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 37.0
             end
+
+            context "when join options are specified" do
+              let(:options) { { join_options: {media: :direct} } }
+
+              it "joins the calls with those options" do
+                call.should_receive(:answer).once
+                other_mock_call.should_receive(:join).once.with(call, media: :direct)
+                other_mock_call.stub hangup: true
+
+                t = dial_in_thread
+
+                sleep 0.5
+
+                other_mock_call << mock_answered
+
+                other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+
+                t.join
+              end
+            end
           end
 
           context "when a dial is split" do
             before do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.should_receive(:join).once.with(call, join_options)
               other_mock_call.stub(:unjoin).and_return do
                 call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                 other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
@@ -463,7 +488,7 @@ module Adhearsion
 
                 dial.split
 
-                other_mock_call.should_receive(:join).once.ordered.with(call)
+                other_mock_call.should_receive(:join).once.ordered.with(call, {})
                 dial.rejoin
 
                 other_mock_call << mock_end
@@ -472,6 +497,40 @@ module Adhearsion
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
+              end
+
+              context "when join options were set originally" do
+                let(:options) { { join_options: {media: :direct} } }
+
+                it "should rejoin with the same parameters" do
+                  other_mock_call.stub(:unjoin)
+
+                  dial = Dial::Dial.new to, options, call
+                  dial.run subject
+
+                  other_mock_call << mock_answered
+
+                  dial.split
+
+                  other_mock_call.should_receive(:join).once.ordered.with(call, media: :direct)
+                  dial.rejoin
+                end
+              end
+
+              context "when join options are passed to rejoin" do
+                it "should rejoin with those parameters" do
+                  other_mock_call.stub(:unjoin)
+
+                  dial = Dial::Dial.new to, options, call
+                  dial.run subject
+
+                  other_mock_call << mock_answered
+
+                  dial.split
+
+                  other_mock_call.should_receive(:join).once.ordered.with(call, media: :direct)
+                  dial.rejoin nil, media: :direct
+                end
               end
 
               context "to a specified mixer" do
@@ -497,8 +556,8 @@ module Adhearsion
 
                   dial.split
 
-                  call.should_receive(:join).once.ordered.with(mixer_name: mixer)
-                  other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
                   dial.rejoin mixer_name: mixer
 
                   other_mock_call << mock_end
@@ -529,8 +588,8 @@ module Adhearsion
 
                   dial.split
 
-                  call.should_receive(:join).once.ordered.with(mixer_name: mixer)
-                  other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
                   dial.rejoin mixer_name: mixer
 
                   other_mock_call.should_receive(:unjoin).once.ordered.with(mixer_name: mixer).and_return do
@@ -562,7 +621,7 @@ module Adhearsion
               before do
                 second_root_call.stub write_command: true, id: second_root_call_id
                 OutboundCall.should_receive(:new).and_return second_other_mock_call
-                second_other_mock_call.should_receive(:join).once.with(second_root_call)
+                second_other_mock_call.should_receive(:join).once.with(second_root_call, {})
                 second_other_mock_call.should_receive(:dial).once.with(second_to, options)
                 second_root_call.should_receive(:answer).once
 
@@ -585,11 +644,11 @@ module Adhearsion
                   second_other_mock_call << Punchblock::Event::Unjoined.new(call_uri: second_root_call.id)
                 end
 
-                call.should_receive(:join).once.ordered.with(mixer_name: mixer)
-                other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
 
-                second_root_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
-                second_other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                second_root_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                second_other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
 
                 dial.merge other_dial
 
@@ -608,6 +667,23 @@ module Adhearsion
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
+              end
+
+              context "when join options were specified originally" do
+                let(:options) { { join_options: {media: :direct} } }
+
+                it "should rejoin with default options" do
+                  other_mock_call.stub(:unjoin)
+                  second_other_mock_call.stub(:unjoin)
+
+                  call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+
+                  second_root_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  second_other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+
+                  dial.merge other_dial
+                end
               end
 
               it "should add the merged calls to the returned status" do
@@ -707,7 +783,7 @@ module Adhearsion
                 dial.split
 
                 [call, second_root_call, second_other_mock_call].each do |call|
-                  call.should_receive(:join).once.with(mixer_name: 'foobar').and_return do
+                  call.should_receive(:join).once.with({mixer_name: 'foobar'}, {}).and_return do
                     call << Punchblock::Event::Joined.new(mixer_name: 'foobar')
                   end
                 end
@@ -822,7 +898,7 @@ module Adhearsion
                   latch.wait(1).should be_false
 
                   [call, second_root_call, second_other_mock_call].each do |call|
-                    call.should_receive(:join).once.with(mixer_name: 'foobar').and_return do
+                    call.should_receive(:join).once.with({mixer_name: 'foobar'}, {}).and_return do
                       call << Punchblock::Event::Joined.new(mixer_name: 'foobar')
                     end
                   end
@@ -838,11 +914,11 @@ module Adhearsion
                   other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
                   second_other_mock_call.should_receive(:unjoin).once.ordered.with(second_root_call).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
 
-                  call.should_receive(:join).once.ordered.with(mixer_name: mixer)
-                  other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
 
-                  second_root_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
-                  second_other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  second_root_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  second_other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
 
                   dial.merge other_dial
 
@@ -906,7 +982,7 @@ module Adhearsion
 
           it "dials all parties and joins the first one to answer, hanging up the rest" do
             call.should_receive(:answer).once
-            other_mock_call.should_receive(:join).once.with(call)
+            other_mock_call.should_receive(:join).once.with(call, {})
             second_other_mock_call.should_receive(:hangup).once.and_return do
               second_other_mock_call << mock_end
             end
@@ -929,7 +1005,7 @@ module Adhearsion
 
           it "unblocks when the joined call unjoins, allowing it to proceed further" do
             call.should_receive(:answer).once
-            other_mock_call.should_receive(:join).once.with(call)
+            other_mock_call.should_receive(:join).once.with(call, {})
             other_mock_call.should_receive(:hangup).once
             second_other_mock_call.should_receive(:hangup).once.and_return do
               second_other_mock_call << mock_end
@@ -1041,7 +1117,7 @@ module Adhearsion
           context "when a call is answered and joined, and the other ends with an error" do
             it "has an overall dial status of :answer" do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.should_receive(:join).once.with(call, {})
               second_other_mock_call.should_receive(:hangup).once.and_return do
                 second_other_mock_call << mock_end(:error)
               end
@@ -1090,7 +1166,7 @@ module Adhearsion
             it "should not abort until the far end hangs up" do
               other_mock_call.should_receive(:dial).once.with(to, hash_including(:timeout => timeout))
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.should_receive(:join).once.with(call, {})
               OutboundCall.should_receive(:new).and_return other_mock_call
 
               time = Time.now
@@ -1193,7 +1269,7 @@ module Adhearsion
               other_mock_call.should_receive(:hangup).once
               other_mock_call['confirm'] = true
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.should_receive(:join).once.with(call, {})
 
               t = dial_in_thread
 
@@ -1265,7 +1341,7 @@ module Adhearsion
                 call.should_receive(:answer).once
 
                 other_mock_call.should_receive(:dial).once.with(to, from: nil)
-                other_mock_call.should_receive(:join).once.with(call)
+                other_mock_call.should_receive(:join).once.with(call, {})
                 other_mock_call.should_receive(:hangup).once.and_return do
                   other_mock_call << mock_end
                 end
@@ -1368,7 +1444,7 @@ module Adhearsion
 
           it "joins the new call to the existing one on answer" do
             call.should_receive(:answer).once
-            other_mock_call.should_receive(:join).once.with(call)
+            other_mock_call.should_receive(:join).once.with(call, {})
 
             dial_in_thread
 
@@ -1387,7 +1463,7 @@ module Adhearsion
             it "executes the callback prior to joining" do
               foo.should_receive(:bar).once.with(other_mock_call).ordered
               call.should_receive(:answer).once.ordered
-              other_mock_call.should_receive(:join).once.with(call).ordered
+              other_mock_call.should_receive(:join).once.with(call, {}).ordered
 
               dial_in_thread
 
@@ -1413,7 +1489,7 @@ module Adhearsion
               subject.should_receive(:play!).once.with(['file://tt-monkeys'], repeat_times: 0).and_return(component)
               component.should_receive(:stop!).twice
               call.should_receive(:answer).once.ordered
-              other_mock_call.should_receive(:join).once.with(call).ordered
+              other_mock_call.should_receive(:join).once.with(call, {}).ordered
 
               dial_in_thread
 
@@ -1433,7 +1509,7 @@ module Adhearsion
                 foo.should_receive(:bar).once.ordered
                 component.should_receive(:stop!).twice
                 call.should_receive(:answer).once.ordered
-                other_mock_call.should_receive(:join).once.with(call).ordered
+                other_mock_call.should_receive(:join).once.with(call, {}).ordered
 
                 dial_in_thread
 
@@ -1465,7 +1541,7 @@ module Adhearsion
           it "hangs up the new call when the root call ends" do
             other_mock_call.should_receive(:hangup).once
             call.should_receive(:answer).once
-            other_mock_call.should_receive(:join).once.with(call)
+            other_mock_call.should_receive(:join).once.with(call, {})
 
             dial_in_thread
 
@@ -1516,7 +1592,7 @@ module Adhearsion
           context "when the call is answered and joined" do
             it "has an overall dial status of :answer" do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.should_receive(:join).once.with(call, {})
 
               t = dial_in_thread
 
@@ -1537,7 +1613,7 @@ module Adhearsion
 
             it "records the duration of the join" do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.should_receive(:join).once.with(call, {})
               other_mock_call.stub hangup: true
 
               t = dial_in_thread
@@ -1562,12 +1638,35 @@ module Adhearsion
               joined_status = status.joins[status.calls.first]
               joined_status.duration.should == 37.0
             end
+
+            context "when join options are specified" do
+              let(:options) { { join_options: {media: :direct} } }
+
+              it "joins the calls with those options" do
+                call.should_receive(:answer).once
+                other_mock_call.should_receive(:join).once.with(call, media: :direct)
+                other_mock_call.stub hangup: true
+
+                t = dial_in_thread
+
+                sleep 0.5
+
+                other_mock_call << mock_answered
+
+                other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+
+                t.join
+              end
+            end
           end
 
           context "when a dial is split" do
             before do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.should_receive(:join).once.with(call, join_options)
               other_mock_call.stub(:unjoin).and_return do
                 call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                 other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
@@ -1735,7 +1834,7 @@ module Adhearsion
 
                 dial.split
 
-                other_mock_call.should_receive(:join).once.ordered.with(call)
+                other_mock_call.should_receive(:join).once.ordered.with(call, {})
                 dial.rejoin
 
                 other_mock_call << mock_end
@@ -1744,6 +1843,40 @@ module Adhearsion
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
+              end
+
+              context "when join options were set originally" do
+                let(:options) { { join_options: {media: :direct} } }
+
+                it "should rejoin with the same parameters" do
+                  other_mock_call.stub(:unjoin)
+
+                  dial = Dial::ParallelConfirmationDial.new to, options, call
+                  dial.run subject
+
+                  other_mock_call << mock_answered
+
+                  dial.split
+
+                  other_mock_call.should_receive(:join).once.ordered.with(call, media: :direct)
+                  dial.rejoin
+                end
+              end
+
+              context "when join options are passed to rejoin" do
+                it "should rejoin with those parameters" do
+                  other_mock_call.stub(:unjoin)
+
+                  dial = Dial::ParallelConfirmationDial.new to, options, call
+                  dial.run subject
+
+                  other_mock_call << mock_answered
+
+                  dial.split
+
+                  other_mock_call.should_receive(:join).once.ordered.with(call, media: :direct)
+                  dial.rejoin nil, media: :direct
+                end
               end
 
               context "to a specified mixer" do
@@ -1769,8 +1902,8 @@ module Adhearsion
 
                   dial.split
 
-                  call.should_receive(:join).once.ordered.with(mixer_name: mixer)
-                  other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
                   dial.rejoin mixer_name: mixer
 
                   other_mock_call << mock_end
@@ -1801,8 +1934,8 @@ module Adhearsion
 
                   dial.split
 
-                  call.should_receive(:join).once.ordered.with(mixer_name: mixer)
-                  other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
                   dial.rejoin mixer_name: mixer
 
                   other_mock_call.should_receive(:unjoin).once.ordered.with(mixer_name: mixer).and_return do
@@ -1834,7 +1967,7 @@ module Adhearsion
               before do
                 second_root_call.stub write_command: true, id: second_root_call_id
                 OutboundCall.should_receive(:new).and_return second_other_mock_call
-                second_other_mock_call.should_receive(:join).once.with(second_root_call)
+                second_other_mock_call.should_receive(:join).once.with(second_root_call, {})
                 second_other_mock_call.should_receive(:dial).once.with(second_to, options)
                 second_root_call.should_receive(:answer).once
 
@@ -1857,11 +1990,11 @@ module Adhearsion
                   second_other_mock_call << Punchblock::Event::Unjoined.new(call_uri: second_root_call.id)
                 end
 
-                call.should_receive(:join).once.ordered.with(mixer_name: mixer)
-                other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
 
-                second_root_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
-                second_other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                second_root_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                second_other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
 
                 dial.merge other_dial
 
@@ -1880,6 +2013,23 @@ module Adhearsion
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
+              end
+
+              context "when join options were specified originally" do
+                let(:options) { { join_options: {media: :direct} } }
+
+                it "should rejoin with default options" do
+                  other_mock_call.stub(:unjoin)
+                  second_other_mock_call.stub(:unjoin)
+
+                  call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+
+                  second_root_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  second_other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+
+                  dial.merge other_dial
+                end
               end
 
               it "should add the merged calls to the returned status" do
@@ -1979,7 +2129,7 @@ module Adhearsion
                 dial.split
 
                 [call, other_mock_call, second_root_call, second_other_mock_call].each do |call|
-                  call.should_receive(:join).once.with(mixer_name: 'foobar').and_return do
+                  call.should_receive(:join).once.with({mixer_name: 'foobar'}, {}).and_return do
                     call << Punchblock::Event::Joined.new(mixer_name: 'foobar')
                   end
                 end
@@ -2016,7 +2166,7 @@ module Adhearsion
                   latch.wait(1).should be_false
 
                   [call, second_root_call, second_other_mock_call].each do |call|
-                    call.should_receive(:join).once.with(mixer_name: 'foobar').and_return do
+                    call.should_receive(:join).once.with({mixer_name: 'foobar'}, {}).and_return do
                       call << Punchblock::Event::Joined.new(mixer_name: 'foobar')
                     end
                   end
@@ -2032,11 +2182,11 @@ module Adhearsion
                   other_mock_call.should_receive(:unjoin).once.ordered.with(call).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
                   second_other_mock_call.should_receive(:unjoin).once.ordered.with(second_root_call).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
 
-                  call.should_receive(:join).once.ordered.with(mixer_name: mixer)
-                  other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
 
-                  second_root_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
-                  second_other_mock_call.should_receive(:join).once.ordered.with(mixer_name: mixer)
+                  second_root_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  second_other_mock_call.should_receive(:join).once.ordered.with({mixer_name: mixer}, {})
 
                   dial.merge other_dial
 
@@ -2100,7 +2250,7 @@ module Adhearsion
 
           it "dials all parties and joins the first one to answer, hanging up the rest" do
             call.should_receive(:answer).once
-            other_mock_call.should_receive(:join).once.with(call)
+            other_mock_call.should_receive(:join).once.with(call, {})
             second_other_mock_call.should_receive(:hangup).once.and_return do
               second_other_mock_call << mock_end
             end
@@ -2123,7 +2273,7 @@ module Adhearsion
 
           it "unblocks when the joined call unjoins, allowing it to proceed further" do
             call.should_receive(:answer).once
-            other_mock_call.should_receive(:join).once.with(call)
+            other_mock_call.should_receive(:join).once.with(call, {})
             other_mock_call.should_receive(:hangup).once
             second_other_mock_call.should_receive(:hangup).once.and_return do
               second_other_mock_call << mock_end
@@ -2235,7 +2385,7 @@ module Adhearsion
           context "when a call is answered and joined, and the other ends with an error" do
             it "has an overall dial status of :answer" do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.should_receive(:join).once.with(call, {})
               second_other_mock_call.should_receive(:hangup).once.and_return do
                 second_other_mock_call << mock_end(:error)
               end
@@ -2284,7 +2434,7 @@ module Adhearsion
             it "should not abort until the far end hangs up" do
               other_mock_call.should_receive(:dial).once.with(to, hash_including(:timeout => timeout))
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.should_receive(:join).once.with(call, {})
               OutboundCall.should_receive(:new).and_return other_mock_call
 
               time = Time.now
@@ -2392,7 +2542,7 @@ module Adhearsion
               end
               other_mock_call['confirm'] = true
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call)
+              other_mock_call.should_receive(:join).once.with(call, {})
 
               t = dial_in_thread
 
@@ -2479,7 +2629,7 @@ module Adhearsion
                 call.should_receive(:answer).once
 
                 other_mock_call.should_receive(:dial).once.with(to, from: nil)
-                other_mock_call.should_receive(:join).once.with(call)
+                other_mock_call.should_receive(:join).once.with(call, {})
                 other_mock_call.should_receive(:hangup).once.and_return do
                   other_mock_call.async.deliver_message mock_end
                 end
