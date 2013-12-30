@@ -8,12 +8,6 @@ module Adhearsion
 
     trap_exit :call_died
 
-    def from_offer(offer)
-      Call.new(offer).tap do |call|
-        self << call
-      end
-    end
-
     def <<(call)
       link call
       self[call.id] = call

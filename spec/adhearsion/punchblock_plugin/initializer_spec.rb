@@ -199,7 +199,7 @@ module Adhearsion
         before do
           initialize_punchblock
           Adhearsion::Process.should_receive(:state_name).once.and_return process_state
-          Adhearsion.active_calls.should_receive(:from_offer).once.and_return mock_call
+          Adhearsion::Call.should_receive(:new).once.and_return mock_call
         end
 
         context "when the Adhearsion::Process is :booting" do

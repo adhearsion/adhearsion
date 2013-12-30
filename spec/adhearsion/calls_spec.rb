@@ -15,9 +15,10 @@ module Adhearsion
       Punchblock::Event::Offer.new domain: 'example.com', transport: 'xmpp', :target_call_id => call_id || random_call_id, :headers => headers
     end
 
-    it 'can create a call and add it to the collection' do
+    it 'can add a call to the collection' do
       subject.any?.should be == false
-      call = subject.from_offer new_offer
+      call = Call.new new_offer
+      subject << call
       call.should be_a Adhearsion::Call
       subject.size.should be == 1
       subject[call.id].should be call
