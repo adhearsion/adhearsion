@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Change: Set default call post-hangup lifetime to zero for better out of the box performance.
   * Feature: Allow stopping all components executed by a controller when passing from it (`#hard_pass`) or at will (`#stop_all_components`)
   * Feature: Generated plugins include a .gitignore file
   * Bugfix: Don't block shutdown waiting for the console to terminate
