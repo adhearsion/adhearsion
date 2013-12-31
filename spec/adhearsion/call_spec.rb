@@ -811,26 +811,156 @@ module Adhearsion
               subject.join target, :media => :bridge, :direction => :recv
             end
           end
+
+          it "should return the command" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+            result[:command].should be_a Punchblock::Command::Join
+            result[:command].call_uri.should eql(uri)
+            result[:command].media.should eql(:bridge)
+            result[:command].direction.should eql(:recv)
+          end
+
+          it "should return something that can be blocked on until the join is complete" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            result[:joined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            result[:joined_condition].wait(0.5).should be_true
+          end
+
+          it "should return something that can be blocked on until the entities are unjoined" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should unblock all conditions on call end if no joined/unjoined events are received" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            result[:joined_condition].wait(0.5).should be_false
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::End.new
+            result[:joined_condition].wait(0.5).should be_true
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should not error on call end when joined/unjoined events are received correctly" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+
+            subject << Punchblock::Event::End.new
+          end
+
+          it "should not error if multiple joined events are received for the same join" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+
+            subject.should be_alive
+          end
         end
 
         context "with a call ID" do
           let(:target) { rand.to_s }
+          let(:uri) { "footransport:#{target}@#{subject.domain}" }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options call_uri: "footransport:#{target}@#{subject.domain}"
+            expect_join_with_options call_uri: uri
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :call_uri => "footransport:#{target}@#{subject.domain}", :media => :bridge, :direction => :recv
+              expect_join_with_options :call_uri => uri, :media => :bridge, :direction => :recv
               subject.join target, :media => :bridge, :direction => :recv
             end
+          end
+
+          it "should return the command" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+            result[:command].should be_a Punchblock::Command::Join
+            result[:command].call_uri.should eql(uri)
+            result[:command].media.should eql(:bridge)
+            result[:command].direction.should eql(:recv)
+          end
+
+          it "should return something that can be blocked on until the join is complete" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            result[:joined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            result[:joined_condition].wait(0.5).should be_true
+          end
+
+          it "should return something that can be blocked on until the entities are unjoined" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should unblock all conditions on call end if no joined/unjoined events are received" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            result[:joined_condition].wait(0.5).should be_false
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::End.new
+            result[:joined_condition].wait(0.5).should be_true
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should not error on call end when joined/unjoined events are received correctly" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+
+            subject << Punchblock::Event::End.new
+          end
+
+          it "should not error if multiple joined events are received for the same join" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+
+            subject.should be_alive
           end
         end
 
         context "with a call URI as a hash key" do
           let(:call_id) { rand.to_s }
+          let(:uri) { call_id }
           let(:target)  { { :call_uri => call_id } }
 
           it "should send a join command joining to the provided call ID" do
@@ -843,6 +973,70 @@ module Adhearsion
               expect_join_with_options :call_uri => call_id, :media => :bridge, :direction => :recv
               subject.join target.merge({:media => :bridge, :direction => :recv})
             end
+          end
+
+          it "should return the command" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+            result[:command].should be_a Punchblock::Command::Join
+            result[:command].call_uri.should eql(uri)
+            result[:command].media.should eql(:bridge)
+            result[:command].direction.should eql(:recv)
+          end
+
+          it "should return something that can be blocked on until the join is complete" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            result[:joined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            result[:joined_condition].wait(0.5).should be_true
+          end
+
+          it "should return something that can be blocked on until the entities are unjoined" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should unblock all conditions on call end if no joined/unjoined events are received" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            result[:joined_condition].wait(0.5).should be_false
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::End.new
+            result[:joined_condition].wait(0.5).should be_true
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should not error on call end when joined/unjoined events are received correctly" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+
+            subject << Punchblock::Event::End.new
+          end
+
+          it "should not error if multiple joined events are received for the same join" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+
+            subject.should be_alive
           end
         end
 
@@ -860,6 +1054,70 @@ module Adhearsion
               expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
               subject.join target.merge({:media => :bridge, :direction => :recv})
             end
+          end
+
+          it "should return the command" do
+            expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+            result[:command].should be_a Punchblock::Command::Join
+            result[:command].mixer_name.should eql(mixer_name)
+            result[:command].media.should eql(:bridge)
+            result[:command].direction.should eql(:recv)
+          end
+
+          it "should return something that can be blocked on until the join is complete" do
+            expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            result[:joined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
+            result[:joined_condition].wait(0.5).should be_true
+          end
+
+          it "should return something that can be blocked on until the entities are unjoined" do
+            expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Unjoined.new(mixer_name: mixer_name)
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should unblock all conditions on call end if no joined/unjoined events are received" do
+            expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            result[:joined_condition].wait(0.5).should be_false
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::End.new
+            result[:joined_condition].wait(0.5).should be_true
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should not error on call end when joined/unjoined events are received correctly" do
+            expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
+            subject << Punchblock::Event::Unjoined.new(mixer_name: mixer_name)
+
+            subject << Punchblock::Event::End.new
+          end
+
+          it "should not error if multiple joined events are received for the same join" do
+            expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
+            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
+
+            subject.should be_alive
           end
         end
 

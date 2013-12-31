@@ -53,6 +53,15 @@ module Adhearsion
     # @return [String] the value of the From header from the signaling protocol
     delegate :from, to: :offer, allow_nil: true
 
+    def self.uri(transport, id, domain)
+      return nil unless id
+      s = ""
+      s << transport << ":" if transport
+      s << id
+      s << "@" << domain if domain
+      s
+    end
+
     def initialize(offer = nil)
       register_initial_handlers
 
@@ -88,12 +97,7 @@ module Adhearsion
     # @return [String, nil] The uri at which the call resides
     #
     def uri
-      return nil unless id
-      s = ""
-      s << transport << ":" if transport
-      s << id
-      s << "@" << domain if domain
-      s
+      self.class.uri(transport, id, domain)
     end
 
     #
@@ -260,7 +264,7 @@ module Adhearsion
 
     # @private
     def guards_for_target(target)
-      target ? [join_options_with_target(target)] : []
+      target ? [target_from_join_options(join_options_with_target(target))] : []
     end
 
     def on_end(&block)
@@ -310,10 +314,29 @@ module Adhearsion
     # @option target [String] mixer_name The mixer to join to
     # @param [Hash, Optional] options further options to be joined with
     #
+    # @return [Hash] where :command is the issued command, :joined_waiter is a #wait responder which is triggered when the join is complete, and :unjoined_waiter is a #wait responder which is triggered when the entities are unjoined
+    #
     def join(target, options = {})
       logger.info "Joining to #{target}"
+
+      joined_condition = CountDownLatch.new(1)
+      on_joined target do
+        joined_condition.countdown!
+      end
+
+      unjoined_condition = CountDownLatch.new(1)
+      on_unjoined target do
+        unjoined_condition.countdown!
+      end
+
+      on_end do
+        joined_condition.countdown!
+        unjoined_condition.countdown!
+      end
+
       command = Punchblock::Command::Join.new options.merge(join_options_with_target(target))
       write_and_await_response command
+      {command: command, joined_condition: joined_condition, unjoined_condition: unjoined_condition}
     end
 
     ##
@@ -335,13 +358,20 @@ module Adhearsion
       when Call
         { :call_uri => target.uri }
       when String
-        { :call_uri => "#{transport}:#{target}@#{domain}" }
+        { :call_uri => self.class.uri(transport, target, domain) }
       when Hash
         abort ArgumentError.new "You cannot specify both a call URI and mixer name" if target.has_key?(:call_uri) && target.has_key?(:mixer_name)
         target
       else
         abort ArgumentError.new "Don't know how to join to #{target.inspect}"
       end
+    end
+
+    # @private
+    def target_from_join_options(options)
+      call_uri = options[:call_uri]
+      return {call_uri: call_uri} if call_uri
+      {mixer_name: options[:mixer_name]}
     end
 
     def wait_for_joined(expected_target)

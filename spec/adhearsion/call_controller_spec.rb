@@ -387,7 +387,7 @@ module Adhearsion
     describe "#join" do
       it "delegates to the call, blocking first until it is allowed to execute, and unblocking when an unjoined event is received" do
         subject.should_receive(:block_until_resumed).once.ordered
-        subject.call.should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:call_id => 'call1')
+        call.wrapped_object.should_receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(call_uri: 'call1'))
         latch = CountDownLatch.new 1
         Thread.new do
           subject.join 'call1', :foo => :bar
@@ -403,7 +403,7 @@ module Adhearsion
       context "with a mixer" do
         it "delegates to the call, blocking first until it is allowed to execute, and unblocking when an unjoined event is received" do
           subject.should_receive(:block_until_resumed).once.ordered
-          subject.call.should_receive(:join).once.with({:mixer_name => 'foobar', :foo => :bar}, {}).ordered.and_return Punchblock::Command::Join.new(:mixer_name => 'foobar')
+          call.wrapped_object.should_receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(mixer_name: 'foobar'))
           latch = CountDownLatch.new 1
           Thread.new do
             subject.join :mixer_name => 'foobar', :foo => :bar
@@ -420,7 +420,7 @@ module Adhearsion
       context "with :async => true" do
         it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
           subject.should_receive(:block_until_resumed).once.ordered
-          subject.call.should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:call_id => 'call1')
+          call.wrapped_object.should_receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(call_uri: 'call1'))
           latch = CountDownLatch.new 1
           Thread.new do
             subject.join 'call1', :foo => :bar, :async => true
@@ -434,7 +434,7 @@ module Adhearsion
         context "with a mixer" do
           it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
             subject.should_receive(:block_until_resumed).once.ordered
-            subject.call.should_receive(:join).once.with({:mixer_name => 'foobar', :foo => :bar}, {}).ordered.and_return Punchblock::Command::Join.new(:mixer_name => 'foobar')
+            call.wrapped_object.should_receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(mixer_name: 'foobar'))
             latch = CountDownLatch.new 1
             Thread.new do
               subject.join :mixer_name => 'foobar', :foo => :bar, :async => true

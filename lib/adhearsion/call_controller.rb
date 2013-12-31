@@ -282,13 +282,9 @@ module Adhearsion
     def join(target, options = {})
       block_until_resumed
       async = (target.is_a?(Hash) ? target : options).delete :async
-      join_command = call.join target, options
-      waiter = join_command.call_uri || join_command.mixer_name
-      if async
-        call.wait_for_joined waiter
-      else
-        call.wait_for_unjoined waiter
-      end
+      join = call.join target, options
+      waiter = async ? join[:joined_condition] : join[:unjoined_condition]
+      waiter.wait
     end
 
     alias :safely :catching_standard_errors
