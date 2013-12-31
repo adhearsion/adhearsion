@@ -151,18 +151,17 @@ module Adhearsion
     end
 
     describe "event handlers" do
-      before { pending }
       let(:response) { double 'Response' }
 
       describe "for joined events" do
         context "joined to another call" do
           let :event do
-            Punchblock::Event::Joined.new call_uri: 'xmpp:foobar@rayo.net'
+            Punchblock::Event::Joined.new call_uri: 'footransport:foobar@rayo.net'
           end
 
           it "should trigger any on_joined callbacks set for the matching call ID" do
             response.should_receive(:call).once.with(event)
-            subject.on_joined(:call_uri => 'xmpp:foobar@rayo.net') { |event| response.call event }
+            subject.on_joined(:call_uri => 'footransport:foobar@rayo.net') { |event| response.call event }
             subject << event
           end
 
@@ -175,14 +174,14 @@ module Adhearsion
           it "should trigger any on_joined callbacks set for the matching call" do
             response.should_receive(:call).once.with(event)
             call = Call.new
-            call.wrapped_object.stub id: 'foobar', domain: 'rayo.net'
+            call.wrapped_object.stub id: 'foobar', domain: 'rayo.net', transport: 'footransport'
             subject.on_joined(call) { |event| response.call event }
             subject << event
           end
 
           it "should not trigger on_joined callbacks for other call IDs" do
             response.should_receive(:call).never
-            subject.on_joined(:call_id => 'barfoo') { |event| response.call event }
+            subject.on_joined(:call_uri => 'barfoo') { |event| response.call event }
             subject << event
           end
 
@@ -212,7 +211,7 @@ module Adhearsion
 
           it "should not trigger any on_joined callbacks set for calls" do
             response.should_receive(:call).never
-            subject.on_joined(:call_id => 'foobar') { |event| response.call event }
+            subject.on_joined(:call_uri => 'foobar') { |event| response.call event }
             subject << event
           end
 
@@ -225,7 +224,7 @@ module Adhearsion
           it "should not trigger any on_joined callbacks set for the matching call" do
             response.should_receive(:call).never
             call = Call.new
-            call.stub :id => 'foobar'
+            call.wrapped_object.stub :id => 'foobar'
             subject.on_joined(call) { |event| response.call event }
             subject << event
           end
@@ -235,12 +234,12 @@ module Adhearsion
       describe "for unjoined events" do
         context "unjoined from another call" do
           let :event do
-            Punchblock::Event::Unjoined.new call_uri: 'xmpp:foobar@rayo.net'
+            Punchblock::Event::Unjoined.new call_uri: 'footransport:foobar@rayo.net'
           end
 
           it "should trigger any on_unjoined callbacks set for the matching call ID" do
             response.should_receive(:call).once.with(event)
-            subject.on_unjoined(:call_uri => 'xmpp:foobar@rayo.net') { |event| response.call event }
+            subject.on_unjoined(:call_uri => 'footransport:foobar@rayo.net') { |event| response.call event }
             subject << event
           end
 
@@ -253,14 +252,14 @@ module Adhearsion
           it "should trigger any on_unjoined callbacks set for the matching call" do
             response.should_receive(:call).once.with(event)
             call = Call.new
-            call.wrapped_object.stub id: 'foobar', domain: 'rayo.net'
+            call.wrapped_object.stub id: 'foobar', domain: 'rayo.net', transport: 'footransport'
             subject.on_unjoined(call) { |event| response.call event }
             subject << event
           end
 
           it "should not trigger on_unjoined callbacks for other call IDs" do
             response.should_receive(:call).never
-            subject.on_unjoined(:call_id => 'barfoo') { |event| response.call event }
+            subject.on_unjoined(:call_uri => 'barfoo') { |event| response.call event }
             subject << event
           end
 
@@ -290,7 +289,7 @@ module Adhearsion
 
           it "should not trigger any on_unjoined callbacks set for calls" do
             response.should_receive(:call).never
-            subject.on_unjoined(:call_id => 'foobar') { |event| response.call event }
+            subject.on_unjoined(:call_uri => 'foobar') { |event| response.call event }
             subject << event
           end
 
@@ -303,7 +302,7 @@ module Adhearsion
           it "should not trigger any on_unjoined callbacks set for the matching call" do
             response.should_receive(:call).never
             call = Call.new
-            call.stub :id => 'foobar'
+            call.wrapped_object.stub :id => 'foobar'
             subject.on_unjoined(call) { |event| response.call event }
             subject << event
           end
