@@ -9,6 +9,7 @@
   * Bugfix: Ensure that `Call#peers` are correctly maintained - this was broken by Rayo moving to full call URIs in joined/unjoined events
   * Feature: Add `--empty` switch to app generator for power users. Generates an app with less fluff.
   * Feature: Default generated applications with config appropriate for [Telephony Dev Box](http://github.com/mojolingo/Telephony-Dev-Box)
+  * Bugfix: Ensure that failure to dial a call kills the actor
 
 # [2.4.0](https://github.com/adhearsion/adhearsion/compare/v2.3.5...v2.4.0) - [2013-08-29](https://rubygems.org/gems/adhearsion/versions/2.4.0)
   * Deprecation: Ruby 1.9.2 support is deprecated and will be dropped in a future version of Adhearsion

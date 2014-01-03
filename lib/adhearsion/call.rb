@@ -397,25 +397,27 @@ module Adhearsion
     end
 
     # @private
-    def write_and_await_response(command, timeout = 60)
+    def write_and_await_response(command, timeout = 60, fatal = false)
       @commands << command
       write_command command
+
+      error_handler = fatal ? ->(error) { raise error } : ->(error) { abort error }
 
       response = defer { command.response timeout }
       case response
       when Punchblock::ProtocolError
         if response.name == :item_not_found
-          abort Hangup.new(@end_reason)
+          error_handler[Hangup.new(@end_reason)]
         else
-          abort response
+          error_handler[response]
         end
       when Exception
-        abort response
+        error_handler[response]
       end
 
       command
     rescue Timeout::Error
-      abort CommandTimeout.new(command.to_s)
+      error_handler[CommandTimeout.new(command.to_s)]
     ensure
       @commands.delete command
     end

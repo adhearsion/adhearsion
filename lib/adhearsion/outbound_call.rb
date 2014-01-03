@@ -73,7 +73,7 @@ module Adhearsion
         wait_timeout = 60
       end
 
-      write_and_await_response(Punchblock::Command::Dial.new(options), wait_timeout).tap do |dial_command|
+      write_and_await_response(Punchblock::Command::Dial.new(options), wait_timeout, true).tap do |dial_command|
         @dial_command = dial_command
         Adhearsion.active_calls << current_actor
         Adhearsion::Events.trigger_immediately :call_dialed, current_actor
