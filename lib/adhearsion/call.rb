@@ -25,7 +25,7 @@ module Adhearsion
         def proxy.method_missing(*args)
           super
         rescue Celluloid::DeadActorError
-          raise ExpiredError, "This call is expired and is no longer accessible"
+          raise ExpiredError, "This call is expired and is no longer accessible. See http://adhearsion.com/docs/calls for further details."
         end
       end
     end
