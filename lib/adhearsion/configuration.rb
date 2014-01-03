@@ -55,7 +55,7 @@ module Adhearsion
           __
         }
 
-        after_hangup_lifetime 0, :transform => Proc.new { |v| v.to_i }, :desc => <<-__
+        after_hangup_lifetime 1, :transform => Proc.new { |v| v.to_i }, :desc => <<-__
           Lifetime of a call after it has hung up. Should be set to the minimum functional value for your application. Call actors (threads) living after hangup consume more system resources and reduce the concurrent call capacity of your application.
         __
 
