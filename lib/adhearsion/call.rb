@@ -436,6 +436,7 @@ module Adhearsion
     end
     # @private
     def inspect
+      return "..." if Celluloid.detect_recursion
       attrs = [:offer, :end_reason, :commands, :variables, :controllers, :to, :from].map do |attr|
         "#{attr}=#{send(attr).inspect}"
       end
