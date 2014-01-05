@@ -37,6 +37,13 @@ module Adhearsion
       Adhearsion.active_calls.clear
     end
 
+    it "should do recursion detection on inspect" do
+      subject[:foo] = subject
+      Timeout.timeout(0.2) do
+        expect(subject.inspect).to match('...')
+      end
+    end
+
     it { should respond_to :<< }
 
     its(:end_reason) { should be == nil }
