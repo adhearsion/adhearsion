@@ -12,6 +12,7 @@
   * Feature: Default generated applications with config appropriate for [Telephony Dev Box](http://github.com/mojolingo/Telephony-Dev-Box)
   * Bugfix: Ensure that failure to dial a call kills the actor
   * Bugfix: Adhearsion call actors should do recursion detection on #inspect
+  * Bugfix: Fix controller block context on JRuby
 
 # [2.4.0](https://github.com/adhearsion/adhearsion/compare/v2.3.5...v2.4.0) - [2013-08-29](https://rubygems.org/gems/adhearsion/versions/2.4.0)
   * Deprecation: Ruby 1.9.2 support is deprecated and will be dropped in a future version of Adhearsion

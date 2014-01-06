@@ -75,13 +75,13 @@ module Adhearsion
     #
     def initialize(call, metadata = nil, &block)
       @call, @metadata, @block = call, metadata || {}, block
+      @block_context = eval "self", @block.binding if @block
       @active_components = []
     end
 
     def method_missing(method_name, *args, &block)
-      if @block
-        block_context = eval "self", @block.binding
-        block_context.send method_name, *args, &block
+      if @block_context
+        @block_context.send method_name, *args, &block
       else
         super
       end
