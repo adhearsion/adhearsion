@@ -761,6 +761,20 @@ module Adhearsion
       end
     end
 
+    describe "#send_message" do
+      it "should send a message through the Punchblock connection using the call ID and domain" do
+        subject.wrapped_object.should_receive(:client).once.and_return mock_client
+        mock_client.should_receive(:send_message).once.with(subject.id, subject.domain, "Hello World!", {})
+        subject.send_message "Hello World!"
+      end
+
+      it "should send a message with the given subject" do
+        subject.wrapped_object.should_receive(:client).once.and_return mock_client
+        mock_client.should_receive(:send_message).once.with(subject.id, subject.domain, nil, :subject => "Important Message")
+        subject.send_message nil, :subject => "Important Message"
+      end
+    end
+
     describe "basic control commands" do
       def expect_message_waiting_for_response(message = nil, fail = false, &block)
         expectation = subject.wrapped_object.should_receive(:write_and_await_response, &block).once

@@ -64,7 +64,7 @@ module Adhearsion
     attr_reader :block
 
     delegate :[], :[]=, :to => :@metadata
-    delegate :variables, :to => :call
+    delegate :variables, :send_message, :to => :call
 
     #
     # Create a new instance

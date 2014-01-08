@@ -13,6 +13,7 @@
   * Feature: Allow passing `:join_target` parameter to `#dial` to specify who to join to (eg a mixer).
   * Feature: Generated apps now encourage storing most app code in `app/`, which is in the load path. Nothing in this directory is auto-loaded, but can be easily required without messy relative paths.
   * Feature: Routes and event handlers are now split out of main config file for readability. They may be retained in the main config file for existing apps.
+  * Feature: Allow XMPP messages to be sent via Punchblock
   * Bugfix: Don't block shutdown waiting for the console to terminate
   * Bugfix: Ensure that splitting a dial rejoined to an alternative target (eg a mixer) or merged with another dial can still be split properly.
   * Bugfix: Ensure that hungup calls don't prevent dial splits/merges.
