@@ -2,4 +2,7 @@
 
 require 'bundler'
 Bundler.setup
-Bundler.require
+
+require 'adhearsion'
+
+Bundler.require(:default, Adhearsion.environment)
