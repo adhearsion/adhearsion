@@ -45,6 +45,9 @@ module Adhearsion
     # @return [Time] the time at which the call began. For inbound calls this is the time at which the call was offered to Adhearsion. For outbound calls it is the time at which the remote party answered.
     attr_reader :end_time
 
+    # @return [true, false] wether or not the call should be automatically hung up after executing its controller
+    attr_accessor :auto_hangup
+
     delegate :[], :[]=, :to => :variables
 
     # @return [String] the value of the To header from the signaling protocol
@@ -74,6 +77,7 @@ module Adhearsion
       @end_blocker  = Celluloid::Condition.new
       @peers        = {}
       @duration     = nil
+      @auto_hangup  = true
 
       self << offer if offer
     end

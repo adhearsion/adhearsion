@@ -57,6 +57,8 @@ module Adhearsion
     its(:to)      { should be == to }
     its(:from)    { should be == from }
 
+    its(:auto_hangup) { should be_true }
+
     context "when the ID is nil" do
       let(:call_id) { nil }
 
