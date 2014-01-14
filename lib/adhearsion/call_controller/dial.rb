@@ -36,6 +36,8 @@ module Adhearsion
       # @option options [CallController] :confirm the controller to execute on the first outbound call to be answered, to give an opportunity to screen the call. The calls will be joined if the outbound call is still active after this controller completes.
       # @option options [Hash] :confirm_metadata Metadata to set on the confirmation controller before executing it. This is shared between all calls if dialing multiple endpoints; if you care about it being mutated, you should provide an immutable value (using eg https://github.com/harukizaemon/hamster).
       #
+      # @option options [Hash] :pre_call A callback to be executed immediately prior to answering and joining a successful call. Is called with a single parameter which is the outbound call being joined.
+      #
       # @example Make a call to the PSTN using my SIP provider for VoIP termination
       #   dial "SIP/19095551001@my.sip.voip.terminator.us"
       #
@@ -313,6 +315,8 @@ module Adhearsion
           @confirmation_controller = @options.delete :confirm
           @confirmation_metadata = @options.delete :confirm_metadata
 
+          @pre_join = @options.delete :pre_join
+
           @skip_cleanup = false
         end
 
@@ -324,6 +328,7 @@ module Adhearsion
         end
 
         def pre_join_tasks(call)
+          @pre_join[call] if @pre_join
         end
 
         def on_all_except(call)
@@ -360,6 +365,7 @@ module Adhearsion
         end
 
         def pre_join_tasks(call)
+          super
           on_all_except call do |target_call|
             if @apology_controller
               logger.info "#dial apologising to call #{target_call.id} because this call has been confirmed by another channel"

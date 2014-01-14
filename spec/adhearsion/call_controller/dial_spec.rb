@@ -108,6 +108,26 @@ module Adhearsion
             latch.wait(1).should be_true
           end
 
+          context "with a pre-join callback specified" do
+            let(:foo) { double }
+            let(:options) { { pre_join: ->(call) { foo.bar call } } }
+
+            it "executes the callback prior to joining" do
+              foo.should_receive(:bar).once.with(other_mock_call).ordered
+              call.should_receive(:answer).once.ordered
+              other_mock_call.should_receive(:join).once.with(call).ordered
+
+              dial_in_thread
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_answered
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+            end
+          end
+
           it "hangs up the new call when the root call ends" do
             call.should_receive(:answer).once
             other_mock_call.should_receive(:join).once.with(call)
@@ -1296,6 +1316,26 @@ module Adhearsion
             other_mock_call << mock_end
 
             latch.wait(1).should be_true
+          end
+
+          context "with a pre-join callback specified" do
+            let(:foo) { double }
+            let(:options) { { pre_join: ->(call) { foo.bar call } } }
+
+            it "executes the callback prior to joining" do
+              foo.should_receive(:bar).once.with(other_mock_call).ordered
+              call.should_receive(:answer).once.ordered
+              other_mock_call.should_receive(:join).once.with(call).ordered
+
+              dial_in_thread
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_answered
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+            end
           end
 
           it "hangs up the new call when the root call ends" do
