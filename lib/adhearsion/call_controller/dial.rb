@@ -38,7 +38,7 @@ module Adhearsion
       #
       # @option options [#call] :pre_call A callback to be executed immediately prior to answering and joining a successful call. Is called with a single parameter which is the outbound call being joined.
       #
-      # @option options [Array] :ringback A collection of audio (see #play for acceptable values) to render as a replacement for ringback
+      # @option options [Array, #call] :ringback A collection of audio (see #play for acceptable values) to render as a replacement for ringback. If a callback is passed, it will be used to start ringback, and must return something that responds to #stop! to stop it.
       #
       # @example Make a call to the PSTN using my SIP provider for VoIP termination
       #   dial "SIP/19095551001@my.sip.voip.terminator.us"
@@ -115,7 +115,11 @@ module Adhearsion
         # @param [Adhearsion::CallController] controller the controller on which to play ringback
         def start_ringback(controller)
           return unless @ringback
-          @ringback_component = controller.play! @ringback, repeat_times: 0
+          @ringback_component = if @ringback.respond_to?(:call)
+            @ringback.call
+          else
+            controller.play! @ringback, repeat_times: 0
+          end
         end
 
         #

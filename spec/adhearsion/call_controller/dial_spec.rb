@@ -153,6 +153,27 @@ module Adhearsion
               latch.wait(1).should be_true
             end
 
+            context "as a callback" do
+              let(:foo) { double }
+              let(:options) { { ringback: -> { foo.bar; component } } }
+
+              it "calls the callback to start, and uses the return value of the callback to stop the ringback" do
+                foo.should_receive(:bar).once.ordered
+                component.should_receive(:stop!).twice
+                call.should_receive(:answer).once.ordered
+                other_mock_call.should_receive(:join).once.with(call).ordered
+
+                dial_in_thread
+
+                latch.wait(1).should be_false
+
+                other_mock_call << mock_answered
+                other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+              end
+            end
+
             context "when the call is rejected" do
               it "terminates the ringback before returning" do
                 subject.should_receive(:play!).once.with(['file://tt-monkeys'], repeat_times: 0).and_return(component)
@@ -1402,6 +1423,27 @@ module Adhearsion
               other_mock_call << mock_end
 
               latch.wait(1).should be_true
+            end
+
+            context "as a callback" do
+              let(:foo) { double }
+              let(:options) { { ringback: -> { foo.bar; component } } }
+
+              it "calls the callback to start, and uses the return value of the callback to stop the ringback" do
+                foo.should_receive(:bar).once.ordered
+                component.should_receive(:stop!).twice
+                call.should_receive(:answer).once.ordered
+                other_mock_call.should_receive(:join).once.with(call).ordered
+
+                dial_in_thread
+
+                latch.wait(1).should be_false
+
+                other_mock_call << mock_answered
+                other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+              end
             end
 
             context "when the call is rejected" do
