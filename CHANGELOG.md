@@ -6,6 +6,7 @@
   * Feature: Detect something like "1234#" as characters instead of text
   * Feature: Add `--empty` switch to app generator for power users. Generates an app with less fluff.
   * Feature: Default generated applications with config appropriate for [Telephony Dev Box](http://github.com/mojolingo/Telephony-Dev-Box)
+  * Feature: Allow preventing automatic call hangup after controller completion. Set `Call#auto_hangup = false` prior to controller termination.
   * Bugfix: Don't block shutdown waiting for the console to terminate
   * Bugfix: Ensure that splitting a dial rejoined to an alternative target (eg a mixer) or merged with another dial can still be split properly.
   * Bugfix: Ensure that hungup calls don't prevent dial splits/merges.

@@ -159,8 +159,8 @@ module Adhearsion
             end
           end
 
-          context 'with the :ahn_prevent_hangup call variable set' do
-            before { call[:ahn_prevent_hangup] = true }
+          context 'with the Call#auto_hangup set to false' do
+            before { call.auto_hangup = false }
 
             it "should not hangup the call after controller execution" do
               call.should_receive(:hangup).never
