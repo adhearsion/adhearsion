@@ -36,7 +36,9 @@ module Adhearsion
       # @option options [CallController] :confirm the controller to execute on the first outbound call to be answered, to give an opportunity to screen the call. The calls will be joined if the outbound call is still active after this controller completes.
       # @option options [Hash] :confirm_metadata Metadata to set on the confirmation controller before executing it. This is shared between all calls if dialing multiple endpoints; if you care about it being mutated, you should provide an immutable value (using eg https://github.com/harukizaemon/hamster).
       #
-      # @option options [Hash] :pre_call A callback to be executed immediately prior to answering and joining a successful call. Is called with a single parameter which is the outbound call being joined.
+      # @option options [#call] :pre_call A callback to be executed immediately prior to answering and joining a successful call. Is called with a single parameter which is the outbound call being joined.
+      #
+      # @option options [Array] :ringback A collection of audio (see #play for acceptable values) to render as a replacement for ringback
       #
       # @example Make a call to the PSTN using my SIP provider for VoIP termination
       #   dial "SIP/19095551001@my.sip.voip.terminator.us"
@@ -51,8 +53,9 @@ module Adhearsion
       #
       def dial(to, options = {})
         dial = Dial.new to, options, call
-        dial.run
+        dial.run(self)
         dial.await_completion
+        dial.terminate_ringback
         dial.cleanup_calls
         dial.status
       end
@@ -65,8 +68,9 @@ module Adhearsion
       # @see #dial
       def dial_and_confirm(to, options = {})
         dial = ParallelConfirmationDial.new to, options, call
-        dial.run
+        dial.run(self)
         dial.await_completion
+        dial.terminate_ringback
         dial.cleanup_calls
         dial.status
       end
@@ -87,8 +91,9 @@ module Adhearsion
         end
 
         # Prep outbound calls, link call lifecycles and place outbound calls
-        def run
+        def run(controller)
           track_originating_call
+          start_ringback controller
           prep_calls
           place_calls
         end
@@ -102,6 +107,24 @@ module Adhearsion
               latch.countdown! until latch.count == 0
             end
           end
+        end
+
+        #
+        # Starts ringback on the specified controller
+        #
+        # @param [Adhearsion::CallController] controller the controller on which to play ringback
+        def start_ringback(controller)
+          return unless @ringback
+          @ringback_component = controller.play! @ringback, repeat_times: 0
+        end
+
+        #
+        # Terminates any ringback that might be playing
+        #
+        def terminate_ringback
+          return unless @ringback_component
+          return unless @ringback_component.executing?
+          @ringback_component.stop!
         end
 
         #
@@ -316,6 +339,7 @@ module Adhearsion
           @confirmation_metadata = @options.delete :confirm_metadata
 
           @pre_join = @options.delete :pre_join
+          @ringback = @options.delete :ringback
 
           @skip_cleanup = false
         end
@@ -329,6 +353,7 @@ module Adhearsion
 
         def pre_join_tasks(call)
           @pre_join[call] if @pre_join
+          terminate_ringback
         end
 
         def on_all_except(call)
