@@ -108,6 +108,88 @@ module Adhearsion
             latch.wait(1).should be_true
           end
 
+          context "with a pre-join callback specified" do
+            let(:foo) { double }
+            let(:options) { { pre_join: ->(call) { foo.bar call } } }
+
+            it "executes the callback prior to joining" do
+              foo.should_receive(:bar).once.with(other_mock_call).ordered
+              call.should_receive(:answer).once.ordered
+              other_mock_call.should_receive(:join).once.with(call).ordered
+
+              dial_in_thread
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_answered
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+            end
+          end
+
+          context "with ringback specified" do
+            let(:component) { Punchblock::Component::Output.new }
+            let(:options) { { ringback: ['file://tt-monkeys'] } }
+
+            before do
+              component.request!
+              component.execute!
+            end
+
+            it "plays the ringback asynchronously, terminating prior to joining" do
+              subject.should_receive(:play!).once.with(['file://tt-monkeys'], repeat_times: 0).and_return(component)
+              component.should_receive(:stop!).twice
+              call.should_receive(:answer).once.ordered
+              other_mock_call.should_receive(:join).once.with(call).ordered
+
+              dial_in_thread
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_answered
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+            end
+
+            context "as a callback" do
+              let(:foo) { double }
+              let(:options) { { ringback: -> { foo.bar; component } } }
+
+              it "calls the callback to start, and uses the return value of the callback to stop the ringback" do
+                foo.should_receive(:bar).once.ordered
+                component.should_receive(:stop!).twice
+                call.should_receive(:answer).once.ordered
+                other_mock_call.should_receive(:join).once.with(call).ordered
+
+                dial_in_thread
+
+                latch.wait(1).should be_false
+
+                other_mock_call << mock_answered
+                other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+              end
+            end
+
+            context "when the call is rejected" do
+              it "terminates the ringback before returning" do
+                subject.should_receive(:play!).once.with(['file://tt-monkeys'], repeat_times: 0).and_return(component)
+                component.should_receive(:stop!).once
+
+                t = dial_in_thread
+
+                latch.wait(1).should be_false
+
+                other_mock_call << mock_end(:reject)
+
+                latch.wait(1).should be_true
+              end
+            end
+          end
+
           it "hangs up the new call when the root call ends" do
             call.should_receive(:answer).once
             other_mock_call.should_receive(:join).once.with(call)
@@ -227,7 +309,7 @@ module Adhearsion
               end
 
               dial = Dial::Dial.new to, options, call
-              dial.run
+              dial.run subject
 
               waiter_thread = Thread.new do
                 dial.await_completion
@@ -249,7 +331,7 @@ module Adhearsion
 
             it "should not unblock immediately" do
               dial = Dial::Dial.new to, options, call
-              dial.run
+              dial.run subject
 
               waiter_thread = Thread.new do
                 dial.await_completion
@@ -274,7 +356,7 @@ module Adhearsion
 
             it "should set end time" do
               dial = Dial::Dial.new to, options, call
-              dial.run
+              dial.run subject
 
               waiter_thread = Thread.new do
                 dial.await_completion
@@ -326,7 +408,7 @@ module Adhearsion
 
               it "should execute the :main controller on the originating call and :others on the outbound calls" do
                 dial = Dial::Dial.new to, options, call
-                dial.run
+                dial.run subject
 
                 waiter_thread = Thread.new do
                   dial.await_completion
@@ -368,7 +450,7 @@ module Adhearsion
                 end
 
                 dial = Dial::Dial.new to, options, call
-                dial.run
+                dial.run subject
 
                 waiter_thread = Thread.new do
                   dial.await_completion
@@ -402,7 +484,7 @@ module Adhearsion
                   end
 
                   dial = Dial::Dial.new to, options, call
-                  dial.run
+                  dial.run subject
 
                   waiter_thread = Thread.new do
                     dial.await_completion
@@ -434,7 +516,7 @@ module Adhearsion
                   end
 
                   dial = Dial::Dial.new to, options, call
-                  dial.run
+                  dial.run subject
 
                   waiter_thread = Thread.new do
                     dial.await_completion
@@ -486,8 +568,8 @@ module Adhearsion
 
                 SecureRandom.stub uuid: mixer
 
-                dial.run
-                other_dial.run
+                dial.run subject
+                other_dial.run subject
 
                 other_mock_call << mock_answered
                 second_other_mock_call << mock_answered
@@ -1298,6 +1380,88 @@ module Adhearsion
             latch.wait(1).should be_true
           end
 
+          context "with a pre-join callback specified" do
+            let(:foo) { double }
+            let(:options) { { pre_join: ->(call) { foo.bar call } } }
+
+            it "executes the callback prior to joining" do
+              foo.should_receive(:bar).once.with(other_mock_call).ordered
+              call.should_receive(:answer).once.ordered
+              other_mock_call.should_receive(:join).once.with(call).ordered
+
+              dial_in_thread
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_answered
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+            end
+          end
+
+          context "with ringback specified" do
+            let(:component) { Punchblock::Component::Output.new }
+            let(:options) { { ringback: ['file://tt-monkeys'] } }
+
+            before do
+              component.request!
+              component.execute!
+            end
+
+            it "plays the ringback asynchronously, terminating prior to joining" do
+              subject.should_receive(:play!).once.with(['file://tt-monkeys'], repeat_times: 0).and_return(component)
+              component.should_receive(:stop!).twice
+              call.should_receive(:answer).once.ordered
+              other_mock_call.should_receive(:join).once.with(call).ordered
+
+              dial_in_thread
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_answered
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+            end
+
+            context "as a callback" do
+              let(:foo) { double }
+              let(:options) { { ringback: -> { foo.bar; component } } }
+
+              it "calls the callback to start, and uses the return value of the callback to stop the ringback" do
+                foo.should_receive(:bar).once.ordered
+                component.should_receive(:stop!).twice
+                call.should_receive(:answer).once.ordered
+                other_mock_call.should_receive(:join).once.with(call).ordered
+
+                dial_in_thread
+
+                latch.wait(1).should be_false
+
+                other_mock_call << mock_answered
+                other_mock_call << mock_end
+
+                latch.wait(1).should be_true
+              end
+            end
+
+            context "when the call is rejected" do
+              it "terminates the ringback before returning" do
+                subject.should_receive(:play!).once.with(['file://tt-monkeys'], repeat_times: 0).and_return(component)
+                component.should_receive(:stop!).once
+
+                t = dial_in_thread
+
+                latch.wait(1).should be_false
+
+                other_mock_call << mock_end(:reject)
+
+                latch.wait(1).should be_true
+              end
+            end
+          end
+
           it "hangs up the new call when the root call ends" do
             other_mock_call.should_receive(:hangup).once
             call.should_receive(:answer).once
@@ -1417,7 +1581,7 @@ module Adhearsion
               end
 
               dial = Dial::ParallelConfirmationDial.new to, options, call
-              dial.run
+              dial.run subject
 
               waiter_thread = Thread.new do
                 dial.await_completion
@@ -1439,7 +1603,7 @@ module Adhearsion
 
             it "should not unblock immediately" do
               dial = Dial::ParallelConfirmationDial.new to, options, call
-              dial.run
+              dial.run subject
 
               waiter_thread = Thread.new do
                 dial.await_completion
@@ -1464,7 +1628,7 @@ module Adhearsion
 
             it "should set end time" do
               dial = Dial::ParallelConfirmationDial.new to, options, call
-              dial.run
+              dial.run subject
 
               waiter_thread = Thread.new do
                 dial.await_completion
@@ -1516,7 +1680,7 @@ module Adhearsion
 
               it "should execute the :main controller on the originating call and :others on the outbound calls" do
                 dial = Dial::ParallelConfirmationDial.new to, options, call
-                dial.run
+                dial.run subject
 
                 waiter_thread = Thread.new do
                   dial.await_completion
@@ -1558,7 +1722,7 @@ module Adhearsion
                 end
 
                 dial = Dial::ParallelConfirmationDial.new to, options, call
-                dial.run
+                dial.run subject
 
                 waiter_thread = Thread.new do
                   dial.await_completion
@@ -1592,7 +1756,7 @@ module Adhearsion
                   end
 
                   dial = Dial::ParallelConfirmationDial.new to, options, call
-                  dial.run
+                  dial.run subject
 
                   waiter_thread = Thread.new do
                     dial.await_completion
@@ -1624,7 +1788,7 @@ module Adhearsion
                   end
 
                   dial = Dial::ParallelConfirmationDial.new to, options, call
-                  dial.run
+                  dial.run subject
 
                   waiter_thread = Thread.new do
                     dial.await_completion
@@ -1676,8 +1840,8 @@ module Adhearsion
 
                 SecureRandom.stub uuid: mixer
 
-                dial.run
-                other_dial.run
+                dial.run subject
+                other_dial.run subject
 
                 other_mock_call << mock_answered
                 second_other_mock_call << mock_answered
@@ -2379,7 +2543,7 @@ module Adhearsion
             other_mock_call.stub dial: true, join: true
             other_mock_call.should_receive(:hangup).never
 
-            subject.run
+            subject.run double('controller')
 
             subject.skip_cleanup
 
