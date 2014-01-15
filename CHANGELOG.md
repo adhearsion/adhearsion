@@ -8,7 +8,7 @@
   * Feature: Default generated applications with config appropriate for [Telephony Dev Box](http://github.com/mojolingo/Telephony-Dev-Box)
   * Feature: Allow preventing automatic call hangup after controller completion. Set `Call#auto_hangup = false` prior to controller termination.
   * Feature: Allow specifying a pre-join callback to #dial
-  * Feature: Allow specifying rinback to `#dial`
+  * Feature: Allow specifying ringback to `#dial` as either a list or a proc
   * Bugfix: Don't block shutdown waiting for the console to terminate
   * Bugfix: Ensure that splitting a dial rejoined to an alternative target (eg a mixer) or merged with another dial can still be split properly.
   * Bugfix: Ensure that hungup calls don't prevent dial splits/merges.
