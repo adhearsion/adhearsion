@@ -5,7 +5,7 @@ gem 'adhearsion', '~> <%= Adhearsion::VERSION.split('.')[0,2].join('.') %>'
 # Adhearsion depends on the Punchblock library, but here you can specify the major version your application depends on.
 # Exercise care when updating the major version, since you might encounter API compatability in parts of your Adhearsion application that rely on the Punchblock API.
 # On occasion, an update of Adhearsion might necessitate an update to Punchblock. You will have to manually allow that here, and take care in the upgrade.
-gem 'punchblock', '~> <%= Punchblock::VERSION.split('.')[0,2].join('.') %>'
+gem 'punchblock', '~> <%= require "punchblock/version"; Punchblock::VERSION.split('.')[0,2].join('.') %>'
 
 # This is here by default due to deprecation of #ask and #menu.
 # See http://adhearsion.com/docs/common_problems#toc_3 for details
