@@ -450,6 +450,14 @@ module Adhearsion
       "#<#{self.class}:#{id}@#{domain} #{attrs.join ', '}>"
     end
 
+    #
+    # Execute a call controller asynchronously against this call.
+    #
+    # @param [Adhearsion::CallController] controller an instance of a controller initialized for this call
+    # @param [Proc] a callback to be executed when the controller finishes execution
+    #
+    # @yield execute the current block as the body of a controller by specifying no controller instance
+    #
     def execute_controller(controller = nil, completion_callback = nil, &block)
       raise ArgumentError, "Cannot supply a controller and a block at the same time" if controller && block_given?
       controller ||= CallController.new current_actor, &block
