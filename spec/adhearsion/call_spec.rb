@@ -150,13 +150,38 @@ module Adhearsion
       end
     end
 
-    it 'allows the registration of event handlers which are called when messages are delivered' do
-      event = double 'Event'
-      event.should_receive(:foo?).and_return true
-      response = double 'Response'
-      response.should_receive(:call).once
-      subject.register_event_handler(:foo?) { response.call }
-      subject << event
+    context 'registered event handlers' do
+      let(:event)     { double 'Event' }
+      let(:response)  { double 'Response' }
+
+      it 'are called when messages are delivered' do
+        event.should_receive(:foo?).and_return true
+        response.should_receive(:call).once
+        subject.register_event_handler(:foo?) { response.call }
+        subject << event
+      end
+
+      context 'when a handler raises' do
+        it 'does not cause the call actor to crash' do
+          subject.register_event_handler { raise 'Boom' }
+          subject << event
+          subject.should be_alive
+        end
+
+        it "triggers an exception event" do
+          e = StandardError.new('Boom')
+          Events.should_receive(:trigger).once.with(:exception, [e, subject.logger])
+          subject.register_event_handler { raise e }
+          subject << event
+        end
+
+        it 'executes all handlers for each event' do
+          response.should_receive(:call).once
+          subject.register_event_handler { raise 'Boom' }
+          subject.register_event_handler { response.call }
+          subject << event
+        end
+      end
     end
 
     describe "event handlers" do

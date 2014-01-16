@@ -165,7 +165,9 @@ module Adhearsion
 
     def deliver_message(message)
       logger.debug "Receiving message: #{message.inspect}"
-      catching_standard_errors { trigger_handler :event, message }
+      catching_standard_errors do
+        trigger_handler :event, message, broadcast: true, exception_callback: ->(e) { Adhearsion::Events.trigger :exception, [e, logger] }
+      end
     end
     alias << deliver_message
 
@@ -179,12 +181,10 @@ module Adhearsion
         @offer  = offer
         @client = offer.client
         @start_time = Time.now
-        throw :pass
       end
 
       register_event_handler Punchblock::HasHeaders do |event|
         merge_headers event.headers
-        throw :pass
       end
 
       on_joined do |event|
@@ -223,7 +223,6 @@ module Adhearsion
         @end_blocker.broadcast event.reason
         @commands.terminate
         after(Adhearsion.config.platform.after_hangup_lifetime) { terminate }
-        throw :pass
       end
     end
 
@@ -248,7 +247,6 @@ module Adhearsion
     def on_joined(target = nil, &block)
       register_event_handler Punchblock::Event::Joined, *guards_for_target(target) do |event|
         block.call event
-        throw :pass
       end
     end
 
@@ -260,10 +258,7 @@ module Adhearsion
     # @option target [String] mixer_name The mixer name to guard on
     #
     def on_unjoined(target = nil, &block)
-      register_event_handler Punchblock::Event::Unjoined, *guards_for_target(target) do |event|
-        block.call event
-        throw :pass
-      end
+      register_event_handler Punchblock::Event::Unjoined, *guards_for_target(target), &block
     end
 
     # @private
@@ -272,10 +267,7 @@ module Adhearsion
     end
 
     def on_end(&block)
-      register_event_handler Punchblock::Event::End do |event|
-        block.call event
-        throw :pass
-      end
+      register_event_handler Punchblock::Event::End, &block
     end
 
     #

@@ -95,15 +95,11 @@ module Adhearsion
     def run_router_on_answer
       register_event_handler Punchblock::Event::Answered do |event|
         run_router
-        throw :pass
       end
     end
 
     def on_answer(&block)
-      register_event_handler Punchblock::Event::Answered do |event|
-        block.call event
-        throw :pass
-      end
+      register_event_handler Punchblock::Event::Answered, &block
     end
 
     def execute_controller_or_router_on_answer(controller, metadata = {}, &controller_block)
