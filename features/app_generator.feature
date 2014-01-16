@@ -7,6 +7,7 @@ Feature: Adhearsion App Generator
     When I run `ahn create path/somewhere`
     And I cd to "path/somewhere"
     Then the following directories should exist:
+      | app/call_controllers  |
       | lib                   |
       | config                |
       | script                |
@@ -17,10 +18,10 @@ Feature: Adhearsion App Generator
     And the following files should exist:
       | .gitignore                                |
       | .rspec                                    |
+      | app/call_controllers/simon_game.rb        |
       | config/adhearsion.rb                      |
       | config/environment.rb                     |
       | Gemfile                                   |
-      | lib/simon_game.rb                         |
       | script/ahn                                |
       | spec/spec_helper.rb                       |
       | spec/call_controllers/simon_game_spec.rb  |
@@ -46,13 +47,14 @@ Feature: Adhearsion App Generator
     source 'https://rubygems.org
     gem 'adhearsion-asr'
     """
-    And the file "lib/simon_game.rb" should contain "class SimonGame"
+    And the file "app/call_controllers/simon_game.rb" should contain "class SimonGame"
     And the file "script/ahn" should contain "require 'adhearsion'"
 
   Scenario: Generate application --empty
     When I run `ahn create path/somewhere --empty`
     And I cd to "path/somewhere"
     Then the following directories should exist:
+      | app/call_controllers  |
       | lib                   |
       | config                |
       | script                |
@@ -73,7 +75,7 @@ Feature: Adhearsion App Generator
       | Procfile              |
 
     And the following files should not exist:
-      | lib/simon_game.rb                         |
+      | app/call_controllers/simon_game.rb        |
       | spec/call_controllers/simon_game_spec.rb  |
 
     And the file "config/adhearsion.rb" should not contain each of these content parts:

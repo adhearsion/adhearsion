@@ -64,6 +64,10 @@ Adhearsion::Events.draw do
 <% end %>
 end
 
+<% unless options[:empty] %>
+require 'call_controllers/simon_game'
+<% end %>
+
 Adhearsion.router do
 <% if options[:empty] %>
   route 'default' do

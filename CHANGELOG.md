@@ -9,6 +9,7 @@
   * Feature: Allow preventing automatic call hangup after controller completion. Set `Call#auto_hangup = false` prior to controller termination.
   * Feature: Allow specifying a pre-join callback to #dial
   * Feature: Allow specifying ringback to `#dial` as either a list or a proc
+  * Feature: Generated apps now encourage storing most app code in `app/`, which is in the load path. Nothing in this directory is auto-loaded, but can be easily required without messy relative paths.
   * Bugfix: Don't block shutdown waiting for the console to terminate
   * Bugfix: Ensure that splitting a dial rejoined to an alternative target (eg a mixer) or merged with another dial can still be split properly.
   * Bugfix: Ensure that hungup calls don't prevent dial splits/merges.
