@@ -5,7 +5,7 @@ module Adhearsion
     class AppGenerator < Generator
 
       BASEDIRS  = %w( config script spec )
-      EMPTYDIRS = %w( lib spec/support spec/call_controllers )
+      EMPTYDIRS = %w( app/call_controllers lib spec/support spec/call_controllers )
 
       class_option :empty, type: :boolean
 
@@ -22,7 +22,7 @@ module Adhearsion
         copy_file "Rakefile"
         copy_file "README.md"
         unless options[:empty]
-          copy_file "simon_game.rb", "lib/simon_game.rb"
+          copy_file "simon_game.rb", "app/call_controllers/simon_game.rb"
           copy_file "simon_game_spec.rb", "spec/call_controllers/simon_game_spec.rb"
         end
         chmod "script/ahn", 0755
