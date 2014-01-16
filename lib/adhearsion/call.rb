@@ -159,6 +159,17 @@ module Adhearsion
       end
     end
 
+    #
+    # Register a handler for events on this call. Note that Adhearsion::Call implements the has-guarded-handlers API, and all of its methods are available. Specifically, all Adhearsion events are available on the `:event` channel.
+    #
+    # @param [guards] guards take a look at the guards documentation
+    #
+    # @yield [Object] trigger_object the incoming event
+    #
+    # @return [String] handler ID for later manipulation
+    #
+    # @see http://adhearsion.github.io/has-guarded-handlers for more details
+    #
     def register_event_handler(*guards, &block)
       register_handler :event, *guards, &block
     end
