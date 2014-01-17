@@ -35,6 +35,7 @@ module Adhearsion
       #
       # @option options [CallController] :confirm the controller to execute on the first outbound call to be answered, to give an opportunity to screen the call. The calls will be joined if the outbound call is still active after this controller completes.
       # @option options [Hash] :confirm_metadata Metadata to set on the confirmation controller before executing it. This is shared between all calls if dialing multiple endpoints; if you care about it being mutated, you should provide an immutable value (using eg https://github.com/harukizaemon/hamster).
+      # @option options [Hash] :join_options Options to specify the kind of join operation to perform. See `Call#join` for details.
       #
       # @option options [#call] :pre_call A callback to be executed immediately prior to answering and joining a successful call. Is called with a single parameter which is the outbound call being joined.
       #
@@ -175,7 +176,7 @@ module Adhearsion
                 pre_join_tasks new_call
                 @call.answer
                 join_status.started
-                new_call.join @call
+                new_call.join @call, @join_options
                 status.answer!
               elsif status.result == :answer
                 join_status.lost_confirmation!
@@ -243,16 +244,19 @@ module Adhearsion
 
         # Rejoin parties that were previously split
         # @param [Call, String, Hash] target The target to join calls to. See Call#join for details.
-        def rejoin(target = join_target)
+        # @param [Hash] join_options Options to specify the kind of join operation to perform. See `Call#join` for details.
+        def rejoin(target = nil, join_options = nil)
+          target ||= join_target
+          join_options ||= @join_options
           logger.info "Rejoining to #{target}"
           ignoring_ended_calls do
             unless target == @call
               @join_target = target
-              @call.join target
+              @call.join target, join_options
             end
           end
           @calls.each do |call|
-            ignoring_ended_calls { call.join target }
+            ignoring_ended_calls { call.join target, join_options }
           end
         end
 
@@ -265,8 +269,8 @@ module Adhearsion
           split
           other.split
 
-          rejoin mixer_name: mixer_name
-          other.rejoin mixer_name: mixer_name
+          rejoin({mixer_name: mixer_name}, {})
+          other.rejoin({mixer_name: mixer_name}, {})
 
           calls_to_merge = other.status.calls + [other.root_call]
           @calls.merge calls_to_merge
@@ -344,6 +348,8 @@ module Adhearsion
 
           @pre_join = @options.delete :pre_join
           @ringback = @options.delete :ringback
+
+          @join_options = @options.delete(:join_options) || {}
 
           @skip_cleanup = false
         end
