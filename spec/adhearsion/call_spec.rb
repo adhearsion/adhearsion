@@ -44,6 +44,13 @@ module Adhearsion
       end
     end
 
+    it "should allow timers to be registered from outside" do
+      foo = :bar
+      subject.after(1) { foo = :baz }
+      sleep 1.1
+      foo.should == :baz
+    end
+
     it { should respond_to :<< }
 
     its(:end_reason) { should be == nil }

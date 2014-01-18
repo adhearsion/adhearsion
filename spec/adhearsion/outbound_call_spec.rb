@@ -18,6 +18,13 @@ module Adhearsion
     its(:client) { should be mock_client }
     its(:start_time) { should be nil }
 
+    it "should allow timers to be registered from outside" do
+      foo = :bar
+      subject.after(1) { foo = :baz }
+      sleep 1.1
+      foo.should == :baz
+    end
+
     describe ".originate" do
       let(:to) { 'sip:foo@bar.com' }
 
