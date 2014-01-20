@@ -10,6 +10,7 @@
   * Feature: Allow specifying a pre-join callback to #dial
   * Feature: Allow specifying ringback to `#dial` as either a list or a proc
   * Feature: Allow passing `:join_options` parameter to `#dial` to specify the kind of join to perform.
+  * Feature: Allow passing `:join_target` parameter to `#dial` to specify who to join to (eg a mixer).
   * Feature: Generated apps now encourage storing most app code in `app/`, which is in the load path. Nothing in this directory is auto-loaded, but can be easily required without messy relative paths.
   * Bugfix: Don't block shutdown waiting for the console to terminate
   * Bugfix: Ensure that splitting a dial rejoined to an alternative target (eg a mixer) or merged with another dial can still be split properly.

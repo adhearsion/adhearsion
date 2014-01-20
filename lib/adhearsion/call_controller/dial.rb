@@ -35,7 +35,9 @@ module Adhearsion
       #
       # @option options [CallController] :confirm the controller to execute on the first outbound call to be answered, to give an opportunity to screen the call. The calls will be joined if the outbound call is still active after this controller completes.
       # @option options [Hash] :confirm_metadata Metadata to set on the confirmation controller before executing it. This is shared between all calls if dialing multiple endpoints; if you care about it being mutated, you should provide an immutable value (using eg https://github.com/harukizaemon/hamster).
+      #
       # @option options [Hash] :join_options Options to specify the kind of join operation to perform. See `Call#join` for details.
+      # @option options [Call, String, Hash] :join_target the target to join to. May be a Call object, a call ID (String, Hash) or a mixer name (Hash). See `Call#join` for details.
       #
       # @option options [#call] :pre_call A callback to be executed immediately prior to answering and joining a successful call. Is called with a single parameter which is the outbound call being joined.
       #
@@ -176,7 +178,10 @@ module Adhearsion
                 pre_join_tasks new_call
                 @call.answer
                 join_status.started
-                new_call.join @call, @join_options
+                new_call.join @join_target, @join_options
+                unless @join_target == @call
+                  @call.join @join_target, @join_options
+                end
                 status.answer!
               elsif status.result == :answer
                 join_status.lost_confirmation!
@@ -350,6 +355,7 @@ module Adhearsion
           @ringback = @options.delete :ringback
 
           @join_options = @options.delete(:join_options) || {}
+          @join_target = @options.delete(:join_target) || @call
 
           @skip_cleanup = false
         end

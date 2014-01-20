@@ -110,6 +110,25 @@ module Adhearsion
             latch.wait(1).should be_true
           end
 
+          context "with a join target specified" do
+            let(:options) { { join_target: {mixer_name: 'foobar'} } }
+
+            it "joins the calls to the specified target on answer" do
+              call.should_receive(:answer).once
+              call.should_receive(:join).once.with({mixer_name: 'foobar'}, {})
+              other_mock_call.should_receive(:join).once.with({mixer_name: 'foobar'}, {})
+
+              dial_in_thread
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_answered
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+            end
+          end
+
           context "with a pre-join callback specified" do
             let(:foo) { double }
             let(:options) { { pre_join: ->(call) { foo.bar call } } }
@@ -318,9 +337,11 @@ module Adhearsion
           end
 
           context "when a dial is split" do
+            let(:join_target) { call }
+
             before do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call, join_options)
+              other_mock_call.should_receive(:join).once.with(join_target, join_options)
               other_mock_call.stub(:unjoin).and_return do
                 call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                 other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
@@ -530,6 +551,45 @@ module Adhearsion
 
                   other_mock_call.should_receive(:join).once.ordered.with(call, media: :direct)
                   dial.rejoin nil, media: :direct
+                end
+              end
+
+              context "when a join target was originally specified" do
+                let(:join_target) { {mixer_name: 'foobar'} }
+                let(:options) { { join_target: join_target } }
+
+                it "joins the calls to the specified target on answer" do
+                  call.should_receive(:join).once.with(join_target, {})
+                  other_mock_call.should_receive(:unjoin).once.ordered.with(join_target)
+                  call.should_receive(:unjoin).once.ordered.with(join_target).and_return do
+                    call << Punchblock::Event::Unjoined.new(join_target)
+                    other_mock_call << Punchblock::Event::Unjoined.new(join_target)
+                  end
+
+                  dial = Dial::Dial.new to, options, call
+                  dial.run subject
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  other_mock_call << mock_answered
+
+                  dial.split
+
+                  call.should_receive(:join).once.ordered.with({mixer_name: 'foobar'}, {})
+                  other_mock_call.should_receive(:join).once.ordered.with({mixer_name: 'foobar'}, {})
+                  dial.rejoin
+
+                  other_mock_call << mock_end
+
+                  latch.wait(1).should be_true
+
+                  waiter_thread.join
+                  dial.status.result.should be == :answer
                 end
               end
 
@@ -1456,6 +1516,25 @@ module Adhearsion
             latch.wait(1).should be_true
           end
 
+          context "with a join target specified" do
+            let(:options) { { join_target: {mixer_name: 'foobar'} } }
+
+            it "joins the calls to the specified target on answer" do
+              call.should_receive(:answer).once
+              call.should_receive(:join).once.with({mixer_name: 'foobar'}, {})
+              other_mock_call.should_receive(:join).once.with({mixer_name: 'foobar'}, {})
+
+              dial_in_thread
+
+              latch.wait(1).should be_false
+
+              other_mock_call << mock_answered
+              other_mock_call << mock_end
+
+              latch.wait(1).should be_true
+            end
+          end
+
           context "with a pre-join callback specified" do
             let(:foo) { double }
             let(:options) { { pre_join: ->(call) { foo.bar call } } }
@@ -1664,9 +1743,11 @@ module Adhearsion
           end
 
           context "when a dial is split" do
+            let(:join_target) { call }
+
             before do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call, join_options)
+              other_mock_call.should_receive(:join).once.with(join_target, join_options)
               other_mock_call.stub(:unjoin).and_return do
                 call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                 other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
@@ -1876,6 +1957,45 @@ module Adhearsion
 
                   other_mock_call.should_receive(:join).once.ordered.with(call, media: :direct)
                   dial.rejoin nil, media: :direct
+                end
+              end
+
+              context "when a join target was originally specified" do
+                let(:join_target) { {mixer_name: 'foobar'} }
+                let(:options) { { join_target: join_target } }
+
+                it "joins the calls to the specified target on answer" do
+                  call.should_receive(:join).once.with(join_target, {})
+                  other_mock_call.should_receive(:unjoin).once.ordered.with(join_target)
+                  call.should_receive(:unjoin).once.ordered.with(join_target).and_return do
+                    call << Punchblock::Event::Unjoined.new(join_target)
+                    other_mock_call << Punchblock::Event::Unjoined.new(join_target)
+                  end
+
+                  dial = Dial::ParallelConfirmationDial.new to, options, call
+                  dial.run subject
+
+                  waiter_thread = Thread.new do
+                    dial.await_completion
+                    latch.countdown!
+                  end
+
+                  sleep 0.5
+
+                  other_mock_call << mock_answered
+
+                  dial.split
+
+                  call.should_receive(:join).once.ordered.with({mixer_name: 'foobar'}, {})
+                  other_mock_call.should_receive(:join).once.ordered.with({mixer_name: 'foobar'}, {})
+                  dial.rejoin
+
+                  other_mock_call << mock_end
+
+                  latch.wait(1).should be_true
+
+                  waiter_thread.join
+                  dial.status.result.should be == :answer
                 end
               end
 
