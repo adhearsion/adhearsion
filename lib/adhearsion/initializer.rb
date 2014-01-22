@@ -34,7 +34,7 @@ module Adhearsion
       @mode     = options[:mode]
       @pid_file = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
       @loaded_init_files  = options[:loaded_init_files]
-      Adhearsion.ahn_root = '.'
+      Adhearsion.root = '.'
     end
 
     def start
