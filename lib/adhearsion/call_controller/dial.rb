@@ -62,7 +62,7 @@ module Adhearsion
         dial.cleanup_calls
         dial.status
       ensure
-        catching_standard_errors { dial.delete_logger }
+        catching_standard_errors { dial.delete_logger if dial }
       end
 
       # Dial one or more third parties and join one to this call after execution of a confirmation controller.
@@ -79,7 +79,7 @@ module Adhearsion
         dial.cleanup_calls
         dial.status
       ensure
-        catching_standard_errors { dial.delete_logger }
+        catching_standard_errors { dial.delete_logger if dial }
       end
 
       class Dial
