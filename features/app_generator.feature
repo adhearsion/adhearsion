@@ -21,6 +21,8 @@ Feature: Adhearsion App Generator
       | app/call_controllers/simon_game.rb        |
       | config/adhearsion.rb                      |
       | config/environment.rb                     |
+      | config/events.rb                          |
+      | config/routes.rb                          |
       | Gemfile                                   |
       | script/ahn                                |
       | spec/spec_helper.rb                       |
@@ -31,10 +33,17 @@ Feature: Adhearsion App Generator
 
     And the file "config/adhearsion.rb" should contain each of these content parts:
     """
-    Adhearsion.router
     Adhearsion.config
     logging.level
     config.punchblock
+    """
+    And the file "config/events.rb" should contain each of these content parts:
+    """
+    Adhearsion::Events.draw do
+    """
+    And the file "config/routes.rb" should contain each of these content parts:
+    """
+    Adhearsion.router
     """
     And the file "README.md" should contain each of these content parts:
     """
@@ -67,6 +76,8 @@ Feature: Adhearsion App Generator
       | .rspec                |
       | config/adhearsion.rb  |
       | config/environment.rb |
+      | config/events.rb      |
+      | config/routes.rb      |
       | Gemfile               |
       | script/ahn            |
       | spec/spec_helper.rb   |
