@@ -17,8 +17,6 @@ If you are using Asterisk 1.8, you will need to add an additional context with t
 
 ## FreeSWITCH
 
-### With mod_rayo (recommended)
-
 * Ensure that mod_rayo is installed and configured according to its' documentation.
 * Add an extension to your dialplan like so:
 
@@ -31,23 +29,6 @@ If you are using Asterisk 1.8, you will need to add an additional context with t
 ```
 
 * Connect Adhearsion via XMPP using the Rayo protocol, as per the sample config.
-
-### With Punchblock's FreeSWITCH mode (deprecated)
-
-* Ensure that mod_event_socket is installed, and configure it in autoload_configs/event_socket.conf.xml to taste
-* Add an extension to your dialplan like so:
-
-```xml
-<extension name='Adhearsion'>
-  <condition field="destination_number" expression="^10$">
-    <action application="set" data="hangup_after_bridge=false"/>
-    <action application="set" data="park_after_bridge=true"/>
-    <action application='rayo'/>
-  </condition>
-</extension>
-```
-
-* Connect Adhearsion via EventSocket, as per the sample config.
 
 ## Voxeo PRISM
 

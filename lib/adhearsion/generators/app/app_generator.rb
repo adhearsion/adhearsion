@@ -16,6 +16,8 @@ module Adhearsion
 
         template "Gemfile.erb", "Gemfile"
         template "adhearsion.erb", "config/adhearsion.rb"
+        template "events.erb", "config/events.rb"
+        template "routes.erb", "config/routes.rb"
         copy_file "gitignore", ".gitignore"
         copy_file "rspec", ".rspec"
         copy_file "Procfile"

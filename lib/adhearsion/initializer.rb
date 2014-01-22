@@ -42,6 +42,8 @@ module Adhearsion
         resolve_pid_file_path
         load_lib_folder
         load_config_file
+        load_events_file
+        load_routes_file
         initialize_log_paths
 
         if should_daemonize?
@@ -193,6 +195,16 @@ module Adhearsion
 
     def load_config_file
       require "#{Adhearsion.config.root}/config/adhearsion.rb"
+    end
+
+    def load_events_file
+      path = "#{Adhearsion.config.root}/config/events.rb"
+      require path if File.exists?(path)
+    end
+
+    def load_routes_file
+      path = "#{Adhearsion.config.root}/config/routes.rb"
+      require path if File.exists?(path)
     end
 
     def init_get_logging_appenders
