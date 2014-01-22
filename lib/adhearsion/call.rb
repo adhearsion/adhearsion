@@ -208,7 +208,7 @@ module Adhearsion
         end
         logger.info "Joined to #{type} #{target}"
         call = Adhearsion.active_calls.with_uri(target)
-        @peers[call ? call.id : target] = call
+        @peers[target] = call
         signal :joined, target
       end
 

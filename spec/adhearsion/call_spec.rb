@@ -386,11 +386,10 @@ module Adhearsion
     end
 
     context "peer registry" do
-      let(:other_call_id) { 'foobar' }
       let(:other_call_uri) { 'xmpp:foobar@example.com' }
       let(:other_call) { Call.new }
 
-      before { other_call.stub :id => other_call_id, uri: other_call_uri }
+      before { other_call.stub uri: other_call_uri }
 
       let :joined_event do
         Punchblock::Event::Joined.new call_uri: other_call_uri
@@ -406,7 +405,7 @@ module Adhearsion
 
         it "should add the peer to its registry" do
           subject << joined_event
-          subject.peers.should == {'foobar' => other_call}
+          subject.peers.should == {'xmpp:foobar@example.com' => other_call}
         end
 
         context "in a handler for the joined event" do
@@ -414,12 +413,36 @@ module Adhearsion
             peer = nil
 
             subject.on_joined do |event|
-              peer = subject.peers.values.first
+              peer = subject.peers.keys.first
             end
 
             subject << joined_event
 
-            peer.should == other_call
+            peer.should == other_call_uri
+          end
+        end
+
+        context "when being unjoined from a previously joined call" do
+          before { subject << joined_event }
+
+          it "should remove the peer from its registry" do
+            subject.peers.should_not eql({})
+            subject << unjoined_event
+            subject.peers.should eql({})
+          end
+
+          context "in a handler for the unjoined event" do
+            it "should have already been removed the registry" do
+              peer_count = nil
+
+              subject.on_unjoined do |event|
+                peer_count = subject.peers.size
+              end
+
+              subject << unjoined_event
+
+              peer_count.should == 0
+            end
           end
         end
       end
@@ -429,34 +452,48 @@ module Adhearsion
           subject << joined_event
           subject.peers.should == {'xmpp:foobar@example.com' => nil}
         end
+
+        context "in a handler for the joined event" do
+          it "should have already populated the registry" do
+            peer = nil
+
+            subject.on_joined do |event|
+              peer = subject.peers.keys.first
+            end
+
+            subject << joined_event
+
+            peer.should == other_call_uri
+          end
+        end
+
+        context "when being unjoined from a previously joined call" do
+          before { subject << joined_event }
+
+          it "should remove the peer from its registry" do
+            subject.peers.should_not eql({})
+            subject << unjoined_event
+            subject.peers.should eql({})
+          end
+
+          context "in a handler for the unjoined event" do
+            it "should have already been removed the registry" do
+              peer_count = nil
+
+              subject.on_unjoined do |event|
+                peer_count = subject.peers.size
+              end
+
+              subject << unjoined_event
+
+              peer_count.should == 0
+            end
+          end
+        end
       end
 
       it "should not return the same registry every call" do
         subject.peers.should_not be subject.peers
-      end
-
-      context "when being unjoined from a previously joined call" do
-        before { subject << joined_event }
-
-        it "should remove the peer from its registry" do
-          subject.peers.should_not eql({})
-          subject << unjoined_event
-          subject.peers.should eql({})
-        end
-
-        context "in a handler for the unjoined event" do
-          it "should have already been removed the registry" do
-            peer_count = nil
-
-            subject.on_unjoined do |event|
-              peer_count = subject.peers.size
-            end
-
-            subject << unjoined_event
-
-            peer_count.should == 0
-          end
-        end
       end
     end
 
