@@ -89,7 +89,7 @@ Feature: Adhearsion Ahn CLI (Create)
       | app/call_controllers/simon_game.rb        |
       | spec/call_controllers/simon_game_spec.rb  |
 
-    And the file "config/adhearsion.rb" should not contain each of these content parts:
+    And the file "config/events.rb" should not contain each of these content parts:
     """
     # Register global handlers for events
     """
