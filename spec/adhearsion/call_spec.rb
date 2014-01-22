@@ -408,6 +408,20 @@ module Adhearsion
           subject << joined_event
           subject.peers.should == {'foobar' => other_call}
         end
+
+        context "in a handler for the joined event" do
+          it "should have already populated the registry" do
+            peer = nil
+
+            subject.on_joined do |event|
+              peer = subject.peers.values.first
+            end
+
+            subject << joined_event
+
+            peer.should == other_call
+          end
+        end
       end
 
       context "when we don't know about the joined call" do
@@ -428,6 +442,20 @@ module Adhearsion
           subject.peers.should_not eql({})
           subject << unjoined_event
           subject.peers.should eql({})
+        end
+
+        context "in a handler for the unjoined event" do
+          it "should have already been removed the registry" do
+            peer_count = nil
+
+            subject.on_unjoined do |event|
+              peer_count = subject.peers.size
+            end
+
+            subject << unjoined_event
+
+            peer_count.should == 0
+          end
         end
       end
     end
