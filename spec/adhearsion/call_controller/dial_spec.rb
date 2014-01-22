@@ -819,7 +819,6 @@ module Adhearsion
               end
 
               it "should subsequently rejoin to a mixer" do
-                SecureRandom.stub uuid: 'foobar'
                 [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
 
                 dial.merge other_dial
@@ -835,16 +834,16 @@ module Adhearsion
                 latch.wait(1).should be_false
 
                 [call, second_root_call, second_other_mock_call].each do |call|
-                  call.should_receive(:unjoin).once.with(mixer_name: 'foobar').and_return do
-                    call << Punchblock::Event::Unjoined.new(mixer_name: 'foobar')
+                  call.should_receive(:unjoin).once.with(mixer_name: mixer).and_return do
+                    call << Punchblock::Event::Unjoined.new(mixer_name: mixer)
                   end
                 end
 
                 dial.split
 
                 [call, second_root_call, second_other_mock_call].each do |call|
-                  call.should_receive(:join).once.with({mixer_name: 'foobar'}, {}).and_return do
-                    call << Punchblock::Event::Joined.new(mixer_name: 'foobar')
+                  call.should_receive(:join).once.with({mixer_name: mixer}, {}).and_return do
+                    call << Punchblock::Event::Joined.new(mixer_name: mixer)
                   end
                 end
 
@@ -930,8 +929,6 @@ module Adhearsion
               end
 
               context "if a call hangs up" do
-                before { SecureRandom.stub uuid: 'foobar' }
-
                 it "should still allow splitting and rejoining" do
                   [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
 
@@ -945,8 +942,8 @@ module Adhearsion
                   sleep 0.5
 
                   [call, second_root_call, second_other_mock_call].each do |call|
-                    call.should_receive(:unjoin).once.with(mixer_name: 'foobar').and_return do
-                      call << Punchblock::Event::Unjoined.new(mixer_name: 'foobar')
+                    call.should_receive(:unjoin).once.with(mixer_name: mixer).and_return do
+                      call << Punchblock::Event::Unjoined.new(mixer_name: mixer)
                     end
                   end
 
@@ -958,8 +955,8 @@ module Adhearsion
                   latch.wait(1).should be_false
 
                   [call, second_root_call, second_other_mock_call].each do |call|
-                    call.should_receive(:join).once.with({mixer_name: 'foobar'}, {}).and_return do
-                      call << Punchblock::Event::Joined.new(mixer_name: 'foobar')
+                    call.should_receive(:join).once.with({mixer_name: mixer}, {}).and_return do
+                      call << Punchblock::Event::Joined.new(mixer_name: mixer)
                     end
                   end
 
@@ -2225,7 +2222,6 @@ module Adhearsion
               end
 
               it "should subsequently rejoin to a mixer" do
-                SecureRandom.stub uuid: 'foobar'
                 [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
 
                 dial.merge other_dial
@@ -2241,16 +2237,16 @@ module Adhearsion
                 latch.wait(1).should be_false
 
                 [call, second_root_call, second_other_mock_call].each do |call|
-                  call.should_receive(:unjoin).once.with(mixer_name: 'foobar').and_return do
-                    call << Punchblock::Event::Unjoined.new(mixer_name: 'foobar')
+                  call.should_receive(:unjoin).once.with(mixer_name: mixer).and_return do
+                    call << Punchblock::Event::Unjoined.new(mixer_name: mixer)
                   end
                 end
 
                 dial.split
 
                 [call, other_mock_call, second_root_call, second_other_mock_call].each do |call|
-                  call.should_receive(:join).once.with({mixer_name: 'foobar'}, {}).and_return do
-                    call << Punchblock::Event::Joined.new(mixer_name: 'foobar')
+                  call.should_receive(:join).once.with({mixer_name: mixer}, {}).and_return do
+                    call << Punchblock::Event::Joined.new(mixer_name: mixer)
                   end
                 end
 
@@ -2258,8 +2254,6 @@ module Adhearsion
               end
 
               context "if a call hangs up" do
-                before { SecureRandom.stub uuid: 'foobar' }
-
                 it "should still allow splitting and rejoining" do
                   [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
 
@@ -2273,8 +2267,8 @@ module Adhearsion
                   sleep 0.5
 
                   [call, second_root_call, second_other_mock_call].each do |call|
-                    call.should_receive(:unjoin).once.with(mixer_name: 'foobar').and_return do
-                      call << Punchblock::Event::Unjoined.new(mixer_name: 'foobar')
+                    call.should_receive(:unjoin).once.with(mixer_name: mixer).and_return do
+                      call << Punchblock::Event::Unjoined.new(mixer_name: mixer)
                     end
                   end
 
@@ -2286,8 +2280,8 @@ module Adhearsion
                   latch.wait(1).should be_false
 
                   [call, second_root_call, second_other_mock_call].each do |call|
-                    call.should_receive(:join).once.with({mixer_name: 'foobar'}, {}).and_return do
-                      call << Punchblock::Event::Joined.new(mixer_name: 'foobar')
+                    call.should_receive(:join).once.with({mixer_name: mixer}, {}).and_return do
+                      call << Punchblock::Event::Joined.new(mixer_name: mixer)
                     end
                   end
 

@@ -61,6 +61,8 @@ module Adhearsion
         dial.terminate_ringback
         dial.cleanup_calls
         dial.status
+      ensure
+        catching_standard_errors { dial.delete_logger }
       end
 
       # Dial one or more third parties and join one to this call after execution of a confirmation controller.
@@ -76,6 +78,8 @@ module Adhearsion
         dial.terminate_ringback
         dial.cleanup_calls
         dial.status
+      ensure
+        catching_standard_errors { dial.delete_logger }
       end
 
       class Dial
@@ -83,6 +87,7 @@ module Adhearsion
 
         def initialize(to, options, call)
           raise Call::Hangup unless call.alive? && call.active?
+          @id = SecureRandom.uuid
           @options, @call = options, call
           @targets = to.respond_to?(:has_key?) ? to : Array(to)
           @call_targets = {}
@@ -90,7 +95,7 @@ module Adhearsion
         end
 
         def inspect
-          "#<#{self.class} to=#{@to.inspect} options=#{@options.inspect}>"
+          "#<#{self.class}[#{@id}] to=#{@to.inspect} options=#{@options.inspect}>"
         end
 
         # Prep outbound calls, link call lifecycles and place outbound calls
@@ -147,7 +152,7 @@ module Adhearsion
             status.joins[new_call] = join_status
 
             new_call.on_end do |event|
-              @latch.countdown! unless new_call["dial_countdown_#{@call.id}"]
+              @latch.countdown! unless new_call["dial_countdown_#{@id}"]
               if event.reason == :error
                 status.error!
                 join_status.errored!
@@ -160,7 +165,7 @@ module Adhearsion
               new_call.on_unjoined @call do |unjoined|
                 join_status.ended
                 unless @splitting
-                  new_call["dial_countdown_#{@call.id}"] = true
+                  new_call["dial_countdown_#{@id}"] = true
                   @latch.countdown!
                 end
               end
@@ -269,13 +274,12 @@ module Adhearsion
         # @param [Dial] other the other dial operation to merge calls from
         def merge(other)
           logger.info "Merging with #{other.inspect}"
-          mixer_name = SecureRandom.uuid
 
           split
           other.split
 
-          rejoin({mixer_name: mixer_name}, {})
-          other.rejoin({mixer_name: mixer_name}, {})
+          rejoin({mixer_name: @id}, {})
+          other.rejoin({mixer_name: @id}, {})
 
           calls_to_merge = other.status.calls + [other.root_call]
           @calls.merge calls_to_merge
@@ -325,6 +329,10 @@ module Adhearsion
           end
         end
 
+        def delete_logger
+          ::Logging::Repository.instance.delete logger_id
+        end
+
         protected
 
         def root_call
@@ -332,6 +340,11 @@ module Adhearsion
         end
 
         private
+
+        # @private
+        def logger_id
+          "#{self.class}: #{@id}"
+        end
 
         def join_target
           @join_target || @call
