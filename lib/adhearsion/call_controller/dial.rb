@@ -39,7 +39,7 @@ module Adhearsion
       # @option options [Hash] :join_options Options to specify the kind of join operation to perform. See `Call#join` for details.
       # @option options [Call, String, Hash] :join_target the target to join to. May be a Call object, a call ID (String, Hash) or a mixer name (Hash). See `Call#join` for details.
       #
-      # @option options [#call] :pre_call A callback to be executed immediately prior to answering and joining a successful call. Is called with a single parameter which is the outbound call being joined.
+      # @option options [#call] :pre_join A callback to be executed immediately prior to answering and joining a successful call. Is called with a single parameter which is the outbound call being joined.
       #
       # @option options [Array, #call] :ringback A collection of audio (see #play for acceptable values) to render as a replacement for ringback. If a callback is passed, it will be used to start ringback, and must return something that responds to #stop! to stop it.
       #
