@@ -49,6 +49,17 @@ module Adhearsion
         subject.execute!
       end
 
+      context "when trying to execute a command against a dead call" do
+        before do
+          subject.should_receive(:run).once.ordered.and_raise(Call::ExpiredError)
+        end
+
+        it "gracefully terminates " do
+          subject.logger.should_receive(:info).once.with(/Call was hung up/).ordered
+          subject.execute!
+        end
+      end
+
       it "catches standard errors, triggering an exception event" do
         subject.should_receive(:run).once.ordered.and_raise(StandardError)
         latch = CountDownLatch.new 1
