@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Feature: Add `end_code` attribute to `Call`, which specifies the platform code for the call end event.
   * **Change: Ruby 1.9.2 is no longer supported**
   * Change: Set default call post-hangup lifetime to one second for better out of the box performance.
   * Feature: Allow stopping all components executed by a controller when passing from it (`#hard_pass`) or at will (`#stop_all_components`)

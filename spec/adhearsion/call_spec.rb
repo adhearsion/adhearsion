@@ -500,7 +500,7 @@ module Adhearsion
     describe "#<<" do
       describe "with a Punchblock End" do
         let :end_event do
-          Punchblock::Event::End.new :reason => :hangup
+          Punchblock::Event::End.new :reason => :hangup, :platform_code => 'arbitrary_code'
         end
 
         it "should mark the call as ended" do
@@ -511,6 +511,11 @@ module Adhearsion
         it "should set the end reason" do
           subject << end_event
           subject.end_reason.should be == :hangup
+        end
+
+        it "should set the end code" do
+          subject << end_event
+          subject.end_code.should be == 'arbitrary_code'
         end
 
         it "should set the end time" do
