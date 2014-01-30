@@ -33,6 +33,9 @@ module Adhearsion
     # @return [Symbol] the reason for the call ending
     attr_reader :end_reason
 
+    # @return [String] the reason code for the call ending
+    attr_reader :end_code
+
     # @return [Array<Adhearsion::CallController>] the set of call controllers executing on the call
     attr_reader :controllers
 
@@ -74,6 +77,7 @@ module Adhearsion
       @variables    = HashWithIndifferentAccess.new
       @controllers  = []
       @end_reason   = nil
+      @end_code     = nil
       @end_blocker  = Celluloid::Condition.new
       @peers        = {}
       @duration     = nil
@@ -231,6 +235,7 @@ module Adhearsion
         @duration = @end_time - @start_time if @start_time
         clear_from_active_calls
         @end_reason = event.reason
+        @end_code = event.platform_code
         @end_blocker.broadcast event.reason
         @commands.terminate
         after(Adhearsion.config.platform.after_hangup_lifetime) { terminate }
