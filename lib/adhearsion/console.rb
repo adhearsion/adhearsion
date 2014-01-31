@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require 'pry'
+require 'readline'
 
 module Adhearsion
   class Console
