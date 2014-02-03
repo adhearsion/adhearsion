@@ -442,6 +442,18 @@ module Adhearsion
       client.execute_command command, call_id: id, domain: domain, async: true
     end
 
+    ##
+    # Sends a message to the caller
+    #
+    # @param [String] body The message text.
+    # @param [Hash, Optional] options The message options.
+    # @option options [String] subject The message subject.
+    #
+    def send_message(body, options = {})
+      logger.debug "Sending message: #{body}"
+      client.send_message id, domain, body, options
+    end
+
     # @private
     def logger_id
       "#{self.class}: #{id}@#{domain}"

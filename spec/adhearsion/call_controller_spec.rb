@@ -28,6 +28,13 @@ module Adhearsion
     its(:logger)    { should be call.logger }
     its(:variables) { should be call.variables }
 
+    describe "#send_message" do
+      it 'should send a message' do
+        call.should_receive(:send_message).with("Hello World!").once
+        subject.send_message "Hello World!"
+      end
+    end
+
     context "when the call is dead" do
       before { call.terminate }
 
