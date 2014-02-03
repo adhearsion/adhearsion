@@ -64,7 +64,7 @@ module Adhearsion
     attr_reader :block
 
     delegate :[], :[]=, :to => :@metadata
-    delegate :variables, :to => :call
+    delegate :variables, :send_message, :to => :call
 
     #
     # Create a new instance
@@ -75,12 +75,13 @@ module Adhearsion
     #
     def initialize(call, metadata = nil, &block)
       @call, @metadata, @block = call, metadata || {}, block
+      @block_context = eval "self", @block.binding if @block
+      @active_components = []
     end
 
     def method_missing(method_name, *args, &block)
-      if @block
-        block_context = eval "self", @block.binding
-        block_context.send method_name, *args, &block
+      if @block_context
+        @block_context.send method_name, *args, &block
       else
         super
       end
@@ -117,7 +118,7 @@ module Adhearsion
       call.async.register_controller self
       execute_callbacks :before_call
       run
-    rescue Call::Hangup
+    rescue Call::Hangup, Call::ExpiredError
       logger.info "Call was hung up while executing a controller"
     rescue SyntaxError, StandardError => e
       Events.trigger :exception, [e, logger]
@@ -155,6 +156,31 @@ module Adhearsion
       throw :pass_controller, controller_class.new(call, metadata)
     end
 
+    #
+    # Stop execution of all the components currently running in the controller.
+    #
+    def stop_all_components
+      logger.info "Stopping all controller components"
+      @active_components.each do |component|
+        begin
+          component.stop!
+        rescue Punchblock::Component::InvalidActionError
+        end
+      end
+    end
+
+    #
+    # Cease execution of this controller, including any components it is executing, and pass to another.
+    #
+    # @param [Class] controller_class The class of controller to pass to
+    # @param [Hash] metadata generic key-value storage applicable to the controller
+    #
+    def hard_pass(controller_class, metadata = nil)
+      logger.info "Hard passing with active components #{@active_components.inspect}"
+      stop_all_components
+      pass controller_class, metadata
+    end
+
     # @private
     def execute_callbacks(type)
       self.class.callbacks[type].each do |callback|
@@ -173,6 +199,12 @@ module Adhearsion
     def write_and_await_response(command)
       block_until_resumed
       call.write_and_await_response command
+      if command.is_a?(Punchblock::Component::ComponentNode)
+        command.register_event_handler Punchblock::Event::Complete do |event|
+          @active_components.delete command
+        end
+        @active_components << command
+      end
     end
 
     # @private
@@ -250,13 +282,9 @@ module Adhearsion
     def join(target, options = {})
       block_until_resumed
       async = (target.is_a?(Hash) ? target : options).delete :async
-      join_command = call.join target, options
-      waiter = join_command.call_uri || join_command.mixer_name
-      if async
-        call.wait_for_joined waiter
-      else
-        call.wait_for_unjoined waiter
-      end
+      join = call.join target, options
+      waiter = async ? join[:joined_condition] : join[:unjoined_condition]
+      waiter.wait
     end
 
     alias :safely :catching_standard_errors

@@ -18,6 +18,13 @@ module Adhearsion
     its(:client) { should be mock_client }
     its(:start_time) { should be nil }
 
+    it "should allow timers to be registered from outside" do
+      foo = :bar
+      subject.after(1) { foo = :baz }
+      sleep 1.1
+      foo.should == :baz
+    end
+
     describe ".originate" do
       let(:to) { 'sip:foo@bar.com' }
 
@@ -84,6 +91,23 @@ module Adhearsion
           call << Punchblock::Event::Answered.new
         end
       end
+
+      context "when the dial fails" do
+        before do
+          subject.wrapped_object.should_receive(:write_command)
+          Punchblock::Command::Dial.any_instance.should_receive(:response).and_return StandardError.new("User not registered")
+        end
+
+        it "should raise the exception in the caller" do
+          expect { subject.dial to }.to raise_error("User not registered")
+        end
+
+        it "should kill the actor" do
+          expect { subject.dial to }.to raise_error("User not registered")
+          sleep 0.1
+          subject.should_not be_alive
+        end
+      end
     end
 
     describe "event handlers" do
@@ -121,7 +145,7 @@ module Adhearsion
 
     describe "#dial" do
       def expect_message_waiting_for_response(message)
-        subject.wrapped_object.should_receive(:write_and_await_response).once.with(message, 60).and_return do
+        subject.wrapped_object.should_receive(:write_and_await_response).once.with(message, 60, true).and_return do
           message.transport = transport
           message.target_call_id = call_id
           message.domain = domain
@@ -137,61 +161,80 @@ module Adhearsion
 
       let(:expected_dial_command) { Punchblock::Command::Dial.new(:to => to, :from => from) }
 
-      before do
-        expect_message_waiting_for_response expected_dial_command
+      context "with a successful response" do
+        before do
+          expect_message_waiting_for_response expected_dial_command
+        end
+
+        it "should send a dial stanza, wait for the response" do
+          subject.dial to, :from => from
+        end
+
+        it "should set the dial command" do
+          subject.dial to, :from => from
+          subject.dial_command.should be == expected_dial_command
+        end
+
+        it "should set the URI from the reference" do
+          subject.dial to, :from => from
+          subject.uri.should be == "footransport:abc123@rayo.net"
+        end
+
+        it "should set the call ID from the reference" do
+          subject.dial to, :from => from
+          subject.id.should be == call_id
+        end
+
+        it "should set the call domain from the reference" do
+          subject.dial to, :from => from
+          subject.domain.should be == domain
+        end
+
+        it "should set the to from the dial command" do
+          subject.dial to, :from => from
+          subject.to.should be == to
+        end
+
+        it "should set the 'from' from the dial command" do
+          subject.dial to, :from => from
+          subject.from.should be == from
+        end
+
+        it "should add the call to the active calls registry" do
+          Adhearsion.active_calls.clear
+          subject.dial to, :from => from
+          Adhearsion.active_calls[call_id].should be subject
+        end
+
+        it "should immediately fire the :call_dialed event giving the call" do
+          Adhearsion::Events.should_receive(:trigger_immediately).once.with(:call_dialed, subject)
+          subject.dial to, :from => from
+        end
+
+        it "should not modify the provided options" do
+          options = {:from => from}
+          original_options = Marshal.load(Marshal.dump(options))
+          options.should be == original_options
+          subject.dial to, options
+          options.should be == original_options
+        end
       end
 
-      it "should send a dial stanza, wait for the response" do
-        subject.dial to, :from => from
-      end
+      context "when the dial fails" do
+        before do
+          subject.wrapped_object.should_receive(:write_command)
+          Punchblock::Command::Dial.any_instance.should_receive(:response).and_return StandardError.new("User not registered")
+        end
 
-      it "should set the dial command" do
-        subject.dial to, :from => from
-        subject.dial_command.should be == expected_dial_command
-      end
+        it "should raise the exception in the caller" do
+          expect { subject.dial to }.to raise_error("User not registered")
+        end
 
-      it "should set the URI from the reference" do
-        subject.dial to, :from => from
-        subject.uri.should be == "footransport:abc123@rayo.net"
-      end
-
-      it "should set the call ID from the reference" do
-        subject.dial to, :from => from
-        subject.id.should be == call_id
-      end
-
-      it "should set the call domain from the reference" do
-        subject.dial to, :from => from
-        subject.domain.should be == domain
-      end
-
-      it "should set the to from the dial command" do
-        subject.dial to, :from => from
-        subject.to.should be == to
-      end
-
-      it "should set the 'from' from the dial command" do
-        subject.dial to, :from => from
-        subject.from.should be == from
-      end
-
-      it "should add the call to the active calls registry" do
-        Adhearsion.active_calls.clear
-        subject.dial to, :from => from
-        Adhearsion.active_calls[call_id].should be subject
-      end
-
-      it "should immediately fire the :call_dialed event giving the call" do
-        Adhearsion::Events.should_receive(:trigger_immediately).once.with(:call_dialed, subject)
-        subject.dial to, :from => from
-      end
-
-      it "should not modify the provided options" do
-        options = {:from => from}
-        original_options = Marshal.load(Marshal.dump(options))
-        options.should be == original_options
-        subject.dial to, options
-        options.should be == original_options
+        it "should kill the actor" do
+          expect { subject.dial to }.to raise_error("User not registered")
+          sleep 0.1
+          subject.should_not be_alive
+        end
       end
     end
 

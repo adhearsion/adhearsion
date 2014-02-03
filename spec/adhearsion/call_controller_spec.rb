@@ -28,6 +28,13 @@ module Adhearsion
     its(:logger)    { should be call.logger }
     its(:variables) { should be call.variables }
 
+    describe "#send_message" do
+      it 'should send a message' do
+        call.should_receive(:send_message).with("Hello World!").once
+        subject.send_message "Hello World!"
+      end
+    end
+
     context "when the call is dead" do
       before { call.terminate }
 
@@ -47,6 +54,17 @@ module Adhearsion
         subject.should_receive(:run).once.ordered.and_raise(Call::Hangup)
         subject.logger.should_receive(:info).once.with(/Call was hung up/).ordered
         subject.execute!
+      end
+
+      context "when trying to execute a command against a dead call" do
+        before do
+          subject.should_receive(:run).once.ordered.and_raise(Call::ExpiredError)
+        end
+
+        it "gracefully terminates " do
+          subject.logger.should_receive(:info).once.with(/Call was hung up/).ordered
+          subject.execute!
+        end
       end
 
       it "catches standard errors, triggering an exception event" do
@@ -165,26 +183,28 @@ module Adhearsion
     end
 
     describe "#pass" do
-      class PassController < CallController
-        after_call :foobar
+      let(:pass_controller) do
+        Class.new CallController do
+          after_call :foobar
 
-        def run
-          before
-          pass SecondController, :foo => 'bar'
-          after
-        end
+          def run
+            before
+            pass SecondController, :foo => 'bar'
+            after
+          end
 
-        def before
-        end
+          def before
+          end
 
-        def after
-        end
+          def after
+          end
 
-        def foobar
+          def foobar
+          end
         end
       end
 
-      subject { PassController.new call }
+      subject { pass_controller.new call }
 
       before do
         call.wrapped_object.stub :write_and_await_response => nil
@@ -208,6 +228,142 @@ module Adhearsion
         call.should_receive(:answer).once.ordered
 
         subject.exec
+      end
+    end
+
+    describe "#hard_pass" do
+      let(:pass_controller) do
+        Class.new CallController do
+          def run
+            hard_pass SecondController, foo: 'bar'
+          end
+        end
+      end
+
+      subject { pass_controller.new call }
+
+      before do
+        call.wrapped_object.stub(:write_and_await_response).and_return do |command|
+          command.request!
+          command.execute!
+        end
+        call.stub register_controller: nil
+        SecondController.any_instance.should_receive(:md_check).once.with :foo => 'bar'
+        Events.should_receive(:trigger).with(:exception, Exception).never
+      end
+
+      it "should cease execution of the current controller, and instruct the call to execute another" do
+        call.should_receive(:answer).once.ordered
+
+        subject.exec
+      end
+
+      context "when components have been executed on the controller" do
+        let(:pass_controller) do
+          Class.new CallController do
+            attr_accessor :output1, :output2
+
+            def prep_output
+              @output1 = play! 'file://foo.wav'
+              @output2 = play! 'file://bar.wav'
+            end
+
+            def run
+              hard_pass SecondController, foo: 'bar'
+            end
+          end
+        end
+
+        before { subject.prep_output }
+
+        context "but not yet received a complete event" do
+          it "should terminate the components" do
+            subject.output1.should_receive(:stop!).once
+            subject.output2.should_receive(:stop!).once
+
+            subject.exec
+          end
+
+          context "and some fail to terminate" do
+            before { subject.output1.should_receive(:stop!).and_raise(Punchblock::Component::InvalidActionError) }
+
+            it "should terminate the others" do
+              subject.output2.should_receive(:stop!).once
+              subject.exec
+            end
+          end
+        end
+
+        context "when some have completed" do
+          before { subject.output1.trigger_event_handler Punchblock::Event::Complete.new }
+
+          it "should not terminate the completed components" do
+            subject.output1.should_receive(:stop!).never
+            subject.output2.should_receive(:stop!).once
+
+            subject.exec
+          end
+        end
+      end
+    end
+
+    describe '#stop_all_components' do
+      let(:stop_controller) do
+        Class.new CallController do
+          attr_accessor :output1, :output2
+
+          def prep_output
+            @output1 = play! 'file://foo.wav'
+            @output2 = play! 'file://bar.wav'
+          end
+
+          def run
+            stop_all_components
+          end
+        end
+      end
+
+      subject { stop_controller.new call }
+
+      context "when components have been executed on the controller" do
+        before do
+          call.wrapped_object.stub(:write_and_await_response).and_return do |command|
+            command.request!
+            command.execute!
+          end
+          call.stub register_controller: nil
+          Events.should_receive(:trigger).with(:exception, Exception).never
+          subject.prep_output
+        end
+
+        context "when they have not yet received a complete event" do
+          it "should terminate the components" do
+            subject.output1.should_receive(:stop!).once
+            subject.output2.should_receive(:stop!).once
+
+            subject.exec
+          end
+
+          context "and some fail to terminate" do
+            before { subject.output1.should_receive(:stop!).and_raise(Punchblock::Component::InvalidActionError) }
+
+            it "should terminate the others" do
+              subject.output2.should_receive(:stop!).once
+              subject.exec
+            end
+          end
+        end
+
+        context "when some have completed" do
+          before { subject.output1.trigger_event_handler Punchblock::Event::Complete.new }
+
+          it "should not terminate the completed components" do
+            subject.output1.should_receive(:stop!).never
+            subject.output2.should_receive(:stop!).once
+
+            subject.exec
+          end
+        end
       end
     end
 
@@ -249,7 +405,7 @@ module Adhearsion
     describe "#join" do
       it "delegates to the call, blocking first until it is allowed to execute, and unblocking when an unjoined event is received" do
         subject.should_receive(:block_until_resumed).once.ordered
-        subject.call.should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:call_id => 'call1')
+        call.wrapped_object.should_receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(call_uri: 'call1'))
         latch = CountDownLatch.new 1
         Thread.new do
           subject.join 'call1', :foo => :bar
@@ -265,7 +421,7 @@ module Adhearsion
       context "with a mixer" do
         it "delegates to the call, blocking first until it is allowed to execute, and unblocking when an unjoined event is received" do
           subject.should_receive(:block_until_resumed).once.ordered
-          subject.call.should_receive(:join).once.with({:mixer_name => 'foobar', :foo => :bar}, {}).ordered.and_return Punchblock::Command::Join.new(:mixer_name => 'foobar')
+          call.wrapped_object.should_receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(mixer_name: 'foobar'))
           latch = CountDownLatch.new 1
           Thread.new do
             subject.join :mixer_name => 'foobar', :foo => :bar
@@ -282,7 +438,7 @@ module Adhearsion
       context "with :async => true" do
         it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
           subject.should_receive(:block_until_resumed).once.ordered
-          subject.call.should_receive(:join).once.with('call1', :foo => :bar).ordered.and_return Punchblock::Command::Join.new(:call_id => 'call1')
+          call.wrapped_object.should_receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(call_uri: 'call1'))
           latch = CountDownLatch.new 1
           Thread.new do
             subject.join 'call1', :foo => :bar, :async => true
@@ -296,7 +452,7 @@ module Adhearsion
         context "with a mixer" do
           it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
             subject.should_receive(:block_until_resumed).once.ordered
-            subject.call.should_receive(:join).once.with({:mixer_name => 'foobar', :foo => :bar}, {}).ordered.and_return Punchblock::Command::Join.new(:mixer_name => 'foobar')
+            call.wrapped_object.should_receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(mixer_name: 'foobar'))
             latch = CountDownLatch.new 1
             Thread.new do
               subject.join :mixer_name => 'foobar', :foo => :bar, :async => true

@@ -199,7 +199,7 @@ module Adhearsion
         before do
           initialize_punchblock
           Adhearsion::Process.should_receive(:state_name).once.and_return process_state
-          Adhearsion.active_calls.should_receive(:from_offer).once.and_return mock_call
+          Adhearsion::Call.should_receive(:new).once.and_return mock_call
         end
 
         context "when the Adhearsion::Process is :booting" do
@@ -276,8 +276,8 @@ module Adhearsion
         end
 
         describe "with an inactive call" do
-          it "should log an error" do
-            Adhearsion::Logging.get_logger(Initializer).should_receive(:error).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
+          it "should log an warning" do
+            Adhearsion::Logging.get_logger(Initializer).should_receive(:warn).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
             Initializer.dispatch_call_event mock_event
           end
         end

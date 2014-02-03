@@ -1,5 +1,34 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
+# [2.5.0](https://github.com/adhearsion/adhearsion/compare/v2.4.0...v2.5.0) - [2014-02-03](https://rubygems.org/gems/adhearsion/versions/2.5.0)
+  * **Change: Ruby 1.9.2 is no longer supported**
+  * Change: Set default call post-hangup lifetime to one second for better out of the box performance.
+  * Feature: Allow stopping all components executed by a controller when passing from it (`#hard_pass`) or at will (`#stop_all_components`)
+  * Feature: Generated plugins include a .gitignore file
+  * Feature: Detect something like "1234#" as characters instead of text
+  * Feature: Add `--empty` switch to app generator for power users. Generates an app with less fluff.
+  * Feature: Default generated applications with config appropriate for [Telephony Dev Box](http://github.com/mojolingo/Telephony-Dev-Box)
+  * Feature: Allow preventing automatic call hangup after controller completion. Set `Call#auto_hangup = false` prior to controller termination.
+  * Feature: Allow specifying a pre-join callback to #dial
+  * Feature: Allow specifying ringback to `#dial` as either a list or a proc
+  * Feature: Allow passing `:join_options` parameter to `#dial` to specify the kind of join to perform.
+  * Feature: Allow passing `:join_target` parameter to `#dial` to specify who to join to (eg a mixer).
+  * Feature: Generated apps now encourage storing most app code in `app/`, which is in the load path. Nothing in this directory is auto-loaded, but can be easily required without messy relative paths.
+  * Feature: Routes and event handlers are now split out of main config file for readability. They may be retained in the main config file for existing apps.
+  * Feature: Add `Call#end_code`, which specifies the platform code for the call end event.
+  * Feature: Allow XMPP messages to be sent via Punchblock
+  * Bugfix: Don't block shutdown waiting for the console to terminate
+  * Bugfix: Ensure that splitting a dial rejoined to an alternative target (eg a mixer) or merged with another dial can still be split properly.
+  * Bugfix: Ensure that hungup calls don't prevent dial splits/merges.
+  * Bugfix: Ensure that merged dials which are split and rejoined all get rejoined to the mixer.
+  * Bugfix: Ensure that `Call#peers` are correctly maintained - this was broken by Rayo moving to full call URIs in joined/unjoined events
+  * Bugfix: Ensure that failure to dial a call kills the actor
+  * Bugfix: Adhearsion call actors should do recursion detection on #inspect
+  * Bugfix: Fix controller block context on JRuby
+  * Bugfix: Require only Bundler groups appropriate to application environment
+  * Bugfix: Call event handlers now cannot crash the call, and no longer stop on return value
+  * Bugfix: Call controllers are gracefully terminated when a command is attempted against a dead call
+
 # [2.4.0](https://github.com/adhearsion/adhearsion/compare/v2.3.5...v2.4.0) - [2013-08-29](https://rubygems.org/gems/adhearsion/versions/2.4.0)
   * Deprecation: Ruby 1.9.2 support is deprecated and will be dropped in a future version of Adhearsion
   * Deprecation: Some media options from Punchblock config are now overriden by other core config, and will eventually be removed.

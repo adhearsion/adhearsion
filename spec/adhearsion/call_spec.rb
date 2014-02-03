@@ -37,6 +37,20 @@ module Adhearsion
       Adhearsion.active_calls.clear
     end
 
+    it "should do recursion detection on inspect" do
+      subject[:foo] = subject
+      Timeout.timeout(0.2) do
+        expect(subject.inspect).to match('...')
+      end
+    end
+
+    it "should allow timers to be registered from outside" do
+      foo = :bar
+      subject.after(1) { foo = :baz }
+      sleep 1.1
+      foo.should == :baz
+    end
+
     it { should respond_to :<< }
 
     its(:end_reason) { should be == nil }
@@ -49,6 +63,8 @@ module Adhearsion
     its(:uri)     { should be == "footransport:#{call_id}@#{domain}" }
     its(:to)      { should be == to }
     its(:from)    { should be == from }
+
+    its(:auto_hangup) { should be_true }
 
     context "when the ID is nil" do
       let(:call_id) { nil }
@@ -141,28 +157,52 @@ module Adhearsion
       end
     end
 
-    it 'allows the registration of event handlers which are called when messages are delivered' do
-      event = double 'Event'
-      event.should_receive(:foo?).and_return true
-      response = double 'Response'
-      response.should_receive(:call).once
-      subject.register_event_handler(:foo?) { response.call }
-      subject << event
+    context 'registered event handlers' do
+      let(:event)     { double 'Event' }
+      let(:response)  { double 'Response' }
+
+      it 'are called when messages are delivered' do
+        event.should_receive(:foo?).and_return true
+        response.should_receive(:call).once
+        subject.register_event_handler(:foo?) { response.call }
+        subject << event
+      end
+
+      context 'when a handler raises' do
+        it 'does not cause the call actor to crash' do
+          subject.register_event_handler { raise 'Boom' }
+          subject << event
+          subject.should be_alive
+        end
+
+        it "triggers an exception event" do
+          e = StandardError.new('Boom')
+          Events.should_receive(:trigger).once.with(:exception, [e, subject.logger])
+          subject.register_event_handler { raise e }
+          subject << event
+        end
+
+        it 'executes all handlers for each event' do
+          response.should_receive(:call).once
+          subject.register_event_handler { raise 'Boom' }
+          subject.register_event_handler { response.call }
+          subject << event
+        end
+      end
     end
 
     describe "event handlers" do
-      before { pending }
       let(:response) { double 'Response' }
 
       describe "for joined events" do
         context "joined to another call" do
           let :event do
-            Punchblock::Event::Joined.new call_uri: 'xmpp:foobar@rayo.net'
+            Punchblock::Event::Joined.new call_uri: 'footransport:foobar@rayo.net'
           end
 
           it "should trigger any on_joined callbacks set for the matching call ID" do
             response.should_receive(:call).once.with(event)
-            subject.on_joined(:call_uri => 'xmpp:foobar@rayo.net') { |event| response.call event }
+            subject.on_joined(:call_uri => 'footransport:foobar@rayo.net') { |event| response.call event }
             subject << event
           end
 
@@ -175,14 +215,14 @@ module Adhearsion
           it "should trigger any on_joined callbacks set for the matching call" do
             response.should_receive(:call).once.with(event)
             call = Call.new
-            call.wrapped_object.stub id: 'foobar', domain: 'rayo.net'
+            call.wrapped_object.stub id: 'foobar', domain: 'rayo.net', transport: 'footransport'
             subject.on_joined(call) { |event| response.call event }
             subject << event
           end
 
           it "should not trigger on_joined callbacks for other call IDs" do
             response.should_receive(:call).never
-            subject.on_joined(:call_id => 'barfoo') { |event| response.call event }
+            subject.on_joined(:call_uri => 'barfoo') { |event| response.call event }
             subject << event
           end
 
@@ -212,7 +252,7 @@ module Adhearsion
 
           it "should not trigger any on_joined callbacks set for calls" do
             response.should_receive(:call).never
-            subject.on_joined(:call_id => 'foobar') { |event| response.call event }
+            subject.on_joined(:call_uri => 'foobar') { |event| response.call event }
             subject << event
           end
 
@@ -225,7 +265,7 @@ module Adhearsion
           it "should not trigger any on_joined callbacks set for the matching call" do
             response.should_receive(:call).never
             call = Call.new
-            call.stub :id => 'foobar'
+            call.wrapped_object.stub :id => 'foobar'
             subject.on_joined(call) { |event| response.call event }
             subject << event
           end
@@ -235,12 +275,12 @@ module Adhearsion
       describe "for unjoined events" do
         context "unjoined from another call" do
           let :event do
-            Punchblock::Event::Unjoined.new call_uri: 'xmpp:foobar@rayo.net'
+            Punchblock::Event::Unjoined.new call_uri: 'footransport:foobar@rayo.net'
           end
 
           it "should trigger any on_unjoined callbacks set for the matching call ID" do
             response.should_receive(:call).once.with(event)
-            subject.on_unjoined(:call_uri => 'xmpp:foobar@rayo.net') { |event| response.call event }
+            subject.on_unjoined(:call_uri => 'footransport:foobar@rayo.net') { |event| response.call event }
             subject << event
           end
 
@@ -253,14 +293,14 @@ module Adhearsion
           it "should trigger any on_unjoined callbacks set for the matching call" do
             response.should_receive(:call).once.with(event)
             call = Call.new
-            call.wrapped_object.stub id: 'foobar', domain: 'rayo.net'
+            call.wrapped_object.stub id: 'foobar', domain: 'rayo.net', transport: 'footransport'
             subject.on_unjoined(call) { |event| response.call event }
             subject << event
           end
 
           it "should not trigger on_unjoined callbacks for other call IDs" do
             response.should_receive(:call).never
-            subject.on_unjoined(:call_id => 'barfoo') { |event| response.call event }
+            subject.on_unjoined(:call_uri => 'barfoo') { |event| response.call event }
             subject << event
           end
 
@@ -290,7 +330,7 @@ module Adhearsion
 
           it "should not trigger any on_unjoined callbacks set for calls" do
             response.should_receive(:call).never
-            subject.on_unjoined(:call_id => 'foobar') { |event| response.call event }
+            subject.on_unjoined(:call_uri => 'foobar') { |event| response.call event }
             subject << event
           end
 
@@ -303,7 +343,7 @@ module Adhearsion
           it "should not trigger any on_unjoined callbacks set for the matching call" do
             response.should_receive(:call).never
             call = Call.new
-            call.stub :id => 'foobar'
+            call.wrapped_object.stub :id => 'foobar'
             subject.on_unjoined(call) { |event| response.call event }
             subject << event
           end
@@ -346,54 +386,121 @@ module Adhearsion
     end
 
     context "peer registry" do
-      let(:other_call_id) { 'foobar' }
+      let(:other_call_uri) { 'xmpp:foobar@example.com' }
       let(:other_call) { Call.new }
 
-      before { other_call.stub :id => other_call_id }
+      before { other_call.stub uri: other_call_uri }
 
       let :joined_event do
-        Punchblock::Event::Joined.new call_uri: other_call_id
+        Punchblock::Event::Joined.new call_uri: other_call_uri
       end
 
       let :unjoined_event do
-        Punchblock::Event::Unjoined.new call_uri: other_call_id
+        Punchblock::Event::Unjoined.new call_uri: other_call_uri
       end
 
       context "when we know about the joined call" do
         before { Adhearsion.active_calls << other_call }
+        after { Adhearsion.active_calls.remove_inactive_call other_call }
 
         it "should add the peer to its registry" do
           subject << joined_event
-          subject.peers.should == {'foobar' => other_call}
+          subject.peers.should == {'xmpp:foobar@example.com' => other_call}
+        end
+
+        context "in a handler for the joined event" do
+          it "should have already populated the registry" do
+            peer = nil
+
+            subject.on_joined do |event|
+              peer = subject.peers.keys.first
+            end
+
+            subject << joined_event
+
+            peer.should == other_call_uri
+          end
+        end
+
+        context "when being unjoined from a previously joined call" do
+          before { subject << joined_event }
+
+          it "should remove the peer from its registry" do
+            subject.peers.should_not eql({})
+            subject << unjoined_event
+            subject.peers.should eql({})
+          end
+
+          context "in a handler for the unjoined event" do
+            it "should have already been removed the registry" do
+              peer_count = nil
+
+              subject.on_unjoined do |event|
+                peer_count = subject.peers.size
+              end
+
+              subject << unjoined_event
+
+              peer_count.should == 0
+            end
+          end
         end
       end
 
       context "when we don't know about the joined call" do
         it "should add a nil entry to its registry" do
           subject << joined_event
-          subject.peers.should == {'foobar' => nil}
+          subject.peers.should == {'xmpp:foobar@example.com' => nil}
+        end
+
+        context "in a handler for the joined event" do
+          it "should have already populated the registry" do
+            peer = nil
+
+            subject.on_joined do |event|
+              peer = subject.peers.keys.first
+            end
+
+            subject << joined_event
+
+            peer.should == other_call_uri
+          end
+        end
+
+        context "when being unjoined from a previously joined call" do
+          before { subject << joined_event }
+
+          it "should remove the peer from its registry" do
+            subject.peers.should_not eql({})
+            subject << unjoined_event
+            subject.peers.should eql({})
+          end
+
+          context "in a handler for the unjoined event" do
+            it "should have already been removed the registry" do
+              peer_count = nil
+
+              subject.on_unjoined do |event|
+                peer_count = subject.peers.size
+              end
+
+              subject << unjoined_event
+
+              peer_count.should == 0
+            end
+          end
         end
       end
 
       it "should not return the same registry every call" do
         subject.peers.should_not be subject.peers
       end
-
-      context "when being unjoined from a previously joined call" do
-        before { subject << joined_event }
-
-        it "should remove the peer from its registry" do
-          subject.peers.should_not eql({})
-          subject << unjoined_event
-          subject.peers.should eql({})
-        end
-      end
     end
 
     describe "#<<" do
       describe "with a Punchblock End" do
         let :end_event do
-          Punchblock::Event::End.new :reason => :hangup
+          Punchblock::Event::End.new :reason => :hangup, :platform_code => 'arbitrary_code'
         end
 
         it "should mark the call as ended" do
@@ -404,6 +511,11 @@ module Adhearsion
         it "should set the end reason" do
           subject << end_event
           subject.end_reason.should be == :hangup
+        end
+
+        it "should set the end code" do
+          subject << end_event
+          subject.end_code.should be == 'arbitrary_code'
         end
 
         it "should set the end time" do
@@ -654,6 +766,20 @@ module Adhearsion
       end
     end
 
+    describe "#send_message" do
+      it "should send a message through the Punchblock connection using the call ID and domain" do
+        subject.wrapped_object.should_receive(:client).once.and_return mock_client
+        mock_client.should_receive(:send_message).once.with(subject.id, subject.domain, "Hello World!", {})
+        subject.send_message "Hello World!"
+      end
+
+      it "should send a message with the given subject" do
+        subject.wrapped_object.should_receive(:client).once.and_return mock_client
+        mock_client.should_receive(:send_message).once.with(subject.id, subject.domain, nil, :subject => "Important Message")
+        subject.send_message nil, :subject => "Important Message"
+      end
+    end
+
     describe "basic control commands" do
       def expect_message_waiting_for_response(message = nil, fail = false, &block)
         expectation = subject.wrapped_object.should_receive(:write_and_await_response, &block).once
@@ -810,26 +936,156 @@ module Adhearsion
               subject.join target, :media => :bridge, :direction => :recv
             end
           end
+
+          it "should return the command" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+            result[:command].should be_a Punchblock::Command::Join
+            result[:command].call_uri.should eql(uri)
+            result[:command].media.should eql(:bridge)
+            result[:command].direction.should eql(:recv)
+          end
+
+          it "should return something that can be blocked on until the join is complete" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            result[:joined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            result[:joined_condition].wait(0.5).should be_true
+          end
+
+          it "should return something that can be blocked on until the entities are unjoined" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should unblock all conditions on call end if no joined/unjoined events are received" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            result[:joined_condition].wait(0.5).should be_false
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::End.new
+            result[:joined_condition].wait(0.5).should be_true
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should not error on call end when joined/unjoined events are received correctly" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+
+            subject << Punchblock::Event::End.new
+          end
+
+          it "should not error if multiple joined events are received for the same join" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+
+            subject.should be_alive
+          end
         end
 
         context "with a call ID" do
           let(:target) { rand.to_s }
+          let(:uri) { "footransport:#{target}@#{subject.domain}" }
 
           it "should send a join command joining to the provided call ID" do
-            expect_join_with_options call_uri: "footransport:#{target}@#{subject.domain}"
+            expect_join_with_options call_uri: uri
             subject.join target
           end
 
           context "and direction/media options" do
             it "should send a join command with the correct options" do
-              expect_join_with_options :call_uri => "footransport:#{target}@#{subject.domain}", :media => :bridge, :direction => :recv
+              expect_join_with_options :call_uri => uri, :media => :bridge, :direction => :recv
               subject.join target, :media => :bridge, :direction => :recv
             end
+          end
+
+          it "should return the command" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+            result[:command].should be_a Punchblock::Command::Join
+            result[:command].call_uri.should eql(uri)
+            result[:command].media.should eql(:bridge)
+            result[:command].direction.should eql(:recv)
+          end
+
+          it "should return something that can be blocked on until the join is complete" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            result[:joined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            result[:joined_condition].wait(0.5).should be_true
+          end
+
+          it "should return something that can be blocked on until the entities are unjoined" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should unblock all conditions on call end if no joined/unjoined events are received" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            result[:joined_condition].wait(0.5).should be_false
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::End.new
+            result[:joined_condition].wait(0.5).should be_true
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should not error on call end when joined/unjoined events are received correctly" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+
+            subject << Punchblock::Event::End.new
+          end
+
+          it "should not error if multiple joined events are received for the same join" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target, :media => :bridge, :direction => :recv
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+
+            subject.should be_alive
           end
         end
 
         context "with a call URI as a hash key" do
           let(:call_id) { rand.to_s }
+          let(:uri) { call_id }
           let(:target)  { { :call_uri => call_id } }
 
           it "should send a join command joining to the provided call ID" do
@@ -842,6 +1098,70 @@ module Adhearsion
               expect_join_with_options :call_uri => call_id, :media => :bridge, :direction => :recv
               subject.join target.merge({:media => :bridge, :direction => :recv})
             end
+          end
+
+          it "should return the command" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+            result[:command].should be_a Punchblock::Command::Join
+            result[:command].call_uri.should eql(uri)
+            result[:command].media.should eql(:bridge)
+            result[:command].direction.should eql(:recv)
+          end
+
+          it "should return something that can be blocked on until the join is complete" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            result[:joined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            result[:joined_condition].wait(0.5).should be_true
+          end
+
+          it "should return something that can be blocked on until the entities are unjoined" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should unblock all conditions on call end if no joined/unjoined events are received" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            result[:joined_condition].wait(0.5).should be_false
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::End.new
+            result[:joined_condition].wait(0.5).should be_true
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should not error on call end when joined/unjoined events are received correctly" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+
+            subject << Punchblock::Event::End.new
+          end
+
+          it "should not error if multiple joined events are received for the same join" do
+            expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Punchblock::Event::Joined.new(call_uri: uri)
+
+            subject.should be_alive
           end
         end
 
@@ -859,6 +1179,70 @@ module Adhearsion
               expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
               subject.join target.merge({:media => :bridge, :direction => :recv})
             end
+          end
+
+          it "should return the command" do
+            expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+            result[:command].should be_a Punchblock::Command::Join
+            result[:command].mixer_name.should eql(mixer_name)
+            result[:command].media.should eql(:bridge)
+            result[:command].direction.should eql(:recv)
+          end
+
+          it "should return something that can be blocked on until the join is complete" do
+            expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            result[:joined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
+            result[:joined_condition].wait(0.5).should be_true
+          end
+
+          it "should return something that can be blocked on until the entities are unjoined" do
+            expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::Unjoined.new(mixer_name: mixer_name)
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should unblock all conditions on call end if no joined/unjoined events are received" do
+            expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            result[:joined_condition].wait(0.5).should be_false
+            result[:unjoined_condition].wait(0.5).should be_false
+
+            subject << Punchblock::Event::End.new
+            result[:joined_condition].wait(0.5).should be_true
+            result[:unjoined_condition].wait(0.5).should be_true
+          end
+
+          it "should not error on call end when joined/unjoined events are received correctly" do
+            expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
+            subject << Punchblock::Event::Unjoined.new(mixer_name: mixer_name)
+
+            subject << Punchblock::Event::End.new
+          end
+
+          it "should not error if multiple joined events are received for the same join" do
+            expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
+            result = subject.join target.merge({:media => :bridge, :direction => :recv})
+
+            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
+            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
+
+            subject.should be_alive
           end
         end
 

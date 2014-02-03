@@ -17,7 +17,7 @@ module Adhearsion
     include Celluloid
     include HasGuardedHandlers
 
-    execute_block_on_receiver :register_handler, :register_tmp_handler, :register_handler_with_priority, :register_event_handler, :on_joined, :on_unjoined, :on_end, :execute_controller
+    execute_block_on_receiver :register_handler, :register_tmp_handler, :register_handler_with_priority, :register_event_handler, :on_joined, :on_unjoined, :on_end, :execute_controller, *execute_block_on_receiver
     finalizer :finalize
 
     def self.new(*args, &block)
@@ -25,13 +25,16 @@ module Adhearsion
         def proxy.method_missing(*args)
           super
         rescue Celluloid::DeadActorError
-          raise ExpiredError, "This call is expired and is no longer accessible"
+          raise ExpiredError, "This call is expired and is no longer accessible. See http://adhearsion.com/docs/calls for further details."
         end
       end
     end
 
     # @return [Symbol] the reason for the call ending
     attr_reader :end_reason
+
+    # @return [String] the reason code for the call ending
+    attr_reader :end_code
 
     # @return [Array<Adhearsion::CallController>] the set of call controllers executing on the call
     attr_reader :controllers
@@ -45,8 +48,25 @@ module Adhearsion
     # @return [Time] the time at which the call began. For inbound calls this is the time at which the call was offered to Adhearsion. For outbound calls it is the time at which the remote party answered.
     attr_reader :end_time
 
+    # @return [true, false] wether or not the call should be automatically hung up after executing its controller
+    attr_accessor :auto_hangup
+
     delegate :[], :[]=, :to => :variables
-    delegate :to, :from, :to => :offer, :allow_nil => true
+
+    # @return [String] the value of the To header from the signaling protocol
+    delegate :to, to: :offer, allow_nil: true
+
+    # @return [String] the value of the From header from the signaling protocol
+    delegate :from, to: :offer, allow_nil: true
+
+    def self.uri(transport, id, domain)
+      return nil unless id
+      s = ""
+      s << transport << ":" if transport
+      s << id
+      s << "@" << domain if domain
+      s
+    end
 
     def initialize(offer = nil)
       register_initial_handlers
@@ -57,9 +77,11 @@ module Adhearsion
       @variables    = HashWithIndifferentAccess.new
       @controllers  = []
       @end_reason   = nil
+      @end_code     = nil
       @end_blocker  = Celluloid::Condition.new
       @peers        = {}
       @duration     = nil
+      @auto_hangup  = true
 
       self << offer if offer
     end
@@ -83,12 +105,7 @@ module Adhearsion
     # @return [String, nil] The uri at which the call resides
     #
     def uri
-      return nil unless id
-      s = ""
-      s << transport << ":" if transport
-      s << id
-      s << "@" << domain if domain
-      s
+      self.class.uri(transport, id, domain)
     end
 
     #
@@ -146,13 +163,26 @@ module Adhearsion
       end
     end
 
+    #
+    # Register a handler for events on this call. Note that Adhearsion::Call implements the has-guarded-handlers API, and all of its methods are available. Specifically, all Adhearsion events are available on the `:event` channel.
+    #
+    # @param [guards] guards take a look at the guards documentation
+    #
+    # @yield [Object] trigger_object the incoming event
+    #
+    # @return [String] handler ID for later manipulation
+    #
+    # @see http://adhearsion.github.io/has-guarded-handlers for more details
+    #
     def register_event_handler(*guards, &block)
       register_handler :event, *guards, &block
     end
 
     def deliver_message(message)
       logger.debug "Receiving message: #{message.inspect}"
-      catching_standard_errors { trigger_handler :event, message }
+      catching_standard_errors do
+        trigger_handler :event, message, broadcast: true, exception_callback: ->(e) { Adhearsion::Events.trigger :exception, [e, logger] }
+      end
     end
     alias << deliver_message
 
@@ -166,12 +196,10 @@ module Adhearsion
         @offer  = offer
         @client = offer.client
         @start_time = Time.now
-        throw :pass
       end
 
       register_event_handler Punchblock::HasHeaders do |event|
         merge_headers event.headers
-        throw :pass
       end
 
       on_joined do |event|
@@ -183,7 +211,8 @@ module Adhearsion
           type = :mixer
         end
         logger.info "Joined to #{type} #{target}"
-        @peers[target] = Adhearsion.active_calls[target]
+        call = Adhearsion.active_calls.with_uri(target)
+        @peers[target] = call
         signal :joined, target
       end
 
@@ -206,10 +235,10 @@ module Adhearsion
         @duration = @end_time - @start_time if @start_time
         clear_from_active_calls
         @end_reason = event.reason
+        @end_code = event.platform_code
         @end_blocker.broadcast event.reason
         @commands.terminate
         after(Adhearsion.config.platform.after_hangup_lifetime) { terminate }
-        throw :pass
       end
     end
 
@@ -234,7 +263,6 @@ module Adhearsion
     def on_joined(target = nil, &block)
       register_event_handler Punchblock::Event::Joined, *guards_for_target(target) do |event|
         block.call event
-        throw :pass
       end
     end
 
@@ -246,22 +274,16 @@ module Adhearsion
     # @option target [String] mixer_name The mixer name to guard on
     #
     def on_unjoined(target = nil, &block)
-      register_event_handler Punchblock::Event::Unjoined, *guards_for_target(target) do |event|
-        block.call event
-        throw :pass
-      end
+      register_event_handler Punchblock::Event::Unjoined, *guards_for_target(target), &block
     end
 
     # @private
     def guards_for_target(target)
-      target ? [join_options_with_target(target)] : []
+      target ? [target_from_join_options(join_options_with_target(target))] : []
     end
 
     def on_end(&block)
-      register_event_handler Punchblock::Event::End do |event|
-        block.call event
-        throw :pass
-      end
+      register_event_handler Punchblock::Event::End, &block
     end
 
     #
@@ -304,10 +326,29 @@ module Adhearsion
     # @option target [String] mixer_name The mixer to join to
     # @param [Hash, Optional] options further options to be joined with
     #
+    # @return [Hash] where :command is the issued command, :joined_waiter is a #wait responder which is triggered when the join is complete, and :unjoined_waiter is a #wait responder which is triggered when the entities are unjoined
+    #
     def join(target, options = {})
       logger.info "Joining to #{target}"
+
+      joined_condition = CountDownLatch.new(1)
+      on_joined target do
+        joined_condition.countdown!
+      end
+
+      unjoined_condition = CountDownLatch.new(1)
+      on_unjoined target do
+        unjoined_condition.countdown!
+      end
+
+      on_end do
+        joined_condition.countdown!
+        unjoined_condition.countdown!
+      end
+
       command = Punchblock::Command::Join.new options.merge(join_options_with_target(target))
       write_and_await_response command
+      {command: command, joined_condition: joined_condition, unjoined_condition: unjoined_condition}
     end
 
     ##
@@ -329,13 +370,20 @@ module Adhearsion
       when Call
         { :call_uri => target.uri }
       when String
-        { :call_uri => "#{transport}:#{target}@#{domain}" }
+        { :call_uri => self.class.uri(transport, target, domain) }
       when Hash
         abort ArgumentError.new "You cannot specify both a call URI and mixer name" if target.has_key?(:call_uri) && target.has_key?(:mixer_name)
         target
       else
         abort ArgumentError.new "Don't know how to join to #{target.inspect}"
       end
+    end
+
+    # @private
+    def target_from_join_options(options)
+      call_uri = options[:call_uri]
+      return {call_uri: call_uri} if call_uri
+      {mixer_name: options[:mixer_name]}
     end
 
     def wait_for_joined(expected_target)
@@ -361,25 +409,27 @@ module Adhearsion
     end
 
     # @private
-    def write_and_await_response(command, timeout = 60)
+    def write_and_await_response(command, timeout = 60, fatal = false)
       @commands << command
       write_command command
+
+      error_handler = fatal ? ->(error) { raise error } : ->(error) { abort error }
 
       response = defer { command.response timeout }
       case response
       when Punchblock::ProtocolError
         if response.name == :item_not_found
-          abort Hangup.new(@end_reason)
+          error_handler[Hangup.new(@end_reason)]
         else
-          abort response
+          error_handler[response]
         end
       when Exception
-        abort response
+        error_handler[response]
       end
 
       command
     rescue Timeout::Error
-      abort CommandTimeout.new(command.to_s)
+      error_handler[CommandTimeout.new(command.to_s)]
     ensure
       @commands.delete command
     end
@@ -392,18 +442,39 @@ module Adhearsion
       client.execute_command command, call_id: id, domain: domain, async: true
     end
 
+    ##
+    # Sends a message to the caller
+    #
+    # @param [String] body The message text.
+    # @param [Hash, Optional] options The message options.
+    # @option options [String] subject The message subject.
+    #
+    def send_message(body, options = {})
+      logger.debug "Sending message: #{body}"
+      client.send_message id, domain, body, options
+    end
+
     # @private
     def logger_id
       "#{self.class}: #{id}@#{domain}"
     end
     # @private
     def inspect
+      return "..." if Celluloid.detect_recursion
       attrs = [:offer, :end_reason, :commands, :variables, :controllers, :to, :from].map do |attr|
         "#{attr}=#{send(attr).inspect}"
       end
       "#<#{self.class}:#{id}@#{domain} #{attrs.join ', '}>"
     end
 
+    #
+    # Execute a call controller asynchronously against this call.
+    #
+    # @param [Adhearsion::CallController] controller an instance of a controller initialized for this call
+    # @param [Proc] a callback to be executed when the controller finishes execution
+    #
+    # @yield execute the current block as the body of a controller by specifying no controller instance
+    #
     def execute_controller(controller = nil, completion_callback = nil, &block)
       raise ArgumentError, "Cannot supply a controller and a block at the same time" if controller && block_given?
       controller ||= CallController.new current_actor, &block

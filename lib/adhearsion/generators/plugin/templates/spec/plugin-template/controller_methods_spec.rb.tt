@@ -16,7 +16,7 @@ module <%= @plugin_name %>
 
       describe "#greet" do
         it "greets with the correct parameter" do
-          subject.expects(:play).once.with("Hello, Luca")
+          subject.should_receive(:play).once.with("Hello, Luca")
           subject.greet "Luca"
         end
       end

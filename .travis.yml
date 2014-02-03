@@ -1,14 +1,14 @@
 language: ruby
 rvm:
-  - 1.9.2
   - 1.9.3
   - 2.0.0
+  - 2.1.0
   - jruby-19mode
-  - rbx-19mode
+  - rbx-2.1.1
   - ruby-head
 matrix:
   allow_failures:
-    - rvm: rbx-19mode
+    - rvm: rbx-2.1.1
     - rvm: ruby-head
 env: ARUBA_TIMEOUT=120 RAILS_ENV=development AHN_ENV=development
 notifications:

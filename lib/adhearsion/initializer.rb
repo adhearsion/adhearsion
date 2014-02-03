@@ -34,7 +34,7 @@ module Adhearsion
       @mode     = options[:mode]
       @pid_file = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
       @loaded_init_files  = options[:loaded_init_files]
-      Adhearsion.ahn_root = '.'
+      Adhearsion.root = '.'
     end
 
     def start
@@ -42,6 +42,8 @@ module Adhearsion
         resolve_pid_file_path
         load_lib_folder
         load_config_file
+        load_events_file
+        load_routes_file
         initialize_log_paths
 
         if should_daemonize?
@@ -195,6 +197,16 @@ module Adhearsion
       require "#{Adhearsion.config.root}/config/adhearsion.rb"
     end
 
+    def load_events_file
+      path = "#{Adhearsion.config.root}/config/events.rb"
+      require path if File.exists?(path)
+    end
+
+    def load_routes_file
+      path = "#{Adhearsion.config.root}/config/routes.rb"
+      require path if File.exists?(path)
+    end
+
     def init_get_logging_appenders
       @file_loggers ||= memoize_logging_appenders
     end
@@ -249,7 +261,7 @@ module Adhearsion
     end
 
     def launch_console
-      Adhearsion::Process.important_threads << Thread.new do
+      Thread.new do
         catching_standard_errors do
           Adhearsion::Console.run
         end

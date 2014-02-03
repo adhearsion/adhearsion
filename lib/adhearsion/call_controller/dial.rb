@@ -36,6 +36,13 @@ module Adhearsion
       # @option options [CallController] :confirm the controller to execute on the first outbound call to be answered, to give an opportunity to screen the call. The calls will be joined if the outbound call is still active after this controller completes.
       # @option options [Hash] :confirm_metadata Metadata to set on the confirmation controller before executing it. This is shared between all calls if dialing multiple endpoints; if you care about it being mutated, you should provide an immutable value (using eg https://github.com/harukizaemon/hamster).
       #
+      # @option options [Hash] :join_options Options to specify the kind of join operation to perform. See `Call#join` for details.
+      # @option options [Call, String, Hash] :join_target the target to join to. May be a Call object, a call ID (String, Hash) or a mixer name (Hash). See `Call#join` for details.
+      #
+      # @option options [#call] :pre_join A callback to be executed immediately prior to answering and joining a successful call. Is called with a single parameter which is the outbound call being joined.
+      #
+      # @option options [Array, #call] :ringback A collection of audio (see #play for acceptable values) to render as a replacement for ringback. If a callback is passed, it will be used to start ringback, and must return something that responds to #stop! to stop it.
+      #
       # @example Make a call to the PSTN using my SIP provider for VoIP termination
       #   dial "SIP/19095551001@my.sip.voip.terminator.us"
       #
@@ -49,10 +56,13 @@ module Adhearsion
       #
       def dial(to, options = {})
         dial = Dial.new to, options, call
-        dial.run
+        dial.run(self)
         dial.await_completion
+        dial.terminate_ringback
         dial.cleanup_calls
         dial.status
+      ensure
+        catching_standard_errors { dial.delete_logger if dial }
       end
 
       # Dial one or more third parties and join one to this call after execution of a confirmation controller.
@@ -63,10 +73,13 @@ module Adhearsion
       # @see #dial
       def dial_and_confirm(to, options = {})
         dial = ParallelConfirmationDial.new to, options, call
-        dial.run
+        dial.run(self)
         dial.await_completion
+        dial.terminate_ringback
         dial.cleanup_calls
         dial.status
+      ensure
+        catching_standard_errors { dial.delete_logger if dial }
       end
 
       class Dial
@@ -74,6 +87,7 @@ module Adhearsion
 
         def initialize(to, options, call)
           raise Call::Hangup unless call.alive? && call.active?
+          @id = SecureRandom.uuid
           @options, @call = options, call
           @targets = to.respond_to?(:has_key?) ? to : Array(to)
           @call_targets = {}
@@ -81,12 +95,13 @@ module Adhearsion
         end
 
         def inspect
-          "#<#{self.class} to=#{@to.inspect} options=#{@options.inspect}>"
+          "#<#{self.class}[#{@id}] to=#{@to.inspect} options=#{@options.inspect}>"
         end
 
         # Prep outbound calls, link call lifecycles and place outbound calls
-        def run
+        def run(controller)
           track_originating_call
+          start_ringback controller
           prep_calls
           place_calls
         end
@@ -103,18 +118,41 @@ module Adhearsion
         end
 
         #
+        # Starts ringback on the specified controller
+        #
+        # @param [Adhearsion::CallController] controller the controller on which to play ringback
+        def start_ringback(controller)
+          return unless @ringback
+          @ringback_component = if @ringback.respond_to?(:call)
+            @ringback.call
+          else
+            controller.play! @ringback, repeat_times: 0
+          end
+        end
+
+        #
+        # Terminates any ringback that might be playing
+        #
+        def terminate_ringback
+          return unless @ringback_component
+          return unless @ringback_component.executing?
+          @ringback_component.stop!
+        end
+
+        #
         # Prepares a set of OutboundCall actors to be dialed and links their lifecycles to the Dial operation
         #
         # @yield Each call to the passed block for further setup operations
         def prep_calls
-          @calls = @targets.map do |target, specific_options|
+          @calls = Set.new
+          @targets.map do |target, specific_options|
             new_call = OutboundCall.new
 
             join_status = JoinStatus.new
             status.joins[new_call] = join_status
 
             new_call.on_end do |event|
-              @latch.countdown! unless new_call["dial_countdown_#{@call.id}"]
+              @latch.countdown! unless new_call["dial_countdown_#{@id}"]
               if event.reason == :error
                 status.error!
                 join_status.errored!
@@ -127,7 +165,7 @@ module Adhearsion
               new_call.on_unjoined @call do |unjoined|
                 join_status.ended
                 unless @splitting
-                  new_call["dial_countdown_#{@call.id}"] = true
+                  new_call["dial_countdown_#{@id}"] = true
                   @latch.countdown!
                 end
               end
@@ -145,7 +183,10 @@ module Adhearsion
                 pre_join_tasks new_call
                 @call.answer
                 join_status.started
-                new_call.join @call
+                new_call.join @join_target, @join_options
+                unless @join_target == @call
+                  @call.join @join_target, @join_options
+                end
                 status.answer!
               elsif status.result == :answer
                 join_status.lost_confirmation!
@@ -156,7 +197,7 @@ module Adhearsion
 
             yield new_call if block_given?
 
-            new_call
+            @calls << new_call
           end
 
           status.calls = @calls
@@ -183,29 +224,49 @@ module Adhearsion
         def split(targets = {})
           logger.info "Splitting calls apart"
           @splitting = true
-          @calls.each do |call|
-            logger.info "Unjoining peer #{call.id}"
-            ignoring_missing_joins { @call.unjoin call.id }
-            if split_controller = targets[:others]
-              logger.info "Executing split controller #{split_controller} on #{call.id}"
-              call.execute_controller split_controller.new(call, 'current_dial' => self), targets[:others_callback]
+          calls_to_split = @calls.map do |call|
+            ignoring_ended_calls do
+              [call.id, call] if call.active?
+            end
+          end.compact
+          logger.info "Splitting peer calls #{calls_to_split.map(&:first).join ", "}"
+          calls_to_split.each do |id, call|
+            ignoring_ended_calls do
+              logger.info "Unjoining peer #{call.id} from #{join_target}"
+              ignoring_missing_joins { call.unjoin join_target }
+              if split_controller = targets[:others]
+                logger.info "Executing split controller #{split_controller} on #{call.id}"
+                call.execute_controller split_controller.new(call, 'current_dial' => self), targets[:others_callback]
+              end
             end
           end
-          if split_controller = targets[:main]
-            logger.info "Executing split controller #{split_controller} on main call"
-            @call.execute_controller split_controller.new(@call, 'current_dial' => self), targets[:main_callback]
+          ignoring_ended_calls do
+            if join_target != @call
+              logger.info "Unjoining main call #{@call.id} from #{join_target}"
+              @call.unjoin join_target
+            end
+            if split_controller = targets[:main]
+              logger.info "Executing split controller #{split_controller} on main call"
+              @call.execute_controller split_controller.new(@call, 'current_dial' => self), targets[:main_callback]
+            end
           end
         end
 
         # Rejoin parties that were previously split
         # @param [Call, String, Hash] target The target to join calls to. See Call#join for details.
-        def rejoin(target = @call)
+        # @param [Hash] join_options Options to specify the kind of join operation to perform. See `Call#join` for details.
+        def rejoin(target = nil, join_options = nil)
+          target ||= join_target
+          join_options ||= @join_options
           logger.info "Rejoining to #{target}"
-          unless target == @call
-            @call.join target
+          ignoring_ended_calls do
+            unless target == @call
+              @join_target = target
+              @call.join target, join_options
+            end
           end
           @calls.each do |call|
-            call.join target
+            ignoring_ended_calls { call.join target, join_options }
           end
         end
 
@@ -213,16 +274,15 @@ module Adhearsion
         # @param [Dial] other the other dial operation to merge calls from
         def merge(other)
           logger.info "Merging with #{other.inspect}"
-          mixer_name = SecureRandom.uuid
 
           split
           other.split
 
-          rejoin mixer_name: mixer_name
-          other.rejoin mixer_name: mixer_name
+          rejoin({mixer_name: @id}, {})
+          other.rejoin({mixer_name: @id}, {})
 
           calls_to_merge = other.status.calls + [other.root_call]
-          @calls.concat calls_to_merge
+          @calls.merge calls_to_merge
 
           latch = CountDownLatch.new calls_to_merge.size
           calls_to_merge.each do |call|
@@ -236,7 +296,9 @@ module Adhearsion
         def await_completion
           @latch.wait(@options[:timeout]) || status.timeout!
           return unless status.result == :answer
+          logger.debug "Main calls were completed, waiting for any added calls: #{@waiters.inspect}"
           @waiters.each(&:wait)
+          logger.debug "All calls were completed, unblocking."
         end
 
         #
@@ -249,9 +311,8 @@ module Adhearsion
         # Hangup any remaining calls
         def cleanup_calls
           calls_to_hangup = @calls.map do |call|
-            begin
+            ignoring_ended_calls do
               [call.id, call] if call.active?
-            rescue Celluloid::DeadActorError
             end
           end.compact
           if calls_to_hangup.size.zero?
@@ -263,13 +324,13 @@ module Adhearsion
           else
             logger.info "#dial finished. Hanging up #{calls_to_hangup.size} outbound calls which are still active: #{calls_to_hangup.map(&:first).join ", "}."
             calls_to_hangup.each do |id, outbound_call|
-              begin
-                outbound_call.hangup
-              rescue Celluloid::DeadActorError
-                # This actor may previously have been shut down due to the call ending
-              end
+              ignoring_ended_calls { outbound_call.hangup }
             end
           end
+        end
+
+        def delete_logger
+          ::Logging::Repository.instance.delete logger_id
         end
 
         protected
@@ -279,6 +340,15 @@ module Adhearsion
         end
 
         private
+
+        # @private
+        def logger_id
+          "#{self.class}: #{@id}"
+        end
+
+        def join_target
+          @join_target || @call
+        end
 
         def set_defaults
           @status = DialStatus.new
@@ -294,6 +364,12 @@ module Adhearsion
           @confirmation_controller = @options.delete :confirm
           @confirmation_metadata = @options.delete :confirm_metadata
 
+          @pre_join = @options.delete :pre_join
+          @ringback = @options.delete :ringback
+
+          @join_options = @options.delete(:join_options) || {}
+          @join_target = @options.delete(:join_target) || @call
+
           @skip_cleanup = false
         end
 
@@ -305,15 +381,15 @@ module Adhearsion
         end
 
         def pre_join_tasks(call)
+          @pre_join[call] if @pre_join
+          terminate_ringback
         end
 
         def on_all_except(call)
           @calls.each do |target_call|
-            begin
+            ignoring_ended_calls do
               next if target_call.id == call.id
               yield target_call
-            rescue Celluloid::DeadActorError
-              # This actor may previously have been shut down due to the call ending
             end
           end
         end
@@ -322,6 +398,12 @@ module Adhearsion
           yield
         rescue Punchblock::ProtocolError => e
           raise unless e.name == :service_unavailable
+        end
+
+        def ignoring_ended_calls
+          yield
+        rescue Celluloid::DeadActorError, Adhearsion::Call::Hangup, Adhearsion::Call::ExpiredError
+          # This actor may previously have been shut down due to the call ending
         end
       end
 
@@ -337,6 +419,7 @@ module Adhearsion
         end
 
         def pre_join_tasks(call)
+          super
           on_all_except call do |target_call|
             if @apology_controller
               logger.info "#dial apologising to call #{target_call.id} because this call has been confirmed by another channel"

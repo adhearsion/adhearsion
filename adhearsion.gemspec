@@ -12,6 +12,10 @@ Gem::Specification.new do |s|
   s.summary     = "Adhearsion, open-source telephony development framework"
   s.description = "Adhearsion is an open-source telephony development framework"
 
+  s.license = 'MIT'
+
+  s.required_ruby_version = '>= 1.9.3'
+
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
@@ -25,11 +29,11 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'deep_merge'
   s.add_runtime_dependency 'ffi', ["~> 1.0"]
   s.add_runtime_dependency 'girl_friday'
-  s.add_runtime_dependency 'has-guarded-handlers', ["~> 1.5"]
+  s.add_runtime_dependency 'has-guarded-handlers', ["~> 1.6"]
   s.add_runtime_dependency 'jruby-openssl' if RUBY_PLATFORM == 'java'
   s.add_runtime_dependency 'logging', ["~> 1.8"]
   s.add_runtime_dependency 'pry'
-  s.add_runtime_dependency 'punchblock', ["~> 2.0"]
+  s.add_runtime_dependency 'punchblock', ["~> 2.3"]
   s.add_runtime_dependency 'rake'
   s.add_runtime_dependency 'ruby_speech', ["~> 2.0"]
   s.add_runtime_dependency 'thor', "~> 0.18.0"
@@ -43,6 +47,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'simplecov'
   s.add_development_dependency 'simplecov-rcov'
   s.add_development_dependency 'yard'
+  s.add_development_dependency 'guard-yard'
   s.add_development_dependency 'coveralls'
   s.add_development_dependency 'timecop'
 end

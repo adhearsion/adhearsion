@@ -11,6 +11,7 @@ module Adhearsion
       autoload :Player
 
       PlaybackError = Class.new Adhearsion::Error # Represents failure to play audio, such as when the sound file cannot be found
+      NoDocError = Class.new Adhearsion::Error # Represents failure to provide documents to playback
 
       #
       # Speak output using text-to-speech (TTS)
@@ -18,9 +19,10 @@ module Adhearsion
       # @param [String, #to_s] text The text to be rendered
       # @param [Hash] options A set of options for output
       #
-      # @raises [PlaybackError] if the given argument could not be played
+      # @raise [PlaybackError] if the given argument could not be played
       #
       def say(text, options = {})
+        return unless text
         player.play_ssml(text, options) || player.output(output_formatter.ssml_for_text(text.to_s), options)
       end
       alias :speak :say
@@ -31,9 +33,10 @@ module Adhearsion
       # @param [String, #to_s] text The text to be rendered
       # @param [Hash] options A set of options for output
       #
-      # @raises [PlaybackError] if the given argument could not be played
+      # @raise [PlaybackError] if the given argument could not be played
       #
       def say!(text, options = {})
+        return unless text
         async_player.play_ssml(text, options) || async_player.output(output_formatter.ssml_for_text(text.to_s), options)
       end
       alias :speak! :say!
@@ -47,7 +50,7 @@ module Adhearsion
       # @param [String, #to_s] characters The string of characters to be spoken
       # @param [Hash] options A set of options for output
       #
-      # @raises [PlaybackError] if the given argument could not be played
+      # @raise [PlaybackError] if the given argument could not be played
       #
       def say_characters(characters, options = {})
         player.play_ssml output_formatter.ssml_for_characters(characters), options
@@ -62,7 +65,7 @@ module Adhearsion
       # @param [String, #to_s] characters The string of characters to be spoken
       # @param [Hash] options A set of options for output
       #
-      # @raises [PlaybackError] if the given argument could not be played
+      # @raise [PlaybackError] if the given argument could not be played
       #
       def say_characters!(characters, options = {})
         async_player.play_ssml output_formatter.ssml_for_characters(characters), options
@@ -88,12 +91,15 @@ module Adhearsion
       # @example Play two sound files
       #   play "/path/to/you-sound-cute.mp3", "/path/to/what-are-you-wearing.wav"
       #
-      # @raises [PlaybackError] if (one of) the given argument(s) could not be played
+      # @raise [PlaybackError] if (one of) the given argument(s) could not be played
       #
-      def play(*arguments)
-        options = process_output_options arguments
-        player.play_ssml output_formatter.ssml_for_collection(arguments), options
+      def play(*outputs, options)
+        options = process_output_options outputs, options
+        ssml = output_formatter.ssml_for_collection(outputs) || return
+        player.play_ssml ssml, options
         true
+      rescue NoDocError
+        false
       end
 
       #
@@ -116,12 +122,15 @@ module Adhearsion
       # @example Play two sound files
       #   play "/path/to/you-sound-cute.mp3", "/path/to/what-are-you-wearing.wav"
       #
-      # @raises [PlaybackError] if (one of) the given argument(s) could not be played
-      # @returns [Punchblock::Component::Output]
+      # @raise [PlaybackError] if (one of) the given argument(s) could not be played
+      # @return [Punchblock::Component::Output]
       #
-      def play!(*arguments)
-        options = process_output_options arguments
-        async_player.play_ssml output_formatter.ssml_for_collection(arguments), options
+      def play!(*outputs, options)
+        options = process_output_options outputs, options
+        ssml = output_formatter.ssml_for_collection(outputs) || return
+        async_player.play_ssml ssml, options
+      rescue NoDocError
+        false
       end
 
       #
@@ -134,7 +143,7 @@ module Adhearsion
       # @option options [String] :fallback The text to play if the file is not available
       # @option options [Symbol] :renderer The media engine to use for rendering the file
       #
-      # @raises [PlaybackError] if (one of) the given argument(s) could not be played
+      # @raise [PlaybackError] if (one of) the given argument(s) could not be played
       #
       def play_audio(file, options = {})
         renderer = options.delete :renderer
@@ -151,8 +160,8 @@ module Adhearsion
       # @param [Hash] options Additional options to specify how exactly to say time specified.
       # @option options [String] :fallback The text to play if the file is not available
       #
-      # @raises [PlaybackError] if (one of) the given argument(s) could not be played
-      # @returns [Punchblock::Component::Output]
+      # @raise [PlaybackError] if (one of) the given argument(s) could not be played
+      # @return [Punchblock::Component::Output]
       #
       def play_audio!(file, options = {})
         renderer = options.delete :renderer
@@ -172,7 +181,7 @@ module Adhearsion
       # @option options [String] :strftime This format is what defines the string that is sent to the Speech Synthesis Engine.
       #   It uses Time::strftime symbols.
       #
-      # @raises [ArgumentError] if the given argument can not be played
+      # @raise [ArgumentError] if the given argument can not be played
       #
       def play_time(time, options = {})
         raise ArgumentError unless [Date, Time, DateTime].include?(time.class) && options.is_a?(Hash)
@@ -193,8 +202,8 @@ module Adhearsion
       # @option options [String] :strftime This format is what defines the string that is sent to the Speech Synthesis Engine.
       #   It uses Time::strftime symbols.
       #
-      # @raises [ArgumentError] if the given argument can not be played
-      # @returns [Punchblock::Component::Output]
+      # @raise [ArgumentError] if the given argument can not be played
+      # @return [Punchblock::Component::Output]
       #
       def play_time!(time, options = {})
         raise ArgumentError unless [Date, Time, DateTime].include?(time.class) && options.is_a?(Hash)
@@ -206,9 +215,9 @@ module Adhearsion
       # When playing numbers, Adhearsion assumes you're saying the number, not the digits. For example, play("100")
       # is pronounced as "one hundred" instead of "one zero zero".
       #
-      # @param [Numeric, String] Numeric or String containing a valid Numeric, like "321".
+      # @param [Numeric, String] number Numeric or String containing a valid Numeric, like "321".
       #
-      # @raises [ArgumentError] if the given argument can not be played
+      # @raise [ArgumentError] if the given argument can not be played
       #
       def play_numeric(number)
         raise ArgumentError unless number.kind_of?(Numeric) || number =~ /^\d+$/
@@ -221,10 +230,10 @@ module Adhearsion
       # When playing numbers, Adhearsion assumes you're saying the number, not the digits. For example, play("100")
       # is pronounced as "one hundred" instead of "one zero zero".
       #
-      # @param [Numeric, String] Numeric or String containing a valid Numeric, like "321".
+      # @param [Numeric, String] number Numeric or String containing a valid Numeric, like "321".
       #
-      # @raises [ArgumentError] if the given argument can not be played
-      # @returns [Punchblock::Component::Output]
+      # @raise [ArgumentError] if the given argument can not be played
+      # @return [Punchblock::Component::Output]
       #
       def play_numeric!(number)
         raise ArgumentError unless number.kind_of?(Numeric) || number =~ /^\d+$/
@@ -242,14 +251,14 @@ module Adhearsion
       #   input = interruptible_play ssml
       #   play input unless input.nil?
       #
-      # @param [String, Numeric, Date, Time, RubySpeech::SSML::Speak, Array, Hash] The argument to play to the user, or an array of arguments.
-      # @param [Hash] Additional options.
+      # @param [String, Numeric, Date, Time, RubySpeech::SSML::Speak, Array, Hash] outputs The argument to play to the user, or an array of arguments.
+      # @param [Hash] options Additional options.
       #
       # @return [String, nil] The single DTMF character entered by the user, or nil if nothing was entered
-      # @raises [PlaybackError] if (one of) the given argument(s) could not be played
+      # @raise [PlaybackError] if (one of) the given argument(s) could not be played
       #
-      def interruptible_play(*outputs)
-        options = process_output_options outputs
+      def interruptible_play(*outputs, options)
+        options = process_output_options outputs, options
         outputs.find do |output|
           digit = stream_file output, '0123456789#*', options
           return digit if digit
@@ -259,8 +268,8 @@ module Adhearsion
       #
       # Plays a single output, not only files, accepting interruption by one of the digits specified
       #
-      # @param [Object] String or Hash specifying output and options
-      # @param [String] String with the digits that are allowed to interrupt output
+      # @param [Object] argument String or Hash specifying output and options
+      # @param [String] digits String with the digits that are allowed to interrupt output
       #
       # @return [String, nil] The pressed digit, or nil if nothing was pressed
       # @private
@@ -296,8 +305,13 @@ module Adhearsion
       end
 
       # @private
-      def process_output_options(arguments)
-        arguments.last.is_a?(Hash) && arguments.count > 1 ? arguments.pop : {}
+      def process_output_options(outputs, options)
+        if options.is_a?(Hash) && outputs.count > 0
+          options
+        else
+          outputs << options
+          {}
+        end
       end
 
       #

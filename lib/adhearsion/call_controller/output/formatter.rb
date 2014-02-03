@@ -8,6 +8,9 @@ module Adhearsion
       class Formatter
 
         def ssml_for_collection(collection)
+          collection = collection.compact
+          raise NoDocError if collection.empty?
+
           collection.inject RubySpeech::SSML.draw do |doc, argument|
             doc + case argument
             when Hash
@@ -28,6 +31,8 @@ module Adhearsion
             :time
           when Numeric, /^\d+$/
             :numeric
+          when /^[\d\*\#]+$/
+            :characters
           when /^\//, ->(string) { uri? string }
             :audio
           else
@@ -45,7 +50,7 @@ module Adhearsion
         # Generates SSML for the argument and options passed, using automatic detection
         # Directly returns the argument if it is already an SSML document
         #
-        # @param [String, Hash, RubySpeech::SSML::Speak] the argument with options as accepted by the play_ methods, or an SSML document
+        # @param [String, Hash, RubySpeech::SSML::Speak] args the argument with options as accepted by the play_ methods, or an SSML document
         # @return [RubySpeech::SSML::Speak] an SSML document
         #
         def ssml_for(*args)
@@ -89,7 +94,7 @@ module Adhearsion
           end
         end
 
-        def ssml_for_characters(argument)
+        def ssml_for_characters(argument, options = {})
           RubySpeech::SSML.draw do
             say_as(interpret_as: 'characters') { string argument.to_s }
           end

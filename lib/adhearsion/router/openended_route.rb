@@ -8,7 +8,7 @@ module Adhearsion
       end
 
       def dispatch(call, callback = nil)
-        call[:ahn_prevent_hangup] = true
+        call.auto_hangup = false
         super
       end
     end

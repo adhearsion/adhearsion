@@ -338,6 +338,13 @@ module Adhearsion
         let(:extra_options) do
           { renderer: :native }
         end
+
+        describe "with a nil argument" do
+          it "is a noop" do
+            subject.play nil
+          end
+        end
+
         describe "with a single string" do
           let(:audio_file) { "/foo/bar.wav" }
           let :ssml do
@@ -357,15 +364,17 @@ module Adhearsion
         end
 
         describe "with multiple arguments" do
-          let(:args) { ["/foo/bar.wav", 1, Time.now] }
+          let(:args) { ["/foo/bar.wav", 1, Time.now, "123#"] }
           let :ssml do
             file = args[0]
             n = args[1].to_s
             t = args[2].to_s
+            c = args[3].to_s
             RubySpeech::SSML.draw do
               audio :src => file
               say_as(:interpret_as => 'cardinal') { n }
               say_as(:interpret_as => 'time') { t }
+              say_as(:interpret_as => 'characters') { c }
             end
           end
 
@@ -397,6 +406,12 @@ module Adhearsion
           it 'plays all arguments in one document' do
             expect_ssml_output ssml
             subject.play(args).should be true
+          end
+
+          context "that is empty" do
+            it "is a noop" do
+              subject.play []
+            end
           end
         end
 
@@ -496,6 +511,13 @@ module Adhearsion
         let(:extra_options) do
           { renderer: :native }
         end
+
+        describe "with a nil argument" do
+          it "is a noop" do
+            subject.play! nil
+          end
+        end
+
         describe "with a single string" do
           let(:audio_file) { "/foo/bar.wav" }
           let :ssml do
@@ -731,6 +753,12 @@ module Adhearsion
       end
 
       describe "#say" do
+        describe "with a nil argument" do
+          it "is a no-op" do
+            subject.say nil
+          end
+        end
+
         describe "with a RubySpeech document" do
           it 'plays the correct SSML' do
             ssml = RubySpeech::SSML.draw { string "Hello world" }
@@ -829,6 +857,12 @@ module Adhearsion
       end
 
       describe "#say!" do
+        describe "with a nil argument" do
+          it "is a noop" do
+            subject.say! nil
+          end
+        end
+
         describe "with a RubySpeech document" do
           it 'plays the correct SSML' do
             ssml = RubySpeech::SSML.draw { string "Hello world" }

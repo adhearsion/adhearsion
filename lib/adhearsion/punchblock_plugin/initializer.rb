@@ -127,7 +127,8 @@ module Adhearsion
 
         def dispatch_offer(offer)
           catching_standard_errors do
-            call = Adhearsion.active_calls.from_offer offer
+            call = Call.new(offer)
+            Adhearsion.active_calls << call
             case Adhearsion::Process.state_name
             when :booting, :rejecting
               logger.info "Declining call because the process is not yet running."
@@ -144,7 +145,7 @@ module Adhearsion
           if call = Adhearsion.active_calls[event.target_call_id]
             call.async.deliver_message event
           else
-            logger.error "Event received for inactive call #{event.target_call_id}: #{event.inspect}"
+            logger.warn "Event received for inactive call #{event.target_call_id}: #{event.inspect}"
           end
         end
 

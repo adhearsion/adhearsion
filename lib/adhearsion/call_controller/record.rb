@@ -8,20 +8,21 @@ module Adhearsion
       #
       # Handle a recording
       #
-      # @param [Adhearsion::CallController] controller on which to execute the recording
-      # @param [Hash] options
-      # @option options [Boolean, Optional] :async Execute asynchronously. Defaults to false
-      # @option options [Boolean, Optional] :start_beep Indicates whether subsequent record will be preceded with a beep. Default is true.
-      # @option options [Boolean, Optional] :start_paused Whether subsequent record will start in PAUSE mode. Default is false.
-      # @option options [String, Optional] :max_duration Indicates the maximum duration (seconds) for a recording.
-      # @option options [String, Optional] :format File format used during recording.
-      # @option options [String, Optional] :initial_timeout Controls how long (seconds) the recognizer should wait after the end of the prompt for the caller to speak before sending a Recorder event.
-      # @option options [String, Optional] :final_timeout Controls the length (seconds) of a period of silence after callers have spoken to conclude they finished.
-      # @option options [Boolean, Optional] :interruptible Allows the recording to be terminated by any single DTMF key, default is false
-      #
       class Recorder
         attr_accessor :record_component, :stopper_component
 
+        #
+        # @param [Adhearsion::CallController] controller on which to execute the recording
+        # @param [Hash] options
+        # @option options [Boolean, Optional] :async Execute asynchronously. Defaults to false
+        # @option options [Boolean, Optional] :start_beep Indicates whether subsequent record will be preceded with a beep. Default is true.
+        # @option options [Boolean, Optional] :start_paused Whether subsequent record will start in PAUSE mode. Default is false.
+        # @option options [String, Optional] :max_duration Indicates the maximum duration (seconds) for a recording.
+        # @option options [String, Optional] :format File format used during recording.
+        # @option options [String, Optional] :initial_timeout Controls how long (seconds) the recognizer should wait after the end of the prompt for the caller to speak before sending a Recorder event.
+        # @option options [String, Optional] :final_timeout Controls the length (seconds) of a period of silence after callers have spoken to conclude they finished.
+        # @option options [Boolean, Optional] :interruptible Allows the recording to be terminated by any single DTMF key, default is false
+        #
         def initialize(controller, options = {})
           @controller = controller
 
@@ -98,7 +99,7 @@ module Adhearsion
       # Start a recording
       #
       # @example Record in a blocking way and use result
-      #   record_result = record :start_beep => true, :max_duration => 60_000
+      #   record_result = record :start_beep => true, :max_duration => 60
       #   logger.info "Recording saved to #{record_result.complete_event.recording.uri}"
       # @example Asynchronous recording, execution of the controller will continue
       #   record :async => true do |event|
@@ -106,7 +107,6 @@ module Adhearsion
       #   end
       #
       # @param [Hash] options
-      # @param [Block] block to process result of the record method, it will receive the complete Event for the method.
       # @option options [Boolean, Optional] :async Execute asynchronously. Defaults to false
       # @option options [Boolean, Optional] :start_beep Indicates whether subsequent record will be preceded with a beep. Default is true.
       # @option options [Boolean, Optional] :start_paused Whether subsequent record will start in PAUSE mode. Default is false.
@@ -115,6 +115,9 @@ module Adhearsion
       # @option options [String, Optional] :initial_timeout Controls how long (seconds) the recognizer should wait after the end of the prompt for the caller to speak before sending a Recorder event.
       # @option options [String, Optional] :final_timeout Controls the length (seconds) of a period of silence after callers have spoken to conclude they finished.
       # @option options [Boolean, String, Optional] :interruptible Allows the recording to be terminated by any single DTMF key, default is false
+      #
+      # @yield [event] Handle the recording completion event asyncronously.
+      # @yieldparam [Punchblock::Event::Complete] event the complete event for the recording
       #
       # @return Punchblock::Component::Record
       #

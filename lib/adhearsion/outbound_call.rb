@@ -2,7 +2,7 @@
 
 module Adhearsion
   class OutboundCall < Call
-    execute_block_on_receiver :register_handler, :register_tmp_handler, :register_handler_with_priority, :register_event_handler, :on_joined, :on_unjoined, :on_end, :execute_controller, :on_answer, :execute_controller_or_router_on_answer
+    execute_block_on_receiver :on_answer, :execute_controller_or_router_on_answer, *execute_block_on_receiver
 
     attr_reader :dial_command
 
@@ -73,7 +73,7 @@ module Adhearsion
         wait_timeout = 60
       end
 
-      write_and_await_response(Punchblock::Command::Dial.new(options), wait_timeout).tap do |dial_command|
+      write_and_await_response(Punchblock::Command::Dial.new(options), wait_timeout, true).tap do |dial_command|
         @dial_command = dial_command
         Adhearsion.active_calls << current_actor
         Adhearsion::Events.trigger_immediately :call_dialed, current_actor
@@ -95,15 +95,11 @@ module Adhearsion
     def run_router_on_answer
       register_event_handler Punchblock::Event::Answered do |event|
         run_router
-        throw :pass
       end
     end
 
     def on_answer(&block)
-      register_event_handler Punchblock::Event::Answered do |event|
-        block.call event
-        throw :pass
-      end
+      register_event_handler Punchblock::Event::Answered, &block
     end
 
     def execute_controller_or_router_on_answer(controller, metadata = {}, &controller_block)

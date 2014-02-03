@@ -16,6 +16,7 @@ module Adhearsion
       end
 
       desc "create /path/to/directory", "Create a new Adhearsion application under the given path"
+      method_option :empty, type: :boolean
       def create(path)
         require 'adhearsion/generators/app/app_generator'
         Generators::AppGenerator.start

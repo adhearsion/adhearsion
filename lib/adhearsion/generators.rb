@@ -28,7 +28,7 @@ module Adhearsion
         klass.start args
       end
 
-      ##
+      #
       # Return a ordered list of task with their class
       #
       def mappings
@@ -38,20 +38,18 @@ module Adhearsion
       ##
       # Globally add a new generator class to +ahn generate+
       #
-      # @param [Symbol] name
-      # key name for generator mapping
-      # @param [Class] klass
-      # class of generator
+      # @param [Symbol] name key name for generator mapping
+      # @param [Class] klass class of generator
       #
       # @return [Hash] generator mappings
       #
       # @example
-      # Adhearsion::Generators.add_generator :myplugin, MyPluginGenerator
+      #   Adhearsion::Generators.add_generator :myplugin, MyPluginGenerator
       #
       def add_generator(name, klass)
         mappings[name] = klass
       end
 
-    end#class << self
-  end#module
-end#module
+    end
+  end
+end

@@ -33,6 +33,8 @@ RSpec.configure do |config|
 
   config.before :suite do
     Adhearsion::Logging.start Adhearsion::Logging.default_appenders, :trace, Adhearsion.config.platform.logging.formatter
+    Adhearsion.config.platform.after_hangup_lifetime = 10
+    Adhearsion::Initializer.new.initialize_exception_logger
   end
 
   config.before :each do
