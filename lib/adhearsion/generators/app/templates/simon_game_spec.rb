@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require 'spec_helper'
+require 'call_controllers/simon_game'
 
 describe SimonGame do
 
