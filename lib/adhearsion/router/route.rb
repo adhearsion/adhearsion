@@ -39,10 +39,10 @@ module Adhearsion
         call.execute_controller controller, lambda { |call_actor|
           begin
             if call_actor.auto_hangup
-              logger.info "Call routing completed. Hanging up now..."
+              logger.info "Call routing completed. Hanging up now."
               call_actor.hangup
             else
-              logger.info "Call routing completed, keeping the call alive at controller/router request."
+              logger.info "Call routing completed. Keeping the call alive at controller/router request."
             end
           rescue Call::Hangup, Call::ExpiredError
           end
