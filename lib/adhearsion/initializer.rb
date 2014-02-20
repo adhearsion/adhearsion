@@ -217,7 +217,11 @@ module Adhearsion
       appenders.map! do |a|
         case a
         when String
-          f = File.expand_path(Adhearsion.config.root.dup.concat("/").concat(a)) unless a.start_with?("/")
+          f = if a.start_with?("/")
+            File.expand_path(Adhearsion.config.root.dup.concat("/").concat(a))
+          else
+            a
+          end
           ::Logging.appenders.file(f,
             :layout => ::Logging.layouts.pattern(
               :pattern => Adhearsion::Logging.adhearsion_pattern
