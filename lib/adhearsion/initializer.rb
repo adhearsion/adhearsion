@@ -218,9 +218,9 @@ module Adhearsion
         case a
         when String
           f = if a.start_with?("/")
-            File.expand_path(Adhearsion.config.root.dup.concat("/").concat(a))
-          else
             a
+          else
+            File.expand_path(Adhearsion.config.root.dup.concat("/").concat(a))
           end
           ::Logging.appenders.file(f,
             :layout => ::Logging.layouts.pattern(
