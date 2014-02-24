@@ -6,6 +6,7 @@ task :environment do
   begin
     Adhearsion.config # load default config vlaues
     initializer = Adhearsion::Initializer.new
+    initializer.configure_plugins
     initializer.load_lib_folder
     initializer.load_config_file
   rescue Exception => ex

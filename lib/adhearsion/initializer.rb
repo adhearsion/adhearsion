@@ -40,6 +40,7 @@ module Adhearsion
     def start
       catch :boot_aborted do
         resolve_pid_file_path
+        configure_plugins
         load_lib_folder
         load_config_file
         load_events_file
@@ -239,6 +240,10 @@ module Adhearsion
       else
         appenders += Adhearsion::Logging.default_appenders
       end
+    end
+
+    def configure_plugins
+      Plugin.configure_plugins
     end
 
     def init_plugins
