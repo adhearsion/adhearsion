@@ -3,6 +3,7 @@
   * Bugfix: Log to correct file when supplying an absolute path
   * Bugfix: Delay configuring plugins until after initialisation. Allows plugin config to use things which are not set until initialisation like the current working directory, Adhearsion.root, etc. https://github.com/adhearsion/adhearsion-i18n/issues/4
   * Bugfix: Calls which are dead but can still be found now log a warning when receiving events
+  * Bugfix: Cleanup generated application routes spacing
 
 # [2.5.0](https://github.com/adhearsion/adhearsion/compare/v2.4.0...v2.5.0) - [2014-02-03](https://rubygems.org/gems/adhearsion/versions/2.5.0)
   * **Change: Ruby 1.9.2 is no longer supported**
