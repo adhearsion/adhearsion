@@ -439,7 +439,11 @@ module Adhearsion
       abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
       merge_headers command.headers if command.respond_to? :headers
       logger.debug "Executing command #{command.inspect}"
-      client.execute_command command, call_id: id, domain: domain, async: true
+      unless command.is_a?(Punchblock::Command::Dial)
+        command.target_call_id = id
+        command.domain = domain
+      end
+      client.execute_command command
     end
 
     ##
