@@ -278,6 +278,12 @@ module Adhearsion
           sleep 0.1
           subject.should_not be_alive
         end
+
+        it "should remove the call from the active calls hash" do
+          expect { subject.dial to }.to raise_error("User not registered")
+          sleep 0.1
+          Adhearsion.active_calls[call_id].should be_nil
+        end
       end
     end
 
