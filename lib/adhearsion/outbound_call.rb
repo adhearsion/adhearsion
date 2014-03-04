@@ -83,7 +83,7 @@ module Adhearsion
     # @private
     def register_initial_handlers
       super
-      on_answer { |event| @start_time = Time.now }
+      on_answer { |event| @start_time = event.timestamp.to_time }
     end
 
     def run_router
