@@ -163,7 +163,7 @@ module Adhearsion
               pre_confirmation_tasks new_call
 
               new_call.on_unjoined @call do |unjoined|
-                join_status.ended
+                join_status.ended unjoined.timestamp.to_time
                 unless @splitting
                   new_call["dial_countdown_#{@id}"] = true
                   @latch.countdown!
@@ -520,8 +520,8 @@ module Adhearsion
           @result = :joined
         end
 
-        def ended
-          @end_time = Time.now
+        def ended(time)
+          @end_time = time
         end
       end
 

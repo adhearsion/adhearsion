@@ -18,13 +18,15 @@ module Adhearsion
     let(:to)      { 'sip:you@there.com' }
     let(:from)    { 'sip:me@here.com' }
     let(:transport) { 'footransport' }
+    let(:base_time) { Time.local(2008, 9, 1, 12, 0, 0) }
     let :offer do
       Punchblock::Event::Offer.new target_call_id: call_id,
                                    domain: domain,
                                    transport: transport,
                                    to: to,
                                    from: from,
-                                   headers: headers
+                                   headers: headers,
+                                   timestamp: base_time
     end
 
     subject { Adhearsion::Call.new offer }
@@ -85,8 +87,6 @@ module Adhearsion
     end
 
     it "should mark its start time" do
-      base_time = Time.local(2008, 9, 1, 12, 0, 0)
-      Timecop.freeze base_time
       subject.start_time.should == base_time
     end
 

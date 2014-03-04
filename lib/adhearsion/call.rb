@@ -195,7 +195,7 @@ module Adhearsion
       register_event_handler Punchblock::Event::Offer do |offer|
         @offer  = offer
         @client = offer.client
-        @start_time = Time.now
+        @start_time = offer.timestamp.to_time
       end
 
       register_event_handler Punchblock::HasHeaders do |event|
@@ -231,7 +231,7 @@ module Adhearsion
 
       on_end do |event|
         logger.info "Call ended due to #{event.reason}"
-        @end_time = Time.now
+        @end_time = event.timestamp.to_time
         @duration = @end_time - @start_time if @start_time
         clear_from_active_calls
         @end_reason = event.reason
