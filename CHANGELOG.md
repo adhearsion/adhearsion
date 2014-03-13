@@ -2,7 +2,7 @@
   * Bugfix: Avoid race conditions in event delivery for outbound calls. **note: This requires a Rayo server compliant with Rayo v0.4, which includes changes outlined in [rayo/xmpp#89](https://github.com/rayo/xmpp/issues/89). For FreeSWITCH mod_rayo, this means v1.2.23 of FreeSWITCH or the latest v1.2.stable branch.** ([#439](https://github.com/adhearsion/adhearsion/issues/444))
   * Bugfix: Fix some omissions in 2.5.0 relating to the new application layout ([#439](https://github.com/adhearsion/adhearsion/pull/439))
   * Bugfix: Log to correct file when supplying an absolute path
-  * Bugfix: Delay configuring plugins until after initialisation. Allows plugin config to use things which are not set until initialisation like the current working directory, Adhearsion.root, etc. https://github.com/adhearsion/adhearsion-i18n/issues/4
+  * Bugfix: Delay configuring plugins until after initialisation. Allows plugin config to use things which are not set until initialisation like the current working directory, Adhearsion.root, etc. ([adhearsion/adhearsion-i18n#4](https://github.com/adhearsion/adhearsion-i18n/issues/4))
   * Bugfix: Calls which are dead but can still be found now log a warning when receiving events
   * Bugfix: Cleanup generated application routes spacing
 
