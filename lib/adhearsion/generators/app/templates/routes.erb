@@ -1,19 +1,18 @@
 # encoding: utf-8
 
-<% unless options[:empty] %>
+<% unless options[:empty] -%>
 require 'call_controllers/simon_game'
-<% end %>
 
+<% end -%>
 Adhearsion.router do
-<% if options[:empty] %>
+<% if options[:empty] -%>
   route 'default' do
 
   end
-<% else %>
-  #
+<% else -%>
+
   # Specify your call routes, directing calls with particular attributes to a controller
-  #
 
   route 'default', SimonGame
-<% end %>
+<% end -%>
 end
