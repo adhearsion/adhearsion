@@ -9,7 +9,7 @@ module Adhearsion
     def initialize
       @mutex = ::Monitor.new
       @calls = {}
-      @supervisor = Supervisor.new self
+      restart_supervisor
     end
 
     def <<(call)
@@ -44,6 +44,11 @@ module Adhearsion
 
     def with_uri(uri)
       by_uri[uri]
+    end
+
+    def restart_supervisor
+      @supervisor.terminate if @supervisor
+      @supervisor = Supervisor.new self
     end
 
     private
