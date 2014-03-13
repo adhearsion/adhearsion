@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * **Change**: Named environments no longer influence choice of configuration. `RAILS_ENV` is no longer inherited, and `Adhearsion.environment` simply reflects the `AHN_ENV` environment variable. This is retained purely for the purpose of chosing appropriate groups from an application `Gemfile`.
   * Bugfix: Avoid race conditions in event delivery for outbound calls. **note: This requires a Rayo server compliant with Rayo v0.4, which includes changes outlined in [rayo/xmpp#89](https://github.com/rayo/xmpp/issues/89). For FreeSWITCH mod_rayo, this means v1.2.23 of FreeSWITCH or the latest v1.2.stable branch.** ([#439](https://github.com/adhearsion/adhearsion/issues/444))
   * Bugfix: Fix some omissions in 2.5.0 relating to the new application layout ([#439](https://github.com/adhearsion/adhearsion/pull/439))
   * Bugfix: Log to correct file when supplying an absolute path

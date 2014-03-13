@@ -17,8 +17,6 @@ module Adhearsion
     #
     # @return [Adhearsion::Configuration]
     def initialize(&block)
-      initialize_environments
-
       Loquacious.env_config = true
       Loquacious.env_prefix = "AHN"
 
@@ -29,10 +27,6 @@ module Adhearsion
           Folder to include the own libraries to be used. Adhearsion loads any ruby file
           located into this folder during the bootstrap process. Set to nil if you do not
           want these files to be loaded. This folder is relative to the application root folder.
-        __
-
-        environment :development, :transform => Proc.new { |v| v.to_sym }, :desc => <<-__
-          Active environment. Supported values: development, production, staging, test
         __
 
         process_name "ahn", :desc => <<-__
@@ -69,32 +63,6 @@ module Adhearsion
       Loquacious::Configuration.for :platform, &block if block_given?
 
       self
-    end
-
-    def initialize_environments
-      # Create a method per each valid environment that, when invoked, may execute
-      # the block received if the environment is active
-      valid_environments.each do |enviro|
-        add_environment enviro
-      end
-    end
-
-    def valid_environment?(env)
-      env && self.valid_environments.include?(env.to_sym)
-    end
-
-    def valid_environments
-      @valid_environments ||= [:production, :development, :staging, :test]
-    end
-
-    def add_environment(env)
-      return if self.class.method_defined? env.to_sym
-      self.class.send(:define_method, env.to_sym) do |*args, &block|
-        unless block.nil? || env != self.platform.environment.to_sym
-          self.instance_eval(&block)
-        end
-        self
-      end
     end
 
     ##
