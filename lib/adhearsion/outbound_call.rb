@@ -33,11 +33,19 @@ module Adhearsion
     end
 
     def id
-      dial_command.target_call_id if dial_command
+      if dial_command
+        dial_command.target_call_id || @id
+      else
+        @id
+      end
     end
 
     def domain
-      dial_command.domain if dial_command
+      if dial_command
+        dial_command.domain || @domain
+      else
+        @domain
+      end
     end
 
     def client
@@ -73,11 +81,24 @@ module Adhearsion
         wait_timeout = 60
       end
 
-      write_and_await_response(Punchblock::Command::Dial.new(options), wait_timeout, true).tap do |dial_command|
-        @dial_command = dial_command
-        Adhearsion.active_calls << current_actor
+      uri = client.new_call_uri
+      options[:uri] = uri
+
+      @dial_command = Punchblock::Command::Dial.new(options)
+
+      ref = Punchblock::Ref.new uri: uri
+      @transport = ref.scheme
+      @id = ref.call_id
+      @domain = ref.domain
+
+      Adhearsion.active_calls << current_actor
+
+      write_and_await_response(@dial_command, wait_timeout, true).tap do |dial_command|
         Adhearsion::Events.trigger_immediately :call_dialed, current_actor
       end
+    rescue
+      clear_from_active_calls
+      raise
     end
 
     # @private
@@ -115,7 +136,11 @@ module Adhearsion
     private
 
     def transport
-      dial_command.transport if dial_command
+      if dial_command
+        dial_command.transport || @transport
+      else
+        @transport
+      end
     end
   end
 end
