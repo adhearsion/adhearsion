@@ -78,22 +78,22 @@ module Adhearsion
           it "blocks the original controller until the new call ends" do
             dial_in_thread
 
-            latch.wait(1).should be_false
+            latch.wait(2).should be_false
 
             other_mock_call << mock_end
 
-            latch.wait(1).should be_true
+            latch.wait(2).should be_true
           end
 
           it "unblocks the original controller if the original call ends" do
             other_mock_call.should_receive(:hangup).once
             dial_in_thread
 
-            latch.wait(1).should be_false
+            latch.wait(2).should be_false
 
             call << mock_end
 
-            latch.wait(1).should be_true
+            latch.wait(2).should be_true
           end
 
           it "joins the new call to the existing one on answer" do
@@ -102,12 +102,12 @@ module Adhearsion
 
             dial_in_thread
 
-            latch.wait(1).should be_false
+            latch.wait(2).should be_false
 
             other_mock_call << mock_answered
             other_mock_call << mock_end
 
-            latch.wait(1).should be_true
+            latch.wait(2).should be_true
           end
 
           context "with a join target specified" do
@@ -120,12 +120,12 @@ module Adhearsion
 
               dial_in_thread
 
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
 
               other_mock_call << mock_answered
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
             end
           end
 
@@ -140,12 +140,12 @@ module Adhearsion
 
               dial_in_thread
 
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
 
               other_mock_call << mock_answered
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
             end
           end
 
@@ -166,12 +166,12 @@ module Adhearsion
 
               dial_in_thread
 
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
 
               other_mock_call << mock_answered
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
             end
 
             context "as a callback" do
@@ -186,12 +186,12 @@ module Adhearsion
 
                 dial_in_thread
 
-                latch.wait(1).should be_false
+                latch.wait(2).should be_false
 
                 other_mock_call << mock_answered
                 other_mock_call << mock_end
 
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
               end
             end
 
@@ -202,11 +202,11 @@ module Adhearsion
 
                 t = dial_in_thread
 
-                latch.wait(1).should be_false
+                latch.wait(2).should be_false
 
                 other_mock_call << mock_end(:reject)
 
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
               end
             end
           end
@@ -218,12 +218,12 @@ module Adhearsion
 
             dial_in_thread
 
-            latch.wait(1).should be_false
+            latch.wait(2).should be_false
 
             other_mock_call << mock_answered
             call << mock_end
 
-            latch.wait(1).should be_true
+            latch.wait(2).should be_true
           end
 
           context "when the call is rejected" do
@@ -274,7 +274,7 @@ module Adhearsion
               other_mock_call << mock_answered
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               t.join
               status = t.value
@@ -303,7 +303,7 @@ module Adhearsion
               other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               t.join
               status = t.value
@@ -329,7 +329,7 @@ module Adhearsion
                 other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
                 other_mock_call << mock_end
 
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
 
                 t.join
               end
@@ -369,7 +369,7 @@ module Adhearsion
               dial.split
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               waiter_thread.join
               dial.status.result.should be == :answer
@@ -390,11 +390,11 @@ module Adhearsion
 
               dial.split
 
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
 
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               waiter_thread.join
               dial.status.result.should be == :answer
@@ -424,7 +424,7 @@ module Adhearsion
               Timecop.freeze base_time
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               waiter_thread.join
               status = dial.status
@@ -470,8 +470,8 @@ module Adhearsion
 
                 dial.split main: main_split_controller, others: others_split_controller, main_callback: ->(call) { self.callback(call) }, others_callback: ->(call) { self.callback(call) }
 
-                latch.wait(1).should be_false
-                split_latch.wait(1).should be_true
+                latch.wait(2).should be_false
+                split_latch.wait(2).should be_true
 
                 call['hit_split_controller'].should == main_split_controller
                 call['split_controller_metadata']['current_dial'].should be dial
@@ -481,7 +481,7 @@ module Adhearsion
 
                 other_mock_call << mock_end
 
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
@@ -514,7 +514,7 @@ module Adhearsion
 
                 other_mock_call << mock_end
 
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
@@ -586,7 +586,7 @@ module Adhearsion
 
                   other_mock_call << mock_end
 
-                  latch.wait(1).should be_true
+                  latch.wait(2).should be_true
 
                   waiter_thread.join
                   dial.status.result.should be == :answer
@@ -622,7 +622,7 @@ module Adhearsion
 
                   other_mock_call << mock_end
 
-                  latch.wait(1).should be_true
+                  latch.wait(2).should be_true
 
                   waiter_thread.join
                   dial.status.result.should be == :answer
@@ -662,7 +662,7 @@ module Adhearsion
 
                   other_mock_call << mock_end
 
-                  latch.wait(1).should be_true
+                  latch.wait(2).should be_true
 
                   waiter_thread.join
                   dial.status.result.should be == :answer
@@ -723,7 +723,7 @@ module Adhearsion
                 second_root_call.async << mock_end
                 second_other_mock_call.async << mock_end
 
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
@@ -761,7 +761,7 @@ module Adhearsion
                 second_root_call.async << mock_end
                 second_other_mock_call.async << mock_end
 
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
@@ -781,13 +781,13 @@ module Adhearsion
                 sleep 0.5
 
                 other_mock_call << mock_end
-                latch.wait(1).should be_false
+                latch.wait(2).should be_false
 
                 second_other_mock_call << mock_end
-                latch.wait(1).should be_false
+                latch.wait(2).should be_false
 
                 second_root_call << mock_end
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
@@ -812,7 +812,7 @@ module Adhearsion
                 sleep 0.5
 
                 call << mock_end
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
@@ -831,7 +831,7 @@ module Adhearsion
                 sleep 0.5
 
                 other_mock_call << mock_end
-                latch.wait(1).should be_false
+                latch.wait(2).should be_false
 
                 [call, second_root_call, second_other_mock_call].each do |call|
                   call.should_receive(:unjoin).once.with(mixer_name: mixer).and_return do
@@ -867,7 +867,7 @@ module Adhearsion
                   second_root_call.async << mock_end
                   second_other_mock_call.async << mock_end
 
-                  latch.wait(1).should be_true
+                  latch.wait(2).should be_true
 
                   waiter_thread.join
                   dial.status.result.should be == :answer
@@ -888,13 +888,13 @@ module Adhearsion
                   sleep 0.5
 
                   other_mock_call << mock_end
-                  latch.wait(1).should be_true
+                  latch.wait(2).should be_true
 
                   second_other_mock_call << mock_end
-                  latch.wait(1).should be_true
+                  latch.wait(2).should be_true
 
                   second_root_call << mock_end
-                  latch.wait(1).should be_true
+                  latch.wait(2).should be_true
 
                   waiter_thread.join
                   dial.status.result.should be == :answer
@@ -921,7 +921,7 @@ module Adhearsion
                   sleep 0.5
 
                   call << mock_end
-                  latch.wait(1).should be_true
+                  latch.wait(2).should be_true
 
                   waiter_thread.join
                   dial.status.result.should be == :answer
@@ -952,7 +952,7 @@ module Adhearsion
                   dial.split
 
                   other_mock_call << mock_end
-                  latch.wait(1).should be_false
+                  latch.wait(2).should be_false
 
                   [call, second_root_call, second_other_mock_call].each do |call|
                     call.should_receive(:join).once.with({mixer_name: mixer}, {}).and_return do
@@ -990,7 +990,7 @@ module Adhearsion
                   second_root_call.async << mock_end
                   second_other_mock_call.async << mock_end
 
-                  latch.wait(1).should be_true
+                  latch.wait(2).should be_true
 
                   waiter_thread.join
                   dial.status.result.should be == :answer
@@ -1046,7 +1046,7 @@ module Adhearsion
 
             t = dial_in_thread
 
-            latch.wait(1).should be_false
+            latch.wait(2).should be_false
 
             other_mock_call << mock_answered
             other_mock_call << mock_end
@@ -1070,7 +1070,7 @@ module Adhearsion
 
             t = dial_in_thread
 
-            latch.wait(1).should be_false
+            latch.wait(2).should be_false
 
             other_mock_call << mock_answered
             other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
@@ -1145,9 +1145,9 @@ module Adhearsion
                 latch.countdown!
               end
 
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
               other_mock_call << mock_end
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
               second_other_mock_call << mock_end
               latch.wait(2).should be_true
               t.join
@@ -1186,7 +1186,7 @@ module Adhearsion
               other_mock_call << mock_answered
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               t.join
               status = t.value
@@ -1293,7 +1293,7 @@ module Adhearsion
 
               other_mock_call << mock_answered
 
-              confirmation_latch.wait(1).should be_true
+              confirmation_latch.wait(2).should be_true
               latch.wait(2).should be_true
 
               other_mock_call[:foo].should == 'bar'
@@ -1318,7 +1318,7 @@ module Adhearsion
 
               other_mock_call << mock_answered
 
-              confirmation_latch.wait(1).should be_true
+              confirmation_latch.wait(2).should be_true
               latch.wait(2).should be_true
             end
 
@@ -1330,7 +1330,7 @@ module Adhearsion
 
               t = dial_in_thread
 
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
 
               base_time = Time.local(2008, 9, 1, 12, 0, 0)
               Timecop.freeze base_time
@@ -1342,7 +1342,7 @@ module Adhearsion
               other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               t.join
               status = t.value
@@ -1363,11 +1363,11 @@ module Adhearsion
 
               t = dial_in_thread
 
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
 
               other_mock_call << mock_answered
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               t.join
               status = t.value
@@ -1412,10 +1412,10 @@ module Adhearsion
 
                 t = dial_in_thread
 
-                latch.wait(1).should be_false
+                latch.wait(2).should be_false
 
                 other_mock_call << mock_answered
-                confirmation_latch.wait(1).should be_true
+                confirmation_latch.wait(2).should be_true
 
                 other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
 
@@ -1481,22 +1481,22 @@ module Adhearsion
           it "blocks the original controller until the new call ends" do
             dial_in_thread
 
-            latch.wait(1).should be_false
+            latch.wait(2).should be_false
 
             other_mock_call << mock_end
 
-            latch.wait(1).should be_true
+            latch.wait(2).should be_true
           end
 
           it "unblocks the original controller if the original call ends" do
             other_mock_call.should_receive(:hangup).once
             dial_in_thread
 
-            latch.wait(1).should be_false
+            latch.wait(2).should be_false
 
             call << mock_end
 
-            latch.wait(1).should be_true
+            latch.wait(2).should be_true
           end
 
           it "joins the new call to the existing one on answer" do
@@ -1505,12 +1505,12 @@ module Adhearsion
 
             dial_in_thread
 
-            latch.wait(1).should be_false
+            latch.wait(2).should be_false
 
             other_mock_call << mock_answered
             other_mock_call << mock_end
 
-            latch.wait(1).should be_true
+            latch.wait(2).should be_true
           end
 
           context "with a join target specified" do
@@ -1523,12 +1523,12 @@ module Adhearsion
 
               dial_in_thread
 
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
 
               other_mock_call << mock_answered
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
             end
           end
 
@@ -1543,12 +1543,12 @@ module Adhearsion
 
               dial_in_thread
 
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
 
               other_mock_call << mock_answered
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
             end
           end
 
@@ -1569,12 +1569,12 @@ module Adhearsion
 
               dial_in_thread
 
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
 
               other_mock_call << mock_answered
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
             end
 
             context "as a callback" do
@@ -1589,12 +1589,12 @@ module Adhearsion
 
                 dial_in_thread
 
-                latch.wait(1).should be_false
+                latch.wait(2).should be_false
 
                 other_mock_call << mock_answered
                 other_mock_call << mock_end
 
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
               end
             end
 
@@ -1605,11 +1605,11 @@ module Adhearsion
 
                 t = dial_in_thread
 
-                latch.wait(1).should be_false
+                latch.wait(2).should be_false
 
                 other_mock_call << mock_end(:reject)
 
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
               end
             end
           end
@@ -1621,12 +1621,12 @@ module Adhearsion
 
             dial_in_thread
 
-            latch.wait(1).should be_false
+            latch.wait(2).should be_false
 
             other_mock_call << mock_answered
             call << mock_end
 
-            latch.wait(1).should be_true
+            latch.wait(2).should be_true
           end
 
           context "when the call is rejected" do
@@ -1677,7 +1677,7 @@ module Adhearsion
               other_mock_call << mock_answered
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               t.join
               status = t.value
@@ -1706,7 +1706,7 @@ module Adhearsion
               other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               t.join
               status = t.value
@@ -1732,7 +1732,7 @@ module Adhearsion
                 other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
                 other_mock_call << mock_end
 
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
 
                 t.join
               end
@@ -1772,7 +1772,7 @@ module Adhearsion
               dial.split
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               waiter_thread.join
               dial.status.result.should be == :answer
@@ -1793,11 +1793,11 @@ module Adhearsion
 
               dial.split
 
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
 
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               waiter_thread.join
               dial.status.result.should be == :answer
@@ -1827,7 +1827,7 @@ module Adhearsion
               Timecop.freeze base_time
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               waiter_thread.join
               status = dial.status
@@ -1873,8 +1873,8 @@ module Adhearsion
 
                 dial.split main: main_split_controller, others: others_split_controller, main_callback: ->(call) { self.callback(call) }, others_callback: ->(call) { self.callback(call) }
 
-                latch.wait(1).should be_false
-                split_latch.wait(1).should be_true
+                latch.wait(2).should be_false
+                split_latch.wait(2).should be_true
 
                 call['hit_split_controller'].should == main_split_controller
                 call['split_controller_metadata']['current_dial'].should be dial
@@ -1884,7 +1884,7 @@ module Adhearsion
 
                 other_mock_call << mock_end
 
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
@@ -1917,7 +1917,7 @@ module Adhearsion
 
                 other_mock_call << mock_end
 
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
@@ -1989,7 +1989,7 @@ module Adhearsion
 
                   other_mock_call << mock_end
 
-                  latch.wait(1).should be_true
+                  latch.wait(2).should be_true
 
                   waiter_thread.join
                   dial.status.result.should be == :answer
@@ -2025,7 +2025,7 @@ module Adhearsion
 
                   other_mock_call << mock_end
 
-                  latch.wait(1).should be_true
+                  latch.wait(2).should be_true
 
                   waiter_thread.join
                   dial.status.result.should be == :answer
@@ -2065,7 +2065,7 @@ module Adhearsion
 
                   other_mock_call << mock_end
 
-                  latch.wait(1).should be_true
+                  latch.wait(2).should be_true
 
                   waiter_thread.join
                   dial.status.result.should be == :answer
@@ -2126,7 +2126,7 @@ module Adhearsion
                 second_root_call.async << mock_end
                 second_other_mock_call.async << mock_end
 
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
@@ -2164,7 +2164,7 @@ module Adhearsion
                 second_root_call.async << mock_end
                 second_other_mock_call.async << mock_end
 
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
@@ -2184,13 +2184,13 @@ module Adhearsion
                 sleep 0.5
 
                 other_mock_call << mock_end
-                latch.wait(1).should be_false
+                latch.wait(2).should be_false
 
                 second_other_mock_call << mock_end
-                latch.wait(1).should be_false
+                latch.wait(2).should be_false
 
                 second_root_call << mock_end
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
@@ -2215,7 +2215,7 @@ module Adhearsion
                 sleep 0.5
 
                 call << mock_end
-                latch.wait(1).should be_true
+                latch.wait(2).should be_true
 
                 waiter_thread.join
                 dial.status.result.should be == :answer
@@ -2234,7 +2234,7 @@ module Adhearsion
                 sleep 0.5
 
                 other_mock_call << mock_end
-                latch.wait(1).should be_false
+                latch.wait(2).should be_false
 
                 [call, second_root_call, second_other_mock_call].each do |call|
                   call.should_receive(:unjoin).once.with(mixer_name: mixer).and_return do
@@ -2277,7 +2277,7 @@ module Adhearsion
                   dial.split
 
                   other_mock_call << mock_end
-                  latch.wait(1).should be_false
+                  latch.wait(2).should be_false
 
                   [call, second_root_call, second_other_mock_call].each do |call|
                     call.should_receive(:join).once.with({mixer_name: mixer}, {}).and_return do
@@ -2315,7 +2315,7 @@ module Adhearsion
                   second_root_call.async << mock_end
                   second_other_mock_call.async << mock_end
 
-                  latch.wait(1).should be_true
+                  latch.wait(2).should be_true
 
                   waiter_thread.join
                   dial.status.result.should be == :answer
@@ -2371,7 +2371,7 @@ module Adhearsion
 
             t = dial_in_thread
 
-            latch.wait(1).should be_false
+            latch.wait(2).should be_false
 
             other_mock_call << mock_answered
             other_mock_call << mock_end
@@ -2395,7 +2395,7 @@ module Adhearsion
 
             t = dial_in_thread
 
-            latch.wait(1).should be_false
+            latch.wait(2).should be_false
 
             other_mock_call << mock_answered
             other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
@@ -2470,9 +2470,9 @@ module Adhearsion
                 latch.countdown!
               end
 
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
               other_mock_call << mock_end
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
               second_other_mock_call << mock_end
               latch.wait(2).should be_true
               t.join
@@ -2511,7 +2511,7 @@ module Adhearsion
               other_mock_call << mock_answered
               other_mock_call << mock_end
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               t.join
               status = t.value
@@ -2621,7 +2621,7 @@ module Adhearsion
 
               other_mock_call << mock_answered
 
-              confirmation_latch.wait(1).should be_true
+              confirmation_latch.wait(2).should be_true
               latch.wait(2).should be_true
 
               other_mock_call[:foo].should == 'bar'
@@ -2646,7 +2646,7 @@ module Adhearsion
 
               other_mock_call << mock_answered
 
-              confirmation_latch.wait(1).should be_true
+              confirmation_latch.wait(2).should be_true
               latch.wait(2).should be_true
             end
 
@@ -2660,7 +2660,7 @@ module Adhearsion
 
               t = dial_in_thread
 
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
 
               base_time = Time.local(2008, 9, 1, 12, 0, 0)
               Timecop.freeze base_time
@@ -2671,7 +2671,7 @@ module Adhearsion
               Timecop.freeze base_time
               other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               t.join
               status = t.value
@@ -2692,11 +2692,11 @@ module Adhearsion
 
               t = dial_in_thread
 
-              latch.wait(1).should be_false
+              latch.wait(2).should be_false
 
               other_mock_call << mock_answered
 
-              latch.wait(1).should be_true
+              latch.wait(2).should be_true
 
               t.join
               status = t.value
@@ -2756,11 +2756,11 @@ module Adhearsion
 
                 t = dial_in_thread
 
-                latch.wait(1).should be_false
+                latch.wait(2).should be_false
 
                 other_mock_call.async.deliver_message mock_answered
                 second_other_mock_call.async.deliver_message mock_answered
-                confirmation_latch.wait(1).should be_true
+                confirmation_latch.wait(2).should be_true
 
                 sleep 2
 
@@ -2820,7 +2820,7 @@ module Adhearsion
             other_mock_call << mock_answered
             call << mock_end
 
-            latch.wait(1).should be_true
+            latch.wait(2).should be_true
           end
         end
       end
