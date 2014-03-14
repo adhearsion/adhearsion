@@ -80,18 +80,6 @@ describe Adhearsion do
     it "should return the same instance each time" do
       Adhearsion.active_calls.should be Adhearsion.active_calls
     end
-
-    it "should create a new collection if the existing one dies" do
-      original = Adhearsion.active_calls
-      original.terminate
-      original.should_not be_alive
-
-      sleep 0.25
-
-      current = Adhearsion.active_calls
-      current.should be_alive
-      current.should_not be original
-    end
   end
 
   describe "#statistics" do
