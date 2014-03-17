@@ -251,6 +251,17 @@ module Adhearsion
     end
 
     #
+    # Redirect the call to some other target
+    #
+    # @see Call#redirect
+    #
+    def redirect(*args)
+      block_until_resumed
+      call.redirect(*args)
+      raise Call::Hangup
+    end
+
+    #
     # Mute the call
     #
     # @see Call#mute
