@@ -1,18 +1,24 @@
 # encoding: utf-8
 
+require 'thread'
+
 module Adhearsion
   ##
   # This manages the list of calls the Adhearsion service receives
-  class Calls < Hash
-    include Celluloid
-
-    trap_exit :call_died
+  class Calls
+    def initialize
+      @mutex = ::Monitor.new
+      @calls = {}
+      restart_supervisor
+    end
 
     def <<(call)
-      link call
-      self[call.id] = call
-      by_uri[call.uri] = call
-      current_actor
+      @supervisor.link call
+      @mutex.synchronize do
+        self[call.id] = call
+        by_uri[call.uri] = call
+      end
+      self
     end
 
     def remove_inactive_call(call)
@@ -40,6 +46,11 @@ module Adhearsion
       by_uri[uri]
     end
 
+    def restart_supervisor
+      @supervisor.terminate if @supervisor
+      @supervisor = Supervisor.new self
+    end
+
     private
 
     def by_uri
@@ -53,18 +64,34 @@ module Adhearsion
 
     def call_is_dead?(call)
       !call.alive?
-    rescue NoMethodError
+    rescue ::NoMethodError
       false
     end
 
-    def call_died(call, reason)
-      catching_standard_errors do
-        call_id = key call
-        remove_inactive_call call
-        return unless reason
-        Adhearsion::Events.trigger :exception, reason
-        logger.error "Call #{call_id} terminated abnormally due to #{reason}. Forcing hangup."
-        PunchblockPlugin.client.execute_command Punchblock::Command::Hangup.new, :async => true, :call_id => call_id
+    def method_missing(method, *args, &block)
+      @mutex.synchronize do
+        @calls.send method, *args, &block
+      end
+    end
+
+    class Supervisor
+      include Celluloid
+
+      trap_exit :call_died
+
+      def initialize(collection)
+        @collection = collection
+      end
+
+      def call_died(call, reason)
+        catching_standard_errors do
+          call_id = @collection.key call
+          @collection.remove_inactive_call call
+          return unless reason
+          Adhearsion::Events.trigger :exception, reason
+          logger.error "Call #{call_id} terminated abnormally due to #{reason}. Forcing hangup."
+          PunchblockPlugin.client.execute_command Punchblock::Command::Hangup.new, :async => true, :call_id => call_id
+        end
       end
     end
   end

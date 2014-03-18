@@ -107,10 +107,7 @@ module Adhearsion
         end
 
         after do
-          begin
-            Adhearsion.active_calls.terminate
-          rescue Celluloid::DeadActorError
-          end
+          Adhearsion.active_calls.restart_supervisor
         end
 
         it "should raise the exception in the caller" do
@@ -263,10 +260,7 @@ module Adhearsion
         end
 
         after do
-          begin
-            Adhearsion.active_calls.terminate
-          rescue Celluloid::DeadActorError
-          end
+          Adhearsion.active_calls.restart_supervisor
         end
 
         it "should raise the exception in the caller" do

@@ -101,8 +101,7 @@ module Adhearsion
     end
 
     def active_calls
-      Celluloid::Actor[:active_calls] || Calls.supervise_as(:active_calls)
-      Celluloid::Actor[:active_calls]
+      @active_calls ||= Calls.new
     end
 
     #
