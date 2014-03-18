@@ -48,13 +48,6 @@ describe Adhearsion do
     end
   end
 
-  describe "#environments" do
-    it "should be the collection of valid environments" do
-      Adhearsion.config.valid_environments << :foo
-      Adhearsion.environments.should include :foo
-    end
-  end
-
   describe "#router" do
     its(:router) { should be_a Adhearsion::Router }
 

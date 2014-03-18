@@ -27,9 +27,9 @@ describe Adhearsion::Configuration do
     end
 
     it "should allow to update a config value" do
-      subject.platform.environment.should be == :development
-      subject.platform.environment = :production
-      subject.platform.environment.should be == :production
+      subject.platform.process_name.should be == 'ahn'
+      subject.platform.process_name = 'foo'
+      subject.platform.process_name.should be == 'foo'
     end
 
     it "should allow to create new config values" do
@@ -42,7 +42,6 @@ describe Adhearsion::Configuration do
     subject do
       Adhearsion::Configuration.new do
         root "foo", :desc => "Adhearsion application root folder"
-        environment :development, :desc => "Active environment. Supported values: development, production, staging, test"
       end
     end
 
@@ -50,18 +49,14 @@ describe Adhearsion::Configuration do
       subject.platform.root.should be == "foo"
     end
 
-    it "should return the environment value" do
-      subject.platform.environment.should be == :development
-    end
-
     it "should return a description for the platform configuration" do
       Adhearsion.config.description(:platform).should be_instance_of String
     end
 
     it "should allow to update a config value" do
-      subject.platform.environment.should be == :development
-      subject.platform.environment = :production
-      subject.platform.environment.should be == :production
+      subject.platform.process_name.should be == 'ahn'
+      subject.platform.process_name = 'foo'
+      subject.platform.process_name.should be == 'foo'
     end
 
     it "should allow to create new config values" do
@@ -90,94 +85,8 @@ describe Adhearsion::Configuration do
     end
 
     it "should allow to retrieve any platform configuration value" do
-      subject.environment.should be == :development
+      subject.process_name.should be == 'ahn'
     end
-
-    describe "if configuration has a named environment" do
-
-      let :config_obj do
-        Adhearsion::Configuration.new
-      end
-
-      let :env_values do
-        config_obj.valid_environments.inject({}) do |hash, k|
-          hash[k] = hash.keys.length
-          hash
-        end
-      end
-
-      let :config_object do
-        config_obj do
-          my_level(-1, :desc => "An index to check the environment value is being retrieved")
-        end
-      end
-
-      subject do
-        config_object.production do |env|
-          env.platform.my_level = 0
-        end
-        config_object.development do |env|
-          env.platform.my_level = 1
-        end
-        config_object.staging do |env|
-          env.platform.my_level = 2
-        end
-        config_object.test do |env|
-          env.platform.my_level = 3
-        end
-        config_object
-      end
-
-      it "should return by default the development value" do
-        subject.platform.my_level.should be == 1
-      end
-
-      [:staging, :production, :test].each do |env|
-        it "should return the #{env.to_s} value when environment set to #{env.to_s}" do
-          config_object.platform.environment = env
-          subject.platform.my_level.should be == env_values[env]
-        end
-      end
-    end
-  end
-
-  describe "while defining the environment" do
-
-    after do
-      ENV['AHN_ENV'] = nil
-      Adhearsion.config = nil
-    end
-
-    it "should return 'development' by default" do
-      Adhearsion.config.platform.environment.should be == :development
-    end
-
-    [:development, :production, :staging, :test].each do |env|
-      it "should respond to #{env.to_s}" do
-        Adhearsion.config.should respond_to(env)
-      end
-    end
-
-    context "when the ENV value is valid" do
-      [:production, :staging, :test].each do |env|
-        it "should override the environment value with #{env.to_s} when set in ENV value" do
-          ENV['AHN_ENV'] = env.to_s
-          Adhearsion.config.platform.environment.should be == env
-        end
-      end
-    end
-
-    it "should not override the default environment with the ENV value if valid" do
-      ENV['AHN_ENV'] = "invalid_value"
-      Adhearsion.config.platform.environment.should be == :development
-    end
-
-    it "should allow to add a new environment" do
-      Adhearsion.config.valid_environment?(:another_environment).should be == false
-      Adhearsion.environments << :another_environment
-      Adhearsion.config.valid_environment?(:another_environment).should be == true
-    end
-
   end
 
   describe "while retrieving configuration descriptions" do
@@ -190,14 +99,12 @@ describe Adhearsion::Configuration do
     it "should retrieve a string with the platform configuration" do
       desc = subject.description :platform, :show_values => false
       desc.length.should be > 0
-      desc.should match(/^.*environment.*$/)
       desc.should match(/^.*root.*$/)
     end
 
     it "should retrieve a string with the platform configuration and values" do
       desc = subject.description :platform
       desc.length.should be > 0
-      desc.should match(/^.*environment.*:development.*$/)
       desc.should match(/^.*root.*$/)
     end
 
@@ -234,38 +141,6 @@ describe Adhearsion::Configuration do
             subject[:host].should be == 'localhost'
           end
         end
-
-        context "when config has named environments" do
-          subject do
-            Adhearsion.config do |c|
-              c.production do |env|
-                env.my_plugin.name = "production"
-              end
-              c.development do |env|
-                env.my_plugin.name = "development"
-              end
-              c.staging do |env|
-                env.my_plugin.name = "staging"
-              end
-              c.test do |env|
-                env.my_plugin.name = "test"
-              end
-            end
-            Adhearsion.config[:my_plugin]
-          end
-
-          it "should return the development value by default" do
-            Adhearsion.config # initialize
-            subject.name.should be == "development"
-          end
-
-          [:development, :staging, :production, :test].each do |env|
-            it "should return the #{env.to_s} value when environment is set to #{env.to_s}" do
-              Adhearsion.config.platform.environment = env
-              subject.name.should be == env.to_s
-            end
-          end
-        end
       end
 
       it "should retrieve a valid plugin description" do
@@ -287,7 +162,6 @@ describe Adhearsion::Configuration do
       it "should retrieve both platform and plugin configuration" do
         desc = subject.description :all
         desc.length.should be > 0
-        desc.should match(/^.*environment.*:development.*$/)
         desc.should match(/^.*root.*$/)
         desc.should match(/^.*name.*user.*$/)
         desc.should match(/^.*password.*password.*$/)
@@ -298,7 +172,6 @@ describe Adhearsion::Configuration do
         desc = subject.description :all, :show_values => false
         desc.length.should be > 0
         desc.should match(/^.*Configuration for platform.*$/)
-        desc.should match(/^.*environment.*$/)
         desc.should match(/^.*root.*$/)
         desc.should match(/^.*Configuration for my_plugin.*$/)
         desc.should match(/^.*name.*$/)

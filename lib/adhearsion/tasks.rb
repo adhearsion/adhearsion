@@ -8,7 +8,7 @@ end
 
 Adhearsion::Plugin.load_tasks
 
-puts "\nAdhearsion configured environment: #{Adhearsion.config.platform.environment}\n" unless ARGV.empty?
+puts "\nAdhearsion environment: #{Adhearsion.environment}\n" unless ARGV.empty?
 
 desc "Dump useful information about this application's Adhearsion environment"
 task :about do

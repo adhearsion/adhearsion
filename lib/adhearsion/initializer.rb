@@ -60,7 +60,6 @@ module Adhearsion
         catch_termination_signal
         set_ahn_proc_name
         initialize_exception_logger
-        update_rails_env_var
         init_plugins
 
         run_plugins
@@ -90,25 +89,6 @@ module Adhearsion
       debugging_items.each do |item|
         logger.trace item
       end
-    end
-
-    def update_rails_env_var
-      env = ENV['AHN_ENV']
-      if env && Adhearsion.config.valid_environment?(env.to_sym)
-        unless ENV['RAILS_ENV']
-          logger.info "Copying AHN_ENV (#{env}) to RAILS_ENV"
-          ENV['RAILS_ENV'] = env
-        end
-      else
-        unless ENV['RAILS_ENV']
-          env = Adhearsion.config.platform.environment.to_s
-          ENV['AHN_ENV'] = env
-          logger.info "Setting RAILS_ENV to \"#{env}\""
-          ENV['RAILS_ENV'] = env
-        end
-      end
-      logger.warn "AHN_ENV(#{ENV['AHN_ENV']}) does not match RAILS_ENV(#{ENV['RAILS_ENV']})!" unless ENV['RAILS_ENV'] == ENV['AHN_ENV']
-      env
     end
 
     def default_pid_path
