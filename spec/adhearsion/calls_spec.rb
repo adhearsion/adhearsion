@@ -103,6 +103,8 @@ module Adhearsion
         subject << call
         call.terminate
 
+        sleep 0.1
+
         subject.size.should be == size_before
         subject[call_id].should be_nil
         subject.with_uri(call_uri).should be_nil
