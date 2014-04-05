@@ -225,7 +225,7 @@ module Adhearsion
           end
           ::Logging.appenders.file(f,
             :layout => ::Logging.layouts.pattern(
-              :pattern => Adhearsion::Logging.adhearsion_pattern
+              Adhearsion::Logging.adhearsion_pattern_options
             ),
            :auto_flushing => 2,
            :flush_period => 2

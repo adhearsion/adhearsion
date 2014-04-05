@@ -34,8 +34,11 @@ module Adhearsion
         :date     => [:bold, :blue],
         :logger   => :cyan
 
-      def adhearsion_pattern
-        '[%d] %-5l %c: %m\n'
+      def adhearsion_pattern_options
+        {
+          :pattern      => '[%d] %-5l %c: %m\n',
+          :date_pattern => '%Y-%m-%d %H:%M:%S.%L'
+        }
       end
 
       # Silence Adhearsion's logging, printing only FATAL messages
@@ -87,9 +90,9 @@ module Adhearsion
         [::Logging.appenders.stdout(
            'stdout',
            :layout => ::Logging.layouts.pattern(
-             :pattern => adhearsion_pattern,
-             :date_pattern => "%Y-%m-%d %H:%M:%S.%L",
-             :color_scheme => 'bright'
+             adhearsion_pattern_options.merge(
+               :color_scheme => 'bright'
+             )
            ),
            :auto_flushing => 2,
            :flush_period => 2
