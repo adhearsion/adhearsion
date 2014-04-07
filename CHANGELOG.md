@@ -1,4 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+
+# [2.5.1](https://github.com/adhearsion/adhearsion/compare/v2.5.0...v2.5.1) - [2014-04-07](https://rubygems.org/gems/adhearsion/versions/2.5.1)
   * Bugfix: Avoid race conditions in event delivery for outbound calls. **note: This requires a Rayo server compliant with Rayo v0.4, which includes changes outlined in [rayo/xmpp#89](https://github.com/rayo/xmpp/issues/89). For FreeSWITCH mod_rayo, this means v1.2.23 of FreeSWITCH or the latest v1.2.stable branch.** ([#439](https://github.com/adhearsion/adhearsion/issues/444))
   * Bugfix: Fix some omissions in 2.5.0 relating to the new application layout ([#439](https://github.com/adhearsion/adhearsion/pull/439))
   * Bugfix: Log to correct file when supplying an absolute path
