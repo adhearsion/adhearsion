@@ -18,13 +18,15 @@ module Adhearsion
     let(:to)      { 'sip:you@there.com' }
     let(:from)    { 'sip:me@here.com' }
     let(:transport) { 'footransport' }
+    let(:base_time) { Time.local(2008, 9, 1, 12, 0, 0) }
     let :offer do
       Punchblock::Event::Offer.new target_call_id: call_id,
                                    domain: domain,
                                    transport: transport,
                                    to: to,
                                    from: from,
-                                   headers: headers
+                                   headers: headers,
+                                   timestamp: base_time
     end
 
     subject { Adhearsion::Call.new offer }
@@ -85,8 +87,6 @@ module Adhearsion
     end
 
     it "should mark its start time" do
-      base_time = Time.local(2008, 9, 1, 12, 0, 0)
-      Timecop.freeze base_time
       subject.start_time.should == base_time
     end
 
@@ -650,12 +650,12 @@ module Adhearsion
     end
 
     describe "#write_command" do
-      let(:mock_command) { double('Command') }
+      let(:command) { Punchblock::Command::Answer.new }
 
-      it "should asynchronously write the command to the Punchblock connection" do
+      it "should write the command to the Punchblock connection" do
         subject.wrapped_object.should_receive(:client).once.and_return mock_client
-        mock_client.should_receive(:execute_command).once.with(mock_command, call_id: call_id, domain: domain, async: true).and_return true
-        subject.write_command mock_command
+        mock_client.should_receive(:execute_command).once.with(Punchblock::Command::Answer.new(target_call_id: call_id, domain: domain)).and_return true
+        subject.write_command command
       end
 
       describe "with a hungup call" do
@@ -664,14 +664,14 @@ module Adhearsion
         end
 
         it "should raise a Hangup exception" do
-          lambda { subject.write_command mock_command }.should raise_error(Call::Hangup)
+          lambda { subject.write_command command }.should raise_error(Call::Hangup)
         end
 
         describe "if the command is a Hangup" do
-          let(:mock_command) { Punchblock::Command::Hangup.new }
+          let(:command) { Punchblock::Command::Hangup.new }
 
           it "should not raise a Hangup exception" do
-            lambda { subject.write_command mock_command }.should_not raise_error
+            lambda { subject.write_command command }.should_not raise_error
           end
         end
       end
@@ -755,6 +755,8 @@ module Adhearsion
 
       describe "when the response times out" do
         before do
+          message.target_call_id = call_id
+          message.domain = domain
           message.should_receive(:response).and_raise Timeout::Error
         end
 

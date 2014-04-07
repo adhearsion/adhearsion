@@ -40,6 +40,7 @@ module Adhearsion
     def start
       catch :boot_aborted do
         resolve_pid_file_path
+        configure_plugins
         load_lib_folder
         load_config_file
         load_events_file
@@ -217,10 +218,14 @@ module Adhearsion
       appenders.map! do |a|
         case a
         when String
-          f = File.expand_path(Adhearsion.config.root.dup.concat("/").concat(a)) unless a.start_with?("/")
+          f = if a.start_with?("/")
+            a
+          else
+            File.expand_path(Adhearsion.config.root.dup.concat("/").concat(a))
+          end
           ::Logging.appenders.file(f,
             :layout => ::Logging.layouts.pattern(
-              :pattern => Adhearsion::Logging.adhearsion_pattern
+              Adhearsion::Logging.adhearsion_pattern_options
             ),
            :auto_flushing => 2,
            :flush_period => 2
@@ -235,6 +240,10 @@ module Adhearsion
       else
         appenders += Adhearsion::Logging.default_appenders
       end
+    end
+
+    def configure_plugins
+      Plugin.configure_plugins
     end
 
     def init_plugins

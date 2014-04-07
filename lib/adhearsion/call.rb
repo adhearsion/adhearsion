@@ -195,7 +195,7 @@ module Adhearsion
       register_event_handler Punchblock::Event::Offer do |offer|
         @offer  = offer
         @client = offer.client
-        @start_time = Time.now
+        @start_time = offer.timestamp.to_time
       end
 
       register_event_handler Punchblock::HasHeaders do |event|
@@ -231,7 +231,7 @@ module Adhearsion
 
       on_end do |event|
         logger.info "Call ended due to #{event.reason}"
-        @end_time = Time.now
+        @end_time = event.timestamp.to_time
         @duration = @end_time - @start_time if @start_time
         clear_from_active_calls
         @end_reason = event.reason
@@ -439,7 +439,11 @@ module Adhearsion
       abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
       merge_headers command.headers if command.respond_to? :headers
       logger.debug "Executing command #{command.inspect}"
-      client.execute_command command, call_id: id, domain: domain, async: true
+      unless command.is_a?(Punchblock::Command::Dial)
+        command.target_call_id = id
+        command.domain = domain
+      end
+      client.execute_command command
     end
 
     ##

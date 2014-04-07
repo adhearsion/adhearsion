@@ -73,7 +73,7 @@ module Adhearsion
       _config = Configuration.new
       env = environment.to_sym if environment.respond_to? :to_sym
       unless _config.valid_environment? env
-        puts  "You tried to initialize with an invalid environment name #{env}. Valid values are #{_config.valid_environments}."
+        puts  "You tried to initialize with an invalid environment name #{env}; environment-specific config may not load successfully. Valid values are #{_config.valid_environments}."
         env = nil
       end
       _config.platform.environment = env if env
@@ -101,8 +101,7 @@ module Adhearsion
     end
 
     def active_calls
-      Celluloid::Actor[:active_calls] || Calls.supervise_as(:active_calls)
-      Celluloid::Actor[:active_calls]
+      @active_calls ||= Calls.new
     end
 
     #

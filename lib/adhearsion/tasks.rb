@@ -6,6 +6,16 @@ Dir[File.join(File.dirname(__FILE__), "tasks/*.rb")].each do |file|
   require file
 end
 
+initializer = Adhearsion::Initializer.new
+initializer.configure_plugins
+initializer.load_lib_folder
+initializer.load_config_file
+initializer.load_events_file
+initializer.load_routes_file
+initializer.initialize_log_paths
+initializer.start_logging
+initializer.init_plugins
+
 Adhearsion::Plugin.load_tasks
 
 puts "\nAdhearsion configured environment: #{Adhearsion.config.platform.environment}\n" unless ARGV.empty?

@@ -110,7 +110,7 @@ module Adhearsion
         # Links the lifecycle of the originating call to the Dial operation such that the Dial is unblocked when the originating call ends
         def track_originating_call
           @call.on_end do |_|
-            logger.info "Root call ended, unblocking everything..."
+            logger.debug "Root call ended, unblocking connected calls"
             @waiters.each do |latch|
               latch.countdown! until latch.count == 0
             end
@@ -163,7 +163,7 @@ module Adhearsion
               pre_confirmation_tasks new_call
 
               new_call.on_unjoined @call do |unjoined|
-                join_status.ended
+                join_status.ended unjoined.timestamp.to_time
                 unless @splitting
                   new_call["dial_countdown_#{@id}"] = true
                   @latch.countdown!
@@ -520,8 +520,8 @@ module Adhearsion
           @result = :joined
         end
 
-        def ended
-          @end_time = Time.now
+        def ended(time)
+          @end_time = time
         end
       end
 

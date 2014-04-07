@@ -39,6 +39,7 @@ RSpec.configure do |config|
 
   config.before :each do
     Adhearsion.router = nil
+    Punchblock.stub new_request_id: 'foo'
   end
 
   config.after :each do

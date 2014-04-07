@@ -144,15 +144,23 @@ module Adhearsion
         @plugin_name = name
       end
 
+      # Class method that will be used by subclasses to configure the plugin
+      # @param name Symbol plugin config name
       def config(name = nil, &block)
+        if name.nil?
+          name = self.plugin_name
+        else
+          self.plugin_name = name
+        end
+
         if block_given?
-          if name.nil?
-            name = self.plugin_name
-          else
-            self.plugin_name = name
+          opts = {}
+          opts[:after] ||= configs.last.name unless configs.empty?
+          ::Loquacious::Configuration.defaults_for plugin_name, &Proc.new
+          initializer = Initializer.new(plugin_name, self, opts) do
+            ::Loquacious.configuration_for plugin_name, &block
           end
-          ::Loquacious::Configuration.defaults_for name, &Proc.new
-          ::Loquacious.configuration_for plugin_name, &block
+          Adhearsion::Plugin.configs << initializer
         else
           ::Loquacious.configuration_for plugin_name
         end
@@ -160,6 +168,12 @@ module Adhearsion
 
       def show_description
         ::Loquacious::Configuration.help_for plugin_name
+      end
+
+      def configure_plugins(*args)
+        configs.tsort.each do |config|
+          config.run(*args)
+        end
       end
 
       # Recursively initialization of all the loaded plugins
@@ -173,6 +187,10 @@ module Adhearsion
         runners.tsort.each do |runner|
           runner.run(*args)
         end
+      end
+
+      def configs
+        @configs ||= Collection.new
       end
 
       def initializers

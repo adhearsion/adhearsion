@@ -9,14 +9,22 @@ module Adhearsion
     its(:id) { should be_nil }
     its(:variables) { should be == {} }
 
-    let(:mock_client) { double 'Punchblock Client' }
+    let(:mock_client) { double 'Punchblock Client', execute_command: true, new_call_uri: call_uri }
 
     before do
       PunchblockPlugin::Initializer.client = mock_client
+      Adhearsion.active_calls.clear
     end
 
     its(:client) { should be mock_client }
     its(:start_time) { should be nil }
+
+    let(:transport) { 'xmpp' }
+    let(:call_id)   { SecureRandom.uuid }
+    let(:domain)    { 'rayo.net' }
+    let(:call_uri)  { "xmpp:#{call_id}@rayo.net" }
+    let(:to)        { '+1800 555-0199' }
+    let(:from)      { '+1800 555-0122' }
 
     it "should allow timers to be registered from outside" do
       foo = :bar
@@ -98,6 +106,10 @@ module Adhearsion
           Punchblock::Command::Dial.any_instance.should_receive(:response).and_return StandardError.new("User not registered")
         end
 
+        after do
+          Adhearsion.active_calls.restart_supervisor
+        end
+
         it "should raise the exception in the caller" do
           expect { subject.dial to }.to raise_error("User not registered")
         end
@@ -153,13 +165,35 @@ module Adhearsion
         end
       end
 
-      let(:transport) { 'footransport' }
-      let(:call_id)   { 'abc123' }
-      let(:domain)    { 'rayo.net' }
-      let(:to)        { '+1800 555-0199' }
-      let(:from)      { '+1800 555-0122' }
+      let(:expected_dial_command) { Punchblock::Command::Dial.new(:to => to, :from => from, :uri => call_uri) }
 
-      let(:expected_dial_command) { Punchblock::Command::Dial.new(:to => to, :from => from) }
+      context "while waiting for a response" do
+        before do
+          mock_client.should_receive(:execute_command).once.with(expected_dial_command).and_return true
+          subject.async.dial to, from: from
+          sleep 1
+        end
+
+        it "should set the dial command" do
+          subject.dial_command.should be == expected_dial_command
+        end
+
+        it "should know its requested URI" do
+          subject.uri.should be == call_uri
+        end
+
+        it "should know its requested ID" do
+          subject.id.should be == call_id
+        end
+
+        it "should know its domain" do
+          subject.domain.should be == domain
+        end
+
+        it "should be entered in the active calls registry" do
+          Adhearsion.active_calls[call_id].should be subject
+        end
+      end
 
       context "with a successful response" do
         before do
@@ -172,12 +206,12 @@ module Adhearsion
 
         it "should set the dial command" do
           subject.dial to, :from => from
-          subject.dial_command.should be == expected_dial_command
+          subject.dial_command.should be == Punchblock::Command::Dial.new(:to => to, :from => from, :uri => call_uri)
         end
 
         it "should set the URI from the reference" do
           subject.dial to, :from => from
-          subject.uri.should be == "footransport:abc123@rayo.net"
+          subject.uri.should be == call_uri
         end
 
         it "should set the call ID from the reference" do
@@ -201,7 +235,6 @@ module Adhearsion
         end
 
         it "should add the call to the active calls registry" do
-          Adhearsion.active_calls.clear
           subject.dial to, :from => from
           Adhearsion.active_calls[call_id].should be subject
         end
@@ -226,6 +259,10 @@ module Adhearsion
           Punchblock::Command::Dial.any_instance.should_receive(:response).and_return StandardError.new("User not registered")
         end
 
+        after do
+          Adhearsion.active_calls.restart_supervisor
+        end
+
         it "should raise the exception in the caller" do
           expect { subject.dial to }.to raise_error("User not registered")
         end
@@ -234,6 +271,12 @@ module Adhearsion
           expect { subject.dial to }.to raise_error("User not registered")
           sleep 0.1
           subject.should_not be_alive
+        end
+
+        it "should remove the call from the active calls hash" do
+          expect { subject.dial to }.to raise_error("User not registered")
+          sleep 0.1
+          Adhearsion.active_calls[call_id].should be_nil
         end
       end
     end

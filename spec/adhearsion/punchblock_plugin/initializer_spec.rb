@@ -276,7 +276,19 @@ module Adhearsion
         end
 
         describe "with an inactive call" do
-          it "should log an warning" do
+          it "should log a warning" do
+            Adhearsion::Logging.get_logger(Initializer).should_receive(:warn).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
+            Initializer.dispatch_call_event mock_event
+          end
+        end
+
+        describe "when the registry contains a dead call" do
+          before do
+            mock_call.terminate
+            Adhearsion.active_calls[mock_call.id] = mock_call
+          end
+
+          it "should log a warning" do
             Adhearsion::Logging.get_logger(Initializer).should_receive(:warn).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
             Initializer.dispatch_call_event mock_event
           end
