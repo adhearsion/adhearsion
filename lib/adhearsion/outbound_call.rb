@@ -94,6 +94,11 @@ module Adhearsion
       Adhearsion.active_calls << current_actor
 
       write_and_await_response(@dial_command, wait_timeout, true).tap do |dial_command|
+        if @dial_command.uri != self.uri
+          logger.warn "Requested call URI (#{uri}) was not respected. Tracking by new URI #{self.uri}. This might cause a race in event handling, please upgrade your Rayo server."
+          Adhearsion.active_calls << current_actor
+          Adhearsion.active_calls.delete(@id)
+        end
         Adhearsion::Events.trigger_immediately :call_dialed, current_actor
       end
     rescue
