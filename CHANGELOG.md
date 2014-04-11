@@ -1,4 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+
+# [2.5.2](https://github.com/adhearsion/adhearsion/compare/v2.5.1...v2.5.2) - [2014-04-11](https://rubygems.org/gems/adhearsion/versions/2.5.2)
   * All changes from 2.5.1 (re-released)
   * Further fix for outbound call race conditions. When a Rayo server does not support client-supplied outbound call URIs, or refuses a requested URI by silently replacing it with a different one, the behaviour of Adhearsion falls back to the one with a race condition.
 
