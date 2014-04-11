@@ -1,7 +1,11 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
-# [2.5.1](https://github.com/adhearsion/adhearsion/compare/v2.5.0...v2.5.1) - [2014-04-07](https://rubygems.org/gems/adhearsion/versions/2.5.1)
-  * Bugfix: Avoid race conditions in event delivery for outbound calls. **note: This requires a Rayo server compliant with Rayo v0.4, which includes changes outlined in [rayo/xmpp#89](https://github.com/rayo/xmpp/issues/89). For FreeSWITCH mod_rayo, this means v1.2.23 of FreeSWITCH or the latest v1.2.stable branch.** ([#439](https://github.com/adhearsion/adhearsion/issues/444))
+# [2.5.2](https://github.com/adhearsion/adhearsion/compare/v2.5.1...v2.5.2) - [2014-04-11](https://rubygems.org/gems/adhearsion/versions/2.5.2)
+  * All changes from 2.5.1 (re-released)
+  * Further fix for outbound call race conditions. When a Rayo server does not support client-supplied outbound call URIs, or refuses a requested URI by silently replacing it with a different one, the behaviour of Adhearsion falls back to the one with a race condition.
+
+# [2.5.1](https://github.com/adhearsion/adhearsion/compare/v2.5.0...v2.5.1) - [2014-04-07](https://rubygems.org/gems/adhearsion/versions/2.5.1) - yanked
+  * Bugfix: Avoid race conditions in event delivery for outbound calls. **note: This requires a Rayo server compliant with Rayo v0.4, which includes changes outlined in [rayo/xmpp#89](https://github.com/rayo/xmpp/issues/89). For FreeSWITCH mod_rayo, this means v1.2.23 of FreeSWITCH or the latest v1.2.stable branch.**([#439](https://github.com/adhearsion/adhearsion/issues/444))
   * Bugfix: Fix some omissions in 2.5.0 relating to the new application layout ([#439](https://github.com/adhearsion/adhearsion/pull/439))
   * Bugfix: Log to correct file when supplying an absolute path
   * Bugfix: Delay configuring plugins until after initialisation. Allows plugin config to use things which are not set until initialisation like the current working directory, Adhearsion.root, etc. ([adhearsion/adhearsion-i18n#4](https://github.com/adhearsion/adhearsion-i18n/issues/4))

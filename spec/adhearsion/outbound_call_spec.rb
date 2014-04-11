@@ -156,12 +156,11 @@ module Adhearsion
     end
 
     describe "#dial" do
-      def expect_message_waiting_for_response(message)
-        subject.wrapped_object.should_receive(:write_and_await_response).once.with(message, 60, true).and_return do
-          message.transport = transport
-          message.target_call_id = call_id
-          message.domain = domain
-          message
+      def expect_message_waiting_for_response(message, uri = call_uri)
+        subject.wrapped_object.should_receive(:write_and_await_response).once.with(message, 60, true).and_return do |real_message|
+          real_message.request!
+          real_message.response = Punchblock::Ref.new(uri: uri)
+          real_message
         end
       end
 
@@ -196,8 +195,10 @@ module Adhearsion
       end
 
       context "with a successful response" do
+        let(:returned_uri) { call_uri }
+
         before do
-          expect_message_waiting_for_response expected_dial_command
+          expect_message_waiting_for_response expected_dial_command, returned_uri
         end
 
         it "should send a dial stanza, wait for the response" do
@@ -206,7 +207,7 @@ module Adhearsion
 
         it "should set the dial command" do
           subject.dial to, :from => from
-          subject.dial_command.should be == Punchblock::Command::Dial.new(:to => to, :from => from, :uri => call_uri)
+          subject.dial_command.should be == Punchblock::Command::Dial.new(:to => to, :from => from, :uri => call_uri, target_call_id: call_id, domain: domain, transport: transport)
         end
 
         it "should set the URI from the reference" do
@@ -237,6 +238,31 @@ module Adhearsion
         it "should add the call to the active calls registry" do
           subject.dial to, :from => from
           Adhearsion.active_calls[call_id].should be subject
+        end
+
+        context "when a different ref is returned than the one expected" do
+          let(:returned_uri) { 'xmpp:otherid@wonderland.lit' }
+
+          before do
+            subject.dial to, :from => from
+          end
+
+          it "should set the URI from the reference" do
+            subject.uri.should be == returned_uri
+          end
+
+          it "should set the call ID from the reference" do
+            subject.id.should be == 'otherid'
+          end
+
+          it "should set the call domain from the reference" do
+            subject.domain.should be == 'wonderland.lit'
+          end
+
+          it "should make the call addressible in the active calls registry by the new ID" do
+            Adhearsion.active_calls[call_id].should be_nil
+            Adhearsion.active_calls['otherid'].should be subject
+          end
         end
 
         it "should immediately fire the :call_dialed event giving the call" do

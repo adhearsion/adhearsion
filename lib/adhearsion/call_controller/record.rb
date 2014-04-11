@@ -15,7 +15,7 @@ module Adhearsion
         # @param [Adhearsion::CallController] controller on which to execute the recording
         # @param [Hash] options
         # @option options [Boolean, Optional] :async Execute asynchronously. Defaults to false
-        # @option options [Boolean, Optional] :start_beep Indicates whether subsequent record will be preceded with a beep. Default is true.
+        # @option options [Boolean, Optional] :start_beep Indicates whether subsequent record will be preceded with a beep. Default is false.
         # @option options [Boolean, Optional] :start_paused Whether subsequent record will start in PAUSE mode. Default is false.
         # @option options [String, Optional] :max_duration Indicates the maximum duration (seconds) for a recording.
         # @option options [String, Optional] :format File format used during recording.
@@ -108,7 +108,7 @@ module Adhearsion
       #
       # @param [Hash] options
       # @option options [Boolean, Optional] :async Execute asynchronously. Defaults to false
-      # @option options [Boolean, Optional] :start_beep Indicates whether subsequent record will be preceded with a beep. Default is true.
+      # @option options [Boolean, Optional] :start_beep Indicates whether subsequent record will be preceded with a beep. Default is false.
       # @option options [Boolean, Optional] :start_paused Whether subsequent record will start in PAUSE mode. Default is false.
       # @option options [String, Optional] :max_duration Indicates the maximum duration (seconds) for a recording.
       # @option options [String, Optional] :format File format used during recording.
