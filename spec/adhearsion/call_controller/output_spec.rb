@@ -150,6 +150,16 @@ module Adhearsion
             lambda { subject.play_numeric input }.should raise_error(ArgumentError)
           end
         end
+
+        context "with a renderer" do
+          let(:input)     { 123 }
+          let(:renderer)  { :native }
+
+          it "should use the specified renderer in the SSML" do
+            expect_ssml_output ssml, renderer: renderer
+            subject.play_numeric(input, renderer: renderer).should be true
+          end
+        end
       end
 
       describe "#play_numeric!" do
@@ -182,6 +192,16 @@ module Adhearsion
 
           it 'raises ArgumentError' do
             lambda { subject.play_numeric! input }.should raise_error(ArgumentError)
+          end
+        end
+
+        context "with a renderer" do
+          let(:input)     { 123 }
+          let(:renderer)  { :native }
+
+          it "should use the specified renderer in the SSML" do
+            expect_async_ssml_output ssml, renderer: renderer
+            subject.play_numeric!(input, renderer: renderer).should be_a Punchblock::Component::Output
           end
         end
       end
@@ -248,6 +268,18 @@ module Adhearsion
           it 'plays the correct SSML' do
             expect_ssml_output ssml
             subject.play_time(base_input, :format => format, :strftime => strftime).should be true
+          end
+        end
+
+        context "with a renderer" do
+          let(:renderer)  { :native }
+          let(:input)     { Date.parse('2011-01-23') }
+          let(:format)    { "d-m-y" }
+          let(:expected_say_as_options) { {:interpret_as => 'date', :format => format} }
+
+          it "should use the specified renderer in the SSML" do
+            expect_ssml_output ssml, renderer: renderer
+            subject.play_time(input, format: format, renderer: renderer).should be true
           end
         end
 
@@ -322,6 +354,18 @@ module Adhearsion
           it 'plays the correct SSML' do
             expect_async_ssml_output ssml
             subject.play_time!(base_input, :format => format, :strftime => strftime).should be_a Punchblock::Component::Output
+          end
+        end
+
+        context "with a renderer" do
+          let(:renderer)  { :native }
+          let(:input)     { Date.parse('2011-01-23') }
+          let(:format)    { "d-m-y" }
+          let(:expected_say_as_options) { {:interpret_as => 'date', :format => format} }
+
+          it "should use the specified renderer in the SSML" do
+            expect_async_ssml_output ssml, renderer: renderer
+            subject.play_time!(input, format: format, renderer: renderer).should be_a Punchblock::Component::Output
           end
         end
 

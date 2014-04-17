@@ -17,7 +17,7 @@ module Adhearsion
       # Speak output using text-to-speech (TTS)
       #
       # @param [String, #to_s] text The text to be rendered
-      # @param [Hash] options A set of options for output
+      # @param [Hash] options A set of options for output. Includes everything in Punchblock::Component::Output.new.
       #
       # @raise [PlaybackError] if the given argument could not be played
       #
@@ -31,7 +31,7 @@ module Adhearsion
       # Speak output using text-to-speech (TTS) and return as soon as it begins
       #
       # @param [String, #to_s] text The text to be rendered
-      # @param [Hash] options A set of options for output
+      # @param [Hash] options A set of options for output. Includes everything in Punchblock::Component::Output.new.
       #
       # @raise [PlaybackError] if the given argument could not be played
       #
@@ -48,7 +48,7 @@ module Adhearsion
       #   say_characters('abc123')
       #
       # @param [String, #to_s] characters The string of characters to be spoken
-      # @param [Hash] options A set of options for output
+      # @param [Hash] options A set of options for output. Includes everything in Punchblock::Component::Output.new.
       #
       # @raise [PlaybackError] if the given argument could not be played
       #
@@ -63,7 +63,7 @@ module Adhearsion
       #   say_characters!('abc123')
       #
       # @param [String, #to_s] characters The string of characters to be spoken
-      # @param [Hash] options A set of options for output
+      # @param [Hash] options A set of options for output. Includes everything in Punchblock::Component::Output.new.
       #
       # @raise [PlaybackError] if the given argument could not be played
       #
@@ -139,15 +139,13 @@ module Adhearsion
       # The Punchblock backend will have to handle cases like Asterisk where there is a fixed sounds directory.
       #
       # @param [String] file http:// URL or full disk path to the sound file
-      # @param [Hash] options Additional options
+      # @param [Hash] options Additional options Includes everything in Punchblock::Component::Output.new.
       # @option options [String] :fallback The text to play if the file is not available
-      # @option options [Symbol] :renderer The media engine to use for rendering the file
       #
       # @raise [PlaybackError] if (one of) the given argument(s) could not be played
       #
       def play_audio(file, options = {})
-        renderer = options.delete :renderer
-        player.play_ssml(output_formatter.ssml_for_audio(file, options), renderer: renderer)
+        player.play_ssml(output_formatter.ssml_for_audio(file, options), options)
         true
       end
 
@@ -157,15 +155,14 @@ module Adhearsion
       # The Punchblock backend will have to handle cases like Asterisk where there is a fixed sounds directory.
       #
       # @param [String] file http:// URL or full disk path to the sound file
-      # @param [Hash] options Additional options to specify how exactly to say time specified.
+      # @param [Hash] options Additional options to specify how exactly to say time specified. Includes everything in Punchblock::Component::Output.new.
       # @option options [String] :fallback The text to play if the file is not available
       #
       # @raise [PlaybackError] if (one of) the given argument(s) could not be played
       # @return [Punchblock::Component::Output]
       #
       def play_audio!(file, options = {})
-        renderer = options.delete :renderer
-        async_player.play_ssml(output_formatter.ssml_for_audio(file, options), renderer: renderer)
+        async_player.play_ssml(output_formatter.ssml_for_audio(file, options), options)
       end
 
       #
@@ -173,7 +170,7 @@ module Adhearsion
       # using the given timezone and format.
       #
       # @param [Date, Time, DateTime] time Time to be said.
-      # @param [Hash] options Additional options to specify how exactly to say time specified.
+      # @param [Hash] options Additional options to specify how exactly to say time specified. Includes everything in Punchblock::Component::Output.new.
       # @option options [String] :format This format is used only to disambiguate times that could be interpreted in different ways.
       #   For example, 01/06/2011 could mean either the 1st of June or the 6th of January.
       #   Please refer to the SSML specification.
@@ -185,7 +182,7 @@ module Adhearsion
       #
       def play_time(time, options = {})
         raise ArgumentError unless [Date, Time, DateTime].include?(time.class) && options.is_a?(Hash)
-        player.play_ssml output_formatter.ssml_for_time(time, options)
+        player.play_ssml output_formatter.ssml_for_time(time, options), options
         true
       end
 
@@ -194,7 +191,7 @@ module Adhearsion
       # using the given timezone and format and returns as soon as it begins.
       #
       # @param [Date, Time, DateTime] time Time to be said.
-      # @param [Hash] options Additional options to specify how exactly to say time specified.
+      # @param [Hash] options Additional options to specify how exactly to say time specified. Includes everything in Punchblock::Component::Output.new.
       # @option options [String] :format This format is used only to disambiguate times that could be interpreted in different ways.
       #   For example, 01/06/2011 could mean either the 1st of June or the 6th of January.
       #   Please refer to the SSML specification.
@@ -207,7 +204,7 @@ module Adhearsion
       #
       def play_time!(time, options = {})
         raise ArgumentError unless [Date, Time, DateTime].include?(time.class) && options.is_a?(Hash)
-        async_player.play_ssml output_formatter.ssml_for_time(time, options)
+        async_player.play_ssml output_formatter.ssml_for_time(time, options), options
       end
 
       #
@@ -216,12 +213,13 @@ module Adhearsion
       # is pronounced as "one hundred" instead of "one zero zero".
       #
       # @param [Numeric, String] number Numeric or String containing a valid Numeric, like "321".
+      # @param [Hash] options A set of options for output. See Punchblock::Component::Output.new for details.
       #
       # @raise [ArgumentError] if the given argument can not be played
       #
-      def play_numeric(number)
+      def play_numeric(number, options = {})
         raise ArgumentError unless number.kind_of?(Numeric) || number =~ /^\d+$/
-        player.play_ssml output_formatter.ssml_for_numeric(number)
+        player.play_ssml output_formatter.ssml_for_numeric(number), options
         true
       end
 
@@ -231,13 +229,14 @@ module Adhearsion
       # is pronounced as "one hundred" instead of "one zero zero".
       #
       # @param [Numeric, String] number Numeric or String containing a valid Numeric, like "321".
+      # @param [Hash] options A set of options for output. See Punchblock::Component::Output.new for details.
       #
       # @raise [ArgumentError] if the given argument can not be played
       # @return [Punchblock::Component::Output]
       #
-      def play_numeric!(number)
+      def play_numeric!(number, options = {})
         raise ArgumentError unless number.kind_of?(Numeric) || number =~ /^\d+$/
-        async_player.play_ssml output_formatter.ssml_for_numeric(number)
+        async_player.play_ssml output_formatter.ssml_for_numeric(number), options
       end
 
       #
