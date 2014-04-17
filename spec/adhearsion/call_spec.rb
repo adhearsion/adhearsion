@@ -876,6 +876,40 @@ module Adhearsion
         end
       end
 
+      describe '#redirect' do
+        describe "with a target given" do
+          it 'should send a Redirect message with the correct target' do
+            expect_message_waiting_for_response Punchblock::Command::Redirect.new(to: 'sip:foo@bar.com')
+            subject.redirect 'sip:foo@bar.com'
+          end
+        end
+
+        describe "with no target given" do
+          it 'should raise with ArgumentError' do
+            expect { subject.redirect }.to raise_error(ArgumentError)
+          end
+        end
+
+        describe "with no headers" do
+          it 'should send a Redirect message' do
+            expect_message_waiting_for_response do |c|
+              c.is_a?(Punchblock::Command::Redirect) && c.headers == {}
+            end
+            subject.redirect 'sip:foo@bar.com'
+          end
+        end
+
+        describe "with headers set" do
+          it 'should send a Redirect message with the correct headers' do
+            headers = {:foo => 'bar'}
+            expect_message_waiting_for_response do |c|
+              c.is_a?(Punchblock::Command::Redirect) && c.headers == headers
+            end
+            subject.redirect 'sip:foo@bar.com', headers
+          end
+        end
+      end
+
       describe "#hangup" do
         describe "if the call is not active" do
           before do

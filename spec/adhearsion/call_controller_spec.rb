@@ -391,7 +391,8 @@ module Adhearsion
 
     [
       :hangup,
-      :reject
+      :reject,
+      :redirect
     ].each do |method_name|
       describe "##{method_name}" do
         it "delegates to the call, blocking first until it is allowed to execute, and raises Call::Hangup" do

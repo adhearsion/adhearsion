@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Feature: Add `Call#redirect` and `CallController#redirect` for redirecting calls to other systems ([#465](https://github.com/adhearsion/adhearsion/issues/465))
   * Bugfix: Do not quiesce until the second SIGTERM, as per documentation ([#483](https://github.com/adhearsion/adhearsion/issues/483))
   * Bugfix: Consistent support for output options in all output methods ([#481](https://github.com/adhearsion/adhearsion/issues/481))
   * Bugfix: Use engine timestamps for joined timestamps in `#dial` ([#466](https://github.com/adhearsion/adhearsion/issues/466))
