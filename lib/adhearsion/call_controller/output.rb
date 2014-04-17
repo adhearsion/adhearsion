@@ -77,6 +77,9 @@ module Adhearsion
       # pass in as an array with the first parameter as the Date/Time/DateTime object along with a hash with the
       # additional options. See play_time for more information.
       #
+      # @param [Array<String, Fixnum, Time, Date>, String, Fixnum, Time, Date] outputs A collection of outputs to render.
+      # @param [Hash] options A set of options for output. Includes everything in Punchblock::Component::Output.new.
+      #
       # @example Play file hello-world
       #   play 'http://www.example.com/hello-world.mp3'
       #   play '/path/on/disk/hello-world.wav'
@@ -107,6 +110,9 @@ module Adhearsion
       # Fixnums (e.g. 1000), Strings which are valid Fixnums (e.g "123"), and direct sound files. To specify how the Date/Time objects are said
       # pass in as an array with the first parameter as the Date/Time/DateTime object along with a hash with the
       # additional options. See play_time for more information.
+      #
+      # @param [Array<String, Fixnum, Time, Date>, String, Fixnum, Time, Date] outputs A collection of outputs to render.
+      # @param [Hash] options A set of options for output. Includes everything in Punchblock::Component::Output.new.
       #
       # @example Play file hello-world
       #   play 'http://www.example.com/hello-world.mp3'
