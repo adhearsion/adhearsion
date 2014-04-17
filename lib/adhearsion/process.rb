@@ -11,6 +11,7 @@ module Adhearsion
     state_machine :initial => :booting do
       before_transition :log_state_change
       after_transition :on => :shutdown, :do => :request_stop
+      after_transition any => :rejecting, :do => :quiesce
       after_transition any => :stopped, :do => :final_shutdown
       before_transition any => :force_stopped, :do => :die_now!
 
@@ -70,6 +71,10 @@ module Adhearsion
     def request_stop
       Events.trigger_immediately :stop_requested
       important_threads << Thread.new { stop_when_zero_calls }
+    end
+
+    def quiesce
+      Events.trigger_immediately :quiesced
     end
 
     def final_shutdown
