@@ -1,6 +1,7 @@
 # [develop](https://github.com/adhearsion/adhearsion)
   * Bugfix: Do not quiesce until the second SIGTERM, as per documentation ([#483](https://github.com/adhearsion/adhearsion/issues/483))
   * Bugfix: Consistent support for output options in all output methods ([#481](https://github.com/adhearsion/adhearsion/issues/481))
+  * Bugfix: Use engine timestamps for joined timestamps in `#dial` ([#466](https://github.com/adhearsion/adhearsion/issues/466))
 
 # [2.5.2](https://github.com/adhearsion/adhearsion/compare/v2.5.1...v2.5.2) - [2014-04-11](https://rubygems.org/gems/adhearsion/versions/2.5.2)
   * All changes from 2.5.1 (re-released)

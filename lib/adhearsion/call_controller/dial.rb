@@ -162,6 +162,10 @@ module Adhearsion
             new_call.on_answer do |event|
               pre_confirmation_tasks new_call
 
+              new_call.on_joined @call do |joined|
+                join_status.started joined.timestamp.to_time
+              end
+
               new_call.on_unjoined @call do |unjoined|
                 join_status.ended unjoined.timestamp.to_time
                 unless @splitting
@@ -182,7 +186,6 @@ module Adhearsion
                 logger.info "#dial joining call #{new_call.id} to #{@call.id}"
                 pre_join_tasks new_call
                 @call.answer
-                join_status.started
                 new_call.join @join_target, @join_options
                 unless @join_target == @call
                   @call.join @join_target, @join_options
@@ -515,8 +518,8 @@ module Adhearsion
           @result = :lost_confirmation
         end
 
-        def started
-          @start_time = Time.now
+        def started(time)
+          @start_time = time
           @result = :joined
         end
 
