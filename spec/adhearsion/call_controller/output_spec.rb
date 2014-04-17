@@ -22,10 +22,6 @@ module Adhearsion
           player.should be_a Output::Player
           player.controller.should be controller
         end
-
-        it "should return the same player every time" do
-          controller.player.should be controller.player
-        end
       end
 
       describe "#async_player" do
@@ -33,10 +29,6 @@ module Adhearsion
           player = controller.async_player
           player.should be_a Output::AsyncPlayer
           player.controller.should be controller
-        end
-
-        it "should return the same player every time" do
-          controller.async_player.should be controller.async_player
         end
       end
 

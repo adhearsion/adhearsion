@@ -301,12 +301,12 @@ module Adhearsion
 
       # @private
       def player
-        @player ||= Player.new(self)
+        Player.new(self)
       end
 
       # @private
       def async_player
-        @async_player ||= AsyncPlayer.new(self)
+        AsyncPlayer.new(self)
       end
 
       # @private
