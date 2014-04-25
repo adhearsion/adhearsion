@@ -2864,6 +2864,36 @@ module Adhearsion
             latch.wait(2).should be_true
           end
         end
+
+        describe "#cleanup_calls" do
+          let(:dial) { Dial::Dial.new to, dial_options, call }
+
+          before do
+            other_mock_call.stub dial: true
+            expect(OutboundCall).to receive(:new).and_return other_mock_call
+          end
+
+          context "when a Cleanup Controller is specified" do
+            let(:cleanup_controller) do
+              Class.new(Adhearsion::CallController) do
+                def run
+                  logger.info "Cleaning up..."
+                end
+              end
+            end
+            let(:dial_options) { {cleanup: cleanup_controller} }
+
+            it "invokes the Cleanup Controller on each active outbound call before terminating the call" do
+              expect(cleanup_controller).to receive(:new).with(other_mock_call, anything)
+              Thread.new do
+                dial.run double(Adhearsion::CallController)
+                dial.cleanup_calls
+                latch.countdown!
+              end
+              latch.wait(2).should be_true
+            end
+          end
+        end
       end
     end
   end

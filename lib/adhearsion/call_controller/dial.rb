@@ -36,6 +36,9 @@ module Adhearsion
       # @option options [CallController] :confirm the controller to execute on the first outbound call to be answered, to give an opportunity to screen the call. The calls will be joined if the outbound call is still active after this controller completes.
       # @option options [Hash] :confirm_metadata Metadata to set on the confirmation controller before executing it. This is shared between all calls if dialing multiple endpoints; if you care about it being mutated, you should provide an immutable value (using eg https://github.com/harukizaemon/hamster).
       #
+      # @option options [CallController] :cleanup The controller to execute on each call being cleaned up. This can be used, for instance, to notify that the call is being terminated. Calls are terminated right after this controller completes execution. If this is not specified, calls are silently terminated during cleanup.
+      # @option options [Hash] :cleanup_metadata Metadata to set on the cleanup controller before executing it. Defaults to :confirm_metadata if not specified.
+      #
       # @option options [Hash] :join_options Options to specify the kind of join operation to perform. See `Call#join` for details.
       # @option options [Call, String, Hash] :join_target the target to join to. May be a Call object, a call ID (String, Hash) or a mixer name (Hash). See `Call#join` for details.
       #
@@ -327,7 +330,15 @@ module Adhearsion
           else
             logger.info "#dial finished. Hanging up #{calls_to_hangup.size} outbound calls which are still active: #{calls_to_hangup.map(&:first).join ", "}."
             calls_to_hangup.each do |id, outbound_call|
-              ignoring_ended_calls { outbound_call.hangup }
+              ignoring_ended_calls do
+                if @cleanup_controller
+                  logger.info "#dial running #{@cleanup_controller.class.name} on #{outbound_call.id}"
+                  outbound_call.execute_controller @cleanup_controller.new(outbound_call, @cleanup_metadata), ->(call) { call.hangup }
+                else
+                  logger.info "#dial hanging up #{outbound_call.id}"
+                  outbound_call.hangup
+                end
+              end
             end
           end
         end
@@ -373,6 +384,8 @@ module Adhearsion
           @join_options = @options.delete(:join_options) || {}
           @join_target = @options.delete(:join_target) || @call
 
+          @cleanup_controller = @options.delete :cleanup
+          @cleanup_metadata = @options.delete :cleanup_metadata || @confirmation_metadata
           @skip_cleanup = false
         end
 
