@@ -37,9 +37,9 @@ module Adhearsion
             connection.ready!
           end
 
-          # When a stop is requested, change our status to "Do Not Disturb"
+          # When quiescence is requested, change our status to "Do Not Disturb"
           # This should prevent the telephony engine from sending us any new calls.
-          Events.register_callback :stop_requested do
+          Events.register_callback :quiesced do
             connection.not_ready! if connection.connected?
           end
 

@@ -329,7 +329,7 @@ module Adhearsion
     # @return [Hash] where :command is the issued command, :joined_waiter is a #wait responder which is triggered when the join is complete, and :unjoined_waiter is a #wait responder which is triggered when the entities are unjoined
     #
     def join(target, options = {})
-      logger.info "Joining to #{target}"
+      logger.debug "Joining to #{target}"
 
       joined_condition = CountDownLatch.new(1)
       on_joined target do

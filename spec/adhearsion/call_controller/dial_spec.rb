@@ -265,7 +265,10 @@ module Adhearsion
           context "when the call is answered and joined" do
             it "has an overall dial status of :answer" do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call, {})
+              other_mock_call.should_receive(:join).once.with(call, {}).and_return do
+                call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
+                other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+              end
 
               t = dial_in_thread
 
@@ -286,7 +289,10 @@ module Adhearsion
 
             it "records the duration of the join" do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call, {})
+              other_mock_call.should_receive(:join).once.with(call, {}).and_return do
+                call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
+                other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+              end
               other_mock_call.stub hangup: true
 
               t = dial_in_thread
@@ -341,7 +347,10 @@ module Adhearsion
 
             before do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(join_target, join_options)
+              other_mock_call.should_receive(:join).once.with(join_target, join_options).and_return do
+                call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
+                other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+              end
               other_mock_call.stub(:unjoin).and_return do
                 call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                 other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
@@ -1323,10 +1332,12 @@ module Adhearsion
             end
 
             it "should join the calls if the call is still active after execution of the call controller" do
-              other_mock_call.should_receive(:hangup).once
               other_mock_call['confirm'] = true
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call, {})
+              other_mock_call.should_receive(:join).once.with(call, {}).and_return do
+                call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
+                other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+              end
 
               t = dial_in_thread
 
@@ -1398,7 +1409,10 @@ module Adhearsion
                 call.should_receive(:answer).once
 
                 other_mock_call.should_receive(:dial).once.with(to, from: nil)
-                other_mock_call.should_receive(:join).once.with(call, {})
+                other_mock_call.should_receive(:join).once.with(call, {}).and_return do
+                  call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
+                  other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                end
                 other_mock_call.should_receive(:hangup).once.and_return do
                   other_mock_call << mock_end
                 end
@@ -1668,7 +1682,10 @@ module Adhearsion
           context "when the call is answered and joined" do
             it "has an overall dial status of :answer" do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call, {})
+              other_mock_call.should_receive(:join).once.with(call, {}).and_return do
+                call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
+                other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+              end
 
               t = dial_in_thread
 
@@ -1689,7 +1706,10 @@ module Adhearsion
 
             it "records the duration of the join" do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call, {})
+              other_mock_call.should_receive(:join).once.with(call, {}).and_return do
+                call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
+                other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+              end
               other_mock_call.stub hangup: true
 
               t = dial_in_thread
@@ -1720,7 +1740,10 @@ module Adhearsion
 
               it "joins the calls with those options" do
                 call.should_receive(:answer).once
-                other_mock_call.should_receive(:join).once.with(call, media: :direct)
+                other_mock_call.should_receive(:join).once.with(call, media: :direct).and_return do
+                  call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
+                  other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                end
                 other_mock_call.stub hangup: true
 
                 t = dial_in_thread
@@ -1744,7 +1767,10 @@ module Adhearsion
 
             before do
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(join_target, join_options)
+              other_mock_call.should_receive(:join).once.with(join_target, join_options).and_return do
+                call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
+                other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+              end
               other_mock_call.stub(:unjoin).and_return do
                 call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
                 other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
@@ -1912,7 +1938,10 @@ module Adhearsion
 
                 dial.split
 
-                other_mock_call.should_receive(:join).once.ordered.with(call, {})
+                other_mock_call.should_receive(:join).once.ordered.with(call, {}).and_return do
+                  call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
+                  other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                end
                 dial.rejoin
 
                 other_mock_call << mock_end
@@ -1936,7 +1965,10 @@ module Adhearsion
 
                   dial.split
 
-                  other_mock_call.should_receive(:join).once.ordered.with(call, media: :direct)
+                  other_mock_call.should_receive(:join).once.ordered.with(call, media: :direct).and_return do
+                    call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
+                    other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                  end
                   dial.rejoin
                 end
               end
@@ -1952,7 +1984,10 @@ module Adhearsion
 
                   dial.split
 
-                  other_mock_call.should_receive(:join).once.ordered.with(call, media: :direct)
+                  other_mock_call.should_receive(:join).once.ordered.with(call, media: :direct).and_return do
+                    call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
+                    other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                  end
                   dial.rejoin nil, media: :direct
                 end
               end
@@ -2656,7 +2691,10 @@ module Adhearsion
               end
               other_mock_call['confirm'] = true
               call.should_receive(:answer).once
-              other_mock_call.should_receive(:join).once.with(call, {})
+              other_mock_call.should_receive(:join).once.with(call, {}).and_return do
+                call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
+                other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+              end
 
               t = dial_in_thread
 
@@ -2743,7 +2781,10 @@ module Adhearsion
                 call.should_receive(:answer).once
 
                 other_mock_call.should_receive(:dial).once.with(to, from: nil)
-                other_mock_call.should_receive(:join).once.with(call, {})
+                other_mock_call.should_receive(:join).once.with(call, {}).and_return do
+                  call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
+                  other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                end
                 other_mock_call.should_receive(:hangup).once.and_return do
                   other_mock_call.async.deliver_message mock_end
                 end
