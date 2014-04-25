@@ -333,7 +333,7 @@ module Adhearsion
               ignoring_ended_calls do
                 if @cleanup_controller
                   logger.info "#dial running #{@cleanup_controller.class.name} on #{outbound_call.id}"
-                  outbound_call.async.execute_controller @cleanup_controller.new(outbound_call, @cleanup_metadata), ->(call) { call.hangup }
+                  outbound_call.execute_controller @cleanup_controller.new(outbound_call, @cleanup_metadata), ->(call) { call.hangup }
                 else
                   logger.info "#dial hanging up #{outbound_call.id}"
                   outbound_call.hangup
