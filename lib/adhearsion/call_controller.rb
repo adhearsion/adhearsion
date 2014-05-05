@@ -21,7 +21,7 @@ module Adhearsion
 
     class_attribute :callbacks
 
-    self.callbacks = {:before_call => [], :after_call => []}
+    self.callbacks = {:before_call => [], :after_call => [], :on_error => []}
 
     self.callbacks.keys.each do |name|
       class_eval <<-STOP
@@ -122,6 +122,7 @@ module Adhearsion
       logger.info "Call was hung up while executing a controller"
     rescue SyntaxError, StandardError => e
       Events.trigger :exception, [e, logger]
+      on_error e
     ensure
       after_call
       logger.debug "Finished executing controller #{self.inspect}"
@@ -193,6 +194,12 @@ module Adhearsion
     # @private
     def after_call
       @after_call ||= execute_callbacks :after_call
+    end
+
+    # @private
+    def on_error(e)
+      @error = e
+      @on_error ||= execute_callbacks :on_error
     end
 
     # @private

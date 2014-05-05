@@ -601,10 +601,16 @@ class ExampleCallController < Adhearsion::CallController
   after_call { clean_up_models }
   after_call :clean_up_models
 
+  on_error { apologize_for_failure }
+  on_error :apologize_for_failure
+
   def setup_models
   end
 
   def clean_up_models
+  end
+
+  def apologize_for_failure
   end
 
   def run
@@ -653,6 +659,13 @@ describe ExampleCallController do
     subject.execute!
     latch.wait(1).should be true
     Adhearsion::Events.clear_handlers :exception
+  end
+
+  it "should call the requested method when an exception is encountered" do
+    subject.should_receive(:join_to_conference).once.and_raise StandardError
+    subject.should_receive(:apologize_for_failure).twice.ordered
+
+    subject.execute!
   end
 
   describe "when the controller finishes without a hangup" do
