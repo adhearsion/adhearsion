@@ -22,6 +22,7 @@ module Adhearsion
         # @option options [String, Optional] :initial_timeout Controls how long (seconds) the recognizer should wait after the end of the prompt for the caller to speak before sending a Recorder event.
         # @option options [String, Optional] :final_timeout Controls the length (seconds) of a period of silence after callers have spoken to conclude they finished.
         # @option options [Boolean, Optional] :interruptible Allows the recording to be terminated by any single DTMF key, default is false
+        # @option options [Symbol, Optional] :direction Controls which sides of the conversation are recorded: :recv (what the caller hears), :send (what the caller said), or :duplex (both)
         #
         def initialize(controller, options = {})
           @controller = controller
