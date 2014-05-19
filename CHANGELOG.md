@@ -1,5 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
   * Feature: Accept a `:cleanup` parameter in Dial options, which specifies a controller to be run on each outbound call before cleanup.
+  * Feature: Add a per-controller callback `on_error` that is invoked whenever an unhandled exception is raised. This can be used to play apology messages before disconnecting the caller
 
 # [2.5.3](https://github.com/adhearsion/adhearsion/compare/v2.5.2...v2.5.3) - [2014-04-25](https://rubygems.org/gems/adhearsion/versions/2.5.3)
   * Bugfix: Do not quiesce until the second SIGTERM, as per documentation ([#483](https://github.com/adhearsion/adhearsion/issues/483))
