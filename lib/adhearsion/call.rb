@@ -306,6 +306,15 @@ module Adhearsion
       Adhearsion::Events.trigger_immediately :call_rejected, call: current_actor, reason: reason
     end
 
+    #
+    # Redirect the call to some other target system
+    #
+    # @param [String] to the target to redirect to, eg a SIP URI
+    # @param [Hash, optional] headers a set of headers to send along with the redirect instruction
+    def redirect(to, headers = nil)
+      write_and_await_response Punchblock::Command::Redirect.new(to: to, headers: headers)
+    end
+
     def hangup(headers = nil)
       return false unless active?
       logger.info "Hanging up"
