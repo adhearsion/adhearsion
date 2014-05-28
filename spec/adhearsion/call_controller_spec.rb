@@ -76,7 +76,7 @@ module Adhearsion
           latch.countdown!
         end
         expect { subject.exec }.to raise_error
-        latch.wait(1).should be true
+        latch.wait(LATCH_TIMEOUT).should be true
         ex.should be_a StandardError
         lo.should be subject.logger
       end
@@ -416,7 +416,7 @@ module Adhearsion
         subject.call << Punchblock::Event::Joined.new(call_uri: 'call1')
         latch.wait(1).should be false
         subject.call << Punchblock::Event::Unjoined.new(call_uri: 'call1')
-        latch.wait(1).should be true
+        latch.wait(LATCH_TIMEOUT).should be true
       end
 
       context "with a mixer" do
@@ -432,7 +432,7 @@ module Adhearsion
           subject.call << Punchblock::Event::Joined.new(:mixer_name => 'foobar')
           latch.wait(1).should be false
           subject.call << Punchblock::Event::Unjoined.new(:mixer_name => 'foobar')
-          latch.wait(1).should be true
+          latch.wait(LATCH_TIMEOUT).should be true
         end
       end
 
@@ -447,7 +447,7 @@ module Adhearsion
           end
           latch.wait(1).should be false
           subject.call << Punchblock::Event::Joined.new(call_uri: 'call1')
-          latch.wait(1).should be true
+          latch.wait(LATCH_TIMEOUT).should be true
         end
 
         context "with a mixer" do
@@ -461,7 +461,7 @@ module Adhearsion
             end
             latch.wait(1).should be false
             subject.call << Punchblock::Event::Joined.new(:mixer_name => 'foobar')
-            latch.wait(1).should be true
+            latch.wait(LATCH_TIMEOUT).should be true
           end
         end
       end
@@ -495,7 +495,7 @@ module Adhearsion
 
           subject.resume!
 
-          latch.wait(1).should be_true
+          latch.wait(LATCH_TIMEOUT).should be_true
 
           (t2 - t1).should >= 0.5
         end
@@ -658,7 +658,7 @@ describe ExampleCallController do
       latch.countdown!
     end
     subject.exec
-    latch.wait(1).should be true
+    latch.wait(LATCH_TIMEOUT).should be true
     Adhearsion::Events.clear_handlers :exception
   end
 

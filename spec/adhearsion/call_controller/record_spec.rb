@@ -199,7 +199,7 @@ module Adhearsion
             component.request!
             component.execute!
             component.trigger_event_handler response
-            latch.wait(1).should be true
+            latch.wait(LATCH_TIMEOUT).should be true
             Adhearsion::Events.clear_handlers :exception
           end
         end

@@ -379,7 +379,7 @@ module Adhearsion
           end
           subject.register_event_handler { |e| raise 'foo' }
           lambda { subject << :foo }.should_not raise_error
-          latch.wait(3).should be true
+          latch.wait(LATCH_TIMEOUT).should be true
           Adhearsion::Events.clear_handlers :exception
         end
       end
@@ -989,7 +989,7 @@ module Adhearsion
             result[:joined_condition].wait(0.5).should be_false
 
             subject << Punchblock::Event::Joined.new(call_uri: uri)
-            result[:joined_condition].wait(0.5).should be_true
+            result[:joined_condition].wait(LATCH_TIMEOUT).should be_true
           end
 
           it "should return something that can be blocked on until the entities are unjoined" do
@@ -1002,7 +1002,7 @@ module Adhearsion
             result[:unjoined_condition].wait(0.5).should be_false
 
             subject << Punchblock::Event::Unjoined.new(call_uri: uri)
-            result[:unjoined_condition].wait(0.5).should be_true
+            result[:unjoined_condition].wait(LATCH_TIMEOUT).should be_true
           end
 
           it "should unblock all conditions on call end if no joined/unjoined events are received" do
@@ -1013,8 +1013,8 @@ module Adhearsion
             result[:unjoined_condition].wait(0.5).should be_false
 
             subject << Punchblock::Event::End.new
-            result[:joined_condition].wait(0.5).should be_true
-            result[:unjoined_condition].wait(0.5).should be_true
+            result[:joined_condition].wait(LATCH_TIMEOUT).should be_true
+            result[:unjoined_condition].wait(LATCH_TIMEOUT).should be_true
           end
 
           it "should not error on call end when joined/unjoined events are received correctly" do
@@ -1070,7 +1070,7 @@ module Adhearsion
             result[:joined_condition].wait(0.5).should be_false
 
             subject << Punchblock::Event::Joined.new(call_uri: uri)
-            result[:joined_condition].wait(0.5).should be_true
+            result[:joined_condition].wait(LATCH_TIMEOUT).should be_true
           end
 
           it "should return something that can be blocked on until the entities are unjoined" do
@@ -1083,7 +1083,7 @@ module Adhearsion
             result[:unjoined_condition].wait(0.5).should be_false
 
             subject << Punchblock::Event::Unjoined.new(call_uri: uri)
-            result[:unjoined_condition].wait(0.5).should be_true
+            result[:unjoined_condition].wait(LATCH_TIMEOUT).should be_true
           end
 
           it "should unblock all conditions on call end if no joined/unjoined events are received" do
@@ -1094,8 +1094,8 @@ module Adhearsion
             result[:unjoined_condition].wait(0.5).should be_false
 
             subject << Punchblock::Event::End.new
-            result[:joined_condition].wait(0.5).should be_true
-            result[:unjoined_condition].wait(0.5).should be_true
+            result[:joined_condition].wait(LATCH_TIMEOUT).should be_true
+            result[:unjoined_condition].wait(LATCH_TIMEOUT).should be_true
           end
 
           it "should not error on call end when joined/unjoined events are received correctly" do
@@ -1152,7 +1152,7 @@ module Adhearsion
             result[:joined_condition].wait(0.5).should be_false
 
             subject << Punchblock::Event::Joined.new(call_uri: uri)
-            result[:joined_condition].wait(0.5).should be_true
+            result[:joined_condition].wait(LATCH_TIMEOUT).should be_true
           end
 
           it "should return something that can be blocked on until the entities are unjoined" do
@@ -1165,7 +1165,7 @@ module Adhearsion
             result[:unjoined_condition].wait(0.5).should be_false
 
             subject << Punchblock::Event::Unjoined.new(call_uri: uri)
-            result[:unjoined_condition].wait(0.5).should be_true
+            result[:unjoined_condition].wait(LATCH_TIMEOUT).should be_true
           end
 
           it "should unblock all conditions on call end if no joined/unjoined events are received" do
@@ -1176,8 +1176,8 @@ module Adhearsion
             result[:unjoined_condition].wait(0.5).should be_false
 
             subject << Punchblock::Event::End.new
-            result[:joined_condition].wait(0.5).should be_true
-            result[:unjoined_condition].wait(0.5).should be_true
+            result[:joined_condition].wait(LATCH_TIMEOUT).should be_true
+            result[:unjoined_condition].wait(LATCH_TIMEOUT).should be_true
           end
 
           it "should not error on call end when joined/unjoined events are received correctly" do
@@ -1233,7 +1233,7 @@ module Adhearsion
             result[:joined_condition].wait(0.5).should be_false
 
             subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
-            result[:joined_condition].wait(0.5).should be_true
+            result[:joined_condition].wait(LATCH_TIMEOUT).should be_true
           end
 
           it "should return something that can be blocked on until the entities are unjoined" do
@@ -1246,7 +1246,7 @@ module Adhearsion
             result[:unjoined_condition].wait(0.5).should be_false
 
             subject << Punchblock::Event::Unjoined.new(mixer_name: mixer_name)
-            result[:unjoined_condition].wait(0.5).should be_true
+            result[:unjoined_condition].wait(LATCH_TIMEOUT).should be_true
           end
 
           it "should unblock all conditions on call end if no joined/unjoined events are received" do
@@ -1257,8 +1257,8 @@ module Adhearsion
             result[:unjoined_condition].wait(0.5).should be_false
 
             subject << Punchblock::Event::End.new
-            result[:joined_condition].wait(0.5).should be_true
-            result[:unjoined_condition].wait(0.5).should be_true
+            result[:joined_condition].wait(LATCH_TIMEOUT).should be_true
+            result[:unjoined_condition].wait(LATCH_TIMEOUT).should be_true
           end
 
           it "should not error on call end when joined/unjoined events are received correctly" do
@@ -1379,7 +1379,7 @@ module Adhearsion
         it "should call #bg_exec on the controller instance" do
           mock_controller.should_receive(:exec).once
           subject.execute_controller mock_controller, lambda { |call| latch.countdown! }
-          latch.wait(3).should be_true
+          latch.wait(LATCH_TIMEOUT).should be_true
         end
 
         it "should use the passed block as a controller if none is specified" do
@@ -1388,7 +1388,7 @@ module Adhearsion
           subject.execute_controller nil, lambda { |call| latch.countdown! } do
             foo
           end
-          latch.wait(3).should be_true
+          latch.wait(LATCH_TIMEOUT).should be_true
         end
 
         it "should raise ArgumentError if both a controller and a block are passed" do
@@ -1403,21 +1403,21 @@ module Adhearsion
             latch.countdown!
           end
           subject.execute_controller BrokenController.new(subject), lambda { |call| latch.countdown! }
-          latch.wait(3).should be true
+          latch.wait(LATCH_TIMEOUT).should be true
           Adhearsion::Events.clear_handlers :exception
         end
 
         it "should execute a callback after the controller executes" do
           foo = nil
           subject.execute_controller mock_controller, lambda { |call| foo = call; latch.countdown! }
-          latch.wait(3).should be_true
+          latch.wait(LATCH_TIMEOUT).should be_true
           foo.should be subject
         end
 
         it "should prevent exceptions in controllers from being raised" do
           mock_controller.should_receive(:run).once.ordered.and_raise StandardError
           expect { subject.execute_controller mock_controller, lambda { |call| latch.countdown! } }.to_not raise_error
-          latch.wait(3).should be_true
+          latch.wait(LATCH_TIMEOUT).should be_true
           subject.alive?.should be true
         end
       end

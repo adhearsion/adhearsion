@@ -29,7 +29,7 @@ module Adhearsion
 
       Events.trigger :event, :foo
 
-      latch.wait(2).should be_true
+      latch.wait(LATCH_TIMEOUT).should be_true
       t.should be == :event
       o.should be == :foo
     end
