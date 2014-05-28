@@ -1413,6 +1413,13 @@ module Adhearsion
           latch.wait(3).should be_true
           foo.should be subject
         end
+
+        it "should prevent exceptions in controllers from being raised" do
+          mock_controller.should_receive(:run).once.ordered.and_raise StandardError
+          expect { subject.execute_controller mock_controller, lambda { |call| latch.countdown! } }.to_not raise_error
+          latch.wait(3).should be_true
+          subject.alive?.should be true
+        end
       end
 
       describe "#register_controller" do

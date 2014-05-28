@@ -53,7 +53,7 @@ module Adhearsion
       it "catches Hangup exceptions and logs the hangup" do
         subject.should_receive(:run).once.ordered.and_raise(Call::Hangup)
         subject.logger.should_receive(:info).once.with(/Call was hung up/).ordered
-        subject.execute!
+        subject.exec
       end
 
       context "when trying to execute a command against a dead call" do
@@ -63,7 +63,7 @@ module Adhearsion
 
         it "gracefully terminates " do
           subject.logger.should_receive(:info).once.with(/Call was hung up/).ordered
-          subject.execute!
+          subject.exec
         end
       end
 
@@ -75,7 +75,7 @@ module Adhearsion
           ex, lo = e, l
           latch.countdown!
         end
-        subject.execute!
+        expect { subject.exec }.to raise_error
         latch.wait(1).should be true
         ex.should be_a StandardError
         lo.should be subject.logger
@@ -157,18 +157,18 @@ module Adhearsion
         call.should_receive(:answer).once.ordered
         subject.should_receive(:after).once.ordered
 
-        subject.execute!
+        subject.exec
       end
 
       it "should return the outer controller's run method return value" do
         SecondController.any_instance.should_receive(:run).once.and_return(:run_result)
-        subject.execute!
+        subject.exec
         subject.metadata[:invoke_result].should be == :run_result
       end
 
       it "should invoke the new controller with metadata" do
         SecondController.any_instance.should_receive(:md_check).once.with :foo => 'bar'
-        subject.execute!
+        subject.exec
       end
 
       it "should allow the outer controller to cease execution and handle remote hangups" do
@@ -178,7 +178,7 @@ module Adhearsion
         call.should_receive(:answer).once.ordered
         subject.should_receive(:after).never.ordered
 
-        subject.execute!
+        subject.exec
       end
     end
 
@@ -638,14 +638,14 @@ describe ExampleCallController do
   it "should execute the before_call callbacks before processing the call" do
     subject.should_receive(:setup_models).twice.ordered
     subject.should_receive(:join_to_conference).once.ordered
-    subject.execute!
+    subject.exec
   end
 
   it "should execute the after_call callbacks after the call is hung up" do
     subject.should_receive(:join_to_conference).once.ordered
     subject.should_receive(:clean_up_models).twice.ordered
     subject.should_receive(:foobar).never
-    subject.execute!
+    subject.exec
   end
 
   it "should capture errors in callbacks" do
@@ -657,7 +657,7 @@ describe ExampleCallController do
       l.should be subject.logger
       latch.countdown!
     end
-    subject.execute!
+    subject.exec
     latch.wait(1).should be true
     Adhearsion::Events.clear_handlers :exception
   end
@@ -666,7 +666,7 @@ describe ExampleCallController do
     subject.should_receive(:join_to_conference).once.and_raise StandardError
     subject.should_receive(:apologize_for_failure).twice.ordered
 
-    subject.execute!
+    expect { subject.exec }.to raise_error
   end
 
   describe "when the controller finishes without a hangup" do
@@ -675,7 +675,7 @@ describe ExampleCallController do
       subject.should_receive(:join_to_conference).once.ordered
       subject.should_receive(:foobar).once.ordered
       subject.should_receive(:clean_up_models).twice.ordered
-      subject.execute!
+      subject.exec
     end
   end
 
