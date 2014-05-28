@@ -123,6 +123,7 @@ module Adhearsion
     rescue SyntaxError, StandardError => e
       Events.trigger :exception, [e, logger]
       on_error e
+      raise
     ensure
       after_call
       logger.debug "Finished executing controller #{self.inspect}"
