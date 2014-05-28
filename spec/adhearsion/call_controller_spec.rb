@@ -75,7 +75,7 @@ module Adhearsion
           ex, lo = e, l
           latch.countdown!
         end
-        subject.execute!
+        expect { subject.exec }.to raise_error
         latch.wait(1).should be true
         ex.should be_a StandardError
         lo.should be subject.logger
@@ -666,7 +666,7 @@ describe ExampleCallController do
     subject.should_receive(:join_to_conference).once.and_raise StandardError
     subject.should_receive(:apologize_for_failure).twice.ordered
 
-    subject.execute!
+    expect { subject.exec }.to raise_error
   end
 
   describe "when the controller finishes without a hangup" do
