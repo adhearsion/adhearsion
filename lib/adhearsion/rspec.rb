@@ -8,3 +8,5 @@ initializer.load_lib_folder
 initializer.load_config_file
 initializer.load_events_file
 initializer.load_routes_file
+initializer.start_logging
+Adhearsion::Logging.logging_level = :error
