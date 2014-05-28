@@ -332,7 +332,7 @@ module Adhearsion
 
         Initializer.handle_event ami_event
 
-        latch.wait(1).should be true
+        latch.wait(LATCH_TIMEOUT).should be true
         result.should be ami_event
       end
     end

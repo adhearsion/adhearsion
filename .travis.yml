@@ -10,6 +10,6 @@ matrix:
   allow_failures:
     - rvm: rbx-2.1.1
     - rvm: ruby-head
-env: ARUBA_TIMEOUT=120 RAILS_ENV=development AHN_ENV=development
+env: ARUBA_TIMEOUT=120 RAILS_ENV=development AHN_ENV=development LATCH_TIMEOUT=10
 notifications:
   irc: "irc.freenode.org#adhearsion"

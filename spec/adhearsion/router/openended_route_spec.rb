@@ -27,7 +27,7 @@ module Adhearsion
           it "should accept the call" do
             call.should_receive(:accept).once
             route.dispatch call, lambda { latch.countdown! }
-            latch.wait(2).should be true
+            latch.wait(LATCH_TIMEOUT).should be true
           end
 
           it "should instruct the call to use an instance of the controller" do
@@ -38,7 +38,7 @@ module Adhearsion
           it "should not hangup the call after all controllers have executed" do
             call.should_receive(:hangup).never
             route.dispatch call, lambda { latch.countdown! }
-            latch.wait(2).should be true
+            latch.wait(LATCH_TIMEOUT).should be true
           end
         end
 
