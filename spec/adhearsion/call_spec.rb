@@ -1414,7 +1414,7 @@ module Adhearsion
           foo.should be subject
         end
 
-        it "should prevent exceptions in controllers from being raised", focus: true do
+        it "should prevent exceptions in controllers from being raised" do
           mock_controller.should_receive(:run).once.ordered.and_raise StandardError
           expect { subject.execute_controller mock_controller }.to_not raise_error
         end
