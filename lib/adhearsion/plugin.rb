@@ -1,6 +1,8 @@
 # encoding: utf-8
 
 require 'loquacious'
+require 'active_support/inflector'
+require 'active_support/dependencies/autoload'
 
 module Adhearsion
 

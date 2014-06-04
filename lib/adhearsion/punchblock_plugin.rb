@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require 'active_support/dependencies/autoload'
+
 module Adhearsion
   class PunchblockPlugin < Plugin
     extend ActiveSupport::Autoload

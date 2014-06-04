@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require 'countdownlatch'
+require 'active_support/dependencies/autoload'
 
 module Adhearsion
   class CallController

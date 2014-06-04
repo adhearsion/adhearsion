@@ -3,7 +3,7 @@
 abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE})! Please upgrade to at least Ruby v1.9.3, JRuby 1.7.0 or Rubinius 2.0." if RUBY_VERSION < "1.9.3"
 
 %w{
-  active_support/all
+  active_support/dependencies/autoload
   punchblock
   celluloid
 

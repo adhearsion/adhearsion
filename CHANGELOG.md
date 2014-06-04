@@ -3,9 +3,9 @@
   * Feature: Add a per-controller callback `on_error` that is invoked whenever an unhandled exception is raised. This can be used to play apology messages before disconnecting the caller ([#486](https://github.com/adhearsion/adhearsion/issues/486))
   * Feature: Add `Call#redirect` and `CallController#redirect` for redirecting calls to other systems ([#465](https://github.com/adhearsion/adhearsion/issues/465))
   * Feature: Ensure logging is available on STDOUT during RSpec runs
+  * Feature: Reduce Adhearsion start-up time by selectively requiring the parts of ActiveSupport we use
 
 # [2.5.3](https://github.com/adhearsion/adhearsion/compare/v2.5.2...v2.5.3) - [2014-04-25](https://rubygems.org/gems/adhearsion/versions/2.5.3)
-=======
   * Bugfix: Do not quiesce until the second SIGTERM, as per documentation ([#483](https://github.com/adhearsion/adhearsion/issues/483))
   * Bugfix: Consistent support for output options in all output methods ([#481](https://github.com/adhearsion/adhearsion/issues/481))
   * Bugfix: Use engine timestamps for joined timestamps in `#dial` ([#466](https://github.com/adhearsion/adhearsion/issues/466))
