@@ -4,6 +4,7 @@
   * Feature: Add `Call#redirect` and `CallController#redirect` for redirecting calls to other systems ([#465](https://github.com/adhearsion/adhearsion/issues/465))
   * Feature: Ensure logging is available on STDOUT during RSpec runs
   * Feature: Reduce Adhearsion start-up time by selectively requiring the parts of ActiveSupport we use
+  * Bugfix: Ensure config gets correctly loaded by application
 
 # [2.5.3](https://github.com/adhearsion/adhearsion/compare/v2.5.2...v2.5.3) - [2014-04-25](https://rubygems.org/gems/adhearsion/versions/2.5.3)
   * Bugfix: Do not quiesce until the second SIGTERM, as per documentation ([#483](https://github.com/adhearsion/adhearsion/issues/483))
