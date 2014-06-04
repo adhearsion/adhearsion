@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require 'active_support/json'
+
 module Adhearsion
   module CLI
     class PluginCommand < Thor
