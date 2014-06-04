@@ -195,17 +195,17 @@ module Adhearsion
     end
 
     def load_config_file
-      require "#{Adhearsion.config.root}/config/adhearsion.rb"
+      load "#{Adhearsion.config.root}/config/adhearsion.rb"
     end
 
     def load_events_file
       path = "#{Adhearsion.config.root}/config/events.rb"
-      require path if File.exists?(path)
+      load path if File.exists?(path)
     end
 
     def load_routes_file
       path = "#{Adhearsion.config.root}/config/routes.rb"
-      require path if File.exists?(path)
+      load path if File.exists?(path)
     end
 
     def init_get_logging_appenders
