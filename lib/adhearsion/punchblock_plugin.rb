@@ -1,13 +1,10 @@
 # encoding: utf-8
 
-require 'active_support/dependencies/autoload'
+require 'adhearsion/plugin'
+require 'adhearsion/punchblock_plugin/initializer'
 
 module Adhearsion
   class PunchblockPlugin < Plugin
-    extend ActiveSupport::Autoload
-
-    autoload :Initializer
-
     config :punchblock do
       enabled             true             , :transform => Proc.new { |v| v == 'true' }, :desc => "Enable or disable Punchblock connectivity to a Voice server"
       platform            :xmpp            , :transform => Proc.new { |v| v.to_sym }, :desc => <<-__

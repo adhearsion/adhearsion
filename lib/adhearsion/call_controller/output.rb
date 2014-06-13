@@ -1,17 +1,14 @@
 # encoding: utf-8
-
-require 'active_support/dependencies/autoload'
+%w(
+  abstract_player
+  async_player
+  formatter
+  player
+).each { |r| require "adhearsion/call_controller/output/#{r}" }
 
 module Adhearsion
   class CallController
     module Output
-      extend ActiveSupport::Autoload
-
-      autoload :AbstractPlayer
-      autoload :AsyncPlayer
-      autoload :Formatter
-      autoload :Player
-
       PlaybackError = Class.new Adhearsion::Error # Represents failure to play audio, such as when the sound file cannot be found
       NoDocError = Class.new Adhearsion::Error # Represents failure to provide documents to playback
 

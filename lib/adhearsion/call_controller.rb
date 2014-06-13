@@ -1,19 +1,17 @@
 # encoding: utf-8
 
 require 'countdownlatch'
-require 'active_support/dependencies/autoload'
+%w(
+  dial
+  input
+  menu_dsl
+  output
+  record
+  utility
+).each { |r| require "adhearsion/call_controller/#{r}" }
 
 module Adhearsion
   class CallController
-    extend ActiveSupport::Autoload
-
-    autoload :Dial
-    autoload :Input
-    autoload :MenuDSL
-    autoload :Output
-    autoload :Record
-    autoload :Utility
-
     include Dial
     include Input
     include Output
