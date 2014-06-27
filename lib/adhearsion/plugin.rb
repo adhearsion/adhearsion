@@ -2,7 +2,11 @@
 
 require 'loquacious'
 require 'active_support/inflector'
-require 'active_support/dependencies/autoload'
+require 'adhearsion/configuration'
+%w(
+  collection
+  initializer
+).each { |r| require "adhearsion/plugin/#{r}" }
 
 module Adhearsion
 
@@ -53,13 +57,7 @@ module Adhearsion
   #
   class Plugin
 
-    extend ActiveSupport::Autoload
-
     METHODS_OPTIONS = {:load => true, :scope => false}
-
-    autoload :Configuration
-    autoload :Collection
-    autoload :Initializer
 
     class << self
       ##

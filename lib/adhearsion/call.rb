@@ -4,6 +4,7 @@ require 'has_guarded_handlers'
 require 'thread'
 require 'active_support/hash_with_indifferent_access'
 require 'active_support/core_ext/hash/indifferent_access'
+require 'adhearsion'
 
 module Adhearsion
   ##

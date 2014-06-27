@@ -4,7 +4,7 @@ require 'blather'
 require 'active_support/core_ext/class/attribute_accessors'
 
 module Adhearsion
-  class PunchblockPlugin
+  class PunchblockPlugin < Plugin
     class Initializer
       cattr_accessor :config, :client, :dispatcher, :attempts
 

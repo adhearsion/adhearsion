@@ -2,35 +2,14 @@
 
 abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE})! Please upgrade to at least Ruby v1.9.3, JRuby 1.7.0 or Rubinius 2.0." if RUBY_VERSION < "1.9.3"
 
-%w{
-  active_support/dependencies/autoload
+%w(
   punchblock
   celluloid
+).each { |r| require r }
 
-  adhearsion/version
-  adhearsion/foundation
-}.each { |f| require f }
 
 module Adhearsion
-  extend ActiveSupport::Autoload
-
   Error = Class.new StandardError
-
-  autoload :Call
-  autoload :CallController
-  autoload :Calls
-  autoload :Configuration
-  autoload :Console
-  autoload :Dispatcher
-  autoload :Events
-  autoload :Generators
-  autoload :Initializer
-  autoload :Logging
-  autoload :OutboundCall
-  autoload :Plugin
-  autoload :Process
-  autoload :Router
-  autoload :Statistics
 
   class << self
 
@@ -130,3 +109,22 @@ module Celluloid
     end
   end
 end
+
+%w(
+  version
+  foundation
+  call
+  call_controller
+  calls
+  configuration
+  console
+  events
+  generators
+  initializer
+  logging
+  outbound_call
+  plugin
+  process
+  router
+  statistics
+).each { |f| require "adhearsion/#{f}" }
