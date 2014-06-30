@@ -38,8 +38,10 @@ module Adhearsion
     end
 
     def config(&block)
+      return @config if @config
+
       @config ||= initialize_config
-      block_given? and yield @config
+      yield(@config) if block_given?
       @config
     end
 
