@@ -60,7 +60,7 @@ module Adhearsion
     end
 
     def environment
-      ENV['AHN_ENV'] || ENV['RAILS_ENV'] || :development
+      ENV['AHN_ENV'] || ENV['RAILS_ENV'] || ENV['AHN_PLATFORM_ENVIRONMENT'] || :development
     end
 
     def environments
