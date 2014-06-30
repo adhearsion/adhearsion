@@ -55,6 +55,19 @@ describe Adhearsion do
     end
   end
 
+  describe "#environment" do
+    let(:env) { "foo" }
+
+    before do
+      Adhearsion.config{ |conf| conf.platform.environment = nil}
+      ENV['AHN_PLATFORM_ENVIRONMENT'] = env
+    end
+
+    it "should be the collection of valid environments" do
+      Adhearsion.config.platform.environment.should eq env.to_sym
+    end
+  end
+
   describe "#router" do
     its(:router) { should be_a Adhearsion::Router }
 
