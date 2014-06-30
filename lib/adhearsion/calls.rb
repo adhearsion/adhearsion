@@ -38,7 +38,11 @@ module Adhearsion
 
     def with_tag(tag)
       values.find_all do |call|
-        call.tagged_with? tag
+        begin
+          call.tagged_with? tag
+        rescue Call::ExpiredError
+          false
+        end
       end
     end
 

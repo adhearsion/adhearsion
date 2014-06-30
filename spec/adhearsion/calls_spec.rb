@@ -72,13 +72,25 @@ module Adhearsion
       end
     end
 
-    it "finding calls by a tag" do
-      calls.each { |call| subject << call }
+    context "tagged calls" do
+      it "finding calls by a tag" do
+        calls.each { |call| subject << call }
 
-      tagged_call = calls.last
-      tagged_call.tag :moderator
+        tagged_call = calls.last
+        tagged_call.tag :moderator
 
-      subject.with_tag(:moderator).should be == [tagged_call]
+        subject.with_tag(:moderator).should be == [tagged_call]
+      end
+
+      it "when a call is dead, ignore it in the search" do
+        calls.each { |call| subject << call }
+
+        tagged_call = calls.last
+        tagged_call.tag :moderator
+        Celluloid::Actor.kill tagged_call
+
+        subject.with_tag(:moderator).should be == []
+      end
     end
 
     it "finding calls by uri" do
