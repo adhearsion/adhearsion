@@ -57,7 +57,9 @@ module Adhearsion
         puts  "You tried to initialize with an invalid environment name #{env}; environment-specific config may not load successfully. Valid values are #{_config.valid_environments}."
         env = nil
       end
-      _config.platform.environment = env if env
+      if env && !_config.platform.environment
+        _config.platform.environment = env
+      end
       _config
     end
 
