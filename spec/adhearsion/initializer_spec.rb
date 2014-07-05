@@ -13,7 +13,7 @@ describe Adhearsion::Initializer do
     before do
       ::Logging.reset
       expect(Adhearsion::Logging).to receive(:start).once.and_return('')
-      ::Logging::Appenders.stub(:file => nil)
+      allow(::Logging::Appenders).to receive_messages(:file => nil)
       Adhearsion.config = nil
     end
 
@@ -190,7 +190,7 @@ describe Adhearsion::Initializer do
 
     it "should load the contents of the preconfigured directory" do
       Adhearsion.config.platform.lib = "foo"
-      File.stub directory?: true
+      allow(File).to receive_messages directory?: true
       expect(Dir).to receive(:chdir).with(File.join(path, "foo")).and_return []
       Adhearsion::Initializer.new.load_lib_folder
     end

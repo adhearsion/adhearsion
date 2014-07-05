@@ -11,7 +11,7 @@ describe Adhearsion::Statistics do
 
   before do
     Celluloid::Actor[:statistics] = described_class.new
-    Adhearsion.active_calls.stub count: 0
+    allow(Adhearsion.active_calls).to receive_messages count: 0
   end
 
   after do

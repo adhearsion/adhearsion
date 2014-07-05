@@ -130,7 +130,7 @@ module Adhearsion
         let(:block) { Proc.new {} }
 
         it "calls instance_exec if the match object has a block" do
-          match_object.stub(:block => block)
+          allow(match_object).to receive_messages(:block => block)
           expect(subject).to receive(:instance_exec).with(overrides[:extension], &block)
           subject.jump_to(match_object, overrides)
         end
@@ -162,7 +162,7 @@ module Adhearsion
         let(:response) { '1234' }
 
         before do
-          menu_instance.stub :status => status, :result => response
+          allow(menu_instance).to receive_messages :status => status, :result => response
           expect(MenuDSL::Menu).to receive(:new).and_return(menu_instance)
         end
 

@@ -22,12 +22,12 @@ module Adhearsion
       let(:join_options) { options[:join_options] || {} }
 
       before do
-        other_mock_call.wrapped_object.stub id: other_call_id, write_command: true
-        second_other_mock_call.wrapped_object.stub id: second_other_call_id, write_command: true
+        allow(other_mock_call.wrapped_object).to receive_messages id: other_call_id, write_command: true
+        allow(second_other_mock_call.wrapped_object).to receive_messages id: second_other_call_id, write_command: true
       end
 
       def mock_end(reason = :hangup_command)
-        Punchblock::Event::End.new.tap { |event| event.stub reason: reason }
+        Punchblock::Event::End.new.tap { |event| allow(event).to receive_messages reason: reason }
       end
 
       describe "#dial" do
@@ -48,7 +48,7 @@ module Adhearsion
         end
 
         it "should default the caller ID to that of the original call" do
-          call.stub :from => 'sip:foo@bar.com'
+          allow(call).to receive_messages :from => 'sip:foo@bar.com'
           expect(OutboundCall).to receive(:new).and_return other_mock_call
           expect(other_mock_call).to receive(:dial).with(to, :from => 'sip:foo@bar.com').once
           dial_thread = Thread.new do
@@ -293,7 +293,7 @@ module Adhearsion
                 call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
                 other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
               end
-              other_mock_call.stub hangup: true
+              allow(other_mock_call).to receive_messages hangup: true
 
               t = dial_in_thread
 
@@ -324,7 +324,7 @@ module Adhearsion
               it "joins the calls with those options" do
                 expect(call).to receive(:answer).once
                 expect(other_mock_call).to receive(:join).once.with(call, media: :direct)
-                other_mock_call.stub hangup: true
+                allow(other_mock_call).to receive_messages hangup: true
 
                 t = dial_in_thread
 
@@ -688,13 +688,13 @@ module Adhearsion
               let(:other_dial)  { Dial::Dial.new second_to, options, second_root_call }
 
               before do
-                second_root_call.stub write_command: true, id: second_root_call_id
+                allow(second_root_call).to receive_messages write_command: true, id: second_root_call_id
                 expect(OutboundCall).to receive(:new).and_return second_other_mock_call
                 expect(second_other_mock_call).to receive(:join).once.with(second_root_call, {})
                 expect(second_other_mock_call).to receive(:dial).once.with(second_to, options)
                 expect(second_root_call).to receive(:answer).once
 
-                SecureRandom.stub uuid: mixer
+                allow(SecureRandom).to receive_messages uuid: mixer
 
                 dial.run subject
                 other_dial.run subject
@@ -756,7 +756,7 @@ module Adhearsion
               end
 
               it "should add the merged calls to the returned status" do
-                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| allow(c).to receive_messages join: true, unjoin: true }
                 dial.merge other_dial
 
                 waiter_thread = Thread.new do
@@ -778,7 +778,7 @@ module Adhearsion
               end
 
               it "should not unblock until all joined calls end" do
-                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| allow(c).to receive_messages join: true, unjoin: true }
 
                 dial.merge other_dial
 
@@ -804,7 +804,7 @@ module Adhearsion
 
               it "should cleanup merged calls when the root call ends" do
                 [call, other_mock_call, second_root_call, second_other_mock_call].each do |c|
-                  c.stub join: true, unjoin: true
+                  allow(c).to receive_messages join: true, unjoin: true
                 end
                 [other_mock_call, second_root_call, second_other_mock_call].each do |c|
                   expect(c).to receive(:hangup).once
@@ -828,7 +828,7 @@ module Adhearsion
               end
 
               it "should subsequently rejoin to a mixer" do
-                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| allow(c).to receive_messages join: true, unjoin: true }
 
                 dial.merge other_dial
 
@@ -861,7 +861,7 @@ module Adhearsion
 
               describe "if splitting fails" do
                 it "should not add the merged calls to the returned status" do
-                  [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+                  [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| allow(c).to receive_messages join: true, unjoin: true }
                   expect(other_dial).to receive(:split).and_raise StandardError
                   expect { dial.merge other_dial }.to raise_error(StandardError)
 
@@ -884,7 +884,7 @@ module Adhearsion
                 end
 
                 it "should unblock before all joined calls end" do
-                  [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+                  [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| allow(c).to receive_messages join: true, unjoin: true }
 
                   expect(other_dial).to receive(:split).and_raise StandardError
                   expect { dial.merge other_dial }.to raise_error(StandardError)
@@ -911,7 +911,7 @@ module Adhearsion
 
                 it "should not cleanup merged calls when the root call ends" do
                   [call, other_mock_call, second_root_call, second_other_mock_call].each do |c|
-                    c.stub join: true, unjoin: true
+                    allow(c).to receive_messages join: true, unjoin: true
                   end
                   expect(other_mock_call).to receive(:hangup).once
                   [second_root_call, second_other_mock_call].each do |c|
@@ -939,7 +939,7 @@ module Adhearsion
 
               context "if a call hangs up" do
                 it "should still allow splitting and rejoining" do
-                  [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+                  [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| allow(c).to receive_messages join: true, unjoin: true }
 
                   dial.merge other_dial
 
@@ -1465,7 +1465,7 @@ module Adhearsion
         end
 
         it "should default the caller ID to that of the original call" do
-          call.stub :from => 'sip:foo@bar.com'
+          allow(call).to receive_messages :from => 'sip:foo@bar.com'
           expect(OutboundCall).to receive(:new).and_return other_mock_call
           expect(other_mock_call).to receive(:dial).with(to, :from => 'sip:foo@bar.com').once
           dial_thread = Thread.new do
@@ -1710,7 +1710,7 @@ module Adhearsion
                 call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
                 other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
               end
-              other_mock_call.stub hangup: true
+              allow(other_mock_call).to receive_messages hangup: true
 
               t = dial_in_thread
 
@@ -1744,7 +1744,7 @@ module Adhearsion
                   call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
                   other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
                 end
-                other_mock_call.stub hangup: true
+                allow(other_mock_call).to receive_messages hangup: true
 
                 t = dial_in_thread
 
@@ -2117,13 +2117,13 @@ module Adhearsion
               let(:other_dial)  { Dial::ParallelConfirmationDial.new second_to, options, second_root_call }
 
               before do
-                second_root_call.stub write_command: true, id: second_root_call_id
+                allow(second_root_call).to receive_messages write_command: true, id: second_root_call_id
                 expect(OutboundCall).to receive(:new).and_return second_other_mock_call
                 expect(second_other_mock_call).to receive(:join).once.with(second_root_call, {})
                 expect(second_other_mock_call).to receive(:dial).once.with(second_to, options)
                 expect(second_root_call).to receive(:answer).once
 
-                SecureRandom.stub uuid: mixer
+                allow(SecureRandom).to receive_messages uuid: mixer
 
                 dial.run subject
                 other_dial.run subject
@@ -2185,7 +2185,7 @@ module Adhearsion
               end
 
               it "should add the merged calls to the returned status" do
-                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| allow(c).to receive_messages join: true, unjoin: true }
                 dial.merge other_dial
 
                 waiter_thread = Thread.new do
@@ -2207,7 +2207,7 @@ module Adhearsion
               end
 
               it "should not unblock until all joined calls end" do
-                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| allow(c).to receive_messages join: true, unjoin: true }
 
                 dial.merge other_dial
 
@@ -2233,7 +2233,7 @@ module Adhearsion
 
               it "should cleanup merged calls when the root call ends" do
                 [call, other_mock_call, second_root_call, second_other_mock_call].each do |c|
-                  c.stub join: true, unjoin: true
+                  allow(c).to receive_messages join: true, unjoin: true
                 end
                 [other_mock_call, second_root_call, second_other_mock_call].each do |c|
                   expect(c).to receive(:hangup).once
@@ -2257,7 +2257,7 @@ module Adhearsion
               end
 
               it "should subsequently rejoin to a mixer" do
-                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+                [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| allow(c).to receive_messages join: true, unjoin: true }
 
                 dial.merge other_dial
 
@@ -2290,7 +2290,7 @@ module Adhearsion
 
               context "if a call hangs up" do
                 it "should still allow splitting and rejoining" do
-                  [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| c.stub join: true, unjoin: true }
+                  [call, other_mock_call, second_root_call, second_other_mock_call].each { |c| allow(c).to receive_messages join: true, unjoin: true }
 
                   dial.merge other_dial
 
@@ -2844,8 +2844,8 @@ module Adhearsion
           it "allows the new call to continue after the root call ends" do
             expect(OutboundCall).to receive(:new).and_return other_mock_call
 
-            call.stub answer: true
-            other_mock_call.stub dial: true, join: true
+            allow(call).to receive_messages answer: true
+            allow(other_mock_call).to receive_messages dial: true, join: true
             expect(other_mock_call).to receive(:hangup).never
 
             subject.run double('controller')
@@ -2869,7 +2869,7 @@ module Adhearsion
           let(:dial) { Dial::Dial.new to, dial_options, call }
 
           before do
-            other_mock_call.stub dial: true
+            allow(other_mock_call).to receive_messages dial: true
             expect(OutboundCall).to receive(:new).and_return other_mock_call
           end
 

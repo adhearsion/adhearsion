@@ -47,12 +47,12 @@ module Adhearsion
       let(:mock_client) { double 'Client' }
 
       before do
-        mock_call.stub :id => call_id
+        allow(mock_call).to receive_messages :id => call_id
         mock_client.as_null_object
-        mock_client.stub :event_handler= => true
+        allow(mock_client).to receive_messages :event_handler= => true
         Events.refresh!
-        Adhearsion::Process.stub :fqdn => 'hostname'
-        ::Process.stub :pid => 1234
+        allow(Adhearsion::Process).to receive_messages :fqdn => 'hostname'
+        allow(::Process).to receive_messages :pid => 1234
       end
 
       describe "starts the client with the default values" do
@@ -246,7 +246,7 @@ module Adhearsion
         let(:component)   { double 'ComponentNode' }
         let(:mock_event)  { double 'Event' }
 
-        before { mock_event.stub target_call_id: call_id, source: component }
+        before { allow(mock_event).to receive_messages target_call_id: call_id, source: component }
 
         before do
           initialize_punchblock
@@ -261,7 +261,7 @@ module Adhearsion
       describe "dispatching a call event" do
         let(:mock_event)  { double 'Event' }
 
-        before { mock_event.stub target_call_id: call_id }
+        before { allow(mock_event).to receive_messages target_call_id: call_id }
 
         describe "with an active call" do
           before do

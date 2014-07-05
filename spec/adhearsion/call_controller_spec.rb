@@ -60,8 +60,8 @@ module Adhearsion
 
     describe "execution on a call" do
       before do
-        subject.stub :execute_component_and_await_completion => nil
-        call.wrapped_object.stub :write_and_await_response => nil
+        allow(subject).to receive_messages :execute_component_and_await_completion => nil
+        allow(call.wrapped_object).to receive_messages :write_and_await_response => nil
       end
 
       it "catches Hangup exceptions and logs the hangup" do
@@ -108,7 +108,7 @@ module Adhearsion
         end
 
         it "should execute the block in the context of the controller" do
-          subject.stub :value => :bar
+          allow(subject).to receive_messages :value => :bar
           expect(subject).to receive(:foo).once.with(:bar)
           subject.run
         end
@@ -163,9 +163,9 @@ module Adhearsion
       subject { InvokeController.new call }
 
       before do
-        subject.stub :execute_component_and_await_completion => nil
-        call.wrapped_object.stub :write_and_await_response => nil
-        call.stub :register_controller => nil
+        allow(subject).to receive_messages :execute_component_and_await_completion => nil
+        allow(call.wrapped_object).to receive_messages :write_and_await_response => nil
+        allow(call).to receive_messages :register_controller => nil
         expect(Events).to receive(:trigger).with(:exception, Exception).never
       end
 
@@ -224,9 +224,9 @@ module Adhearsion
       subject { pass_controller.new call }
 
       before do
-        call.wrapped_object.stub :write_and_await_response => nil
-        call.stub :register_controller => nil
-        subject.stub :execute_component_and_await_completion => nil
+        allow(call.wrapped_object).to receive_messages :write_and_await_response => nil
+        allow(call).to receive_messages :register_controller => nil
+        allow(subject).to receive_messages :execute_component_and_await_completion => nil
         expect_any_instance_of(SecondController).to receive(:md_check).once.with :foo => 'bar'
         expect(Events).to receive(:trigger).with(:exception, Exception).never
       end
@@ -264,7 +264,7 @@ module Adhearsion
           command.request!
           command.execute!
         end
-        call.stub register_controller: nil
+        allow(call).to receive_messages register_controller: nil
         expect_any_instance_of(SecondController).to receive(:md_check).once.with :foo => 'bar'
         expect(Events).to receive(:trigger).with(:exception, Exception).never
       end
@@ -348,7 +348,7 @@ module Adhearsion
             command.request!
             command.execute!
           end
-          call.stub register_controller: nil
+          allow(call).to receive_messages register_controller: nil
           expect(Events).to receive(:trigger).with(:exception, Exception).never
           subject.prep_output
         end
@@ -648,8 +648,8 @@ describe ExampleCallController do
   include CallControllerTestHelpers
 
   before do
-    subject.stub :execute_component_and_await_completion => nil
-    call.wrapped_object.stub :write_and_await_response => nil
+    allow(subject).to receive_messages :execute_component_and_await_completion => nil
+    allow(call.wrapped_object).to receive_messages :write_and_await_response => nil
   end
 
   it "should execute the before_call callbacks before processing the call" do

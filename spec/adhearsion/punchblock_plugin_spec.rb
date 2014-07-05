@@ -19,7 +19,7 @@ module Adhearsion
 
       before do
         PunchblockPlugin::Initializer.client = mock_client
-        message.stub :execute! => true
+        allow(message).to receive_messages :execute! => true
         message.response = response
         execute_expectation
       end

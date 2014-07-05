@@ -264,7 +264,7 @@ module Adhearsion
           it "should trigger any on_joined callbacks set for the matching call" do
             expect(response).to receive(:call).once.with(event)
             call = Call.new
-            call.wrapped_object.stub id: 'foobar', domain: 'rayo.net', transport: 'footransport'
+            allow(call.wrapped_object).to receive_messages id: 'foobar', domain: 'rayo.net', transport: 'footransport'
             subject.on_joined(call) { |event| response.call event }
             subject << event
           end
@@ -314,7 +314,7 @@ module Adhearsion
           it "should not trigger any on_joined callbacks set for the matching call" do
             expect(response).to receive(:call).never
             call = Call.new
-            call.wrapped_object.stub :id => 'foobar'
+            allow(call.wrapped_object).to receive_messages :id => 'foobar'
             subject.on_joined(call) { |event| response.call event }
             subject << event
           end
@@ -342,7 +342,7 @@ module Adhearsion
           it "should trigger any on_unjoined callbacks set for the matching call" do
             expect(response).to receive(:call).once.with(event)
             call = Call.new
-            call.wrapped_object.stub id: 'foobar', domain: 'rayo.net', transport: 'footransport'
+            allow(call.wrapped_object).to receive_messages id: 'foobar', domain: 'rayo.net', transport: 'footransport'
             subject.on_unjoined(call) { |event| response.call event }
             subject << event
           end
@@ -392,7 +392,7 @@ module Adhearsion
           it "should not trigger any on_unjoined callbacks set for the matching call" do
             expect(response).to receive(:call).never
             call = Call.new
-            call.wrapped_object.stub :id => 'foobar'
+            allow(call.wrapped_object).to receive_messages :id => 'foobar'
             subject.on_unjoined(call) { |event| response.call event }
             subject << event
           end
@@ -438,7 +438,7 @@ module Adhearsion
       let(:other_call_uri) { 'xmpp:foobar@example.com' }
       let(:other_call) { Call.new }
 
-      before { other_call.stub uri: other_call_uri }
+      before { allow(other_call).to receive_messages uri: other_call_uri }
 
       let :joined_event do
         Punchblock::Event::Joined.new call_uri: other_call_uri
@@ -1008,7 +1008,7 @@ module Adhearsion
           let(:uri)     { "footransport:#{call_id}@#{domain}" }
           let(:target)  { described_class.new }
 
-          before { target.wrapped_object.stub uri: uri }
+          before { allow(target.wrapped_object).to receive_messages uri: uri }
 
           it "should send a join command joining to the provided call ID" do
             expect_join_with_options call_uri: uri
@@ -1355,7 +1355,7 @@ module Adhearsion
           let(:uri)     { "footransport:#{call_id}@#{domain}" }
           let(:target)  { described_class.new }
 
-          before { target.wrapped_object.stub uri: uri }
+          before { allow(target.wrapped_object).to receive_messages uri: uri }
 
           it "should send an unjoin command unjoining from the provided call ID" do
             expect_unjoin_with_options call_uri: "footransport:#{call_id}@#{domain}"
@@ -1422,7 +1422,7 @@ module Adhearsion
         let(:mock_controller) { CallController.new(subject) }
 
         before do
-          subject.wrapped_object.stub :write_and_await_response => true
+          allow(subject.wrapped_object).to receive_messages :write_and_await_response => true
         end
 
         it "should call #bg_exec on the controller instance" do

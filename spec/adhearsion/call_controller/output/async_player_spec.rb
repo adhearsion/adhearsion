@@ -43,7 +43,7 @@ module Adhearsion
             response = Punchblock::Event::Complete.new
             response.reason = Punchblock::Event::Complete::Error.new
             component = Punchblock::Component::Output.new(:ssml => content)
-            subject.stub :new_output => component
+            allow(subject).to receive_messages :new_output => component
             expect_message_waiting_for_response component
             expect(controller.logger).to receive(:error).once
             subject.output content

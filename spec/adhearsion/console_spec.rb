@@ -5,7 +5,7 @@ require 'spec_helper'
 module Adhearsion
   describe Console do
     before do
-      Console.instance.stub :pry => nil
+      allow(Console.instance).to receive_messages :pry => nil
     end
 
     describe "providing hooks to include console functionality" do
@@ -81,7 +81,7 @@ module Adhearsion
 
       before do
         Adhearsion.active_calls.clear
-        call.stub(:id => call_id)
+        allow(call).to receive_messages(:id => call_id)
       end
 
       context "with a call" do
@@ -107,7 +107,7 @@ module Adhearsion
           let(:call2) { Call.new }
 
           before do
-            call2.stub :id => rand.to_s
+            allow(call2).to receive_messages :id => rand.to_s
             Adhearsion.active_calls << call << call2
           end
 

@@ -12,7 +12,7 @@ describe Adhearsion::Plugin do
   end
 
   before do
-    Adhearsion::PunchblockPlugin::Initializer.stub :start => true
+    allow(Adhearsion::PunchblockPlugin::Initializer).to receive_messages :start => true
   end
 
   describe "inheritance" do

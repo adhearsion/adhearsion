@@ -50,7 +50,7 @@ module Adhearsion
       it "should hang up active calls" do
         3.times do
           fake_call = Call.new
-          fake_call.stub :id => random_call_id
+          allow(fake_call).to receive_messages :id => random_call_id
           expect(fake_call).to receive(:hangup).once
           Adhearsion.active_calls << fake_call
         end

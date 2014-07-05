@@ -10,7 +10,7 @@ module Adhearsion
       subject { Router.new {} }
 
       let(:call) { double 'Adhearsion::Call' }
-      before { call.stub id: 'abc123' }
+      before { allow(call).to receive_messages id: 'abc123' }
 
       it "should make the router available to the block" do
         foo = nil
@@ -155,7 +155,7 @@ module Adhearsion
         subject { router.match call }
 
         context 'with a call from fred' do
-          before { call.stub :from => 'fred' }
+          before { allow(call).to receive_messages :from => 'fred' }
 
           describe '#name' do
             subject { super().name }
@@ -164,7 +164,7 @@ module Adhearsion
         end
 
         context 'with a call from paul' do
-          before { call.stub :from => 'paul' }
+          before { allow(call).to receive_messages :from => 'paul' }
 
           describe '#name' do
             subject { super().name }
@@ -173,7 +173,7 @@ module Adhearsion
         end
 
         context 'with a call from frank' do
-          before { call.stub :from => 'frank' }
+          before { allow(call).to receive_messages :from => 'frank' }
 
           describe '#name' do
             subject { super().name }
@@ -214,7 +214,7 @@ module Adhearsion
             end
           end
 
-          before { call.stub to: 'bar' }
+          before { allow(call).to receive_messages to: 'bar' }
 
           it "should return a dispatcher which rejects the call as an error" do
             expect(call).to receive(:reject).once.with(:error)
