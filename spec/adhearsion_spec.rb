@@ -94,7 +94,7 @@ describe Adhearsion do
     it "should create a new aggregator if the existing one dies" do
       original = Adhearsion.statistics
       original.terminate
-      original.should_not be_alive
+      expect(original.alive?).to be false
 
       sleep 0.25
 

@@ -569,7 +569,7 @@ module Adhearsion
           Adhearsion.config.platform.after_hangup_lifetime = 2
           subject << end_event
           sleep 2.1
-          subject.should_not be_alive
+          expect(subject.alive?).to be false
           lambda { subject.id }.should raise_error Call::ExpiredError, /expired and is no longer accessible/
         end
       end

@@ -117,7 +117,7 @@ module Adhearsion
         it "should kill the actor" do
           expect { subject.dial to }.to raise_error("User not registered")
           sleep 0.1
-          subject.should_not be_alive
+          expect(subject.alive?).to be false
         end
       end
     end
@@ -296,7 +296,7 @@ module Adhearsion
         it "should kill the actor" do
           expect { subject.dial to }.to raise_error("User not registered")
           sleep 0.1
-          subject.should_not be_alive
+          expect(subject.alive?).to be false
         end
 
         it "should remove the call from the active calls hash" do
