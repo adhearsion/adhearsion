@@ -16,25 +16,47 @@ module Adhearsion
 
         subject { Route.new name }
 
-        it { should_not be_evented }
-        it { should be_accepting }
+        it { is_expected.not_to be_evented }
+        it { is_expected.to be_accepting }
 
         describe "with a class target and guards" do
           let(:target) { CallController }
 
           subject { Route.new name, target, *guards }
 
-          its(:name)    { should be == name }
-          its(:target)  { should be == target }
-          its(:guards)  { should be == guards }
+          describe '#name' do
+            subject { super().name }
+            it { is_expected.to eq(name) }
+          end
+
+          describe '#target' do
+            subject { super().target }
+            it { is_expected.to eq(target) }
+          end
+
+          describe '#guards' do
+            subject { super().guards }
+            it { is_expected.to eq(guards) }
+          end
         end
 
         describe "with a block target and guards" do
           subject { Route.new(name, *guards) { :foo } }
 
-          its(:name)    { should be == name }
-          its(:target)  { should be_a Proc }
-          its(:guards)  { should be == guards }
+          describe '#name' do
+            subject { super().name }
+            it { is_expected.to eq(name) }
+          end
+
+          describe '#target' do
+            subject { super().target }
+            it { is_expected.to be_a Proc }
+          end
+
+          describe '#guards' do
+            subject { super().guards }
+            it { is_expected.to eq(guards) }
+          end
         end
       end
 
@@ -42,11 +64,11 @@ module Adhearsion
         subject { Route.new 'foobar', CallController, *guards }
 
         def should_match_the_call
-          subject.match?(call).should be true
+          expect(subject.match?(call)).to be true
         end
 
         def should_not_match_the_call
-          subject.match?(call).should be false
+          expect(subject.match?(call)).to be false
         end
 
         describe "matching calls from fred to paul" do
@@ -109,34 +131,34 @@ module Adhearsion
 
         let(:latch) { CountDownLatch.new 1 }
 
-        before { call.wrapped_object.stub :write_and_await_response }
+        before { allow(call.wrapped_object).to receive :write_and_await_response }
 
         context "via a call controller" do
           let(:controller)  { CallController }
           let(:route)       { Route.new 'foobar', controller }
 
           it "should immediately fire the :call_routed event giving the call and route" do
-            Adhearsion::Events.should_receive(:trigger_immediately).once.with(:call_routed, call: call, route: route)
-            call.should_receive(:hangup).once
+            expect(Adhearsion::Events).to receive(:trigger_immediately).once.with(:call_routed, call: call, route: route)
+            expect(call).to receive(:hangup).once
             route.dispatch call, lambda { latch.countdown! }
-            latch.wait(2).should be true
+            expect(latch.wait(2)).to be true
           end
 
           it "should accept the call" do
-            call.should_receive(:accept).once
+            expect(call).to receive(:accept).once
             route.dispatch call, lambda { latch.countdown! }
-            latch.wait(2).should be true
+            expect(latch.wait(2)).to be true
           end
 
           it "should instruct the call to use an instance of the controller" do
-            call.should_receive(:execute_controller).once.with kind_of(controller), kind_of(Proc)
+            expect(call).to receive(:execute_controller).once.with kind_of(controller), kind_of(Proc)
             route.dispatch call
           end
 
           it "should hangup the call after all controllers have executed" do
-            call.should_receive(:hangup).once
+            expect(call).to receive(:hangup).once
             route.dispatch call, lambda { latch.countdown! }
-            latch.wait(2).should be true
+            expect(latch.wait(2)).to be true
           end
 
           context "when the CallController mutates its metadata" do
@@ -154,7 +176,7 @@ module Adhearsion
 
             it "gives the next call fresh metadata" do
               expected_controller = controller.new call, nil
-              call.should_receive(:execute_controller).once.with expected_controller, kind_of(Proc)
+              expect(call).to receive(:execute_controller).once.with expected_controller, kind_of(Proc)
               route.dispatch call
             end
           end
@@ -163,20 +185,20 @@ module Adhearsion
             before { call.auto_hangup = false }
 
             it "should not hangup the call after controller execution" do
-              call.should_receive(:hangup).never
+              expect(call).to receive(:hangup).never
               route.dispatch call, lambda { latch.countdown! }
-              latch.wait(2).should be true
+              expect(latch.wait(2)).to be true
             end
           end
 
           context "if hangup raises a Call::Hangup" do
-            before { call.should_receive(:hangup).once.and_raise Call::Hangup }
+            before { expect(call).to receive(:hangup).once.and_raise Call::Hangup }
 
             it "should not raise an exception" do
-              lambda do
+              expect do
                 route.dispatch call, lambda { latch.countdown! }
-                latch.wait(2).should be true
-              end.should_not raise_error
+                expect(latch.wait(2)).to be true
+              end.not_to raise_error
             end
           end
 
@@ -190,10 +212,10 @@ module Adhearsion
             end
 
             it "should not raise an exception" do
-              lambda do
+              expect do
                 route.dispatch call, lambda { latch.countdown! }
-                latch.wait(2).should be true
-              end.should_not raise_error
+                expect(latch.wait(2)).to be true
+              end.not_to raise_error
             end
           end
         end
@@ -206,8 +228,8 @@ module Adhearsion
           end
 
           it "should instruct the call to use a CallController with the correct block" do
-            call.should_receive(:execute_controller).once.with(kind_of(CallController), kind_of(Proc)).and_return do |controller|
-              controller.block.call.should be == :foobar
+            expect(call).to receive(:execute_controller).once.with(kind_of(CallController), kind_of(Proc)) do |controller|
+              expect(controller.block.call).to eq(:foobar)
             end
             route.dispatch call
           end

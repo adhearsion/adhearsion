@@ -11,20 +11,20 @@ module Adhearsion
     describe "providing hooks to include console functionality" do
       it "should allow mixing in a module globally on all CallController classes" do
         Console.mixin TestBiscuit
-        Console.throwadogabone.should be true
+        expect(Console.throwadogabone).to be true
       end
     end
 
     unless defined? JRUBY_VERSION # These tests are not valid on JRuby
       describe 'testing for readline' do
         it 'should return false when detecting readline' do
-          Readline.should_receive(:emacs_editing_mode).once.and_return true
-          Console.cruby_with_readline?.should be true
+          expect(Readline).to receive(:emacs_editing_mode).once.and_return true
+          expect(Console.cruby_with_readline?).to be true
         end
 
         it 'should return true when detecting libedit' do
-          Readline.should_receive(:emacs_editing_mode).once.and_raise NotImplementedError
-          Console.cruby_with_readline?.should be false
+          expect(Readline).to receive(:emacs_editing_mode).once.and_raise NotImplementedError
+          expect(Console.cruby_with_readline?).to be false
         end
       end
     end
@@ -32,7 +32,7 @@ module Adhearsion
     describe "#log_level" do
       context "with a value" do
         it "should set the log level via Adhearsion::Logging" do
-          Adhearsion::Logging.should_receive(:level=).once.with(:foo)
+          expect(Adhearsion::Logging).to receive(:level=).once.with(:foo)
           Console.log_level :foo
         end
       end
@@ -40,28 +40,28 @@ module Adhearsion
       context "without a value" do
         it "should return the current level as a symbol" do
           Adhearsion::Logging.level = :fatal
-          Console.log_level.should be == :fatal
+          expect(Console.log_level).to eq(:fatal)
         end
       end
     end
 
     describe "#silence!" do
       it "should delegate to Adhearsion::Logging" do
-        Adhearsion::Logging.should_receive(:silence!).once
+        expect(Adhearsion::Logging).to receive(:silence!).once
         Console.silence!
       end
     end
 
     describe "#unsilence!" do
       it "should delegate to Adhearsion::Logging" do
-        Adhearsion::Logging.should_receive(:unsilence!).once
+        expect(Adhearsion::Logging).to receive(:unsilence!).once
         Console.unsilence!
       end
     end
 
     describe "#shutdown!" do
       it "should tell the process to shutdown" do
-        Adhearsion::Process.should_receive(:shutdown!).once
+        expect(Adhearsion::Process).to receive(:shutdown!).once
         Console.shutdown!
       end
     end
@@ -69,9 +69,9 @@ module Adhearsion
     describe "#originate" do
       it "should be an alias for Adhearsion::OutboundCall.originate" do
         foo = nil
-        Adhearsion::OutboundCall.should_receive(:originate).once.with(:foo, :bar).and_yield
+        expect(Adhearsion::OutboundCall).to receive(:originate).once.with(:foo, :bar).and_yield
         Console.originate(:foo, :bar) { foo = :bar}
-        foo.should == :bar
+        expect(foo).to eq(:bar)
       end
     end
 
@@ -86,7 +86,7 @@ module Adhearsion
 
       context "with a call" do
         it "should interact with the call" do
-          Console.instance.should_receive(:interact_with_call).once.with call
+          expect(Console.instance).to receive(:interact_with_call).once.with call
           Console.take call
         end
       end
@@ -98,7 +98,7 @@ module Adhearsion
           end
 
           it "should interact with the current call" do
-            Console.instance.should_receive(:interact_with_call).once.with call
+            expect(Console.instance).to receive(:interact_with_call).once.with call
             Console.take
           end
         end
@@ -114,8 +114,8 @@ module Adhearsion
           it "should allow selection of the call to use" do
             mock_io = StringIO.new
             Console.input = mock_io
-            mock_io.should_receive(:gets).once.and_return "1\n"
-            Console.instance.should_receive(:interact_with_call).once.with call2
+            expect(mock_io).to receive(:gets).once.and_return "1\n"
+            expect(Console.instance).to receive(:interact_with_call).once.with call2
             Console.take
           end
         end
@@ -128,15 +128,15 @@ module Adhearsion
           end
 
           it "should interact with that call" do
-            Console.instance.should_receive(:interact_with_call).once.with call
+            expect(Console.instance).to receive(:interact_with_call).once.with call
             Console.take call_id
           end
         end
 
         context "if an active call with that ID does not exist" do
           it "should log an error explaining that the call does not exist" do
-            Console.logger.should_receive(:error).once.with(/does not exist/)
-            Console.instance.should_receive(:interact_with_call).never
+            expect(Console.logger).to receive(:error).once.with(/does not exist/)
+            expect(Console.instance).to receive(:interact_with_call).never
             Console.take call_id
           end
         end
@@ -147,16 +147,16 @@ module Adhearsion
       let(:call) { Call.new }
 
       it "should pause the call's controllers, and unpause even if the interactive controller raises" do
-        call.should_receive(:pause_controllers).once.ordered
-        CallController.should_receive(:exec).once.ordered.and_raise StandardError
-        call.should_receive(:resume_controllers).once.ordered
-        lambda { Console.interact_with_call call }.should raise_error StandardError
+        expect(call).to receive(:pause_controllers).once.ordered
+        expect(CallController).to receive(:exec).once.ordered.and_raise StandardError
+        expect(call).to receive(:resume_controllers).once.ordered
+        expect { Console.interact_with_call call }.to raise_error StandardError
       end
 
       it "should execute an interactive call controller on the call" do
-        CallController.should_receive(:exec).once do |c|
-          c.should be_a Console::InteractiveController
-          c.call.should be call
+        expect(CallController).to receive(:exec).once do |c|
+          expect(c).to be_a Console::InteractiveController
+          expect(c.call).to be call
         end
         Console.interact_with_call call
       end

@@ -11,30 +11,30 @@ describe Adhearsion::Configuration do
     end
 
     it "should have an empty configuration for the platform" do
-      subject.should respond_to :platform
+      expect(subject).to respond_to :platform
     end
 
     it "should have a platform configuration object" do
-      subject.platform.should be_instance_of Loquacious::Configuration
+      expect(subject.platform).to be_instance_of Loquacious::Configuration
     end
 
     it "should initialize root to nil" do
-      subject.platform.root.should be_nil
+      expect(subject.platform.root).to be_nil
     end
 
     it "should initialize logging to level info" do
-      subject.platform.logging.level.should be == :info
+      expect(subject.platform.logging.level).to eq(:info)
     end
 
     it "should allow to update a config value" do
-      subject.platform.environment.should be == :development
+      expect(subject.platform.environment).to eq(:development)
       subject.platform.environment = :production
-      subject.platform.environment.should be == :production
+      expect(subject.platform.environment).to eq(:production)
     end
 
     it "should allow to create new config values" do
       subject.platform.bar = "foo"
-      subject.platform.bar.should be == "foo"
+      expect(subject.platform.bar).to eq("foo")
     end
   end
 
@@ -47,34 +47,34 @@ describe Adhearsion::Configuration do
     end
 
     it "should return the root value" do
-      subject.platform.root.should be == "foo"
+      expect(subject.platform.root).to eq("foo")
     end
 
     it "should return the environment value" do
-      subject.platform.environment.should be == :development
+      expect(subject.platform.environment).to eq(:development)
     end
 
     it "should return a description for the platform configuration" do
-      Adhearsion.config.description(:platform).should be_instance_of String
+      expect(Adhearsion.config.description(:platform)).to be_instance_of String
     end
 
     it "should allow to update a config value" do
-      subject.platform.environment.should be == :development
+      expect(subject.platform.environment).to eq(:development)
       subject.platform.environment = :production
-      subject.platform.environment.should be == :production
+      expect(subject.platform.environment).to eq(:production)
     end
 
     it "should allow to create new config values" do
       subject.platform.bar = "bazz"
-      subject.platform.bar.should be == "bazz"
+      expect(subject.platform.bar).to eq("bazz")
     end
   end
 
   describe "when configuring a non existing object" do
     it "should raise a ConfigurationError" do
-      lambda {
+      expect {
         Adhearsion.config.foo.bar = "bazz"
-      }.should raise_error Adhearsion::Configuration::ConfigurationError, "Invalid plugin foo"
+      }.to raise_error Adhearsion::Configuration::ConfigurationError, "Invalid plugin foo"
     end
   end
 
@@ -86,11 +86,11 @@ describe Adhearsion::Configuration do
     subject{ Adhearsion.config[:platform] }
 
     it "should return the valid platform configuration object" do
-      subject.should be_instance_of ::Loquacious::Configuration
+      expect(subject).to be_instance_of ::Loquacious::Configuration
     end
 
     it "should allow to retrieve any platform configuration value" do
-      subject.environment.should be == :development
+      expect(subject.environment).to eq(:development)
     end
 
     describe "if configuration has a named environment" do
@@ -129,13 +129,13 @@ describe Adhearsion::Configuration do
       end
 
       it "should return by default the development value" do
-        subject.platform.my_level.should be == 1
+        expect(subject.platform.my_level).to eq(1)
       end
 
       [:staging, :production, :test].each do |env|
         it "should return the #{env.to_s} value when environment set to #{env.to_s}" do
           config_object.platform.environment = env
-          subject.platform.my_level.should be == env_values[env]
+          expect(subject.platform.my_level).to eq(env_values[env])
         end
       end
     end
@@ -149,12 +149,12 @@ describe Adhearsion::Configuration do
     end
 
     it "should return 'development' by default" do
-      Adhearsion.config.platform.environment.should be == :development
+      expect(Adhearsion.config.platform.environment).to eq(:development)
     end
 
     [:development, :production, :staging, :test].each do |env|
       it "should respond to #{env.to_s}" do
-        Adhearsion.config.should respond_to(env)
+        expect(Adhearsion.config).to respond_to(env)
       end
     end
 
@@ -162,20 +162,20 @@ describe Adhearsion::Configuration do
       [:production, :staging, :test].each do |env|
         it "should override the environment value with #{env.to_s} when set in ENV value" do
           ENV['AHN_ENV'] = env.to_s
-          Adhearsion.config.platform.environment.should be == env
+          expect(Adhearsion.config.platform.environment).to eq(env)
         end
       end
     end
 
     it "should not override the default environment with the ENV value if valid" do
       ENV['AHN_ENV'] = "invalid_value"
-      Adhearsion.config.platform.environment.should be == :development
+      expect(Adhearsion.config.platform.environment).to eq(:development)
     end
 
     it "should allow to add a new environment" do
-      Adhearsion.config.valid_environment?(:another_environment).should be == false
+      expect(Adhearsion.config.valid_environment?(:another_environment)).to eq(false)
       Adhearsion.environments << :another_environment
-      Adhearsion.config.valid_environment?(:another_environment).should be == true
+      expect(Adhearsion.config.valid_environment?(:another_environment)).to eq(true)
     end
 
   end
@@ -189,16 +189,16 @@ describe Adhearsion::Configuration do
 
     it "should retrieve a string with the platform configuration" do
       desc = subject.description :platform, :show_values => false
-      desc.length.should be > 0
-      desc.should match(/^.*environment.*$/)
-      desc.should match(/^.*root.*$/)
+      expect(desc.length).to be > 0
+      expect(desc).to match(/^.*environment.*$/)
+      expect(desc).to match(/^.*root.*$/)
     end
 
     it "should retrieve a string with the platform configuration and values" do
       desc = subject.description :platform
-      desc.length.should be > 0
-      desc.should match(/^.*environment.*:development.*$/)
-      desc.should match(/^.*root.*$/)
+      expect(desc.length).to be > 0
+      expect(desc).to match(/^.*environment.*:development.*$/)
+      expect(desc).to match(/^.*root.*$/)
     end
 
     describe "if there are plugins installed" do
@@ -219,9 +219,9 @@ describe Adhearsion::Configuration do
           subject { Adhearsion.config.my_plugin }
 
           it "should have the correct values" do
-            subject[:name].should be == 'user'
-            subject[:password].should be == 'password'
-            subject[:host].should be == 'localhost'
+            expect(subject[:name]).to eq('user')
+            expect(subject[:password]).to eq('password')
+            expect(subject[:host]).to eq('localhost')
           end
         end
 
@@ -229,9 +229,9 @@ describe Adhearsion::Configuration do
           subject { Adhearsion.config[:my_plugin] }
 
           it "should have the correct values" do
-            subject[:name].should be == 'user'
-            subject[:password].should be == 'password'
-            subject[:host].should be == 'localhost'
+            expect(subject[:name]).to eq('user')
+            expect(subject[:password]).to eq('password')
+            expect(subject[:host]).to eq('localhost')
           end
         end
 
@@ -256,13 +256,13 @@ describe Adhearsion::Configuration do
 
           it "should return the development value by default" do
             Adhearsion.config # initialize
-            subject.name.should be == "development"
+            expect(subject.name).to eq("development")
           end
 
           [:development, :staging, :production, :test].each do |env|
             it "should return the #{env.to_s} value when environment is set to #{env.to_s}" do
               Adhearsion.config.platform.environment = env
-              subject.name.should be == env.to_s
+              expect(subject.name).to eq(env.to_s)
             end
           end
         end
@@ -270,40 +270,40 @@ describe Adhearsion::Configuration do
 
       it "should retrieve a valid plugin description" do
         desc = subject.description :my_plugin
-        desc.length.should be > 0
-        desc.should match(/^.*name.*user.*$/)
-        desc.should match(/^.*password.*password.*$/)
-        desc.should match(/^.*host.*localhost.*$/)
+        expect(desc.length).to be > 0
+        expect(desc).to match(/^.*name.*user.*$/)
+        expect(desc).to match(/^.*password.*password.*$/)
+        expect(desc).to match(/^.*host.*localhost.*$/)
       end
 
       it "should retrieve a valid plugin description with no values" do
         desc = subject.description :my_plugin, :show_values => false
-        desc.length.should be > 0
-        desc.should match(/^.*name.*$/)
-        desc.should match(/^.*password.*$/)
-        desc.should match(/^.*host.*$/)
+        expect(desc.length).to be > 0
+        expect(desc).to match(/^.*name.*$/)
+        expect(desc).to match(/^.*password.*$/)
+        expect(desc).to match(/^.*host.*$/)
       end
 
       it "should retrieve both platform and plugin configuration" do
         desc = subject.description :all
-        desc.length.should be > 0
-        desc.should match(/^.*environment.*:development.*$/)
-        desc.should match(/^.*root.*$/)
-        desc.should match(/^.*name.*user.*$/)
-        desc.should match(/^.*password.*password.*$/)
-        desc.should match(/^.*host.*localhost.*$/)
+        expect(desc.length).to be > 0
+        expect(desc).to match(/^.*environment.*:development.*$/)
+        expect(desc).to match(/^.*root.*$/)
+        expect(desc).to match(/^.*name.*user.*$/)
+        expect(desc).to match(/^.*password.*password.*$/)
+        expect(desc).to match(/^.*host.*localhost.*$/)
       end
 
       it "should retrieve both platform and plugin configuration with no values" do
         desc = subject.description :all, :show_values => false
-        desc.length.should be > 0
-        desc.should match(/^.*Configuration for platform.*$/)
-        desc.should match(/^.*environment.*$/)
-        desc.should match(/^.*root.*$/)
-        desc.should match(/^.*Configuration for my_plugin.*$/)
-        desc.should match(/^.*name.*$/)
-        desc.should match(/^.*password.*$/)
-        desc.should match(/^.*host.*$/)
+        expect(desc.length).to be > 0
+        expect(desc).to match(/^.*Configuration for platform.*$/)
+        expect(desc).to match(/^.*environment.*$/)
+        expect(desc).to match(/^.*root.*$/)
+        expect(desc).to match(/^.*Configuration for my_plugin.*$/)
+        expect(desc).to match(/^.*name.*$/)
+        expect(desc).to match(/^.*password.*$/)
+        expect(desc).to match(/^.*host.*$/)
       end
     end
 

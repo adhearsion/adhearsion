@@ -15,11 +15,11 @@ module Adhearsion
           end
 
           it 'returns SSML for a text argument' do
-            subject.ssml_for(prompt).should be == ssml
+            expect(subject.ssml_for(prompt)).to eq(ssml)
           end
 
           it 'returns the same SSML passed in if it is SSML' do
-            subject.ssml_for(ssml).should be == ssml
+            expect(subject.ssml_for(ssml)).to eq(ssml)
           end
         end
 
@@ -39,60 +39,60 @@ module Adhearsion
           end
 
           it "should create a composite SSML document" do
-            subject.ssml_for_collection(collection).should be == ssml
+            expect(subject.ssml_for_collection(collection)).to eq(ssml)
           end
         end
 
         describe "#detect_type" do
           it "detects an HTTP path" do
             http_path = "http://adhearsion.com/sounds/hello.mp3"
-            subject.detect_type(http_path).should be :audio
+            expect(subject.detect_type(http_path)).to be :audio
           end
 
           it "detects a file path" do
             file_path = "file:///usr/shared/sounds/hello.mp3"
-            subject.detect_type(file_path).should be :audio
+            expect(subject.detect_type(file_path)).to be :audio
 
             absolute_path = "/usr/shared/sounds/hello.mp3"
-            subject.detect_type(absolute_path).should be :audio
+            expect(subject.detect_type(absolute_path)).to be :audio
 
             relative_path = "foo/bar"
-            subject.detect_type(relative_path).should_not be :audio
+            expect(subject.detect_type(relative_path)).not_to be :audio
           end
 
           it "detects a Date object" do
             today = Date.today
-            subject.detect_type(today).should be :time
+            expect(subject.detect_type(today)).to be :time
           end
 
           it "detects a Time object" do
             now = Time.now
-            subject.detect_type(now).should be :time
+            expect(subject.detect_type(now)).to be :time
           end
 
           it "detects a DateTime object" do
             today = DateTime.now
-            subject.detect_type(today).should be :time
+            expect(subject.detect_type(today)).to be :time
           end
 
           it "detects a Numeric object" do
             number = 123
-            subject.detect_type(number).should be :numeric
+            expect(subject.detect_type(number)).to be :numeric
           end
 
           it "detects a String of digits" do
             number = '123'
-            subject.detect_type(number).should be :numeric
+            expect(subject.detect_type(number)).to be :numeric
           end
 
           it "detects a String of characters" do
             number = '123#'
-            subject.detect_type(number).should be :characters
+            expect(subject.detect_type(number)).to be :characters
           end
 
           ["Foo", "Foo bar", "The answer: foo", "The answer could be foo/bar"].each do |string|
             it "detects '#{string}' as text" do
-              subject.detect_type(string).should be :text
+              expect(subject.detect_type(string)).to be :text
             end
           end
         end

@@ -1,9 +1,9 @@
 # encoding: utf-8
 
 Given /^PENDING/ do
-  pending
+  skip
 end
 
 Given /^JRuby skip test/ do
-  pending "Daemonize not supported under JRuby" if RUBY_PLATFORM == 'java'
+  skip "Daemonize not supported under JRuby" if RUBY_PLATFORM == 'java'
 end

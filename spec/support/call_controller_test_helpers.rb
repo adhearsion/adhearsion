@@ -26,7 +26,7 @@ module CallControllerTestHelpers
   end
 
   def expect_message_waiting_for_response(message = nil, fail = false, &block)
-    expectation = controller.should_receive(:write_and_await_response, &block).once
+    expectation = expect(controller).to receive(:write_and_await_response, &block).once
     expectation = expectation.with message if message
     if fail
       expectation.and_raise fail
@@ -36,11 +36,11 @@ module CallControllerTestHelpers
   end
 
   def expect_message_of_type_waiting_for_response(message)
-    controller.should_receive(:write_and_await_response).once.with(kind_of(message.class)).and_return message
+    expect(controller).to receive(:write_and_await_response).once.with(kind_of(message.class)).and_return message
   end
 
   def expect_component_execution(component, fail = false)
-    expectation = controller.should_receive(:execute_component_and_await_completion).once.with(component)
+    expectation = expect(controller).to receive(:execute_component_and_await_completion).once.with(component)
     if fail
       expectation.and_raise fail
     else

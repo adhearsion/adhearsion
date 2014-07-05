@@ -31,12 +31,12 @@ module Adhearsion
           it "returns the component" do
             component = Punchblock::Component::Output.new :ssml => content
             expect_message_waiting_for_response component
-            subject.output(content).should be_a Punchblock::Component::Output
+            expect(subject.output(content)).to be_a Punchblock::Component::Output
           end
 
           it "raises a PlaybackError if the component fails to start" do
             expect_message_waiting_for_response Punchblock::Component::Output.new(:ssml => content), Punchblock::ProtocolError
-            lambda { subject.output content }.should raise_error(PlaybackError)
+            expect { subject.output content }.to raise_error(PlaybackError)
           end
 
           it "logs the complete event if it is an error" do
@@ -45,7 +45,7 @@ module Adhearsion
             component = Punchblock::Component::Output.new(:ssml => content)
             subject.stub :new_output => component
             expect_message_waiting_for_response component
-            controller.logger.should_receive(:error).once
+            expect(controller.logger).to receive(:error).once
             subject.output content
             component.request!
             component.execute!

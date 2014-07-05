@@ -32,7 +32,7 @@ module Adhearsion
     subject { Adhearsion::Call.new offer }
 
     before do
-      offer.stub(:client).and_return(mock_client)
+      allow(offer).to receive(:client).and_return(mock_client)
     end
 
     after do
@@ -50,49 +50,86 @@ module Adhearsion
       foo = :bar
       subject.after(1) { foo = :baz }
       sleep 1.1
-      foo.should == :baz
+      expect(foo).to eq(:baz)
     end
 
-    it { should respond_to :<< }
+    it { is_expected.to respond_to :<< }
 
-    its(:end_reason) { should be == nil }
-    it { should be_active }
+    describe '#end_reason' do
+      subject { super().end_reason }
+      it { is_expected.to eq(nil) }
+    end
+    it { is_expected.to be_active }
 
-    its(:commands) { should be_empty }
+    describe '#commands' do
+      subject { super().commands }
+      it { is_expected.to be_empty }
+    end
 
-    its(:id)      { should be == call_id }
-    its(:domain)  { should be == domain }
-    its(:uri)     { should be == "footransport:#{call_id}@#{domain}" }
-    its(:to)      { should be == to }
-    its(:from)    { should be == from }
+    describe '#id' do
+      subject { super().id }
+      it { is_expected.to eq(call_id) }
+    end
 
-    its(:auto_hangup) { should be_true }
+    describe '#domain' do
+      subject { super().domain }
+      it { is_expected.to eq(domain) }
+    end
+
+    describe '#uri' do
+      subject { super().uri }
+      it { is_expected.to eq("footransport:#{call_id}@#{domain}") }
+    end
+
+    describe '#to' do
+      subject { super().to }
+      it { is_expected.to eq(to) }
+    end
+
+    describe '#from' do
+      subject { super().from }
+      it { is_expected.to eq(from) }
+    end
+
+    describe '#auto_hangup' do
+      subject { super().auto_hangup }
+      it { is_expected.to be_truthy }
+    end
 
     context "when the ID is nil" do
       let(:call_id) { nil }
 
-      its(:uri) { should be == nil }
+      describe '#uri' do
+        subject { super().uri }
+        it { is_expected.to eq(nil) }
+      end
     end
 
     context "when the domain is nil" do
       let(:domain) { nil }
 
-      its(:uri) { should be == "footransport:#{call_id}" }
+      describe '#uri' do
+        subject { super().uri }
+        it { is_expected.to eq("footransport:#{call_id}") }
+      end
     end
 
     context "when the transport is nil" do
       let(:transport) { nil }
 
-      its(:uri) { should be == "#{call_id}@#{domain}" }
+      describe '#uri' do
+        subject { super().uri }
+        it { is_expected.to eq("#{call_id}@#{domain}") }
+      end
     end
 
     it "should mark its start time" do
-      subject.start_time.should == base_time
+      expect(subject.start_time).to eq(base_time)
     end
 
     describe "#commands" do
       it "should use a duplicating accessor for the command registry" do
-        subject.commands.should_not be subject.commands
+        expect(subject.commands).not_to be subject.commands
       end
     end
 
@@ -100,15 +137,19 @@ module Adhearsion
       context "with an offer" do
         context "with headers" do
           let(:headers)   { {'X-foo' => 'bar'} }
-          its(:variables) { should be == {'x_foo' => 'bar'} }
+
+          describe '#variables' do
+            subject { super().variables }
+            it { is_expected.to eq({'x_foo' => 'bar'}) }
+          end
 
           it "should be made available via []" do
-            subject[:x_foo].should be == 'bar'
+            expect(subject[:x_foo]).to eq('bar')
           end
 
           it "should be alterable using []=" do
             subject[:x_foo] = 'baz'
-            subject[:x_foo].should be == 'baz'
+            expect(subject[:x_foo]).to eq('baz')
           end
 
           context "when receiving an event with headers" do
@@ -116,7 +157,7 @@ module Adhearsion
 
             it "should merge later headers" do
               subject << event
-              subject.variables.should be == {'x_foo' => 'bar', 'x_bar' => 'foo'}
+              expect(subject.variables).to eq({'x_foo' => 'bar', 'x_bar' => 'foo'})
             end
 
             context "with have symbol names" do
@@ -124,7 +165,7 @@ module Adhearsion
 
               it "should merge later headers" do
                 subject << event
-                subject.variables.should be == {'x_foo' => 'bar', 'x_bar' => 'foo'}
+                expect(subject.variables).to eq({'x_foo' => 'bar', 'x_bar' => 'foo'})
               end
             end
           end
@@ -134,26 +175,34 @@ module Adhearsion
 
             it "should merge later headers" do
               subject.write_command command
-              subject.variables.should be == {'x_foo' => 'bar', 'x_bar' => 'foo'}
+              expect(subject.variables).to eq({'x_foo' => 'bar', 'x_bar' => 'foo'})
             end
           end
         end
 
         context "without headers" do
           let(:headers)   { nil }
-          its(:variables) { should be == {} }
+
+          describe '#variables' do
+            subject { super().variables }
+            it { is_expected.to eq({}) }
+          end
         end
       end
 
       context "without an offer" do
         let(:offer)     { nil }
-        its(:variables) { should be == {} }
+
+        describe '#variables' do
+          subject { super().variables }
+          it { is_expected.to eq({}) }
+        end
       end
     end
 
     describe 'without an offer' do
       it 'should not raise an exception' do
-        lambda { Adhearsion::Call.new }.should_not raise_error
+        expect { Adhearsion::Call.new }.not_to raise_error
       end
     end
 
@@ -162,8 +211,8 @@ module Adhearsion
       let(:response)  { double 'Response' }
 
       it 'are called when messages are delivered' do
-        event.should_receive(:foo?).and_return true
-        response.should_receive(:call).once
+        expect(event).to receive(:foo?).and_return true
+        expect(response).to receive(:call).once
         subject.register_event_handler(:foo?) { response.call }
         subject << event
       end
@@ -172,18 +221,18 @@ module Adhearsion
         it 'does not cause the call actor to crash' do
           subject.register_event_handler { raise 'Boom' }
           subject << event
-          subject.should be_alive
+          expect(subject).to be_alive
         end
 
         it "triggers an exception event" do
           e = StandardError.new('Boom')
-          Events.should_receive(:trigger).once.with(:exception, [e, subject.logger])
+          expect(Events).to receive(:trigger).once.with(:exception, [e, subject.logger])
           subject.register_event_handler { raise e }
           subject << event
         end
 
         it 'executes all handlers for each event' do
-          response.should_receive(:call).once
+          expect(response).to receive(:call).once
           subject.register_event_handler { raise 'Boom' }
           subject.register_event_handler { response.call }
           subject << event
@@ -201,19 +250,19 @@ module Adhearsion
           end
 
           it "should trigger any on_joined callbacks set for the matching call ID" do
-            response.should_receive(:call).once.with(event)
+            expect(response).to receive(:call).once.with(event)
             subject.on_joined(:call_uri => 'footransport:foobar@rayo.net') { |event| response.call event }
             subject << event
           end
 
           it "should trigger any on_joined callbacks set for the matching call ID as a string" do
-            response.should_receive(:call).once.with(event)
+            expect(response).to receive(:call).once.with(event)
             subject.on_joined('foobar') { |event| response.call event }
             subject << event
           end
 
           it "should trigger any on_joined callbacks set for the matching call" do
-            response.should_receive(:call).once.with(event)
+            expect(response).to receive(:call).once.with(event)
             call = Call.new
             call.wrapped_object.stub id: 'foobar', domain: 'rayo.net', transport: 'footransport'
             subject.on_joined(call) { |event| response.call event }
@@ -221,13 +270,13 @@ module Adhearsion
           end
 
           it "should not trigger on_joined callbacks for other call IDs" do
-            response.should_receive(:call).never
+            expect(response).to receive(:call).never
             subject.on_joined(:call_uri => 'barfoo') { |event| response.call event }
             subject << event
           end
 
           it "should not trigger on_joined callbacks for mixers" do
-            response.should_receive(:call).never
+            expect(response).to receive(:call).never
             subject.on_joined(:mixer_name => 'foobar') { |event| response.call event }
             subject << event
           end
@@ -239,31 +288,31 @@ module Adhearsion
           end
 
           it "should trigger on_joined callbacks for the matching mixer name" do
-            response.should_receive(:call).once.with(event)
+            expect(response).to receive(:call).once.with(event)
             subject.on_joined(:mixer_name => 'foobar') { |event| response.call event }
             subject << event
           end
 
           it "should not trigger on_joined callbacks for other mixer names" do
-            response.should_receive(:call).never
+            expect(response).to receive(:call).never
             subject.on_joined(:mixer_name => 'barfoo') { |event| response.call event }
             subject << event
           end
 
           it "should not trigger any on_joined callbacks set for calls" do
-            response.should_receive(:call).never
+            expect(response).to receive(:call).never
             subject.on_joined(:call_uri => 'foobar') { |event| response.call event }
             subject << event
           end
 
           it "should not trigger any on_joined callbacks set for the matching call ID as a string" do
-            response.should_receive(:call).never
+            expect(response).to receive(:call).never
             subject.on_joined('foobar') { |event| response.call event }
             subject << event
           end
 
           it "should not trigger any on_joined callbacks set for the matching call" do
-            response.should_receive(:call).never
+            expect(response).to receive(:call).never
             call = Call.new
             call.wrapped_object.stub :id => 'foobar'
             subject.on_joined(call) { |event| response.call event }
@@ -279,19 +328,19 @@ module Adhearsion
           end
 
           it "should trigger any on_unjoined callbacks set for the matching call ID" do
-            response.should_receive(:call).once.with(event)
+            expect(response).to receive(:call).once.with(event)
             subject.on_unjoined(:call_uri => 'footransport:foobar@rayo.net') { |event| response.call event }
             subject << event
           end
 
           it "should trigger any on_unjoined callbacks set for the matching call ID as a string" do
-            response.should_receive(:call).once.with(event)
+            expect(response).to receive(:call).once.with(event)
             subject.on_unjoined('foobar') { |event| response.call event }
             subject << event
           end
 
           it "should trigger any on_unjoined callbacks set for the matching call" do
-            response.should_receive(:call).once.with(event)
+            expect(response).to receive(:call).once.with(event)
             call = Call.new
             call.wrapped_object.stub id: 'foobar', domain: 'rayo.net', transport: 'footransport'
             subject.on_unjoined(call) { |event| response.call event }
@@ -299,13 +348,13 @@ module Adhearsion
           end
 
           it "should not trigger on_unjoined callbacks for other call IDs" do
-            response.should_receive(:call).never
+            expect(response).to receive(:call).never
             subject.on_unjoined(:call_uri => 'barfoo') { |event| response.call event }
             subject << event
           end
 
           it "should not trigger on_unjoined callbacks for mixers" do
-            response.should_receive(:call).never
+            expect(response).to receive(:call).never
             subject.on_joined(:mixer_name => 'foobar') { |event| response.call event }
             subject << event
           end
@@ -317,31 +366,31 @@ module Adhearsion
           end
 
           it "should trigger on_unjoined callbacks for the matching mixer name" do
-            response.should_receive(:call).once.with(event)
+            expect(response).to receive(:call).once.with(event)
             subject.on_unjoined(:mixer_name => 'foobar') { |event| response.call event }
             subject << event
           end
 
           it "should not trigger on_unjoined callbacks for other mixer names" do
-            response.should_receive(:call).never
+            expect(response).to receive(:call).never
             subject.on_unjoined(:mixer_name => 'barfoo') { |event| response.call event }
             subject << event
           end
 
           it "should not trigger any on_unjoined callbacks set for calls" do
-            response.should_receive(:call).never
+            expect(response).to receive(:call).never
             subject.on_unjoined(:call_uri => 'foobar') { |event| response.call event }
             subject << event
           end
 
           it "should not trigger any on_unjoined callbacks set for the matching call ID as a string" do
-            response.should_receive(:call).never
+            expect(response).to receive(:call).never
             subject.on_unjoined('foobar') { |event| response.call event }
             subject << event
           end
 
           it "should not trigger any on_unjoined callbacks set for the matching call" do
-            response.should_receive(:call).never
+            expect(response).to receive(:call).never
             call = Call.new
             call.wrapped_object.stub :id => 'foobar'
             subject.on_unjoined(call) { |event| response.call event }
@@ -356,7 +405,7 @@ module Adhearsion
         end
 
         it "should trigger any on_end callbacks set" do
-          response.should_receive(:call).once.with(event)
+          expect(response).to receive(:call).once.with(event)
           subject.on_end { |event| response.call event }
           subject << event
         end
@@ -365,21 +414,21 @@ module Adhearsion
       context "when raising an exception" do
         it "does not kill the call actor" do
           subject.register_event_handler { |e| raise 'foo' }
-          lambda { subject << :foo }.should_not raise_error
+          expect { subject << :foo }.not_to raise_error
           sleep 1
-          subject.should be_alive
+          expect(subject).to be_alive
         end
 
         it 'passes the exception through the Events system' do
           latch = CountDownLatch.new 1
           Adhearsion::Events.exception do |e, l|
-            e.should be_a RuntimeError
-            l.should be subject.logger
+            expect(e).to be_a RuntimeError
+            expect(l).to be subject.logger
             latch.countdown!
           end
           subject.register_event_handler { |e| raise 'foo' }
-          lambda { subject << :foo }.should_not raise_error
-          latch.wait(3).should be true
+          expect { subject << :foo }.not_to raise_error
+          expect(latch.wait(3)).to be true
           Adhearsion::Events.clear_handlers :exception
         end
       end
@@ -405,7 +454,7 @@ module Adhearsion
 
         it "should add the peer to its registry" do
           subject << joined_event
-          subject.peers.should == {'xmpp:foobar@example.com' => other_call}
+          expect(subject.peers).to eq({'xmpp:foobar@example.com' => other_call})
         end
 
         context "in a handler for the joined event" do
@@ -418,7 +467,7 @@ module Adhearsion
 
             subject << joined_event
 
-            peer.should == other_call_uri
+            expect(peer).to eq(other_call_uri)
           end
         end
 
@@ -426,9 +475,9 @@ module Adhearsion
           before { subject << joined_event }
 
           it "should remove the peer from its registry" do
-            subject.peers.should_not eql({})
+            expect(subject.peers).not_to eql({})
             subject << unjoined_event
-            subject.peers.should eql({})
+            expect(subject.peers).to eql({})
           end
 
           context "in a handler for the unjoined event" do
@@ -441,7 +490,7 @@ module Adhearsion
 
               subject << unjoined_event
 
-              peer_count.should == 0
+              expect(peer_count).to eq(0)
             end
           end
         end
@@ -450,7 +499,7 @@ module Adhearsion
       context "when we don't know about the joined call" do
         it "should add a nil entry to its registry" do
           subject << joined_event
-          subject.peers.should == {'xmpp:foobar@example.com' => nil}
+          expect(subject.peers).to eq({'xmpp:foobar@example.com' => nil})
         end
 
         context "in a handler for the joined event" do
@@ -463,7 +512,7 @@ module Adhearsion
 
             subject << joined_event
 
-            peer.should == other_call_uri
+            expect(peer).to eq(other_call_uri)
           end
         end
 
@@ -471,9 +520,9 @@ module Adhearsion
           before { subject << joined_event }
 
           it "should remove the peer from its registry" do
-            subject.peers.should_not eql({})
+            expect(subject.peers).not_to eql({})
             subject << unjoined_event
-            subject.peers.should eql({})
+            expect(subject.peers).to eql({})
           end
 
           context "in a handler for the unjoined event" do
@@ -486,14 +535,14 @@ module Adhearsion
 
               subject << unjoined_event
 
-              peer_count.should == 0
+              expect(peer_count).to eq(0)
             end
           end
         end
       end
 
       it "should not return the same registry every call" do
-        subject.peers.should_not be subject.peers
+        expect(subject.peers).not_to be subject.peers
       end
     end
 
@@ -505,25 +554,25 @@ module Adhearsion
 
         it "should mark the call as ended" do
           subject << end_event
-          subject.should_not be_active
+          expect(subject).not_to be_active
         end
 
         it "should set the end reason" do
           subject << end_event
-          subject.end_reason.should be == :hangup
+          expect(subject.end_reason).to eq(:hangup)
         end
 
         it "should set the end code" do
           subject << end_event
-          subject.end_code.should be == 'arbitrary_code'
+          expect(subject.end_code).to eq('arbitrary_code')
         end
 
         it "should set the end time" do
           finish_time = Time.local(2008, 9, 1, 12, 1, 3)
           Timecop.freeze finish_time
-          subject.end_time.should == nil
+          expect(subject.end_time).to eq(nil)
           subject << end_event
-          subject.end_time.should == finish_time
+          expect(subject.end_time).to eq(finish_time)
         end
 
         it "should set the call duration" do
@@ -534,7 +583,7 @@ module Adhearsion
           mid_point_time = Time.local(2008, 9, 1, 12, 0, 37)
           Timecop.freeze mid_point_time
 
-          subject.duration.should == 37.0
+          expect(subject.duration).to eq(37.0)
 
           finish_time = Time.local(2008, 9, 1, 12, 1, 3)
           Timecop.freeze finish_time
@@ -544,7 +593,7 @@ module Adhearsion
           future_time = Time.local(2008, 9, 1, 12, 2, 3)
           Timecop.freeze finish_time
 
-          subject.duration.should == 63.0
+          expect(subject.duration).to eq(63.0)
         end
 
         it "should instruct the command registry to terminate" do
@@ -552,17 +601,17 @@ module Adhearsion
           command.request!
           subject.future.write_and_await_response command
           subject << end_event
-          command.response(1).should be_a Call::Hangup
+          expect(command.response(1)).to be_a Call::Hangup
         end
 
         it "removes itself from the active calls" do
           size_before = Adhearsion.active_calls.size
 
           Adhearsion.active_calls << subject
-          Adhearsion.active_calls.size.should be > size_before
+          expect(Adhearsion.active_calls.size).to be > size_before
 
           subject << end_event
-          Adhearsion.active_calls.size.should be == size_before
+          expect(Adhearsion.active_calls.size).to eq(size_before)
         end
 
         it "shuts down the actor" do
@@ -570,7 +619,7 @@ module Adhearsion
           subject << end_event
           sleep 2.1
           expect(subject.alive?).to be false
-          lambda { subject.id }.should raise_error Call::ExpiredError, /expired and is no longer accessible/
+          expect { subject.id }.to raise_error Call::ExpiredError, /expired and is no longer accessible/
         end
       end
     end
@@ -584,7 +633,7 @@ module Adhearsion
         before { subject << end_event }
 
         it "should return the end reason" do
-          subject.wait_for_end.should == :hangup
+          expect(subject.wait_for_end).to eq(:hangup)
         end
       end
 
@@ -593,35 +642,35 @@ module Adhearsion
           fut = subject.future.wait_for_end
 
           sleep 0.5
-          fut.should_not be_ready
+          expect(fut).not_to be_ready
 
           subject << end_event
 
-          fut.value.should == :hangup
+          expect(fut.value).to eq(:hangup)
         end
       end
     end
 
     describe "tagging a call" do
       it 'with a single Symbol' do
-        lambda {
+        expect {
           subject.tag :moderator
-        }.should_not raise_error
+        }.not_to raise_error
       end
 
       it 'with multiple Symbols' do
-        lambda {
+        expect {
           subject.tag :moderator
           subject.tag :female
-        }.should_not raise_error
+        }.not_to raise_error
       end
 
       it 'with a non-Symbol, non-String object' do
         bad_objects = [123, Object.new, 888.88, nil, true, false, StringIO.new]
         bad_objects.each do |bad_object|
-          lambda {
+          expect {
             subject.tag bad_object
-          }.should raise_error ArgumentError
+          }.to raise_error ArgumentError
         end
       end
     end
@@ -631,21 +680,21 @@ module Adhearsion
       subject.tag :female
       subject.remove_tag :female
       subject.tag :male
-      subject.tags.should be == [:moderator, :male]
+      expect(subject.tags).to eq([:moderator, :male])
     end
 
     describe "#tagged_with?" do
       it 'with one tag' do
         subject.tag :guest
-        subject.tagged_with?(:guest).should be true
-        subject.tagged_with?(:authorized).should be false
+        expect(subject.tagged_with?(:guest)).to be true
+        expect(subject.tagged_with?(:authorized)).to be false
       end
 
       it 'with many tags' do
         subject.tag :customer
         subject.tag :authorized
-        subject.tagged_with?(:customer).should be true
-        subject.tagged_with?(:authorized).should be true
+        expect(subject.tagged_with?(:customer)).to be true
+        expect(subject.tagged_with?(:authorized)).to be true
       end
     end
 
@@ -653,25 +702,25 @@ module Adhearsion
       let(:command) { Punchblock::Command::Answer.new }
 
       it "should write the command to the Punchblock connection" do
-        subject.wrapped_object.should_receive(:client).once.and_return mock_client
-        mock_client.should_receive(:execute_command).once.with(Punchblock::Command::Answer.new(target_call_id: call_id, domain: domain)).and_return true
+        expect(subject.wrapped_object).to receive(:client).once.and_return mock_client
+        expect(mock_client).to receive(:execute_command).once.with(Punchblock::Command::Answer.new(target_call_id: call_id, domain: domain)).and_return true
         subject.write_command command
       end
 
       describe "with a hungup call" do
         before do
-          subject.wrapped_object.should_receive(:active?).and_return(false)
+          expect(subject.wrapped_object).to receive(:active?).and_return(false)
         end
 
         it "should raise a Hangup exception" do
-          lambda { subject.write_command command }.should raise_error(Call::Hangup)
+          expect { subject.write_command command }.to raise_error(Call::Hangup)
         end
 
         describe "if the command is a Hangup" do
           let(:command) { Punchblock::Command::Hangup.new }
 
           it "should not raise a Hangup exception" do
-            lambda { subject.write_command command }.should_not raise_error
+            expect { subject.write_command command }.not_to raise_error
           end
         end
       end
@@ -682,18 +731,18 @@ module Adhearsion
       let(:response) { :foo }
 
       before do
-        message.should_receive(:execute!).and_return true
+        expect(message).to receive(:execute!).and_return true
         message.response = response
       end
 
       it "writes a command to the call" do
-        subject.wrapped_object.should_receive(:write_command).once.with(message)
+        expect(subject.wrapped_object).to receive(:write_command).once.with(message)
         subject.write_and_await_response message
       end
 
       it "removes the command from the registry after execution" do
         subject.write_and_await_response message
-        subject.commands.should be_empty
+        expect(subject.commands).to be_empty
       end
 
       it "blocks until a response is received" do
@@ -705,7 +754,7 @@ module Adhearsion
         end
         starting_time = Time.now
         subject.write_and_await_response slow_command
-        (Time.now - starting_time).should >= 0.5
+        expect(Time.now - starting_time).to be >= 0.5
       end
 
       context "while waiting for a response" do
@@ -715,7 +764,7 @@ module Adhearsion
 
         it "does not block the whole actor while waiting for a response" do
           fut = subject.future.write_and_await_response slow_command
-          subject.id.should == call_id
+          expect(subject.id).to eq(call_id)
           slow_command.response = response
           fut.value
         end
@@ -723,14 +772,14 @@ module Adhearsion
         it "adds the command to the registry" do
           subject.future.write_and_await_response slow_command
           sleep 0.2
-          subject.commands.should_not be_empty
-          subject.commands.first.should be slow_command
+          expect(subject.commands).not_to be_empty
+          expect(subject.commands.first).to be slow_command
         end
       end
 
       describe "with a successful response" do
         it "returns the executed command" do
-          subject.write_and_await_response(message).should be message
+          expect(subject.write_and_await_response(message)).to be message
         end
       end
 
@@ -739,16 +788,16 @@ module Adhearsion
         let(:response) { new_exception.new }
 
         it "raises the error" do
-          Events.should_receive(:trigger).never
-          lambda { subject.write_and_await_response message }.should raise_error new_exception
+          expect(Events).to receive(:trigger).never
+          expect { subject.write_and_await_response message }.to raise_error new_exception
         end
 
         context "where the name is :item_not_found" do
           let(:response) { new_exception.new.setup :item_not_found }
 
           it "should raise a Hangup exception" do
-            Events.should_receive(:trigger).never
-            lambda { subject.write_and_await_response message }.should raise_error Call::Hangup
+            expect(Events).to receive(:trigger).never
+            expect { subject.write_and_await_response message }.to raise_error Call::Hangup
           end
         end
       end
@@ -757,34 +806,34 @@ module Adhearsion
         before do
           message.target_call_id = call_id
           message.domain = domain
-          message.should_receive(:response).and_raise Timeout::Error
+          expect(message).to receive(:response).and_raise Timeout::Error
         end
 
         it "should raise the error in the caller but not crash the actor" do
-          lambda { subject.write_and_await_response message }.should raise_error Call::CommandTimeout, message.to_s
+          expect { subject.write_and_await_response message }.to raise_error Call::CommandTimeout, message.to_s
           sleep 0.5
-          subject.should be_alive
+          expect(subject).to be_alive
         end
       end
     end
 
     describe "#send_message" do
       it "should send a message through the Punchblock connection using the call ID and domain" do
-        subject.wrapped_object.should_receive(:client).once.and_return mock_client
-        mock_client.should_receive(:send_message).once.with(subject.id, subject.domain, "Hello World!", {})
+        expect(subject.wrapped_object).to receive(:client).once.and_return mock_client
+        expect(mock_client).to receive(:send_message).once.with(subject.id, subject.domain, "Hello World!", {})
         subject.send_message "Hello World!"
       end
 
       it "should send a message with the given subject" do
-        subject.wrapped_object.should_receive(:client).once.and_return mock_client
-        mock_client.should_receive(:send_message).once.with(subject.id, subject.domain, nil, :subject => "Important Message")
+        expect(subject.wrapped_object).to receive(:client).once.and_return mock_client
+        expect(mock_client).to receive(:send_message).once.with(subject.id, subject.domain, nil, :subject => "Important Message")
         subject.send_message nil, :subject => "Important Message"
       end
     end
 
     describe "basic control commands" do
       def expect_message_waiting_for_response(message = nil, fail = false, &block)
-        expectation = subject.wrapped_object.should_receive(:write_and_await_response, &block).once
+        expectation = expect(subject.wrapped_object).to receive(:write_and_await_response, &block).once
         expectation = expectation.with message if message
         if fail
           expectation.and_raise fail
@@ -871,7 +920,7 @@ module Adhearsion
 
         it "should immediately fire the :call_rejected event giving the call and the reason" do
           expect_message_waiting_for_response kind_of(Punchblock::Command::Reject)
-          Adhearsion::Events.should_receive(:trigger_immediately).once.with(:call_rejected, :call => subject, :reason => :decline)
+          expect(Adhearsion::Events).to receive(:trigger_immediately).once.with(:call_rejected, :call => subject, :reason => :decline)
           subject.reject :decline
         end
       end
@@ -913,12 +962,12 @@ module Adhearsion
       describe "#hangup" do
         describe "if the call is not active" do
           before do
-            subject.wrapped_object.should_receive(:active?).and_return false
+            expect(subject.wrapped_object).to receive(:active?).and_return false
           end
 
           it "should do nothing and return false" do
-            subject.should_receive(:write_and_await_response).never
-            subject.hangup.should be false
+            expect(subject).to receive(:write_and_await_response).never
+            expect(subject.hangup).to be false
           end
         end
 
@@ -926,7 +975,7 @@ module Adhearsion
           it "should mark the call inactive" do
             expect_message_waiting_for_response Punchblock::Command::Hangup.new
             subject.hangup
-            subject.should_not be_active
+            expect(subject).not_to be_active
           end
 
           describe "with no headers" do
@@ -976,45 +1025,45 @@ module Adhearsion
           it "should return the command" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target, :media => :bridge, :direction => :recv
-            result[:command].should be_a Punchblock::Command::Join
-            result[:command].call_uri.should eql(uri)
-            result[:command].media.should eql(:bridge)
-            result[:command].direction.should eql(:recv)
+            expect(result[:command]).to be_a Punchblock::Command::Join
+            expect(result[:command].call_uri).to eql(uri)
+            expect(result[:command].media).to eql(:bridge)
+            expect(result[:command].direction).to eql(:recv)
           end
 
           it "should return something that can be blocked on until the join is complete" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target, :media => :bridge, :direction => :recv
 
-            result[:joined_condition].wait(0.5).should be_false
+            expect(result[:joined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::Joined.new(call_uri: uri)
-            result[:joined_condition].wait(0.5).should be_true
+            expect(result[:joined_condition].wait(0.5)).to be_truthy
           end
 
           it "should return something that can be blocked on until the entities are unjoined" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target, :media => :bridge, :direction => :recv
 
-            result[:unjoined_condition].wait(0.5).should be_false
+            expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::Joined.new(call_uri: uri)
-            result[:unjoined_condition].wait(0.5).should be_false
+            expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::Unjoined.new(call_uri: uri)
-            result[:unjoined_condition].wait(0.5).should be_true
+            expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
 
           it "should unblock all conditions on call end if no joined/unjoined events are received" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target, :media => :bridge, :direction => :recv
 
-            result[:joined_condition].wait(0.5).should be_false
-            result[:unjoined_condition].wait(0.5).should be_false
+            expect(result[:joined_condition].wait(0.5)).to be_falsey
+            expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::End.new
-            result[:joined_condition].wait(0.5).should be_true
-            result[:unjoined_condition].wait(0.5).should be_true
+            expect(result[:joined_condition].wait(0.5)).to be_truthy
+            expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
 
           it "should not error on call end when joined/unjoined events are received correctly" do
@@ -1034,7 +1083,7 @@ module Adhearsion
             subject << Punchblock::Event::Joined.new(call_uri: uri)
             subject << Punchblock::Event::Joined.new(call_uri: uri)
 
-            subject.should be_alive
+            expect(subject).to be_alive
           end
         end
 
@@ -1057,45 +1106,45 @@ module Adhearsion
           it "should return the command" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target, :media => :bridge, :direction => :recv
-            result[:command].should be_a Punchblock::Command::Join
-            result[:command].call_uri.should eql(uri)
-            result[:command].media.should eql(:bridge)
-            result[:command].direction.should eql(:recv)
+            expect(result[:command]).to be_a Punchblock::Command::Join
+            expect(result[:command].call_uri).to eql(uri)
+            expect(result[:command].media).to eql(:bridge)
+            expect(result[:command].direction).to eql(:recv)
           end
 
           it "should return something that can be blocked on until the join is complete" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target, :media => :bridge, :direction => :recv
 
-            result[:joined_condition].wait(0.5).should be_false
+            expect(result[:joined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::Joined.new(call_uri: uri)
-            result[:joined_condition].wait(0.5).should be_true
+            expect(result[:joined_condition].wait(0.5)).to be_truthy
           end
 
           it "should return something that can be blocked on until the entities are unjoined" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target, :media => :bridge, :direction => :recv
 
-            result[:unjoined_condition].wait(0.5).should be_false
+            expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::Joined.new(call_uri: uri)
-            result[:unjoined_condition].wait(0.5).should be_false
+            expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::Unjoined.new(call_uri: uri)
-            result[:unjoined_condition].wait(0.5).should be_true
+            expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
 
           it "should unblock all conditions on call end if no joined/unjoined events are received" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target, :media => :bridge, :direction => :recv
 
-            result[:joined_condition].wait(0.5).should be_false
-            result[:unjoined_condition].wait(0.5).should be_false
+            expect(result[:joined_condition].wait(0.5)).to be_falsey
+            expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::End.new
-            result[:joined_condition].wait(0.5).should be_true
-            result[:unjoined_condition].wait(0.5).should be_true
+            expect(result[:joined_condition].wait(0.5)).to be_truthy
+            expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
 
           it "should not error on call end when joined/unjoined events are received correctly" do
@@ -1115,7 +1164,7 @@ module Adhearsion
             subject << Punchblock::Event::Joined.new(call_uri: uri)
             subject << Punchblock::Event::Joined.new(call_uri: uri)
 
-            subject.should be_alive
+            expect(subject).to be_alive
           end
         end
 
@@ -1139,45 +1188,45 @@ module Adhearsion
           it "should return the command" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target.merge({:media => :bridge, :direction => :recv})
-            result[:command].should be_a Punchblock::Command::Join
-            result[:command].call_uri.should eql(uri)
-            result[:command].media.should eql(:bridge)
-            result[:command].direction.should eql(:recv)
+            expect(result[:command]).to be_a Punchblock::Command::Join
+            expect(result[:command].call_uri).to eql(uri)
+            expect(result[:command].media).to eql(:bridge)
+            expect(result[:command].direction).to eql(:recv)
           end
 
           it "should return something that can be blocked on until the join is complete" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target.merge({:media => :bridge, :direction => :recv})
 
-            result[:joined_condition].wait(0.5).should be_false
+            expect(result[:joined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::Joined.new(call_uri: uri)
-            result[:joined_condition].wait(0.5).should be_true
+            expect(result[:joined_condition].wait(0.5)).to be_truthy
           end
 
           it "should return something that can be blocked on until the entities are unjoined" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target.merge({:media => :bridge, :direction => :recv})
 
-            result[:unjoined_condition].wait(0.5).should be_false
+            expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::Joined.new(call_uri: uri)
-            result[:unjoined_condition].wait(0.5).should be_false
+            expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::Unjoined.new(call_uri: uri)
-            result[:unjoined_condition].wait(0.5).should be_true
+            expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
 
           it "should unblock all conditions on call end if no joined/unjoined events are received" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target.merge({:media => :bridge, :direction => :recv})
 
-            result[:joined_condition].wait(0.5).should be_false
-            result[:unjoined_condition].wait(0.5).should be_false
+            expect(result[:joined_condition].wait(0.5)).to be_falsey
+            expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::End.new
-            result[:joined_condition].wait(0.5).should be_true
-            result[:unjoined_condition].wait(0.5).should be_true
+            expect(result[:joined_condition].wait(0.5)).to be_truthy
+            expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
 
           it "should not error on call end when joined/unjoined events are received correctly" do
@@ -1197,7 +1246,7 @@ module Adhearsion
             subject << Punchblock::Event::Joined.new(call_uri: uri)
             subject << Punchblock::Event::Joined.new(call_uri: uri)
 
-            subject.should be_alive
+            expect(subject).to be_alive
           end
         end
 
@@ -1220,45 +1269,45 @@ module Adhearsion
           it "should return the command" do
             expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
             result = subject.join target.merge({:media => :bridge, :direction => :recv})
-            result[:command].should be_a Punchblock::Command::Join
-            result[:command].mixer_name.should eql(mixer_name)
-            result[:command].media.should eql(:bridge)
-            result[:command].direction.should eql(:recv)
+            expect(result[:command]).to be_a Punchblock::Command::Join
+            expect(result[:command].mixer_name).to eql(mixer_name)
+            expect(result[:command].media).to eql(:bridge)
+            expect(result[:command].direction).to eql(:recv)
           end
 
           it "should return something that can be blocked on until the join is complete" do
             expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
             result = subject.join target.merge({:media => :bridge, :direction => :recv})
 
-            result[:joined_condition].wait(0.5).should be_false
+            expect(result[:joined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
-            result[:joined_condition].wait(0.5).should be_true
+            expect(result[:joined_condition].wait(0.5)).to be_truthy
           end
 
           it "should return something that can be blocked on until the entities are unjoined" do
             expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
             result = subject.join target.merge({:media => :bridge, :direction => :recv})
 
-            result[:unjoined_condition].wait(0.5).should be_false
+            expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
-            result[:unjoined_condition].wait(0.5).should be_false
+            expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::Unjoined.new(mixer_name: mixer_name)
-            result[:unjoined_condition].wait(0.5).should be_true
+            expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
 
           it "should unblock all conditions on call end if no joined/unjoined events are received" do
             expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
             result = subject.join target.merge({:media => :bridge, :direction => :recv})
 
-            result[:joined_condition].wait(0.5).should be_false
-            result[:unjoined_condition].wait(0.5).should be_false
+            expect(result[:joined_condition].wait(0.5)).to be_falsey
+            expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
             subject << Punchblock::Event::End.new
-            result[:joined_condition].wait(0.5).should be_true
-            result[:unjoined_condition].wait(0.5).should be_true
+            expect(result[:joined_condition].wait(0.5)).to be_truthy
+            expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
 
           it "should not error on call end when joined/unjoined events are received correctly" do
@@ -1278,7 +1327,7 @@ module Adhearsion
             subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
             subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
 
-            subject.should be_alive
+            expect(subject).to be_alive
           end
         end
 
@@ -1288,7 +1337,7 @@ module Adhearsion
           let(:target)      { { :call_uri => call_id, :mixer_name => mixer_name } }
 
           it "should raise an ArgumentError" do
-            lambda { subject.join target }.should raise_error ArgumentError, /call URI and mixer name/
+            expect { subject.join target }.to raise_error ArgumentError, /call URI and mixer name/
           end
         end
       end
@@ -1349,7 +1398,7 @@ module Adhearsion
           let(:target)      { { call_uri: call_id, mixer_name: mixer_name } }
 
           it "should raise an ArgumentError" do
-            lambda { subject.unjoin target }.should raise_error ArgumentError, /call URI and mixer name/
+            expect { subject.unjoin target }.to raise_error ArgumentError, /call URI and mixer name/
           end
         end
       end
@@ -1377,55 +1426,55 @@ module Adhearsion
         end
 
         it "should call #bg_exec on the controller instance" do
-          mock_controller.should_receive(:exec).once
+          expect(mock_controller).to receive(:exec).once
           subject.execute_controller mock_controller, lambda { |call| latch.countdown! }
-          latch.wait(3).should be_true
+          expect(latch.wait(3)).to be_truthy
         end
 
         it "should use the passed block as a controller if none is specified" do
-          mock_controller.should_receive(:exec).once
-          CallController.should_receive(:new).once.and_return mock_controller
+          expect(mock_controller).to receive(:exec).once
+          expect(CallController).to receive(:new).once.and_return mock_controller
           subject.execute_controller nil, lambda { |call| latch.countdown! } do
             foo
           end
-          latch.wait(3).should be_true
+          expect(latch.wait(3)).to be_truthy
         end
 
         it "should raise ArgumentError if both a controller and a block are passed" do
-          lambda { subject.execute_controller(mock_controller) { foo } }.should raise_error(ArgumentError)
+          expect { subject.execute_controller(mock_controller) { foo } }.to raise_error(ArgumentError)
         end
 
         it "should pass the exception to the events system" do
           latch = CountDownLatch.new 1
           Adhearsion::Events.exception do |e, l|
-            e.should be_a RuntimeError
-            l.should be subject.logger
+            expect(e).to be_a RuntimeError
+            expect(l).to be subject.logger
             latch.countdown!
           end
           subject.execute_controller BrokenController.new(subject), lambda { |call| latch.countdown! }
-          latch.wait(3).should be true
+          expect(latch.wait(3)).to be true
           Adhearsion::Events.clear_handlers :exception
         end
 
         it "should execute a callback after the controller executes" do
           foo = nil
           subject.execute_controller mock_controller, lambda { |call| foo = call; latch.countdown! }
-          latch.wait(3).should be_true
-          foo.should be subject
+          expect(latch.wait(3)).to be_truthy
+          expect(foo).to be subject
         end
 
         it "should prevent exceptions in controllers from being raised" do
-          mock_controller.should_receive(:run).once.ordered.and_raise StandardError
+          expect(mock_controller).to receive(:run).once.ordered.and_raise StandardError
           expect { subject.execute_controller mock_controller, lambda { |call| latch.countdown! } }.to_not raise_error
-          latch.wait(3).should be_true
-          subject.alive?.should be true
+          expect(latch.wait(3)).to be_truthy
+          expect(subject.alive?).to be true
         end
       end
 
       describe "#register_controller" do
         it "should add the controller to a list on the call" do
           subject.register_controller :foo
-          subject.controllers.should include :foo
+          expect(subject.controllers).to include :foo
         end
       end
 
@@ -1437,8 +1486,8 @@ module Adhearsion
 
         describe "#pause_controllers" do
           it "should pause each of the registered controllers" do
-            controller1.should_receive(:pause!).once
-            controller2.should_receive(:pause!).once
+            expect(controller1).to receive(:pause!).once
+            expect(controller2).to receive(:pause!).once
 
             subject.pause_controllers
           end
@@ -1446,8 +1495,8 @@ module Adhearsion
 
         describe "#resume_controllers" do
           it "should resume each of the registered controllers" do
-            controller1.should_receive(:resume!).once
-            controller2.should_receive(:resume!).once
+            expect(controller1).to receive(:resume!).once
+            expect(controller2).to receive(:resume!).once
 
             subject.resume_controllers
           end
@@ -1458,7 +1507,7 @@ module Adhearsion
         it "should delete its logger" do
           logger = subject.logger
           subject.terminate
-          ::Logging::Repository.instance[logger.name].should be_nil
+          expect(::Logging::Repository.instance[logger.name]).to be_nil
         end
       end
     end
@@ -1466,21 +1515,21 @@ module Adhearsion
     describe Call::CommandRegistry do
       subject { Call::CommandRegistry.new }
 
-      it { should be_empty }
+      it { is_expected.to be_empty }
 
       describe "#<<" do
         it "should add a command to the registry" do
           subject << :foo
-          subject.should_not be_empty
+          expect(subject).not_to be_empty
         end
       end
 
       describe "#delete" do
         it "should remove a command from the registry" do
           subject << :foo
-          subject.should_not be_empty
+          expect(subject).not_to be_empty
           subject.delete :foo
-          subject.should be_empty
+          expect(subject).to be_empty
         end
       end
 
@@ -1503,9 +1552,9 @@ module Adhearsion
           end
           subject.terminate
           commands.each do |command|
-            command.response.should be_a Call::Hangup
+            expect(command.response).to be_a Call::Hangup
           end
-          finished_command.response.should be == :foo
+          expect(finished_command.response).to eq(:foo)
         end
       end
     end

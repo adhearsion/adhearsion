@@ -19,16 +19,16 @@ module Adhearsion
       describe "#player" do
         it "should return a Player component targetted at the current controller" do
           player = controller.player
-          player.should be_a Output::Player
-          player.controller.should be controller
+          expect(player).to be_a Output::Player
+          expect(player.controller).to be controller
         end
       end
 
       describe "#async_player" do
         it "should return an AsyncPlayer component targetted at the current controller" do
           player = controller.async_player
-          player.should be_a Output::AsyncPlayer
-          player.controller.should be controller
+          expect(player).to be_a Output::AsyncPlayer
+          expect(player.controller).to be controller
         end
       end
 
@@ -42,7 +42,7 @@ module Adhearsion
 
         it 'plays the correct ssml' do
           expect_ssml_output ssml
-          subject.play_audio(audio_file).should be true
+          expect(subject.play_audio(audio_file)).to be true
         end
 
         context "with a fallback" do
@@ -58,7 +58,7 @@ module Adhearsion
 
           it 'places the fallback in the SSML doc' do
             expect_ssml_output ssml
-            subject.play_audio(audio_file, :fallback => fallback).should be true
+            expect(subject.play_audio(audio_file, :fallback => fallback)).to be true
           end
         end
 
@@ -66,7 +66,7 @@ module Adhearsion
           let(:media_engine) { :native }
           it "should use the specified media engine in the component" do
             expect_ssml_output ssml, renderer: media_engine
-            subject.play_audio(audio_file, renderer: media_engine).should be true
+            expect(subject.play_audio(audio_file, renderer: media_engine)).to be true
           end
         end
       end
@@ -81,7 +81,7 @@ module Adhearsion
 
         it 'plays the correct ssml' do
           expect_async_ssml_output ssml
-          subject.play_audio!(audio_file).should be_a Punchblock::Component::Output
+          expect(subject.play_audio!(audio_file)).to be_a Punchblock::Component::Output
         end
 
         context "with a fallback" do
@@ -97,7 +97,7 @@ module Adhearsion
 
           it 'places the fallback in the SSML doc' do
             expect_async_ssml_output ssml
-            subject.play_audio!(audio_file, :fallback => fallback).should be_a Punchblock::Component::Output
+            expect(subject.play_audio!(audio_file, :fallback => fallback)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -105,7 +105,7 @@ module Adhearsion
           let(:media_engine) { :native }
           it "should use the specified media engine in the SSML" do
             expect_async_ssml_output ssml, renderer: media_engine
-            subject.play_audio!(audio_file, renderer: media_engine).should be_a Punchblock::Component::Output
+            expect(subject.play_audio!(audio_file, renderer: media_engine)).to be_a Punchblock::Component::Output
           end
         end
       end
@@ -122,7 +122,7 @@ module Adhearsion
 
           it 'plays the correct ssml' do
             expect_ssml_output ssml
-            subject.play_numeric(input).should be true
+            expect(subject.play_numeric(input)).to be true
           end
         end
 
@@ -131,7 +131,7 @@ module Adhearsion
 
           it 'plays the correct ssml' do
             expect_ssml_output ssml
-            subject.play_numeric(input).should be true
+            expect(subject.play_numeric(input)).to be true
           end
         end
 
@@ -139,7 +139,7 @@ module Adhearsion
           let(:input) { 'foo' }
 
           it 'raises ArgumentError' do
-            lambda { subject.play_numeric input }.should raise_error(ArgumentError)
+            expect { subject.play_numeric input }.to raise_error(ArgumentError)
           end
         end
 
@@ -149,7 +149,7 @@ module Adhearsion
 
           it "should use the specified renderer in the SSML" do
             expect_ssml_output ssml, renderer: renderer
-            subject.play_numeric(input, renderer: renderer).should be true
+            expect(subject.play_numeric(input, renderer: renderer)).to be true
           end
         end
       end
@@ -166,7 +166,7 @@ module Adhearsion
 
           it 'plays the correct ssml' do
             expect_async_ssml_output ssml
-            subject.play_numeric!(input).should be_a Punchblock::Component::Output
+            expect(subject.play_numeric!(input)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -175,7 +175,7 @@ module Adhearsion
 
           it 'plays the correct ssml' do
             expect_async_ssml_output ssml
-            subject.play_numeric!(input).should be_a Punchblock::Component::Output
+            expect(subject.play_numeric!(input)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -183,7 +183,7 @@ module Adhearsion
           let(:input) { 'foo' }
 
           it 'raises ArgumentError' do
-            lambda { subject.play_numeric! input }.should raise_error(ArgumentError)
+            expect { subject.play_numeric! input }.to raise_error(ArgumentError)
           end
         end
 
@@ -193,7 +193,7 @@ module Adhearsion
 
           it "should use the specified renderer in the SSML" do
             expect_async_ssml_output ssml, renderer: renderer
-            subject.play_numeric!(input, renderer: renderer).should be_a Punchblock::Component::Output
+            expect(subject.play_numeric!(input, renderer: renderer)).to be_a Punchblock::Component::Output
           end
         end
       end
@@ -213,7 +213,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_ssml_output ssml
-            subject.play_time(input).should be true
+            expect(subject.play_time(input)).to be true
           end
         end
 
@@ -223,7 +223,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_ssml_output ssml
-            subject.play_time(input).should be true
+            expect(subject.play_time(input)).to be true
           end
         end
 
@@ -234,7 +234,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_ssml_output ssml
-            subject.play_time(input, :format => format).should be true
+            expect(subject.play_time(input, :format => format)).to be true
           end
         end
 
@@ -246,7 +246,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_ssml_output ssml
-            subject.play_time(base_input, :strftime => strftime).should be true
+            expect(subject.play_time(base_input, :strftime => strftime)).to be true
           end
         end
 
@@ -259,7 +259,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_ssml_output ssml
-            subject.play_time(base_input, :format => format, :strftime => strftime).should be true
+            expect(subject.play_time(base_input, :format => format, :strftime => strftime)).to be true
           end
         end
 
@@ -271,7 +271,7 @@ module Adhearsion
 
           it "should use the specified renderer in the SSML" do
             expect_ssml_output ssml, renderer: renderer
-            subject.play_time(input, format: format, renderer: renderer).should be true
+            expect(subject.play_time(input, format: format, renderer: renderer)).to be true
           end
         end
 
@@ -279,7 +279,7 @@ module Adhearsion
           let(:input) { "foo" }
 
           it 'raises ArgumentError' do
-            lambda { subject.play_time input }.should raise_error(ArgumentError)
+            expect { subject.play_time input }.to raise_error(ArgumentError)
           end
         end
       end
@@ -299,7 +299,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_async_ssml_output ssml
-            subject.play_time!(input).should be_a Punchblock::Component::Output
+            expect(subject.play_time!(input)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -309,7 +309,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_async_ssml_output ssml
-            subject.play_time!(input).should be_a Punchblock::Component::Output
+            expect(subject.play_time!(input)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -320,7 +320,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_async_ssml_output ssml
-            subject.play_time!(input, :format => format).should be_a Punchblock::Component::Output
+            expect(subject.play_time!(input, :format => format)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -332,7 +332,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_async_ssml_output ssml
-            subject.play_time!(base_input, :strftime => strftime).should be_a Punchblock::Component::Output
+            expect(subject.play_time!(base_input, :strftime => strftime)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -345,7 +345,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_async_ssml_output ssml
-            subject.play_time!(base_input, :format => format, :strftime => strftime).should be_a Punchblock::Component::Output
+            expect(subject.play_time!(base_input, :format => format, :strftime => strftime)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -357,7 +357,7 @@ module Adhearsion
 
           it "should use the specified renderer in the SSML" do
             expect_async_ssml_output ssml, renderer: renderer
-            subject.play_time!(input, format: format, renderer: renderer).should be_a Punchblock::Component::Output
+            expect(subject.play_time!(input, format: format, renderer: renderer)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -365,7 +365,7 @@ module Adhearsion
           let(:input) { "foo" }
 
           it 'raises ArgumentError' do
-            lambda { subject.play_time! input }.should raise_error(ArgumentError)
+            expect { subject.play_time! input }.to raise_error(ArgumentError)
           end
         end
       end
@@ -390,12 +390,12 @@ module Adhearsion
 
           it 'plays the audio file' do
             expect_ssml_output ssml
-            subject.play(audio_file).should be true
+            expect(subject.play(audio_file)).to be true
           end
 
           it 'plays the audio file with the specified extra options if present' do
             expect_ssml_output ssml, extra_options
-            subject.play(audio_file, extra_options).should be true
+            expect(subject.play(audio_file, extra_options)).to be true
           end
         end
 
@@ -416,13 +416,13 @@ module Adhearsion
 
           it 'plays all arguments in one document' do
             expect_ssml_output ssml
-            subject.play(*args).should be true
+            expect(subject.play(*args)).to be true
           end
 
           it 'plays all arguments in one document with the extra options if present' do
             expect_ssml_output ssml, extra_options
             args << extra_options
-            subject.play(*args).should be true
+            expect(subject.play(*args)).to be true
           end
         end
 
@@ -441,7 +441,7 @@ module Adhearsion
 
           it 'plays all arguments in one document' do
             expect_ssml_output ssml
-            subject.play(args).should be true
+            expect(subject.play(args)).to be true
           end
 
           context "that is empty" do
@@ -463,7 +463,7 @@ module Adhearsion
 
           it 'plays the number' do
             expect_ssml_output ssml
-            subject.play(argument).should be true
+            expect(subject.play(argument)).to be true
           end
         end
 
@@ -479,7 +479,7 @@ module Adhearsion
 
           it 'plays the number' do
             expect_ssml_output ssml
-            subject.play(argument).should be true
+            expect(subject.play(argument)).to be true
           end
         end
 
@@ -495,7 +495,7 @@ module Adhearsion
 
           it 'plays the time' do
             expect_ssml_output ssml
-            subject.play(time).should be true
+            expect(subject.play(time)).to be true
           end
         end
 
@@ -510,7 +510,7 @@ module Adhearsion
 
           it 'plays the time' do
             expect_ssml_output ssml
-            subject.play(date).should be true
+            expect(subject.play(date)).to be true
           end
         end
 
@@ -529,7 +529,7 @@ module Adhearsion
 
           it 'plays the time with the specified format and strftime' do
             expect_ssml_output ssml
-            subject.play(:value => date, :format => format, :strftime => strftime).should be true
+            expect(subject.play(:value => date, :format => format, :strftime => strftime)).to be true
           end
         end
 
@@ -538,7 +538,7 @@ module Adhearsion
 
           it "plays the SSML without generating" do
             expect_ssml_output ssml
-            subject.play(ssml).should be true
+            expect(subject.play(ssml)).to be true
           end
         end
       end
@@ -563,7 +563,7 @@ module Adhearsion
 
           it 'plays the audio file' do
             expect_async_ssml_output ssml
-            subject.play!(audio_file).should be_a Punchblock::Component::Output
+            expect(subject.play!(audio_file)).to be_a Punchblock::Component::Output
           end
 
           it 'plays the audio file with the specified extra options if present' do
@@ -587,7 +587,7 @@ module Adhearsion
 
           it 'plays all arguments in one document' do
             expect_async_ssml_output ssml
-            subject.play!(*args).should be_a Punchblock::Component::Output
+            expect(subject.play!(*args)).to be_a Punchblock::Component::Output
           end
 
           it 'plays all arguments in one document with the extra options if present' do
@@ -609,7 +609,7 @@ module Adhearsion
 
           it 'plays the number' do
             expect_async_ssml_output ssml
-            subject.play!(argument).should be_a Punchblock::Component::Output
+            expect(subject.play!(argument)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -625,7 +625,7 @@ module Adhearsion
 
           it 'plays the number' do
             expect_async_ssml_output ssml
-            subject.play!(argument).should be_a Punchblock::Component::Output
+            expect(subject.play!(argument)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -641,7 +641,7 @@ module Adhearsion
 
           it 'plays the time' do
             expect_async_ssml_output ssml
-            subject.play!(time).should be_a Punchblock::Component::Output
+            expect(subject.play!(time)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -656,7 +656,7 @@ module Adhearsion
 
           it 'plays the time' do
             expect_async_ssml_output ssml
-            subject.play!(date).should be_a Punchblock::Component::Output
+            expect(subject.play!(date)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -675,7 +675,7 @@ module Adhearsion
 
           it 'plays the time with the specified format and strftime' do
             expect_async_ssml_output ssml
-            subject.play!(:value => date, :format => format, :strftime => strftime).should be_a Punchblock::Component::Output
+            expect(subject.play!(:value => date, :format => format, :strftime => strftime)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -684,7 +684,7 @@ module Adhearsion
 
           it "plays the SSML without generating" do
             expect_async_ssml_output ssml
-            subject.play!(ssml).should be_a Punchblock::Component::Output
+            expect(subject.play!(ssml)).to be_a Punchblock::Component::Output
           end
         end
       end
@@ -696,26 +696,26 @@ module Adhearsion
         let(:extra_options) { {renderer: :native } }
 
         it "plays two outputs in succession" do
-          subject.should_receive(:stream_file).twice
+          expect(subject).to receive(:stream_file).twice
           digit = subject.interruptible_play output1, output2
-          digit.should be_nil
+          expect(digit).to be_nil
         end
 
         it "stops at the first play when input is received" do
-          subject.should_receive(:stream_file).once.and_return(2)
+          expect(subject).to receive(:stream_file).once.and_return(2)
           digit = subject.interruptible_play output1, output2
-          digit.should be == 2
+          expect(digit).to eq(2)
         end
 
         it "passes options on to #stream_file" do
-          subject.should_receive(:stream_file).once.with(output1, '0123456789#*', extra_options)
-          subject.should_receive(:stream_file).once.with(output2, '0123456789#*', extra_options)
+          expect(subject).to receive(:stream_file).once.with(output1, '0123456789#*', extra_options)
+          expect(subject).to receive(:stream_file).once.with(output2, '0123456789#*', extra_options)
           digit = subject.interruptible_play output1, output2, extra_options
-          digit.should be_nil
+          expect(digit).to be_nil
         end
 
         it 'raises an exception when output is unsuccessful' do
-          subject.should_receive(:stream_file).once.and_raise Output::PlaybackError, "Output failed"
+          expect(subject).to receive(:stream_file).once.and_raise Output::PlaybackError, "Output failed"
           expect { subject.interruptible_play non_existing }.to raise_error(Output::PlaybackError)
         end
       end
@@ -755,7 +755,7 @@ module Adhearsion
 
         #test does pass and method works, but not sure if the empty method is a good idea
         it "plays the correct output" do
-          controller.stub(:write_and_await_response)
+          allow(controller).to receive(:write_and_await_response)
 
           expect_component_complete_event
           expect_component_execution Punchblock::Component::Output.new(:ssml => ssml)
@@ -763,23 +763,23 @@ module Adhearsion
         end
 
         it "returns a single digit amongst the allowed when pressed" do
-          controller.should_receive(:write_and_await_response).with(kind_of(Punchblock::Component::Input)) do |input_component|
+          expect(controller).to receive(:write_and_await_response).with(kind_of(Punchblock::Component::Input)) do |input_component|
             input_component.trigger_event_handler Punchblock::Event::Complete.new
           end
 
-          controller.should_receive(:write_and_await_response).once.with(kind_of(Punchblock::Component::Output))
+          expect(controller).to receive(:write_and_await_response).once.with(kind_of(Punchblock::Component::Output))
 
-          Punchblock::Component::Output.any_instance.should_receive(:stop!)
-          Punchblock::Component::Output.any_instance.should_receive(:complete_event).and_return double('complete', reason: double('Reason'))
+          expect_any_instance_of(Punchblock::Component::Output).to receive(:stop!)
+          expect_any_instance_of(Punchblock::Component::Output).to receive(:complete_event).and_return double('complete', reason: double('Reason'))
           expect_input_component_complete_event 'dtmf-5'
 
-          subject.stream_file(prompt, allowed_digits).should be == '5'
+          expect(subject.stream_file(prompt, allowed_digits)).to eq('5')
         end
 
         context "with output options passed in" do
           let(:extra_options) { {renderer: :native } }
           it "plays the correct output with options" do
-            controller.stub(:write_and_await_response)
+            allow(controller).to receive(:write_and_await_response)
 
             expect_component_complete_event
             expect_component_execution Punchblock::Component::Output.new({:ssml => ssml}.merge(extra_options))
@@ -799,7 +799,7 @@ module Adhearsion
           it 'plays the correct SSML' do
             ssml = RubySpeech::SSML.draw { string "Hello world" }
             expect_ssml_output ssml
-            subject.say(ssml).should be_a Punchblock::Component::Output
+            expect(subject.say(ssml)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -808,7 +808,7 @@ module Adhearsion
             str = "Hello world"
             ssml = RubySpeech::SSML.draw { string str }
             expect_ssml_output ssml
-            subject.say(str).should be_a Punchblock::Component::Output
+            expect(subject.say(str)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -881,14 +881,14 @@ module Adhearsion
             argument = 123
             ssml = RubySpeech::SSML.draw { string '123' }
             expect_ssml_output ssml
-            subject.say(argument).should be_a Punchblock::Component::Output
+            expect(subject.say(argument)).to be_a Punchblock::Component::Output
           end
         end
       end
 
       describe "#speak" do
         it "should be an alias for #say" do
-          subject.method(:speak).should be == subject.method(:say)
+          expect(subject.method(:speak)).to eq(subject.method(:say))
         end
       end
 
@@ -903,7 +903,7 @@ module Adhearsion
           it 'plays the correct SSML' do
             ssml = RubySpeech::SSML.draw { string "Hello world" }
             expect_async_ssml_output ssml
-            subject.say!(ssml).should be_a Punchblock::Component::Output
+            expect(subject.say!(ssml)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -912,7 +912,7 @@ module Adhearsion
             str = "Hello world"
             ssml = RubySpeech::SSML.draw { string str }
             expect_async_ssml_output ssml
-            subject.say!(str).should be_a Punchblock::Component::Output
+            expect(subject.say!(str)).to be_a Punchblock::Component::Output
           end
         end
 
@@ -985,14 +985,14 @@ module Adhearsion
             argument = 123
             ssml = RubySpeech::SSML.draw { string '123' }
             expect_async_ssml_output ssml
-            subject.say!(argument).should be_a Punchblock::Component::Output
+            expect(subject.say!(argument)).to be_a Punchblock::Component::Output
           end
         end
       end
 
       describe "#speak!" do
         it "should be an alias for #say!" do
-          subject.method(:speak!).should be == subject.method(:say!)
+          expect(subject.method(:speak!)).to eq(subject.method(:say!))
         end
       end
 
@@ -1006,7 +1006,7 @@ module Adhearsion
 
           it 'plays the correct ssml' do
             expect_ssml_output ssml
-            subject.say_characters('1234#abc').should be true
+            expect(subject.say_characters('1234#abc')).to be true
           end
         end
 
@@ -1019,7 +1019,7 @@ module Adhearsion
 
           it 'plays the correct ssml' do
             expect_ssml_output ssml
-            subject.say_characters(1234).should be true
+            expect(subject.say_characters(1234)).to be true
           end
         end
       end
@@ -1034,7 +1034,7 @@ module Adhearsion
 
           it 'plays the correct ssml' do
             expect_async_ssml_output ssml
-            subject.say_characters!('1234#abc').should be_a Punchblock::Component::Output
+            expect(subject.say_characters!('1234#abc')).to be_a Punchblock::Component::Output
           end
         end
 
@@ -1047,7 +1047,7 @@ module Adhearsion
 
           it 'plays the correct ssml' do
             expect_async_ssml_output ssml
-            subject.say_characters!(1234).should be_a Punchblock::Component::Output
+            expect(subject.say_characters!(1234)).to be_a Punchblock::Component::Output
           end
         end
       end

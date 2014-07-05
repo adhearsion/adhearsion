@@ -12,7 +12,7 @@ module Adhearsion
         DummyGenerator = Class.new
 
         Generators.add_generator generator_key, DummyGenerator
-        Generators.mappings[generator_key].should be == DummyGenerator
+        expect(Generators.mappings[generator_key]).to eq(DummyGenerator)
       end
     end
   end

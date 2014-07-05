@@ -15,21 +15,21 @@ describe SimonGame do
 
   describe "#random_number" do
 
-    before { subject.stub!(:rand).and_return(example_number) }
+    before { allow(subject).to receive(:rand).and_return(example_number) }
 
     it "generates a random number" do
-      subject.random_number.should eq example_number
+      expect(subject.random_number).to eq example_number
     end
   end
 
   describe "#update_number" do
 
     before { subject.number = "123" }
-    before { subject.stub!(:random_number).and_return "4" }
+    before { allow(subject).to receive(:random_number).and_return "4" }
 
     it "adds a digit to the end of the number" do
       subject.update_number
-      subject.number.should eq "1234"
+      expect(subject.number).to eq "1234"
     end
   end
 
@@ -40,7 +40,7 @@ describe SimonGame do
       before { subject.number = "3" }
 
       it "asks for a 1 digits number" do
-        subject.should_receive(:ask).with("3", :limit => 1).and_return(example_response)
+        expect(subject).to receive(:ask).with("3", :limit => 1).and_return(example_response)
         subject.collect_attempt
       end
     end
@@ -50,7 +50,7 @@ describe SimonGame do
       before { subject.number = long_number }
 
       it "asks for a 5 digits number" do
-        subject.should_receive(:ask).with(long_number, :limit => 5).and_return(long_response)
+        expect(subject).to receive(:ask).with(long_number, :limit => 5).and_return(long_response)
         subject.collect_attempt
       end
     end
@@ -60,9 +60,9 @@ describe SimonGame do
       before { subject.number = "12345" }
 
       it "based on the user's response" do
-        subject.should_receive(:ask).with("12345", :limit => 5).and_return(long_response)
+        expect(subject).to receive(:ask).with("12345", :limit => 5).and_return(long_response)
         subject.collect_attempt
-        subject.attempt.should eq long_number
+        expect(subject.attempt).to eq long_number
       end
     end
   end
@@ -76,7 +76,7 @@ describe SimonGame do
       before { subject.attempt = "7" }
 
       it "returns true" do
-        subject.attempt_correct?.should be_true
+        expect(subject.attempt_correct?).to be_truthy
       end
     end
 
@@ -85,7 +85,7 @@ describe SimonGame do
       before { subject.attempt = "9" }
 
       it "returns true" do
-        subject.attempt_correct?.should be_false
+        expect(subject.attempt_correct?).to be_falsey
       end
     end
   end
@@ -93,10 +93,10 @@ describe SimonGame do
   describe "#verify_attempt" do
     context "when the user is a good guesser" do
 
-      before { subject.stub!(:attempt_correct?).and_return true }
+      before { allow(subject).to receive(:attempt_correct?).and_return true }
 
       it "congradulates them" do
-        subject.should_receive(:speak).with('good')
+        expect(subject).to receive(:speak).with('good')
         subject.verify_attempt
       end
     end
@@ -107,7 +107,7 @@ describe SimonGame do
       before { subject.attempt = "12346" }
 
       it "congradulates them" do
-        subject.should_receive(:speak).with('4 times wrong, try again smarty')
+        expect(subject).to receive(:speak).with('4 times wrong, try again smarty')
         subject.verify_attempt
       end
     end
@@ -118,22 +118,22 @@ describe SimonGame do
     before { subject.reset }
 
     it "sets @number" do
-      subject.number.should eq ''
+      expect(subject.number).to eq ''
     end
 
     it "sets @attempt" do
-      subject.attempt.should eq ''
+      expect(subject.attempt).to eq ''
     end
   end
 
   describe "#run" do
     it "loops the loop" do
-      subject.should_receive :answer
-      subject.should_receive :reset
+      expect(subject).to receive :answer
+      expect(subject).to receive :reset
 
-      subject.should_receive :update_number
-      subject.should_receive :collect_attempt
-      subject.should_receive(:verify_attempt).and_throw :rspec_loop_stop
+      expect(subject).to receive :update_number
+      expect(subject).to receive :collect_attempt
+      expect(subject).to receive(:verify_attempt).and_throw :rspec_loop_stop
 
       catch :rspec_loop_stop do
         subject.run

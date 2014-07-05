@@ -23,7 +23,7 @@ module Adhearsion
 
       def initialize_punchblock(options = {})
         reset_default_config
-        Initializer.stub(:connect)
+        allow(Initializer).to receive(:connect)
         Adhearsion.config.punchblock do |config|
           config.platform           = options[:platform] if options.has_key?(:platform)
           config.username           = options[:username] if options.has_key?(:username)
@@ -59,59 +59,59 @@ module Adhearsion
         subject { initialize_punchblock }
 
         it "should set properly the username value" do
-          subject.username.should be == 'usera@127.0.0.1'
+          expect(subject.username).to eq('usera@127.0.0.1')
         end
 
         it "should set properly the password value" do
-          subject.password.should be == '1'
+          expect(subject.password).to eq('1')
         end
 
         it "should set properly the host value" do
-          subject.host.should be_nil
+          expect(subject.host).to be_nil
         end
 
         it "should set properly the port value" do
-          subject.port.should be_nil
+          expect(subject.port).to be_nil
         end
 
         it "should set properly the certs_directory value" do
-          subject.certs_directory.should be_nil
+          expect(subject.certs_directory).to be_nil
         end
 
         it "should set properly the root_domain value" do
-          subject.root_domain.should be_nil
+          expect(subject.root_domain).to be_nil
         end
 
         it "should properly set the reconnect_attempts value" do
-          subject.reconnect_attempts.should be == 1.0/0.0
+          expect(subject.reconnect_attempts).to eq(1.0/0.0)
         end
 
         it "should properly set the reconnect_timer value" do
-          subject.reconnect_timer.should be == 5
+          expect(subject.reconnect_timer).to eq(5)
         end
       end
 
       it "starts the client with the correct resource" do
         username = "usera@127.0.0.1/hostname-1234"
 
-        Punchblock::Connection::XMPP.should_receive(:new).once.with(hash_including :username => username).and_return mock_client
+        expect(Punchblock::Connection::XMPP).to receive(:new).once.with(hash_including :username => username).and_return mock_client
         initialize_punchblock
       end
 
       context "when the fqdn is not available" do
         it "should use the local hostname instead" do
-          Adhearsion::Process.stub(:fqdn).and_raise SocketError
-          Socket.stub(:gethostname).and_return 'local_hostname'
+          allow(Adhearsion::Process).to receive(:fqdn).and_raise SocketError
+          allow(Socket).to receive(:gethostname).and_return 'local_hostname'
 
           username = "usera@127.0.0.1/local_hostname-1234"
 
-          Punchblock::Connection::XMPP.should_receive(:new).once.with(hash_including :username => username).and_return mock_client
+          expect(Punchblock::Connection::XMPP).to receive(:new).once.with(hash_including :username => username).and_return mock_client
           initialize_punchblock
         end
       end
 
       it "starts the client with any overridden settings" do
-        Punchblock::Connection::XMPP.should_receive(:new).once.with(username: 'userb@127.0.0.1/foo', password: '123', host: 'foo.bar.com', port: 200, certs: '/foo/bar', connection_timeout: 20, root_domain: 'foo.com').and_return mock_client
+        expect(Punchblock::Connection::XMPP).to receive(:new).once.with(username: 'userb@127.0.0.1/foo', password: '123', host: 'foo.bar.com', port: 200, certs: '/foo/bar', connection_timeout: 20, root_domain: 'foo.com').and_return mock_client
         initialize_punchblock username: 'userb@127.0.0.1/foo', password: '123', host: 'foo.bar.com', port: 200, certs_directory: '/foo/bar', connection_timeout: 20, root_domain: 'foo.com'
       end
 
@@ -119,12 +119,12 @@ module Adhearsion
         it 'should block until the connection is established' do
           reset_default_config
           mock_connection = double :mock_connection
-          mock_connection.should_receive(:register_event_handler).once
-          Punchblock::Client.should_receive(:new).once.and_return mock_connection
-          mock_connection.should_receive(:run).once
+          expect(mock_connection).to receive(:register_event_handler).once
+          expect(Punchblock::Client).to receive(:new).once.and_return mock_connection
+          expect(mock_connection).to receive(:run).once
           t = Thread.new { Initializer.init; Initializer.run }
           t.join 5
-          t.status.should be == "sleep"
+          expect(t.status).to eq("sleep")
           Events.trigger_immediately :punchblock, Punchblock::Connection::Connected.new
           t.join
         end
@@ -135,8 +135,8 @@ module Adhearsion
           Adhearsion::Process.reset
           Initializer.config = reset_default_config
           Initializer.config.reconnect_attempts = 1
-          Adhearsion::Logging.get_logger(Initializer).should_receive(:fatal).at_most(:once)
-          Initializer.stub(:client).and_return mock_client
+          expect(Adhearsion::Logging.get_logger(Initializer)).to receive(:fatal).at_most(:once)
+          allow(Initializer).to receive(:client).and_return mock_client
         end
 
         after :each do
@@ -145,29 +145,29 @@ module Adhearsion
 
         it 'should reset the Adhearsion process state to "booting"' do
           Adhearsion::Process.booted
-          Adhearsion::Process.state_name.should be == :running
-          mock_client.stub(:run).and_raise Punchblock::DisconnectedError
-          Adhearsion::Process.should_receive(:reset).at_least(:once)
+          expect(Adhearsion::Process.state_name).to eq(:running)
+          allow(mock_client).to receive(:run).and_raise Punchblock::DisconnectedError
+          expect(Adhearsion::Process).to receive(:reset).at_least(:once)
           Initializer.connect_to_server
         end
 
         it 'should retry the connection the specified number of times' do
           Initializer.config.reconnect_attempts = 3
-          mock_client.stub(:run).and_raise Punchblock::DisconnectedError
+          allow(mock_client).to receive(:run).and_raise Punchblock::DisconnectedError
           Initializer.connect_to_server
-          Initializer.attempts.should be == 3
+          expect(Initializer.attempts).to eq(3)
         end
 
         it 'should preserve a Punchblock::ProtocolError exception and give up' do
-          mock_client.stub(:run).and_raise Punchblock::ProtocolError
+          allow(mock_client).to receive(:run).and_raise Punchblock::ProtocolError
           expect { Initializer.connect_to_server }.to raise_error Punchblock::ProtocolError
         end
 
         it 'should not attempt to reconnect if Adhearsion is shutting down' do
           Adhearsion::Process.booted
           Adhearsion::Process.shutdown
-          mock_client.stub(:run).and_raise Punchblock::DisconnectedError
-          Initializer.should_not raise_error Punchblock::DisconnectedError
+          allow(mock_client).to receive(:run).and_raise Punchblock::DisconnectedError
+          expect(Initializer).not_to raise_error
         end
       end
 
@@ -175,7 +175,7 @@ module Adhearsion
         let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :certs => nil, :connection_timeout => 20, :root_domain => 'foo.com'} }
 
         it 'should start an Asterisk PB connection' do
-          Punchblock::Connection::Asterisk.should_receive(:new).once.with(overrides).and_return mock_client
+          expect(Punchblock::Connection::Asterisk).to receive(:new).once.with(overrides).and_return mock_client
           initialize_punchblock overrides.merge(:platform => :asterisk)
         end
       end
@@ -184,13 +184,13 @@ module Adhearsion
         let(:overrides) { {:username => 'test', :password => '123', :host => 'foo.bar.com', :port => 200, :certs => nil, :connection_timeout => 20, :root_domain => 'foo.com'} }
 
         it 'should start a FreeSWITCH PB connection' do
-          Punchblock::Connection::Freeswitch.should_receive(:new).once.with(overrides).and_return mock_client
+          expect(Punchblock::Connection::Freeswitch).to receive(:new).once.with(overrides).and_return mock_client
           initialize_punchblock overrides.merge(:platform => :freeswitch)
         end
       end
 
       it 'should place events from Punchblock into the event handler' do
-        Events.instance.should_receive(:trigger).once.with(:punchblock, offer)
+        expect(Events.instance).to receive(:trigger).once.with(:punchblock, offer)
         initialize_punchblock
         Initializer.client.handle_event offer
       end
@@ -198,15 +198,15 @@ module Adhearsion
       describe "dispatching an offer" do
         before do
           initialize_punchblock
-          Adhearsion::Process.should_receive(:state_name).once.and_return process_state
-          Adhearsion::Call.should_receive(:new).once.and_return mock_call
+          expect(Adhearsion::Process).to receive(:state_name).once.and_return process_state
+          expect(Adhearsion::Call).to receive(:new).once.and_return mock_call
         end
 
         context "when the Adhearsion::Process is :booting" do
           let(:process_state) { :booting }
 
           it 'should reject a call with cause :declined' do
-            mock_call.should_receive(:reject).once.with(:decline)
+            expect(mock_call).to receive(:reject).once.with(:decline)
           end
         end
 
@@ -218,7 +218,7 @@ module Adhearsion
               Adhearsion.router do
                 route 'foobar', Class.new
               end
-              Adhearsion.router.should_receive(:handle).once.with mock_call
+              expect(Adhearsion.router).to receive(:handle).once.with mock_call
             end
           end
         end
@@ -227,7 +227,7 @@ module Adhearsion
           let(:process_state) { :rejecting }
 
           it 'should reject a call with cause :declined' do
-            mock_call.should_receive(:reject).once.with(:decline)
+            expect(mock_call).to receive(:reject).once.with(:decline)
           end
         end
 
@@ -235,7 +235,7 @@ module Adhearsion
           let(:process_state) { :foobar }
 
           it 'should reject a call with cause :error' do
-            mock_call.should_receive(:reject).once.with(:error)
+            expect(mock_call).to receive(:reject).once.with(:error)
           end
         end
 
@@ -253,7 +253,7 @@ module Adhearsion
         end
 
         it "should place the event in the call's inbox" do
-          component.should_receive(:trigger_event_handler).once.with mock_event
+          expect(component).to receive(:trigger_event_handler).once.with mock_event
           Events.trigger_immediately :punchblock, mock_event
         end
       end
@@ -270,14 +270,14 @@ module Adhearsion
           end
 
           it "should place the event in the call's inbox" do
-            mock_call.async.should_receive(:deliver_message).once.with(mock_event)
+            expect(mock_call.async).to receive(:deliver_message).once.with(mock_event)
             Initializer.dispatch_call_event mock_event
           end
         end
 
         describe "with an inactive call" do
           it "should log a warning" do
-            Adhearsion::Logging.get_logger(Initializer).should_receive(:warn).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
+            expect(Adhearsion::Logging.get_logger(Initializer)).to receive(:warn).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
             Initializer.dispatch_call_event mock_event
           end
         end
@@ -289,7 +289,7 @@ module Adhearsion
           end
 
           it "should log a warning" do
-            Adhearsion::Logging.get_logger(Initializer).should_receive(:warn).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
+            expect(Adhearsion::Logging.get_logger(Initializer)).to receive(:warn).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
             Initializer.dispatch_call_event mock_event
           end
         end
@@ -309,11 +309,11 @@ module Adhearsion
           end
 
           it "should set properly the username value" do
-            subject.username.should be == 'userb@127.0.0.1'
+            expect(subject.username).to eq('userb@127.0.0.1')
           end
 
           it "should set properly the password value" do
-            subject.password.should be == 'abc123'
+            expect(subject.password).to eq('abc123')
           end
         end
       end
@@ -332,8 +332,8 @@ module Adhearsion
 
         Initializer.handle_event ami_event
 
-        latch.wait(1).should be true
-        result.should be ami_event
+        expect(latch.wait(1)).to be true
+        expect(result).to be ami_event
       end
     end
   end

@@ -30,7 +30,7 @@ module Adhearsion
           it "yields the component to the block before waiting for it to finish" do
             component = Punchblock::Component::Output.new :ssml => content
 
-            controller.should_receive(:execute_component_and_await_completion).once.with(component).and_yield(:foo)
+            expect(controller).to receive(:execute_component_and_await_completion).once.with(component).and_yield(:foo)
 
             @foo = nil
 
@@ -38,22 +38,22 @@ module Adhearsion
               @foo = comp
             end
 
-            @foo.should == :foo
+            expect(@foo).to eq(:foo)
           end
 
           it "raises a PlaybackError if the component fails to start" do
             expect_component_execution Punchblock::Component::Output.new(:ssml => content), Punchblock::ProtocolError
-            lambda { subject.output content }.should raise_error(PlaybackError)
+            expect { subject.output content }.to raise_error(PlaybackError)
           end
 
           it "raises a Playback Error if the component ends due to an error" do
             expect_component_execution Punchblock::Component::Output.new(:ssml => content), Adhearsion::Error
-            lambda { subject.output content }.should raise_error(PlaybackError)
+            expect { subject.output content }.to raise_error(PlaybackError)
           end
 
           it "raises a Call::Hangup exception if the component ends due to an error" do
             expect_component_execution Punchblock::Component::Output.new(:ssml => content), Call::Hangup
-            lambda { subject.output content }.should raise_error(Call::Hangup)
+            expect { subject.output content }.to raise_error(Call::Hangup)
           end
         end
 

@@ -11,7 +11,7 @@ module Adhearsion
 
       before { subject.extend described_class }
 
-      it { should be_evented }
+      it { is_expected.to be_evented }
 
       describe "dispatching a call" do
         let(:call) { Call.new }
@@ -24,7 +24,7 @@ module Adhearsion
           end
 
           it "should yield the call to the block" do
-            call.should_receive(:foo).once
+            expect(call).to receive(:foo).once
             route.dispatch call
           end
         end
