@@ -21,7 +21,6 @@ Bundler.require(:default, :test) if defined?(Bundler)
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |f| require f }
 
 RSpec.configure do |config|
-  config.treat_symbols_as_metadata_keys_with_true_values = true
   config.mock_framework = :rspec
   config.filter_run :focus => true
   config.run_all_when_everything_filtered = true
@@ -39,7 +38,7 @@ RSpec.configure do |config|
 
   config.before :each do
     Adhearsion.router = nil
-    Punchblock.stub new_request_id: 'foo'
+    allow(Punchblock).to receive(:new_request_id).and_return 'foo'
   end
 
   config.after :each do

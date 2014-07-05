@@ -167,7 +167,7 @@ module Adhearsion
           Adhearsion::Process.booted
           Adhearsion::Process.shutdown
           allow(mock_client).to receive(:run).and_raise Punchblock::DisconnectedError
-          expect(Initializer).not_to raise_error
+          expect { Initializer.connect_to_server }.not_to raise_error
         end
       end
 
