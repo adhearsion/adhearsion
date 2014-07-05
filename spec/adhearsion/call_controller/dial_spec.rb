@@ -474,8 +474,8 @@ module Adhearsion
 
                 other_mock_call << mock_answered
 
-                should_receive(:callback).once.with(call)
-                should_receive(:callback).once.with(other_mock_call)
+                expect(self).to receive(:callback).once.with(call)
+                expect(self).to receive(:callback).once.with(other_mock_call)
 
                 dial.split main: main_split_controller, others: others_split_controller, main_callback: ->(call) { self.callback(call) }, others_callback: ->(call) { self.callback(call) }
 
@@ -1894,8 +1894,8 @@ module Adhearsion
 
                 other_mock_call << mock_answered
 
-                should_receive(:callback).once.with(call)
-                should_receive(:callback).once.with(other_mock_call)
+                expect(self).to receive(:callback).once.with(call)
+                expect(self).to receive(:callback).once.with(other_mock_call)
 
                 dial.split main: main_split_controller, others: others_split_controller, main_callback: ->(call) { self.callback(call) }, others_callback: ->(call) { self.callback(call) }
 

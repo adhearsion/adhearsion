@@ -26,6 +26,8 @@ RSpec.configure do |config|
   config.run_all_when_everything_filtered = true
   config.color = true
 
+  config.raise_errors_for_deprecations!
+
   config.mock_with :rspec do |mocks|
     mocks.add_stub_and_should_receive_to Celluloid::AbstractProxy, ThreadSafeArray
   end
