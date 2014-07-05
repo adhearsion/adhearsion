@@ -6,7 +6,7 @@ module CallControllerTestHelpers
     test_case.let(:call)        { Adhearsion::Call.new }
     test_case.let(:block)       { nil }
     test_case.let(:metadata)    { {doo: :dah} }
-    test_case.let(:controller)  { new_controller test_case.describes }
+    test_case.let(:controller)  { new_controller test_case.described_class }
 
     test_case.subject { controller }
 
