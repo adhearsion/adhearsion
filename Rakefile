@@ -19,7 +19,7 @@ require 'cucumber'
 require 'cucumber/rake/task'
 require 'ci/reporter/rake/cucumber'
 Cucumber::Rake::Task.new(:features) do |t|
-  t.cucumber_opts = %w{--tags ~@jruby} unless defined?(JRUBY_VERSION)
+  t.cucumber_opts = %w{--tags ~@skip_jruby} if defined?(JRUBY_VERSION)
 end
 
 Cucumber::Rake::Task.new(:wip) do |t|
