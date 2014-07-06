@@ -1504,7 +1504,7 @@ module Adhearsion
             expect(latch.wait(2)).to be_truthy
           end
 
-          it "unblocks the original controller if the original call ends", focus: true do
+          it "unblocks the original controller if the original call ends" do
             expect(other_mock_call).to receive(:hangup).once
             dial_in_thread
 
