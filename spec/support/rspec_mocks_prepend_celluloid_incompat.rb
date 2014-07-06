@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module RSpec::Support::RubyFeatures
   def module_prepends_supported?
     false
