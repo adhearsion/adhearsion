@@ -1338,6 +1338,9 @@ module Adhearsion
                 call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
                 other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
               end
+              expect(other_mock_call).to receive(:hangup).once do
+                other_mock_call << mock_end
+              end
 
               t = dial_in_thread
 
@@ -1351,9 +1354,8 @@ module Adhearsion
               base_time = Time.local(2008, 9, 1, 12, 0, 42)
               Timecop.freeze base_time
               other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
-              other_mock_call << mock_end
 
-              expect(latch.wait(2)).to be_truthy
+              expect(latch.wait(3)).to be_truthy
 
               t.join
               status = t.value
@@ -1502,7 +1504,7 @@ module Adhearsion
             expect(latch.wait(2)).to be_truthy
           end
 
-          it "unblocks the original controller if the original call ends" do
+          it "unblocks the original controller if the original call ends", focus: true do
             expect(other_mock_call).to receive(:hangup).once
             dial_in_thread
 
