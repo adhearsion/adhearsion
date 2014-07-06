@@ -66,7 +66,6 @@ module Adhearsion
 
       it "catches Hangup exceptions and logs the hangup" do
         expect(subject).to receive(:run).once.ordered.and_raise(Call::Hangup)
-        expect(subject.logger).to receive(:info).once.with(/Call was hung up/).ordered
         subject.exec
       end
 
@@ -76,7 +75,6 @@ module Adhearsion
         end
 
         it "gracefully terminates " do
-          expect(subject.logger).to receive(:info).once.with(/Call was hung up/).ordered
           subject.exec
         end
       end

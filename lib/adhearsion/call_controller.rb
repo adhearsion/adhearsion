@@ -118,7 +118,6 @@ module Adhearsion
       execute_callbacks :before_call
       run
     rescue Call::Hangup, Call::ExpiredError
-      logger.info "Call was hung up while executing a controller"
     rescue SyntaxError, StandardError => e
       Events.trigger :exception, [e, logger]
       on_error e
