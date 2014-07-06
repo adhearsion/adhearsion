@@ -28,10 +28,6 @@ RSpec.configure do |config|
 
   config.raise_errors_for_deprecations!
 
-  config.mock_with :rspec do |mocks|
-    mocks.add_stub_and_should_receive_to Celluloid::AbstractProxy, ThreadSafeArray
-  end
-
   config.before :suite do
     Adhearsion::Logging.start Adhearsion::Logging.default_appenders, :trace, Adhearsion.config.platform.logging.formatter
     Adhearsion.config.platform.after_hangup_lifetime = 10
