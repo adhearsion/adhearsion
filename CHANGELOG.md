@@ -1,5 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
   * Bugfix: Ignore dead calls when searching by tag
+  * Bugfix: Routing a dead call should end cleanly ([#441](https://github.com/adhearsion/adhearsion/issues/441))
 
 # [2.5.3](https://github.com/adhearsion/adhearsion/compare/v2.5.2...v2.5.3) - [2014-04-25](https://rubygems.org/gems/adhearsion/versions/2.5.3)
   * Bugfix: Do not quiesce until the second SIGTERM, as per documentation ([#483](https://github.com/adhearsion/adhearsion/issues/483))
