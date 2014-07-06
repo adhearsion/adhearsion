@@ -48,6 +48,8 @@ module Adhearsion
           end
           callback.call if callback
         }
+      rescue Call::Hangup, Call::ExpiredError
+        logger.info "Call routing could not be completed because call was unavailable."
       end
 
       def evented?
