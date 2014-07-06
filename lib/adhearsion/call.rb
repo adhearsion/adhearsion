@@ -2,8 +2,7 @@
 
 require 'has_guarded_handlers'
 require 'thread'
-require 'active_support/hash_with_indifferent_access'
-require 'active_support/core_ext/hash/indifferent_access'
+require 'hashie'
 require 'adhearsion'
 
 module Adhearsion
@@ -15,6 +14,10 @@ module Adhearsion
     Hangup          = Class.new Adhearsion::Error
     CommandTimeout  = Class.new Adhearsion::Error
     ExpiredError    = Class.new Celluloid::DeadActorError
+
+    class VariablesCollection < Hash
+      include Hashie::Extensions::IndifferentAccess
+    end
 
     include Celluloid
     include HasGuardedHandlers
@@ -76,7 +79,7 @@ module Adhearsion
       @offer        = nil
       @tags         = []
       @commands     = CommandRegistry.new
-      @variables    = HashWithIndifferentAccess.new
+      @variables    = VariablesCollection.new
       @controllers  = []
       @end_reason   = nil
       @end_code     = nil
