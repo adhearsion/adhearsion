@@ -269,9 +269,25 @@ module Adhearsion
             Adhearsion.active_calls << mock_call
           end
 
-          it "should place the event in the call's inbox" do
-            expect(mock_call.async).to receive(:deliver_message).once.with(mock_event)
+          it "should forward the event to the call actor" do
+            events = []
+            mock_call.register_event_handler do |event|
+              events << event
+            end
             Initializer.dispatch_call_event mock_event
+            sleep 0.5
+            expect(events).to eql([mock_event])
+          end
+
+          it "should not block on the call handling the event" do
+
+            mock_call.register_event_handler do |event|
+              sleep 5
+            end
+            start_time = Time.now
+            Initializer.dispatch_call_event mock_event
+            sleep 0.5
+            expect(Time.now - start_time).to be < 1
           end
         end
 
