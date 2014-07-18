@@ -4,9 +4,6 @@
   * Feature: Add `Call#redirect` and `CallController#redirect` for redirecting calls to other systems ([#465](https://github.com/adhearsion/adhearsion/issues/465))
   * Feature: Ensure logging is available on STDOUT during RSpec runs
   * Feature: Reduce Adhearsion start-up time by selectively requiring the parts of ActiveSupport we use
-  * Bugfix: Ensure config gets correctly loaded from config file
-  * Bugfix: Ignore dead calls when searching by tag
-  * Bugfix: Routing a dead call should end cleanly ([#441](https://github.com/adhearsion/adhearsion/issues/441))
 
 # [2.5.4](https://github.com/adhearsion/adhearsion/compare/v2.5.3...v2.5.4) - [2014-07-18](https://rubygems.org/gems/adhearsion/versions/2.5.4)
   * Bugfix: Ignore dead calls when searching by tag
