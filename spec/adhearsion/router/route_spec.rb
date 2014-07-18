@@ -139,6 +139,14 @@ module Adhearsion
             latch.wait(2).should be true
           end
 
+          context "when the call has already ended before routing can begin" do
+            before { Celluloid::Actor.kill call }
+
+            it "should fall through cleanly" do
+              expect { route.dispatch call }.not_to raise_error
+            end
+          end
+
           context "when the CallController mutates its metadata" do
             let :controller do
               Class.new CallController do
