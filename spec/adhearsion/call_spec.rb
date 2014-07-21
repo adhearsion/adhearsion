@@ -865,6 +865,16 @@ module Adhearsion
             subject.accept
           end
         end
+
+        context "with a failure response" do
+          it 'should raise the error but not crash the actor' do
+            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Punchblock::Command::Accept.new, error
+            expect { subject.accept }.to raise_error error
+            sleep 0.2
+            expect(subject.alive?).to be true
+          end
+        end
       end
 
       describe '#answer' do
@@ -880,6 +890,16 @@ module Adhearsion
             headers = {:foo => 'bar'}
             expect_message_waiting_for_response Punchblock::Command::Answer.new(:headers => headers)
             subject.answer headers
+          end
+        end
+
+        context "with a failure response" do
+          it 'should raise the error but not crash the actor' do
+            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Punchblock::Command::Answer.new, error
+            expect { subject.answer }.to raise_error error
+            sleep 0.2
+            expect(subject.alive?).to be true
           end
         end
       end
@@ -923,6 +943,16 @@ module Adhearsion
           expect(Adhearsion::Events).to receive(:trigger_immediately).once.with(:call_rejected, :call => subject, :reason => :decline)
           subject.reject :decline
         end
+
+        context "with a failure response" do
+          it 'should raise the error but not crash the actor' do
+            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Punchblock::Command::Reject.new(reason: :busy), error
+            expect { subject.reject }.to raise_error error
+            sleep 0.2
+            expect(subject.alive?).to be true
+          end
+        end
       end
 
       describe '#redirect' do
@@ -955,6 +985,16 @@ module Adhearsion
               c.is_a?(Punchblock::Command::Redirect) && c.headers == headers
             end
             subject.redirect 'sip:foo@bar.com', headers
+          end
+        end
+
+        context "with a failure response" do
+          it 'should raise the error but not crash the actor' do
+            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Punchblock::Command::Redirect.new(to: 'sip:foo@bar.com'), error
+            expect { subject.redirect 'sip:foo@bar.com' }.to raise_error error
+            sleep 0.2
+            expect(subject.alive?).to be true
           end
         end
       end
@@ -991,6 +1031,16 @@ module Adhearsion
               expect_message_waiting_for_response Punchblock::Command::Hangup.new(:headers => headers)
               subject.hangup headers
             end
+          end
+        end
+
+        context "with a failure response" do
+          it 'should raise the error but not crash the actor' do
+            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Punchblock::Command::Hangup.new, error
+            expect { subject.hangup }.to raise_error error
+            sleep 0.2
+            expect(subject.alive?).to be true
           end
         end
       end
@@ -1340,6 +1390,16 @@ module Adhearsion
             expect { subject.join target }.to raise_error ArgumentError, /call URI and mixer name/
           end
         end
+
+        context "with a failure response" do
+          it 'should raise the error but not crash the actor' do
+            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Punchblock::Command::Join.new(call_id: 'footransport:foo@rayo.net'), error
+            expect { subject.join 'foo' }.to raise_error error
+            sleep 0.2
+            expect(subject.alive?).to be true
+          end
+        end
       end
 
       describe "#unjoin" do
@@ -1401,6 +1461,16 @@ module Adhearsion
             expect { subject.unjoin target }.to raise_error ArgumentError, /call URI and mixer name/
           end
         end
+
+        context "with a failure response" do
+          it 'should raise the error but not crash the actor' do
+            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Punchblock::Command::Unjoin.new(call_id: 'footransport:foo@rayo.net'), error
+            expect { subject.unjoin 'foo' }.to raise_error error
+            sleep 0.2
+            expect(subject.alive?).to be true
+          end
+        end
       end
 
       describe "#mute" do
@@ -1408,12 +1478,32 @@ module Adhearsion
           expect_message_waiting_for_response Punchblock::Command::Mute.new
           subject.mute
         end
+
+        context "with a failure response" do
+          it 'should raise the error but not crash the actor' do
+            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Punchblock::Command::Mute.new, error
+            expect { subject.mute }.to raise_error error
+            sleep 0.2
+            expect(subject.alive?).to be true
+          end
+        end
       end
 
       describe "#unmute" do
         it 'should send a Mute message' do
           expect_message_waiting_for_response Punchblock::Command::Unmute.new
           subject.unmute
+        end
+
+        context "with a failure response" do
+          it 'should raise the error but not crash the actor' do
+            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Punchblock::Command::Unmute.new, error
+            expect { subject.unmute }.to raise_error error
+            sleep 0.2
+            expect(subject.alive?).to be true
+          end
         end
       end
 

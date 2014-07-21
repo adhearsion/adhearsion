@@ -297,15 +297,21 @@ module Adhearsion
 
     def accept(headers = nil)
       @accept_command ||= write_and_await_response Punchblock::Command::Accept.new(:headers => headers)
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     def answer(headers = nil)
       write_and_await_response Punchblock::Command::Answer.new(:headers => headers)
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     def reject(reason = :busy, headers = nil)
       write_and_await_response Punchblock::Command::Reject.new(:reason => reason, :headers => headers)
       Adhearsion::Events.trigger_immediately :call_rejected, call: current_actor, reason: reason
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     #
@@ -315,6 +321,8 @@ module Adhearsion
     # @param [Hash, optional] headers a set of headers to send along with the redirect instruction
     def redirect(to, headers = nil)
       write_and_await_response Punchblock::Command::Redirect.new(to: to, headers: headers)
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     def hangup(headers = nil)
@@ -322,6 +330,8 @@ module Adhearsion
       logger.info "Hanging up"
       @end_reason = true
       write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     # @private
@@ -360,6 +370,8 @@ module Adhearsion
       command = Punchblock::Command::Join.new options.merge(join_options_with_target(target))
       write_and_await_response command
       {command: command, joined_condition: joined_condition, unjoined_condition: unjoined_condition}
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     ##
@@ -373,6 +385,8 @@ module Adhearsion
       logger.info "Unjoining from #{target}"
       command = Punchblock::Command::Unjoin.new join_options_with_target(target)
       write_and_await_response command
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     # @private
@@ -413,10 +427,14 @@ module Adhearsion
 
     def mute
       write_and_await_response Punchblock::Command::Mute.new
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     def unmute
       write_and_await_response Punchblock::Command::Unmute.new
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     # @private
