@@ -202,6 +202,7 @@ module Adhearsion
       if command.is_a?(Punchblock::Component::ComponentNode)
         command.register_event_handler Punchblock::Event::Complete do |event|
           @active_components.delete command
+          throw :pass
         end
         @active_components << command
       end
