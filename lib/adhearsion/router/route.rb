@@ -28,6 +28,8 @@ module Adhearsion
       def dispatch(call, callback = nil)
         Adhearsion::Events.trigger_immediately :call_routed, call: call, route: self
 
+        call_id = call.id # Grab this to use later incase the actor is dead
+
         controller = if target.respond_to?(:call)
           CallController.new call, controller_metadata, &target
         else
@@ -38,11 +40,15 @@ module Adhearsion
 
         call.execute_controller controller, lambda { |call_actor|
           begin
-            if call_actor.auto_hangup && call_actor.alive? && call_actor.active?
-              logger.info "Call #{call.id} routing completed. Hanging up now."
-              call_actor.hangup
+            if call_actor.alive? && call_actor.active?
+              if call_actor.auto_hangup
+                logger.info "Call #{call_id} routing completed. Hanging up now."
+                call_actor.hangup
+              else
+                logger.info "Call #{call_id} routing completed. Keeping the call alive at controller/router request."
+              end
             else
-              logger.info "Call #{call.id} routing completed. Keeping the call alive at controller/router request."
+              logger.info "Call #{call_id} routing completed. Call was already hung up."
             end
           rescue Call::Hangup, Call::ExpiredError
           end
