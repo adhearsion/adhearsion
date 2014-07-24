@@ -390,6 +390,17 @@ module Adhearsion
         expect(subject.call).to receive(:write_and_await_response).once.ordered.with(message)
         subject.write_and_await_response message
       end
+      
+      it "allows complete events to bubble" do
+        bubbled = false
+        message = Punchblock::Component::Output.new
+        subject.call.stub(:write_and_await_response)
+        subject.write_and_await_response message
+        message.register_event_handler(Punchblock::Event::Complete) { bubbled = true }
+        bubbled.should be false
+        message.trigger_event_handler Punchblock::Event::Complete.new
+        bubbled.should be true
+      end
     end
 
     [ :answer,
