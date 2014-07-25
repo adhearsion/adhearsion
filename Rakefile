@@ -11,13 +11,8 @@ RSpec::Core::RakeTask.new(:spec) do |t|
   # t.ruby_opts = "-w -r./spec/capture_warnings"
 end
 
-require 'ci/reporter/rake/rspec'
-require 'ci/reporter/rake/cucumber'
-task :ci => ['ci:setup:rspec', :spec, 'ci:setup:rspec', :features]
-
 require 'cucumber'
 require 'cucumber/rake/task'
-require 'ci/reporter/rake/cucumber'
 Cucumber::Rake::Task.new(:features) do |t|
   t.cucumber_opts = %w{--tags ~@skip_jruby} if defined?(JRUBY_VERSION)
 end
