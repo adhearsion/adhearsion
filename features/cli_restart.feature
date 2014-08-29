@@ -39,3 +39,14 @@ Feature: Adhearsion Ahn CLI (restart)
     Starting Adhearsion
     """
     And the exit status should be 0
+
+  @reconnect @skip_jruby
+  Scenario: Command restart on a stopped application
+    Given that I create a valid app under "path/somewhere"
+    When I cd to "path/somewhere"
+    And I run `ahn restart --pid-file=ahn.pid`
+    Then the output should contain:
+    """
+    Starting Adhearsion
+    """
+    And the exit status should be 0

@@ -6,6 +6,7 @@
   * Feature: Reduce Adhearsion start-up time by selectively requiring the parts of ActiveSupport we use
   * Bugfix: Logging around post-routing call termination now accounts for the call already being down.
   * Bugfix: Bubble component complete events to other registered handlers
+  * Bugfix: Calling `ahn restart` on a stopped application now works
 
 # [2.5.4](https://github.com/adhearsion/adhearsion/compare/v2.5.3...v2.5.4) - [2014-07-18](https://rubygems.org/gems/adhearsion/versions/2.5.4)
   * Bugfix: Ignore dead calls when searching by tag
