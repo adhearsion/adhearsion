@@ -315,7 +315,16 @@ module Adhearsion
     end
 
     #
-    # Redirect the call to some other target system
+    # Redirect the call to some other target system.
+    #
+    # If the redirect is successful, the call will be released from the
+    # telephony engine and Adhearsion will lose control of the call.
+    #
+    # Note that for the common case, this will result in a SIP 302 or
+    # SIP REFER, which provides the caller with a new URI to dial. As such,
+    # the redirect target cannot be any telephony-engine specific address
+    # (such as sofia/gateway, agent/101, or SIP/mypeer); instead it should be a
+    # fully-qualified external SIP URI that the caller can independently reach.
     #
     # @param [String] to the target to redirect to, eg a SIP URI
     # @param [Hash, optional] headers a set of headers to send along with the redirect instruction
