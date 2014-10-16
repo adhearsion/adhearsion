@@ -530,6 +530,11 @@ module Adhearsion
     end
 
     # @private
+    def deregister_controller(controller)
+      @controllers.delete controller
+    end
+
+    # @private
     def pause_controllers
       controllers.each(&:pause!)
     end

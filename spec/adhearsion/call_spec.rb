@@ -1568,6 +1568,21 @@ module Adhearsion
         end
       end
 
+      describe "#deregister_controller" do
+        let(:controller) { double('CallController') }
+
+        it "should remove the controller from a list on the call" do
+          subject.register_controller controller
+          deregistered = subject.deregister_controller(controller)
+          expect(deregistered).to be controller
+        end
+
+        it "should return nil if the controller is not registered" do
+          deregistered = subject.deregister_controller(controller)
+          expect(deregistered).to be nil
+        end
+      end
+
       context "with two controllers registered" do
         let(:controller1) { double 'CallController1' }
         let(:controller2) { double 'CallController2' }
