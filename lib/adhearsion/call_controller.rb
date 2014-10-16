@@ -124,6 +124,7 @@ module Adhearsion
       raise
     ensure
       after_call
+      call.async.deregister_controller self
       logger.debug "Finished executing controller #{self.inspect}"
     end
 
