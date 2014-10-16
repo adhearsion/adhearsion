@@ -163,7 +163,6 @@ module Adhearsion
       before do
         allow(subject).to receive_messages :execute_component_and_await_completion => nil
         allow(call.wrapped_object).to receive_messages :write_and_await_response => nil
-        allow(call).to receive_messages :register_controller => nil
         expect(Events).to receive(:trigger).with(:exception, Exception).never
       end
 
@@ -223,7 +222,6 @@ module Adhearsion
 
       before do
         allow(call.wrapped_object).to receive_messages :write_and_await_response => nil
-        allow(call).to receive_messages :register_controller => nil
         allow(subject).to receive_messages :execute_component_and_await_completion => nil
         expect_any_instance_of(SecondController).to receive(:md_check).once.with :foo => 'bar'
         expect(Events).to receive(:trigger).with(:exception, Exception).never
@@ -262,7 +260,6 @@ module Adhearsion
           command.request!
           command.execute!
         end
-        allow(call).to receive_messages register_controller: nil
         expect_any_instance_of(SecondController).to receive(:md_check).once.with :foo => 'bar'
         expect(Events).to receive(:trigger).with(:exception, Exception).never
       end
@@ -346,7 +343,6 @@ module Adhearsion
             command.request!
             command.execute!
           end
-          allow(call).to receive_messages register_controller: nil
           expect(Events).to receive(:trigger).with(:exception, Exception).never
           subject.prep_output
         end
