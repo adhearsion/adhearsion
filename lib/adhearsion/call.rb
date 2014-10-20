@@ -232,7 +232,7 @@ module Adhearsion
       end
 
       on_end do |event|
-        logger.info "Call ended due to #{event.reason}"
+        logger.info "Call #{from} -> #{to} ended due to #{event.reason}#{" (code #{event.platform_code})" if event.platform_code}"
         @end_time = event.timestamp.to_time
         @duration = @end_time - @start_time if @start_time
         clear_from_active_calls

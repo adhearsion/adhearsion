@@ -228,31 +228,30 @@ module Adhearsion
         # @option options [Adhearsion::CallController] :others The call controller class to execute on the 'other' call legs (the ones created as a result of the #dial)
         # @option options [Proc] :others_callback A block to call when the :others controller completes on an individual call
         def split(targets = {})
-          logger.info "Splitting calls apart"
           @splitting = true
           calls_to_split = @calls.map do |call|
             ignoring_ended_calls do
               [call.id, call] if call.active?
             end
           end.compact
-          logger.info "Splitting peer calls #{calls_to_split.map(&:first).join ", "}"
+          logger.info "Splitting off peer calls #{calls_to_split.map(&:first).join ", "}"
           calls_to_split.each do |id, call|
             ignoring_ended_calls do
-              logger.info "Unjoining peer #{call.id} from #{join_target}"
+              logger.debug "Unjoining peer #{call.id} from #{join_target}"
               ignoring_missing_joins { call.unjoin join_target }
               if split_controller = targets[:others]
-                logger.info "Executing split controller #{split_controller} on #{call.id}"
+                logger.info "Executing controller #{split_controller} on split call #{call.id}"
                 call.execute_controller split_controller.new(call, 'current_dial' => self), targets[:others_callback]
               end
             end
           end
           ignoring_ended_calls do
             if join_target != @call
-              logger.info "Unjoining main call #{@call.id} from #{join_target}"
+              logger.debug "Unjoining main call #{@call.id} from #{join_target}"
               @call.unjoin join_target
             end
             if split_controller = targets[:main]
-              logger.info "Executing split controller #{split_controller} on main call"
+              logger.info "Executing controller #{split_controller} on main call"
               @call.execute_controller split_controller.new(@call, 'current_dial' => self), targets[:main_callback]
             end
           end
@@ -438,7 +437,7 @@ module Adhearsion
           super
           on_all_except call do |target_call|
             if @apology_controller
-              logger.info "#dial apologising to call #{target_call.id} because this call has been confirmed by another channel"
+              logger.info "#dial executing apology controller #{@apology_controller} on call #{target_call.id} because this call has been confirmed by another channel"
               target_call.async.execute_controller @apology_controller.new(target_call, @confirmation_metadata), ->(call) { call.hangup }
             else
               logger.info "#dial hanging up call #{target_call.id} because this call has been confirmed by another channel"

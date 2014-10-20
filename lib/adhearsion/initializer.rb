@@ -163,10 +163,10 @@ module Adhearsion
         logger.info "Received SIG#{signal}. Shutting down."
         Adhearsion::Process.shutdown
       when 'HUP'
-        logger.debug "Received SIGHUP. Reopening logfiles."
+        logger.info "Received SIGHUP. Reopening logfiles."
         Adhearsion::Logging.reopen_logs
       when 'ALRM'
-        logger.debug "Received SIGALRM. Toggling trace logging."
+        logger.info "Received SIGALRM. Toggling trace logging."
         Adhearsion::Logging.toggle_trace!
       when 'ABRT'
         logger.info "Received ABRT signal. Forcing stop."
