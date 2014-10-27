@@ -4,6 +4,7 @@
   * Feature: Add `Call#redirect` and `CallController#redirect` for redirecting calls to other systems ([#465](https://github.com/adhearsion/adhearsion/issues/465))
   * Feature: Ensure logging is available on STDOUT during RSpec runs
   * Feature: Reduce Adhearsion start-up time by selectively requiring the parts of ActiveSupport we use
+  * Feature: `Call#unjoin` does not require a `target`, allowing to unjoin from all existing joins
   * Bugfix: Logging around post-routing call termination now accounts for the call already being down.
   * Bugfix: Bubble component complete events to other registered handlers
   * Bugfix: Calling `ahn restart` on a stopped application now works

@@ -386,11 +386,11 @@ module Adhearsion
     ##
     # Unjoins this call from another call or a mixer
     #
-    # @param [Call, String, Hash] target the target to unjoin from. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
+    # @param [Call, String, Hash, nil] target the target to unjoin from. May be a Call object, a call ID (String, Hash), a mixer name (Hash) or missing to unjoin from every existing join (nil)
     # @option target [String] call_uri The call ID to unjoin from
     # @option target [String] mixer_name The mixer to unjoin from
     #
-    def unjoin(target)
+    def unjoin(target = nil)
       logger.info "Unjoining from #{target}"
       command = Punchblock::Command::Unjoin.new join_options_with_target(target)
       write_and_await_response command
@@ -401,6 +401,8 @@ module Adhearsion
     # @private
     def join_options_with_target(target)
       case target
+      when nil
+        {}
       when Call
         { :call_uri => target.uri }
       when String
