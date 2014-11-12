@@ -671,7 +671,7 @@ module Adhearsion
 
                   other_mock_call << mock_end
 
-                  expect(latch.wait(2)).to be_truthy
+                  expect(latch.wait(10)).to be_truthy
 
                   waiter_thread.join
                   expect(dial.status.result).to eq(:answer)
