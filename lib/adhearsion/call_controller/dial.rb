@@ -396,7 +396,7 @@ module Adhearsion
         end
 
         def pre_join_tasks(call)
-          @pre_join[call] if @pre_join
+          @pre_join.call(call) if @pre_join
           terminate_ringback
         end
 
