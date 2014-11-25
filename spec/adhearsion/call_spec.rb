@@ -1409,6 +1409,13 @@ module Adhearsion
           end
         end
 
+        context "without a target" do
+          it "should send an unjoin command unjoining from every existing join" do
+            expect_unjoin_with_options nil
+            subject.unjoin
+          end
+        end
+
         context "with a call" do
           let(:call_id) { rand.to_s }
           let(:domain)  { 'rayo.net' }
