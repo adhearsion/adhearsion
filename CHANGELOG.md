@@ -10,6 +10,7 @@
   * Bugfix: Calling `ahn restart` on a stopped application now works
   * Documentation: Improved INFO level log messages
   * Update: Update Punchblock to fix Celluloid incompatibility
+  * Update: Update to Celluloid 0.16.0
 
 # [2.5.4](https://github.com/adhearsion/adhearsion/compare/v2.5.3...v2.5.4) - [2014-07-18](https://rubygems.org/gems/adhearsion/versions/2.5.4)
   * Bugfix: Ignore dead calls when searching by tag
