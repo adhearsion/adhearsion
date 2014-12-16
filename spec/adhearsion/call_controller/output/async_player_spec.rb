@@ -62,6 +62,16 @@ module Adhearsion
             subject.play_ssml ssml
           end
         end
+
+        describe "#play_url" do
+          let(:url) { "http://example.com/ex.ssml" }
+
+          it 'executes an Output with the URL' do
+            component = Punchblock::Component::Output.new({render_document: {value: url, content_type: "application/ssml+xml"}})
+            expect_message_waiting_for_response component
+            subject.play_url url
+          end
+        end
       end
     end
   end

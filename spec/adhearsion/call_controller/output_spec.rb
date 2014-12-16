@@ -16,6 +16,16 @@ module Adhearsion
         expect_message_waiting_for_response Punchblock::Component::Output.new(options.merge(:ssml => ssml))
       end
 
+      def expect_url_output(url, options = {})
+        component = Punchblock::Component::Output.new(options.merge(render_document: {value: url, content_type: "application/ssml+xml"}))
+        expect_component_execution component
+      end
+
+      def expect_async_url_output(url, options = {})
+        component = Punchblock::Component::Output.new(options.merge(render_document: {value: url, content_type: "application/ssml+xml"}))
+        expect_message_waiting_for_response component
+      end
+
       describe "#player" do
         it "should return a Player component targetted at the current controller" do
           player = controller.player
@@ -194,6 +204,44 @@ module Adhearsion
           it "should use the specified renderer in the SSML" do
             expect_async_ssml_output ssml, renderer: renderer
             expect(subject.play_numeric!(input, renderer: renderer)).to be_a Punchblock::Component::Output
+          end
+        end
+      end
+
+      describe "#play_document" do
+        describe "with a URL" do
+          let(:input) { 'http://example.com/ex.ssml' }
+
+          it 'plays the url' do
+            expect_url_output input
+            expect(subject.play_document(input)).to be true
+          end
+        end
+
+        describe "with something that's not a URL" do
+          let(:input) { 'ceci n\'est pas une url' }
+
+          it 'raises ArgumentError' do
+            expect { subject.play_document input }.to raise_error(ArgumentError)
+          end
+        end
+      end
+
+      describe "#play_document!" do
+        describe "with a URL" do
+          let(:input) { 'http://example.com/ex.ssml' }
+
+          it 'plays the url' do
+            expect_async_url_output input
+            expect(subject.play_document!(input)).to be_a Punchblock::Component::Output
+          end
+        end
+
+        describe "with something that's not a URL" do
+          let(:input) { 'ceci n\'est pas une url' }
+
+          it 'raises ArgumentError' do
+            expect { subject.play_document! input }.to raise_error(ArgumentError)
           end
         end
       end

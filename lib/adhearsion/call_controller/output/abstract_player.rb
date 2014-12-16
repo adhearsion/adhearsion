@@ -19,6 +19,10 @@ module Adhearsion
           end
         end
 
+        def play_url(url, options = {})
+          output url, options.merge(render_document: {url: url, content_type: "application/ssml+xml"})
+        end
+
         def new_output(options)
           defaults = {}
 
