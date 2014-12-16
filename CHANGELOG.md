@@ -5,6 +5,7 @@
   * Feature: Ensure logging is available on STDOUT during RSpec runs
   * Feature: Reduce Adhearsion start-up time by selectively requiring the parts of ActiveSupport we use
   * Feature: `Call#unjoin` does not require a `target`, allowing to unjoin from all existing joins
+  * Feature: Add `Output#play_document` and `Output#play_document!` for playing an SSML document from a URL
   * Bugfix: Logging around post-routing call termination now accounts for the call already being down.
   * Bugfix: Bubble component complete events to other registered handlers
   * Bugfix: Calling `ahn restart` on a stopped application now works
