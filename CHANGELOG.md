@@ -1,17 +1,19 @@
 # [develop](https://github.com/adhearsion/adhearsion)
-  * Feature: Call#after_hangup_lifetime optionally overrides Adhearsion.config.platform.after_hangup_lifetime 
-  * Feature: Accept a `:cleanup` parameter in Dial options, which specifies a controller to be run on each outbound call before cleanup.
+
+# [2.6.0](https://github.com/adhearsion/adhearsion/compare/v2.5.4...v2.6.0) - [2015-02-01](https://rubygems.org/gems/adhearsion/versions/2.6.0)
+  * Feature: `Call#after_hangup_lifetime` optionally overrides `Adhearsion.config.platform.after_hangup_lifetime` ([#537](https://github.com/adhearsion/adhearsion/pull/537))
+  * Feature: Accept a `:cleanup` parameter in Dial options, which specifies a controller to be run on each outbound call before cleanup. ([#484](https://github.com/adhearsion/adhearsion/pull/484))
   * Feature: Add a per-controller callback `on_error` that is invoked whenever an unhandled exception is raised. This can be used to play apology messages before disconnecting the caller ([#486](https://github.com/adhearsion/adhearsion/issues/486))
   * Feature: Add `Call#redirect` and `CallController#redirect` for redirecting calls to other systems ([#465](https://github.com/adhearsion/adhearsion/issues/465))
-  * Feature: Ensure logging is available on STDOUT during RSpec runs
+  * Feature: Ensure logging is available on STDOUT during RSpec runs ([#489](https://github.com/adhearsion/adhearsion/pull/489))
   * Feature: Reduce Adhearsion start-up time by selectively requiring the parts of ActiveSupport we use
-  * Feature: `Call#unjoin` does not require a `target`, allowing to unjoin from all existing joins
-  * Feature: Add `Output#play_document` and `Output#play_document!` for playing an SSML document from a URL
+  * Feature: `Call#unjoin` does not require a `target`, allowing to unjoin from all existing joins ([#519](https://github.com/adhearsion/adhearsion/pull/519))
+  * Feature: Add `Output#play_document` and `Output#play_document!` for playing an SSML document from a URL ([#535](https://github.com/adhearsion/adhearsion/pull/535))
   * Bugfix: Logging around post-routing call termination now accounts for the call already being down.
   * Bugfix: Bubble component complete events to other registered handlers
   * Bugfix: Calling `ahn restart` on a stopped application now works
-  * Documentation: Improved INFO level log messages
-  * Update: Update Punchblock to fix Celluloid incompatibility
+  * Documentation: Improved INFO level log messages ([#518](https://github.com/adhearsion/adhearsion/pull/518))
+  * Update: Update Punchblock to fix Celluloid incompatibility ([#521](https://github.com/adhearsion/adhearsion/pull/521))
 
 # [2.5.4](https://github.com/adhearsion/adhearsion/compare/v2.5.3...v2.5.4) - [2014-07-18](https://rubygems.org/gems/adhearsion/versions/2.5.4)
   * Bugfix: Ignore dead calls when searching by tag

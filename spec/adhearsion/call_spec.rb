@@ -619,20 +619,45 @@ module Adhearsion
           expect(Adhearsion.active_calls.size).to eq(size_before)
         end
 
-        it "shuts down the actor using platform config" do
-          Adhearsion.config.platform.after_hangup_lifetime = 2
-          subject << end_event
-          sleep 2.1
-          expect(subject.alive?).to be false
-          expect { subject.id }.to raise_error Call::ExpiredError, /expired and is no longer accessible/
+        context "with no custom lifetime" do
+          around do |example|
+            old_val = Adhearsion.config.platform.after_hangup_lifetime
+            begin
+              example.run
+            rescue
+              Adhearsion.config.platform.after_hangup_lifetime = old_val
+            end
+          end
+
+          it "shuts down the actor using platform config" do
+            Adhearsion.config.platform.after_hangup_lifetime = 2
+            subject << end_event
+            sleep 2.1
+            expect(subject.alive?).to be false
+            expect { subject.id }.to raise_error Call::ExpiredError, /expired and is no longer accessible/
+          end
         end
 
-        it "shuts down the actor using the call after_hangup_lifetime instance" do
-          subject.after_hangup_lifetime = 2
-          subject << end_event
-          sleep 2.1
-          expect(subject.alive?).to be false
-          expect { subject.id }.to raise_error Call::ExpiredError, /expired and is no longer accessible/
+        context "with a custom lifetime" do
+          around do |example|
+            old_val = Adhearsion.config.platform.after_hangup_lifetime
+            begin
+              example.run
+            rescue
+              Adhearsion.config.platform.after_hangup_lifetime = old_val
+            end
+          end
+
+          it "shuts down the actor using the Call#after_hangup_lifetime" do
+            Adhearsion.config.platform.after_hangup_lifetime = 1
+            subject.after_hangup_lifetime = 2
+            subject << end_event
+            sleep 1.1
+            expect(subject.alive?).to be true
+            sleep 1
+            expect(subject.alive?).to be false
+            expect { subject.id }.to raise_error Call::ExpiredError, /expired and is no longer accessible/
+          end
         end
       end
     end
