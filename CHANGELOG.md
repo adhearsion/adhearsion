@@ -1,4 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+
+# [2.6.0](https://github.com/adhearsion/adhearsion/compare/v2.5.4...v2.6.0) - [2015-02-01](https://rubygems.org/gems/adhearsion/versions/2.6.0)
   * Feature: Call#after_hangup_lifetime optionally overrides Adhearsion.config.platform.after_hangup_lifetime 
   * Feature: Accept a `:cleanup` parameter in Dial options, which specifies a controller to be run on each outbound call before cleanup.
   * Feature: Add a per-controller callback `on_error` that is invoked whenever an unhandled exception is raised. This can be used to play apology messages before disconnecting the caller ([#486](https://github.com/adhearsion/adhearsion/issues/486))
