@@ -13,7 +13,7 @@ module Adhearsion
     end
 
     it "should have a GirlFriday::Queue to handle events" do
-      Events.queue.should be_a GirlFriday::WorkQueue
+      expect(Events.queue).to be_a GirlFriday::WorkQueue
     end
 
     it "should allow adding events to the queue and handle them appropriately" do
@@ -21,7 +21,7 @@ module Adhearsion
       o = nil
       latch = CountDownLatch.new 1
 
-      Events.instance.should_receive(:handle_message).and_return do |message|
+      expect(Events.instance).to receive(:handle_message) do |message|
         t = message.type
         o = message.object
         latch.countdown!
@@ -29,16 +29,16 @@ module Adhearsion
 
       Events.trigger :event, :foo
 
-      latch.wait(2).should be_true
-      t.should be == :event
-      o.should be == :foo
+      expect(latch.wait(2)).to be_truthy
+      expect(t).to eq(:event)
+      expect(o).to eq(:foo)
     end
 
     it "should allow executing events immediately" do
       t = nil
       o = nil
 
-      Events.instance.should_receive(:handle_message).and_return do |message|
+      expect(Events.instance).to receive(:handle_message) do |message|
         sleep 0.25
         t = message.type
         o = message.object
@@ -46,8 +46,8 @@ module Adhearsion
 
       Events.trigger_immediately :event, :foo
 
-      t.should be == :event
-      o.should be == :foo
+      expect(t).to eq(:event)
+      expect(o).to eq(:foo)
     end
 
     it "should handle events using registered guarded handlers" do
@@ -59,13 +59,13 @@ module Adhearsion
 
       Events.trigger_immediately :event, EventClass.new
 
-      result.should be == :foo
+      expect(result).to eq(:foo)
 
       Events.clear_handlers :event, EventClass
     end
 
     it "should handle exceptions in event processing by raising the exception as an event" do
-      Events.instance.should_receive(:trigger).with(:exception, kind_of(ExceptionClass)).once
+      expect(Events.instance).to receive(:trigger).with(:exception, kind_of(ExceptionClass)).once
 
       Events.register_handler :event, EventClass do |event|
         raise ExceptionClass
@@ -88,7 +88,7 @@ module Adhearsion
 
       Events.trigger_immediately :event, EventClass.new
 
-      result.should be == :bar
+      expect(result).to eq(:bar)
 
       Events.clear_handlers :event, EventClass
     end
@@ -97,8 +97,8 @@ module Adhearsion
       Events.register_handler :event_type_1 do |event|
       end
 
-      Events.should respond_to(:event_type_1)
-      Events.should_not respond_to(:event_type_2)
+      expect(Events).to respond_to(:event_type_1)
+      expect(Events).not_to respond_to(:event_type_2)
     end
 
     describe '#draw' do
@@ -112,7 +112,7 @@ module Adhearsion
 
         Events.trigger_immediately :event
 
-        result.should be == :foo
+        expect(result).to eq(:foo)
 
         Events.clear_handlers :event
       end

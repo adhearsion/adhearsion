@@ -1,3 +1,4 @@
 --format documentation
 --colour
 --tty
+--profile

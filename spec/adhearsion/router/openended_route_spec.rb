@@ -11,34 +11,34 @@ module Adhearsion
 
       before { subject.extend described_class }
 
-      it { should be_openended }
+      it { is_expected.to be_openended }
 
       describe "dispatching a call" do
         let(:call) { Call.new }
 
         let(:latch) { CountDownLatch.new 1 }
 
-        before { call.wrapped_object.stub :write_and_await_response }
+        before { allow(call.wrapped_object).to receive :write_and_await_response }
 
         context "via a call controller" do
           let(:controller)  { CallController }
           subject(:route)   { Route.new 'foobar', controller }
 
           it "should accept the call" do
-            call.should_receive(:accept).once
+            expect(call).to receive(:accept).once
             route.dispatch call, lambda { latch.countdown! }
-            latch.wait(2).should be true
+            expect(latch.wait(2)).to be true
           end
 
           it "should instruct the call to use an instance of the controller" do
-            call.should_receive(:execute_controller).once.with kind_of(controller), kind_of(Proc)
+            expect(call).to receive(:execute_controller).once.with kind_of(controller), kind_of(Proc)
             route.dispatch call
           end
 
           it "should not hangup the call after all controllers have executed" do
-            call.should_receive(:hangup).never
+            expect(call).to receive(:hangup).never
             route.dispatch call, lambda { latch.countdown! }
-            latch.wait(2).should be true
+            expect(latch.wait(2)).to be true
           end
         end
 
@@ -50,8 +50,8 @@ module Adhearsion
           end
 
           it "should instruct the call to use a CallController with the correct block" do
-            call.should_receive(:execute_controller).once.with(kind_of(CallController), kind_of(Proc)).and_return do |controller|
-              controller.block.call.should be == :foobar
+            expect(call).to receive(:execute_controller).once.with(kind_of(CallController), kind_of(Proc)) do |controller|
+              expect(controller.block.call).to eq(:foobar)
             end
             route.dispatch call
           end

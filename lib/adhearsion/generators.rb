@@ -1,11 +1,9 @@
 # encoding: utf-8
 
+require 'adhearsion/generators/generator'
+
 module Adhearsion
   module Generators
-    extend ActiveSupport::Autoload
-
-    autoload :Generator
-
     class << self
 
       # Show help message with available generators.

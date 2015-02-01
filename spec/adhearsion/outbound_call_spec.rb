@@ -4,10 +4,17 @@ require 'spec_helper'
 
 module Adhearsion
   describe OutboundCall do
-    it { should be_a Call }
+    it { is_expected.to be_a Call }
 
-    its(:id) { should be_nil }
-    its(:variables) { should be == {} }
+    describe '#id' do
+      subject { super().id }
+      it { is_expected.to be_nil }
+    end
+
+    describe '#variables' do
+      subject { super().variables }
+      it { is_expected.to eq({}) }
+    end
 
     let(:mock_client) { double 'Punchblock Client', execute_command: true, new_call_uri: call_uri }
 
@@ -16,8 +23,15 @@ module Adhearsion
       Adhearsion.active_calls.clear
     end
 
-    its(:client) { should be mock_client }
-    its(:start_time) { should be nil }
+    describe '#client' do
+      subject { super().client }
+      it { is_expected.to be mock_client }
+    end
+
+    describe '#start_time' do
+      subject { super().start_time }
+      it { is_expected.to be nil }
+    end
 
     let(:transport) { 'xmpp' }
     let(:call_id)   { SecureRandom.uuid }
@@ -30,7 +44,7 @@ module Adhearsion
       foo = :bar
       subject.after(1) { foo = :baz }
       sleep 1.1
-      foo.should == :baz
+      expect(foo).to eq(:baz)
     end
 
     describe ".originate" do
@@ -40,18 +54,18 @@ module Adhearsion
 
       before do
         mock_call
-        OutboundCall.should_receive(:new).and_return mock_call
+        expect(OutboundCall).to receive(:new).and_return mock_call
       end
 
       it "should dial the call to the correct endpoint and return it" do
-        mock_call.wrapped_object.should_receive(:dial).with(to, :from => 'foo').once
-        OutboundCall.originate(to, :from => 'foo').should be mock_call
+        expect(mock_call.wrapped_object).to receive(:dial).with(to, :from => 'foo').once
+        expect(OutboundCall.originate(to, :from => 'foo')).to be mock_call
       end
 
       it "should run through the router when the call is answered" do
-        mock_call.wrapped_object.should_receive(:dial).once
+        expect(mock_call.wrapped_object).to receive(:dial).once
 
-        Adhearsion.router.should_receive(:handle).once.with(mock_call)
+        expect(Adhearsion.router).to receive(:handle).once.with(mock_call)
 
         OutboundCall.originate(to) << Punchblock::Event::Answered.new
       end
@@ -60,15 +74,15 @@ module Adhearsion
         let(:controller) { CallController }
 
         it "should execute the controller on the call when it is answered" do
-          mock_call.should_receive(:dial).once.with(to, {})
-          mock_call.should_receive(:execute_controller).once.with kind_of(controller), kind_of(Proc)
+          expect(mock_call).to receive(:dial).once.with(to, {})
+          expect(mock_call).to receive(:execute_controller).once.with kind_of(controller), kind_of(Proc)
           call = OutboundCall.originate to, :controller => controller
           call << Punchblock::Event::Answered.new
         end
 
         it "should hangup the call after all controllers have executed" do
-          mock_call.should_receive(:dial).once
-          mock_call.should_receive(:hangup).once
+          expect(mock_call).to receive(:dial).once
+          expect(mock_call).to receive(:hangup).once
 
           call = OutboundCall.originate to, :controller => controller
           call << Punchblock::Event::Answered.new
@@ -77,9 +91,9 @@ module Adhearsion
 
         context "with controller metadata specified" do
           it "should set the metadata on the controller" do
-            mock_call.should_receive(:dial).once.with(to, {})
+            expect(mock_call).to receive(:dial).once.with(to, {})
             expected_controller = controller.new mock_call, foo: 'bar'
-            mock_call.should_receive(:execute_controller).with(expected_controller, kind_of(Proc)).once
+            expect(mock_call).to receive(:execute_controller).with(expected_controller, kind_of(Proc)).once
             call = OutboundCall.originate to, :controller => controller, :controller_metadata => {:foo => 'bar'}
             call << Punchblock::Event::Answered.new
           end
@@ -88,9 +102,9 @@ module Adhearsion
 
       context "when given a block" do
         it "should execute the block as a controller on the call when it is answered" do
-          mock_call.should_receive(:dial).once.with(to, {})
-          mock_call.should_receive(:execute_controller).once.with(kind_of(CallController), kind_of(Proc)).and_return do |controller|
-            controller.block.call.should be == :foobar
+          expect(mock_call).to receive(:dial).once.with(to, {})
+          expect(mock_call).to receive(:execute_controller).once.with(kind_of(CallController), kind_of(Proc)) do |controller|
+            expect(controller.block.call).to eq(:foobar)
           end
 
           call = OutboundCall.originate to do
@@ -102,8 +116,8 @@ module Adhearsion
 
       context "when the dial fails" do
         before do
-          subject.wrapped_object.should_receive(:write_command)
-          Punchblock::Command::Dial.any_instance.should_receive(:response).and_return StandardError.new("User not registered")
+          expect(subject.wrapped_object).to receive(:write_command)
+          expect_any_instance_of(Punchblock::Command::Dial).to receive(:response).and_return StandardError.new("User not registered")
         end
 
         after do
@@ -117,7 +131,7 @@ module Adhearsion
         it "should kill the actor" do
           expect { subject.dial to }.to raise_error("User not registered")
           sleep 0.1
-          subject.should_not be_alive
+          expect(subject.alive?).to be false
         end
       end
     end
@@ -129,7 +143,7 @@ module Adhearsion
         let(:event) { Punchblock::Event::Answered.new }
 
         it "should trigger any on_answer callbacks set" do
-          response.should_receive(:call).once.with(event)
+          expect(response).to receive(:call).once.with(event)
           subject.on_answer { |event| response.call event }
           subject << event
         end
@@ -137,27 +151,27 @@ module Adhearsion
         it "should record the call start time" do
           originate_time = Time.local(2008, 9, 1, 12, 0, 0)
           Timecop.freeze originate_time
-          subject.duration.should == 0.0
+          expect(subject.duration).to eq(0.0)
 
           mid_point_time = Time.local(2008, 9, 1, 12, 0, 20)
           Timecop.freeze mid_point_time
-          subject.duration.should == 0.0
+          expect(subject.duration).to eq(0.0)
 
           answer_time = Time.local(2008, 9, 1, 12, 0, 40)
           Timecop.freeze answer_time
           subject << event
-          subject.start_time.should == answer_time
+          expect(subject.start_time).to eq(answer_time)
 
           later_time = Time.local(2008, 9, 1, 12, 0, 50)
           Timecop.freeze later_time
-          subject.duration.should == 10.0
+          expect(subject.duration).to eq(10.0)
         end
       end
     end
 
     describe "#dial" do
       def expect_message_waiting_for_response(message, uri = call_uri)
-        subject.wrapped_object.should_receive(:write_and_await_response).once.with(message, 60, true).and_return do |real_message|
+        expect(subject.wrapped_object).to receive(:write_and_await_response).once.with(message, 60, true) do |real_message|
           real_message.request!
           real_message.response = Punchblock::Ref.new(uri: uri)
           real_message
@@ -168,29 +182,29 @@ module Adhearsion
 
       context "while waiting for a response" do
         before do
-          mock_client.should_receive(:execute_command).once.with(expected_dial_command).and_return true
+          expect(mock_client).to receive(:execute_command).once.with(expected_dial_command).and_return true
           subject.async.dial to, from: from
           sleep 1
         end
 
         it "should set the dial command" do
-          subject.dial_command.should be == expected_dial_command
+          expect(subject.dial_command).to eq(expected_dial_command)
         end
 
         it "should know its requested URI" do
-          subject.uri.should be == call_uri
+          expect(subject.uri).to eq(call_uri)
         end
 
         it "should know its requested ID" do
-          subject.id.should be == call_id
+          expect(subject.id).to eq(call_id)
         end
 
         it "should know its domain" do
-          subject.domain.should be == domain
+          expect(subject.domain).to eq(domain)
         end
 
         it "should be entered in the active calls registry" do
-          Adhearsion.active_calls[call_id].should be subject
+          expect(Adhearsion.active_calls[call_id]).to be subject
         end
       end
 
@@ -207,37 +221,37 @@ module Adhearsion
 
         it "should set the dial command" do
           subject.dial to, :from => from
-          subject.dial_command.should be == Punchblock::Command::Dial.new(:to => to, :from => from, :uri => call_uri, target_call_id: call_id, domain: domain, transport: transport)
+          expect(subject.dial_command).to eq(Punchblock::Command::Dial.new(:to => to, :from => from, :uri => call_uri, target_call_id: call_id, domain: domain, transport: transport))
         end
 
         it "should set the URI from the reference" do
           subject.dial to, :from => from
-          subject.uri.should be == call_uri
+          expect(subject.uri).to eq(call_uri)
         end
 
         it "should set the call ID from the reference" do
           subject.dial to, :from => from
-          subject.id.should be == call_id
+          expect(subject.id).to eq(call_id)
         end
 
         it "should set the call domain from the reference" do
           subject.dial to, :from => from
-          subject.domain.should be == domain
+          expect(subject.domain).to eq(domain)
         end
 
         it "should set the to from the dial command" do
           subject.dial to, :from => from
-          subject.to.should be == to
+          expect(subject.to).to eq(to)
         end
 
         it "should set the 'from' from the dial command" do
           subject.dial to, :from => from
-          subject.from.should be == from
+          expect(subject.from).to eq(from)
         end
 
         it "should add the call to the active calls registry" do
           subject.dial to, :from => from
-          Adhearsion.active_calls[call_id].should be subject
+          expect(Adhearsion.active_calls[call_id]).to be subject
         end
 
         context "when a different ref is returned than the one expected" do
@@ -248,41 +262,41 @@ module Adhearsion
           end
 
           it "should set the URI from the reference" do
-            subject.uri.should be == returned_uri
+            expect(subject.uri).to eq(returned_uri)
           end
 
           it "should set the call ID from the reference" do
-            subject.id.should be == 'otherid'
+            expect(subject.id).to eq('otherid')
           end
 
           it "should set the call domain from the reference" do
-            subject.domain.should be == 'wonderland.lit'
+            expect(subject.domain).to eq('wonderland.lit')
           end
 
           it "should make the call addressible in the active calls registry by the new ID" do
-            Adhearsion.active_calls[call_id].should be_nil
-            Adhearsion.active_calls['otherid'].should be subject
+            expect(Adhearsion.active_calls[call_id]).to be_nil
+            expect(Adhearsion.active_calls['otherid']).to be subject
           end
         end
 
         it "should immediately fire the :call_dialed event giving the call" do
-          Adhearsion::Events.should_receive(:trigger_immediately).once.with(:call_dialed, subject)
+          expect(Adhearsion::Events).to receive(:trigger_immediately).once.with(:call_dialed, subject)
           subject.dial to, :from => from
         end
 
         it "should not modify the provided options" do
           options = {:from => from}
           original_options = Marshal.load(Marshal.dump(options))
-          options.should be == original_options
+          expect(options).to eq(original_options)
           subject.dial to, options
-          options.should be == original_options
+          expect(options).to eq(original_options)
         end
       end
 
       context "when the dial fails" do
         before do
-          subject.wrapped_object.should_receive(:write_command)
-          Punchblock::Command::Dial.any_instance.should_receive(:response).and_return StandardError.new("User not registered")
+          expect(subject.wrapped_object).to receive(:write_command)
+          expect_any_instance_of(Punchblock::Command::Dial).to receive(:response).and_return StandardError.new("User not registered")
         end
 
         after do
@@ -296,20 +310,20 @@ module Adhearsion
         it "should kill the actor" do
           expect { subject.dial to }.to raise_error("User not registered")
           sleep 0.1
-          subject.should_not be_alive
+          expect(subject.alive?).to be false
         end
 
         it "should remove the call from the active calls hash" do
           expect { subject.dial to }.to raise_error("User not registered")
           sleep 0.1
-          Adhearsion.active_calls[call_id].should be_nil
+          expect(Adhearsion.active_calls[call_id]).to be_nil
         end
       end
     end
 
     describe "basic control commands" do
       def expect_no_message_waiting_for_response
-        subject.wrapped_object.should_receive(:write_and_await_response).never
+        expect(subject.wrapped_object).to receive(:write_and_await_response).never
       end
 
       describe '#accept' do

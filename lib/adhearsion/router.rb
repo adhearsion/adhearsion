@@ -1,14 +1,14 @@
 # encoding: utf-8
 
+%w(
+  evented_route
+  openended_route
+  route
+  unaccepting_route
+).each { |r| require "adhearsion/router/#{r}" }
+
 module Adhearsion
   class Router
-    extend ActiveSupport::Autoload
-
-    autoload :EventedRoute
-    autoload :OpenendedRoute
-    autoload :Route
-    autoload :UnacceptingRoute
-
     NoMatchError = Class.new Adhearsion::Error
 
     attr_reader :routes

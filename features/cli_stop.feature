@@ -3,9 +3,8 @@ Feature: Adhearsion Ahn CLI (stop)
   I want the ahn command to provide a 'stop' command
   So that I can stop a running Adhearsion daemon
 
-  @reconnect
+  @reconnect @skip_jruby
   Scenario: Command stop with valid path and pid option
-    Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
     When I run `ahn daemon path/somewhere --pid-file=ahn.pid`
     And I run `ahn stop path/somewhere --pid-file=ahn.pid`
@@ -15,9 +14,8 @@ Feature: Adhearsion Ahn CLI (stop)
     """
     And the file "ahn.pid" should not exist
 
-  @reconnect
+  @reconnect @skip_jruby
   Scenario: Command stop with valid path and no pid option
-    Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
     When I run `ahn daemon path/somewhere`
     And I run `ahn stop path/somewhere`
@@ -27,9 +25,8 @@ Feature: Adhearsion Ahn CLI (stop)
     """
     And the file "path/somewhere/adhearsion.pid" should not exist
 
-  @reconnect
+  @reconnect @skip_jruby
   Scenario: Command stop with no options inside the app directory
-    Given JRuby skip test
     Given that I create a valid app under "path/somewhere"
     And I cd to "path/somewhere"
     When I run `ahn daemon`
@@ -39,3 +36,15 @@ Feature: Adhearsion Ahn CLI (stop)
     Stopping Adhearsion
     """
     And the file "adhearsion.pid" should not exist
+
+  @reconnect @skip_jruby
+  Scenario: Command stop with pid option inside the app directory
+    Given that I create a valid app under "path/somewhere"
+    And I cd to "path/somewhere"
+    When I run `ahn daemon --pid-file=ahn.pid`
+    And I run `ahn stop --pid-file=ahn.pid`
+    Then the output should contain:
+    """
+    Stopping Adhearsion
+    """
+    And the file "ahn.pid" should not exist

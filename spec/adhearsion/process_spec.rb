@@ -13,23 +13,23 @@ module Adhearsion
     end
 
     it 'should trigger :stop_requested events on #shutdown' do
-      Events.should_receive(:trigger_immediately).once.with(:stop_requested).ordered
-      Events.should_receive(:trigger_immediately).once.with(:shutdown).ordered
+      expect(Events).to receive(:trigger_immediately).once.with(:stop_requested).ordered
+      expect(Events).to receive(:trigger_immediately).once.with(:shutdown).ordered
       Adhearsion::Process.booted
       Adhearsion::Process.shutdown
       sleep 0.2
     end
 
     it '#stop_when_zero_calls should wait until the list of active calls reaches 0' do
-      pending
+      skip
       calls = ThreadSafeArray.new
       3.times do
         fake_call = Object.new
-        fake_call.should_receive(:hangup).once
+        expect(fake_call).to receive(:hangup).once
         calls << fake_call
       end
-      Adhearsion.should_receive(:active_calls).and_return calls
-      Adhearsion::Process.instance.should_receive(:final_shutdown).once
+      expect(Adhearsion).to receive(:active_calls).and_return calls
+      expect(Adhearsion::Process.instance).to receive(:final_shutdown).once
       calls = []
       3.times do
         calls << Thread.new do
@@ -42,7 +42,7 @@ module Adhearsion
     end
 
     it 'should terminate the process immediately on #force_stop' do
-      ::Process.should_receive(:exit).with(1).once.and_return true
+      expect(::Process).to receive(:exit).with(1).once.and_return true
       Adhearsion::Process.force_stop
     end
 
@@ -50,8 +50,8 @@ module Adhearsion
       it "should hang up active calls" do
         3.times do
           fake_call = Call.new
-          fake_call.stub :id => random_call_id
-          fake_call.should_receive(:hangup).once
+          allow(fake_call).to receive_messages :id => random_call_id
+          expect(fake_call).to receive(:hangup).once
           Adhearsion.active_calls << fake_call
         end
 
@@ -63,9 +63,9 @@ module Adhearsion
       it "should trigger shutdown handlers synchronously" do
         foo = lambda { |b| b }
 
-        foo.should_receive(:[]).once.with(:a).ordered
-        foo.should_receive(:[]).once.with(:b).ordered
-        foo.should_receive(:[]).once.with(:c).ordered
+        expect(foo).to receive(:[]).once.with(:a).ordered
+        expect(foo).to receive(:[]).once.with(:b).ordered
+        expect(foo).to receive(:[]).once.with(:c).ordered
 
         Events.shutdown { sleep 2; foo[:a] }
         Events.shutdown { sleep 1; foo[:b] }
@@ -75,37 +75,37 @@ module Adhearsion
       end
 
       it "should stop the console" do
-        Console.should_receive(:stop).once
+        expect(Console).to receive(:stop).once
         Adhearsion::Process.final_shutdown
       end
     end
 
     it 'should handle subsequent :shutdown events in the correct order' do
       Adhearsion::Process.booted
-      Adhearsion::Process.state_name.should be :running
+      expect(Adhearsion::Process.state_name).to be :running
       Adhearsion::Process.shutdown
-      Adhearsion::Process.state_name.should be :stopping
+      expect(Adhearsion::Process.state_name).to be :stopping
       Adhearsion::Process.shutdown
-      Adhearsion::Process.state_name.should be :rejecting
+      expect(Adhearsion::Process.state_name).to be :rejecting
       Adhearsion::Process.shutdown
-      Adhearsion::Process.state_name.should be :stopped
-      Adhearsion::Process.instance.should_receive(:die_now!).once
+      expect(Adhearsion::Process.state_name).to be :stopped
+      expect(Adhearsion::Process.instance).to receive(:die_now!).once
       Adhearsion::Process.shutdown
       sleep 0.2
     end
 
     it 'should forcibly kill the Adhearsion process on :force_stop' do
-      ::Process.should_receive(:exit).once.with(1)
+      expect(::Process).to receive(:exit).once.with(1)
       Adhearsion::Process.force_stop
     end
 
     describe "#fqdn" do
       it "should be a string" do
-        Adhearsion::Process.fqdn.should be_a String
+        expect(Adhearsion::Process.fqdn).to be_a String
       end
 
       context "when networking issues crop up" do
-        before { Socket.stub(:gethostbyname).and_raise(SocketError) }
+        before { allow(Socket).to receive(:gethostbyname).and_raise(SocketError) }
 
         it "should raise SocketError" do
           expect { Adhearsion::Process.fqdn }.to raise_error(SocketError)

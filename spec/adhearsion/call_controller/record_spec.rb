@@ -42,7 +42,10 @@ module Adhearsion
 
         subject { Recorder.new controller, options }
 
-        its(:record_component) { should == component }
+        describe '#record_component' do
+          subject { super().record_component }
+          it { is_expected.to eq(component) }
+        end
 
         context "when passing time related options" do
           let :component_options do
@@ -56,7 +59,7 @@ module Adhearsion
           end
 
           it "takes seconds but sets milliseconds on the command" do
-            subject.record_component.should == component
+            expect(subject.record_component).to eq(component)
           end
         end
 
@@ -78,11 +81,14 @@ module Adhearsion
           end
 
           context "with :interruptible => false" do
-            its(:stopper_component) { should be_nil }
+            describe '#stopper_component' do
+              subject { super().stopper_component }
+              it { is_expected.to be_nil }
+            end
 
             it "does not use an Input component" do
-              controller.should_receive(:execute_component_and_await_completion).once.with(component)
-              controller.should_receive(:write_and_await_response).never.with(input_component)
+              expect(controller).to receive(:execute_component_and_await_completion).once.with(component)
+              expect(controller).to receive(:write_and_await_response).never.with(input_component)
               subject.run
             end
           end
@@ -90,7 +96,10 @@ module Adhearsion
           context "with :interruptible => true" do
             let(:interruptible) { true }
 
-            its(:stopper_component) { should == input_component }
+            describe '#stopper_component' do
+              subject { super().stopper_component }
+              it { is_expected.to eq(input_component) }
+            end
 
             describe "when the input component completes" do
               let(:complete_event) { Punchblock::Event::Complete.new }
@@ -101,16 +110,16 @@ module Adhearsion
               end
 
               it "stops the recording" do
-                subject.record_component.should_receive(:stop!).once
+                expect(subject.record_component).to receive(:stop!).once
                 subject.stopper_component.trigger_event_handler complete_event
               end
             end
 
             describe "when the recording completes" do
               it "stops the input component" do
-                controller.should_receive(:execute_component_and_await_completion).once.with(component)
-                controller.should_receive(:write_and_await_response).once.with(input_component)
-                subject.stopper_component.should_receive(:stop!).once
+                expect(controller).to receive(:execute_component_and_await_completion).once.with(component)
+                expect(controller).to receive(:write_and_await_response).once.with(input_component)
+                expect(subject.stopper_component).to receive(:stop!).once
                 subject.run
               end
             end
@@ -132,7 +141,10 @@ module Adhearsion
             end
           end
 
-          its(:stopper_component) { should == input_component }
+          describe '#stopper_component' do
+            subject { super().stopper_component }
+            it { is_expected.to eq(input_component) }
+          end
         end
 
         describe "setting completion handlers" do
@@ -140,7 +152,7 @@ module Adhearsion
 
           it "should execute those handlers when recording completes" do
             foo = double 'foo'
-            foo.should_receive(:call).once.with kind_of(Punchblock::Event::Complete)
+            expect(foo).to receive(:call).once.with kind_of(Punchblock::Event::Complete)
             subject.handle_record_completion { |e| foo.call e }
             subject.record_component.trigger_event_handler complete_event
           end
@@ -164,7 +176,7 @@ module Adhearsion
         describe "with :async => true and an :on_complete callback" do
           before do
             component
-            Punchblock::Component::Record.should_receive(:new).once.with(parsed_options).and_return component
+            expect(Punchblock::Component::Record).to receive(:new).once.with(parsed_options).and_return component
             expect_message_waiting_for_response component
             @rec = Queue.new
             subject.record(options.merge(async: true)) { |rec| @rec.push rec }
@@ -175,7 +187,7 @@ module Adhearsion
           it "should execute the callback" do
             component.trigger_event_handler response
             Timeout::timeout 5 do
-              @rec.pop.should be response
+              expect(@rec.pop).to be response
             end
           end
         end
@@ -184,14 +196,14 @@ module Adhearsion
           before do
             TestException = Class.new StandardError
             component
-            Punchblock::Component::Record.should_receive(:new).once.with({}).and_return component
+            expect(Punchblock::Component::Record).to receive(:new).once.with({}).and_return component
           end
 
           it "should pass the exception to the events system" do
             latch = CountDownLatch.new 1
             Adhearsion::Events.exception do |e, l|
-              e.should be_a TestException
-              l.should be subject.logger
+              expect(e).to be_a TestException
+              expect(l).to be subject.logger
               latch.countdown!
             end
             expect_component_execution component
@@ -199,7 +211,7 @@ module Adhearsion
             component.request!
             component.execute!
             component.trigger_event_handler response
-            latch.wait(1).should be true
+            expect(latch.wait(1)).to be true
             Adhearsion::Events.clear_handlers :exception
           end
         end
@@ -207,7 +219,7 @@ module Adhearsion
         describe "with :async => false" do
           before do
             component
-            Punchblock::Component::Record.should_receive(:new).once.with(parsed_options).and_return component
+            expect(Punchblock::Component::Record).to receive(:new).once.with(parsed_options).and_return component
             expect_component_execution component
             @rec = Queue.new
             subject.record(options.merge(:async => false)) { |rec| @rec.push rec }
@@ -218,7 +230,7 @@ module Adhearsion
           it 'should execute a passed block' do
             component.trigger_event_handler response
             Timeout::timeout 5 do
-              @rec.pop.should be == response
+              expect(@rec.pop).to eq(response)
             end
           end
         end
@@ -226,8 +238,8 @@ module Adhearsion
         describe "with :interruptible => false" do
           let(:input_component) { Punchblock::Component::Input.new }
           it "does not use an Input component" do
-            subject.should_receive(:execute_component_and_await_completion).once.with(component)
-            subject.should_receive(:write_and_await_response).never.with(input_component)
+            expect(subject).to receive(:execute_component_and_await_completion).once.with(component)
+            expect(subject).to receive(:write_and_await_response).never.with(input_component)
             subject.record(options.merge(:async => false, :interruptible => false)) { |rec| @rec.push rec }
           end
         end
@@ -240,8 +252,8 @@ module Adhearsion
 
             expect_input_component_complete_event 'dtmf-5'
 
-            Punchblock::Component::Record.any_instance.should_receive(:stop!)
-            subject.should_receive(:execute_component_and_await_completion).once.with(component)
+            expect_any_instance_of(Punchblock::Component::Record).to receive(:stop!)
+            expect(subject).to receive(:execute_component_and_await_completion).once.with(component)
             subject.record(options.merge(:async => false, :interruptible => true)) { |rec| @rec.push rec }
           end
 
@@ -250,9 +262,9 @@ module Adhearsion
         describe "check for the return value" do
           it "returns a Record component" do
             component
-            Punchblock::Component::Record.should_receive(:new).once.with(parsed_options).and_return component
+            expect(Punchblock::Component::Record).to receive(:new).once.with(parsed_options).and_return component
             expect_component_execution component
-            subject.record(options.merge(:async => false)).should be == component
+            expect(subject.record(options.merge(:async => false))).to eq(component)
             component.request!
             component.execute!
           end

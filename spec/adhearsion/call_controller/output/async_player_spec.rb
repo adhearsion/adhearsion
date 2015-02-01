@@ -31,21 +31,21 @@ module Adhearsion
           it "returns the component" do
             component = Punchblock::Component::Output.new :ssml => content
             expect_message_waiting_for_response component
-            subject.output(content).should be_a Punchblock::Component::Output
+            expect(subject.output(content)).to be_a Punchblock::Component::Output
           end
 
           it "raises a PlaybackError if the component fails to start" do
             expect_message_waiting_for_response Punchblock::Component::Output.new(:ssml => content), Punchblock::ProtocolError
-            lambda { subject.output content }.should raise_error(PlaybackError)
+            expect { subject.output content }.to raise_error(PlaybackError)
           end
 
           it "logs the complete event if it is an error" do
             response = Punchblock::Event::Complete.new
             response.reason = Punchblock::Event::Complete::Error.new
             component = Punchblock::Component::Output.new(:ssml => content)
-            subject.stub :new_output => component
+            allow(subject).to receive_messages :new_output => component
             expect_message_waiting_for_response component
-            controller.logger.should_receive(:error).once
+            expect(controller.logger).to receive(:error).once
             subject.output content
             component.request!
             component.execute!
@@ -60,6 +60,16 @@ module Adhearsion
             component = Punchblock::Component::Output.new :ssml => ssml
             expect_message_waiting_for_response component
             subject.play_ssml ssml
+          end
+        end
+
+        describe "#play_url" do
+          let(:url) { "http://example.com/ex.ssml" }
+
+          it 'executes an Output with the URL' do
+            component = Punchblock::Component::Output.new({render_document: {value: url, content_type: "application/ssml+xml"}})
+            expect_message_waiting_for_response component
+            subject.play_url url
           end
         end
       end

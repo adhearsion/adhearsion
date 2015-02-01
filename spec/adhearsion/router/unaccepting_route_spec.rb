@@ -11,44 +11,44 @@ module Adhearsion
 
       before { subject.extend described_class }
 
-      it { should_not be_accepting }
+      it { is_expected.not_to be_accepting }
 
       describe "dispatching a call" do
         let(:call) { Call.new }
 
         let(:latch) { CountDownLatch.new 1 }
 
-        before { call.wrapped_object.stub :write_and_await_response }
+        before { allow(call.wrapped_object).to receive :write_and_await_response }
 
         context "via a call controller" do
           let(:controller)  { CallController }
           subject(:route)   { Route.new 'foobar', controller }
 
           it "should not accept the call" do
-            call.should_receive(:accept).never
+            expect(call).to receive(:accept).never
             route.dispatch call, lambda { latch.countdown! }
-            latch.wait(2).should be true
+            expect(latch.wait(2)).to be true
           end
 
           it "should instruct the call to use an instance of the controller" do
-            call.should_receive(:execute_controller).once.with kind_of(controller), kind_of(Proc)
+            expect(call).to receive(:execute_controller).once.with kind_of(controller), kind_of(Proc)
             route.dispatch call
           end
 
           it "should hangup the call after all controllers have executed" do
-            call.should_receive(:hangup).once
+            expect(call).to receive(:hangup).once
             route.dispatch call, lambda { latch.countdown! }
-            latch.wait(2).should be true
+            expect(latch.wait(2)).to be true
           end
 
           context "if hangup raises a Call::Hangup" do
-            before { call.should_receive(:hangup).once.and_raise Call::Hangup }
+            before { expect(call).to receive(:hangup).once.and_raise Call::Hangup }
 
             it "should not raise an exception" do
-              lambda do
+              expect do
                 route.dispatch call, lambda { latch.countdown! }
-                latch.wait(2).should be true
-              end.should_not raise_error
+                expect(latch.wait(2)).to be true
+              end.not_to raise_error
             end
           end
         end
@@ -61,8 +61,8 @@ module Adhearsion
           end
 
           it "should instruct the call to use a CallController with the correct block" do
-            call.should_receive(:execute_controller).once.with(kind_of(CallController), kind_of(Proc)).and_return do |controller|
-              controller.block.call.should be == :foobar
+            expect(call).to receive(:execute_controller).once.with(kind_of(CallController), kind_of(Proc)) do |controller|
+              expect(controller.block.call).to eq(:foobar)
             end
             route.dispatch call
           end

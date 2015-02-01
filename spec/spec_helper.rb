@@ -21,15 +21,12 @@ Bundler.require(:default, :test) if defined?(Bundler)
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |f| require f }
 
 RSpec.configure do |config|
-  config.treat_symbols_as_metadata_keys_with_true_values = true
   config.mock_framework = :rspec
   config.filter_run :focus => true
   config.run_all_when_everything_filtered = true
-  config.color_enabled = true
+  config.color = true
 
-  config.mock_with :rspec do |mocks|
-    mocks.add_stub_and_should_receive_to Celluloid::AbstractProxy, ThreadSafeArray
-  end
+  config.raise_errors_for_deprecations!
 
   config.before :suite do
     Adhearsion::Logging.start Adhearsion::Logging.default_appenders, :trace, Adhearsion.config.platform.logging.formatter
@@ -39,7 +36,7 @@ RSpec.configure do |config|
 
   config.before :each do
     Adhearsion.router = nil
-    Punchblock.stub new_request_id: 'foo'
+    allow(Punchblock).to receive(:new_request_id).and_return 'foo'
   end
 
   config.after :each do

@@ -13,7 +13,7 @@ module Adhearsion
 
           if pattern_string == query_string
             args[:exact_matches] = [pattern]
-          elsif pattern_string.starts_with? query_string
+          elsif pattern_string.start_with? query_string
             args[:potential_matches] = [pattern]
           end
 

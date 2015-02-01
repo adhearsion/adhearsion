@@ -6,7 +6,7 @@ module Adhearsion
   describe PunchblockPlugin do
     it "should make the client accessible from the Initializer" do
       PunchblockPlugin::Initializer.client = :foo
-      PunchblockPlugin.client.should be :foo
+      expect(PunchblockPlugin.client).to be :foo
       PunchblockPlugin::Initializer.client = nil
     end
 
@@ -15,11 +15,11 @@ module Adhearsion
       let(:response)    { :foo }
       let(:mock_client) { double 'Client' }
 
-      let(:execute_expectation) { PunchblockPlugin.client.should_receive(:execute_command).once }
+      let(:execute_expectation) { expect(PunchblockPlugin.client).to receive(:execute_command).once }
 
       before do
         PunchblockPlugin::Initializer.client = mock_client
-        message.stub :execute! => true
+        allow(message).to receive_messages :execute! => true
         message.response = response
         execute_expectation
       end
@@ -38,12 +38,12 @@ module Adhearsion
           slow_command.response = response
         end
         PunchblockPlugin.execute_component slow_command
-        (Time.now - starting_time).should >= 0.4
+        expect(Time.now - starting_time).to be >= 0.4
       end
 
       describe "with a successful response" do
         it "returns the executed command" do
-          PunchblockPlugin.execute_component(message).should be message
+          expect(PunchblockPlugin.execute_component(message)).to be message
         end
       end
 
@@ -51,7 +51,7 @@ module Adhearsion
         let(:response) { Exception.new }
 
         it "raises the error" do
-          lambda { PunchblockPlugin.execute_component message }.should raise_error Exception
+          expect { PunchblockPlugin.execute_component message }.to raise_error Exception
         end
       end
     end

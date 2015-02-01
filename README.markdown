@@ -3,6 +3,7 @@
 [![Dependency Status](https://gemnasium.com/adhearsion/adhearsion.png?travis)](https://gemnasium.com/adhearsion/adhearsion)
 [![Code Climate](https://codeclimate.com/github/adhearsion/adhearsion.png)](https://codeclimate.com/github/adhearsion/adhearsion)
 [![Coverage Status](https://coveralls.io/repos/adhearsion/adhearsion/badge.png?branch=develop)](https://coveralls.io/r/adhearsion/adhearsion)
+[![Inline docs](http://inch-ci.org/github/adhearsion/adhearsion.png?branch=develop)](http://inch-ci.org/github/adhearsion/adhearsion)
 
 # Adhearsion
 
@@ -82,4 +83,4 @@ There is a pre-commit hook that runs encoding checks available in pre-commit. To
 
 ### Copyright
 
-Copyright (c) 2011-2013 Adhearsion Foundation Inc. MIT LICENSE (see LICENSE for details).
+Copyright (c) 2011-2014 Adhearsion Foundation Inc. MIT LICENSE (see LICENSE for details).

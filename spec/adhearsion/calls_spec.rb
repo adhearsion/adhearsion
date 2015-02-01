@@ -16,18 +16,18 @@ module Adhearsion
     end
 
     it 'can add a call to the collection' do
-      subject.any?.should be == false
+      expect(subject.any?).to eq(false)
       call = Call.new new_offer
       subject << call
-      call.should be_a Adhearsion::Call
-      subject.size.should be == 1
-      subject[call.id].should be call
+      expect(call).to be_a Adhearsion::Call
+      expect(subject.size).to eq(1)
+      expect(subject[call.id]).to be call
     end
 
     it '#size should return the number of calls in the collection' do
-      subject.size.should be == 0
+      expect(subject.size).to eq(0)
       subject << call
-      subject.size.should be == 1
+      expect(subject.size).to eq(1)
     end
 
     describe "removing a call" do
@@ -39,9 +39,9 @@ module Adhearsion
         before { subject.remove_inactive_call deleted_call }
 
         it "should remove the call from the collection" do
-          subject.size.should be == number_of_calls - 1
-          subject[deleted_call.id].should be_nil
-          subject.with_uri(deleted_call.uri).should be_nil
+          expect(subject.size).to eq(number_of_calls - 1)
+          expect(subject[deleted_call.id]).to be_nil
+          expect(subject.with_uri(deleted_call.uri)).to be_nil
         end
       end
 
@@ -50,14 +50,14 @@ module Adhearsion
           @call_id = deleted_call.id
           @call_uri = deleted_call.uri
           Celluloid::Actor.kill deleted_call
-          deleted_call.should_not be_alive
+          expect(deleted_call.alive?).to be false
           subject.remove_inactive_call deleted_call
         end
 
         it "should remove the call from the collection" do
-          subject.size.should be == number_of_calls - 1
-          subject[@call_id].should be_nil
-          subject.with_uri(@call_uri).should be_nil
+          expect(subject.size).to eq(number_of_calls - 1)
+          expect(subject[@call_id]).to be_nil
+          expect(subject.with_uri(@call_uri)).to be_nil
         end
       end
 
@@ -65,9 +65,9 @@ module Adhearsion
         before { subject.remove_inactive_call deleted_call.id }
 
         it "should remove the call from the collection" do
-          subject.size.should be == number_of_calls - 1
-          subject[deleted_call.id].should be_nil
-          subject.with_uri(deleted_call.uri).should be_nil
+          expect(subject.size).to eq(number_of_calls - 1)
+          expect(subject[deleted_call.id]).to be_nil
+          expect(subject.with_uri(deleted_call.uri)).to be_nil
         end
       end
     end
@@ -79,7 +79,7 @@ module Adhearsion
         tagged_call = calls.last
         tagged_call.tag :moderator
 
-        subject.with_tag(:moderator).should be == [tagged_call]
+        expect(subject.with_tag(:moderator)).to eq([tagged_call])
       end
 
       it "when a call is dead, ignore it in the search" do
@@ -89,20 +89,20 @@ module Adhearsion
         tagged_call.tag :moderator
         Celluloid::Actor.kill tagged_call
 
-        subject.with_tag(:moderator).should be == []
+        expect(subject.with_tag(:moderator)).to eq([])
       end
     end
 
     it "finding calls by uri" do
       calls.each { |call| subject << call }
 
-      subject.with_uri(calls.last.uri).should be == calls.last
+      expect(subject.with_uri(calls.last.uri)).to eq(calls.last)
     end
 
     describe "#<<" do
       it "should allow chaining" do
         subject << Call.new(new_offer) << Call.new(new_offer)
-        subject.size.should be == 2
+        expect(subject.size).to eq(2)
       end
     end
 
@@ -117,9 +117,9 @@ module Adhearsion
 
         sleep 0.1
 
-        subject.size.should be == size_before
-        subject[call_id].should be_nil
-        subject.with_uri(call_uri).should be_nil
+        expect(subject.size).to eq(size_before)
+        expect(subject[call_id]).to be_nil
+        expect(subject.with_uri(call_uri)).to be_nil
       end
     end
 
@@ -133,7 +133,7 @@ module Adhearsion
       end
 
       def crash
-        lambda { call.crash_me }.should raise_error(StandardError, "Someone crashed me")
+        expect { call.crash_me }.to raise_error(StandardError, "Someone crashed me")
         sleep 0.5
       end
 
@@ -143,20 +143,20 @@ module Adhearsion
         size_before = subject.size
 
         subject << call
-        subject.size.should be > size_before
-        subject[call_id].should be call
-        subject.with_uri(call_uri).should be call
+        expect(subject.size).to be > size_before
+        expect(subject[call_id]).to be call
+        expect(subject.with_uri(call_uri)).to be call
 
         crash
-        subject.size.should be == size_before
-        subject[call_id].should be_nil
-        subject.with_uri(call_uri).should be_nil
+        expect(subject.size).to eq(size_before)
+        expect(subject[call_id]).to be_nil
+        expect(subject.with_uri(call_uri)).to be_nil
       end
 
       it "is sends a hangup command for the call" do
         call_id = call.id
-        PunchblockPlugin.stub :client => double('Client')
-        PunchblockPlugin.client.should_receive(:execute_command).once.with(Punchblock::Command::Hangup.new, :async => true, :call_id => call_id)
+        allow(PunchblockPlugin).to receive_messages :client => double('Client')
+        expect(PunchblockPlugin.client).to receive(:execute_command).once.with(Punchblock::Command::Hangup.new, :async => true, :call_id => call_id)
 
         subject << call
 
@@ -165,7 +165,7 @@ module Adhearsion
 
       it "shuts down the actor" do
         crash
-        call.should_not be_alive
+        expect(call.alive?).to be false
       end
     end
   end

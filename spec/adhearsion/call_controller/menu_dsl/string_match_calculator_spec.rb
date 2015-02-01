@@ -14,14 +14,14 @@ module Adhearsion
             calculator = StringMatchCalculator.new str, match_payload
 
             match_case = calculator.match str[0,2]
-            match_case.should_not be_exact_match
-            match_case.should be_potential_match
-            match_case.potential_matches.should be == [str]
+            expect(match_case).not_to be_exact_match
+            expect(match_case).to be_potential_match
+            expect(match_case.potential_matches).to eq([str])
 
             match_case = calculator.match str
-            match_case.should be_exact_match
-            match_case.should_not be_potential_match
-            match_case.exact_matches.should be == [str]
+            expect(match_case).to be_exact_match
+            expect(match_case).not_to be_potential_match
+            expect(match_case.exact_matches).to eq([str])
           end
         end
 
@@ -29,9 +29,9 @@ module Adhearsion
           %w[* #].each do |special_digit|
             calculator = StringMatchCalculator.new(special_digit, match_payload)
             match_case = calculator.match special_digit
-            match_case.exact_matches.first.should be == special_digit
-            match_case.should be_exact_match
-            match_case.should_not be_potential_match
+            expect(match_case.exact_matches.first).to eq(special_digit)
+            expect(match_case).to be_exact_match
+            expect(match_case).not_to be_potential_match
           end
         end
       end

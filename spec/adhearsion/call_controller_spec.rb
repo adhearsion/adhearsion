@@ -11,26 +11,40 @@ module Adhearsion
 
     let(:call) { Adhearsion::Call.new mock_offer(nil, :x_foo => 'bar') }
 
-    its(:call)      { should be call }
-    its(:metadata)  { should be == {:doo => :dah} }
+    describe '#call' do
+      subject { super().call }
+      it { is_expected.to be call }
+    end
+
+    describe '#metadata' do
+      subject { super().metadata }
+      it { is_expected.to eq({:doo => :dah}) }
+    end
 
     describe "setting meta-data" do
       it "should preserve data correctly" do
-        subject[:foo].should be nil
+        expect(subject[:foo]).to be nil
         subject[:foo] = 7
-        subject[:foo].should be == 7
+        expect(subject[:foo]).to eq(7)
         subject[:bar] = 10
-        subject[:bar].should be == 10
-        subject[:foo].should be == 7
+        expect(subject[:bar]).to eq(10)
+        expect(subject[:foo]).to eq(7)
       end
     end
 
-    its(:logger)    { should be call.logger }
-    its(:variables) { should be call.variables }
+    describe '#logger' do
+      subject { super().logger }
+      it { is_expected.to be call.logger }
+    end
+
+    describe '#variables' do
+      subject { super().variables }
+      it { is_expected.to be call.variables }
+    end
 
     describe "#send_message" do
       it 'should send a message' do
-        call.should_receive(:send_message).with("Hello World!").once
+        expect(call).to receive(:send_message).with("Hello World!").once
         subject.send_message "Hello World!"
       end
     end
@@ -39,46 +53,44 @@ module Adhearsion
       before { call.terminate }
 
       it "should use an unnamed logger" do
-        subject.logger.should be_a ::Logging::Logger
-        subject.logger.name.should == "Adhearsion::CallController"
+        expect(subject.logger).to be_a ::Logging::Logger
+        expect(subject.logger.name).to eq("Adhearsion::CallController")
       end
     end
 
     describe "execution on a call" do
       before do
-        subject.stub :execute_component_and_await_completion => nil
-        call.wrapped_object.stub :write_and_await_response => nil
+        allow(subject).to receive_messages :execute_component_and_await_completion => nil
+        allow(call.wrapped_object).to receive_messages :write_and_await_response => nil
       end
 
       it "catches Hangup exceptions and logs the hangup" do
-        subject.should_receive(:run).once.ordered.and_raise(Call::Hangup)
-        subject.logger.should_receive(:info).once.with(/Call was hung up/).ordered
-        subject.execute!
+        expect(subject).to receive(:run).once.ordered.and_raise(Call::Hangup)
+        subject.exec
       end
 
       context "when trying to execute a command against a dead call" do
         before do
-          subject.should_receive(:run).once.ordered.and_raise(Call::ExpiredError)
+          expect(subject).to receive(:run).once.ordered.and_raise(Call::ExpiredError)
         end
 
         it "gracefully terminates " do
-          subject.logger.should_receive(:info).once.with(/Call was hung up/).ordered
-          subject.execute!
+          subject.exec
         end
       end
 
       it "catches standard errors, triggering an exception event" do
-        subject.should_receive(:run).once.ordered.and_raise(StandardError)
+        expect(subject).to receive(:run).once.ordered.and_raise(StandardError)
         latch = CountDownLatch.new 1
         ex = lo = nil
         Events.exception do |e, l|
           ex, lo = e, l
           latch.countdown!
         end
-        subject.execute!
-        latch.wait(1).should be true
-        ex.should be_a StandardError
-        lo.should be subject.logger
+        expect { subject.exec }.to raise_error
+        expect(latch.wait(1)).to be true
+        expect(ex).to be_a StandardError
+        expect(lo).to be subject.logger
       end
 
       context "when a block is specified" do
@@ -88,16 +100,19 @@ module Adhearsion
           Proc.new { foo value }
         end
 
-        its(:block) { should be block }
+        describe '#block' do
+          subject { super().block }
+          it { is_expected.to be block }
+        end
 
         it "should execute the block in the context of the controller" do
-          subject.stub :value => :bar
-          subject.should_receive(:foo).once.with(:bar)
+          allow(subject).to receive_messages :value => :bar
+          expect(subject).to receive(:foo).once.with(:bar)
           subject.run
         end
 
         it "should make the block's context available" do
-          subject.should_receive(:foo).once.with(:bar)
+          expect(subject).to receive(:foo).once.with(:bar)
           subject.run
         end
       end
@@ -146,39 +161,39 @@ module Adhearsion
       subject { InvokeController.new call }
 
       before do
-        subject.stub :execute_component_and_await_completion => nil
-        call.wrapped_object.stub :write_and_await_response => nil
-        call.stub :register_controller => nil
-        Events.should_receive(:trigger).with(:exception, Exception).never
+        allow(subject).to receive_messages :execute_component_and_await_completion => nil
+        allow(call.wrapped_object).to receive_messages :write_and_await_response => nil
+        allow(call).to receive_messages :register_controller => nil
+        expect(Events).to receive(:trigger).with(:exception, Exception).never
       end
 
       it "should invoke another controller before returning to the current controller" do
-        subject.should_receive(:before).once.ordered
-        call.should_receive(:answer).once.ordered
-        subject.should_receive(:after).once.ordered
+        expect(subject).to receive(:before).once.ordered
+        expect(call).to receive(:answer).once.ordered
+        expect(subject).to receive(:after).once.ordered
 
-        subject.execute!
+        subject.exec
       end
 
       it "should return the outer controller's run method return value" do
-        SecondController.any_instance.should_receive(:run).once.and_return(:run_result)
-        subject.execute!
-        subject.metadata[:invoke_result].should be == :run_result
+        expect_any_instance_of(SecondController).to receive(:run).once.and_return(:run_result)
+        subject.exec
+        expect(subject.metadata[:invoke_result]).to eq(:run_result)
       end
 
       it "should invoke the new controller with metadata" do
-        SecondController.any_instance.should_receive(:md_check).once.with :foo => 'bar'
-        subject.execute!
+        expect_any_instance_of(SecondController).to receive(:md_check).once.with :foo => 'bar'
+        subject.exec
       end
 
       it "should allow the outer controller to cease execution and handle remote hangups" do
         subject[:second_controller] = SecondControllerWithRemoteHangup
 
-        subject.should_receive(:before).once.ordered
-        call.should_receive(:answer).once.ordered
-        subject.should_receive(:after).never.ordered
+        expect(subject).to receive(:before).once.ordered
+        expect(call).to receive(:answer).once.ordered
+        expect(subject).to receive(:after).never.ordered
 
-        subject.execute!
+        subject.exec
       end
     end
 
@@ -207,25 +222,25 @@ module Adhearsion
       subject { pass_controller.new call }
 
       before do
-        call.wrapped_object.stub :write_and_await_response => nil
-        call.stub :register_controller => nil
-        subject.stub :execute_component_and_await_completion => nil
-        SecondController.any_instance.should_receive(:md_check).once.with :foo => 'bar'
-        Events.should_receive(:trigger).with(:exception, Exception).never
+        allow(call.wrapped_object).to receive_messages :write_and_await_response => nil
+        allow(call).to receive_messages :register_controller => nil
+        allow(subject).to receive_messages :execute_component_and_await_completion => nil
+        expect_any_instance_of(SecondController).to receive(:md_check).once.with :foo => 'bar'
+        expect(Events).to receive(:trigger).with(:exception, Exception).never
       end
 
       it "should cease execution of the current controller, and instruct the call to execute another" do
-        subject.should_receive(:before).once.ordered
-        call.should_receive(:answer).once.ordered
-        subject.should_receive(:after).never.ordered
+        expect(subject).to receive(:before).once.ordered
+        expect(call).to receive(:answer).once.ordered
+        expect(subject).to receive(:after).never.ordered
 
         subject.exec
       end
 
       it "should execute after_call callbacks before passing control" do
-        subject.should_receive(:before).once.ordered
-        subject.should_receive(:foobar).once.ordered
-        call.should_receive(:answer).once.ordered
+        expect(subject).to receive(:before).once.ordered
+        expect(subject).to receive(:foobar).once.ordered
+        expect(call).to receive(:answer).once.ordered
 
         subject.exec
       end
@@ -243,17 +258,17 @@ module Adhearsion
       subject { pass_controller.new call }
 
       before do
-        call.wrapped_object.stub(:write_and_await_response).and_return do |command|
+        allow(call.wrapped_object).to receive(:write_and_await_response) do |command|
           command.request!
           command.execute!
         end
-        call.stub register_controller: nil
-        SecondController.any_instance.should_receive(:md_check).once.with :foo => 'bar'
-        Events.should_receive(:trigger).with(:exception, Exception).never
+        allow(call).to receive_messages register_controller: nil
+        expect_any_instance_of(SecondController).to receive(:md_check).once.with :foo => 'bar'
+        expect(Events).to receive(:trigger).with(:exception, Exception).never
       end
 
       it "should cease execution of the current controller, and instruct the call to execute another" do
-        call.should_receive(:answer).once.ordered
+        expect(call).to receive(:answer).once.ordered
 
         subject.exec
       end
@@ -278,17 +293,17 @@ module Adhearsion
 
         context "but not yet received a complete event" do
           it "should terminate the components" do
-            subject.output1.should_receive(:stop!).once
-            subject.output2.should_receive(:stop!).once
+            expect(subject.output1).to receive(:stop!).once
+            expect(subject.output2).to receive(:stop!).once
 
             subject.exec
           end
 
           context "and some fail to terminate" do
-            before { subject.output1.should_receive(:stop!).and_raise(Punchblock::Component::InvalidActionError) }
+            before { expect(subject.output1).to receive(:stop!).and_raise(Punchblock::Component::InvalidActionError) }
 
             it "should terminate the others" do
-              subject.output2.should_receive(:stop!).once
+              expect(subject.output2).to receive(:stop!).once
               subject.exec
             end
           end
@@ -298,8 +313,8 @@ module Adhearsion
           before { subject.output1.trigger_event_handler Punchblock::Event::Complete.new }
 
           it "should not terminate the completed components" do
-            subject.output1.should_receive(:stop!).never
-            subject.output2.should_receive(:stop!).once
+            expect(subject.output1).to receive(:stop!).never
+            expect(subject.output2).to receive(:stop!).once
 
             subject.exec
           end
@@ -327,28 +342,28 @@ module Adhearsion
 
       context "when components have been executed on the controller" do
         before do
-          call.wrapped_object.stub(:write_and_await_response).and_return do |command|
+          allow(call.wrapped_object).to receive(:write_and_await_response) do |command|
             command.request!
             command.execute!
           end
-          call.stub register_controller: nil
-          Events.should_receive(:trigger).with(:exception, Exception).never
+          allow(call).to receive_messages register_controller: nil
+          expect(Events).to receive(:trigger).with(:exception, Exception).never
           subject.prep_output
         end
 
         context "when they have not yet received a complete event" do
           it "should terminate the components" do
-            subject.output1.should_receive(:stop!).once
-            subject.output2.should_receive(:stop!).once
+            expect(subject.output1).to receive(:stop!).once
+            expect(subject.output2).to receive(:stop!).once
 
             subject.exec
           end
 
           context "and some fail to terminate" do
-            before { subject.output1.should_receive(:stop!).and_raise(Punchblock::Component::InvalidActionError) }
+            before { expect(subject.output1).to receive(:stop!).and_raise(Punchblock::Component::InvalidActionError) }
 
             it "should terminate the others" do
-              subject.output2.should_receive(:stop!).once
+              expect(subject.output2).to receive(:stop!).once
               subject.exec
             end
           end
@@ -358,8 +373,8 @@ module Adhearsion
           before { subject.output1.trigger_event_handler Punchblock::Event::Complete.new }
 
           it "should not terminate the completed components" do
-            subject.output1.should_receive(:stop!).never
-            subject.output2.should_receive(:stop!).once
+            expect(subject.output1).to receive(:stop!).never
+            expect(subject.output2).to receive(:stop!).once
 
             subject.exec
           end
@@ -371,9 +386,20 @@ module Adhearsion
       let(:message) { Punchblock::Command::Accept.new }
 
       it "delegates to the call, blocking first until it is allowed to execute" do
-        subject.should_receive(:block_until_resumed).once.ordered
-        subject.call.should_receive(:write_and_await_response).once.ordered.with(message)
+        expect(subject).to receive(:block_until_resumed).once.ordered
+        expect(subject.call).to receive(:write_and_await_response).once.ordered.with(message)
         subject.write_and_await_response message
+      end
+
+      it "allows complete events to bubble" do
+        bubbled = false
+        message = Punchblock::Component::Output.new
+        expect(subject.call).to receive(:write_and_await_response)
+        subject.write_and_await_response message
+        message.register_event_handler(Punchblock::Event::Complete) { bubbled = true }
+        expect(bubbled).to be false
+        message.trigger_event_handler Punchblock::Event::Complete.new
+        expect(bubbled).to be true
       end
     end
 
@@ -382,8 +408,8 @@ module Adhearsion
       :unmute].each do |method_name|
       describe "##{method_name}" do
         it "delegates to the call, blocking first until it is allowed to execute" do
-          subject.should_receive(:block_until_resumed).once.ordered
-          subject.call.should_receive(method_name).once.ordered
+          expect(subject).to receive(:block_until_resumed).once.ordered
+          expect(subject.call).to receive(method_name).once.ordered
           subject.send method_name
         end
       end
@@ -391,76 +417,77 @@ module Adhearsion
 
     [
       :hangup,
-      :reject
+      :reject,
+      :redirect
     ].each do |method_name|
       describe "##{method_name}" do
         it "delegates to the call, blocking first until it is allowed to execute, and raises Call::Hangup" do
-          subject.should_receive(:block_until_resumed).once.ordered
-          subject.call.should_receive(method_name).once.ordered
-          lambda { subject.send method_name }.should raise_error Call::Hangup
+          expect(subject).to receive(:block_until_resumed).once.ordered
+          expect(subject.call).to receive(method_name).once.ordered
+          expect { subject.send method_name }.to raise_error Call::Hangup
         end
       end
     end
 
     describe "#join" do
       it "delegates to the call, blocking first until it is allowed to execute, and unblocking when an unjoined event is received" do
-        subject.should_receive(:block_until_resumed).once.ordered
-        call.wrapped_object.should_receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(call_uri: 'call1'))
+        expect(subject).to receive(:block_until_resumed).once.ordered
+        expect(call.wrapped_object).to receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(call_uri: 'call1'))
         latch = CountDownLatch.new 1
         Thread.new do
           subject.join 'call1', :foo => :bar
           latch.countdown!
         end
-        latch.wait(1).should be false
+        expect(latch.wait(1)).to be false
         subject.call << Punchblock::Event::Joined.new(call_uri: 'call1')
-        latch.wait(1).should be false
+        expect(latch.wait(1)).to be false
         subject.call << Punchblock::Event::Unjoined.new(call_uri: 'call1')
-        latch.wait(1).should be true
+        expect(latch.wait(1)).to be true
       end
 
       context "with a mixer" do
         it "delegates to the call, blocking first until it is allowed to execute, and unblocking when an unjoined event is received" do
-          subject.should_receive(:block_until_resumed).once.ordered
-          call.wrapped_object.should_receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(mixer_name: 'foobar'))
+          expect(subject).to receive(:block_until_resumed).once.ordered
+          expect(call.wrapped_object).to receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(mixer_name: 'foobar'))
           latch = CountDownLatch.new 1
           Thread.new do
             subject.join :mixer_name => 'foobar', :foo => :bar
             latch.countdown!
           end
-          latch.wait(1).should be false
+          expect(latch.wait(1)).to be false
           subject.call << Punchblock::Event::Joined.new(:mixer_name => 'foobar')
-          latch.wait(1).should be false
+          expect(latch.wait(1)).to be false
           subject.call << Punchblock::Event::Unjoined.new(:mixer_name => 'foobar')
-          latch.wait(1).should be true
+          expect(latch.wait(1)).to be true
         end
       end
 
       context "with :async => true" do
         it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
-          subject.should_receive(:block_until_resumed).once.ordered
-          call.wrapped_object.should_receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(call_uri: 'call1'))
+          expect(subject).to receive(:block_until_resumed).once.ordered
+          expect(call.wrapped_object).to receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(call_uri: 'call1'))
           latch = CountDownLatch.new 1
           Thread.new do
             subject.join 'call1', :foo => :bar, :async => true
             latch.countdown!
           end
-          latch.wait(1).should be false
+          expect(latch.wait(1)).to be false
           subject.call << Punchblock::Event::Joined.new(call_uri: 'call1')
-          latch.wait(1).should be true
+          expect(latch.wait(1)).to be true
         end
 
         context "with a mixer" do
           it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
-            subject.should_receive(:block_until_resumed).once.ordered
-            call.wrapped_object.should_receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(mixer_name: 'foobar'))
+            expect(subject).to receive(:block_until_resumed).once.ordered
+            expect(call.wrapped_object).to receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(mixer_name: 'foobar'))
             latch = CountDownLatch.new 1
             Thread.new do
               subject.join :mixer_name => 'foobar', :foo => :bar, :async => true
               latch.countdown!
             end
-            latch.wait(1).should be false
+            expect(latch.wait(1)).to be false
             subject.call << Punchblock::Event::Joined.new(:mixer_name => 'foobar')
-            latch.wait(1).should be true
+            expect(latch.wait(1)).to be true
           end
         end
       end
@@ -473,7 +500,7 @@ module Adhearsion
           subject.block_until_resumed
           t2 = Time.now
 
-          (t2 - t1).should < 0.2
+          expect(t2 - t1).to be < 0.2
         end
       end
 
@@ -494,9 +521,9 @@ module Adhearsion
 
           subject.resume!
 
-          latch.wait(1).should be_true
+          expect(latch.wait(1)).to be_truthy
 
-          (t2 - t1).should >= 0.5
+          expect(t2 - t1).to be >= 0.5
         end
       end
     end
@@ -518,13 +545,13 @@ module Adhearsion
 
       it "takes a block which is executed after acknowledgement but before waiting on completion" do
         @comp = nil
-        subject.execute_component_and_await_completion(component) { |comp| @comp = comp }.should be == component
-        @comp.should be == component
+        expect(subject.execute_component_and_await_completion(component) { |comp| @comp = comp }).to eq(component)
+        expect(@comp).to eq(component)
       end
 
       describe "with a successful completion" do
         it "returns the executed component" do
-          subject.execute_component_and_await_completion(component).should be component
+          expect(subject.execute_component_and_await_completion(component)).to be component
         end
       end
 
@@ -540,7 +567,7 @@ module Adhearsion
         let(:details) { "Oh noes, it's all borked" }
 
         it "raises the error" do
-          lambda { subject.execute_component_and_await_completion component }.should raise_error(Adhearsion::Error, "#{details}: #{component}")
+          expect { subject.execute_component_and_await_completion component }.to raise_error(Adhearsion::Error, "#{details}: #{component}")
         end
       end
 
@@ -554,7 +581,7 @@ module Adhearsion
         end
         starting_time = Time.now
         subject.execute_component_and_await_completion slow_component
-        (Time.now - starting_time).should > 0.5
+        expect(Time.now - starting_time).to be > 0.5
       end
     end
 
@@ -563,7 +590,7 @@ module Adhearsion
         let(:other) { CallController.new call, metadata }
 
         it "should be equal" do
-          subject.should == other
+          expect(subject).to eq(other)
         end
       end
 
@@ -571,7 +598,7 @@ module Adhearsion
         let(:other) { Class.new(CallController).new call, metadata }
 
         it "should not be equal" do
-          subject.should_not == other
+          expect(subject).not_to eq(other)
         end
       end
 
@@ -579,7 +606,7 @@ module Adhearsion
         let(:other) { CallController.new Call.new, metadata }
 
         it "should not be equal" do
-          subject.should_not == other
+          expect(subject).not_to eq(other)
         end
       end
 
@@ -587,7 +614,7 @@ module Adhearsion
         let(:other) { CallController.new call, something: 'else' }
 
         it "should not be equal" do
-          subject.should_not == other
+          expect(subject).not_to eq(other)
         end
       end
     end
@@ -601,10 +628,16 @@ class ExampleCallController < Adhearsion::CallController
   after_call { clean_up_models }
   after_call :clean_up_models
 
+  on_error { apologize_for_failure }
+  on_error :apologize_for_failure
+
   def setup_models
   end
 
   def clean_up_models
+  end
+
+  def apologize_for_failure
   end
 
   def run
@@ -624,44 +657,51 @@ describe ExampleCallController do
   include CallControllerTestHelpers
 
   before do
-    subject.stub :execute_component_and_await_completion => nil
-    call.wrapped_object.stub :write_and_await_response => nil
+    allow(subject).to receive_messages :execute_component_and_await_completion => nil
+    allow(call.wrapped_object).to receive_messages :write_and_await_response => nil
   end
 
   it "should execute the before_call callbacks before processing the call" do
-    subject.should_receive(:setup_models).twice.ordered
-    subject.should_receive(:join_to_conference).once.ordered
-    subject.execute!
+    expect(subject).to receive(:setup_models).twice.ordered
+    expect(subject).to receive(:join_to_conference).once.ordered
+    subject.exec
   end
 
   it "should execute the after_call callbacks after the call is hung up" do
-    subject.should_receive(:join_to_conference).once.ordered
-    subject.should_receive(:clean_up_models).twice.ordered
-    subject.should_receive(:foobar).never
-    subject.execute!
+    expect(subject).to receive(:join_to_conference).once.ordered
+    expect(subject).to receive(:clean_up_models).twice.ordered
+    expect(subject).to receive(:foobar).never
+    subject.exec
   end
 
   it "should capture errors in callbacks" do
-    subject.should_receive(:setup_models).twice.and_raise StandardError
-    subject.should_receive(:clean_up_models).twice.and_raise StandardError
+    expect(subject).to receive(:setup_models).twice.and_raise StandardError
+    expect(subject).to receive(:clean_up_models).twice.and_raise StandardError
     latch = CountDownLatch.new 4
     Adhearsion::Events.exception do |e, l|
-      e.should be_a StandardError
-      l.should be subject.logger
+      expect(e).to be_a StandardError
+      expect(l).to be subject.logger
       latch.countdown!
     end
-    subject.execute!
-    latch.wait(1).should be true
+    subject.exec
+    expect(latch.wait(1)).to be true
     Adhearsion::Events.clear_handlers :exception
+  end
+
+  it "should call the requested method when an exception is encountered" do
+    expect(subject).to receive(:join_to_conference).once.and_raise StandardError
+    expect(subject).to receive(:apologize_for_failure).twice.ordered
+
+    expect { subject.exec }.to raise_error
   end
 
   describe "when the controller finishes without a hangup" do
     it "should execute the after_call callbacks" do
       subject[:skip_hangup] = true
-      subject.should_receive(:join_to_conference).once.ordered
-      subject.should_receive(:foobar).once.ordered
-      subject.should_receive(:clean_up_models).twice.ordered
-      subject.execute!
+      expect(subject).to receive(:join_to_conference).once.ordered
+      expect(subject).to receive(:foobar).once.ordered
+      expect(subject).to receive(:clean_up_models).twice.ordered
+      subject.exec
     end
   end
 
@@ -670,13 +710,13 @@ describe ExampleCallController do
 
     it "should allow mixing in a module globally on all CallController classes" do
       Adhearsion::CallController.mixin TestBiscuit
-      Adhearsion::CallController.new(call).should respond_to :throwadogabone
+      expect(Adhearsion::CallController.new(call)).to respond_to :throwadogabone
     end
 
     it "should allow mixing in a module on a single CallController class" do
       FinancialWizard.mixin MarmaladeIsBetterThanJam
-      FinancialWizard.new(call).should respond_to :sobittersweet
-      Adhearsion::CallController.new(call).should_not respond_to :sobittersweet
+      expect(FinancialWizard.new(call)).to respond_to :sobittersweet
+      expect(Adhearsion::CallController.new(call)).not_to respond_to :sobittersweet
     end
   end
 end

@@ -3,6 +3,8 @@
 require 'has_guarded_handlers'
 require 'thread'
 require 'active_support/hash_with_indifferent_access'
+require 'active_support/core_ext/hash/indifferent_access'
+require 'adhearsion'
 
 module Adhearsion
   ##
@@ -48,8 +50,11 @@ module Adhearsion
     # @return [Time] the time at which the call began. For inbound calls this is the time at which the call was offered to Adhearsion. For outbound calls it is the time at which the remote party answered.
     attr_reader :end_time
 
-    # @return [true, false] wether or not the call should be automatically hung up after executing its controller
+    # @return [true, false] whether or not the call should be automatically hung up after executing its controller
     attr_accessor :auto_hangup
+
+    # @return [Integer] the number of seconds after the call is hung up that the controller will remain active
+    attr_accessor :after_hangup_lifetime
 
     delegate :[], :[]=, :to => :variables
 
@@ -82,6 +87,7 @@ module Adhearsion
       @peers        = {}
       @duration     = nil
       @auto_hangup  = true
+      @after_hangup_lifetime = nil
 
       self << offer if offer
     end
@@ -230,7 +236,7 @@ module Adhearsion
       end
 
       on_end do |event|
-        logger.info "Call ended due to #{event.reason}"
+        logger.info "Call #{from} -> #{to} ended due to #{event.reason}#{" (code #{event.platform_code})" if event.platform_code}"
         @end_time = event.timestamp.to_time
         @duration = @end_time - @start_time if @start_time
         clear_from_active_calls
@@ -238,7 +244,7 @@ module Adhearsion
         @end_code = event.platform_code
         @end_blocker.broadcast event.reason
         @commands.terminate
-        after(Adhearsion.config.platform.after_hangup_lifetime) { terminate }
+        after(@after_hangup_lifetime || Adhearsion.config.platform.after_hangup_lifetime) { terminate }
       end
     end
 
@@ -295,15 +301,41 @@ module Adhearsion
 
     def accept(headers = nil)
       @accept_command ||= write_and_await_response Punchblock::Command::Accept.new(:headers => headers)
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     def answer(headers = nil)
       write_and_await_response Punchblock::Command::Answer.new(:headers => headers)
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     def reject(reason = :busy, headers = nil)
       write_and_await_response Punchblock::Command::Reject.new(:reason => reason, :headers => headers)
       Adhearsion::Events.trigger_immediately :call_rejected, call: current_actor, reason: reason
+    rescue Punchblock::ProtocolError => e
+      abort e
+    end
+
+    #
+    # Redirect the call to some other target system.
+    #
+    # If the redirect is successful, the call will be released from the
+    # telephony engine and Adhearsion will lose control of the call.
+    #
+    # Note that for the common case, this will result in a SIP 302 or
+    # SIP REFER, which provides the caller with a new URI to dial. As such,
+    # the redirect target cannot be any telephony-engine specific address
+    # (such as sofia/gateway, agent/101, or SIP/mypeer); instead it should be a
+    # fully-qualified external SIP URI that the caller can independently reach.
+    #
+    # @param [String] to the target to redirect to, eg a SIP URI
+    # @param [Hash, optional] headers a set of headers to send along with the redirect instruction
+    def redirect(to, headers = nil)
+      write_and_await_response Punchblock::Command::Redirect.new(to: to, headers: headers)
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     def hangup(headers = nil)
@@ -311,6 +343,8 @@ module Adhearsion
       logger.info "Hanging up"
       @end_reason = true
       write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     # @private
@@ -349,24 +383,30 @@ module Adhearsion
       command = Punchblock::Command::Join.new options.merge(join_options_with_target(target))
       write_and_await_response command
       {command: command, joined_condition: joined_condition, unjoined_condition: unjoined_condition}
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     ##
     # Unjoins this call from another call or a mixer
     #
-    # @param [Call, String, Hash] target the target to unjoin from. May be a Call object, a call ID (String, Hash) or a mixer name (Hash)
+    # @param [Call, String, Hash, nil] target the target to unjoin from. May be a Call object, a call ID (String, Hash), a mixer name (Hash) or missing to unjoin from every existing join (nil)
     # @option target [String] call_uri The call ID to unjoin from
     # @option target [String] mixer_name The mixer to unjoin from
     #
-    def unjoin(target)
+    def unjoin(target = nil)
       logger.info "Unjoining from #{target}"
       command = Punchblock::Command::Unjoin.new join_options_with_target(target)
       write_and_await_response command
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     # @private
     def join_options_with_target(target)
       case target
+      when nil
+        {}
       when Call
         { :call_uri => target.uri }
       when String
@@ -402,10 +442,14 @@ module Adhearsion
 
     def mute
       write_and_await_response Punchblock::Command::Mute.new
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     def unmute
       write_and_await_response Punchblock::Command::Unmute.new
+    rescue Punchblock::ProtocolError => e
+      abort e
     end
 
     # @private

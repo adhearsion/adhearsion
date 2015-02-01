@@ -36,6 +36,9 @@ module Adhearsion
       # @option options [CallController] :confirm the controller to execute on the first outbound call to be answered, to give an opportunity to screen the call. The calls will be joined if the outbound call is still active after this controller completes.
       # @option options [Hash] :confirm_metadata Metadata to set on the confirmation controller before executing it. This is shared between all calls if dialing multiple endpoints; if you care about it being mutated, you should provide an immutable value (using eg https://github.com/harukizaemon/hamster).
       #
+      # @option options [CallController] :cleanup The controller to execute on each call being cleaned up. This can be used, for instance, to notify that the call is being terminated. Calls are terminated right after this controller completes execution. If this is not specified, calls are silently terminated during cleanup.
+      # @option options [Hash] :cleanup_metadata Metadata to set on the cleanup controller before executing it. Defaults to :confirm_metadata if not specified.
+      #
       # @option options [Hash] :join_options Options to specify the kind of join operation to perform. See `Call#join` for details.
       # @option options [Call, String, Hash] :join_target the target to join to. May be a Call object, a call ID (String, Hash) or a mixer name (Hash). See `Call#join` for details.
       #
@@ -225,31 +228,30 @@ module Adhearsion
         # @option options [Adhearsion::CallController] :others The call controller class to execute on the 'other' call legs (the ones created as a result of the #dial)
         # @option options [Proc] :others_callback A block to call when the :others controller completes on an individual call
         def split(targets = {})
-          logger.info "Splitting calls apart"
           @splitting = true
           calls_to_split = @calls.map do |call|
             ignoring_ended_calls do
               [call.id, call] if call.active?
             end
           end.compact
-          logger.info "Splitting peer calls #{calls_to_split.map(&:first).join ", "}"
+          logger.info "Splitting off peer calls #{calls_to_split.map(&:first).join ", "}"
           calls_to_split.each do |id, call|
             ignoring_ended_calls do
-              logger.info "Unjoining peer #{call.id} from #{join_target}"
+              logger.debug "Unjoining peer #{call.id} from #{join_target}"
               ignoring_missing_joins { call.unjoin join_target }
               if split_controller = targets[:others]
-                logger.info "Executing split controller #{split_controller} on #{call.id}"
+                logger.info "Executing controller #{split_controller} on split call #{call.id}"
                 call.execute_controller split_controller.new(call, 'current_dial' => self), targets[:others_callback]
               end
             end
           end
           ignoring_ended_calls do
             if join_target != @call
-              logger.info "Unjoining main call #{@call.id} from #{join_target}"
+              logger.debug "Unjoining main call #{@call.id} from #{join_target}"
               @call.unjoin join_target
             end
             if split_controller = targets[:main]
-              logger.info "Executing split controller #{split_controller} on main call"
+              logger.info "Executing controller #{split_controller} on main call"
               @call.execute_controller split_controller.new(@call, 'current_dial' => self), targets[:main_callback]
             end
           end
@@ -327,7 +329,15 @@ module Adhearsion
           else
             logger.info "#dial finished. Hanging up #{calls_to_hangup.size} outbound calls which are still active: #{calls_to_hangup.map(&:first).join ", "}."
             calls_to_hangup.each do |id, outbound_call|
-              ignoring_ended_calls { outbound_call.hangup }
+              ignoring_ended_calls do
+                if @cleanup_controller
+                  logger.info "#dial running #{@cleanup_controller.class.name} on #{outbound_call.id}"
+                  outbound_call.execute_controller @cleanup_controller.new(outbound_call, @cleanup_metadata), ->(call) { call.hangup }
+                else
+                  logger.info "#dial hanging up #{outbound_call.id}"
+                  outbound_call.hangup
+                end
+              end
             end
           end
         end
@@ -373,6 +383,8 @@ module Adhearsion
           @join_options = @options.delete(:join_options) || {}
           @join_target = @options.delete(:join_target) || @call
 
+          @cleanup_controller = @options.delete :cleanup
+          @cleanup_metadata = @options.delete :cleanup_metadata || @confirmation_metadata
           @skip_cleanup = false
         end
 
@@ -384,7 +396,7 @@ module Adhearsion
         end
 
         def pre_join_tasks(call)
-          @pre_join[call] if @pre_join
+          @pre_join.call(call) if @pre_join
           terminate_ringback
         end
 
@@ -425,7 +437,7 @@ module Adhearsion
           super
           on_all_except call do |target_call|
             if @apology_controller
-              logger.info "#dial apologising to call #{target_call.id} because this call has been confirmed by another channel"
+              logger.info "#dial executing apology controller #{@apology_controller} on call #{target_call.id} because this call has been confirmed by another channel"
               target_call.async.execute_controller @apology_controller.new(target_call, @confirmation_metadata), ->(call) { call.hangup }
             else
               logger.info "#dial hanging up call #{target_call.id} because this call has been confirmed by another channel"

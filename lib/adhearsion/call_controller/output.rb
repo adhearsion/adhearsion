@@ -1,15 +1,16 @@
 # encoding: utf-8
+require 'uri'
+
+%w(
+  abstract_player
+  async_player
+  formatter
+  player
+).each { |r| require "adhearsion/call_controller/output/#{r}" }
 
 module Adhearsion
   class CallController
     module Output
-      extend ActiveSupport::Autoload
-
-      autoload :AbstractPlayer
-      autoload :AsyncPlayer
-      autoload :Formatter
-      autoload :Player
-
       PlaybackError = Class.new Adhearsion::Error # Represents failure to play audio, such as when the sound file cannot be found
       NoDocError = Class.new Adhearsion::Error # Represents failure to provide documents to playback
 
@@ -243,6 +244,34 @@ module Adhearsion
       def play_numeric!(number, options = {})
         raise ArgumentError unless number.kind_of?(Numeric) || number =~ /^\d+$/
         async_player.play_ssml output_formatter.ssml_for_numeric(number), options
+      end
+
+      #
+      # Plays the given SSML document from a URL.
+      #
+      # @param [String] url String containing a valid URL, like "http://example.com/document.ssml".
+      # @param [Hash] options A set of options for output. See Punchblock::Component::Output.new for details.
+      #
+      # @raise [ArgumentError] if the given argument can not be played
+      #
+      def play_document(url, options = {})
+        raise ArgumentError unless url =~ URI::regexp
+        player.play_url url, options
+        true
+      end
+
+      #
+      # Plays the given SSML document from a URL and returns as soon as it begins.
+      #
+      # @param [String] url String containing a valid URL, like "http://example.com/document.ssml".
+      # @param [Hash] options A set of options for output. See Punchblock::Component::Output.new for details.
+      #
+      # @raise [ArgumentError] if the given argument can not be played
+      # @return [Punchblock::Component::Output]
+      #
+      def play_document!(url, options = {})
+        raise ArgumentError unless url =~ URI::regexp
+        async_player.play_url url, options
       end
 
       #

@@ -11,11 +11,14 @@ module Adhearsion
           subject { Menu.new(options) }
 
           describe "#initialize" do
-            its(:tries_count) { should be == 0 }
+            describe '#tries_count' do
+              subject { super().tries_count }
+              it { is_expected.to eq(0) }
+            end
 
             context 'when no timeout is set' do
               it "should have the default timeout" do
-                subject.timeout.should be == 5
+                expect(subject.timeout).to eq(5)
               end
             end
 
@@ -25,13 +28,13 @@ module Adhearsion
               }
 
               it 'should have the passed timeout' do
-                subject.timeout.should be == 20
+                expect(subject.timeout).to eq(20)
               end
             end
 
             context 'when no max number of tries is set' do
               it "should have the default max number of tries" do
-                subject.max_number_of_tries.should be == 1
+                expect(subject.max_number_of_tries).to eq(1)
               end
             end
 
@@ -41,17 +44,17 @@ module Adhearsion
               }
 
               it 'should have the passed max number of tries' do
-                subject.max_number_of_tries.should be == 3
+                expect(subject.max_number_of_tries).to eq(3)
               end
             end
 
             context 'when no terminator is set' do
               it "should have no terminator" do
-                subject.terminator.should be == ''
+                expect(subject.terminator).to eq('')
               end
 
               it 'should not validate successfully' do
-                lambda { subject.validate }.should raise_error(Menu::InvalidStructureError)
+                expect { subject.validate }.to raise_error(Menu::InvalidStructureError)
               end
             end
 
@@ -61,25 +64,25 @@ module Adhearsion
               }
 
               it 'should have the passed terminator' do
-                subject.terminator.should be == '3'
+                expect(subject.terminator).to eq('3')
               end
 
               it 'should validate(:basic) successfully' do
-                subject.validate(:basic).should be true
+                expect(subject.validate(:basic)).to be true
               end
 
               it 'should not validate successfully' do
-                lambda { subject.validate }.should raise_error(Menu::InvalidStructureError)
+                expect { subject.validate }.to raise_error(Menu::InvalidStructureError)
               end
             end
 
             context 'when no limit is set' do
               it "should have no limit" do
-                subject.limit.should be nil
+                expect(subject.limit).to be nil
               end
 
               it 'should not validate successfully' do
-                lambda { subject.validate }.should raise_error(Menu::InvalidStructureError)
+                expect { subject.validate }.to raise_error(Menu::InvalidStructureError)
               end
             end
 
@@ -89,21 +92,21 @@ module Adhearsion
               }
 
               it 'should have the passed limit' do
-                subject.limit.should be == 3
+                expect(subject.limit).to eq(3)
               end
 
               it 'should validate(:basic) successfully' do
-                subject.validate(:basic).should be true
+                expect(subject.validate(:basic)).to be true
               end
 
               it 'should not validate successfully' do
-                lambda { subject.validate }.should raise_error(Menu::InvalidStructureError)
+                expect { subject.validate }.to raise_error(Menu::InvalidStructureError)
               end
             end
 
             context 'when no interruptibility is set' do
               it "should be interruptible" do
-                subject.interruptible.should be true
+                expect(subject.interruptible).to be true
               end
             end
 
@@ -113,13 +116,13 @@ module Adhearsion
               }
 
               it 'should be interruptible' do
-                subject.interruptible.should be false
+                expect(subject.interruptible).to be false
               end
             end
 
             context 'when renderer is not specified' do
               it 'should have a nil renderer' do
-                subject.renderer.should be nil
+                expect(subject.renderer).to be nil
               end
             end
 
@@ -129,7 +132,7 @@ module Adhearsion
               }
 
               it 'should have the specified renderer' do
-                subject.renderer.should == :native
+                expect(subject.renderer).to eq(:native)
               end
             end
 
@@ -141,21 +144,24 @@ module Adhearsion
               end
 
               it 'should validate successfully' do
-                subject.validate.should be true
+                expect(subject.validate).to be true
               end
 
               it 'should not validate(:basic) successfully' do
-                lambda { subject.validate :basic }.should raise_error(Menu::InvalidStructureError)
+                expect { subject.validate :basic }.to raise_error(Menu::InvalidStructureError)
               end
             end
 
             context 'menu builder setup' do
-              its(:builder) { should be_a MenuBuilder }
+              describe '#builder' do
+                subject { super().builder }
+                it { is_expected.to be_a MenuBuilder }
+              end
 
               it "should evaluate the block on the builder object" do
                 mock_menu_builder = MenuBuilder.new
-                MenuBuilder.should_receive(:new).and_return(mock_menu_builder)
-                mock_menu_builder.should_receive(:match).once.with(1)
+                expect(MenuBuilder).to receive(:new).and_return(mock_menu_builder)
+                expect(mock_menu_builder).to receive(:match).once.with(1)
                 Menu.new { match 1 }
               end
             end
@@ -163,41 +169,48 @@ module Adhearsion
           end # describe #initialize
 
           describe "#digit_buffer" do
-            its(:digit_buffer) { should be_a Menu::ClearableStringBuffer }
-            its(:digit_buffer) { should be == "" }
+            describe '#digit_buffer' do
+              subject { super().digit_buffer }
+              it { is_expected.to be_a Menu::ClearableStringBuffer }
+            end
+
+            describe '#digit_buffer' do
+              subject { super().digit_buffer }
+              it { is_expected.to eq("") }
+            end
           end
 
           describe "#<<" do
             it "should add a digit to the buffer" do
               subject << 'a'
-              subject.digit_buffer.should be == 'a'
-              subject.result.should be == 'a'
+              expect(subject.digit_buffer).to eq('a')
+              expect(subject.result).to eq('a')
             end
           end
 
           describe "#digit_buffer_empty?" do
             it "returns true if buffer is empty" do
-              subject.digit_buffer_empty?.should be == true
+              expect(subject.digit_buffer_empty?).to eq(true)
             end
 
             it "returns false if buffer is not empty" do
               subject << 1
-              subject.digit_buffer_empty?.should be == false
+              expect(subject.digit_buffer_empty?).to eq(false)
             end
           end
 
           describe "#digit_buffer_string" do
             it "returns the digit buffer as a string" do
               subject << 1
-              subject.digit_buffer_string.should be == "1"
+              expect(subject.digit_buffer_string).to eq("1")
             end
           end
 
           describe "#should_continue?" do
             it "returns true if the number of tries is less than the maximum" do
-              subject.max_number_of_tries.should be == 1
-              subject.tries_count.should be == 0
-              subject.should_continue?.should be == true
+              expect(subject.max_number_of_tries).to eq(1)
+              expect(subject.tries_count).to eq(0)
+              expect(subject.should_continue?).to eq(true)
             end
           end
 
@@ -205,16 +218,16 @@ module Adhearsion
             it "increments tries and clears the digit buffer" do
               subject << 1
               subject.restart!
-              subject.tries_count.should be == 1
-              subject.digit_buffer_empty?.should be == true
+              expect(subject.tries_count).to eq(1)
+              expect(subject.digit_buffer_empty?).to eq(true)
             end
           end
 
           describe "#execute_invalid_hook" do
             it "calls the builder's execute_hook_for with :invalid" do
               mock_menu_builder = MenuBuilder.new
-              MenuBuilder.should_receive(:new).and_return(mock_menu_builder)
-              mock_menu_builder.should_receive(:execute_hook_for).with(:invalid, "")
+              expect(MenuBuilder).to receive(:new).and_return(mock_menu_builder)
+              expect(mock_menu_builder).to receive(:execute_hook_for).with(:invalid, "")
               menu_instance = Menu.new
               menu_instance.execute_invalid_hook
             end
@@ -223,8 +236,8 @@ module Adhearsion
           describe "#execute_timeout_hook" do
             it "calls the builder's execute_hook_for with :timeout" do
               mock_menu_builder = MenuBuilder.new
-              MenuBuilder.should_receive(:new).and_return(mock_menu_builder)
-              mock_menu_builder.should_receive(:execute_hook_for).with(:timeout, "")
+              expect(MenuBuilder).to receive(:new).and_return(mock_menu_builder)
+              expect(mock_menu_builder).to receive(:execute_hook_for).with(:timeout, "")
               menu_instance = Menu.new
               menu_instance.execute_timeout_hook
             end
@@ -233,8 +246,8 @@ module Adhearsion
           describe "#execute_failure_hook" do
             it "calls the builder's execute_hook_for with :failure" do
               mock_menu_builder = MenuBuilder.new
-              MenuBuilder.should_receive(:new).and_return(mock_menu_builder)
-              mock_menu_builder.should_receive(:execute_hook_for).with(:failure, "")
+              expect(MenuBuilder).to receive(:new).and_return(mock_menu_builder)
+              expect(mock_menu_builder).to receive(:execute_hook_for).with(:failure, "")
               menu_instance = Menu.new
               menu_instance.execute_failure_hook
             end
@@ -243,8 +256,8 @@ module Adhearsion
           describe "#execute_validator_hook" do
             it "calls the builder's execute_hook_for with :validator" do
               mock_menu_builder = MenuBuilder.new
-              MenuBuilder.should_receive(:new).and_return(mock_menu_builder)
-              mock_menu_builder.should_receive(:execute_hook_for).with(:validator, "")
+              expect(MenuBuilder).to receive(:new).and_return(mock_menu_builder)
+              expect(mock_menu_builder).to receive(:execute_hook_for).with(:validator, "")
               menu_instance = Menu.new
               menu_instance.execute_validator_hook
             end
@@ -269,44 +282,44 @@ module Adhearsion
             }
 
             it "returns a MenuGetAnotherDigitOrTimeout if the digit buffer is empty" do
-              subject.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout
-              menu_instance.status.should be nil
+              expect(subject.continue).to be_a Menu::MenuGetAnotherDigitOrTimeout
+              expect(menu_instance.status).to be nil
             end
 
             it "asks for another digit if it has potential matches" do
               menu_instance << 2
-              menu_instance.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout
-              menu_instance.status.should be == :potential
+              expect(menu_instance.continue).to be_a Menu::MenuGetAnotherDigitOrTimeout
+              expect(menu_instance.status).to eq(:potential)
             end
 
             it "returns a MenuResultInvalid if there are no matches" do
               menu_instance << 9
-              menu_instance.continue.should be_a Menu::MenuResultInvalid
-              menu_instance.status.should be == :invalid
+              expect(menu_instance.continue).to be_a Menu::MenuResultInvalid
+              expect(menu_instance.status).to eq(:invalid)
             end
 
             it "returns the first exact match when it has exact and potentials" do
               menu_instance << 3
               menu_result = menu_instance.continue
-              menu_result.should be_a Menu::MenuGetAnotherDigitOrFinish
-              menu_result.match_object.should be == MockControllerB
-              menu_result.new_extension.should be == "3"
-              menu_instance.status.should be == :multi_matched
+              expect(menu_result).to be_a Menu::MenuGetAnotherDigitOrFinish
+              expect(menu_result.match_object).to eq(MockControllerB)
+              expect(menu_result.new_extension).to eq("3")
+              expect(menu_instance.status).to eq(:multi_matched)
             end
 
             it "returns a MenuResultFound if it has exact matches" do
               menu_instance << 6
               menu_result = menu_instance.continue
-              menu_result.should be_a Menu::MenuResultFound
-              menu_instance.status.should be == :matched
+              expect(menu_result).to be_a Menu::MenuResultFound
+              expect(menu_instance.status).to eq(:matched)
             end
 
             it "returns the first exact match when it has only exact matches" do
               menu_instance << 6
               menu_result = menu_instance.continue
-              menu_result.should be_a Menu::MenuResultFound
-              menu_result.match_object.match_payload.should be == MockControllerC
-              menu_result.match_object.pattern.to_s.should be == "6"
+              expect(menu_result).to be_a Menu::MenuResultFound
+              expect(menu_result.match_object.match_payload).to eq(MockControllerC)
+              expect(menu_result.match_object.pattern.to_s).to eq("6")
             end
 
             context "with no matchers" do
@@ -318,13 +331,13 @@ module Adhearsion
                 it "buffers until the terminator is issued then returns a MenuTerminated and sets the status to :terminated, removing the terminator from the buffer" do
                   menu_instance << 2
                   menu_instance << 4
-                  menu_instance.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout
-                  menu_instance.status.should be == :potential
+                  expect(menu_instance.continue).to be_a Menu::MenuGetAnotherDigitOrTimeout
+                  expect(menu_instance.status).to eq(:potential)
                   menu_instance << '#'
-                  menu_instance.continue.should be_a Menu::MenuTerminated
-                  menu_instance.continue.should be_a Menu::MenuResultDone
-                  menu_instance.status.should be == :terminated
-                  menu_instance.result.should be == '24'
+                  expect(menu_instance.continue).to be_a Menu::MenuTerminated
+                  expect(menu_instance.continue).to be_a Menu::MenuResultDone
+                  expect(menu_instance.status).to eq(:terminated)
+                  expect(menu_instance.result).to eq('24')
                 end
               end
 
@@ -334,13 +347,13 @@ module Adhearsion
                 it "buffers until the limit is reached, then returns MenuLimitReached and sets the status to :limited" do
                   menu_instance << 2
                   menu_instance << 4
-                  menu_instance.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout
-                  menu_instance.status.should be == :potential
+                  expect(menu_instance.continue).to be_a Menu::MenuGetAnotherDigitOrTimeout
+                  expect(menu_instance.status).to eq(:potential)
                   menu_instance << 2
-                  menu_instance.continue.should be_a Menu::MenuLimitReached
-                  menu_instance.continue.should be_a Menu::MenuResultDone
-                  menu_instance.status.should be == :limited
-                  menu_instance.result.should be == '242'
+                  expect(menu_instance.continue).to be_a Menu::MenuLimitReached
+                  expect(menu_instance.continue).to be_a Menu::MenuResultDone
+                  expect(menu_instance.status).to eq(:limited)
+                  expect(menu_instance.result).to eq('242')
                 end
               end
 
@@ -354,13 +367,13 @@ module Adhearsion
                 it "buffers until the validator returns true, then returns MenuValidatorTerminated and sets the status to :validator_terminated" do
                   menu_instance << 2
                   menu_instance << 4
-                  menu_instance.continue.should be_a Menu::MenuGetAnotherDigitOrTimeout
-                  menu_instance.status.should be == :potential
+                  expect(menu_instance.continue).to be_a Menu::MenuGetAnotherDigitOrTimeout
+                  expect(menu_instance.status).to eq(:potential)
                   menu_instance << 2
-                  menu_instance.continue.should be_a Menu::MenuValidatorTerminated
-                  menu_instance.continue.should be_a Menu::MenuResultDone
-                  menu_instance.status.should be == :validator_terminated
-                  menu_instance.result.should be == '242'
+                  expect(menu_instance.continue).to be_a Menu::MenuValidatorTerminated
+                  expect(menu_instance.continue).to be_a Menu::MenuResultDone
+                  expect(menu_instance.status).to eq(:validator_terminated)
+                  expect(menu_instance.result).to eq('242')
                 end
               end
 
@@ -375,10 +388,10 @@ module Adhearsion
                   menu_instance << 2
                   menu_instance << 4
                   menu_instance << 2
-                  menu_instance.continue.should be_a Menu::MenuValidatorTerminated
-                  menu_instance.continue.should be_a Menu::MenuResultDone
-                  menu_instance.status.should be == :validator_terminated
-                  menu_instance.result.should be == '242'
+                  expect(menu_instance.continue).to be_a Menu::MenuValidatorTerminated
+                  expect(menu_instance.continue).to be_a Menu::MenuResultDone
+                  expect(menu_instance.status).to eq(:validator_terminated)
+                  expect(menu_instance.result).to eq('242')
                 end
               end
             end
@@ -391,13 +404,13 @@ module Adhearsion
             it "adds a string to itself" do
               subject << 'b'
               subject << 'c'
-              subject.should be == 'bc'
+              expect(subject).to eq('bc')
             end
 
             it "clears itself" do
               subject << 'a'
               subject.clear!
-              subject.should be == ""
+              expect(subject).to eq("")
             end
           end
 

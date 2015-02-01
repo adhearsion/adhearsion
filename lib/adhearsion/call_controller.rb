@@ -1,18 +1,17 @@
 # encoding: utf-8
 
 require 'countdownlatch'
+%w(
+  dial
+  input
+  menu_dsl
+  output
+  record
+  utility
+).each { |r| require "adhearsion/call_controller/#{r}" }
 
 module Adhearsion
   class CallController
-    extend ActiveSupport::Autoload
-
-    autoload :Dial
-    autoload :Input
-    autoload :MenuDSL
-    autoload :Output
-    autoload :Record
-    autoload :Utility
-
     include Dial
     include Input
     include Output
@@ -21,7 +20,7 @@ module Adhearsion
 
     class_attribute :callbacks
 
-    self.callbacks = {:before_call => [], :after_call => []}
+    self.callbacks = {:before_call => [], :after_call => [], :on_error => []}
 
     self.callbacks.keys.each do |name|
       class_eval <<-STOP
@@ -119,9 +118,10 @@ module Adhearsion
       execute_callbacks :before_call
       run
     rescue Call::Hangup, Call::ExpiredError
-      logger.info "Call was hung up while executing a controller"
     rescue SyntaxError, StandardError => e
       Events.trigger :exception, [e, logger]
+      on_error e
+      raise
     ensure
       after_call
       logger.debug "Finished executing controller #{self.inspect}"
@@ -196,12 +196,19 @@ module Adhearsion
     end
 
     # @private
+    def on_error(e)
+      @error = e
+      @on_error ||= execute_callbacks :on_error
+    end
+
+    # @private
     def write_and_await_response(command)
       block_until_resumed
       call.write_and_await_response command
       if command.is_a?(Punchblock::Component::ComponentNode)
         command.register_event_handler Punchblock::Event::Complete do |event|
           @active_components.delete command
+          throw :pass
         end
         @active_components << command
       end
@@ -247,6 +254,17 @@ module Adhearsion
     def reject(*args)
       block_until_resumed
       call.reject(*args)
+      raise Call::Hangup
+    end
+
+    #
+    # Redirect the call to some other target
+    #
+    # @see Call#redirect
+    #
+    def redirect(*args)
+      block_until_resumed
+      call.redirect(*args)
       raise Call::Hangup
     end
 
