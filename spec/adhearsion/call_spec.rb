@@ -96,6 +96,11 @@ module Adhearsion
       it { is_expected.to be_truthy }
     end
 
+    describe '#after_hangup_lifetime' do
+      subject { super().after_hangup_lifetime }
+      it { is_expected.to eq(nil) }
+    end
+
     context "when the ID is nil" do
       let(:call_id) { nil }
 
@@ -614,8 +619,16 @@ module Adhearsion
           expect(Adhearsion.active_calls.size).to eq(size_before)
         end
 
-        it "shuts down the actor" do
+        it "shuts down the actor using platform config" do
           Adhearsion.config.platform.after_hangup_lifetime = 2
+          subject << end_event
+          sleep 2.1
+          expect(subject.alive?).to be false
+          expect { subject.id }.to raise_error Call::ExpiredError, /expired and is no longer accessible/
+        end
+
+        it "shuts down the actor using the call after_hangup_lifetime instance" do
+          subject.after_hangup_lifetime = 2
           subject << end_event
           sleep 2.1
           expect(subject.alive?).to be false

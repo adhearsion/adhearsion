@@ -50,8 +50,11 @@ module Adhearsion
     # @return [Time] the time at which the call began. For inbound calls this is the time at which the call was offered to Adhearsion. For outbound calls it is the time at which the remote party answered.
     attr_reader :end_time
 
-    # @return [true, false] wether or not the call should be automatically hung up after executing its controller
+    # @return [true, false] whether or not the call should be automatically hung up after executing its controller
     attr_accessor :auto_hangup
+
+    # @return [Integer] the number of seconds after the call is hung up that the controller will remain active
+    attr_accessor :after_hangup_lifetime
 
     delegate :[], :[]=, :to => :variables
 
@@ -84,6 +87,7 @@ module Adhearsion
       @peers        = {}
       @duration     = nil
       @auto_hangup  = true
+      @after_hangup_lifetime = nil
 
       self << offer if offer
     end
@@ -240,7 +244,7 @@ module Adhearsion
         @end_code = event.platform_code
         @end_blocker.broadcast event.reason
         @commands.terminate
-        after(Adhearsion.config.platform.after_hangup_lifetime) { terminate }
+        after(@after_hangup_lifetime || Adhearsion.config.platform.after_hangup_lifetime) { terminate }
       end
     end
 

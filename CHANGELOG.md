@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Feature: Call#after_hangup_lifetime optionally overrides Adhearsion.config.platform.after_hangup_lifetime 
   * Feature: Accept a `:cleanup` parameter in Dial options, which specifies a controller to be run on each outbound call before cleanup.
   * Feature: Add a per-controller callback `on_error` that is invoked whenever an unhandled exception is raised. This can be used to play apology messages before disconnecting the caller ([#486](https://github.com/adhearsion/adhearsion/issues/486))
   * Feature: Add `Call#redirect` and `CallController#redirect` for redirecting calls to other systems ([#465](https://github.com/adhearsion/adhearsion/issues/465))
