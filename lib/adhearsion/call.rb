@@ -16,21 +16,22 @@ module Adhearsion
     CommandTimeout  = Class.new Adhearsion::Error
     ExpiredError    = Class.new Celluloid::DeadActorError
 
+    # @private
+    class ActorProxy < Celluloid::ActorProxy
+      def method_missing(meth, *args, &block)
+        super(meth, *args, &block)
+      rescue ::Celluloid::DeadActorError
+        raise ExpiredError, "This call is expired and is no longer accessible. See http://adhearsion.com/docs/calls for further details."
+      end
+    end
+
     include Celluloid
     include HasGuardedHandlers
 
+    proxy_class Call::ActorProxy
+
     execute_block_on_receiver :register_handler, :register_tmp_handler, :register_handler_with_priority, :register_handler_with_options, :register_event_handler, :on_joined, :on_unjoined, :on_end, :execute_controller, *execute_block_on_receiver
     finalizer :finalize
-
-    def self.new(*args, &block)
-      super.tap do |proxy|
-        def proxy.method_missing(*args)
-          super
-        rescue Celluloid::DeadActorError
-          raise ExpiredError, "This call is expired and is no longer accessible. See http://adhearsion.com/docs/calls for further details."
-        end
-      end
-    end
 
     # @return [Symbol] the reason for the call ending
     attr_reader :end_reason
