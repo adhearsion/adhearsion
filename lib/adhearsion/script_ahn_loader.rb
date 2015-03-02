@@ -8,25 +8,28 @@ module Adhearsion
     RUBY = File.join(*RbConfig::CONFIG.values_at("bindir", "ruby_install_name")) + RbConfig::CONFIG["EXEEXT"]
     SCRIPT_AHN = File.join('script', 'ahn')
 
-    def self.exec_script_ahn!(args = ARGV)
-      cwd = Dir.pwd
-      return unless in_ahn_application? || in_ahn_application_subdirectory?
-      exec RUBY, SCRIPT_AHN, *args if in_ahn_application?
-      Dir.chdir("..") do
-        # Recurse in a chdir block: if the search fails we want to be sure
-        # the application is generated in the original working directory.
-        exec_script_ahn! unless cwd == Dir.pwd
+    def self.load_script_ahn(path = Dir.pwd)
+      path = Pathname.new(path).expand_path
+      until path.root?
+        script = File.join(path, SCRIPT_AHN)
+        if File.exists?(script)
+          load script
+          return true
+        end
+        path = path.parent
       end
-    rescue SystemCallError
-      # could not chdir, no problem just return
+      nil
     end
 
-    def self.in_ahn_application?(path = '.')
+    def self.in_ahn_application?(path = nil)
+      return File.exists? SCRIPT_AHN unless path
       Dir.chdir(path) { File.exists? SCRIPT_AHN }
     end
 
-    def self.in_ahn_application_subdirectory?(path = Pathname.new(Dir.pwd))
-      File.exists?(File.join(path, SCRIPT_AHN)) || !path.root? && in_ahn_application_subdirectory?(path.parent)
+    def self.in_ahn_application_subdirectory?(path = nil)
+      path = Pathname.new(path.nil? ? Dir.pwd : path)
+      File.exists?(File.join(path, SCRIPT_AHN)) ||
+        ! path.root? && in_ahn_application_subdirectory?(path.parent)
     end
   end
 end
