@@ -38,8 +38,10 @@ module Adhearsion
     end
 
     def config(&block)
+      return @config if @config
+
       @config ||= initialize_config
-      block_given? and yield @config
+      yield(@config) if block_given?
       @config
     end
 
@@ -55,12 +57,14 @@ module Adhearsion
         puts  "You tried to initialize with an invalid environment name #{env}; environment-specific config may not load successfully. Valid values are #{_config.valid_environments}."
         env = nil
       end
-      _config.platform.environment = env if env
+      if env && !_config.platform.environment
+        _config.platform.environment = env
+      end
       _config
     end
 
     def environment
-      ENV['AHN_ENV'] || ENV['RAILS_ENV'] || :development
+      ENV['AHN_ENV'] || ENV['RAILS_ENV'] || ENV['AHN_PLATFORM_ENVIRONMENT'] || :development
     end
 
     def environments

@@ -31,7 +31,7 @@ module Adhearsion
           want these files to be loaded. This folder is relative to the application root folder.
         __
 
-        environment :development, :transform => Proc.new { |v| v.to_sym }, :desc => <<-__
+        environment nil, :transform => Proc.new { |v| v.to_sym }, :desc => <<-__
           Active environment. Supported values: development, production, staging, test
         __
 
