@@ -17,6 +17,7 @@
   * Change: Rename "platform" to "core" relating to the config system, because "platform" is overloaded. Settings are now `config.core.*` or `AHN_CORE_*`.
   * Feature: Add i18n support via `CallController#t`
   * Feature: Integrate a Rack-based HTTP server from the Virginia plugin
+  * Feature: Permit timing out when calling `Call#wait_for_end`
   * Upgrade to Celluloid 0.16
   * Move events system to Celluloid and do away with GirlFriday
 
