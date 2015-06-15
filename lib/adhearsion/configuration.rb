@@ -46,12 +46,8 @@ module Adhearsion
           level :info, :transform => Proc.new { |v| v.to_sym }, :desc => <<-__
             Supported levels (in increasing severity) -- :trace < :debug < :info < :warn < :error < :fatal
           __
-          outputters ["log/adhearsion.log"], :transform => Proc.new { |val| Array(val) }, :desc => <<-__
-            An array of log outputters to use. The default is to log to stdout and log/adhearsion.log.
-            Each item must be either a string to use as a filename, or a valid Logging appender (see http://github.com/TwP/logging)
-          __
           formatter nil, :desc => <<-__
-            A log formatter to apply to all active outputters. If nil, the Adhearsion default formatter will be used.
+            A log formatter to apply to the stream. If nil, the Adhearsion default formatter will be used.
           __
         }
 

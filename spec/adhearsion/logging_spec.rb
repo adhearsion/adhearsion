@@ -57,18 +57,8 @@ describe Adhearsion::Logging do
     expect(::Logging.logger.root.appenders.select{|a| a.is_a?(::Logging::Appenders::Stdout)}.length).to eql(1)
   end
 
-  it "initializes properly a Logging object with appenders as parameter" do
-    Adhearsion::Logging.start([::Logging.appenders.stdout, ::Logging.appenders.file('example.log')])
-    expect(::Logging.logger.root.appenders.length).to eql(2)
-    expect(::Logging.logger.root.appenders.select{|a| a.is_a?(::Logging::Appenders::Stdout)}.length).to eql(1)
-    expect(::Logging.logger.root.appenders.select{|a| a.is_a?(::Logging::Appenders::File)}.length).to eql(1)
-  end
-
-  it "initializes properly a Logging object with appenders and log level as parameter" do
-    Adhearsion::Logging.start([::Logging.appenders.stdout, ::Logging.appenders.file('example.log')], :debug)
-    expect(::Logging.logger.root.appenders.length).to eql(2)
-    expect(::Logging.logger.root.appenders.select{|a| a.is_a?(::Logging::Appenders::Stdout)}.length).to eql(1)
-    expect(::Logging.logger.root.appenders.select{|a| a.is_a?(::Logging::Appenders::File)}.length).to eql(1)
+  it "initializes properly a Logging object with log level as parameter" do
+    Adhearsion::Logging.start(:debug)
     expect(::Logging.logger.root.level).to eql(::Logging::LEVELS["debug"])
   end
 
@@ -83,11 +73,6 @@ describe Adhearsion::Logging do
     _foo_logger = Foo.new.logger
     _bar_logger = Foo::Bar.new.logger
     expect(_foo_logger.object_id).not_to eql(_bar_logger)
-  end
-
-  it 'should reopen logfiles' do
-    expect(::Logging).to receive(:reopen).once
-    Adhearsion::Logging.reopen_logs
   end
 
   it 'should toggle between :trace and the configured log level' do

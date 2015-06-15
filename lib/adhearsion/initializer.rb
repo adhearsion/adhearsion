@@ -30,7 +30,6 @@ module Adhearsion
         load_config_file
         load_events_file
         load_routes_file
-        initialize_log_paths
 
         Adhearsion.statistics
         start_logging
@@ -70,13 +69,6 @@ module Adhearsion
       end
     end
 
-    def resolve_log_file_path
-      _log_file = Adhearsion.config.platform.logging.outputters
-      _log_file = _log_file[0] if _log_file.is_a?(Array)
-      _log_file = File.expand_path(Adhearsion.config.root.dup.concat("/").concat(_log_file)) unless _log_file.start_with?("/")
-      _log_file
-    end
-
     def catch_termination_signal
       self_read, self_write = IO.pipe
 
@@ -105,9 +97,6 @@ module Adhearsion
       when 'INT', 'TERM'
         logger.info "Received SIG#{signal}. Shutting down."
         Adhearsion::Process.shutdown
-      when 'HUP'
-        logger.info "Received SIGHUP. Reopening logfiles."
-        Adhearsion::Logging.reopen_logs
       when 'ALRM'
         logger.info "Received SIGALRM. Toggling trace logging."
         Adhearsion::Logging.toggle_trace!
@@ -151,36 +140,6 @@ module Adhearsion
       load path if File.exists?(path)
     end
 
-    def init_get_logging_appenders
-      @file_loggers ||= memoize_logging_appenders
-    end
-
-    def memoize_logging_appenders
-      appenders = Array(Adhearsion.config.platform.logging.outputters.dup)
-      # Any filename in the outputters array is mapped to a ::Logging::Appenders::File instance
-      appenders.map! do |a|
-        case a
-        when String
-          f = if a.start_with?("/")
-            a
-          else
-            File.expand_path(Adhearsion.config.root.dup.concat("/").concat(a))
-          end
-          ::Logging.appenders.file(f,
-            :layout => ::Logging.layouts.pattern(
-              Adhearsion::Logging.adhearsion_pattern_options
-            ),
-           :auto_flushing => 2,
-           :flush_period => 2
-          )
-        else
-         a
-        end
-      end
-
-      appenders += Adhearsion::Logging.default_appenders
-    end
-
     def configure_plugins
       Plugin.configure_plugins
     end
@@ -205,28 +164,8 @@ module Adhearsion
       end
     end
 
-    # Creates the relative paths associated to log files
-    # i.e.
-    # - log_file = "log/adhearsion.log"      => creates 'log' folder
-    # - log_file = "log/test/adhearsion.log" => creates 'log' and 'log/test' folders
-    def initialize_log_paths
-      outputters = Array(Adhearsion.config.platform.logging.outputters)
-      outputters.select{|o| o.is_a?(String)}.each do |o|
-        o = o.split("/")
-        unless o[0].empty? # only if relative path
-          o.pop # not consider filename
-          o.inject("") do |path, folder|
-            path = path.concat(folder).concat("/")
-            Dir.mkdir(path) unless File.directory? path
-            path
-          end
-        end
-      end
-    end
-
     def start_logging
-      outputters = init_get_logging_appenders
-      Adhearsion::Logging.start outputters, Adhearsion.config.platform.logging.level, Adhearsion.config.platform.logging.formatter
+      Adhearsion::Logging.start Adhearsion.config.platform.logging.level, Adhearsion.config.platform.logging.formatter
     end
 
     def initialize_exception_logger

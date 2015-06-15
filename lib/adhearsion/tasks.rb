@@ -12,7 +12,6 @@ initializer.load_lib_folder
 initializer.load_config_file
 initializer.load_events_file
 initializer.load_routes_file
-initializer.initialize_log_paths
 initializer.start_logging
 initializer.init_plugins
 

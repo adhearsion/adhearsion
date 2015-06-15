@@ -29,7 +29,7 @@ RSpec.configure do |config|
   config.raise_errors_for_deprecations!
 
   config.before :suite do
-    Adhearsion::Logging.start Adhearsion::Logging.default_appenders, :trace, Adhearsion.config.platform.logging.formatter
+    Adhearsion::Logging.start :trace, Adhearsion.config.platform.logging.formatter
     Adhearsion.config.platform.after_hangup_lifetime = 10
     Adhearsion::Initializer.new.initialize_exception_logger
   end
