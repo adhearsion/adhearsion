@@ -13,6 +13,7 @@
     * `config.punchblock.*` becomes `config.platform.*`
     * No longer any dependency on Punchblock, or any mention of that name
   * Change: No longer supporting FreeSWITCH via IES (Rayo only) or Asterisk < 11
+  * Change: Ruby 1.9 is no longer supported. Minimum supported versions are Ruby 2.2.0 and JRuby 9.0.0.0
   * Feature: Add i18n support via `CallController#t`
   * Upgrade to Celluloid 0.16
 
