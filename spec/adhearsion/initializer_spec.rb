@@ -170,7 +170,7 @@ describe Adhearsion::Initializer do
 
   describe "#load_lib_folder" do
     before do
-      Adhearsion.ahn_root = path
+      Adhearsion.root = path
     end
 
     it "should load the contents of lib directory" do

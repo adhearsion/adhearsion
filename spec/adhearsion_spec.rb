@@ -22,18 +22,6 @@ describe Adhearsion do
     end
   end
 
-  describe "#ahn_root=" do
-    it "should update properly the config root variable" do
-      Adhearsion.ahn_root = "./"
-      expect(Adhearsion.config[:platform].root).to eq(Dir.getwd)
-    end
-
-    it "should update properly the config root variable when path is nil" do
-      Adhearsion.ahn_root = nil
-      expect(Adhearsion.config[:platform].root).to be_nil
-    end
-  end
-
   describe "#config" do
     it "should return a Configuration instance" do
       expect(subject.config).to be_instance_of Adhearsion::Configuration

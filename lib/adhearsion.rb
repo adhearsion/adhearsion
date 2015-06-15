@@ -29,14 +29,6 @@ module Adhearsion
       Adhearsion.config[:platform].root
     end
 
-    #
-    # @deprecated Use #root= instead
-    #
-    def ahn_root=(path)
-      Adhearsion.deprecated "#Adhearsion.root="
-      Adhearsion.root = path
-    end
-
     def config(&block)
       @config ||= initialize_config
       block_given? and yield @config
