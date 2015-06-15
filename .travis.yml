@@ -16,3 +16,4 @@ matrix:
 env: ARUBA_TIMEOUT=120 RAILS_ENV=development AHN_ENV=development
 notifications:
   irc: "irc.freenode.org#adhearsion"
+sudo: false
