@@ -18,7 +18,6 @@ Before '@reconnect' do
 end
 
 # TODO: check for name space / run issues
-# NOTE: this will not stop a forked process (eg. daemon mode)
 After do
   terminate_processes!
 end

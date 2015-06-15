@@ -7,7 +7,6 @@
 }.each { |f| require f }
 
 %w{
-  custom_daemonizer
   exception_handler
   libc
   object

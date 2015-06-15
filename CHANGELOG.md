@@ -5,6 +5,7 @@
   * Merge adhearsion-asr in to core to replace the original `#menu` and `#ask` methods
   * Change: Removed `#interruptible_play` and `#stream_file`, both leftovers from Adhearsion 1.x which are replaced by `#ask`
   * Bugfix: Properly load application bundle. This requires the spawning removed in [#534](https://github.com/adhearsion/adhearsion/pull/534).
+  * Change: Removed daemonisation (`ahn daemon`, `ahn stop`, `ahn restart`, PID files) in favour of 12factor compliant deployment, which pushes this responsibility up to a process manager or PaaS
 
 # [2.6.1](https://github.com/adhearsion/adhearsion/compare/v2.6.0...v2.6.1) - [2015-06-15](https://rubygems.org/gems/adhearsion/versions/2.6.1)
   * Bugfix: Improve Call initialization performance. Use an ActorProxy (subclass) instead of a method_missing definition on every Call.new. This considerably improves Call.new performance; benchmarks show approximately a 30-40% improvement: https://gist.github.com/kares/3576e272250204eb66d1
