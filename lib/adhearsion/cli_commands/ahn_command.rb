@@ -116,7 +116,7 @@ module Adhearsion
         raise PathInvalid, path unless File.directory?(path)
 
         raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?(path)
-        # load script/ahn which than boots the Rails environment :
+        # load script/ahn which then boots the application environment
         Dir.chdir(path) { ScriptAhnLoader.load_script_ahn(path) }
         path
       end
