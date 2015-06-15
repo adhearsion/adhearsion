@@ -16,21 +16,22 @@ module Adhearsion
     CommandTimeout  = Class.new Adhearsion::Error
     ExpiredError    = Class.new Celluloid::DeadActorError
 
+    # @private
+    class ActorProxy < Celluloid::ActorProxy
+      def method_missing(meth, *args, &block)
+        super(meth, *args, &block)
+      rescue ::Celluloid::DeadActorError
+        raise ExpiredError, "This call is expired and is no longer accessible. See http://adhearsion.com/docs/calls for further details."
+      end
+    end
+
     include Celluloid
     include HasGuardedHandlers
 
+    proxy_class Call::ActorProxy
+
     execute_block_on_receiver :register_handler, :register_tmp_handler, :register_handler_with_priority, :register_handler_with_options, :register_event_handler, :on_joined, :on_unjoined, :on_end, :execute_controller, *execute_block_on_receiver
     finalizer :finalize
-
-    def self.new(*args, &block)
-      super.tap do |proxy|
-        def proxy.method_missing(*args)
-          super
-        rescue Celluloid::DeadActorError
-          raise ExpiredError, "This call is expired and is no longer accessible. See http://adhearsion.com/docs/calls for further details."
-        end
-      end
-    end
 
     # @return [Symbol] the reason for the call ending
     attr_reader :end_reason
@@ -518,10 +519,14 @@ module Adhearsion
     #
     # Execute a call controller asynchronously against this call.
     #
+    # To block and wait until the controller completes, call `#join` on the result of this method.
+    #
     # @param [Adhearsion::CallController] controller an instance of a controller initialized for this call
     # @param [Proc] a callback to be executed when the controller finishes execution
     #
     # @yield execute the current block as the body of a controller by specifying no controller instance
+    #
+    # @return [Celluloid::ThreadHandle]
     #
     def execute_controller(controller = nil, completion_callback = nil, &block)
       raise ArgumentError, "Cannot supply a controller and a block at the same time" if controller && block_given?

@@ -8,7 +8,7 @@ Edit `extensions.conf` to include the following:
 
 ```
 [your_context_name]
-exten => _.,1,AGI(agi:async)
+exten => _X.,1,AGI(agi:async)
 
 [adhearsion-redirect]
 exten => 1,1,AGI(agi:async)

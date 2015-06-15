@@ -1,5 +1,10 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
+# [2.6.1](https://github.com/adhearsion/adhearsion/compare/v2.6.0...v2.6.1) - [2015-06-15](https://rubygems.org/gems/adhearsion/versions/2.6.1)
+  * Bugfix: Improve Call initialization performance. Use an ActorProxy (subclass) instead of a method_missing definition on every Call.new. This considerably improves Call.new performance; benchmarks show approximately a 30-40% improvement: https://gist.github.com/kares/3576e272250204eb66d1
+  * Bugfix: Executing ahn commands (such as start) won't spawn any sub-rubies underneath
+  * Bugfix: Allow a generated app to execute Rake tasks with only production dependencies installed
+
 # [2.6.0](https://github.com/adhearsion/adhearsion/compare/v2.5.4...v2.6.0) - [2015-02-01](https://rubygems.org/gems/adhearsion/versions/2.6.0)
   * Feature: `Call#after_hangup_lifetime` optionally overrides `Adhearsion.config.platform.after_hangup_lifetime` ([#537](https://github.com/adhearsion/adhearsion/pull/537))
   * Feature: Accept a `:cleanup` parameter in Dial options, which specifies a controller to be run on each outbound call before cleanup. ([#484](https://github.com/adhearsion/adhearsion/pull/484))
