@@ -73,10 +73,10 @@ module Adhearsion
         end
 
         context "with a media engine" do
-          let(:media_engine) { :native }
+          let(:renderer) { :native }
           it "should use the specified media engine in the component" do
-            expect_ssml_output ssml, renderer: media_engine
-            expect(subject.play_audio(audio_file, renderer: media_engine)).to be true
+            expect_ssml_output ssml, renderer: renderer
+            expect(subject.play_audio(audio_file, renderer: renderer)).to be true
           end
         end
       end
@@ -111,11 +111,11 @@ module Adhearsion
           end
         end
 
-        context "with a media engine" do
-          let(:media_engine) { :native }
-          it "should use the specified media engine in the SSML" do
-            expect_async_ssml_output ssml, renderer: media_engine
-            expect(subject.play_audio!(audio_file, renderer: media_engine)).to be_a Punchblock::Component::Output
+        context "with a renderer" do
+          let(:renderer) { :native }
+          it "should use the specified renderer in the output component" do
+            expect_async_ssml_output ssml, renderer: renderer
+            expect(subject.play_audio!(audio_file, renderer: renderer)).to be_a Punchblock::Component::Output
           end
         end
       end
@@ -737,105 +737,6 @@ module Adhearsion
         end
       end
 
-      describe "#interruptible_play" do
-        let(:output1)       { "one two" }
-        let(:output2)       { "three four" }
-        let(:non_existing)  { "http://adhearsion.com/nonexistingfile.mp3" }
-        let(:extra_options) { {renderer: :native } }
-
-        it "plays two outputs in succession" do
-          expect(subject).to receive(:stream_file).twice
-          digit = subject.interruptible_play output1, output2
-          expect(digit).to be_nil
-        end
-
-        it "stops at the first play when input is received" do
-          expect(subject).to receive(:stream_file).once.and_return(2)
-          digit = subject.interruptible_play output1, output2
-          expect(digit).to eq(2)
-        end
-
-        it "passes options on to #stream_file" do
-          expect(subject).to receive(:stream_file).once.with(output1, '0123456789#*', extra_options)
-          expect(subject).to receive(:stream_file).once.with(output2, '0123456789#*', extra_options)
-          digit = subject.interruptible_play output1, output2, extra_options
-          expect(digit).to be_nil
-        end
-
-        it 'raises an exception when output is unsuccessful' do
-          expect(subject).to receive(:stream_file).once.and_raise Output::PlaybackError, "Output failed"
-          expect { subject.interruptible_play non_existing }.to raise_error(Output::PlaybackError)
-        end
-      end
-
-      describe "#stream_file" do
-        let(:allowed_digits)  { '35' }
-        let(:prompt)          { "Press 3 or 5 to make something happen." }
-
-        let(:ssml) do
-          RubySpeech::SSML.draw do
-            string "Press 3 or 5 to make something happen."
-          end
-        end
-
-        let(:grammar) do
-          RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'acceptdigits' do
-            rule id: 'acceptdigits' do
-              one_of do
-                allowed_digits.each { |d| item { d.to_s } }
-              end
-            end
-          end
-        end
-
-        let(:output_component) {
-          Punchblock::Component::Output.new :ssml => ssml.to_s
-        }
-
-        let(:input_component) {
-          Punchblock::Component::Input.new :mode => :dtmf,
-                                           :grammar => { :value => grammar.to_s }
-        }
-
-        def expect_component_complete_event
-          expect_input_component_complete_event 'dtmf-5'
-        end
-
-        #test does pass and method works, but not sure if the empty method is a good idea
-        it "plays the correct output" do
-          allow(controller).to receive(:write_and_await_response)
-
-          expect_component_complete_event
-          expect_component_execution Punchblock::Component::Output.new(:ssml => ssml)
-          subject.stream_file prompt, allowed_digits
-        end
-
-        it "returns a single digit amongst the allowed when pressed" do
-          expect(controller).to receive(:write_and_await_response).with(kind_of(Punchblock::Component::Input)) do |input_component|
-            input_component.trigger_event_handler Punchblock::Event::Complete.new
-          end
-
-          expect(controller).to receive(:write_and_await_response).once.with(kind_of(Punchblock::Component::Output))
-
-          expect_any_instance_of(Punchblock::Component::Output).to receive(:stop!)
-          expect_any_instance_of(Punchblock::Component::Output).to receive(:complete_event).and_return double('complete', reason: double('Reason'))
-          expect_input_component_complete_event 'dtmf-5'
-
-          expect(subject.stream_file(prompt, allowed_digits)).to eq('5')
-        end
-
-        context "with output options passed in" do
-          let(:extra_options) { {renderer: :native } }
-          it "plays the correct output with options" do
-            allow(controller).to receive(:write_and_await_response)
-
-            expect_component_complete_event
-            expect_component_execution Punchblock::Component::Output.new({:ssml => ssml}.merge(extra_options))
-            subject.stream_file prompt, allowed_digits, extra_options
-          end
-        end
-      end
-
       describe "#say" do
         describe "with a nil argument" do
           it "is a no-op" do
@@ -860,26 +761,12 @@ module Adhearsion
           end
         end
 
-        describe "with a default voice set in PB config" do
-          before { Adhearsion.config.punchblock.default_voice = 'foo' }
-
-          it 'sets the voice on the output component' do
-            str = "Hello world"
-            ssml = RubySpeech::SSML.draw { string str }
-            expect_ssml_output ssml, voice: 'foo'
-            subject.say(str)
-          end
-
-          after { Adhearsion.config.punchblock.default_voice = nil }
-        end
-
-        describe "with a default voice set in core and PB config" do
+        describe "with a default voice set in core config" do
           before do
-            Adhearsion.config.punchblock.default_voice = 'foo'
             Adhearsion.config.platform.media.default_voice = 'bar'
           end
 
-          it 'prefers core config to set the voice on the output component' do
+          it 'sets the voice on the output component' do
             str = "Hello world"
             ssml = RubySpeech::SSML.draw { string str }
             expect_ssml_output ssml, voice: 'bar'
@@ -887,31 +774,16 @@ module Adhearsion
           end
 
           after do
-            Adhearsion.config.punchblock.default_voice = nil
             Adhearsion.config.platform.media.default_voice = nil
           end
         end
 
-        describe "with a default media engine set in PB config" do
-          before { Adhearsion.config.punchblock.media_engine = 'foo' }
-
-          it 'sets the renderer on the output component' do
-            str = "Hello world"
-            ssml = RubySpeech::SSML.draw { string str }
-            expect_ssml_output ssml, renderer: 'foo'
-            subject.say(str)
-          end
-
-          after { Adhearsion.config.punchblock.media_engine = nil }
-        end
-
-        describe "with a default renderer set in core and PB config" do
+        describe "with a default renderer set in config" do
           before do
-            Adhearsion.config.punchblock.media_engine = 'foo'
             Adhearsion.config.platform.media.default_renderer = 'bar'
           end
 
-          it 'prefers core config to set the renderer on the output component' do
+          it 'sets the renderer on the output component' do
             str = "Hello world"
             ssml = RubySpeech::SSML.draw { string str }
             expect_ssml_output ssml, renderer: 'bar'
@@ -919,7 +791,6 @@ module Adhearsion
           end
 
           after do
-            Adhearsion.config.punchblock.media_engine = nil
             Adhearsion.config.platform.media.default_renderer = nil
           end
         end
@@ -964,26 +835,12 @@ module Adhearsion
           end
         end
 
-        describe "with a default voice set in PB config" do
-          before { Adhearsion.config.punchblock.default_voice = 'foo' }
-
-          it 'sets the voice on the output component' do
-            str = "Hello world"
-            ssml = RubySpeech::SSML.draw { string str }
-            expect_async_ssml_output ssml, voice: 'foo'
-            subject.say!(str)
-          end
-
-          after { Adhearsion.config.punchblock.default_voice = nil }
-        end
-
-        describe "with a default voice set in core and PB config" do
+        describe "with a default voice set in config" do
           before do
-            Adhearsion.config.punchblock.default_voice = 'foo'
             Adhearsion.config.platform.media.default_voice = 'bar'
           end
 
-          it 'prefers core config to set the voice on the output component' do
+          it 'sets the voice on the output component' do
             str = "Hello world"
             ssml = RubySpeech::SSML.draw { string str }
             expect_async_ssml_output ssml, voice: 'bar'
@@ -991,31 +848,16 @@ module Adhearsion
           end
 
           after do
-            Adhearsion.config.punchblock.default_voice = nil
             Adhearsion.config.platform.media.default_voice = nil
           end
         end
 
-        describe "with a default media engine set in PB config" do
-          before { Adhearsion.config.punchblock.media_engine = 'foo' }
-
-          it 'sets the renderer on the output component' do
-            str = "Hello world"
-            ssml = RubySpeech::SSML.draw { string str }
-            expect_async_ssml_output ssml, renderer: 'foo'
-            subject.say!(str)
-          end
-
-          after { Adhearsion.config.punchblock.media_engine = nil }
-        end
-
-        describe "with a default renderer set in core and PB config" do
+        describe "with a default renderer set in config" do
           before do
-            Adhearsion.config.punchblock.media_engine = 'foo'
             Adhearsion.config.platform.media.default_renderer = 'bar'
           end
 
-          it 'prefers core config to set the renderer on the output component' do
+          it 'sets the renderer on the output component' do
             str = "Hello world"
             ssml = RubySpeech::SSML.draw { string str }
             expect_async_ssml_output ssml, renderer: 'bar'
@@ -1023,7 +865,6 @@ module Adhearsion
           end
 
           after do
-            Adhearsion.config.punchblock.media_engine = nil
             Adhearsion.config.platform.media.default_renderer = nil
           end
         end

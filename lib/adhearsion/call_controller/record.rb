@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require 'ruby_speech'
+
 module Adhearsion
   class CallController
     module Record
@@ -63,12 +65,25 @@ module Adhearsion
           interrupt_digits = interrupt_digits == true ? '0123456789#*' : interrupt_digits.to_s
           @stopper_component = Punchblock::Component::Input.new :mode => :dtmf,
             :grammar => {
-              :value => @controller.grammar_accept(interrupt_digits)
+              :value => grammar_accept(interrupt_digits)
             }
           @stopper_component.register_event_handler Punchblock::Event::Complete do |event|
             @record_component.stop! unless @record_component.complete?
           end
           @stopper_component
+        end
+
+        def grammar_accept(digits = '0123456789#*')
+          allowed_digits = '0123456789#*'
+          gram_digits = digits.chars.select { |x| allowed_digits.include? x }
+
+          RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
+            rule id: 'inputdigits', scope: 'public' do
+              one_of do
+                gram_digits.each { |d| item { d.to_s } }
+              end
+            end
+          end
         end
 
         def execute_stopper

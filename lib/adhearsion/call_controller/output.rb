@@ -274,60 +274,6 @@ module Adhearsion
         async_player.play_url url, options
       end
 
-      #
-      # Plays the given output, allowing for DTMF input of a single digit from the user
-      # At the end of the played file it returns nil
-      #
-      # @example Ask the user for a number, then play it back
-      #   ssml = RubySpeech::SSML.draw do
-      #     "Please press a button"
-      #   end
-      #   input = interruptible_play ssml
-      #   play input unless input.nil?
-      #
-      # @param [String, Numeric, Date, Time, RubySpeech::SSML::Speak, Array, Hash] outputs The argument to play to the user, or an array of arguments.
-      # @param [Hash] options Additional options.
-      #
-      # @return [String, nil] The single DTMF character entered by the user, or nil if nothing was entered
-      # @raise [PlaybackError] if (one of) the given argument(s) could not be played
-      #
-      def interruptible_play(*outputs, options)
-        options = process_output_options outputs, options
-        outputs.find do |output|
-          digit = stream_file output, '0123456789#*', options
-          return digit if digit
-        end
-      end
-
-      #
-      # Plays a single output, not only files, accepting interruption by one of the digits specified
-      #
-      # @param [Object] argument String or Hash specifying output and options
-      # @param [String] digits String with the digits that are allowed to interrupt output
-      #
-      # @return [String, nil] The pressed digit, or nil if nothing was pressed
-      # @private
-      #
-      def stream_file(argument, digits = '0123456789#*', output_options = {})
-        result = nil
-        stopper = Punchblock::Component::Input.new :mode => :dtmf,
-          :grammar => {
-            :value => grammar_accept(digits)
-          }
-
-        player.output output_formatter.ssml_for(argument), output_options do |output_component|
-          stopper.register_event_handler Punchblock::Event::Complete do |event|
-            output_component.stop! unless output_component.complete?
-          end
-          write_and_await_response stopper
-        end
-
-        stopper.stop! if stopper.executing?
-        reason = stopper.complete_event.reason
-        result = reason.respond_to?(:utterance) ? reason.utterance : nil
-        parse_dtmf result
-      end
-
       # @private
       def player
         Player.new(self)

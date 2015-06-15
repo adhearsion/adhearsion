@@ -22,8 +22,6 @@ module Adhearsion
       connection_timeout  60               , :transform => Proc.new { |v| PunchblockPlugin.validate_number v }, :desc => "The amount of time to wait for a connection"
       reconnect_attempts  1.0/0.0          , :transform => Proc.new { |v| PunchblockPlugin.validate_number v }, :desc => "The number of times to (re)attempt connection to the server"
       reconnect_timer     5                , :transform => Proc.new { |v| PunchblockPlugin.validate_number v }, :desc => "Delay between connection attempts"
-      media_engine        nil              , :transform => Proc.new { |v| v.to_sym }, :desc => "The media engine to use. Defaults to platform default. This is deprecated, please see core media config options for forward compatability."
-      default_voice       nil              , :transform => Proc.new { |v| v.to_sym }, :desc => "The default TTS voice to use. This is deprecated, please see core media config options for forward compatability."
     end
 
     init :punchblock do

@@ -46,6 +46,7 @@ module CallControllerTestHelpers
     else
       expectation.and_return component
     end
+    expectation
   end
 
   def expect_input_component_complete_event(utterance)
