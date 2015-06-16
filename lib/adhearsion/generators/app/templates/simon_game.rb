@@ -7,6 +7,7 @@ class SimonGame < Adhearsion::CallController
   def run
     answer
     reset
+    say t(:hello)
     loop do
       update_number
       collect_attempt

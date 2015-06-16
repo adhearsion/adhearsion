@@ -35,6 +35,9 @@ RSpec.configure do |config|
   end
 
   config.before :each do
+    Adhearsion.config.platform.i18n.locale_path = ["#{File.dirname(__FILE__)}/fixtures/locale"]
+    Adhearsion::Initializer.new.setup_i18n_load_path
+
     Adhearsion.router = nil
     allow(Punchblock).to receive(:new_request_id).and_return 'foo'
   end

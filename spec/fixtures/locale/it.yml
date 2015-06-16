@@ -1,0 +1,13 @@
+it:
+  have_many_cats:
+    audio: ho_parecchi_gatti.wav
+    text: "Ho parecchi gatti"
+
+  my_shirt_is_white:
+    audio: la_mia_camicia_e_bianca.wav
+
+  many_people_out_today:
+    text: Ci sono molti persone fuori oggi
+
+  # Simulating an external, non adhearsion-i18n translation:
+  seventeen: diciassette

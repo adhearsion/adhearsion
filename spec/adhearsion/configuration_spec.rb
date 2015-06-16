@@ -143,6 +143,10 @@ describe Adhearsion::Configuration do
 
   describe "while defining the environment" do
 
+    before do
+      Adhearsion.config = nil
+    end
+
     after do
       ENV['AHN_ENV'] = nil
       Adhearsion.config = nil
