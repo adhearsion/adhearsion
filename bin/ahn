@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
 
 require 'adhearsion/cli'
-# when script/ahn gets loaded it does AhnCommand.start
-Adhearsion::ScriptAhnLoader.load_script_ahn || Adhearsion::CLI::AhnCommand.start
+Adhearsion::CLI::AhnCommand.start
