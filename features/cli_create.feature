@@ -7,9 +7,12 @@ Feature: Adhearsion Ahn CLI (Create)
     When I run `ahn create path/somewhere`
     And I cd to "path/somewhere"
     Then the following directories should exist:
+      | app/assets/audio      |
+      | app/assets/audio/en   |
       | app/call_controllers  |
       | lib                   |
       | config                |
+      | config/locales        |
       | script                |
       | spec                  |
       | spec/call_controllers |
@@ -18,11 +21,13 @@ Feature: Adhearsion Ahn CLI (Create)
     And the following files should exist:
       | .gitignore                                |
       | .rspec                                    |
+      | app/assets/audio/en/hello_world.wav       |
       | app/call_controllers/simon_game.rb        |
       | config/adhearsion.rb                      |
       | config/environment.rb                     |
       | config/events.rb                          |
       | config/routes.rb                          |
+      | config/locales/en.yml                     |
       | Gemfile                                   |
       | script/ahn                                |
       | spec/spec_helper.rb                       |
@@ -58,14 +63,17 @@ Feature: Adhearsion Ahn CLI (Create)
     """
     And the file "app/call_controllers/simon_game.rb" should contain "class SimonGame"
     And the file "script/ahn" should contain "require 'adhearsion'"
+    And the file "config/locales/en.yml" should contain "en:"
 
   Scenario: Generate application --empty
     When I run `ahn create path/somewhere --empty`
     And I cd to "path/somewhere"
     Then the following directories should exist:
+      | app/assets/audio      |
       | app/call_controllers  |
       | lib                   |
       | config                |
+      | config/locales        |
       | script                |
       | spec                  |
       | spec/call_controllers |
@@ -86,7 +94,9 @@ Feature: Adhearsion Ahn CLI (Create)
       | Procfile              |
 
     And the following files should not exist:
+      | app/assets/audio/en/hello_world.wav       |
       | app/call_controllers/simon_game.rb        |
+      | config/locales/en.yml                     |
       | spec/call_controllers/simon_game_spec.rb  |
 
     And the file "config/events.rb" should not contain each of these content parts:

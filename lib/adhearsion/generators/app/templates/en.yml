@@ -1,0 +1,4 @@
+en:
+  hello:
+    audio: hello_world.wav
+    text: "Hello world"

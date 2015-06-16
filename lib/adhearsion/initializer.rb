@@ -38,6 +38,7 @@ module Adhearsion
         catch_termination_signal
         set_ahn_proc_name
         initialize_exception_logger
+        setup_i18n_load_path
         init_plugins
 
         run_plugins
@@ -66,6 +67,13 @@ module Adhearsion
     def debugging_log
       debugging_items.each do |item|
         logger.trace item
+      end
+    end
+
+    def setup_i18n_load_path
+      Adhearsion.config.platform.i18n.locale_path.each do |dir|
+        logger.debug "Adding #{dir} to the I18n load path"
+        I18n.load_path += Dir["#{dir}/**/*.yml"]
       end
     end
 

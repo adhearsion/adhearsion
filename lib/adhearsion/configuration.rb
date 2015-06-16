@@ -66,6 +66,19 @@ module Adhearsion
           recognizer nil, desc: 'The default recognizer used for all input. Set nil to use platform default.'
           input_language 'en-US', desc: 'The default language set on generated grammars. Set nil to use platform default.'
         }
+
+        desc "Internationalisation"
+        i18n {
+          locale_path ["config/locales"], transform: Proc.new { |v| v.split ':' }, desc: <<-__
+            List of directories from which to load locale data, colon-delimited
+          __
+          audio_path "app/assets/audio", desc: <<-__
+            Base path from which audio files can be found. May be a filesystem path or some other URL (like HTTP)
+          __
+          fallback true, desc: <<-__
+            Whether to include text for translations that provide both text & audio. True or false.
+          __
+        }
       end
 
       Loquacious::Configuration.for :platform, &block if block_given?
