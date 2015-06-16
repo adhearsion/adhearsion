@@ -13,45 +13,23 @@ module Adhearsion
       end
     end
 
-    DEFAULT_PID_FILE_NAME = 'adhearsion.pid'
+    attr_reader :path
 
-    attr_reader :path, :daemon, :pid_file
-
-    # Creation of pid_files
-    #
-    #  - You may want to have Adhearsion create a process identification
-    #    file when it boots so that a crash monitoring program such as
-    #    Monit can reboot if necessary or so the init script can kill it
-    #    for system shutdowns.
-    #  - To have Adhearsion create a pid file in the default location (i.e.
-    #    AHN_INSTALL_DIR/adhearsion.pid), supply :pid_file with 'true'. Otherwise
-    #    one is not created UNLESS it is running in daemon mode, in which
-    #    case one is created. You can force Adhearsion to not create one
-    #    even in daemon mode by supplying "false".
     def initialize(options = {})
       @@started = true
       @path     = path
-      @mode     = options[:mode]
-      @pid_file = options[:pid_file].nil? ? ENV['PID_FILE'] : options[:pid_file]
+      @console  = options[:console]
       @loaded_init_files  = options[:loaded_init_files]
       Adhearsion.root = '.'
     end
 
     def start
       catch :boot_aborted do
-        resolve_pid_file_path
         configure_plugins
         load_lib_folder
         load_config_file
         load_events_file
         load_routes_file
-        initialize_log_paths
-
-        if should_daemonize?
-          daemonize!
-        else
-          create_pid_file
-        end
 
         Adhearsion.statistics
         start_logging
@@ -91,29 +69,6 @@ module Adhearsion
       end
     end
 
-    def default_pid_path
-      File.join Adhearsion.config.root, DEFAULT_PID_FILE_NAME
-    end
-
-    def resolve_pid_file_path
-      @pid_file = if pid_file.equal?(true)
-        default_pid_path
-      elsif pid_file.equal?(false)
-        nil
-      elsif pid_file
-        File.expand_path pid_file
-      else
-        should_daemonize? ? default_pid_path : nil
-      end
-    end
-
-    def resolve_log_file_path
-      _log_file = Adhearsion.config.platform.logging.outputters
-      _log_file = _log_file[0] if _log_file.is_a?(Array)
-      _log_file = File.expand_path(Adhearsion.config.root.dup.concat("/").concat(_log_file)) unless _log_file.start_with?("/")
-      _log_file
-    end
-
     def catch_termination_signal
       self_read, self_write = IO.pipe
 
@@ -142,9 +97,6 @@ module Adhearsion
       when 'INT', 'TERM'
         logger.info "Received SIG#{signal}. Shutting down."
         Adhearsion::Process.shutdown
-      when 'HUP'
-        logger.info "Received SIGHUP. Reopening logfiles."
-        Adhearsion::Logging.reopen_logs
       when 'ALRM'
         logger.info "Received SIGALRM. Toggling trace logging."
         Adhearsion::Logging.toggle_trace!
@@ -188,40 +140,6 @@ module Adhearsion
       load path if File.exists?(path)
     end
 
-    def init_get_logging_appenders
-      @file_loggers ||= memoize_logging_appenders
-    end
-
-    def memoize_logging_appenders
-      appenders = Array(Adhearsion.config.platform.logging.outputters.dup)
-      # Any filename in the outputters array is mapped to a ::Logging::Appenders::File instance
-      appenders.map! do |a|
-        case a
-        when String
-          f = if a.start_with?("/")
-            a
-          else
-            File.expand_path(Adhearsion.config.root.dup.concat("/").concat(a))
-          end
-          ::Logging.appenders.file(f,
-            :layout => ::Logging.layouts.pattern(
-              Adhearsion::Logging.adhearsion_pattern_options
-            ),
-           :auto_flushing => 2,
-           :flush_period => 2
-          )
-        else
-         a
-        end
-      end
-
-      if should_daemonize?
-        appenders
-      else
-        appenders += Adhearsion::Logging.default_appenders
-      end
-    end
-
     def configure_plugins
       Plugin.configure_plugins
     end
@@ -234,19 +152,8 @@ module Adhearsion
       Plugin.run_plugins
     end
 
-    def should_daemonize?
-      @mode == :daemon
-    end
-
     def need_console?
-      @mode == :console
-    end
-
-    def daemonize!
-      logger.info "Daemonizing now!"
-      Adhearsion::CustomDaemonizer.daemonize resolve_log_file_path do |pid|
-        create_pid_file pid
-      end
+      @console == true
     end
 
     def launch_console
@@ -257,47 +164,13 @@ module Adhearsion
       end
     end
 
-    # Creates the relative paths associated to log files
-    # i.e.
-    # - log_file = "log/adhearsion.log"      => creates 'log' folder
-    # - log_file = "log/test/adhearsion.log" => creates 'log' and 'log/test' folders
-    def initialize_log_paths
-      outputters = Array(Adhearsion.config.platform.logging.outputters)
-      outputters.select{|o| o.is_a?(String)}.each do |o|
-        o = o.split("/")
-        unless o[0].empty? # only if relative path
-          o.pop # not consider filename
-          o.inject("") do |path, folder|
-            path = path.concat(folder).concat("/")
-            Dir.mkdir(path) unless File.directory? path
-            path
-          end
-        end
-      end
-    end
-
     def start_logging
-      outputters = init_get_logging_appenders
-      Adhearsion::Logging.start outputters, Adhearsion.config.platform.logging.level, Adhearsion.config.platform.logging.formatter
+      Adhearsion::Logging.start Adhearsion.config.platform.logging.level, Adhearsion.config.platform.logging.formatter
     end
 
     def initialize_exception_logger
       Events.register_handler :exception do |e, l|
         (l || logger).error e
-      end
-    end
-
-    def create_pid_file(pid = nil)
-      return unless pid_file
-
-      logger.debug "Creating PID file #{pid_file}"
-
-      File.open pid_file, 'w' do |file|
-        file.puts pid || ::Process.pid
-      end
-
-      Events.register_callback :shutdown do
-        File.delete(pid_file) if File.exists?(pid_file)
       end
     end
 

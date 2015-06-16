@@ -63,24 +63,17 @@ module Adhearsion
         end
       end
 
-      # Close logfiles and reopen them.  Useful for log rotation.
-      def reopen_logs
-        logger.info "Closing logfiles."
-        ::Logging.reopen
-        logger.info "Logfiles reopened."
-      end
-
       def init
         ::Logging.init LOG_LEVELS
 
         LOG_LEVELS.each do |level|
           Adhearsion::Logging.const_defined?(level) or Adhearsion::Logging.const_set(level, ::Logging::LEVELS[::Logging.levelify(level)])
         end
+
+        ::Logging.logger.root.appenders = default_appenders
       end
 
-      def start(_appenders = nil, level = :info, formatter = nil)
-        ::Logging.logger.root.appenders = _appenders.nil? ? default_appenders : _appenders
-
+      def start(level = :info, formatter = nil)
         ::Logging.logger.root.level = level
 
         self.formatter = formatter if formatter
@@ -118,18 +111,6 @@ module Adhearsion
       def sanitized_logger_name(name)
         name.to_s.gsub(/\W/, '').downcase
       end
-
-      def outputters=(outputters)
-        ::Logging.logger.root.appenders = outputters
-      end
-
-      alias :appenders= :outputters=
-
-      def outputters
-        ::Logging.logger.root.appenders
-      end
-
-      alias :appenders :outputters
 
       def formatter=(formatter)
         ::Logging.logger.root.appenders.each do |appender|

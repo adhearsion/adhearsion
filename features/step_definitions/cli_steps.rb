@@ -4,7 +4,6 @@ Then /^I should see the usage message$/ do
   steps %Q{
     Then the output should contain "ahn create"
     Then the output should contain "ahn start"
-    Then the output should contain "ahn daemon"
     Then the output should contain "ahn version"
     Then the output should contain "ahn plugin"
     Then the output should contain "ahn help"
@@ -57,13 +56,3 @@ Then /^there should be a valid adhearsion directory named "([^"]*)"$/ do |path|
   dotsback.shift if dotsback[0].is_a?(String) and dotsback[0].empty?
   cd(dotsback)
 end
-
-When /^I terminate the process using the pid file "([^"]*)"$/ do |pidfile|
-  check_file_presence([pidfile], true)
-  prep_for_fs_check do
-    pid = File.read(pidfile).to_i
-    Process.kill("TERM", pid)
-    sleep 1
-  end
-end
-
