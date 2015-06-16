@@ -14,6 +14,4 @@ matrix:
     - rvm: rbx-2.1.1
     - rvm: ruby-head
 env: ARUBA_TIMEOUT=120 AHN_ENV=development
-notifications:
-  irc: "irc.freenode.org#adhearsion"
 sudo: false
