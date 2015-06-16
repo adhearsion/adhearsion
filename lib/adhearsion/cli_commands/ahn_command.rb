@@ -42,7 +42,7 @@ module Adhearsion
       def start(path = nil)
         path = execute_from_app_dir! path
         say "Starting Adhearsion server at #{Dir.pwd}"
-        Adhearsion::Initializer.start :console => !!options[:noconsole]
+        Adhearsion::Initializer.start :console => !options[:noconsole]
       end
 
       protected
