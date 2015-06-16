@@ -24,7 +24,7 @@ class SimonGame < Adhearsion::CallController
 
   def collect_attempt
     result = ask @number, :limit => @number.length
-    @attempt = result.response
+    @attempt = result.utterance
   end
 
   def verify_attempt

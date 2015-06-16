@@ -1,13 +1,12 @@
 # encoding: utf-8
 
 require 'countdownlatch'
+
 %w(
   dial
   input
-  menu_dsl
   output
   record
-  utility
 ).each { |r| require "adhearsion/call_controller/#{r}" }
 
 module Adhearsion
@@ -16,7 +15,6 @@ module Adhearsion
     include Input
     include Output
     include Record
-    include Utility
 
     class_attribute :callbacks
 

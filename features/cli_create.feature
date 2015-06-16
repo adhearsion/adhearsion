@@ -53,8 +53,8 @@ Feature: Adhearsion Ahn CLI (Create)
     And the file "Rakefile" should contain "adhearsion/tasks"
     And the file "Gemfile" should contain each of these content parts:
     """
-    source 'https://rubygems.org
-    gem 'adhearsion-asr'
+    source 'https://rubygems.org'
+    gem 'adhearsion'
     """
     And the file "app/call_controllers/simon_game.rb" should contain "class SimonGame"
     And the file "script/ahn" should contain "require 'adhearsion'"
