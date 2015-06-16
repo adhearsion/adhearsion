@@ -1,4 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+
+# [2.6.2](https://github.com/adhearsion/adhearsion/compare/v2.6.1...v2.6.2) - [2015-06-16](https://rubygems.org/gems/adhearsion/versions/2.6.2)
   * Bugfix: Properly load application bundle. This requires the spawning removed in [#534](https://github.com/adhearsion/adhearsion/pull/534).
 
 # [2.6.1](https://github.com/adhearsion/adhearsion/compare/v2.6.0...v2.6.1) - [2015-06-15](https://rubygems.org/gems/adhearsion/versions/2.6.1)
