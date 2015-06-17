@@ -7,6 +7,8 @@ module InitializerStubs
 
   def stub_behavior_for_initializer_with_no_path_changing_behavior
     stub_unwanted_behavior
+    allow(Adhearsion::Rayo::Initializer).to receive(:init).and_return(true)
+    allow(Adhearsion::Rayo::Initializer).to receive(:run).and_return(true)
     yield if block_given?
   ensure
     unstub_directory_changing_behavior

@@ -9,12 +9,12 @@ require 'adhearsion'
 
 Before do
   @aruba_timeout_seconds = ENV.has_key?('ARUBA_TIMEOUT') ? ENV['ARUBA_TIMEOUT'].to_i : (RUBY_PLATFORM == 'java' ? 60 : 30)
-  ENV['AHN_PUNCHBLOCK_RECONNECT_ATTEMPTS'] = '0'
-  ENV['AHN_PUNCHBLOCK_PORT'] = '1'
+  ENV['AHN_PLATFORM_RECONNECT_ATTEMPTS'] = '0'
+  ENV['AHN_PLATFORM_PORT'] = '1'
 end
 
 Before '@reconnect' do
-  ENV['AHN_PUNCHBLOCK_RECONNECT_ATTEMPTS'] = '100'
+  ENV['AHN_PLATFORM_RECONNECT_ATTEMPTS'] = '100'
 end
 
 # TODO: check for name space / run issues

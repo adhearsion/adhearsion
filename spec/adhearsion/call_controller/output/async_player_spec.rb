@@ -17,32 +17,32 @@ module Adhearsion
           let(:content) { RubySpeech::SSML.draw { string "BOO" } }
 
           it "should execute an output component with the provided SSML content" do
-            component = Punchblock::Component::Output.new :ssml => content
+            component = Adhearsion::Rayo::Component::Output.new :ssml => content
             expect_message_waiting_for_response component
             subject.output content
           end
 
           it "should allow extra options to be passed to the output component" do
-            component = Punchblock::Component::Output.new :ssml => content, :start_paused => true
+            component = Adhearsion::Rayo::Component::Output.new :ssml => content, :start_paused => true
             expect_message_waiting_for_response component
             subject.output content, :start_paused => true
           end
 
           it "returns the component" do
-            component = Punchblock::Component::Output.new :ssml => content
+            component = Adhearsion::Rayo::Component::Output.new :ssml => content
             expect_message_waiting_for_response component
-            expect(subject.output(content)).to be_a Punchblock::Component::Output
+            expect(subject.output(content)).to be_a Adhearsion::Rayo::Component::Output
           end
 
           it "raises a PlaybackError if the component fails to start" do
-            expect_message_waiting_for_response Punchblock::Component::Output.new(:ssml => content), Punchblock::ProtocolError
+            expect_message_waiting_for_response Adhearsion::Rayo::Component::Output.new(:ssml => content), Adhearsion::ProtocolError
             expect { subject.output content }.to raise_error(PlaybackError)
           end
 
           it "logs the complete event if it is an error" do
-            response = Punchblock::Event::Complete.new
-            response.reason = Punchblock::Event::Complete::Error.new
-            component = Punchblock::Component::Output.new(:ssml => content)
+            response = Adhearsion::Event::Complete.new
+            response.reason = Adhearsion::Event::Complete::Error.new
+            component = Adhearsion::Rayo::Component::Output.new(:ssml => content)
             allow(subject).to receive_messages :new_output => component
             expect_message_waiting_for_response component
             expect(controller.logger).to receive(:error).once
@@ -57,7 +57,7 @@ module Adhearsion
           let(:ssml) { RubySpeech::SSML.draw { string "BOO" } }
 
           it 'executes an Output with the correct ssml' do
-            component = Punchblock::Component::Output.new :ssml => ssml
+            component = Adhearsion::Rayo::Component::Output.new :ssml => ssml
             expect_message_waiting_for_response component
             subject.play_ssml ssml
           end
@@ -67,7 +67,7 @@ module Adhearsion
           let(:url) { "http://example.com/ex.ssml" }
 
           it 'executes an Output with the URL' do
-            component = Punchblock::Component::Output.new({render_document: {value: url, content_type: "application/ssml+xml"}})
+            component = Adhearsion::Rayo::Component::Output.new({render_document: {value: url, content_type: "application/ssml+xml"}})
             expect_message_waiting_for_response component
             subject.play_url url
           end

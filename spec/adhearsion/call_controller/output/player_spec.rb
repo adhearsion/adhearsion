@@ -17,18 +17,18 @@ module Adhearsion
           let(:content) { RubySpeech::SSML.draw { string "BOO" } }
 
           it "should execute an output component with the provided SSML content" do
-            expect_component_execution Punchblock::Component::Output.new(:ssml => content)
+            expect_component_execution Adhearsion::Rayo::Component::Output.new(:ssml => content)
             subject.output content
           end
 
           it "should allow extra options to be passed to the output component" do
-            component = Punchblock::Component::Output.new :ssml => content, :start_paused => true
+            component = Adhearsion::Rayo::Component::Output.new :ssml => content, :start_paused => true
             expect_component_execution component
             subject.output content, :start_paused => true
           end
 
           it "yields the component to the block before waiting for it to finish" do
-            component = Punchblock::Component::Output.new :ssml => content
+            component = Adhearsion::Rayo::Component::Output.new :ssml => content
 
             expect(controller).to receive(:execute_component_and_await_completion).once.with(component).and_yield(:foo)
 
@@ -42,17 +42,17 @@ module Adhearsion
           end
 
           it "raises a PlaybackError if the component fails to start" do
-            expect_component_execution Punchblock::Component::Output.new(:ssml => content), Punchblock::ProtocolError
+            expect_component_execution Adhearsion::Rayo::Component::Output.new(:ssml => content), Adhearsion::ProtocolError
             expect { subject.output content }.to raise_error(PlaybackError)
           end
 
           it "raises a Playback Error if the component ends due to an error" do
-            expect_component_execution Punchblock::Component::Output.new(:ssml => content), Adhearsion::Error
+            expect_component_execution Adhearsion::Rayo::Component::Output.new(:ssml => content), Adhearsion::Error
             expect { subject.output content }.to raise_error(PlaybackError)
           end
 
           it "raises a Call::Hangup exception if the component ends due to an error" do
-            expect_component_execution Punchblock::Component::Output.new(:ssml => content), Call::Hangup
+            expect_component_execution Adhearsion::Rayo::Component::Output.new(:ssml => content), Call::Hangup
             expect { subject.output content }.to raise_error(Call::Hangup)
           end
         end
@@ -61,7 +61,7 @@ module Adhearsion
           let(:ssml) { RubySpeech::SSML.draw { string "BOO" } }
 
           it 'executes an Output with the correct ssml' do
-            expect_component_execution Punchblock::Component::Output.new(:ssml => ssml)
+            expect_component_execution Adhearsion::Rayo::Component::Output.new(:ssml => ssml)
             subject.play_ssml ssml
           end
         end
@@ -70,7 +70,7 @@ module Adhearsion
           let(:url) { "http://example.com/ex.ssml" }
 
           it 'executes an Output with the URL' do
-            component = Punchblock::Component::Output.new({render_document: {value: url, content_type: "application/ssml+xml"}})
+            component = Adhearsion::Rayo::Component::Output.new({render_document: {value: url, content_type: "application/ssml+xml"}})
             expect_component_execution component
             subject.play_url url
           end

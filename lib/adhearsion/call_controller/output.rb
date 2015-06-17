@@ -19,7 +19,7 @@ module Adhearsion
       # Speak output using text-to-speech (TTS)
       #
       # @param [String, #to_s] text The text to be rendered
-      # @param [Hash] options A set of options for output. Includes everything in Punchblock::Component::Output.new.
+      # @param [Hash] options A set of options for output. Includes everything in Adhearsion::Rayo::Component::Output.new.
       #
       # @raise [PlaybackError] if the given argument could not be played
       #
@@ -33,7 +33,7 @@ module Adhearsion
       # Speak output using text-to-speech (TTS) and return as soon as it begins
       #
       # @param [String, #to_s] text The text to be rendered
-      # @param [Hash] options A set of options for output. Includes everything in Punchblock::Component::Output.new.
+      # @param [Hash] options A set of options for output. Includes everything in Adhearsion::Rayo::Component::Output.new.
       #
       # @raise [PlaybackError] if the given argument could not be played
       #
@@ -50,7 +50,7 @@ module Adhearsion
       #   say_characters('abc123')
       #
       # @param [String, #to_s] characters The string of characters to be spoken
-      # @param [Hash] options A set of options for output. Includes everything in Punchblock::Component::Output.new.
+      # @param [Hash] options A set of options for output. Includes everything in Adhearsion::Rayo::Component::Output.new.
       #
       # @raise [PlaybackError] if the given argument could not be played
       #
@@ -65,7 +65,7 @@ module Adhearsion
       #   say_characters!('abc123')
       #
       # @param [String, #to_s] characters The string of characters to be spoken
-      # @param [Hash] options A set of options for output. Includes everything in Punchblock::Component::Output.new.
+      # @param [Hash] options A set of options for output. Includes everything in Adhearsion::Rayo::Component::Output.new.
       #
       # @raise [PlaybackError] if the given argument could not be played
       #
@@ -80,7 +80,7 @@ module Adhearsion
       # additional options. See play_time for more information.
       #
       # @param [Array<String, Fixnum, Time, Date>, String, Fixnum, Time, Date] outputs A collection of outputs to render.
-      # @param [Hash] options A set of options for output. Includes everything in Punchblock::Component::Output.new.
+      # @param [Hash] options A set of options for output. Includes everything in Adhearsion::Rayo::Component::Output.new.
       #
       # @example Play file hello-world
       #   play 'http://www.example.com/hello-world.mp3'
@@ -114,7 +114,7 @@ module Adhearsion
       # additional options. See play_time for more information.
       #
       # @param [Array<String, Fixnum, Time, Date>, String, Fixnum, Time, Date] outputs A collection of outputs to render.
-      # @param [Hash] options A set of options for output. Includes everything in Punchblock::Component::Output.new.
+      # @param [Hash] options A set of options for output. Includes everything in Adhearsion::Rayo::Component::Output.new.
       #
       # @example Play file hello-world
       #   play 'http://www.example.com/hello-world.mp3'
@@ -131,7 +131,7 @@ module Adhearsion
       #   play "/path/to/you-sound-cute.mp3", "/path/to/what-are-you-wearing.wav"
       #
       # @raise [PlaybackError] if (one of) the given argument(s) could not be played
-      # @return [Punchblock::Component::Output]
+      # @return [Adhearsion::Rayo::Component::Output]
       #
       def play!(*outputs, options)
         options = process_output_options outputs, options
@@ -144,10 +144,9 @@ module Adhearsion
       #
       # Plays the given audio file.
       # SSML supports http:// paths and full disk paths.
-      # The Punchblock backend will have to handle cases like Asterisk where there is a fixed sounds directory.
       #
       # @param [String] file http:// URL or full disk path to the sound file
-      # @param [Hash] options Additional options Includes everything in Punchblock::Component::Output.new.
+      # @param [Hash] options Additional options Includes everything in Adhearsion::Rayo::Component::Output.new.
       # @option options [String] :fallback The text to play if the file is not available
       #
       # @raise [PlaybackError] if (one of) the given argument(s) could not be played
@@ -160,14 +159,13 @@ module Adhearsion
       #
       # Plays the given audio file and returns as soon as it begins.
       # SSML supports http:// paths and full disk paths.
-      # The Punchblock backend will have to handle cases like Asterisk where there is a fixed sounds directory.
       #
       # @param [String] file http:// URL or full disk path to the sound file
-      # @param [Hash] options Additional options to specify how exactly to say time specified. Includes everything in Punchblock::Component::Output.new.
+      # @param [Hash] options Additional options to specify how exactly to say time specified. Includes everything in Adhearsion::Rayo::Component::Output.new.
       # @option options [String] :fallback The text to play if the file is not available
       #
       # @raise [PlaybackError] if (one of) the given argument(s) could not be played
-      # @return [Punchblock::Component::Output]
+      # @return [Adhearsion::Rayo::Component::Output]
       #
       def play_audio!(file, options = {})
         async_player.play_ssml(output_formatter.ssml_for_audio(file, options), options)
@@ -178,7 +176,7 @@ module Adhearsion
       # using the given timezone and format.
       #
       # @param [Date, Time, DateTime] time Time to be said.
-      # @param [Hash] options Additional options to specify how exactly to say time specified. Includes everything in Punchblock::Component::Output.new.
+      # @param [Hash] options Additional options to specify how exactly to say time specified. Includes everything in Adhearsion::Rayo::Component::Output.new.
       # @option options [String] :format This format is used only to disambiguate times that could be interpreted in different ways.
       #   For example, 01/06/2011 could mean either the 1st of June or the 6th of January.
       #   Please refer to the SSML specification.
@@ -199,7 +197,7 @@ module Adhearsion
       # using the given timezone and format and returns as soon as it begins.
       #
       # @param [Date, Time, DateTime] time Time to be said.
-      # @param [Hash] options Additional options to specify how exactly to say time specified. Includes everything in Punchblock::Component::Output.new.
+      # @param [Hash] options Additional options to specify how exactly to say time specified. Includes everything in Adhearsion::Rayo::Component::Output.new.
       # @option options [String] :format This format is used only to disambiguate times that could be interpreted in different ways.
       #   For example, 01/06/2011 could mean either the 1st of June or the 6th of January.
       #   Please refer to the SSML specification.
@@ -208,7 +206,7 @@ module Adhearsion
       #   It uses Time::strftime symbols.
       #
       # @raise [ArgumentError] if the given argument can not be played
-      # @return [Punchblock::Component::Output]
+      # @return [Adhearsion::Rayo::Component::Output]
       #
       def play_time!(time, options = {})
         raise ArgumentError unless [Date, Time, DateTime].include?(time.class) && options.is_a?(Hash)
@@ -221,7 +219,7 @@ module Adhearsion
       # is pronounced as "one hundred" instead of "one zero zero".
       #
       # @param [Numeric, String] number Numeric or String containing a valid Numeric, like "321".
-      # @param [Hash] options A set of options for output. See Punchblock::Component::Output.new for details.
+      # @param [Hash] options A set of options for output. See Adhearsion::Rayo::Component::Output.new for details.
       #
       # @raise [ArgumentError] if the given argument can not be played
       #
@@ -237,10 +235,10 @@ module Adhearsion
       # is pronounced as "one hundred" instead of "one zero zero".
       #
       # @param [Numeric, String] number Numeric or String containing a valid Numeric, like "321".
-      # @param [Hash] options A set of options for output. See Punchblock::Component::Output.new for details.
+      # @param [Hash] options A set of options for output. See Adhearsion::Rayo::Component::Output.new for details.
       #
       # @raise [ArgumentError] if the given argument can not be played
-      # @return [Punchblock::Component::Output]
+      # @return [Adhearsion::Rayo::Component::Output]
       #
       def play_numeric!(number, options = {})
         raise ArgumentError unless number.kind_of?(Numeric) || number =~ /^\d+$/
@@ -251,7 +249,7 @@ module Adhearsion
       # Plays the given SSML document from a URL.
       #
       # @param [String] url String containing a valid URL, like "http://example.com/document.ssml".
-      # @param [Hash] options A set of options for output. See Punchblock::Component::Output.new for details.
+      # @param [Hash] options A set of options for output. See Adhearsion::Rayo::Component::Output.new for details.
       #
       # @raise [ArgumentError] if the given argument can not be played
       #
@@ -265,10 +263,10 @@ module Adhearsion
       # Plays the given SSML document from a URL and returns as soon as it begins.
       #
       # @param [String] url String containing a valid URL, like "http://example.com/document.ssml".
-      # @param [Hash] options A set of options for output. See Punchblock::Component::Output.new for details.
+      # @param [Hash] options A set of options for output. See Adhearsion::Rayo::Component::Output.new for details.
       #
       # @raise [ArgumentError] if the given argument can not be played
-      # @return [Punchblock::Component::Output]
+      # @return [Adhearsion::Rayo::Component::Output]
       #
       def play_document!(url, options = {})
         raise ArgumentError unless url =~ URI::regexp

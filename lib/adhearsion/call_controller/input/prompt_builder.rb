@@ -26,9 +26,9 @@ module Adhearsion
               voice: Adhearsion.config.platform.media.default_voice
             }.merge(options[:output_options] || {})
 
-            Punchblock::Component::Prompt.new output_options, input_options, barge_in: options.has_key?(:interruptible) ? options[:interruptible] : true
+            Adhearsion::Rayo::Component::Prompt.new output_options, input_options, barge_in: options.has_key?(:interruptible) ? options[:interruptible] : true
           else
-            Punchblock::Component::Input.new input_options
+            Adhearsion::Rayo::Component::Input.new input_options
           end
         end
 
@@ -52,15 +52,15 @@ module Adhearsion
               result.utterance      = reason.utterance
               result.interpretation = reason.interpretation
               result.nlsml          = reason.nlsml
-            when Punchblock::Event::Complete::Error
+            when Adhearsion::Event::Complete::Error
               raise InputError, reason.details
-            when Punchblock::Component::Input::Complete::NoMatch
+            when Adhearsion::Rayo::Component::Input::Complete::NoMatch
               result.status = :nomatch
-            when Punchblock::Component::Input::Complete::NoInput
+            when Adhearsion::Rayo::Component::Input::Complete::NoInput
               result.status = :noinput
-            when Punchblock::Event::Complete::Hangup
+            when Adhearsion::Event::Complete::Hangup
               result.status = :hangup
-            when Punchblock::Event::Complete::Stop
+            when Adhearsion::Event::Complete::Stop
               result.status = :stop
             else
               raise "Unknown completion reason received: #{reason}"

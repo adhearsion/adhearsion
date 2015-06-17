@@ -7,6 +7,19 @@ module Adhearsion
 
     ConfigurationError = Class.new Adhearsion::Error # Error raised while trying to configure a non existent plugin
 
+    def self.validate_number(value)
+      return 1.0/0.0 if ["Infinity", 1.0/0.0].include? value
+      value.to_i
+    end
+
+    def self.default_port_for_platform(platform)
+      case platform
+        when :asterisk then 5038
+        when :xmpp then 5222
+        else nil
+      end
+    end
+
     ##
     # Initialize the configuration object
     #
@@ -50,6 +63,21 @@ module Adhearsion
             A log formatter to apply to the stream. If nil, the Adhearsion default formatter will be used.
           __
         }
+
+        type                :xmpp            , :transform => Proc.new { |v| v.to_sym }, :desc => <<-__
+          Platform used to connect to the Telephony provider. Currently supported values:
+          - :xmpp
+          - :asterisk
+        __
+        username            "usera@127.0.0.1", :desc => "Authentication credentials"
+        password            "1"              , :desc => "Authentication credentials"
+        host                nil              , :desc => "Host to connect to (where rayo/asterisk is located)"
+        port                Proc.new { Adhearsion::Configuration.default_port_for_platform type }, :transform => Proc.new { |v| Adhearsion::Configuration.validate_number v }, :desc => "Port used to connect"
+        certs_directory     nil              , :desc => "Directory containing certificates for securing the connection."
+        root_domain         nil              , :desc => "The root domain at which to address the server"
+        connection_timeout  60               , :transform => Proc.new { |v| Adhearsion::Configuration.validate_number v }, :desc => "The amount of time to wait for a connection"
+        reconnect_attempts  1.0/0.0          , :transform => Proc.new { |v| Adhearsion::Configuration.validate_number v }, :desc => "The number of times to (re)attempt connection to the server"
+        reconnect_timer     5                , :transform => Proc.new { |v| Adhearsion::Configuration.validate_number v }, :desc => "Delay between connection attempts"
 
         after_hangup_lifetime 1, :transform => Proc.new { |v| v.to_i }, :desc => <<-__
           Lifetime of a call after it has hung up. Should be set to the minimum functional value for your application. Call actors (threads) living after hangup consume more system resources and reduce the concurrent call capacity of your application.

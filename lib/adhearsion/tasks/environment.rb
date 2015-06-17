@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 task :environment do
-  require 'adhearsion/punchblock_plugin'
+  require 'adhearsion/rayo/plugin'
 
   begin
     Adhearsion.config # load default config vlaues

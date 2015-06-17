@@ -23,21 +23,27 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'activesupport', [">= 3.0.0", "< 5.0.0"]
   s.add_runtime_dependency 'adhearsion-loquacious', ["~> 1.9"]
+  s.add_runtime_dependency 'blather', ["~> 1.0"]
   s.add_runtime_dependency 'bundler', ["~> 1.0"]
-  s.add_runtime_dependency 'celluloid', ["~> 0.14"]
+  s.add_runtime_dependency 'celluloid', ["~> 0.15.2"]
   s.add_runtime_dependency 'countdownlatch'
   s.add_runtime_dependency 'deep_merge'
   s.add_runtime_dependency 'ffi', ["~> 1.0"]
+  s.add_runtime_dependency 'future-resource', ["~> 1.0"]
   s.add_runtime_dependency 'girl_friday'
   s.add_runtime_dependency 'has-guarded-handlers', ["~> 1.6"]
   s.add_runtime_dependency 'i18n', ["~> 0.6"]
   s.add_runtime_dependency 'jruby-openssl' if RUBY_PLATFORM == 'java'
   s.add_runtime_dependency 'logging', ["~> 1.8"]
+  s.add_runtime_dependency 'nokogiri', ["~> 1.5", ">= 1.5.6"]
   s.add_runtime_dependency 'pry'
-  s.add_runtime_dependency 'punchblock', ["~> 2.6"]
   s.add_runtime_dependency 'rake'
-  s.add_runtime_dependency 'ruby_speech', ["~> 2.1"]
+  s.add_runtime_dependency 'ruby_ami', ["~> 2.2"]
+  s.add_runtime_dependency 'ruby_jid', ["~> 1.0"]
+  s.add_runtime_dependency 'ruby_speech', ["~> 2.3"]
+  s.add_runtime_dependency 'state_machine', ["~> 1.0"]
   s.add_runtime_dependency 'thor', "~> 0.18.0"
+  s.add_runtime_dependency 'virtus', ["~> 1.0"]
 
   s.add_development_dependency 'aruba', "~> 0.5"
   s.add_development_dependency 'ci_reporter_rspec'

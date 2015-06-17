@@ -3,15 +3,14 @@
 abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE})! Please upgrade to at least Ruby v1.9.3, JRuby 1.7.0 or Rubinius 2.0." if RUBY_VERSION < "1.9.3"
 
 %w(
-  punchblock
+  adhearsion/rayo
   celluloid
+  active_support/inflector
 ).each { |r| require r }
 
-
 module Adhearsion
-  Error = Class.new StandardError
-
   class << self
+    delegate :client, to: Rayo::Initializer
 
     #
     # Sets the application path
@@ -75,6 +74,10 @@ module Adhearsion
       @active_calls ||= Calls.new
     end
 
+    def active_calls=(other)
+      @active_calls = other
+    end
+
     #
     # @return [Adhearsion::Statistics] a statistics aggregator object capable of producing stats dumps
     def statistics
@@ -87,6 +90,36 @@ module Adhearsion
 
     def status
       Adhearsion::Process.state_name
+    end
+
+    def new_uuid
+      SecureRandom.uuid
+    end
+
+    def new_request_id
+      SecureRandom.uuid
+    end
+
+    #
+    # Get a new client with a connection attached
+    #
+    # @param [Symbol] type the connection type (eg :XMPP, :asterisk)
+    # @param [Hash] options the options to pass to the connection (credentials, etc
+    #
+    # @return [Adhearsion::Rayo::Client] a client object
+    #
+    def client_with_connection(type, options)
+      connection = Rayo::Connection.const_get(type == :xmpp ? 'XMPP' : type.to_s.classify).new options
+      Rayo::Client.new :connection => connection
+    rescue NameError
+      raise ArgumentError, "Connection type #{type.inspect} is not valid."
+    end
+
+    def execute_component(command, timeout = 60)
+      client.execute_command command, :async => true
+      response = command.response timeout
+      raise response if response.is_a? Exception
+      command
     end
   end
 end
@@ -110,6 +143,8 @@ end
   calls
   configuration
   console
+  error
+  event
   events
   generators
   initializer
@@ -117,6 +152,7 @@ end
   outbound_call
   plugin
   process
+  protocol_error
   router
   statistics
 ).each { |f| require "adhearsion/#{f}" }
