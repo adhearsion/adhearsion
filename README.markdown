@@ -27,7 +27,7 @@ Adhearsion rests above a lower-level telephony platform, for example [Asterisk](
 * Ruby 1.9.3+ or JRuby 1.7.0+
 * [ruby_speech dependencies](https://github.com/benlangfeld/ruby_speech#dependencies)
 * A VoIP platform:
-  * Asterisk 1.8+
+  * Asterisk 11+
   * A Rayo server (Prism 11+ with rayo-server, or FreeSWITCH with mod_rayo)
 * An interest in building cool new things
 

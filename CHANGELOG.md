@@ -11,8 +11,8 @@
     * `Punchblock::Component::*` and `Punchblock::Command::*` become `Adhearsion::Rayo::Component::*` and `Adhearsion::Rayo::Command::*` respectively
     * `Adhearsion::Events.punchblock` callback becomes `Adhearsion::Events.rayo`
     * `config.punchblock.*` becomes `config.platform.*`
-    * No more support for FreeSWITCH via IES (Rayo only)
     * No longer any dependency on Punchblock, or any mention of that name
+  * Change: No longer supporting FreeSWITCH via IES (Rayo only) or Asterisk < 11
   * Feature: Add i18n support via `CallController#t`
 
 # [2.6.1](https://github.com/adhearsion/adhearsion/compare/v2.6.0...v2.6.1) - [2015-06-15](https://rubygems.org/gems/adhearsion/versions/2.6.1)
