@@ -1,8 +1,6 @@
 # encoding: utf-8
 
 task :environment do
-  require 'adhearsion/rayo/plugin'
-
   begin
     Adhearsion.config # load default config vlaues
     initializer = Adhearsion::Initializer.new
