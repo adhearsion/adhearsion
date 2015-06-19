@@ -9,7 +9,7 @@
 
 Adhearsion is an open-source voice application development framework. Adhearsion users write applications atop the framework with Ruby and **call into their code**.
 
-Adhearsion rests above a lower-level telephony platform, for example [Asterisk](http://asterisk.org), [FreeSWTICH](http://freeswitch.org) or [Voxeo PRISM](http://voxeolabs.com/prism/), and provides a framework for integrating with various resources, such as SQL, LDAP and XMPP (Jabber).
+Adhearsion rests above a lower-level telephony platform, for example [Asterisk](http://asterisk.org), [FreeSWITCH](http://freeswitch.org) or [Voxeo PRISM](http://voxeolabs.com/prism/), and provides a framework for integrating with various resources, such as SQL, LDAP and XMPP (Jabber).
 
 ## Features
 
