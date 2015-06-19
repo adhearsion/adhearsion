@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
 
   s.license = 'MIT'
 
-  s.required_ruby_version = '>= 1.9.3'
+  s.required_ruby_version = '>= 2.2.0'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
@@ -33,7 +33,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'girl_friday'
   s.add_runtime_dependency 'has-guarded-handlers', ["~> 1.6"]
   s.add_runtime_dependency 'i18n', ["~> 0.6"]
-  s.add_runtime_dependency 'jruby-openssl' if RUBY_PLATFORM == 'java'
   s.add_runtime_dependency 'logging', ["~> 1.8"]
   s.add_runtime_dependency 'nokogiri', ["~> 1.5", ">= 1.5.6"]
   s.add_runtime_dependency 'pry'
