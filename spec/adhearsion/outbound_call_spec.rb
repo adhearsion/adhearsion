@@ -16,10 +16,10 @@ module Adhearsion
       it { is_expected.to eq({}) }
     end
 
-    let(:mock_client) { double 'Punchblock Client', execute_command: true, new_call_uri: call_uri }
+    let(:mock_client) { double 'Rayo Client', execute_command: true, new_call_uri: call_uri }
 
     before do
-      PunchblockPlugin::Initializer.client = mock_client
+      Adhearsion::Rayo::Initializer.client = mock_client
       Adhearsion.active_calls.clear
     end
 
@@ -67,7 +67,7 @@ module Adhearsion
 
         expect(Adhearsion.router).to receive(:handle).once.with(mock_call)
 
-        OutboundCall.originate(to) << Punchblock::Event::Answered.new
+        OutboundCall.originate(to) << Adhearsion::Event::Answered.new
       end
 
       context "when a controller class is specified for the call" do
@@ -77,7 +77,7 @@ module Adhearsion
           expect(mock_call).to receive(:dial).once.with(to, {})
           expect(mock_call).to receive(:execute_controller).once.with kind_of(controller), kind_of(Proc)
           call = OutboundCall.originate to, :controller => controller
-          call << Punchblock::Event::Answered.new
+          call << Adhearsion::Event::Answered.new
         end
 
         it "should hangup the call after all controllers have executed" do
@@ -85,7 +85,7 @@ module Adhearsion
           expect(mock_call).to receive(:hangup).once
 
           call = OutboundCall.originate to, :controller => controller
-          call << Punchblock::Event::Answered.new
+          call << Adhearsion::Event::Answered.new
           sleep 0.5
         end
 
@@ -95,7 +95,7 @@ module Adhearsion
             expected_controller = controller.new mock_call, foo: 'bar'
             expect(mock_call).to receive(:execute_controller).with(expected_controller, kind_of(Proc)).once
             call = OutboundCall.originate to, :controller => controller, :controller_metadata => {:foo => 'bar'}
-            call << Punchblock::Event::Answered.new
+            call << Adhearsion::Event::Answered.new
           end
         end
       end
@@ -110,14 +110,14 @@ module Adhearsion
           call = OutboundCall.originate to do
             :foobar
           end
-          call << Punchblock::Event::Answered.new
+          call << Adhearsion::Event::Answered.new
         end
       end
 
       context "when the dial fails" do
         before do
           expect(subject.wrapped_object).to receive(:write_command)
-          expect_any_instance_of(Punchblock::Command::Dial).to receive(:response).and_return StandardError.new("User not registered")
+          expect_any_instance_of(Adhearsion::Rayo::Command::Dial).to receive(:response).and_return StandardError.new("User not registered")
         end
 
         after do
@@ -140,7 +140,7 @@ module Adhearsion
       let(:response) { double 'Response' }
 
       describe "for answered events" do
-        let(:event) { Punchblock::Event::Answered.new }
+        let(:event) { Adhearsion::Event::Answered.new }
 
         it "should trigger any on_answer callbacks set" do
           expect(response).to receive(:call).once.with(event)
@@ -173,12 +173,12 @@ module Adhearsion
       def expect_message_waiting_for_response(message, uri = call_uri)
         expect(subject.wrapped_object).to receive(:write_and_await_response).once.with(message, 60, true) do |real_message|
           real_message.request!
-          real_message.response = Punchblock::Ref.new(uri: uri)
+          real_message.response = Adhearsion::Rayo::Ref.new(uri: uri)
           real_message
         end
       end
 
-      let(:expected_dial_command) { Punchblock::Command::Dial.new(:to => to, :from => from, :uri => call_uri) }
+      let(:expected_dial_command) { Adhearsion::Rayo::Command::Dial.new(:to => to, :from => from, :uri => call_uri) }
 
       context "while waiting for a response" do
         before do
@@ -221,7 +221,7 @@ module Adhearsion
 
         it "should set the dial command" do
           subject.dial to, :from => from
-          expect(subject.dial_command).to eq(Punchblock::Command::Dial.new(:to => to, :from => from, :uri => call_uri, target_call_id: call_id, domain: domain, transport: transport))
+          expect(subject.dial_command).to eq(Adhearsion::Rayo::Command::Dial.new(:to => to, :from => from, :uri => call_uri, target_call_id: call_id, domain: domain, transport: transport))
         end
 
         it "should set the URI from the reference" do
@@ -296,7 +296,7 @@ module Adhearsion
       context "when the dial fails" do
         before do
           expect(subject.wrapped_object).to receive(:write_command)
-          expect_any_instance_of(Punchblock::Command::Dial).to receive(:response).and_return StandardError.new("User not registered")
+          expect_any_instance_of(Adhearsion::Rayo::Command::Dial).to receive(:response).and_return StandardError.new("User not registered")
         end
 
         after do

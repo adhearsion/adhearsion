@@ -2,6 +2,7 @@
 
 require 'loquacious'
 require 'active_support/inflector'
+require 'adhearsion/foundation/object'
 require 'adhearsion/configuration'
 %w(
   collection

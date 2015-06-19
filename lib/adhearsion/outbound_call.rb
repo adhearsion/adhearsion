@@ -49,7 +49,7 @@ module Adhearsion
     end
 
     def client
-      PunchblockPlugin::Initializer.client
+      Adhearsion::Rayo::Initializer.client
     end
 
     def accept(*args)
@@ -84,9 +84,9 @@ module Adhearsion
       uri = client.new_call_uri
       options[:uri] = uri
 
-      @dial_command = Punchblock::Command::Dial.new(options)
+      @dial_command = Adhearsion::Rayo::Command::Dial.new(options)
 
-      ref = Punchblock::Ref.new uri: uri
+      ref = Adhearsion::Rayo::Ref.new uri: uri
       @transport = ref.scheme
       @id = ref.call_id
       @domain = ref.domain
@@ -119,13 +119,13 @@ module Adhearsion
     end
 
     def run_router_on_answer
-      register_event_handler Punchblock::Event::Answered do |event|
+      register_event_handler Adhearsion::Event::Answered do |event|
         run_router
       end
     end
 
     def on_answer(&block)
-      register_event_handler Punchblock::Event::Answered, &block
+      register_event_handler Adhearsion::Event::Answered, &block
     end
 
     def execute_controller_or_router_on_answer(controller, metadata = {}, &controller_block)

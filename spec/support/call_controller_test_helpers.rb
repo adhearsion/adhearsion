@@ -50,8 +50,8 @@ module CallControllerTestHelpers
   end
 
   def expect_input_component_complete_event(utterance)
-    complete_event = Punchblock::Event::Complete.new
+    complete_event = Adhearsion::Event::Complete.new
     allow(complete_event).to receive_messages reason: double(utterance: utterance, name: :input)
-    allow_any_instance_of(Punchblock::Component::Input).to receive_messages(complete?: true, complete_event: complete_event)
+    allow_any_instance_of(Adhearsion::Rayo::Component::Input).to receive_messages(complete?: true, complete_event: complete_event)
   end
 end

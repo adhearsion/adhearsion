@@ -19,7 +19,7 @@ module Adhearsion
           end
         rescue Call::Hangup
           raise
-        rescue Adhearsion::Error, Punchblock::ProtocolError => e
+        rescue Adhearsion::Error, Adhearsion::ProtocolError => e
           raise PlaybackError, "Output failed due to #{e.inspect}"
         end
       end

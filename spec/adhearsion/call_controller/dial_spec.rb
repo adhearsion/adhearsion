@@ -15,7 +15,7 @@ module Adhearsion
       let(:second_other_call_id)    { new_uuid }
       let(:second_other_mock_call)  { OutboundCall.new }
 
-      let(:mock_answered) { Punchblock::Event::Answered.new }
+      let(:mock_answered) { Adhearsion::Event::Answered.new }
 
       let(:latch) { CountDownLatch.new 1 }
 
@@ -27,7 +27,7 @@ module Adhearsion
       end
 
       def mock_end(reason = :hangup_command)
-        Punchblock::Event::End.new.tap { |event| allow(event).to receive_messages reason: reason }
+        Adhearsion::Event::End.new.tap { |event| allow(event).to receive_messages reason: reason }
       end
 
       describe "#dial" do
@@ -150,7 +150,7 @@ module Adhearsion
           end
 
           context "with ringback specified" do
-            let(:component) { Punchblock::Component::Output.new }
+            let(:component) { Adhearsion::Rayo::Component::Output.new }
             let(:options) { { ringback: ['file://tt-monkeys'] } }
 
             before do
@@ -266,8 +266,8 @@ module Adhearsion
             it "has an overall dial status of :answer" do
               expect(call).to receive(:answer).once
               expect(other_mock_call).to receive(:join).once.with(call, {}) do
-                call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
-                other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
+                other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
               end
 
               t = dial_in_thread
@@ -290,8 +290,8 @@ module Adhearsion
             it "records the duration of the join" do
               expect(call).to receive(:answer).once
               expect(other_mock_call).to receive(:join).once.with(call, {}) do
-                call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
-                other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
+                other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
               end
               allow(other_mock_call).to receive_messages hangup: true
 
@@ -306,7 +306,7 @@ module Adhearsion
 
               base_time = Time.local(2008, 9, 1, 12, 0, 37)
               Timecop.freeze base_time
-              other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+              other_mock_call << Adhearsion::Event::Unjoined.new(call_uri: call.id)
               other_mock_call << mock_end
 
               expect(latch.wait(2)).to be_truthy
@@ -324,8 +324,8 @@ module Adhearsion
               it "joins the calls with those options" do
                 expect(call).to receive(:answer).once
                 expect(other_mock_call).to receive(:join).once.with(call, media: :direct) do
-                  call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
-                  other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                  call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
+                  other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
                 end
                 allow(other_mock_call).to receive_messages hangup: true
 
@@ -335,7 +335,7 @@ module Adhearsion
 
                 other_mock_call << mock_answered
 
-                other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                other_mock_call << Adhearsion::Event::Unjoined.new(call_uri: call.id)
                 other_mock_call << mock_end
 
                 expect(latch.wait(2)).to be_truthy
@@ -351,19 +351,19 @@ module Adhearsion
             before do
               expect(call).to receive(:answer).once
               expect(other_mock_call).to receive(:join).once.with(join_target, join_options) do
-                call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
-                other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
+                other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
               end
               allow(other_mock_call).to receive(:unjoin) do
-                call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
-                other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                call << Adhearsion::Event::Unjoined.new(call_uri: other_mock_call.id)
+                other_mock_call << Adhearsion::Event::Unjoined.new(call_uri: call.id)
               end
             end
 
             it "should unjoin the calls" do
               expect(other_mock_call).to receive(:unjoin).once.ordered.with(call) do
-                call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
-                other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                call << Adhearsion::Event::Unjoined.new(call_uri: other_mock_call.id)
+                other_mock_call << Adhearsion::Event::Unjoined.new(call_uri: call.id)
               end
 
               dial = Dial::Dial.new to, options, call
@@ -503,8 +503,8 @@ module Adhearsion
             context "when rejoining" do
               it "should rejoin the calls" do
                 expect(other_mock_call).to receive(:unjoin).once.ordered.with(call) do
-                  call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
-                  other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                  call << Adhearsion::Event::Unjoined.new(call_uri: other_mock_call.id)
+                  other_mock_call << Adhearsion::Event::Unjoined.new(call_uri: call.id)
                 end
 
                 dial = Dial::Dial.new to, options, call
@@ -522,8 +522,8 @@ module Adhearsion
                 dial.split
 
                 expect(other_mock_call).to receive(:join).once.ordered.with(call, {}) do
-                  call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
-                  other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                  call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
+                  other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
                 end
                 dial.rejoin
 
@@ -549,8 +549,8 @@ module Adhearsion
                   dial.split
 
                   expect(other_mock_call).to receive(:join).once.ordered.with(call, media: :direct) do
-                    call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
-                    other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                    call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
+                    other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
                   end
                   dial.rejoin
                 end
@@ -568,8 +568,8 @@ module Adhearsion
                   dial.split
 
                   expect(other_mock_call).to receive(:join).once.ordered.with(call, media: :direct) do
-                    call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
-                    other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                    call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
+                    other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
                   end
                   dial.rejoin nil, media: :direct
                 end
@@ -583,8 +583,8 @@ module Adhearsion
                   expect(call).to receive(:join).once.with(join_target, {})
                   expect(other_mock_call).to receive(:unjoin).once.ordered.with(join_target)
                   expect(call).to receive(:unjoin).once.ordered.with(join_target) do
-                    call << Punchblock::Event::Unjoined.new(join_target)
-                    other_mock_call << Punchblock::Event::Unjoined.new(join_target)
+                    call << Adhearsion::Event::Unjoined.new(join_target)
+                    other_mock_call << Adhearsion::Event::Unjoined.new(join_target)
                   end
 
                   dial = Dial::Dial.new to, options, call
@@ -619,8 +619,8 @@ module Adhearsion
 
                 it "should join all calls to the mixer" do
                   expect(other_mock_call).to receive(:unjoin).once.ordered.with(call) do
-                    call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
-                    other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                    call << Adhearsion::Event::Unjoined.new(call_uri: other_mock_call.id)
+                    other_mock_call << Adhearsion::Event::Unjoined.new(call_uri: call.id)
                   end
 
                   dial = Dial::Dial.new to, options, call
@@ -651,8 +651,8 @@ module Adhearsion
 
                 it "#split should then unjoin calls from the mixer" do
                   expect(other_mock_call).to receive(:unjoin).once.ordered.with(call) do
-                    call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
-                    other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                    call << Adhearsion::Event::Unjoined.new(call_uri: other_mock_call.id)
+                    other_mock_call << Adhearsion::Event::Unjoined.new(call_uri: call.id)
                   end
 
                   dial = Dial::Dial.new to, options, call
@@ -674,10 +674,10 @@ module Adhearsion
                   dial.rejoin mixer_name: mixer
 
                   expect(other_mock_call).to receive(:unjoin).once.ordered.with(mixer_name: mixer) do
-                    other_mock_call << Punchblock::Event::Unjoined.new(mixer_name: mixer)
+                    other_mock_call << Adhearsion::Event::Unjoined.new(mixer_name: mixer)
                   end
                   expect(call).to receive(:unjoin).once.ordered.with(mixer_name: mixer) do
-                    call << Punchblock::Event::Unjoined.new(mixer_name: mixer)
+                    call << Adhearsion::Event::Unjoined.new(mixer_name: mixer)
                   end
                   dial.split
 
@@ -717,12 +717,12 @@ module Adhearsion
 
               it "should split calls, rejoin to a mixer, and rejoin other calls to mixer" do
                 expect(other_mock_call).to receive(:unjoin).once.ordered.with(call) do
-                  call << Punchblock::Event::Unjoined.new(call_uri: other_mock_call.id)
-                  other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+                  call << Adhearsion::Event::Unjoined.new(call_uri: other_mock_call.id)
+                  other_mock_call << Adhearsion::Event::Unjoined.new(call_uri: call.id)
                 end
                 expect(second_other_mock_call).to receive(:unjoin).once.ordered.with(second_root_call) do
-                  second_root_call << Punchblock::Event::Unjoined.new(call_uri: second_other_mock_call.id)
-                  second_other_mock_call << Punchblock::Event::Unjoined.new(call_uri: second_root_call.id)
+                  second_root_call << Adhearsion::Event::Unjoined.new(call_uri: second_other_mock_call.id)
+                  second_other_mock_call << Adhearsion::Event::Unjoined.new(call_uri: second_root_call.id)
                 end
 
                 expect(call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
@@ -856,7 +856,7 @@ module Adhearsion
 
                 [call, second_root_call, second_other_mock_call].each do |call|
                   expect(call).to receive(:unjoin).once.with(mixer_name: mixer) do
-                    call << Punchblock::Event::Unjoined.new(mixer_name: mixer)
+                    call << Adhearsion::Event::Unjoined.new(mixer_name: mixer)
                   end
                 end
 
@@ -864,7 +864,7 @@ module Adhearsion
 
                 [call, other_mock_call, second_root_call, second_other_mock_call].each do |call|
                   expect(call).to receive(:join).once.with({mixer_name: mixer}, {}) do
-                    call << Punchblock::Event::Joined.new(mixer_name: mixer)
+                    call << Adhearsion::Event::Joined.new(mixer_name: mixer)
                   end
                 end
 
@@ -964,7 +964,7 @@ module Adhearsion
 
                   [call, second_root_call, second_other_mock_call].each do |call|
                     expect(call).to receive(:unjoin).once.with(mixer_name: mixer) do
-                      call << Punchblock::Event::Unjoined.new(mixer_name: mixer)
+                      call << Adhearsion::Event::Unjoined.new(mixer_name: mixer)
                     end
                   end
 
@@ -977,7 +977,7 @@ module Adhearsion
 
                   [call, second_root_call, second_other_mock_call].each do |call|
                     expect(call).to receive(:join).once.with({mixer_name: mixer}, {}) do
-                      call << Punchblock::Event::Joined.new(mixer_name: mixer)
+                      call << Adhearsion::Event::Joined.new(mixer_name: mixer)
                     end
                   end
 
@@ -989,8 +989,8 @@ module Adhearsion
 
               context "if the calls were not joined" do
                 it "should still join to mixer" do
-                  expect(other_mock_call).to receive(:unjoin).once.ordered.with(call).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
-                  expect(second_other_mock_call).to receive(:unjoin).once.ordered.with(second_root_call).and_raise Punchblock::ProtocolError.new.setup(:service_unavailable)
+                  expect(other_mock_call).to receive(:unjoin).once.ordered.with(call).and_raise Adhearsion::ProtocolError.new.setup(:service_unavailable)
+                  expect(second_other_mock_call).to receive(:unjoin).once.ordered.with(second_root_call).and_raise Adhearsion::ProtocolError.new.setup(:service_unavailable)
 
                   expect(call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
                   expect(other_mock_call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
@@ -1094,7 +1094,7 @@ module Adhearsion
             expect(latch.wait(2)).to be_falsey
 
             other_mock_call << mock_answered
-            other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+            other_mock_call << Adhearsion::Event::Unjoined.new(call_uri: call.id)
 
             expect(latch.wait(2)).to be_truthy
 
@@ -1353,8 +1353,8 @@ module Adhearsion
               other_mock_call['confirm'] = true
               expect(call).to receive(:answer).once
               expect(other_mock_call).to receive(:join).once.with(call, {}) do
-                call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
-                other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
+                other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
               end
 
               t = dial_in_thread
@@ -1368,7 +1368,7 @@ module Adhearsion
 
               base_time = Time.local(2008, 9, 1, 12, 0, 42)
               Timecop.freeze base_time
-              other_mock_call << Punchblock::Event::Unjoined.new(call_uri: call.id)
+              other_mock_call << Adhearsion::Event::Unjoined.new(call_uri: call.id)
 
               expect(latch.wait(2)).to be_truthy
 
@@ -1443,8 +1443,8 @@ module Adhearsion
 
                 expect(other_mock_call).to receive(:dial).once.with(to, from: nil)
                 expect(other_mock_call).to receive(:join).once.with(call, {}) do
-                  call << Punchblock::Event::Joined.new(call_uri: other_mock_call.id)
-                  other_mock_call << Punchblock::Event::Joined.new(call_uri: call.id)
+                  call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
+                  other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
                 end
                 expect(other_mock_call).to receive(:hangup).once do
                   other_mock_call.async.deliver_message mock_end
@@ -1466,7 +1466,7 @@ module Adhearsion
 
                 sleep 2
 
-                other_mock_call.async.deliver_message Punchblock::Event::Unjoined.new(call_uri: call.id)
+                other_mock_call.async.deliver_message Adhearsion::Event::Unjoined.new(call_uri: call.id)
 
                 expect(latch.wait(2)).to be_truthy
 

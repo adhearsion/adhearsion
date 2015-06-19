@@ -3,14 +3,11 @@
 require 'spec_helper'
 
 describe Adhearsion::Statistics do
-  before(:all) do
-    Adhearsion::Statistics.setup_event_handlers
-  end
-
   subject { Celluloid::Actor[:statistics] }
 
   before do
     Celluloid::Actor[:statistics] = described_class.new
+    Adhearsion::Statistics.setup_event_handlers
     allow(Adhearsion.active_calls).to receive_messages count: 0
   end
 
@@ -38,7 +35,7 @@ describe Adhearsion::Statistics do
   end
 
   it "should listen for call offer events and increment the offered call count" do
-    Adhearsion::Events.trigger_immediately :punchblock, Punchblock::Event::Offer.new
+    Adhearsion::Events.trigger_immediately :rayo, Adhearsion::Event::Offer.new
     expect(subject.dump.call_counts).to eq({dialed: 0, offered: 1, routed: 0, rejected: 0, active: 0})
   end
 

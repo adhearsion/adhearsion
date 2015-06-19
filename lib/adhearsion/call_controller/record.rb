@@ -35,7 +35,7 @@ module Adhearsion
 
           interruptible = options.delete :interruptible
           @stopper_component  = interruptible ? setup_stopper(interruptible) : nil
-          @record_component   = Punchblock::Component::Record.new options
+          @record_component   = Adhearsion::Rayo::Component::Record.new options
         end
 
         #
@@ -53,21 +53,21 @@ module Adhearsion
         #
         # Set a callback to be executed when recording completes
         #
-        # @yield [Punchblock::Event::Complete] the complete Event for the recording
+        # @yield [Adhearsion::Event::Complete] the complete Event for the recording
         #
         def handle_record_completion(&block)
-          @record_component.register_event_handler Punchblock::Event::Complete, &block
+          @record_component.register_event_handler Adhearsion::Event::Complete, &block
         end
 
         private
 
         def setup_stopper(interrupt_digits)
           interrupt_digits = interrupt_digits == true ? '0123456789#*' : interrupt_digits.to_s
-          @stopper_component = Punchblock::Component::Input.new :mode => :dtmf,
+          @stopper_component = Adhearsion::Rayo::Component::Input.new :mode => :dtmf,
             :grammar => {
               :value => grammar_accept(interrupt_digits)
             }
-          @stopper_component.register_event_handler Punchblock::Event::Complete do |event|
+          @stopper_component.register_event_handler Adhearsion::Event::Complete do |event|
             @record_component.stop! unless @record_component.complete?
           end
           @stopper_component
@@ -133,9 +133,9 @@ module Adhearsion
       # @option options [Boolean, String, Optional] :interruptible Allows the recording to be terminated by any single DTMF key, default is false
       #
       # @yield [event] Handle the recording completion event asyncronously.
-      # @yieldparam [Punchblock::Event::Complete] event the complete event for the recording
+      # @yieldparam [Adhearsion::Event::Complete] event the complete event for the recording
       #
-      # @return Punchblock::Component::Record
+      # @return Adhearsion::Rayo::Component::Record
       #
       def record(options = {})
         recorder = Recorder.new self, options

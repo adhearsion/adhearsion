@@ -32,7 +32,7 @@ module Adhearsion
           renderer = Adhearsion.config.platform.media.default_renderer
           defaults[:renderer] = renderer if renderer
 
-          Punchblock::Component::Output.new defaults.merge(options)
+          Adhearsion::Rayo::Component::Output.new defaults.merge(options)
         end
       end
     end

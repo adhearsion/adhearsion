@@ -398,7 +398,7 @@ module Adhearsion
 
         def ignoring_missing_joins
           yield
-        rescue Punchblock::ProtocolError => e
+        rescue Adhearsion::ProtocolError => e
           raise unless e.name == :service_unavailable
         end
 

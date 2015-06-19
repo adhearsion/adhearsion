@@ -20,7 +20,7 @@ module Adhearsion
     let(:transport) { 'footransport' }
     let(:base_time) { Time.local(2008, 9, 1, 12, 0, 0) }
     let :offer do
-      Punchblock::Event::Offer.new target_call_id: call_id,
+      Adhearsion::Event::Offer.new target_call_id: call_id,
                                    domain: domain,
                                    transport: transport,
                                    to: to,
@@ -158,7 +158,7 @@ module Adhearsion
           end
 
           context "when receiving an event with headers" do
-            let(:event) { Punchblock::Event::End.new :headers => {'X-bar' => 'foo'} }
+            let(:event) { Adhearsion::Event::End.new :headers => {'X-bar' => 'foo'} }
 
             it "should merge later headers" do
               subject << event
@@ -166,7 +166,7 @@ module Adhearsion
             end
 
             context "with have symbol names" do
-              let(:event) { Punchblock::Event::End.new :headers => {:x_bar => 'foo'} }
+              let(:event) { Adhearsion::Event::End.new :headers => {:x_bar => 'foo'} }
 
               it "should merge later headers" do
                 subject << event
@@ -176,7 +176,7 @@ module Adhearsion
           end
 
           context "when sending a command with headers" do
-            let(:command) { Punchblock::Command::Accept.new :headers => {'X-bar' => 'foo'} }
+            let(:command) { Adhearsion::Rayo::Command::Accept.new :headers => {'X-bar' => 'foo'} }
 
             it "should merge later headers" do
               subject.write_command command
@@ -251,7 +251,7 @@ module Adhearsion
       describe "for joined events" do
         context "joined to another call" do
           let :event do
-            Punchblock::Event::Joined.new call_uri: 'footransport:foobar@rayo.net'
+            Adhearsion::Event::Joined.new call_uri: 'footransport:foobar@rayo.net'
           end
 
           it "should trigger any on_joined callbacks set for the matching call ID" do
@@ -289,7 +289,7 @@ module Adhearsion
 
         context "joined to a mixer" do
           let :event do
-            Punchblock::Event::Joined.new :mixer_name => 'foobar'
+            Adhearsion::Event::Joined.new :mixer_name => 'foobar'
           end
 
           it "should trigger on_joined callbacks for the matching mixer name" do
@@ -329,7 +329,7 @@ module Adhearsion
       describe "for unjoined events" do
         context "unjoined from another call" do
           let :event do
-            Punchblock::Event::Unjoined.new call_uri: 'footransport:foobar@rayo.net'
+            Adhearsion::Event::Unjoined.new call_uri: 'footransport:foobar@rayo.net'
           end
 
           it "should trigger any on_unjoined callbacks set for the matching call ID" do
@@ -367,7 +367,7 @@ module Adhearsion
 
         context "unjoined from a mixer" do
           let :event do
-            Punchblock::Event::Unjoined.new :mixer_name => 'foobar'
+            Adhearsion::Event::Unjoined.new :mixer_name => 'foobar'
           end
 
           it "should trigger on_unjoined callbacks for the matching mixer name" do
@@ -406,7 +406,7 @@ module Adhearsion
 
       describe "for end events" do
         let :event do
-          Punchblock::Event::End.new :reason => :hangup
+          Adhearsion::Event::End.new :reason => :hangup
         end
 
         it "should trigger any on_end callbacks set" do
@@ -446,11 +446,11 @@ module Adhearsion
       before { allow(other_call).to receive_messages uri: other_call_uri }
 
       let :joined_event do
-        Punchblock::Event::Joined.new call_uri: other_call_uri
+        Adhearsion::Event::Joined.new call_uri: other_call_uri
       end
 
       let :unjoined_event do
-        Punchblock::Event::Unjoined.new call_uri: other_call_uri
+        Adhearsion::Event::Unjoined.new call_uri: other_call_uri
       end
 
       context "when we know about the joined call" do
@@ -552,9 +552,9 @@ module Adhearsion
     end
 
     describe "#<<" do
-      describe "with a Punchblock End" do
+      describe "with an End event" do
         let :end_event do
-          Punchblock::Event::End.new :reason => :hangup, :platform_code => 'arbitrary_code'
+          Adhearsion::Event::End.new :reason => :hangup, :platform_code => 'arbitrary_code'
         end
 
         it "should mark the call as ended" do
@@ -602,7 +602,7 @@ module Adhearsion
         end
 
         it "should instruct the command registry to terminate" do
-          command = Punchblock::Command::Answer.new
+          command = Adhearsion::Rayo::Command::Answer.new
           command.request!
           subject.future.write_and_await_response command
           subject << end_event
@@ -664,7 +664,7 @@ module Adhearsion
 
     describe "#wait_for_end" do
       let :end_event do
-        Punchblock::Event::End.new reason: :hangup
+        Adhearsion::Event::End.new reason: :hangup
       end
 
       context "when the call has already ended" do
@@ -737,11 +737,11 @@ module Adhearsion
     end
 
     describe "#write_command" do
-      let(:command) { Punchblock::Command::Answer.new }
+      let(:command) { Adhearsion::Rayo::Command::Answer.new }
 
-      it "should write the command to the Punchblock connection" do
+      it "should write the command to the Rayo connection" do
         expect(subject.wrapped_object).to receive(:client).once.and_return mock_client
-        expect(mock_client).to receive(:execute_command).once.with(Punchblock::Command::Answer.new(target_call_id: call_id, domain: domain)).and_return true
+        expect(mock_client).to receive(:execute_command).once.with(Adhearsion::Rayo::Command::Answer.new(target_call_id: call_id, domain: domain)).and_return true
         subject.write_command command
       end
 
@@ -755,7 +755,7 @@ module Adhearsion
         end
 
         describe "if the command is a Hangup" do
-          let(:command) { Punchblock::Command::Hangup.new }
+          let(:command) { Adhearsion::Rayo::Command::Hangup.new }
 
           it "should not raise a Hangup exception" do
             expect { subject.write_command command }.not_to raise_error
@@ -765,7 +765,7 @@ module Adhearsion
     end
 
     describe '#write_and_await_response' do
-      let(:message) { Punchblock::Command::Accept.new }
+      let(:message) { Adhearsion::Rayo::Command::Accept.new }
       let(:response) { :foo }
 
       before do
@@ -784,7 +784,7 @@ module Adhearsion
       end
 
       it "blocks until a response is received" do
-        slow_command = Punchblock::Command::Dial.new
+        slow_command = Adhearsion::Rayo::Command::Dial.new
         slow_command.request!
         Thread.new do
           sleep 0.5
@@ -796,7 +796,7 @@ module Adhearsion
       end
 
       context "while waiting for a response" do
-        let(:slow_command) { Punchblock::Command::Dial.new }
+        let(:slow_command) { Adhearsion::Rayo::Command::Dial.new }
 
         before { slow_command.request! }
 
@@ -822,7 +822,7 @@ module Adhearsion
       end
 
       describe "with an error response" do
-        let(:new_exception) { Punchblock::ProtocolError }
+        let(:new_exception) { Adhearsion::ProtocolError }
         let(:response) { new_exception.new }
 
         it "raises the error" do
@@ -856,7 +856,7 @@ module Adhearsion
     end
 
     describe "#send_message" do
-      it "should send a message through the Punchblock connection using the call ID and domain" do
+      it "should send a message through the Rayo connection using the call ID and domain" do
         expect(subject.wrapped_object).to receive(:client).once.and_return mock_client
         expect(mock_client).to receive(:send_message).once.with(subject.id, subject.domain, "Hello World!", {})
         subject.send_message "Hello World!"
@@ -883,7 +883,7 @@ module Adhearsion
       describe '#accept' do
         describe "with no headers" do
           it 'should send an Accept message' do
-            expect_message_waiting_for_response Punchblock::Command::Accept.new
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Accept.new
             subject.accept
           end
         end
@@ -891,14 +891,14 @@ module Adhearsion
         describe "with headers set" do
           it 'should send an Accept message with the correct headers' do
             headers = {:foo => 'bar'}
-            expect_message_waiting_for_response Punchblock::Command::Accept.new(:headers => headers)
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Accept.new(:headers => headers)
             subject.accept headers
           end
         end
 
         describe "a second time" do
           it "should only send one Accept message" do
-            expect_message_waiting_for_response Punchblock::Command::Accept.new
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Accept.new
             subject.accept
             subject.accept
           end
@@ -906,8 +906,8 @@ module Adhearsion
 
         context "with a failure response" do
           it 'should raise the error but not crash the actor' do
-            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
-            expect_message_waiting_for_response Punchblock::Command::Accept.new, error
+            error = Adhearsion::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Accept.new, error
             expect { subject.accept }.to raise_error error
             sleep 0.2
             expect(subject.alive?).to be true
@@ -918,7 +918,7 @@ module Adhearsion
       describe '#answer' do
         describe "with no headers" do
           it 'should send an Answer message' do
-            expect_message_waiting_for_response Punchblock::Command::Answer.new
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Answer.new
             subject.answer
           end
         end
@@ -926,15 +926,15 @@ module Adhearsion
         describe "with headers set" do
           it 'should send an Answer message with the correct headers' do
             headers = {:foo => 'bar'}
-            expect_message_waiting_for_response Punchblock::Command::Answer.new(:headers => headers)
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Answer.new(:headers => headers)
             subject.answer headers
           end
         end
 
         context "with a failure response" do
           it 'should raise the error but not crash the actor' do
-            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
-            expect_message_waiting_for_response Punchblock::Command::Answer.new, error
+            error = Adhearsion::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Answer.new, error
             expect { subject.answer }.to raise_error error
             sleep 0.2
             expect(subject.alive?).to be true
@@ -945,14 +945,14 @@ module Adhearsion
       describe '#reject' do
         describe "with a reason given" do
           it 'should send a Reject message with the correct reason' do
-            expect_message_waiting_for_response Punchblock::Command::Reject.new(:reason => :decline)
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Reject.new(:reason => :decline)
             subject.reject :decline
           end
         end
 
         describe "with no reason given" do
           it 'should send a Reject message with the reason busy' do
-            expect_message_waiting_for_response Punchblock::Command::Reject.new(:reason => :busy)
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Reject.new(:reason => :busy)
             subject.reject
           end
         end
@@ -960,7 +960,7 @@ module Adhearsion
         describe "with no headers" do
           it 'should send a Reject message' do
             expect_message_waiting_for_response do |c|
-              c.is_a?(Punchblock::Command::Reject) && c.headers == {}
+              c.is_a?(Adhearsion::Rayo::Command::Reject) && c.headers == {}
             end
             subject.reject
           end
@@ -970,22 +970,22 @@ module Adhearsion
           it 'should send a Hangup message with the correct headers' do
             headers = {:foo => 'bar'}
             expect_message_waiting_for_response do |c|
-              c.is_a?(Punchblock::Command::Reject) && c.headers == headers
+              c.is_a?(Adhearsion::Rayo::Command::Reject) && c.headers == headers
             end
             subject.reject nil, headers
           end
         end
 
         it "should immediately fire the :call_rejected event giving the call and the reason" do
-          expect_message_waiting_for_response kind_of(Punchblock::Command::Reject)
+          expect_message_waiting_for_response kind_of(Adhearsion::Rayo::Command::Reject)
           expect(Adhearsion::Events).to receive(:trigger_immediately).once.with(:call_rejected, :call => subject, :reason => :decline)
           subject.reject :decline
         end
 
         context "with a failure response" do
           it 'should raise the error but not crash the actor' do
-            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
-            expect_message_waiting_for_response Punchblock::Command::Reject.new(reason: :busy), error
+            error = Adhearsion::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Reject.new(reason: :busy), error
             expect { subject.reject }.to raise_error error
             sleep 0.2
             expect(subject.alive?).to be true
@@ -996,7 +996,7 @@ module Adhearsion
       describe '#redirect' do
         describe "with a target given" do
           it 'should send a Redirect message with the correct target' do
-            expect_message_waiting_for_response Punchblock::Command::Redirect.new(to: 'sip:foo@bar.com')
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Redirect.new(to: 'sip:foo@bar.com')
             subject.redirect 'sip:foo@bar.com'
           end
         end
@@ -1010,7 +1010,7 @@ module Adhearsion
         describe "with no headers" do
           it 'should send a Redirect message' do
             expect_message_waiting_for_response do |c|
-              c.is_a?(Punchblock::Command::Redirect) && c.headers == {}
+              c.is_a?(Adhearsion::Rayo::Command::Redirect) && c.headers == {}
             end
             subject.redirect 'sip:foo@bar.com'
           end
@@ -1020,7 +1020,7 @@ module Adhearsion
           it 'should send a Redirect message with the correct headers' do
             headers = {:foo => 'bar'}
             expect_message_waiting_for_response do |c|
-              c.is_a?(Punchblock::Command::Redirect) && c.headers == headers
+              c.is_a?(Adhearsion::Rayo::Command::Redirect) && c.headers == headers
             end
             subject.redirect 'sip:foo@bar.com', headers
           end
@@ -1028,8 +1028,8 @@ module Adhearsion
 
         context "with a failure response" do
           it 'should raise the error but not crash the actor' do
-            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
-            expect_message_waiting_for_response Punchblock::Command::Redirect.new(to: 'sip:foo@bar.com'), error
+            error = Adhearsion::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Redirect.new(to: 'sip:foo@bar.com'), error
             expect { subject.redirect 'sip:foo@bar.com' }.to raise_error error
             sleep 0.2
             expect(subject.alive?).to be true
@@ -1051,14 +1051,14 @@ module Adhearsion
 
         describe "if the call is active" do
           it "should mark the call inactive" do
-            expect_message_waiting_for_response Punchblock::Command::Hangup.new
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Hangup.new
             subject.hangup
             expect(subject).not_to be_active
           end
 
           describe "with no headers" do
             it 'should send a Hangup message' do
-              expect_message_waiting_for_response Punchblock::Command::Hangup.new
+              expect_message_waiting_for_response Adhearsion::Rayo::Command::Hangup.new
               subject.hangup
             end
           end
@@ -1066,7 +1066,7 @@ module Adhearsion
           describe "with headers set" do
             it 'should send a Hangup message with the correct headers' do
               headers = {:foo => 'bar'}
-              expect_message_waiting_for_response Punchblock::Command::Hangup.new(:headers => headers)
+              expect_message_waiting_for_response Adhearsion::Rayo::Command::Hangup.new(:headers => headers)
               subject.hangup headers
             end
           end
@@ -1074,8 +1074,8 @@ module Adhearsion
 
         context "with a failure response" do
           it 'should raise the error but not crash the actor' do
-            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
-            expect_message_waiting_for_response Punchblock::Command::Hangup.new, error
+            error = Adhearsion::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Hangup.new, error
             expect { subject.hangup }.to raise_error error
             sleep 0.2
             expect(subject.alive?).to be true
@@ -1085,7 +1085,7 @@ module Adhearsion
 
       describe "#join" do
         def expect_join_with_options(options = {})
-          Punchblock::Command::Join.new(options).tap do |join|
+          Adhearsion::Rayo::Command::Join.new(options).tap do |join|
             expect_message_waiting_for_response join
           end
         end
@@ -1113,7 +1113,7 @@ module Adhearsion
           it "should return the command" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target, :media => :bridge, :direction => :recv
-            expect(result[:command]).to be_a Punchblock::Command::Join
+            expect(result[:command]).to be_a Adhearsion::Rayo::Command::Join
             expect(result[:command].call_uri).to eql(uri)
             expect(result[:command].media).to eql(:bridge)
             expect(result[:command].direction).to eql(:recv)
@@ -1125,7 +1125,7 @@ module Adhearsion
 
             expect(result[:joined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
             expect(result[:joined_condition].wait(0.5)).to be_truthy
           end
 
@@ -1135,10 +1135,10 @@ module Adhearsion
 
             expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
             expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+            subject << Adhearsion::Event::Unjoined.new(call_uri: uri)
             expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
 
@@ -1149,7 +1149,7 @@ module Adhearsion
             expect(result[:joined_condition].wait(0.5)).to be_falsey
             expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::End.new
+            subject << Adhearsion::Event::End.new
             expect(result[:joined_condition].wait(0.5)).to be_truthy
             expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
@@ -1158,18 +1158,18 @@ module Adhearsion
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target, :media => :bridge, :direction => :recv
 
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
-            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Unjoined.new(call_uri: uri)
 
-            subject << Punchblock::Event::End.new
+            subject << Adhearsion::Event::End.new
           end
 
           it "should not error if multiple joined events are received for the same join" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target, :media => :bridge, :direction => :recv
 
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
 
             expect(subject).to be_alive
           end
@@ -1194,7 +1194,7 @@ module Adhearsion
           it "should return the command" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target, :media => :bridge, :direction => :recv
-            expect(result[:command]).to be_a Punchblock::Command::Join
+            expect(result[:command]).to be_a Adhearsion::Rayo::Command::Join
             expect(result[:command].call_uri).to eql(uri)
             expect(result[:command].media).to eql(:bridge)
             expect(result[:command].direction).to eql(:recv)
@@ -1206,7 +1206,7 @@ module Adhearsion
 
             expect(result[:joined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
             expect(result[:joined_condition].wait(0.5)).to be_truthy
           end
 
@@ -1216,10 +1216,10 @@ module Adhearsion
 
             expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
             expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+            subject << Adhearsion::Event::Unjoined.new(call_uri: uri)
             expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
 
@@ -1230,7 +1230,7 @@ module Adhearsion
             expect(result[:joined_condition].wait(0.5)).to be_falsey
             expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::End.new
+            subject << Adhearsion::Event::End.new
             expect(result[:joined_condition].wait(0.5)).to be_truthy
             expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
@@ -1239,18 +1239,18 @@ module Adhearsion
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target, :media => :bridge, :direction => :recv
 
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
-            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Unjoined.new(call_uri: uri)
 
-            subject << Punchblock::Event::End.new
+            subject << Adhearsion::Event::End.new
           end
 
           it "should not error if multiple joined events are received for the same join" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target, :media => :bridge, :direction => :recv
 
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
 
             expect(subject).to be_alive
           end
@@ -1276,7 +1276,7 @@ module Adhearsion
           it "should return the command" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target.merge({:media => :bridge, :direction => :recv})
-            expect(result[:command]).to be_a Punchblock::Command::Join
+            expect(result[:command]).to be_a Adhearsion::Rayo::Command::Join
             expect(result[:command].call_uri).to eql(uri)
             expect(result[:command].media).to eql(:bridge)
             expect(result[:command].direction).to eql(:recv)
@@ -1288,7 +1288,7 @@ module Adhearsion
 
             expect(result[:joined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
             expect(result[:joined_condition].wait(0.5)).to be_truthy
           end
 
@@ -1298,10 +1298,10 @@ module Adhearsion
 
             expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
             expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+            subject << Adhearsion::Event::Unjoined.new(call_uri: uri)
             expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
 
@@ -1312,7 +1312,7 @@ module Adhearsion
             expect(result[:joined_condition].wait(0.5)).to be_falsey
             expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::End.new
+            subject << Adhearsion::Event::End.new
             expect(result[:joined_condition].wait(0.5)).to be_truthy
             expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
@@ -1321,18 +1321,18 @@ module Adhearsion
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target.merge({:media => :bridge, :direction => :recv})
 
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
-            subject << Punchblock::Event::Unjoined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Unjoined.new(call_uri: uri)
 
-            subject << Punchblock::Event::End.new
+            subject << Adhearsion::Event::End.new
           end
 
           it "should not error if multiple joined events are received for the same join" do
             expect_join_with_options :call_id => uri, :media => :bridge, :direction => :recv
             result = subject.join target.merge({:media => :bridge, :direction => :recv})
 
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
-            subject << Punchblock::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
+            subject << Adhearsion::Event::Joined.new(call_uri: uri)
 
             expect(subject).to be_alive
           end
@@ -1357,7 +1357,7 @@ module Adhearsion
           it "should return the command" do
             expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
             result = subject.join target.merge({:media => :bridge, :direction => :recv})
-            expect(result[:command]).to be_a Punchblock::Command::Join
+            expect(result[:command]).to be_a Adhearsion::Rayo::Command::Join
             expect(result[:command].mixer_name).to eql(mixer_name)
             expect(result[:command].media).to eql(:bridge)
             expect(result[:command].direction).to eql(:recv)
@@ -1369,7 +1369,7 @@ module Adhearsion
 
             expect(result[:joined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
+            subject << Adhearsion::Event::Joined.new(mixer_name: mixer_name)
             expect(result[:joined_condition].wait(0.5)).to be_truthy
           end
 
@@ -1379,10 +1379,10 @@ module Adhearsion
 
             expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
+            subject << Adhearsion::Event::Joined.new(mixer_name: mixer_name)
             expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::Unjoined.new(mixer_name: mixer_name)
+            subject << Adhearsion::Event::Unjoined.new(mixer_name: mixer_name)
             expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
 
@@ -1393,7 +1393,7 @@ module Adhearsion
             expect(result[:joined_condition].wait(0.5)).to be_falsey
             expect(result[:unjoined_condition].wait(0.5)).to be_falsey
 
-            subject << Punchblock::Event::End.new
+            subject << Adhearsion::Event::End.new
             expect(result[:joined_condition].wait(0.5)).to be_truthy
             expect(result[:unjoined_condition].wait(0.5)).to be_truthy
           end
@@ -1402,18 +1402,18 @@ module Adhearsion
             expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
             result = subject.join target.merge({:media => :bridge, :direction => :recv})
 
-            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
-            subject << Punchblock::Event::Unjoined.new(mixer_name: mixer_name)
+            subject << Adhearsion::Event::Joined.new(mixer_name: mixer_name)
+            subject << Adhearsion::Event::Unjoined.new(mixer_name: mixer_name)
 
-            subject << Punchblock::Event::End.new
+            subject << Adhearsion::Event::End.new
           end
 
           it "should not error if multiple joined events are received for the same join" do
             expect_join_with_options :mixer_name => mixer_name, :media => :bridge, :direction => :recv
             result = subject.join target.merge({:media => :bridge, :direction => :recv})
 
-            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
-            subject << Punchblock::Event::Joined.new(mixer_name: mixer_name)
+            subject << Adhearsion::Event::Joined.new(mixer_name: mixer_name)
+            subject << Adhearsion::Event::Joined.new(mixer_name: mixer_name)
 
             expect(subject).to be_alive
           end
@@ -1431,8 +1431,8 @@ module Adhearsion
 
         context "with a failure response" do
           it 'should raise the error but not crash the actor' do
-            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
-            expect_message_waiting_for_response Punchblock::Command::Join.new(call_id: 'footransport:foo@rayo.net'), error
+            error = Adhearsion::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Join.new(call_id: 'footransport:foo@rayo.net'), error
             expect { subject.join 'foo' }.to raise_error error
             sleep 0.2
             expect(subject.alive?).to be true
@@ -1442,7 +1442,7 @@ module Adhearsion
 
       describe "#unjoin" do
         def expect_unjoin_with_options(options = {})
-          Punchblock::Command::Unjoin.new(options).tap do |unjoin|
+          Adhearsion::Rayo::Command::Unjoin.new(options).tap do |unjoin|
             expect_message_waiting_for_response unjoin
           end
         end
@@ -1509,8 +1509,8 @@ module Adhearsion
 
         context "with a failure response" do
           it 'should raise the error but not crash the actor' do
-            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
-            expect_message_waiting_for_response Punchblock::Command::Unjoin.new(call_id: 'footransport:foo@rayo.net'), error
+            error = Adhearsion::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Unjoin.new(call_id: 'footransport:foo@rayo.net'), error
             expect { subject.unjoin 'foo' }.to raise_error error
             sleep 0.2
             expect(subject.alive?).to be true
@@ -1520,14 +1520,14 @@ module Adhearsion
 
       describe "#mute" do
         it 'should send a Mute message' do
-          expect_message_waiting_for_response Punchblock::Command::Mute.new
+          expect_message_waiting_for_response Adhearsion::Rayo::Command::Mute.new
           subject.mute
         end
 
         context "with a failure response" do
           it 'should raise the error but not crash the actor' do
-            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
-            expect_message_waiting_for_response Punchblock::Command::Mute.new, error
+            error = Adhearsion::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Mute.new, error
             expect { subject.mute }.to raise_error error
             sleep 0.2
             expect(subject.alive?).to be true
@@ -1537,14 +1537,14 @@ module Adhearsion
 
       describe "#unmute" do
         it 'should send a Mute message' do
-          expect_message_waiting_for_response Punchblock::Command::Unmute.new
+          expect_message_waiting_for_response Adhearsion::Rayo::Command::Unmute.new
           subject.unmute
         end
 
         context "with a failure response" do
           it 'should raise the error but not crash the actor' do
-            error = Punchblock::ProtocolError.new.setup(:service_unavailable)
-            expect_message_waiting_for_response Punchblock::Command::Unmute.new, error
+            error = Adhearsion::ProtocolError.new.setup(:service_unavailable)
+            expect_message_waiting_for_response Adhearsion::Rayo::Command::Unmute.new, error
             expect { subject.unmute }.to raise_error error
             sleep 0.2
             expect(subject.alive?).to be true
@@ -1671,13 +1671,13 @@ module Adhearsion
       describe "#terminate" do
         let :commands do
           [
-            Punchblock::Command::Answer.new,
-            Punchblock::Command::Answer.new
+            Adhearsion::Rayo::Command::Answer.new,
+            Adhearsion::Rayo::Command::Answer.new
           ]
         end
 
         it "should set each command's response to an instance of Adhearsion::Hangup if it doesn't already have a response" do
-          finished_command = Punchblock::Command::Answer.new
+          finished_command = Adhearsion::Rayo::Command::Answer.new
           finished_command.request!
           finished_command.response = :foo
           subject << finished_command

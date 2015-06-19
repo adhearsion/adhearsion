@@ -1,7 +1,7 @@
 # encoding: utf-8
 
-require 'adhearsion/punchblock_plugin'
 require 'adhearsion/linux_proc_name'
+require 'adhearsion/rayo/initializer'
 require 'rbconfig'
 
 module Adhearsion
@@ -39,8 +39,10 @@ module Adhearsion
         set_ahn_proc_name
         initialize_exception_logger
         setup_i18n_load_path
+        Rayo::Initializer.init
         init_plugins
 
+        Rayo::Initializer.run
         run_plugins
         trigger_after_initialized_hooks
 

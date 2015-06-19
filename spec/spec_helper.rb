@@ -21,10 +21,13 @@ Bundler.require(:default, :test) if defined?(Bundler)
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |f| require f }
 
 RSpec.configure do |config|
-  config.mock_framework = :rspec
   config.filter_run :focus => true
   config.run_all_when_everything_filtered = true
   config.color = true
+
+  config.mock_with :rspec do |mocks|
+    mocks.add_stub_and_should_receive_to Celluloid::AbstractProxy
+  end
 
   config.raise_errors_for_deprecations!
 
@@ -39,11 +42,18 @@ RSpec.configure do |config|
     Adhearsion::Initializer.new.setup_i18n_load_path
 
     Adhearsion.router = nil
-    allow(Punchblock).to receive(:new_request_id).and_return 'foo'
+    @uuid = SecureRandom.uuid
+    allow(Adhearsion).to receive(:new_request_id).and_return @uuid
   end
 
   config.after :each do
     Timecop.return
+    if defined?(:Celluloid)
+      Celluloid.shutdown
+      Adhearsion.active_calls = nil
+      Celluloid.boot
+      Adhearsion::Events.refresh!
+    end
   end
 end
 

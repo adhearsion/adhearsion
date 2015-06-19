@@ -22,16 +22,16 @@ Adhearsion.config do |config|
   end
 
   ##
-  # Use with Rayo (eg Voxeo PRISM or FreeSWITCH mod_rayo)
+  # Use with Rayo over XMPP (eg Voxeo PRISM or FreeSWITCH mod_rayo)
   #
-  # config.punchblock.username = "usera@freeswitch.local-dev.mojolingo.com" # Your XMPP JID for use with Rayo
-  # config.punchblock.password = "1" # Your XMPP password
+  # config.platform.username = "usera@freeswitch.local-dev.mojolingo.com" # Your XMPP JID for use with Rayo
+  # config.platform.password = "1" # Your XMPP password
 
   ##
   # Use with Asterisk
   #
-  # config.punchblock.platform = :asterisk # Use Asterisk
-  # config.punchblock.username = "manager" # Your AMI username
-  # config.punchblock.password = "password" # Your AMI password
-  # config.punchblock.host = "asterisk.local-dev.mojolingo.com" # Your AMI host
+  # config.platform.type = :asterisk # Use Asterisk
+  # config.platform.username = "manager" # Your AMI username
+  # config.platform.password = "password" # Your AMI password
+  # config.platform.host = "asterisk.local-dev.mojolingo.com" # Your AMI host
 end

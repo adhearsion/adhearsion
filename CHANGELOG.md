@@ -6,6 +6,13 @@
   * Change: Removed `#interruptible_play` and `#stream_file`, both leftovers from Adhearsion 1.x which are replaced by `#ask`
   * Bugfix: Properly load application bundle. This requires the spawning removed in [#534](https://github.com/adhearsion/adhearsion/pull/534).
   * Change: Removed daemonisation (`ahn daemon`, `ahn stop`, `ahn restart`, PID files) and persistent logging in favour of 12factor compliant deployment, which pushes these responsibilities up to a process manager or PaaS
+  * Change: Merge Punchblock into Adhearsion core
+    * `Punchblock::Event::*` becomes `Adhearsion::Event`
+    * `Punchblock::Component::*` and `Punchblock::Command::*` become `Adhearsion::Rayo::Component::*` and `Adhearsion::Rayo::Command::*` respectively
+    * `Adhearsion::Events.punchblock` callback becomes `Adhearsion::Events.rayo`
+    * `config.punchblock.*` becomes `config.platform.*`
+    * No more support for FreeSWITCH via IES (Rayo only)
+    * No longer any dependency on Punchblock, or any mention of that name
   * Feature: Add i18n support via `CallController#t`
 
 # [2.6.1](https://github.com/adhearsion/adhearsion/compare/v2.6.0...v2.6.1) - [2015-06-15](https://rubygems.org/gems/adhearsion/versions/2.6.1)

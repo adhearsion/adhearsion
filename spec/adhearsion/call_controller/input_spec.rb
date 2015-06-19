@@ -49,12 +49,12 @@ module Adhearsion
       let(:expected_barge_in) { true }
 
       let :expected_prompt do
-        Punchblock::Component::Prompt.new expected_output_options, expected_input_options, barge_in: expected_barge_in
+        Adhearsion::Rayo::Component::Prompt.new expected_output_options, expected_input_options, barge_in: expected_barge_in
       end
 
-      let(:reason) { Punchblock::Component::Input::Complete::NoMatch.new }
+      let(:reason) { Adhearsion::Rayo::Component::Input::Complete::NoMatch.new }
 
-      before { allow_any_instance_of(Punchblock::Component::Prompt).to receive(:complete_event).and_return(double(reason: reason)) }
+      before { allow_any_instance_of(Adhearsion::Rayo::Component::Prompt).to receive(:complete_event).and_return(double(reason: reason)) }
 
       describe "#ask" do
         let :digit_limit_grammar do
@@ -97,8 +97,8 @@ module Adhearsion
 
           context "with no prompts" do
             it "executes an Input component with the correct grammar" do
-              allow_any_instance_of(Punchblock::Component::Input).to receive(:complete_event).and_return(double(reason: reason))
-              expect_component_execution Punchblock::Component::Input.new(expected_input_options)
+              allow_any_instance_of(Adhearsion::Rayo::Component::Input).to receive(:complete_event).and_return(double(reason: reason))
+              expect_component_execution Adhearsion::Rayo::Component::Input.new(expected_input_options)
               subject.ask limit: 5
             end
           end
@@ -112,7 +112,7 @@ module Adhearsion
             end
 
             it "executes an Input component with the correct grammar" do
-              allow_any_instance_of(Punchblock::Component::Input).to receive(:complete_event).and_return(double(reason: reason))
+              allow_any_instance_of(Adhearsion::Rayo::Component::Input).to receive(:complete_event).and_return(double(reason: reason))
               expect_component_execution expected_prompt
               subject.ask limit: 5, render_document: {url: 'http://foo.com/bar'}
             end
@@ -120,8 +120,8 @@ module Adhearsion
 
           context "with only nil prompts" do
             it "executes an Input component with the correct grammar" do
-              allow_any_instance_of(Punchblock::Component::Input).to receive(:complete_event).and_return(double(reason: reason))
-              expect_component_execution Punchblock::Component::Input.new(expected_input_options)
+              allow_any_instance_of(Adhearsion::Rayo::Component::Input).to receive(:complete_event).and_return(double(reason: reason))
+              expect_component_execution Adhearsion::Rayo::Component::Input.new(expected_input_options)
               subject.ask nil, limit: 5
             end
           end
@@ -467,7 +467,7 @@ module Adhearsion
               end
             end
 
-            let(:reason) { Punchblock::Component::Input::Complete::Match.new nlsml: nlsml }
+            let(:reason) { Adhearsion::Rayo::Component::Input::Complete::Match.new nlsml: nlsml }
 
             it "returns :match status and the utterance" do
               expect(result.status).to be :match
@@ -556,7 +556,7 @@ module Adhearsion
           end
 
           context "that is a nomatch" do
-            let(:reason) { Punchblock::Component::Input::Complete::NoMatch.new }
+            let(:reason) { Adhearsion::Rayo::Component::Input::Complete::NoMatch.new }
 
             it "returns :nomatch status and a nil utterance" do
               expect(result.status).to eql(:nomatch)
@@ -566,7 +566,7 @@ module Adhearsion
           end
 
           context "that is a noinput" do
-            let(:reason) { Punchblock::Component::Input::Complete::NoInput.new }
+            let(:reason) { Adhearsion::Rayo::Component::Input::Complete::NoInput.new }
 
             it "returns :noinput status and a nil utterance" do
               expect(result.status).to eql(:noinput)
@@ -576,7 +576,7 @@ module Adhearsion
           end
 
           context "that is a hangup" do
-            let(:reason) { Punchblock::Event::Complete::Hangup.new }
+            let(:reason) { Adhearsion::Event::Complete::Hangup.new }
 
             it "returns :hangup status and a nil utterance" do
               expect(result.status).to eql(:hangup)
@@ -586,7 +586,7 @@ module Adhearsion
           end
 
           context "that is a stop" do
-            let(:reason) { Punchblock::Event::Complete::Stop.new }
+            let(:reason) { Adhearsion::Event::Complete::Stop.new }
 
             it "returns :stop status and a nil utterance" do
               expect(result.status).to eql(:stop)
@@ -596,7 +596,7 @@ module Adhearsion
           end
 
           context "that is an error" do
-            let(:reason) { Punchblock::Event::Complete::Error.new details: 'foobar' }
+            let(:reason) { Adhearsion::Event::Complete::Error.new details: 'foobar' }
 
             it "should raise an error with a message of 'foobar" do
               expect { subject.ask prompts, limit: 5 }.to raise_error(Adhearsion::CallController::Input::InputError, /foobar/)
@@ -662,8 +662,8 @@ module Adhearsion
 
           context "with no prompts" do
             it "executes an Input component with the correct grammar" do
-              allow_any_instance_of(Punchblock::Component::Input).to receive(:complete_event).and_return(double(reason: reason))
-              expect_component_execution Punchblock::Component::Input.new(expected_input_options)
+              allow_any_instance_of(Adhearsion::Rayo::Component::Input).to receive(:complete_event).and_return(double(reason: reason))
+              expect_component_execution Adhearsion::Rayo::Component::Input.new(expected_input_options)
               subject.menu do
                 match(1) {}
               end
@@ -672,8 +672,8 @@ module Adhearsion
 
           context "with only nil prompts" do
             it "executes an Input component with the correct grammar" do
-              allow_any_instance_of(Punchblock::Component::Input).to receive(:complete_event).and_return(double(reason: reason))
-              expect_component_execution Punchblock::Component::Input.new(expected_input_options)
+              allow_any_instance_of(Adhearsion::Rayo::Component::Input).to receive(:complete_event).and_return(double(reason: reason))
+              expect_component_execution Adhearsion::Rayo::Component::Input.new(expected_input_options)
               subject.menu nil do
                 match(1) {}
               end
@@ -891,7 +891,7 @@ module Adhearsion
           end
 
           context "when input completes with an error" do
-            let(:reason) { Punchblock::Event::Complete::Error.new details: 'foobar' }
+            let(:reason) { Adhearsion::Event::Complete::Error.new details: 'foobar' }
 
             it "should raise an error with a message of 'foobar'" do
               expect_component_execution expected_prompt
@@ -928,7 +928,7 @@ module Adhearsion
                 end
               end
 
-              let(:reason2) { Punchblock::Component::Input::Complete::Match.new nlsml: nlsml }
+              let(:reason2) { Adhearsion::Rayo::Component::Input::Complete::Match.new nlsml: nlsml }
 
               it "executes the prompt repeatedly until it gets a match" do
                 some_controller_class = Class.new Adhearsion::CallController
@@ -939,7 +939,7 @@ module Adhearsion
                 expect(self).to receive(:do_something_on_failure).never
 
                 invocation_count = 0
-                allow_any_instance_of(Punchblock::Component::Prompt).to receive(:complete_event) do
+                allow_any_instance_of(Adhearsion::Rayo::Component::Prompt).to receive(:complete_event) do
                   invocation_count += 1
                   case invocation_count
                   when 1 then double(reason: reason)
@@ -959,7 +959,7 @@ module Adhearsion
           end
 
           context "when we don't get any input" do
-            let(:reason) { Punchblock::Component::Input::Complete::NoInput.new }
+            let(:reason) { Adhearsion::Rayo::Component::Input::Complete::NoInput.new }
 
             it "runs the timeout and failure handlers" do
               expect_component_execution expected_prompt
@@ -984,7 +984,7 @@ module Adhearsion
                 end
               end
 
-              let(:reason2) { Punchblock::Component::Input::Complete::Match.new nlsml: nlsml }
+              let(:reason2) { Adhearsion::Rayo::Component::Input::Complete::Match.new nlsml: nlsml }
 
               it "executes the prompt repeatedly until it gets a match" do
                 some_controller_class = Class.new Adhearsion::CallController
@@ -995,7 +995,7 @@ module Adhearsion
                 expect(self).to receive(:do_something_on_failure).never
 
                 invocation_count = 0
-                allow_any_instance_of(Punchblock::Component::Prompt).to receive(:complete_event) do
+                allow_any_instance_of(Adhearsion::Rayo::Component::Prompt).to receive(:complete_event) do
                   invocation_count += 1
                   case invocation_count
                   when 1 then double(reason: reason)
@@ -1047,7 +1047,7 @@ module Adhearsion
               end
             end
 
-            let(:reason) { Punchblock::Component::Input::Complete::Match.new nlsml: nlsml }
+            let(:reason) { Adhearsion::Rayo::Component::Input::Complete::Match.new nlsml: nlsml }
 
             context "which specifies a controller class" do
               it "invokes the specfied controller, with the matched input as the :extension key in its metadata" do
@@ -1225,7 +1225,7 @@ module Adhearsion
               end
             end
 
-            let(:reason) { Punchblock::Component::Input::Complete::Match.new nlsml: nlsml }
+            let(:reason) { Adhearsion::Rayo::Component::Input::Complete::Match.new nlsml: nlsml }
 
             it "executes the first successful match" do
               expect_component_execution expected_prompt
