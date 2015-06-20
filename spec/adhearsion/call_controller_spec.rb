@@ -685,7 +685,6 @@ describe ExampleCallController do
     end
     subject.exec
     expect(latch.wait(1)).to be true
-    Adhearsion::Events.clear_handlers :exception
   end
 
   it "should call the requested method when an exception is encountered" do

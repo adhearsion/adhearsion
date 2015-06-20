@@ -212,7 +212,6 @@ module Adhearsion
             component.execute!
             component.trigger_event_handler response
             expect(latch.wait(1)).to be true
-            Adhearsion::Events.clear_handlers :exception
           end
         end
 

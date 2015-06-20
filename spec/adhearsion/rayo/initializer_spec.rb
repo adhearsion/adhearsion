@@ -179,9 +179,19 @@ describe Adhearsion::Rayo::Initializer do
   end
 
   it 'should place events into the event handler' do
-    expect(Adhearsion::Events.instance).to receive(:trigger).once.with(:rayo, offer)
+    event = nil
+    latch = CountDownLatch.new 1
+
+    Adhearsion::Events.register_handler :rayo do |offer|
+      event = offer
+      latch.countdown!
+    end
+
     initialize_rayo
     described_class.client.handle_event offer
+
+    expect(latch.wait(2)).to be_truthy
+    expect(event).to be(offer)
   end
 
   describe "dispatching an offer" do

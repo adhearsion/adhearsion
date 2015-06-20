@@ -57,7 +57,7 @@ RSpec.configure do |config|
   end
 end
 
-Adhearsion::Events.exeption do |e|
+Adhearsion::Events.exception do |e|
   puts e.message
   puts e.backtrace.join("\n")
 end

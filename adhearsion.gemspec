@@ -30,8 +30,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'deep_merge'
   s.add_runtime_dependency 'ffi', ["~> 1.0"]
   s.add_runtime_dependency 'future-resource', ["~> 1.0"]
-  s.add_runtime_dependency 'girl_friday'
-  s.add_runtime_dependency 'has-guarded-handlers', ["~> 1.6"]
+  s.add_runtime_dependency 'has-guarded-handlers', ["~> 1.6", ">= 1.6.3"]
   s.add_runtime_dependency 'i18n', ["~> 0.6"]
   s.add_runtime_dependency 'logging', ["~> 1.8"]
   s.add_runtime_dependency 'nokogiri', ["~> 1.5", ">= 1.5.6"]
