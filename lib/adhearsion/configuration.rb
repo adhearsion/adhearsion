@@ -107,6 +107,14 @@ module Adhearsion
             Whether to include text for translations that provide both text & audio. True or false.
           __
         }
+
+        desc "HTTP server"
+        http do
+          enable true, desc: "Enable or disable the HTTP server"
+          host "0.0.0.0", desc: "IP to bind the HTTP listener to"
+          port "8080", desc: "Port to bind the HTTP listener to"
+          rackup 'config.ru', desc: 'Path to Rack configuration file (relative to Adhearsion application root)'
+        end
       end
 
       Loquacious::Configuration.for :platform, &block if block_given?

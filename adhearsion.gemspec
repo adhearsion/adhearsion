@@ -37,6 +37,8 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'nokogiri', ["~> 1.5", ">= 1.5.6"]
   s.add_runtime_dependency 'pry'
   s.add_runtime_dependency 'rake'
+  s.add_runtime_dependency 'reel', ["~> 0.5.0"]
+  s.add_runtime_dependency 'reel-rack', ["~> 0.2.0"]
   s.add_runtime_dependency 'ruby_ami', ["~> 2.2"]
   s.add_runtime_dependency 'ruby_jid', ["~> 1.0"]
   s.add_runtime_dependency 'ruby_speech', ["~> 2.3"]

@@ -15,6 +15,7 @@
   * Change: No longer supporting FreeSWITCH via IES (Rayo only) or Asterisk < 11
   * Change: Ruby 1.9 is no longer supported. Minimum supported versions are Ruby 2.2.0 and JRuby 9.0.0.0
   * Feature: Add i18n support via `CallController#t`
+  * Feature: Integrate a Rack-based HTTP server from the Virginia plugin
   * Upgrade to Celluloid 0.16
 
 # [2.6.1](https://github.com/adhearsion/adhearsion/compare/v2.6.0...v2.6.1) - [2015-06-15](https://rubygems.org/gems/adhearsion/versions/2.6.1)
