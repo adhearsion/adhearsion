@@ -23,7 +23,7 @@ module Adhearsion
       end
 
       def respond_to_missing?(method_name, include_private = false)
-        respond_to?(method_name, include_private)
+        true
       end
     end
 
