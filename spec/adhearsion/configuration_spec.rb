@@ -27,9 +27,9 @@ describe Adhearsion::Configuration do
     end
 
     it "should allow to update a config value" do
-      expect(subject.core.environment).to eq(:development)
-      subject.core.environment = :production
-      expect(subject.core.environment).to eq(:production)
+      expect(subject.core.logging.level).to eq(:info)
+      subject.core.logging.level = :error
+      expect(subject.core.logging.level).to eq(:error)
     end
 
     it "should allow to create new config values" do
@@ -42,7 +42,6 @@ describe Adhearsion::Configuration do
     subject do
       Adhearsion::Configuration.new do
         root "foo", :desc => "Adhearsion application root folder"
-        environment :development, :desc => "Active environment. Supported values: development, production, staging, test"
       end
     end
 
@@ -50,18 +49,14 @@ describe Adhearsion::Configuration do
       expect(subject.core.root).to eq("foo")
     end
 
-    it "should return the environment value" do
-      expect(subject.core.environment).to eq(:development)
-    end
-
     it "should return a description for the core configuration" do
       expect(Adhearsion.config.description(:core)).to be_instance_of String
     end
 
     it "should allow to update a config value" do
-      expect(subject.core.environment).to eq(:development)
-      subject.core.environment = :production
-      expect(subject.core.environment).to eq(:production)
+      expect(subject.core.root).to eq("foo")
+      subject.core.root = "bar"
+      expect(subject.core.root).to eq("bar")
     end
 
     it "should allow to create new config values" do
@@ -90,7 +85,7 @@ describe Adhearsion::Configuration do
     end
 
     it "should allow to retrieve any core configuration value" do
-      expect(subject.environment).to eq(:development)
+      expect(subject.type).to eq(:xmpp)
     end
 
     describe "if configuration has a named environment" do
@@ -194,14 +189,13 @@ describe Adhearsion::Configuration do
     it "should retrieve a string with the core configuration" do
       desc = subject.description :core, :show_values => false
       expect(desc.length).to be > 0
-      expect(desc).to match(/^.*environment.*$/)
       expect(desc).to match(/^.*root.*$/)
     end
 
     it "should retrieve a string with the core configuration and values" do
       desc = subject.description :core
       expect(desc.length).to be > 0
-      expect(desc).to match(/^.*environment.*:development.*$/)
+      expect(desc).to match(/^.*type.*:xmpp.*$/)
       expect(desc).to match(/^.*root.*$/)
     end
 
@@ -291,7 +285,6 @@ describe Adhearsion::Configuration do
       it "should retrieve both core and plugin configuration" do
         desc = subject.description :all
         expect(desc.length).to be > 0
-        expect(desc).to match(/^.*environment.*:development.*$/)
         expect(desc).to match(/^.*root.*$/)
         expect(desc).to match(/^.*name.*user.*$/)
         expect(desc).to match(/^.*password.*password.*$/)
@@ -302,7 +295,6 @@ describe Adhearsion::Configuration do
         desc = subject.description :all, :show_values => false
         expect(desc.length).to be > 0
         expect(desc).to match(/^.*Configuration for core.*$/)
-        expect(desc).to match(/^.*environment.*$/)
         expect(desc).to match(/^.*root.*$/)
         expect(desc).to match(/^.*Configuration for my_plugin.*$/)
         expect(desc).to match(/^.*name.*$/)
