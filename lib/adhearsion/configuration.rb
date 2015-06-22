@@ -54,6 +54,10 @@ module Adhearsion
           Does not work under JRuby.
         __
 
+        event_threads 5, transform: Proc.new { |v| Adhearsion::Configuration.validate_number v }, desc: <<-__
+          The number of threads to include in the event worker pool."
+        __
+
         desc "Log configuration"
         logging {
           level :info, :transform => Proc.new { |v| v.to_sym }, :desc => <<-__

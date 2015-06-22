@@ -18,7 +18,7 @@ describe Adhearsion::Initializer do
     end
 
     after do
-      Adhearsion::Events.reinitialize_queue!
+      Adhearsion::Events.refresh!
     end
 
     after :all do
@@ -65,7 +65,7 @@ describe Adhearsion::Initializer do
       ::Logging.reset
       Adhearsion::Logging.start
       Adhearsion::Logging.silence!
-      Adhearsion::Events.reinitialize_queue!
+      Adhearsion::Events.refresh!
     end
 
     it "should start logging with valid parameters" do

@@ -1905,22 +1905,6 @@ module Adhearsion
               'Message' => 'Added AGI original_command to queue'
           end
 
-          it 'should send an appropriate AsyncAGI AMI action' do
-            expect_any_instance_of(Celluloid::Future).to receive(:value).and_return nil
-            expect(ami_client).to receive(:send_action).once.with('AGI', 'Channel' => channel, 'Command' => 'EXEC ANSWER', 'CommandID' => Adhearsion.new_uuid).and_return(response)
-            subject.execute_agi_command 'EXEC ANSWER'
-          end
-
-          context 'with some parameters' do
-            let(:params) { [1000, 'foo'] }
-
-            it 'should send the appropriate action' do
-              expect_any_instance_of(Celluloid::Future).to receive(:value).and_return nil
-              expect(ami_client).to receive(:send_action).once.with('AGI', 'Channel' => channel, 'Command' => 'WAIT FOR DIGIT "1000" "foo"', 'CommandID' => Adhearsion.new_uuid).and_return(response)
-              subject.execute_agi_command 'WAIT FOR DIGIT', *params
-            end
-          end
-
           context 'with an error' do
             let(:message) { 'Action failed' }
 
@@ -1952,7 +1936,6 @@ module Adhearsion
             end
           end
 
-
           describe 'when receiving an AsyncAGI event' do
             context 'of type Exec' do
               let(:ami_event) do
@@ -1962,6 +1945,24 @@ module Adhearsion
                   "CommandID"  => Adhearsion.new_uuid,
                   "Command"    => "EXEC ANSWER",
                   "Result"     => "200%20result=123%20(timeout)%0A"
+              end
+
+              it 'should send an appropriate AsyncAGI AMI action' do
+                expect(ami_client).to receive(:send_action).once.with('AGI', 'Channel' => channel, 'Command' => 'EXEC ANSWER', 'CommandID' => Adhearsion.new_uuid).and_return(response)
+                fut = Celluloid::Future.new { subject.execute_agi_command 'EXEC ANSWER' }
+                sleep 0.25
+                subject.process_ami_event ami_event
+              end
+
+              context 'with some parameters' do
+                let(:params) { [1000, 'foo'] }
+
+                it 'should send the appropriate action' do
+                  expect(ami_client).to receive(:send_action).once.with('AGI', 'Channel' => channel, 'Command' => 'WAIT FOR DIGIT "1000" "foo"', 'CommandID' => Adhearsion.new_uuid).and_return(response)
+                  fut = Celluloid::Future.new { subject.execute_agi_command 'WAIT FOR DIGIT', *params }
+                  sleep 0.25
+                  subject.process_ami_event ami_event
+                end
               end
 
               it 'should return the result' do
@@ -1981,6 +1982,24 @@ module Adhearsion
                   "CommandId"  => Adhearsion.new_uuid,
                   "Command"    => "EXEC ANSWER",
                   "Result"     => "200%20result=123%20(timeout)%0A"
+              end
+
+              it 'should send an appropriate AsyncAGI AMI action' do
+                expect(ami_client).to receive(:send_action).once.with('AGI', 'Channel' => channel, 'Command' => 'EXEC ANSWER', 'CommandID' => Adhearsion.new_uuid).and_return(response)
+                fut = Celluloid::Future.new { subject.execute_agi_command 'EXEC ANSWER' }
+                sleep 0.25
+                subject.process_ami_event ami_event
+              end
+
+              context 'with some parameters' do
+                let(:params) { [1000, 'foo'] }
+
+                it 'should send the appropriate action' do
+                  expect(ami_client).to receive(:send_action).once.with('AGI', 'Channel' => channel, 'Command' => 'WAIT FOR DIGIT "1000" "foo"', 'CommandID' => Adhearsion.new_uuid).and_return(response)
+                  fut = Celluloid::Future.new { subject.execute_agi_command 'WAIT FOR DIGIT', *params }
+                  sleep 0.25
+                  subject.process_ami_event ami_event
+                end
               end
 
               it 'should return the result' do

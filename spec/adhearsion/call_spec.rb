@@ -434,7 +434,6 @@ module Adhearsion
           subject.register_event_handler { |e| raise 'foo' }
           expect { subject << :foo }.not_to raise_error
           expect(latch.wait(3)).to be true
-          Adhearsion::Events.clear_handlers :exception
         end
       end
     end
@@ -1588,7 +1587,6 @@ module Adhearsion
           end
           subject.execute_controller BrokenController.new(subject), lambda { |call| latch.countdown! }
           expect(latch.wait(3)).to be true
-          Adhearsion::Events.clear_handlers :exception
         end
 
         it "should execute a callback after the controller executes" do

@@ -143,6 +143,7 @@ module Adhearsion
     end
 
     def load_events_file
+      Adhearsion::Events.init
       path = "#{Adhearsion.config.root}/config/events.rb"
       load path if File.exists?(path)
     end
