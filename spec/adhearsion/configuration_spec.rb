@@ -89,48 +89,45 @@ describe Adhearsion::Configuration do
     end
 
     describe "if configuration has a named environment" do
+      let(:env) { :development }
 
-      let :config_obj do
-        Adhearsion::Configuration.new
-      end
-
-      let :env_values do
-        config_obj.valid_environments.inject({}) do |hash, k|
-          hash[k] = hash.keys.length
-          hash
-        end
-      end
-
-      let :config_object do
-        config_obj do
+      subject do
+        Adhearsion::Configuration.new env do
           my_level(-1, :desc => "An index to check the environment value is being retrieved")
         end
       end
 
-      subject do
-        config_object.production do |env|
+      before do
+        subject.production do |env|
           env.core.my_level = 0
         end
-        config_object.development do |env|
+        subject.development do |env|
           env.core.my_level = 1
         end
-        config_object.staging do |env|
+        subject.staging do |env|
           env.core.my_level = 2
         end
-        config_object.test do |env|
+        subject.test do |env|
           env.core.my_level = 3
         end
-        config_object
       end
 
       it "should return by default the development value" do
         expect(subject.core.my_level).to eq(1)
       end
 
-      [:staging, :production, :test].each do |env|
-        it "should return the #{env.to_s} value when environment set to #{env.to_s}" do
-          config_object.core.environment = env
-          expect(subject.core.my_level).to eq(env_values[env])
+      {
+        production: 0,
+        development: 1,
+        staging: 2,
+        test: 3,
+      }.each do |env, value|
+        describe "in #{env} environment" do
+          let(:env) { env }
+
+          it "should return the #{env} value" do
+            expect(subject.core.my_level).to eq(value)
+          end
         end
       end
     end
@@ -143,32 +140,14 @@ describe Adhearsion::Configuration do
     end
 
     after do
-      ENV['AHN_ENV'] = nil
+      Adhearsion.environment = nil
       Adhearsion.config = nil
     end
 
-    it "should return 'development' by default" do
-      expect(Adhearsion.config.core.environment).to eq(:development)
-    end
-
     [:development, :production, :staging, :test].each do |env|
-      it "should respond to #{env.to_s}" do
+      it "should respond to #{env}" do
         expect(Adhearsion.config).to respond_to(env)
       end
-    end
-
-    context "when the ENV value is valid" do
-      [:production, :staging, :test].each do |env|
-        it "should override the environment value with #{env.to_s} when set in ENV value" do
-          ENV['AHN_ENV'] = env.to_s
-          expect(Adhearsion.config.core.environment).to eq(env)
-        end
-      end
-    end
-
-    it "should not override the default environment with the ENV value if valid" do
-      ENV['AHN_ENV'] = "invalid_value"
-      expect(Adhearsion.config.core.environment).to eq(:development)
     end
 
     it "should allow to add a new environment" do
@@ -234,33 +213,44 @@ describe Adhearsion::Configuration do
         end
 
         context "when config has named environments" do
-          subject do
-            Adhearsion.config do |c|
-              c.production do |env|
-                env.my_plugin.name = "production"
-              end
-              c.development do |env|
-                env.my_plugin.name = "development"
-              end
-              c.staging do |env|
-                env.my_plugin.name = "staging"
-              end
-              c.test do |env|
-                env.my_plugin.name = "test"
-              end
+          let(:env) { :development }
+
+          let(:config) do
+            Adhearsion::Configuration.new env do
+              my_level(-1, :desc => "An index to check the environment value is being retrieved")
             end
-            Adhearsion.config[:my_plugin]
           end
 
-          it "should return the development value by default" do
-            Adhearsion.config # initialize
+          before do
+            config.production do |env|
+              env.my_plugin.name = "production"
+            end
+            config.development do |env|
+              env.my_plugin.name = "development"
+            end
+            config.staging do |env|
+              env.my_plugin.name = "staging"
+            end
+            config.test do |env|
+              env.my_plugin.name = "test"
+            end
+          end
+
+          subject do
+            config.my_plugin
+          end
+
+          it "should return by default the development value" do
             expect(subject.name).to eq("development")
           end
 
-          [:development, :staging, :production, :test].each do |env|
-            it "should return the #{env.to_s} value when environment is set to #{env.to_s}" do
-              Adhearsion.config.core.environment = env
-              expect(subject.name).to eq(env.to_s)
+          [:production, :development, :staging, :test].each do |env, value|
+            describe "in #{env} environment" do
+              let(:env) { env }
+
+              it "should return the #{env} value" do
+                expect(subject.name).to eq(env.to_s)
+              end
             end
           end
         end

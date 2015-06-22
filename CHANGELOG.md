@@ -15,6 +15,7 @@
   * Change: No longer supporting FreeSWITCH via IES (Rayo only) or Asterisk < 11
   * Change: Ruby 1.9 is no longer supported. Minimum supported versions are Ruby 2.2.0 and JRuby 9.0.0.0
   * Change: Rename "platform" to "core" relating to the config system, because "platform" is overloaded. Settings are now `config.core.*` or `AHN_CORE_*`.
+  * Change: Permit application environment to be set only by AHN_ENV. The config system depends on the environment, and the previous dependency was circular.
   * Feature: Add i18n support via `CallController#t`
   * Feature: Integrate a Rack-based HTTP server from the Virginia plugin
   * Upgrade to Celluloid 0.16
