@@ -41,7 +41,7 @@ Feature: Adhearsion Ahn CLI (Create)
     """
     Adhearsion.config
     logging.level
-    config.platform.username
+    config.core.username
     """
     And the file "config/events.rb" should contain each of these content parts:
     """

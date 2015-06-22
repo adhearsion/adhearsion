@@ -763,7 +763,7 @@ module Adhearsion
 
         describe "with a default voice set in core config" do
           before do
-            Adhearsion.config.platform.media.default_voice = 'bar'
+            Adhearsion.config.core.media.default_voice = 'bar'
           end
 
           it 'sets the voice on the output component' do
@@ -774,13 +774,13 @@ module Adhearsion
           end
 
           after do
-            Adhearsion.config.platform.media.default_voice = nil
+            Adhearsion.config.core.media.default_voice = nil
           end
         end
 
         describe "with a default renderer set in config" do
           before do
-            Adhearsion.config.platform.media.default_renderer = 'bar'
+            Adhearsion.config.core.media.default_renderer = 'bar'
           end
 
           it 'sets the renderer on the output component' do
@@ -791,7 +791,7 @@ module Adhearsion
           end
 
           after do
-            Adhearsion.config.platform.media.default_renderer = nil
+            Adhearsion.config.core.media.default_renderer = nil
           end
         end
 
@@ -837,7 +837,7 @@ module Adhearsion
 
         describe "with a default voice set in config" do
           before do
-            Adhearsion.config.platform.media.default_voice = 'bar'
+            Adhearsion.config.core.media.default_voice = 'bar'
           end
 
           it 'sets the voice on the output component' do
@@ -848,13 +848,13 @@ module Adhearsion
           end
 
           after do
-            Adhearsion.config.platform.media.default_voice = nil
+            Adhearsion.config.core.media.default_voice = nil
           end
         end
 
         describe "with a default renderer set in config" do
           before do
-            Adhearsion.config.platform.media.default_renderer = 'bar'
+            Adhearsion.config.core.media.default_renderer = 'bar'
           end
 
           it 'sets the renderer on the output component' do
@@ -865,7 +865,7 @@ module Adhearsion
           end
 
           after do
-            Adhearsion.config.platform.media.default_renderer = nil
+            Adhearsion.config.core.media.default_renderer = nil
           end
         end
 
@@ -1017,11 +1017,11 @@ module Adhearsion
 
         describe 'with fallback disabled, requesting a translation' do
           before do
-            Adhearsion.config.platform.i18n.fallback = false
+            Adhearsion.config.core.i18n.fallback = false
           end
 
           after do
-            Adhearsion.config.platform.i18n.fallback = true
+            Adhearsion.config.core.i18n.fallback = true
           end
 
           it 'should generate proper SSML with only audio (no text) translations' do

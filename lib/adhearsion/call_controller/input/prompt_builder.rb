@@ -9,21 +9,21 @@ module Adhearsion
         def initialize(output_document, grammars, options)
           input_options = {
             mode: options[:mode] || :dtmf,
-            initial_timeout: timeout(options[:timeout] || Adhearsion.config.platform.media.timeout),
-            inter_digit_timeout: timeout(options[:inter_digit_timeout] || Adhearsion.config.platform.media.inter_digit_timeout),
-            max_silence: timeout(options[:timeout] || Adhearsion.config.platform.media.timeout),
-            min_confidence: Adhearsion.config.platform.media.min_confidence,
+            initial_timeout: timeout(options[:timeout] || Adhearsion.config.core.media.timeout),
+            inter_digit_timeout: timeout(options[:inter_digit_timeout] || Adhearsion.config.core.media.inter_digit_timeout),
+            max_silence: timeout(options[:timeout] || Adhearsion.config.core.media.timeout),
+            min_confidence: Adhearsion.config.core.media.min_confidence,
             grammars: grammars,
-            recognizer: Adhearsion.config.platform.media.recognizer,
-            language: Adhearsion.config.platform.media.input_language,
+            recognizer: Adhearsion.config.core.media.recognizer,
+            language: Adhearsion.config.core.media.input_language,
             terminator: options[:terminator]
           }.merge(options[:input_options] || {})
 
           @prompt = if output_document || options[:render_document]
             output_options = {
               render_document: options[:render_document] || {value: output_document},
-              renderer: Adhearsion.config.platform.media.default_renderer,
-              voice: Adhearsion.config.platform.media.default_voice
+              renderer: Adhearsion.config.core.media.default_renderer,
+              voice: Adhearsion.config.core.media.default_voice
             }.merge(options[:output_options] || {})
 
             Adhearsion::Rayo::Component::Prompt.new output_options, input_options, barge_in: options.has_key?(:interruptible) ? options[:interruptible] : true

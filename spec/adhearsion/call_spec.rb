@@ -620,16 +620,16 @@ module Adhearsion
 
         context "with no custom lifetime" do
           around do |example|
-            old_val = Adhearsion.config.platform.after_hangup_lifetime
+            old_val = Adhearsion.config.core.after_hangup_lifetime
             begin
               example.run
             rescue
-              Adhearsion.config.platform.after_hangup_lifetime = old_val
+              Adhearsion.config.core.after_hangup_lifetime = old_val
             end
           end
 
           it "shuts down the actor using platform config" do
-            Adhearsion.config.platform.after_hangup_lifetime = 2
+            Adhearsion.config.core.after_hangup_lifetime = 2
             subject << end_event
             sleep 2.1
             expect(subject.alive?).to be false
@@ -639,16 +639,16 @@ module Adhearsion
 
         context "with a custom lifetime" do
           around do |example|
-            old_val = Adhearsion.config.platform.after_hangup_lifetime
+            old_val = Adhearsion.config.core.after_hangup_lifetime
             begin
               example.run
             rescue
-              Adhearsion.config.platform.after_hangup_lifetime = old_val
+              Adhearsion.config.core.after_hangup_lifetime = old_val
             end
           end
 
           it "shuts down the actor using the Call#after_hangup_lifetime" do
-            Adhearsion.config.platform.after_hangup_lifetime = 1
+            Adhearsion.config.core.after_hangup_lifetime = 1
             subject.after_hangup_lifetime = 2
             subject << end_event
             sleep 1.1

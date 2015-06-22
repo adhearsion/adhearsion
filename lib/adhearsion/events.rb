@@ -64,7 +64,7 @@ module Adhearsion
       end
 
       def init
-        @queue = Worker.pool(size: Adhearsion.config.platform.event_threads)
+        @queue = Worker.pool(size: Adhearsion.config.core.event_threads)
       end
 
       def refresh!

@@ -26,10 +26,10 @@ module Adhearsion
         def new_output(options)
           defaults = {}
 
-          default_voice = Adhearsion.config.platform.media.default_voice
+          default_voice = Adhearsion.config.core.media.default_voice
           defaults[:voice] = default_voice if default_voice
 
-          renderer = Adhearsion.config.platform.media.default_renderer
+          renderer = Adhearsion.config.core.media.default_renderer
           defaults[:renderer] = renderer if renderer
 
           Adhearsion::Rayo::Component::Output.new defaults.merge(options)

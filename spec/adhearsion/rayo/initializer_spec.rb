@@ -5,7 +5,7 @@ require 'spec_helper'
 describe Adhearsion::Rayo::Initializer do
 
   def reset_default_config
-    Adhearsion.config.platform do |config|
+    Adhearsion.config.core do |config|
       config.type               = :xmpp
       config.username           = "usera@127.0.0.1"
       config.password           = "1"
@@ -22,7 +22,7 @@ describe Adhearsion::Rayo::Initializer do
   def initialize_rayo(options = {})
     reset_default_config
     allow(described_class).to receive(:connect)
-    Adhearsion.config.platform do |config|
+    Adhearsion.config.core do |config|
       config.type               = options[:type] if options.has_key?(:type)
       config.username           = options[:username] if options.has_key?(:username)
       config.password           = options[:password] if options.has_key?(:password)
@@ -36,7 +36,7 @@ describe Adhearsion::Rayo::Initializer do
     end
 
     described_class.init
-    Adhearsion.config.platform
+    Adhearsion.config.core
   end
 
   let(:call_id)     { rand }
@@ -313,14 +313,14 @@ describe Adhearsion::Rayo::Initializer do
   context "rayo configuration" do
     describe "with config specified" do
       before do
-        Adhearsion.config.platform do |config|
+        Adhearsion.config.core do |config|
           config.username = 'userb@127.0.0.1'
           config.password = 'abc123'
         end
       end
 
       subject do
-        Adhearsion.config.platform
+        Adhearsion.config.core
       end
 
       it "should set properly the username value" do

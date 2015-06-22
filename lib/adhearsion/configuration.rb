@@ -23,7 +23,7 @@ module Adhearsion
     ##
     # Initialize the configuration object
     #
-    # * &block platform configuration block
+    # * &block core configuration block
     # Adhearsion::Configuration.new do
     #   foo "bar", :desc => "My description"
     # end
@@ -35,7 +35,7 @@ module Adhearsion
       Loquacious.env_config = true
       Loquacious.env_prefix = "AHN"
 
-      Loquacious::Configuration.for :platform do
+      Loquacious::Configuration.for :core do
         root nil, :desc => "Adhearsion application root folder"
 
         lib "lib", :desc => <<-__
@@ -121,7 +121,7 @@ module Adhearsion
         end
       end
 
-      Loquacious::Configuration.for :platform, &block if block_given?
+      Loquacious::Configuration.for :core, &block if block_given?
 
       self
     end
@@ -145,7 +145,7 @@ module Adhearsion
     def add_environment(env)
       return if self.class.method_defined? env.to_sym
       self.class.send(:define_method, env.to_sym) do |*args, &block|
-        unless block.nil? || env != self.platform.environment.to_sym
+        unless block.nil? || env != self.core.environment.to_sym
           self.instance_eval(&block)
         end
         self
@@ -155,7 +155,7 @@ module Adhearsion
     ##
     # Direct access to a specific configuration object
     #
-    # Adhearsion.config[:platform] => returns the configuration object associated to the Adhearsion platform
+    # Adhearsion.config[:core] => returns the configuration object associated with Adhearsion core
     #
     # @return [Loquacious::Configuration] configuration object or nil if the plugin does not exist
     def [](value)
@@ -174,33 +174,33 @@ module Adhearsion
 
     # root accessor
     def root
-      platform.root
+      core.root
     end
 
     ##
-    # Handle the Adhearsion platform configuration
+    # Handle the Adhearsion core configuration
     #
     # It accepts a block that will be executed in the Adhearsion config var environment
     # to update the desired values
     #
-    # Adhearsion.config.platform do
+    # Adhearsion.config.core do
     #   foo "bar", :desc => "My new description"
     # end
     #
-    # values = Adhearsion.config.platform
+    # values = Adhearsion.config.core
     # values.foo => "bar"
     #
     # @return [Loquacious::Configuration] configuration object or nil if the plugin does not exist
-    def platform(&block)
-      Loquacious::Configuration.for :platform, &block
+    def core(&block)
+      Loquacious::Configuration.for :core, &block
     end
 
     ##
-    # Fetchs the configuration info for the Adhearsion platform or a specific plugin
+    # Fetchs the configuration info for the Adhearsion core or a specific plugin
     # @param name [Symbol]
-    #     - :all      => Adhearsion platform and all the loaded plugins
-    #     - nil       => Adhearsion platform configuration
-    #     - :platform => Adhearsion platform configuration
+    #     - :all      => Adhearsion core and all the loaded plugins
+    #     - nil       => Adhearsion core configuration
+    #     - :core => Adhearsion core configuration
     #     - :<plugin-config-name> => Adhearsion plugin configuration
     #
     # @param args [Hash]
@@ -210,7 +210,7 @@ module Adhearsion
     def description(name, args = {:show_values => true})
       desc = StringIO.new
 
-      name.nil? and name = :platform
+      name.nil? and name = :core
       if name.eql? :all
         value = ""
         Loquacious::Configuration.instance_variable_get("@table").keys.map do |config|

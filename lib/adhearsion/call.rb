@@ -245,7 +245,7 @@ module Adhearsion
         @end_code = event.platform_code
         @end_blocker.broadcast event.reason
         @commands.terminate
-        after(@after_hangup_lifetime || Adhearsion.config.platform.after_hangup_lifetime) { terminate }
+        after(@after_hangup_lifetime || Adhearsion.config.core.after_hangup_lifetime) { terminate }
       end
     end
 

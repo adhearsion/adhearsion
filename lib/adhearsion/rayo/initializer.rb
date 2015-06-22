@@ -12,7 +12,7 @@ module Adhearsion
 
       class << self
         def init
-          self.config = Adhearsion.config.platform
+          self.config = Adhearsion.config.core
 
           username = self.config.username
           if (self.config.type || :xmpp) == :xmpp

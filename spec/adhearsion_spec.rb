@@ -6,12 +6,12 @@ describe Adhearsion do
   describe "#root=" do
     it "should update properly the config root variable" do
       Adhearsion.root = "./"
-      expect(Adhearsion.config[:platform].root).to eq(Dir.getwd)
+      expect(Adhearsion.config[:core].root).to eq(Dir.getwd)
     end
 
     it "should update properly the config root variable when path is nil" do
       Adhearsion.root = nil
-      expect(Adhearsion.config[:platform].root).to be_nil
+      expect(Adhearsion.config[:core].root).to be_nil
     end
   end
 

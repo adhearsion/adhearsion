@@ -48,18 +48,18 @@ module Adhearsion
 
       # Restore the default configured logging level
       def unsilence!
-        self.logging_level = Adhearsion.config.platform.logging['level']
+        self.logging_level = Adhearsion.config.core.logging['level']
       end
 
       # Toggle between the configured log level and :trace
       # Useful for debugging a live Adhearsion instance
       def toggle_trace!
-        if level == ::Logging.level_num(Adhearsion.config.platform.logging['level'])
+        if level == ::Logging.level_num(Adhearsion.config.core.logging['level'])
           logger.warn "Turning TRACE logging ON."
           self.level = :trace
         else
           logger.warn "Turning TRACE logging OFF."
-          self.level = Adhearsion.config.platform.logging['level']
+          self.level = Adhearsion.config.core.logging['level']
         end
       end
 

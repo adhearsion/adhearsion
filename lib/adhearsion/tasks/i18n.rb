@@ -5,7 +5,7 @@ namespace :i18n do
   task :validate_files => :environment do
     Adhearsion::Initializer.new.setup_i18n_load_path
 
-    config = Adhearsion.config.platform.i18n
+    config = Adhearsion.config.core.i18n
     locale_files = Dir.glob(I18n.load_path)
 
     locale_errors = {}

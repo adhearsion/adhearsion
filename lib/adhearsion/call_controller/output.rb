@@ -285,14 +285,14 @@ module Adhearsion
         end
 
         unless prompt.empty?
-          prompt = "file://#{Adhearsion.root + "/" unless Adhearsion.config.platform.i18n.audio_path.start_with?("/")}#{Adhearsion.config.platform.i18n.audio_path}/#{this_locale}/#{prompt}"
+          prompt = "file://#{Adhearsion.root + "/" unless Adhearsion.config.core.i18n.audio_path.start_with?("/")}#{Adhearsion.config.core.i18n.audio_path}/#{this_locale}/#{prompt}"
         end
 
         RubySpeech::SSML.draw language: this_locale do
           if prompt.empty?
             string text
           else
-            if Adhearsion.config.platform.i18n.fallback
+            if Adhearsion.config.core.i18n.fallback
               audio(src: prompt) { string text }
             else
               audio(src: prompt)

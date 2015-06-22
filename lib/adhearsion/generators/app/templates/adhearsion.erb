@@ -2,7 +2,7 @@
 
 Adhearsion.config do |config|
 <% unless options[:empty] %>
-  # Centralized way to specify any Adhearsion platform or plugin configuration
+  # Centralized way to specify any Adhearsion core or plugin configuration
   # - Execute rake config:show to view the active configuration values
   #
   # To update a plugin configuration you can write either:
@@ -18,20 +18,20 @@ Adhearsion.config do |config|
   #        end
 <% end %>
   config.development do |dev|
-    dev.platform.logging.level = :debug
+    dev.core.logging.level = :debug
   end
 
   ##
   # Use with Rayo over XMPP (eg Voxeo PRISM or FreeSWITCH mod_rayo)
   #
-  # config.platform.username = "usera@freeswitch.local-dev.mojolingo.com" # Your XMPP JID for use with Rayo
-  # config.platform.password = "1" # Your XMPP password
+  # config.core.username = "usera@freeswitch.local-dev.mojolingo.com" # Your XMPP JID for use with Rayo
+  # config.core.password = "1" # Your XMPP password
 
   ##
   # Use with Asterisk
   #
-  # config.platform.type = :asterisk # Use Asterisk
-  # config.platform.username = "manager" # Your AMI username
-  # config.platform.password = "password" # Your AMI password
-  # config.platform.host = "asterisk.local-dev.mojolingo.com" # Your AMI host
+  # config.core.type = :asterisk # Use Asterisk
+  # config.core.username = "manager" # Your AMI username
+  # config.core.password = "password" # Your AMI password
+  # config.core.host = "asterisk.local-dev.mojolingo.com" # Your AMI host
 end

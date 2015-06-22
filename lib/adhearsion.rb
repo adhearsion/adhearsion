@@ -17,7 +17,7 @@ module Adhearsion
     # @param[String|Pathname] The application path to set
     #
     def root=(path)
-      Adhearsion.config[:platform].root = path.nil? ? nil : File.expand_path(path)
+      Adhearsion.config[:core].root = path.nil? ? nil : File.expand_path(path)
     end
 
     #
@@ -25,7 +25,7 @@ module Adhearsion
     # @return [Pathname] The application path
     #
     def root
-      Adhearsion.config[:platform].root
+      Adhearsion.config[:core].root
     end
 
     def config(&block)
@@ -46,7 +46,7 @@ module Adhearsion
         puts  "You tried to initialize with an invalid environment name #{env}; environment-specific config may not load successfully. Valid values are #{_config.valid_environments}."
         env = nil
       end
-      _config.platform.environment = env if env
+      _config.core.environment = env if env
       _config
     end
 

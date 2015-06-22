@@ -76,14 +76,14 @@ describe Adhearsion::Logging do
   end
 
   it 'should toggle between :trace and the configured log level' do
-    orig_level = Adhearsion.config.platform.logging['level']
-    Adhearsion.config.platform.logging['level'] = :warn
+    orig_level = Adhearsion.config.core.logging['level']
+    Adhearsion.config.core.logging['level'] = :warn
     Adhearsion::Logging.level = :warn
     Adhearsion::Logging.toggle_trace!
     expect(Adhearsion::Logging.level).to eq(0)
     Adhearsion::Logging.toggle_trace!
     expect(Adhearsion::Logging.level).to eq(3)
-    Adhearsion.config.platform.logging['level'] = orig_level
+    Adhearsion.config.core.logging['level'] = orig_level
   end
 
   describe 'level changing' do

@@ -7,7 +7,7 @@ module Adhearsion
   # @private
   class HTTPServer
     def self.start
-      config = Adhearsion.config.platform.http
+      config = Adhearsion.config.core.http
 
       return unless config.enable
 

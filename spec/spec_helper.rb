@@ -32,13 +32,13 @@ RSpec.configure do |config|
   config.raise_errors_for_deprecations!
 
   config.before :suite do
-    Adhearsion::Logging.start :trace, Adhearsion.config.platform.logging.formatter
-    Adhearsion.config.platform.after_hangup_lifetime = 10
+    Adhearsion::Logging.start :trace, Adhearsion.config.core.logging.formatter
+    Adhearsion.config.core.after_hangup_lifetime = 10
     Adhearsion::Initializer.new.initialize_exception_logger
   end
 
   config.before :each do
-    Adhearsion.config.platform.i18n.locale_path = ["#{File.dirname(__FILE__)}/fixtures/locale"]
+    Adhearsion.config.core.i18n.locale_path = ["#{File.dirname(__FILE__)}/fixtures/locale"]
     Adhearsion::Initializer.new.setup_i18n_load_path
 
     Adhearsion.router = nil

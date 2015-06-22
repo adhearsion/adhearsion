@@ -42,7 +42,7 @@ describe Adhearsion::Initializer do
 
     it "should set the adhearsion proc name" do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
-        expect(Adhearsion::LinuxProcName).to receive(:set_proc_name).with(Adhearsion.config.platform.process_name)
+        expect(Adhearsion::LinuxProcName).to receive(:set_proc_name).with(Adhearsion.config.core.process_name)
         Adhearsion::Initializer.start
       end
     end
@@ -51,7 +51,7 @@ describe Adhearsion::Initializer do
       stub_behavior_for_initializer_with_no_path_changing_behavior do
         Adhearsion::Initializer.start
       end
-      expect($0).to eq(Adhearsion.config.platform.process_name)
+      expect($0).to eq(Adhearsion.config.core.process_name)
     end
   end
 
@@ -87,17 +87,17 @@ describe Adhearsion::Initializer do
     end
 
     it "should return false if folder does not exist" do
-      Adhearsion.config.platform.lib = "my_random_lib_directory"
+      Adhearsion.config.core.lib = "my_random_lib_directory"
       expect(Adhearsion::Initializer.new.load_lib_folder).to eq(false)
     end
 
     it "should return false and not load any file if config folder is set to nil" do
-      Adhearsion.config.platform.lib = nil
+      Adhearsion.config.core.lib = nil
       expect(Adhearsion::Initializer.new.load_lib_folder).to eq(false)
     end
 
     it "should load the contents of the preconfigured directory" do
-      Adhearsion.config.platform.lib = "foo"
+      Adhearsion.config.core.lib = "foo"
       allow(File).to receive_messages directory?: true
       expect(Dir).to receive(:chdir).with(File.join(path, "foo")).and_return []
       Adhearsion::Initializer.new.load_lib_folder

@@ -8,7 +8,7 @@ module Adhearsion
     describe Input do
       include CallControllerTestHelpers
 
-      def self.temp_config_value(key, value, namespace = Adhearsion.config.platform.media)
+      def self.temp_config_value(key, value, namespace = Adhearsion.config.core.media)
         before do
           @original_value = namespace[key]
           namespace[key] = value
@@ -384,7 +384,7 @@ module Adhearsion
             expected_output_options.merge! renderer: 'something_else'
           end
 
-          temp_config_value :default_renderer, 'something_else', Adhearsion.config.platform.media
+          temp_config_value :default_renderer, 'something_else', Adhearsion.config.core.media
 
           it "executes a Prompt with correct renderer" do
             expect_component_execution expected_prompt
@@ -400,7 +400,7 @@ module Adhearsion
             expected_output_options.merge! voice: 'something_else'
           end
 
-          temp_config_value :default_voice, 'something_else', Adhearsion.config.platform.media
+          temp_config_value :default_voice, 'something_else', Adhearsion.config.core.media
 
           it "executes a Prompt with correct voice" do
             expect_component_execution expected_prompt
@@ -794,7 +794,7 @@ module Adhearsion
               expected_output_options.merge! renderer: 'something_else'
             end
 
-            temp_config_value :default_renderer, 'something_else', Adhearsion.config.platform.media
+            temp_config_value :default_renderer, 'something_else', Adhearsion.config.core.media
 
             it "executes a Prompt with correct renderer" do
               expect_component_execution expected_prompt
@@ -810,7 +810,7 @@ module Adhearsion
               expected_output_options.merge! voice: 'something_else'
             end
 
-            temp_config_value :default_voice, 'something_else', Adhearsion.config.platform.media
+            temp_config_value :default_voice, 'something_else', Adhearsion.config.core.media
 
             it "executes a Prompt with correct voice" do
               expect_component_execution expected_prompt

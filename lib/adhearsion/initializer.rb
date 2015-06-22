@@ -50,7 +50,7 @@ module Adhearsion
 
         Adhearsion::Process.booted if Adhearsion.status == :booting
 
-        logger.info "Adhearsion v#{Adhearsion::VERSION} initialized in \"#{Adhearsion.config.platform.environment}\"!" if Adhearsion.status == :running
+        logger.info "Adhearsion v#{Adhearsion::VERSION} initialized in \"#{Adhearsion.config.core.environment}\"!" if Adhearsion.status == :running
       end
 
       # This method will block until all important threads have finished.
@@ -75,7 +75,7 @@ module Adhearsion
     end
 
     def setup_i18n_load_path
-      Adhearsion.config.platform.i18n.locale_path.each do |dir|
+      Adhearsion.config.core.i18n.locale_path.each do |dir|
         logger.debug "Adding #{dir} to the I18n load path"
         I18n.load_path += Dir["#{dir}/**/*.yml"]
       end
@@ -122,9 +122,9 @@ module Adhearsion
     # Loads files in application lib folder
     # @return [Boolean] if files have been loaded (lib folder is configured to not nil and actually exists)
     def load_lib_folder
-      return false if Adhearsion.config.platform.lib.nil?
+      return false if Adhearsion.config.core.lib.nil?
 
-      lib_folder = [Adhearsion.config.platform.root, Adhearsion.config.platform.lib].join '/'
+      lib_folder = [Adhearsion.config.core.root, Adhearsion.config.core.lib].join '/'
       return false unless File.directory? lib_folder
 
       $LOAD_PATH.unshift lib_folder
@@ -178,7 +178,7 @@ module Adhearsion
     end
 
     def start_logging
-      Adhearsion::Logging.start Adhearsion.config.platform.logging.level, Adhearsion.config.platform.logging.formatter
+      Adhearsion::Logging.start Adhearsion.config.core.logging.level, Adhearsion.config.core.logging.formatter
     end
 
     def initialize_exception_logger
@@ -188,7 +188,7 @@ module Adhearsion
     end
 
     def set_ahn_proc_name
-      Adhearsion::LinuxProcName.set_proc_name Adhearsion.config.platform.process_name
+      Adhearsion::LinuxProcName.set_proc_name Adhearsion.config.core.process_name
     end
 
     def trigger_after_initialized_hooks

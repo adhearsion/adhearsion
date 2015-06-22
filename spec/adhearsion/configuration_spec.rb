@@ -10,31 +10,31 @@ describe Adhearsion::Configuration do
       Adhearsion::Configuration.new
     end
 
-    it "should have an empty configuration for the platform" do
-      expect(subject).to respond_to :platform
+    it "should have an empty configuration for the core" do
+      expect(subject).to respond_to :core
     end
 
-    it "should have a platform configuration object" do
-      expect(subject.platform).to be_instance_of Loquacious::Configuration
+    it "should have a core configuration object" do
+      expect(subject.core).to be_instance_of Loquacious::Configuration
     end
 
     it "should initialize root to nil" do
-      expect(subject.platform.root).to be_nil
+      expect(subject.core.root).to be_nil
     end
 
     it "should initialize logging to level info" do
-      expect(subject.platform.logging.level).to eq(:info)
+      expect(subject.core.logging.level).to eq(:info)
     end
 
     it "should allow to update a config value" do
-      expect(subject.platform.environment).to eq(:development)
-      subject.platform.environment = :production
-      expect(subject.platform.environment).to eq(:production)
+      expect(subject.core.environment).to eq(:development)
+      subject.core.environment = :production
+      expect(subject.core.environment).to eq(:production)
     end
 
     it "should allow to create new config values" do
-      subject.platform.bar = "foo"
-      expect(subject.platform.bar).to eq("foo")
+      subject.core.bar = "foo"
+      expect(subject.core.bar).to eq("foo")
     end
   end
 
@@ -47,26 +47,26 @@ describe Adhearsion::Configuration do
     end
 
     it "should return the root value" do
-      expect(subject.platform.root).to eq("foo")
+      expect(subject.core.root).to eq("foo")
     end
 
     it "should return the environment value" do
-      expect(subject.platform.environment).to eq(:development)
+      expect(subject.core.environment).to eq(:development)
     end
 
-    it "should return a description for the platform configuration" do
-      expect(Adhearsion.config.description(:platform)).to be_instance_of String
+    it "should return a description for the core configuration" do
+      expect(Adhearsion.config.description(:core)).to be_instance_of String
     end
 
     it "should allow to update a config value" do
-      expect(subject.platform.environment).to eq(:development)
-      subject.platform.environment = :production
-      expect(subject.platform.environment).to eq(:production)
+      expect(subject.core.environment).to eq(:development)
+      subject.core.environment = :production
+      expect(subject.core.environment).to eq(:production)
     end
 
     it "should allow to create new config values" do
-      subject.platform.bar = "bazz"
-      expect(subject.platform.bar).to eq("bazz")
+      subject.core.bar = "bazz"
+      expect(subject.core.bar).to eq("bazz")
     end
   end
 
@@ -78,18 +78,18 @@ describe Adhearsion::Configuration do
     end
   end
 
-  describe "when accessing the platform configuration" do
+  describe "when accessing the core configuration" do
     after do
       Adhearsion.config = nil
     end
 
-    subject{ Adhearsion.config[:platform] }
+    subject{ Adhearsion.config[:core] }
 
-    it "should return the valid platform configuration object" do
+    it "should return the valid core configuration object" do
       expect(subject).to be_instance_of ::Loquacious::Configuration
     end
 
-    it "should allow to retrieve any platform configuration value" do
+    it "should allow to retrieve any core configuration value" do
       expect(subject.environment).to eq(:development)
     end
 
@@ -114,28 +114,28 @@ describe Adhearsion::Configuration do
 
       subject do
         config_object.production do |env|
-          env.platform.my_level = 0
+          env.core.my_level = 0
         end
         config_object.development do |env|
-          env.platform.my_level = 1
+          env.core.my_level = 1
         end
         config_object.staging do |env|
-          env.platform.my_level = 2
+          env.core.my_level = 2
         end
         config_object.test do |env|
-          env.platform.my_level = 3
+          env.core.my_level = 3
         end
         config_object
       end
 
       it "should return by default the development value" do
-        expect(subject.platform.my_level).to eq(1)
+        expect(subject.core.my_level).to eq(1)
       end
 
       [:staging, :production, :test].each do |env|
         it "should return the #{env.to_s} value when environment set to #{env.to_s}" do
-          config_object.platform.environment = env
-          expect(subject.platform.my_level).to eq(env_values[env])
+          config_object.core.environment = env
+          expect(subject.core.my_level).to eq(env_values[env])
         end
       end
     end
@@ -153,7 +153,7 @@ describe Adhearsion::Configuration do
     end
 
     it "should return 'development' by default" do
-      expect(Adhearsion.config.platform.environment).to eq(:development)
+      expect(Adhearsion.config.core.environment).to eq(:development)
     end
 
     [:development, :production, :staging, :test].each do |env|
@@ -166,14 +166,14 @@ describe Adhearsion::Configuration do
       [:production, :staging, :test].each do |env|
         it "should override the environment value with #{env.to_s} when set in ENV value" do
           ENV['AHN_ENV'] = env.to_s
-          expect(Adhearsion.config.platform.environment).to eq(env)
+          expect(Adhearsion.config.core.environment).to eq(env)
         end
       end
     end
 
     it "should not override the default environment with the ENV value if valid" do
       ENV['AHN_ENV'] = "invalid_value"
-      expect(Adhearsion.config.platform.environment).to eq(:development)
+      expect(Adhearsion.config.core.environment).to eq(:development)
     end
 
     it "should allow to add a new environment" do
@@ -191,15 +191,15 @@ describe Adhearsion::Configuration do
 
     subject { Adhearsion.config }
 
-    it "should retrieve a string with the platform configuration" do
-      desc = subject.description :platform, :show_values => false
+    it "should retrieve a string with the core configuration" do
+      desc = subject.description :core, :show_values => false
       expect(desc.length).to be > 0
       expect(desc).to match(/^.*environment.*$/)
       expect(desc).to match(/^.*root.*$/)
     end
 
-    it "should retrieve a string with the platform configuration and values" do
-      desc = subject.description :platform
+    it "should retrieve a string with the core configuration and values" do
+      desc = subject.description :core
       expect(desc.length).to be > 0
       expect(desc).to match(/^.*environment.*:development.*$/)
       expect(desc).to match(/^.*root.*$/)
@@ -265,7 +265,7 @@ describe Adhearsion::Configuration do
 
           [:development, :staging, :production, :test].each do |env|
             it "should return the #{env.to_s} value when environment is set to #{env.to_s}" do
-              Adhearsion.config.platform.environment = env
+              Adhearsion.config.core.environment = env
               expect(subject.name).to eq(env.to_s)
             end
           end
@@ -288,7 +288,7 @@ describe Adhearsion::Configuration do
         expect(desc).to match(/^.*host.*$/)
       end
 
-      it "should retrieve both platform and plugin configuration" do
+      it "should retrieve both core and plugin configuration" do
         desc = subject.description :all
         expect(desc.length).to be > 0
         expect(desc).to match(/^.*environment.*:development.*$/)
@@ -298,10 +298,10 @@ describe Adhearsion::Configuration do
         expect(desc).to match(/^.*host.*localhost.*$/)
       end
 
-      it "should retrieve both platform and plugin configuration with no values" do
+      it "should retrieve both core and plugin configuration with no values" do
         desc = subject.description :all, :show_values => false
         expect(desc.length).to be > 0
-        expect(desc).to match(/^.*Configuration for platform.*$/)
+        expect(desc).to match(/^.*Configuration for core.*$/)
         expect(desc).to match(/^.*environment.*$/)
         expect(desc).to match(/^.*root.*$/)
         expect(desc).to match(/^.*Configuration for my_plugin.*$/)
