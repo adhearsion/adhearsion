@@ -60,7 +60,11 @@ module Adhearsion
       end
 
       def queue
-        @queue || refresh!
+        unless @queue && @queue.alive?
+          init
+        end
+
+        @queue
       end
 
       def init
