@@ -30,7 +30,7 @@ module Adhearsion
     #
     # @return [Adhearsion::Configuration]
     def initialize(env = :development, &block)
-      initialize_environments env
+      @active_environment = env
 
       Loquacious.env_config = true
       Loquacious.env_prefix = "AHN"
@@ -122,31 +122,12 @@ module Adhearsion
       self
     end
 
-    def initialize_environments(active_environment)
-      # Create a method per each valid environment that, when invoked, may execute
-      # the block received if the environment is active
-      valid_environments.each do |env|
-        define_singleton_method env.to_sym do |*args, &block|
-          logger.trace "Ignoring configuration for inactive environment #{env}"
-        end
+    def env(environment)
+      if environment == @active_environment
+        yield self
+      else
+        logger.trace "Ignoring configuration for inactive environment #{environment}"
       end
-
-      define_singleton_method active_environment do |*args, &block|
-        self.instance_eval(&block) unless block.nil?
-        self
-      end
-
-      if valid_environment?(active_environment)
-        logger.warn "You tried to initialize with an invalid environment name #{active_environment}; environment-specific config may not load successfully. Valid values are #{valid_environments}."
-      end
-    end
-
-    def valid_environment?(env)
-      env && self.valid_environments.include?(env.to_sym)
-    end
-
-    def valid_environments
-      @valid_environments ||= [:production, :development, :staging, :test]
     end
 
     ##
