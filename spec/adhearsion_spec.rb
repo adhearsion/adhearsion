@@ -36,13 +36,6 @@ describe Adhearsion do
     end
   end
 
-  describe "#environments" do
-    it "should be the collection of valid environments" do
-      Adhearsion.config.valid_environments << :foo
-      expect(Adhearsion.environments).to include :foo
-    end
-  end
-
   describe "#router" do
     describe '#router' do
       subject { super().router }
