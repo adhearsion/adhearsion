@@ -160,14 +160,18 @@ module Adhearsion
 
     #
     # Wait for the call to end. Returns immediately if the call has already ended, else blocks until it does so.
+    # @param [Integer, nil] timeout a timeout after which to unblock, returning `:timeout`
     # @return [Symbol] the reason for the call ending
+    # @raises [Celluloid::ConditionError] in case of a specified timeout expiring
     #
-    def wait_for_end
+    def wait_for_end(timeout = nil)
       if end_reason
         end_reason
       else
-        @end_blocker.wait
+        @end_blocker.wait(timeout)
       end
+    rescue Celluloid::ConditionError => e
+      abort e
     end
 
     #
