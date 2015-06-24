@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Change: Define configuration per-environment for any environment name and without colliding with plugin names. See [#442](https://github.com/adhearsion/adhearsion/issues/442). Syntax is now `config.env(:development).foo = :bar` instead of `config.development.foo = :bar`.
 
 # [3.0.0.beta1](https://github.com/adhearsion/adhearsion/compare/v2.6.1...v3.0.0.beta1) - [2015-06-24](https://rubygems.org/gems/adhearsion/versions/3.0.0.beta1)
   * Change: Removed `Adhearsion.ahn_root=` which was deprecated in favour of `Adhearsion.root=`
