@@ -5,7 +5,7 @@ module Adhearsion
     class AppGenerator < Generator
 
       BASEDIRS  = %w( config script spec )
-      EMPTYDIRS = %w( app/call_controllers lib spec/support spec/call_controllers )
+      EMPTYDIRS = %w( app/assets/audio/en app/call_controllers config/locales lib spec/support spec/call_controllers )
 
       class_option :empty, type: :boolean
 
@@ -18,13 +18,16 @@ module Adhearsion
         template "adhearsion.erb", "config/adhearsion.rb"
         template "events.erb", "config/events.rb"
         template "routes.erb", "config/routes.rb"
+        copy_file "config.ru", "config.ru"
         copy_file "gitignore", ".gitignore"
         copy_file "rspec", ".rspec"
         copy_file "Procfile"
         copy_file "Rakefile"
         copy_file "README.md"
         unless options[:empty]
+          copy_file "hello_world.wav", "app/assets/audio/en/hello_world.wav"
           copy_file "simon_game.rb", "app/call_controllers/simon_game.rb"
+          copy_file "en.yml", "config/locales/en.yml"
           copy_file "simon_game_spec.rb", "spec/call_controllers/simon_game_spec.rb"
         end
         chmod "script/ahn", 0755

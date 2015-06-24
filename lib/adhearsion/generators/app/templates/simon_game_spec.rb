@@ -5,9 +5,9 @@ require 'call_controllers/simon_game'
 
 describe SimonGame do
 
-  let(:example_response)  { OpenStruct.new(:response => "5")     }
+  let(:example_response)  { OpenStruct.new(:utterance => "5")     }
   let(:example_number)    { "5"                                  }
-  let(:long_response)     { OpenStruct.new(:response => "55555") }
+  let(:long_response)     { OpenStruct.new(:utterance => "55555") }
   let(:long_number)       { "55555"                              }
 
   let(:mock_call) { double 'Call' }

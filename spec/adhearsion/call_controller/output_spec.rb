@@ -9,20 +9,20 @@ module Adhearsion
       include CallControllerTestHelpers
 
       def expect_ssml_output(ssml, options = {})
-        expect_component_execution Punchblock::Component::Output.new(options.merge(:ssml => ssml))
+        expect_component_execution Adhearsion::Rayo::Component::Output.new(options.merge(:ssml => ssml))
       end
 
       def expect_async_ssml_output(ssml, options = {})
-        expect_message_waiting_for_response Punchblock::Component::Output.new(options.merge(:ssml => ssml))
+        expect_message_waiting_for_response Adhearsion::Rayo::Component::Output.new(options.merge(:ssml => ssml))
       end
 
       def expect_url_output(url, options = {})
-        component = Punchblock::Component::Output.new(options.merge(render_document: {value: url, content_type: "application/ssml+xml"}))
+        component = Adhearsion::Rayo::Component::Output.new(options.merge(render_document: {value: url, content_type: "application/ssml+xml"}))
         expect_component_execution component
       end
 
       def expect_async_url_output(url, options = {})
-        component = Punchblock::Component::Output.new(options.merge(render_document: {value: url, content_type: "application/ssml+xml"}))
+        component = Adhearsion::Rayo::Component::Output.new(options.merge(render_document: {value: url, content_type: "application/ssml+xml"}))
         expect_message_waiting_for_response component
       end
 
@@ -73,10 +73,10 @@ module Adhearsion
         end
 
         context "with a media engine" do
-          let(:media_engine) { :native }
+          let(:renderer) { :native }
           it "should use the specified media engine in the component" do
-            expect_ssml_output ssml, renderer: media_engine
-            expect(subject.play_audio(audio_file, renderer: media_engine)).to be true
+            expect_ssml_output ssml, renderer: renderer
+            expect(subject.play_audio(audio_file, renderer: renderer)).to be true
           end
         end
       end
@@ -91,7 +91,7 @@ module Adhearsion
 
         it 'plays the correct ssml' do
           expect_async_ssml_output ssml
-          expect(subject.play_audio!(audio_file)).to be_a Punchblock::Component::Output
+          expect(subject.play_audio!(audio_file)).to be_a Adhearsion::Rayo::Component::Output
         end
 
         context "with a fallback" do
@@ -107,15 +107,15 @@ module Adhearsion
 
           it 'places the fallback in the SSML doc' do
             expect_async_ssml_output ssml
-            expect(subject.play_audio!(audio_file, :fallback => fallback)).to be_a Punchblock::Component::Output
+            expect(subject.play_audio!(audio_file, :fallback => fallback)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
-        context "with a media engine" do
-          let(:media_engine) { :native }
-          it "should use the specified media engine in the SSML" do
-            expect_async_ssml_output ssml, renderer: media_engine
-            expect(subject.play_audio!(audio_file, renderer: media_engine)).to be_a Punchblock::Component::Output
+        context "with a renderer" do
+          let(:renderer) { :native }
+          it "should use the specified renderer in the output component" do
+            expect_async_ssml_output ssml, renderer: renderer
+            expect(subject.play_audio!(audio_file, renderer: renderer)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
       end
@@ -176,7 +176,7 @@ module Adhearsion
 
           it 'plays the correct ssml' do
             expect_async_ssml_output ssml
-            expect(subject.play_numeric!(input)).to be_a Punchblock::Component::Output
+            expect(subject.play_numeric!(input)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -185,7 +185,7 @@ module Adhearsion
 
           it 'plays the correct ssml' do
             expect_async_ssml_output ssml
-            expect(subject.play_numeric!(input)).to be_a Punchblock::Component::Output
+            expect(subject.play_numeric!(input)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -203,7 +203,7 @@ module Adhearsion
 
           it "should use the specified renderer in the SSML" do
             expect_async_ssml_output ssml, renderer: renderer
-            expect(subject.play_numeric!(input, renderer: renderer)).to be_a Punchblock::Component::Output
+            expect(subject.play_numeric!(input, renderer: renderer)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
       end
@@ -233,7 +233,7 @@ module Adhearsion
 
           it 'plays the url' do
             expect_async_url_output input
-            expect(subject.play_document!(input)).to be_a Punchblock::Component::Output
+            expect(subject.play_document!(input)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -347,7 +347,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_async_ssml_output ssml
-            expect(subject.play_time!(input)).to be_a Punchblock::Component::Output
+            expect(subject.play_time!(input)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -357,7 +357,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_async_ssml_output ssml
-            expect(subject.play_time!(input)).to be_a Punchblock::Component::Output
+            expect(subject.play_time!(input)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -368,7 +368,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_async_ssml_output ssml
-            expect(subject.play_time!(input, :format => format)).to be_a Punchblock::Component::Output
+            expect(subject.play_time!(input, :format => format)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -380,7 +380,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_async_ssml_output ssml
-            expect(subject.play_time!(base_input, :strftime => strftime)).to be_a Punchblock::Component::Output
+            expect(subject.play_time!(base_input, :strftime => strftime)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -393,7 +393,7 @@ module Adhearsion
 
           it 'plays the correct SSML' do
             expect_async_ssml_output ssml
-            expect(subject.play_time!(base_input, :format => format, :strftime => strftime)).to be_a Punchblock::Component::Output
+            expect(subject.play_time!(base_input, :format => format, :strftime => strftime)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -405,7 +405,7 @@ module Adhearsion
 
           it "should use the specified renderer in the SSML" do
             expect_async_ssml_output ssml, renderer: renderer
-            expect(subject.play_time!(input, format: format, renderer: renderer)).to be_a Punchblock::Component::Output
+            expect(subject.play_time!(input, format: format, renderer: renderer)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -611,7 +611,7 @@ module Adhearsion
 
           it 'plays the audio file' do
             expect_async_ssml_output ssml
-            expect(subject.play!(audio_file)).to be_a Punchblock::Component::Output
+            expect(subject.play!(audio_file)).to be_a Adhearsion::Rayo::Component::Output
           end
 
           it 'plays the audio file with the specified extra options if present' do
@@ -635,7 +635,7 @@ module Adhearsion
 
           it 'plays all arguments in one document' do
             expect_async_ssml_output ssml
-            expect(subject.play!(*args)).to be_a Punchblock::Component::Output
+            expect(subject.play!(*args)).to be_a Adhearsion::Rayo::Component::Output
           end
 
           it 'plays all arguments in one document with the extra options if present' do
@@ -657,7 +657,7 @@ module Adhearsion
 
           it 'plays the number' do
             expect_async_ssml_output ssml
-            expect(subject.play!(argument)).to be_a Punchblock::Component::Output
+            expect(subject.play!(argument)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -673,7 +673,7 @@ module Adhearsion
 
           it 'plays the number' do
             expect_async_ssml_output ssml
-            expect(subject.play!(argument)).to be_a Punchblock::Component::Output
+            expect(subject.play!(argument)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -689,7 +689,7 @@ module Adhearsion
 
           it 'plays the time' do
             expect_async_ssml_output ssml
-            expect(subject.play!(time)).to be_a Punchblock::Component::Output
+            expect(subject.play!(time)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -704,7 +704,7 @@ module Adhearsion
 
           it 'plays the time' do
             expect_async_ssml_output ssml
-            expect(subject.play!(date)).to be_a Punchblock::Component::Output
+            expect(subject.play!(date)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -723,7 +723,7 @@ module Adhearsion
 
           it 'plays the time with the specified format and strftime' do
             expect_async_ssml_output ssml
-            expect(subject.play!(:value => date, :format => format, :strftime => strftime)).to be_a Punchblock::Component::Output
+            expect(subject.play!(:value => date, :format => format, :strftime => strftime)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -732,106 +732,7 @@ module Adhearsion
 
           it "plays the SSML without generating" do
             expect_async_ssml_output ssml
-            expect(subject.play!(ssml)).to be_a Punchblock::Component::Output
-          end
-        end
-      end
-
-      describe "#interruptible_play" do
-        let(:output1)       { "one two" }
-        let(:output2)       { "three four" }
-        let(:non_existing)  { "http://adhearsion.com/nonexistingfile.mp3" }
-        let(:extra_options) { {renderer: :native } }
-
-        it "plays two outputs in succession" do
-          expect(subject).to receive(:stream_file).twice
-          digit = subject.interruptible_play output1, output2
-          expect(digit).to be_nil
-        end
-
-        it "stops at the first play when input is received" do
-          expect(subject).to receive(:stream_file).once.and_return(2)
-          digit = subject.interruptible_play output1, output2
-          expect(digit).to eq(2)
-        end
-
-        it "passes options on to #stream_file" do
-          expect(subject).to receive(:stream_file).once.with(output1, '0123456789#*', extra_options)
-          expect(subject).to receive(:stream_file).once.with(output2, '0123456789#*', extra_options)
-          digit = subject.interruptible_play output1, output2, extra_options
-          expect(digit).to be_nil
-        end
-
-        it 'raises an exception when output is unsuccessful' do
-          expect(subject).to receive(:stream_file).once.and_raise Output::PlaybackError, "Output failed"
-          expect { subject.interruptible_play non_existing }.to raise_error(Output::PlaybackError)
-        end
-      end
-
-      describe "#stream_file" do
-        let(:allowed_digits)  { '35' }
-        let(:prompt)          { "Press 3 or 5 to make something happen." }
-
-        let(:ssml) do
-          RubySpeech::SSML.draw do
-            string "Press 3 or 5 to make something happen."
-          end
-        end
-
-        let(:grammar) do
-          RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'acceptdigits' do
-            rule id: 'acceptdigits' do
-              one_of do
-                allowed_digits.each { |d| item { d.to_s } }
-              end
-            end
-          end
-        end
-
-        let(:output_component) {
-          Punchblock::Component::Output.new :ssml => ssml.to_s
-        }
-
-        let(:input_component) {
-          Punchblock::Component::Input.new :mode => :dtmf,
-                                           :grammar => { :value => grammar.to_s }
-        }
-
-        def expect_component_complete_event
-          expect_input_component_complete_event 'dtmf-5'
-        end
-
-        #test does pass and method works, but not sure if the empty method is a good idea
-        it "plays the correct output" do
-          allow(controller).to receive(:write_and_await_response)
-
-          expect_component_complete_event
-          expect_component_execution Punchblock::Component::Output.new(:ssml => ssml)
-          subject.stream_file prompt, allowed_digits
-        end
-
-        it "returns a single digit amongst the allowed when pressed" do
-          expect(controller).to receive(:write_and_await_response).with(kind_of(Punchblock::Component::Input)) do |input_component|
-            input_component.trigger_event_handler Punchblock::Event::Complete.new
-          end
-
-          expect(controller).to receive(:write_and_await_response).once.with(kind_of(Punchblock::Component::Output))
-
-          expect_any_instance_of(Punchblock::Component::Output).to receive(:stop!)
-          expect_any_instance_of(Punchblock::Component::Output).to receive(:complete_event).and_return double('complete', reason: double('Reason'))
-          expect_input_component_complete_event 'dtmf-5'
-
-          expect(subject.stream_file(prompt, allowed_digits)).to eq('5')
-        end
-
-        context "with output options passed in" do
-          let(:extra_options) { {renderer: :native } }
-          it "plays the correct output with options" do
-            allow(controller).to receive(:write_and_await_response)
-
-            expect_component_complete_event
-            expect_component_execution Punchblock::Component::Output.new({:ssml => ssml}.merge(extra_options))
-            subject.stream_file prompt, allowed_digits, extra_options
+            expect(subject.play!(ssml)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
       end
@@ -847,7 +748,7 @@ module Adhearsion
           it 'plays the correct SSML' do
             ssml = RubySpeech::SSML.draw { string "Hello world" }
             expect_ssml_output ssml
-            expect(subject.say(ssml)).to be_a Punchblock::Component::Output
+            expect(subject.say(ssml)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -856,30 +757,16 @@ module Adhearsion
             str = "Hello world"
             ssml = RubySpeech::SSML.draw { string str }
             expect_ssml_output ssml
-            expect(subject.say(str)).to be_a Punchblock::Component::Output
+            expect(subject.say(str)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
-        describe "with a default voice set in PB config" do
-          before { Adhearsion.config.punchblock.default_voice = 'foo' }
+        describe "with a default voice set in core config" do
+          before do
+            Adhearsion.config.core.media.default_voice = 'bar'
+          end
 
           it 'sets the voice on the output component' do
-            str = "Hello world"
-            ssml = RubySpeech::SSML.draw { string str }
-            expect_ssml_output ssml, voice: 'foo'
-            subject.say(str)
-          end
-
-          after { Adhearsion.config.punchblock.default_voice = nil }
-        end
-
-        describe "with a default voice set in core and PB config" do
-          before do
-            Adhearsion.config.punchblock.default_voice = 'foo'
-            Adhearsion.config.platform.media.default_voice = 'bar'
-          end
-
-          it 'prefers core config to set the voice on the output component' do
             str = "Hello world"
             ssml = RubySpeech::SSML.draw { string str }
             expect_ssml_output ssml, voice: 'bar'
@@ -887,31 +774,16 @@ module Adhearsion
           end
 
           after do
-            Adhearsion.config.punchblock.default_voice = nil
-            Adhearsion.config.platform.media.default_voice = nil
+            Adhearsion.config.core.media.default_voice = nil
           end
         end
 
-        describe "with a default media engine set in PB config" do
-          before { Adhearsion.config.punchblock.media_engine = 'foo' }
+        describe "with a default renderer set in config" do
+          before do
+            Adhearsion.config.core.media.default_renderer = 'bar'
+          end
 
           it 'sets the renderer on the output component' do
-            str = "Hello world"
-            ssml = RubySpeech::SSML.draw { string str }
-            expect_ssml_output ssml, renderer: 'foo'
-            subject.say(str)
-          end
-
-          after { Adhearsion.config.punchblock.media_engine = nil }
-        end
-
-        describe "with a default renderer set in core and PB config" do
-          before do
-            Adhearsion.config.punchblock.media_engine = 'foo'
-            Adhearsion.config.platform.media.default_renderer = 'bar'
-          end
-
-          it 'prefers core config to set the renderer on the output component' do
             str = "Hello world"
             ssml = RubySpeech::SSML.draw { string str }
             expect_ssml_output ssml, renderer: 'bar'
@@ -919,8 +791,7 @@ module Adhearsion
           end
 
           after do
-            Adhearsion.config.punchblock.media_engine = nil
-            Adhearsion.config.platform.media.default_renderer = nil
+            Adhearsion.config.core.media.default_renderer = nil
           end
         end
 
@@ -929,7 +800,7 @@ module Adhearsion
             argument = 123
             ssml = RubySpeech::SSML.draw { string '123' }
             expect_ssml_output ssml
-            expect(subject.say(argument)).to be_a Punchblock::Component::Output
+            expect(subject.say(argument)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
       end
@@ -951,7 +822,7 @@ module Adhearsion
           it 'plays the correct SSML' do
             ssml = RubySpeech::SSML.draw { string "Hello world" }
             expect_async_ssml_output ssml
-            expect(subject.say!(ssml)).to be_a Punchblock::Component::Output
+            expect(subject.say!(ssml)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -960,30 +831,16 @@ module Adhearsion
             str = "Hello world"
             ssml = RubySpeech::SSML.draw { string str }
             expect_async_ssml_output ssml
-            expect(subject.say!(str)).to be_a Punchblock::Component::Output
+            expect(subject.say!(str)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
-        describe "with a default voice set in PB config" do
-          before { Adhearsion.config.punchblock.default_voice = 'foo' }
+        describe "with a default voice set in config" do
+          before do
+            Adhearsion.config.core.media.default_voice = 'bar'
+          end
 
           it 'sets the voice on the output component' do
-            str = "Hello world"
-            ssml = RubySpeech::SSML.draw { string str }
-            expect_async_ssml_output ssml, voice: 'foo'
-            subject.say!(str)
-          end
-
-          after { Adhearsion.config.punchblock.default_voice = nil }
-        end
-
-        describe "with a default voice set in core and PB config" do
-          before do
-            Adhearsion.config.punchblock.default_voice = 'foo'
-            Adhearsion.config.platform.media.default_voice = 'bar'
-          end
-
-          it 'prefers core config to set the voice on the output component' do
             str = "Hello world"
             ssml = RubySpeech::SSML.draw { string str }
             expect_async_ssml_output ssml, voice: 'bar'
@@ -991,31 +848,16 @@ module Adhearsion
           end
 
           after do
-            Adhearsion.config.punchblock.default_voice = nil
-            Adhearsion.config.platform.media.default_voice = nil
+            Adhearsion.config.core.media.default_voice = nil
           end
         end
 
-        describe "with a default media engine set in PB config" do
-          before { Adhearsion.config.punchblock.media_engine = 'foo' }
+        describe "with a default renderer set in config" do
+          before do
+            Adhearsion.config.core.media.default_renderer = 'bar'
+          end
 
           it 'sets the renderer on the output component' do
-            str = "Hello world"
-            ssml = RubySpeech::SSML.draw { string str }
-            expect_async_ssml_output ssml, renderer: 'foo'
-            subject.say!(str)
-          end
-
-          after { Adhearsion.config.punchblock.media_engine = nil }
-        end
-
-        describe "with a default renderer set in core and PB config" do
-          before do
-            Adhearsion.config.punchblock.media_engine = 'foo'
-            Adhearsion.config.platform.media.default_renderer = 'bar'
-          end
-
-          it 'prefers core config to set the renderer on the output component' do
             str = "Hello world"
             ssml = RubySpeech::SSML.draw { string str }
             expect_async_ssml_output ssml, renderer: 'bar'
@@ -1023,8 +865,7 @@ module Adhearsion
           end
 
           after do
-            Adhearsion.config.punchblock.media_engine = nil
-            Adhearsion.config.platform.media.default_renderer = nil
+            Adhearsion.config.core.media.default_renderer = nil
           end
         end
 
@@ -1033,7 +874,7 @@ module Adhearsion
             argument = 123
             ssml = RubySpeech::SSML.draw { string '123' }
             expect_async_ssml_output ssml
-            expect(subject.say!(argument)).to be_a Punchblock::Component::Output
+            expect(subject.say!(argument)).to be_a Adhearsion::Rayo::Component::Output
           end
         end
       end
@@ -1082,7 +923,7 @@ module Adhearsion
 
           it 'plays the correct ssml' do
             expect_async_ssml_output ssml
-            expect(subject.say_characters!('1234#abc')).to be_a Punchblock::Component::Output
+            expect(subject.say_characters!('1234#abc')).to be_a Adhearsion::Rayo::Component::Output
           end
         end
 
@@ -1095,7 +936,113 @@ module Adhearsion
 
           it 'plays the correct ssml' do
             expect_async_ssml_output ssml
-            expect(subject.say_characters!(1234)).to be_a Punchblock::Component::Output
+            expect(subject.say_characters!(1234)).to be_a Adhearsion::Rayo::Component::Output
+          end
+        end
+      end
+
+      describe "i18n" do
+        before do
+          I18n.default_locale = :en
+        end
+
+        describe 'getting and setting the locale' do
+          it 'should be able to set and get the locale' do
+            expect(controller.locale).to be(:en)
+            controller.locale = :it
+            expect(controller.locale).to be(:it)
+          end
+        end
+
+        describe 'requesting a translation' do
+          it 'should use a default locale' do
+            ssml = controller.t :have_many_cats
+            expect(ssml['xml:lang']).to match(/^en/)
+          end
+
+          it 'should allow overriding the locale per-request' do
+            ssml = controller.t :have_many_cats, locale: 'it'
+            expect(ssml['xml:lang']).to match(/^it/)
+          end
+
+          it 'should allow overriding the locale for the entire call' do
+            controller.locale = 'it'
+            ssml = controller.t :have_many_cats
+            expect(ssml['xml:lang']).to match(/^it/)
+            controller2 = Class.new(Adhearsion::CallController).new call
+            expect(controller2.locale).to eql('it')
+          end
+
+          it 'should generate proper SSML with both audio and text fallback translations' do
+            ssml = controller.t :have_many_cats
+            expect(ssml).to eql(RubySpeech::SSML.draw(language: 'en') do
+              audio src: "file://#{Adhearsion.root}/app/assets/audio/en/have_many_cats.wav" do
+                string 'I have quite a few cats'
+              end
+            end)
+          end
+
+          it 'should generate proper SSML with only audio (no fallback text) translations' do
+            ssml = controller.t :my_shirt_is_white
+            expect(ssml).to eql(RubySpeech::SSML.draw(language: 'en') do
+              audio src: "file://#{Adhearsion.root}/app/assets/audio/en/my_shirt_is_white.wav" do
+                string ''
+              end
+            end)
+          end
+
+          it 'should generate proper SSML with only text (no audio) translations' do
+            ssml = controller.t :many_people_out_today
+            expect(ssml).to eql(RubySpeech::SSML.draw(language: 'en') do
+              string 'There are many people out today'
+            end)
+          end
+
+          it 'should generate a path to the audio prompt based on the requested locale' do
+            ssml = controller.t :my_shirt_is_white, locale: 'it'
+            expect(ssml).to eql(RubySpeech::SSML.draw(language: 'it') do
+              audio src: "file://#{Adhearsion.root}/app/assets/audio/it/la_mia_camicia_e_bianca.wav" do
+                string ''
+              end
+            end)
+          end
+
+          it 'should fall back to a text translation if the locale structure does not break out audio vs. tts' do
+            ssml = controller.t :seventeen, locale: 'it'
+            expect(ssml).to eql(RubySpeech::SSML.draw(language: 'it') do
+              string 'diciassette'
+            end)
+          end
+        end
+
+        describe 'with fallback disabled, requesting a translation' do
+          before do
+            Adhearsion.config.core.i18n.fallback = false
+          end
+
+          after do
+            Adhearsion.config.core.i18n.fallback = true
+          end
+
+          it 'should generate proper SSML with only audio (no text) translations' do
+            ssml = controller.t :my_shirt_is_white
+            expect(ssml).to eql(RubySpeech::SSML.draw(language: 'en') do
+              audio src: "file://#{Adhearsion.root}/app/assets/audio/en/my_shirt_is_white.wav"
+            end)
+          end
+
+          it 'should generate proper SSML with only text (no audio) translations' do
+            ssml = controller.t :many_people_out_today
+            expect(ssml).to eql(RubySpeech::SSML.draw(language: 'en') do
+              string 'There are many people out today'
+            end)
+          end
+
+          it 'should generate proper SSML with only audio translations when both are supplied' do
+            ssml = controller.t :have_many_cats
+            expect(ssml).to eql(RubySpeech::SSML.draw(language: 'en') do
+              audio src: "file://#{Adhearsion.root}/app/assets/audio/en/have_many_cats.wav"
+            end)
           end
         end
       end

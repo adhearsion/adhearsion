@@ -2,11 +2,13 @@
 
 module InitializerStubs
   UNWANTED_BEHAVIOR = {
-    Adhearsion::Initializer => [:debugging_log, :initialize_log_paths, :update_rails_env_var, :require, :load, :init_plugins, :run_plugins]
+    Adhearsion::Initializer => [:debugging_log, :require, :load, :init_plugins, :run_plugins]
   } unless defined? UNWANTED_BEHAVIOR
 
   def stub_behavior_for_initializer_with_no_path_changing_behavior
     stub_unwanted_behavior
+    allow(Adhearsion::Rayo::Initializer).to receive(:init).and_return(true)
+    allow(Adhearsion::Rayo::Initializer).to receive(:run).and_return(true)
     yield if block_given?
   ensure
     unstub_directory_changing_behavior

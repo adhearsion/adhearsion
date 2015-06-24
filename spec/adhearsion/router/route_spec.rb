@@ -79,7 +79,7 @@ module Adhearsion
           end
 
           let :offer do
-            Punchblock::Event::Offer.new :to => to, :from => from
+            Adhearsion::Event::Offer.new :to => to, :from => from
           end
 
           let(:call) { Adhearsion::Call.new offer }

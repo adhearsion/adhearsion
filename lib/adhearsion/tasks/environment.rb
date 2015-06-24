@@ -1,8 +1,6 @@
 # encoding: utf-8
 
 task :environment do
-  require 'adhearsion/punchblock_plugin'
-
   begin
     Adhearsion.config # load default config vlaues
     initializer = Adhearsion::Initializer.new

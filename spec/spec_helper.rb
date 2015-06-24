@@ -21,30 +21,43 @@ Bundler.require(:default, :test) if defined?(Bundler)
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |f| require f }
 
 RSpec.configure do |config|
-  config.mock_framework = :rspec
   config.filter_run :focus => true
   config.run_all_when_everything_filtered = true
   config.color = true
 
+  config.mock_with :rspec do |mocks|
+    mocks.add_stub_and_should_receive_to Celluloid::AbstractProxy
+  end
+
   config.raise_errors_for_deprecations!
 
   config.before :suite do
-    Adhearsion::Logging.start Adhearsion::Logging.default_appenders, :trace, Adhearsion.config.platform.logging.formatter
-    Adhearsion.config.platform.after_hangup_lifetime = 10
+    Adhearsion::Logging.start :trace, Adhearsion.config.core.logging.formatter
+    Adhearsion.config.core.after_hangup_lifetime = 10
     Adhearsion::Initializer.new.initialize_exception_logger
   end
 
   config.before :each do
+    Adhearsion.config.core.i18n.locale_path = ["#{File.dirname(__FILE__)}/fixtures/locale"]
+    Adhearsion::Initializer.new.setup_i18n_load_path
+
     Adhearsion.router = nil
-    allow(Punchblock).to receive(:new_request_id).and_return 'foo'
+    @uuid = SecureRandom.uuid
+    allow(Adhearsion).to receive(:new_request_id).and_return @uuid
   end
 
   config.after :each do
     Timecop.return
+    if defined?(:Celluloid)
+      Celluloid.shutdown
+      Adhearsion.active_calls = nil
+      Celluloid.boot
+      Adhearsion::Events.refresh!
+    end
   end
 end
 
-Adhearsion::Events.exeption do |e|
+Adhearsion::Events.exception do |e|
   puts e.message
   puts e.backtrace.join("\n")
 end

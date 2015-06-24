@@ -12,7 +12,7 @@ module Adhearsion
     end
 
     def new_offer(call_id = nil, headers = {})
-      Punchblock::Event::Offer.new domain: 'example.com', transport: 'xmpp', :target_call_id => call_id || random_call_id, :headers => headers
+      Adhearsion::Event::Offer.new domain: 'example.com', transport: 'xmpp', :target_call_id => call_id || random_call_id, :headers => headers
     end
 
     it 'can add a call to the collection' do
@@ -155,8 +155,8 @@ module Adhearsion
 
       it "is sends a hangup command for the call" do
         call_id = call.id
-        allow(PunchblockPlugin).to receive_messages :client => double('Client')
-        expect(PunchblockPlugin.client).to receive(:execute_command).once.with(Punchblock::Command::Hangup.new, :async => true, :call_id => call_id)
+        allow(Adhearsion).to receive_messages :client => double('Client')
+        expect(Adhearsion.client).to receive(:execute_command).once.with(Adhearsion::Rayo::Command::Hangup.new, :async => true, :call_id => call_id)
 
         subject << call
 

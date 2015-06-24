@@ -6,12 +6,12 @@ describe Adhearsion do
   describe "#root=" do
     it "should update properly the config root variable" do
       Adhearsion.root = "./"
-      expect(Adhearsion.config[:platform].root).to eq(Dir.getwd)
+      expect(Adhearsion.config[:core].root).to eq(Dir.getwd)
     end
 
     it "should update properly the config root variable when path is nil" do
       Adhearsion.root = nil
-      expect(Adhearsion.config[:platform].root).to be_nil
+      expect(Adhearsion.config[:core].root).to be_nil
     end
   end
 
@@ -19,18 +19,6 @@ describe Adhearsion do
     it "should return the set root" do
       Adhearsion.root = "./"
       expect(Adhearsion.root).to eq(Dir.getwd)
-    end
-  end
-
-  describe "#ahn_root=" do
-    it "should update properly the config root variable" do
-      Adhearsion.ahn_root = "./"
-      expect(Adhearsion.config[:platform].root).to eq(Dir.getwd)
-    end
-
-    it "should update properly the config root variable when path is nil" do
-      Adhearsion.ahn_root = nil
-      expect(Adhearsion.config[:platform].root).to be_nil
     end
   end
 
@@ -110,6 +98,93 @@ describe Adhearsion do
   describe "#status" do
     it "should be the process status name" do
       expect(Adhearsion.status).to eq(:booting)
+    end
+  end
+
+  describe '#execute_component' do
+    let(:message)     { Adhearsion::Rayo::Command::Accept.new }
+    let(:response)    { :foo }
+    let(:mock_client) { double 'Client' }
+
+    let(:execute_expectation) { expect(described_class.client).to receive(:execute_command).once }
+
+    before do
+      Adhearsion::Rayo::Initializer.client = mock_client
+      allow(message).to receive_messages :execute! => true
+      message.response = response
+      execute_expectation
+    end
+
+    it "writes a command to the client" do
+      execute_expectation.with(message, :async => true)
+      described_class.execute_component message
+    end
+
+    it "blocks until a response is received" do
+      slow_command = Adhearsion::Rayo::Command::Dial.new
+      slow_command.request!
+      starting_time = Time.now
+      Thread.new do
+        sleep 0.5
+        slow_command.response = response
+      end
+      described_class.execute_component slow_command
+      expect(Time.now - starting_time).to be >= 0.4
+    end
+
+    describe "with a successful response" do
+      it "returns the executed command" do
+        expect(described_class.execute_component(message)).to be message
+      end
+    end
+
+    describe "with an error response" do
+      let(:response) { Exception.new }
+
+      it "raises the error" do
+        expect { described_class.execute_component message }.to raise_error Exception
+      end
+    end
+  end
+
+  describe '#client_with_connection' do
+    let(:mock_connection) { double('Connection').as_null_object }
+
+    context 'with :xmpp' do
+      it 'sets up an XMPP connection, passing options, and a client with the connection attached' do
+        options = {:username => 'foo', :password => 'bar'}
+        expect(Adhearsion::Rayo::Connection::XMPP).to receive(:new).once.with(options).and_return mock_connection
+        client = Adhearsion.client_with_connection :xmpp, options
+        expect(client).to be_a Adhearsion::Rayo::Client
+        expect(client.connection).to be mock_connection
+      end
+    end
+
+    context 'with :XMPP' do
+      it 'sets up an XMPP connection, passing options, and a client with the connection attached' do
+        options = {:username => 'foo', :password => 'bar'}
+        expect(Adhearsion::Rayo::Connection::XMPP).to receive(:new).once.with(options).and_return mock_connection
+        client = Adhearsion.client_with_connection :XMPP, options
+        expect(client).to be_a Adhearsion::Rayo::Client
+        expect(client.connection).to be mock_connection
+      end
+    end
+
+    context 'with :asterisk' do
+      it 'sets up an Asterisk connection, passing options, and a client with the connection attached' do
+        options = {:username => 'foo', :password => 'bar'}
+        expect(Adhearsion::Rayo::Connection::Asterisk).to receive(:new).once.with(options).and_return mock_connection
+        client = Adhearsion.client_with_connection :asterisk, options
+        expect(client).to be_a Adhearsion::Rayo::Client
+        expect(client.connection).to be mock_connection
+      end
+    end
+
+    context 'with :yate' do
+      it 'raises ArgumentError' do
+        options = {:username => 'foo', :password => 'bar'}
+        expect { Adhearsion.client_with_connection :yate, options }.to raise_error(ArgumentError)
+      end
     end
   end
 

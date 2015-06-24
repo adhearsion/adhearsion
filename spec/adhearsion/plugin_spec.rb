@@ -12,7 +12,7 @@ describe Adhearsion::Plugin do
   end
 
   before do
-    allow(Adhearsion::PunchblockPlugin::Initializer).to receive_messages :start => true
+    allow(Adhearsion::Rayo::Initializer).to receive_messages :start => true
   end
 
   describe "inheritance" do
@@ -147,8 +147,7 @@ describe Adhearsion::Plugin do
       it "should do nothing with a Plugin that has no init method call" do
         FooBar = Class.new Adhearsion::Plugin
 
-        # 1 => Punchblock. Must be empty once punchblock initializer is an external Plugin
-        expect(Adhearsion::Plugin.initializers.size).to eq(1)
+        expect(Adhearsion::Plugin.initializers.size).to eq(0)
         Adhearsion::Plugin.init_plugins
       end
 
@@ -243,7 +242,7 @@ describe Adhearsion::Plugin do
       it "should do nothing with a Plugin that has no run method call" do
         FooBar = Class.new Adhearsion::Plugin
 
-        # May become 1 if Punchblock defines a runner.
+        # May become 1 if Rayo defines a runner.
         expect(Adhearsion::Plugin.runners.size).to eq(0)
         Adhearsion::Plugin.run_plugins
       end

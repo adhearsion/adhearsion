@@ -300,7 +300,7 @@ module Adhearsion
           end
 
           context "and some fail to terminate" do
-            before { expect(subject.output1).to receive(:stop!).and_raise(Punchblock::Component::InvalidActionError) }
+            before { expect(subject.output1).to receive(:stop!).and_raise(Adhearsion::Rayo::Component::InvalidActionError) }
 
             it "should terminate the others" do
               expect(subject.output2).to receive(:stop!).once
@@ -310,7 +310,7 @@ module Adhearsion
         end
 
         context "when some have completed" do
-          before { subject.output1.trigger_event_handler Punchblock::Event::Complete.new }
+          before { subject.output1.trigger_event_handler Adhearsion::Event::Complete.new }
 
           it "should not terminate the completed components" do
             expect(subject.output1).to receive(:stop!).never
@@ -360,7 +360,7 @@ module Adhearsion
           end
 
           context "and some fail to terminate" do
-            before { expect(subject.output1).to receive(:stop!).and_raise(Punchblock::Component::InvalidActionError) }
+            before { expect(subject.output1).to receive(:stop!).and_raise(Adhearsion::Rayo::Component::InvalidActionError) }
 
             it "should terminate the others" do
               expect(subject.output2).to receive(:stop!).once
@@ -370,7 +370,7 @@ module Adhearsion
         end
 
         context "when some have completed" do
-          before { subject.output1.trigger_event_handler Punchblock::Event::Complete.new }
+          before { subject.output1.trigger_event_handler Adhearsion::Event::Complete.new }
 
           it "should not terminate the completed components" do
             expect(subject.output1).to receive(:stop!).never
@@ -383,7 +383,7 @@ module Adhearsion
     end
 
     describe "#write_and_await_response" do
-      let(:message) { Punchblock::Command::Accept.new }
+      let(:message) { Adhearsion::Rayo::Command::Accept.new }
 
       it "delegates to the call, blocking first until it is allowed to execute" do
         expect(subject).to receive(:block_until_resumed).once.ordered
@@ -393,12 +393,12 @@ module Adhearsion
 
       it "allows complete events to bubble" do
         bubbled = false
-        message = Punchblock::Component::Output.new
+        message = Adhearsion::Rayo::Component::Output.new
         expect(subject.call).to receive(:write_and_await_response)
         subject.write_and_await_response message
-        message.register_event_handler(Punchblock::Event::Complete) { bubbled = true }
+        message.register_event_handler(Adhearsion::Event::Complete) { bubbled = true }
         expect(bubbled).to be false
-        message.trigger_event_handler Punchblock::Event::Complete.new
+        message.trigger_event_handler Adhearsion::Event::Complete.new
         expect(bubbled).to be true
       end
     end
@@ -432,32 +432,32 @@ module Adhearsion
     describe "#join" do
       it "delegates to the call, blocking first until it is allowed to execute, and unblocking when an unjoined event is received" do
         expect(subject).to receive(:block_until_resumed).once.ordered
-        expect(call.wrapped_object).to receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(call_uri: 'call1'))
+        expect(call.wrapped_object).to receive(:write_and_await_response).once.ordered.with(Adhearsion::Rayo::Command::Join.new(call_uri: 'call1'))
         latch = CountDownLatch.new 1
         Thread.new do
           subject.join 'call1', :foo => :bar
           latch.countdown!
         end
         expect(latch.wait(1)).to be false
-        subject.call << Punchblock::Event::Joined.new(call_uri: 'call1')
+        subject.call << Adhearsion::Event::Joined.new(call_uri: 'call1')
         expect(latch.wait(1)).to be false
-        subject.call << Punchblock::Event::Unjoined.new(call_uri: 'call1')
+        subject.call << Adhearsion::Event::Unjoined.new(call_uri: 'call1')
         expect(latch.wait(1)).to be true
       end
 
       context "with a mixer" do
         it "delegates to the call, blocking first until it is allowed to execute, and unblocking when an unjoined event is received" do
           expect(subject).to receive(:block_until_resumed).once.ordered
-          expect(call.wrapped_object).to receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(mixer_name: 'foobar'))
+          expect(call.wrapped_object).to receive(:write_and_await_response).once.ordered.with(Adhearsion::Rayo::Command::Join.new(mixer_name: 'foobar'))
           latch = CountDownLatch.new 1
           Thread.new do
             subject.join :mixer_name => 'foobar', :foo => :bar
             latch.countdown!
           end
           expect(latch.wait(1)).to be false
-          subject.call << Punchblock::Event::Joined.new(:mixer_name => 'foobar')
+          subject.call << Adhearsion::Event::Joined.new(:mixer_name => 'foobar')
           expect(latch.wait(1)).to be false
-          subject.call << Punchblock::Event::Unjoined.new(:mixer_name => 'foobar')
+          subject.call << Adhearsion::Event::Unjoined.new(:mixer_name => 'foobar')
           expect(latch.wait(1)).to be true
         end
       end
@@ -465,28 +465,28 @@ module Adhearsion
       context "with :async => true" do
         it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
           expect(subject).to receive(:block_until_resumed).once.ordered
-          expect(call.wrapped_object).to receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(call_uri: 'call1'))
+          expect(call.wrapped_object).to receive(:write_and_await_response).once.ordered.with(Adhearsion::Rayo::Command::Join.new(call_uri: 'call1'))
           latch = CountDownLatch.new 1
           Thread.new do
             subject.join 'call1', :foo => :bar, :async => true
             latch.countdown!
           end
           expect(latch.wait(1)).to be false
-          subject.call << Punchblock::Event::Joined.new(call_uri: 'call1')
+          subject.call << Adhearsion::Event::Joined.new(call_uri: 'call1')
           expect(latch.wait(1)).to be true
         end
 
         context "with a mixer" do
           it "delegates to the call, blocking first until it is allowed to execute, and unblocking when the joined event is received" do
             expect(subject).to receive(:block_until_resumed).once.ordered
-            expect(call.wrapped_object).to receive(:write_and_await_response).once.ordered.with(Punchblock::Command::Join.new(mixer_name: 'foobar'))
+            expect(call.wrapped_object).to receive(:write_and_await_response).once.ordered.with(Adhearsion::Rayo::Command::Join.new(mixer_name: 'foobar'))
             latch = CountDownLatch.new 1
             Thread.new do
               subject.join :mixer_name => 'foobar', :foo => :bar, :async => true
               latch.countdown!
             end
             expect(latch.wait(1)).to be false
-            subject.call << Punchblock::Event::Joined.new(:mixer_name => 'foobar')
+            subject.call << Adhearsion::Event::Joined.new(:mixer_name => 'foobar')
             expect(latch.wait(1)).to be true
           end
         end
@@ -529,8 +529,8 @@ module Adhearsion
     end
 
     describe "#execute_component_and_await_completion" do
-      let(:component) { Punchblock::Component::Output.new }
-      let(:response)  { Punchblock::Event::Complete.new }
+      let(:component) { Adhearsion::Rayo::Component::Output.new }
+      let(:response)  { Adhearsion::Event::Complete.new }
 
       before do
         expect_message_of_type_waiting_for_response component
@@ -557,11 +557,11 @@ module Adhearsion
 
       describe "with an error response" do
         let(:response) do
-          Punchblock::Event::Complete.new :reason => error
+          Adhearsion::Event::Complete.new :reason => error
         end
 
         let(:error) do
-          Punchblock::Event::Complete::Error.new :details => details
+          Adhearsion::Event::Complete::Error.new :details => details
         end
 
         let(:details) { "Oh noes, it's all borked" }
@@ -572,7 +572,7 @@ module Adhearsion
       end
 
       it "blocks until the component receives a complete event" do
-        slow_component = Punchblock::Component::Output.new
+        slow_component = Adhearsion::Rayo::Component::Output.new
         slow_component.request!
         slow_component.execute!
         Thread.new do
@@ -685,7 +685,6 @@ describe ExampleCallController do
     end
     subject.exec
     expect(latch.wait(1)).to be true
-    Adhearsion::Events.clear_handlers :exception
   end
 
   it "should call the requested method when an exception is encountered" do

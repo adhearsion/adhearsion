@@ -17,7 +17,7 @@ module Adhearsion
             :async => async
         end
 
-        let(:component) { Punchblock::Component::Record.new component_options }
+        let(:component) { Adhearsion::Rayo::Component::Record.new component_options }
         let :stopper_grammar do
           RubySpeech::GRXML.draw :mode => 'dtmf', :root => 'inputdigits' do
             rule id: 'inputdigits', scope: 'public' do
@@ -38,7 +38,7 @@ module Adhearsion
             end
           end
         end
-        let(:input_component) { Punchblock::Component::Input.new mode: :dtmf, grammar: { :value => stopper_grammar } }
+        let(:input_component) { Adhearsion::Rayo::Component::Input.new mode: :dtmf, grammar: { :value => stopper_grammar } }
 
         subject { Recorder.new controller, options }
 
@@ -53,7 +53,7 @@ module Adhearsion
           end
 
           let :component do
-            Punchblock::Component::Record.new :max_duration => 5500,
+            Adhearsion::Rayo::Component::Record.new :max_duration => 5500,
               :initial_timeout => 6500,
               :final_timeout => 3200
           end
@@ -102,7 +102,7 @@ module Adhearsion
             end
 
             describe "when the input component completes" do
-              let(:complete_event) { Punchblock::Event::Complete.new }
+              let(:complete_event) { Adhearsion::Event::Complete.new }
 
               before do
                 subject.stopper_component.request!
@@ -148,11 +148,11 @@ module Adhearsion
         end
 
         describe "setting completion handlers" do
-          let(:complete_event) { Punchblock::Event::Complete.new }
+          let(:complete_event) { Adhearsion::Event::Complete.new }
 
           it "should execute those handlers when recording completes" do
             foo = double 'foo'
-            expect(foo).to receive(:call).once.with kind_of(Punchblock::Event::Complete)
+            expect(foo).to receive(:call).once.with kind_of(Adhearsion::Event::Complete)
             subject.handle_record_completion { |e| foo.call e }
             subject.record_component.trigger_event_handler complete_event
           end
@@ -170,13 +170,13 @@ module Adhearsion
         let(:parsed_options) do
           options.merge(max_duration: max_duration * 1000)
         end
-        let(:component) { Punchblock::Component::Record.new parsed_options }
-        let(:response)  { Punchblock::Event::Complete.new }
+        let(:component) { Adhearsion::Rayo::Component::Record.new parsed_options }
+        let(:response)  { Adhearsion::Event::Complete.new }
 
         describe "with :async => true and an :on_complete callback" do
           before do
             component
-            expect(Punchblock::Component::Record).to receive(:new).once.with(parsed_options).and_return component
+            expect(Adhearsion::Rayo::Component::Record).to receive(:new).once.with(parsed_options).and_return component
             expect_message_waiting_for_response component
             @rec = Queue.new
             subject.record(options.merge(async: true)) { |rec| @rec.push rec }
@@ -196,7 +196,7 @@ module Adhearsion
           before do
             TestException = Class.new StandardError
             component
-            expect(Punchblock::Component::Record).to receive(:new).once.with({}).and_return component
+            expect(Adhearsion::Rayo::Component::Record).to receive(:new).once.with({}).and_return component
           end
 
           it "should pass the exception to the events system" do
@@ -212,14 +212,13 @@ module Adhearsion
             component.execute!
             component.trigger_event_handler response
             expect(latch.wait(1)).to be true
-            Adhearsion::Events.clear_handlers :exception
           end
         end
 
         describe "with :async => false" do
           before do
             component
-            expect(Punchblock::Component::Record).to receive(:new).once.with(parsed_options).and_return component
+            expect(Adhearsion::Rayo::Component::Record).to receive(:new).once.with(parsed_options).and_return component
             expect_component_execution component
             @rec = Queue.new
             subject.record(options.merge(:async => false)) { |rec| @rec.push rec }
@@ -236,7 +235,7 @@ module Adhearsion
         end
 
         describe "with :interruptible => false" do
-          let(:input_component) { Punchblock::Component::Input.new }
+          let(:input_component) { Adhearsion::Rayo::Component::Input.new }
           it "does not use an Input component" do
             expect(subject).to receive(:execute_component_and_await_completion).once.with(component)
             expect(subject).to receive(:write_and_await_response).never.with(input_component)
@@ -247,12 +246,12 @@ module Adhearsion
         describe "with :interruptible => true" do
           it "stops the recording" do
             def subject.write_and_await_response(input_component)
-              input_component.trigger_event_handler Punchblock::Event::Complete.new
+              input_component.trigger_event_handler Adhearsion::Event::Complete.new
             end
 
             expect_input_component_complete_event 'dtmf-5'
 
-            expect_any_instance_of(Punchblock::Component::Record).to receive(:stop!)
+            expect_any_instance_of(Adhearsion::Rayo::Component::Record).to receive(:stop!)
             expect(subject).to receive(:execute_component_and_await_completion).once.with(component)
             subject.record(options.merge(:async => false, :interruptible => true)) { |rec| @rec.push rec }
           end
@@ -262,7 +261,7 @@ module Adhearsion
         describe "check for the return value" do
           it "returns a Record component" do
             component
-            expect(Punchblock::Component::Record).to receive(:new).once.with(parsed_options).and_return component
+            expect(Adhearsion::Rayo::Component::Record).to receive(:new).once.with(parsed_options).and_return component
             expect_component_execution component
             expect(subject.record(options.merge(:async => false))).to eq(component)
             component.request!

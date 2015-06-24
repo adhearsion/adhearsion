@@ -1,5 +1,29 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
+# [3.0.0.beta1](https://github.com/adhearsion/adhearsion/compare/v2.6.1...v3.0.0.beta1) - [2015-06-24](https://rubygems.org/gems/adhearsion/versions/3.0.0.beta1)
+  * Change: Removed `Adhearsion.ahn_root=` which was deprecated in favour of `Adhearsion.root=`
+  * Change: Remove integration with `RAILS_ENV`
+  * Change: Merge `#dial_and_confirm` into `#dial` such that `#dial` has parallel confirmation behaviour. Remove the old broken confirmation behaviour.
+  * Merge adhearsion-asr in to core to replace the original `#menu` and `#ask` methods
+  * Change: Removed `#interruptible_play` and `#stream_file`, both leftovers from Adhearsion 1.x which are replaced by `#ask`
+  * Bugfix: Properly load application bundle. This requires the spawning removed in [#534](https://github.com/adhearsion/adhearsion/pull/534).
+  * Change: Removed daemonisation (`ahn daemon`, `ahn stop`, `ahn restart`, PID files) and persistent logging in favour of 12factor compliant deployment, which pushes these responsibilities up to a process manager or PaaS
+  * Change: Merge Punchblock into Adhearsion core
+    * `Punchblock::Event::*` becomes `Adhearsion::Event`
+    * `Punchblock::Component::*` and `Punchblock::Command::*` become `Adhearsion::Rayo::Component::*` and `Adhearsion::Rayo::Command::*` respectively
+    * `Adhearsion::Events.punchblock` callback becomes `Adhearsion::Events.rayo`
+    * `config.punchblock.*` becomes `config.platform.*`
+    * No longer any dependency on Punchblock, or any mention of that name
+  * Change: No longer supporting FreeSWITCH via IES (Rayo only) or Asterisk < 11
+  * Change: Ruby 1.9 is no longer supported. Minimum supported versions are Ruby 2.2.0 and JRuby 9.0.0.0
+  * Change: Rename "platform" to "core" relating to the config system, because "platform" is overloaded. Settings are now `config.core.*` or `AHN_CORE_*`.
+  * Change: Permit application environment to be set only by AHN_ENV. The config system depends on the environment, and the previous dependency was circular.
+  * Feature: Add i18n support via `CallController#t`
+  * Feature: Integrate a Rack-based HTTP server from the Virginia plugin
+  * Feature: Permit timing out when calling `Call#wait_for_end`
+  * Upgrade to Celluloid 0.16
+  * Move events system to Celluloid and do away with GirlFriday
+
 # [2.6.1](https://github.com/adhearsion/adhearsion/compare/v2.6.0...v2.6.1) - [2015-06-15](https://rubygems.org/gems/adhearsion/versions/2.6.1)
   * Bugfix: Improve Call initialization performance. Use an ActorProxy (subclass) instead of a method_missing definition on every Call.new. This considerably improves Call.new performance; benchmarks show approximately a 30-40% improvement: https://gist.github.com/kares/3576e272250204eb66d1
   * Bugfix: Executing ahn commands (such as start) won't spawn any sub-rubies underneath

@@ -1,95 +1,76 @@
 # encoding: utf-8
 
 require 'has_guarded_handlers'
-require 'girl_friday'
+require 'singleton'
+require 'celluloid'
 
 module Adhearsion
-  class Events
+  module Events
 
-    include HasGuardedHandlers
+    class Handler
+      include HasGuardedHandlers
+      include Singleton
 
-    Message = Struct.new :type, :object
+      def call_handler(handler, guards, event)
+        super
+        throw :pass
+      end
 
-    class << self
+      alias :register_callback :register_handler
+
       def method_missing(method_name, *args, &block)
-        instance.send method_name, *args, &block
+        register_handler method_name, *args, &block
       end
 
       def respond_to_missing?(method_name, include_private = false)
-        instance.respond_to? method_name, include_private
+        true
+      end
+    end
+
+    class Worker
+      include Celluloid
+
+      def work(type, object)
+        Handler.instance.trigger_handler type, object
+      rescue => e
+        raise if type == :exception
+        async.work :exception, e
+      end
+    end
+
+    class << self
+      def method_missing(method_name, *args, &block)
+        Handler.instance.send method_name, *args, &block
       end
 
-      def instance
-        @@instance || refresh!
+      def respond_to_missing?(method_name, include_private = false)
+        Handler.instance.respond_to? method_name, include_private
+      end
+
+      def trigger(type, object = nil)
+        queue.async.work type, object
+      end
+
+      def trigger_immediately(type, object = nil)
+        queue.work type, object
+      end
+
+      def draw(&block)
+        Handler.instance.instance_exec(&block)
+      end
+
+      def queue
+        @queue || refresh!
+      end
+
+      def init
+        @queue = Worker.pool(size: Adhearsion.config.core.event_threads)
       end
 
       def refresh!
-        @@instance = new
-      end
-    end
-
-    refresh!
-
-    def queue
-      queue? ? @queue : reinitialize_queue!
-    end
-
-    def trigger(type, object = nil)
-      queue.push_async Message.new(type, object)
-    end
-
-    def trigger_immediately(type, object = nil)
-      queue.push_immediately Message.new(type, object)
-    end
-
-    def queue?
-      instance_variable_defined? :@queue
-    end
-
-    def reinitialize_queue!
-      GirlFriday.shutdown! if queue?
-      # TODO: Extract number of threads to use from Adhearsion.config
-      @queue = GirlFriday::WorkQueue.new 'main_queue', :error_handler => ErrorHandler do |message|
-        work message
-      end
-    end
-
-    def work(message)
-      handle_message message
-    rescue => e
-      raise if message.type == :exception
-      trigger :exception, e
-    end
-
-    def handle_message(message)
-      trigger_handler message.type, message.object
-    end
-
-    def draw(&block)
-      instance_exec(&block)
-    end
-
-    def method_missing(method_name, *args, &block)
-      register_handler method_name, *args, &block
-    end
-
-    def respond_to_missing?(method_name, include_private = false)
-      instance_variable_defined?(:@handlers) && @handlers.has_key?(method_name)
-    end
-
-    alias :register_callback :register_handler
-
-    private
-
-    def call_handler(handler, guards, event)
-      super
-      throw :pass
-    end
-
-    class ErrorHandler
-      def handle(exception)
-        logger.error "Exception encountered in exception handler!"
-        logger.error exception
+        @queue = nil
+        Handler.instance.clear_handlers
+        init
       end
     end
 

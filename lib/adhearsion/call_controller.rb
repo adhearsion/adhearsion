@@ -1,13 +1,12 @@
 # encoding: utf-8
 
 require 'countdownlatch'
+
 %w(
   dial
   input
-  menu_dsl
   output
   record
-  utility
 ).each { |r| require "adhearsion/call_controller/#{r}" }
 
 module Adhearsion
@@ -16,7 +15,6 @@ module Adhearsion
     include Input
     include Output
     include Record
-    include Utility
 
     class_attribute :callbacks
 
@@ -99,7 +97,7 @@ module Adhearsion
     end
 
     def bg_exec(completion_callback = nil)
-      Celluloid::ThreadHandle.new do
+      Celluloid::ThreadHandle.new(Celluloid.actor_system) do
         catching_standard_errors do
           exec_with_callback completion_callback
         end
@@ -164,7 +162,7 @@ module Adhearsion
       @active_components.each do |component|
         begin
           component.stop!
-        rescue Punchblock::Component::InvalidActionError
+        rescue Adhearsion::Rayo::Component::InvalidActionError
         end
       end
     end
@@ -205,8 +203,8 @@ module Adhearsion
     def write_and_await_response(command)
       block_until_resumed
       call.write_and_await_response command
-      if command.is_a?(Punchblock::Component::ComponentNode)
-        command.register_event_handler Punchblock::Event::Complete do |event|
+      if command.is_a?(Adhearsion::Rayo::Component::ComponentNode)
+        command.register_event_handler Adhearsion::Event::Complete do |event|
           @active_components.delete command
           throw :pass
         end
@@ -221,7 +219,7 @@ module Adhearsion
       yield component if block_given?
 
       complete_event = component.complete_event
-      raise Adhearsion::Error, [complete_event.reason.details, component.inspect].join(": ") if complete_event.reason.is_a? Punchblock::Event::Complete::Error
+      raise Adhearsion::Error, [complete_event.reason.details, component.inspect].join(": ") if complete_event.reason.is_a? Adhearsion::Event::Complete::Error
       component
     end
 

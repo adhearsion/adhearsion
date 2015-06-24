@@ -1,90 +1,60 @@
 # encoding: utf-8
 
+require 'adhearsion/call_controller/input/ask_grammar_builder'
+require 'adhearsion/call_controller/input/prompt_builder'
+require 'adhearsion/call_controller/input/menu_builder'
+
 module Adhearsion
   class CallController
     module Input
 
-      Result = Struct.new(:response, :status, :menu) do
-        def to_s
-          response
-        end
-
-        def inspect
-          "#<Adhearsion::CallController::Input::Result response=#{response.inspect}, status=#{status.inspect}>"
-        end
-      end
+      InputError = Class.new Adhearsion::Error
 
       #
-      # Prompts for input via DTMF, handling playback of prompts,
-      # timeouts, digit limits and terminator digits.
+      # Prompts for input, handling playback of prompts, DTMF grammar construction, and execution
       #
-      # @example A basic digit collection:
+      # @example A basic DTMF digit collection:
       #   ask "Welcome, ", "/opt/sounds/menu-prompt.mp3",
-      #       :timeout => 10, :terminator => '#', :limit => 3 do |buffer|
-      #     buffer == "12980"
-      #   end
+      #       timeout: 10, terminator: '#', limit: 3
       #
       # The first arguments will be a list of sounds to play, as accepted by #play, including strings for TTS, Date and Time objects, and file paths.
-      # :timeout, :terminator and :limit options may then be specified.
-      # A block may be passed which is invoked on each digit being collected. If it returns true, the collection is terminated.
+      # :timeout, :terminator and :limit options may be specified to automatically construct a grammar, or grammars may be manually specified.
       #
       # @param [Object, Array<Object>] args A list of outputs to play, as accepted by #play
-      # @param [Hash] options Options to use for the menu
+      # @param [Hash] options Options to modify the grammar
       # @option options [Boolean] :interruptible If the prompt should be interruptible or not. Defaults to true
       # @option options [Integer] :limit Digit limit (causes collection to cease after a specified number of digits have been collected)
       # @option options [Integer] :timeout Timeout in seconds before the first and between each input digit
       # @option options [String] :terminator Digit to terminate input
+      # @option options [RubySpeech::GRXML::Grammar, Array<RubySpeech::GRXML::Grammar>] :grammar One of a collection of grammars to execute
+      # @option options [String, Array<String>] :grammar_url One of a collection of URLs for grammars to execute
+      # @option options [Hash] :input_options A hash of options passed directly to the Input constructor
+      # @option options [Hash] :output_options A hash of options passed directly to the Output constructor
       #
-      # @return [Result] a result object from which the #response and #status may be established
+      # @return [Result] a result object from which the details of the utterance may be established
       #
       # @see Output#play
-      # @see CallController#pass
+      # @see Adhearsion::Rayo::Component::Input.new
+      # @see Adhearsion::Rayo::Component::Output.new
       #
-      def ask(*args, options, &block)
-        logger.warn "This implementation of #ask is deprecated due to issues with dropped DTMF. For a solution, see http://adhearsion.com/docs/common_problems#toc_3"
+      def ask(*args)
+        options = args.last.kind_of?(Hash) ? args.pop : {}
+        prompts = args.flatten.compact
 
-        unless options.is_a?(Hash)
-          args << options
-          options = {}
-        end
-        sound_files = args.flatten
+        options[:grammar] || options[:grammar_url] || options[:limit] || options[:terminator] || raise(ArgumentError, "You must specify at least one of limit, terminator or grammar")
 
-        menu_instance = MenuDSL::Menu.new options do
-          validator(&block) if block
-        end
-        menu_instance.validate :basic
-        result_of_menu = nil
+        grammars = AskGrammarBuilder.new(options).grammars
 
-        catch :finish do
-          until MenuDSL::Menu::MenuResultDone === result_of_menu
-            raise unless menu_instance.should_continue?
+        output_document = prompts.empty? ? nil : output_formatter.ssml_for_collection(prompts)
 
-            result_of_menu = menu_instance.continue
-
-            if result_of_menu.is_a?(MenuDSL::Menu::MenuGetAnotherDigit)
-              next_digit = play_sound_files_for_menu menu_instance, sound_files
-              if next_digit
-                menu_instance << next_digit
-              else
-                menu_instance.timeout!
-                throw :finish
-              end
-            end
-          end
-        end
-
-        Result.new.tap do |result|
-          result.response = menu_instance.result
-          result.status   = menu_instance.status
-          result.menu     = menu_instance
-        end
+        PromptBuilder.new(output_document, grammars, options).execute self
       end
 
       # Creates and manages a multiple choice menu driven by DTMF, handling playback of prompts,
       # invalid input, retries and timeouts, and final failures.
       #
       # @example A complete example of the method is as follows:
-      #   menu "Welcome, ", "/opt/sounds/menu-prompt.mp3", :tries => 2, :timeout => 10 do
+      #   menu "Welcome, ", "/opt/sounds/menu-prompt.mp3", tries: 2, timeout: 10 do
       #     match 1, OperatorController
       #
       #     match 10..19 do
@@ -92,7 +62,7 @@ module Adhearsion
       #     end
       #
       #     match 5, 6, 9 do |exten|
-      #      play "The #{exten} extension is currently not active"
+      #       play "The #{exten} extension is currently not active"
       #     end
       #
       #     match '7', OfficeController
@@ -111,13 +81,11 @@ module Adhearsion
       # Input is matched against patterns, and the first exact match has it's payload executed.
       # Matched input is passed in to the associated block, or to the controller through #options.
       #
-      # Allowed payloads are the name of a controller class, in which case it is executed through its #run method, or a block.
+      # Allowed payloads are the name of a controller class, in which case it is executed through its #run method, or a block, which is executed in the context of the current controller.
       #
       # #invalid has its associated block executed when the input does not possibly match any pattern.
-      # #timeout's block is run when time expires before or between input digits.
+      # #timeout's block is run when timeout expires before receiving any input
       # #failure runs its block when the maximum number of tries is reached without an input match.
-      #
-      # #validator runs its block on each digit being collected. If it returns true, the collection is terminated.
       #
       # Execution of the current context resumes after #menu finishes. If you wish to jump to an entirely different controller, use #pass.
       # Menu will return :failed if failure was reached, or :done if a match was executed.
@@ -127,117 +95,26 @@ module Adhearsion
       # @option options [Integer] :tries Number of tries allowed before failure
       # @option options [Integer] :timeout Timeout in seconds before the first and between each input digit
       # @option options [Boolean] :interruptible If the prompt should be interruptible or not. Defaults to true
+      # @option options [String, Symbol] :mode Input mode to accept. May be :voice or :dtmf.
+      # @option options [Hash] :input_options A hash of options passed directly to the Input constructor
+      # @option options [Hash] :output_options A hash of options passed directly to the Output constructor
       #
-      # @return [Result] a result object from which the #response and #status may be established
+      # @return [Result] a result object from which the details of the utterance may be established
       #
       # @see Output#play
       # @see CallController#pass
       #
-      def menu(*args, options, &block)
-        logger.warn "This implementation of #menu is deprecated due to issues with dropped DTMF. For a solution, see http://adhearsion.com/docs/common_problems#toc_3"
+      def menu(*args, &block)
+        raise ArgumentError, "You must specify a block to build the menu" unless block
+        options = args.last.kind_of?(Hash) ? args.pop : {}
+        prompts = args.flatten.compact
 
-        unless options.is_a?(Hash)
-          args << options
-          options = {}
-        end
-        sound_files = args.flatten
+        menu_builder = MenuBuilder.new(options, &block)
 
-        menu_instance = MenuDSL::Menu.new options, &block
-        menu_instance.validate
-        result_of_menu = nil
+        output_document = prompts.empty? ? nil : output_formatter.ssml_for_collection(prompts)
 
-        catch :finish do
-          until MenuDSL::Menu::MenuResultDone === result_of_menu
-            if menu_instance.should_continue?
-              result_of_menu = menu_instance.continue
-            else
-              logger.debug "Menu failed to get valid input. Calling \"failure\" hook."
-              menu_instance.execute_failure_hook
-              throw :finish
-            end
-
-            case result_of_menu
-            when MenuDSL::Menu::MenuResultInvalid
-              logger.debug "Menu received invalid input. Calling \"invalid\" hook and restarting."
-              menu_instance.execute_invalid_hook
-              menu_instance.restart!
-              result_of_menu = nil
-            when MenuDSL::Menu::MenuGetAnotherDigit
-              next_digit = play_sound_files_for_menu menu_instance, sound_files
-              if next_digit
-                menu_instance << next_digit
-              else
-                case result_of_menu
-                when MenuDSL::Menu::MenuGetAnotherDigitOrFinish
-                  jump_to result_of_menu.match_object, :extension => result_of_menu.new_extension
-                  throw :finish
-                when MenuDSL::Menu::MenuGetAnotherDigitOrTimeout
-                  logger.debug "Menu timed out. Calling \"timeout\" hook and restarting."
-                  menu_instance.execute_timeout_hook
-                  menu_instance.restart!
-                  result_of_menu = nil
-                end
-              end
-            when MenuDSL::Menu::MenuResultFound
-              logger.debug "Menu received valid input (#{result_of_menu.new_extension}). Calling the matching hook."
-              jump_to result_of_menu.match_object, :extension => result_of_menu.new_extension
-              throw :finish
-            end
-          end
-        end
-
-        Result.new.tap do |result|
-          result.response = menu_instance.result
-          result.status   = menu_instance.status
-          result.menu     = menu_instance
-        end
+        menu_builder.execute output_document, self
       end
-
-      # @private
-      def play_sound_files_for_menu(menu_instance, sound_files)
-        digit = nil
-        if sound_files.any? && menu_instance.digit_buffer_empty?
-          if menu_instance.interruptible
-            digit = interruptible_play(*sound_files, renderer: menu_instance.renderer)
-          else
-            play(*sound_files, renderer: menu_instance.renderer)
-          end
-        end
-        digit || wait_for_digit(menu_instance.timeout)
-      end
-
-      #
-      # Waits for a single digit and returns it, or returns nil if nothing was pressed
-      #
-      # @param [Integer] timeout the timeout to wait before returning, in seconds. nil or -1 mean no timeout.
-      # @return [String, nil] the pressed key, or nil if timeout was reached.
-      #
-      # @private
-      #
-      def wait_for_digit(timeout = 1)
-        timeout = nil if timeout == -1
-        timeout *= 1_000 if timeout
-        input_component = execute_component_and_await_completion Punchblock::Component::Input.new :mode => :dtmf,
-          :initial_timeout => timeout,
-          :inter_digit_timeout => timeout,
-            :grammar => {
-              :value => grammar_accept.to_s
-          }
-
-        reason = input_component.complete_event.reason
-        result = reason.respond_to?(:utterance) ? reason.utterance : nil
-        parse_dtmf result
-      end
-
-      # @private
-      def jump_to(match_object, overrides = nil)
-        if match_object.block
-          instance_exec overrides[:extension], &match_object.block
-        else
-          invoke match_object.match_payload, overrides
-        end
-      end
-
     end
   end
 end

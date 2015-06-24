@@ -8,7 +8,7 @@ module Adhearsion
 
     # @private
     def self.setup_event_handlers
-      Events.punchblock(Punchblock::Event::Offer) do
+      Events.rayo(Adhearsion::Event::Offer) do
         begin
           Celluloid::Actor[:statistics].register_call_offered
         ensure

@@ -1,0 +1,13 @@
+en:
+  have_many_cats:
+    audio: have_many_cats.wav
+    text: "I have quite a few cats"
+
+  my_shirt_is_white:
+    audio: my_shirt_is_white.wav
+
+  many_people_out_today:
+    text: There are many people out today
+
+  # Simulating an external, non adhearsion-i18n translation:
+  seventeen: seventeen

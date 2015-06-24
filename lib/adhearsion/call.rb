@@ -17,7 +17,7 @@ module Adhearsion
     ExpiredError    = Class.new Celluloid::DeadActorError
 
     # @private
-    class ActorProxy < Celluloid::ActorProxy
+    class ActorProxy < Celluloid::CellProxy
       def method_missing(meth, *args, &block)
         super(meth, *args, &block)
       rescue ::Celluloid::DeadActorError
@@ -160,14 +160,18 @@ module Adhearsion
 
     #
     # Wait for the call to end. Returns immediately if the call has already ended, else blocks until it does so.
+    # @param [Integer, nil] timeout a timeout after which to unblock, returning `:timeout`
     # @return [Symbol] the reason for the call ending
+    # @raises [Celluloid::ConditionError] in case of a specified timeout expiring
     #
-    def wait_for_end
+    def wait_for_end(timeout = nil)
       if end_reason
         end_reason
       else
-        @end_blocker.wait
+        @end_blocker.wait(timeout)
       end
+    rescue Celluloid::ConditionError => e
+      abort e
     end
 
     #
@@ -199,13 +203,13 @@ module Adhearsion
 
     # @private
     def register_initial_handlers
-      register_event_handler Punchblock::Event::Offer do |offer|
+      register_event_handler Adhearsion::Event::Offer do |offer|
         @offer  = offer
         @client = offer.client
         @start_time = offer.timestamp.to_time
       end
 
-      register_event_handler Punchblock::HasHeaders do |event|
+      register_event_handler Adhearsion::HasHeaders do |event|
         merge_headers event.headers
       end
 
@@ -245,7 +249,7 @@ module Adhearsion
         @end_code = event.platform_code
         @end_blocker.broadcast event.reason
         @commands.terminate
-        after(@after_hangup_lifetime || Adhearsion.config.platform.after_hangup_lifetime) { terminate }
+        after(@after_hangup_lifetime || Adhearsion.config.core.after_hangup_lifetime) { terminate }
       end
     end
 
@@ -268,7 +272,7 @@ module Adhearsion
     # @option target [String] mixer_name The mixer name to guard on
     #
     def on_joined(target = nil, &block)
-      register_event_handler Punchblock::Event::Joined, *guards_for_target(target) do |event|
+      register_event_handler Adhearsion::Event::Joined, *guards_for_target(target) do |event|
         block.call event
       end
     end
@@ -281,7 +285,7 @@ module Adhearsion
     # @option target [String] mixer_name The mixer name to guard on
     #
     def on_unjoined(target = nil, &block)
-      register_event_handler Punchblock::Event::Unjoined, *guards_for_target(target), &block
+      register_event_handler Adhearsion::Event::Unjoined, *guards_for_target(target), &block
     end
 
     # @private
@@ -290,7 +294,7 @@ module Adhearsion
     end
 
     def on_end(&block)
-      register_event_handler Punchblock::Event::End, &block
+      register_event_handler Adhearsion::Event::End, &block
     end
 
     #
@@ -301,21 +305,21 @@ module Adhearsion
     end
 
     def accept(headers = nil)
-      @accept_command ||= write_and_await_response Punchblock::Command::Accept.new(:headers => headers)
-    rescue Punchblock::ProtocolError => e
+      @accept_command ||= write_and_await_response Adhearsion::Rayo::Command::Accept.new(:headers => headers)
+    rescue Adhearsion::ProtocolError => e
       abort e
     end
 
     def answer(headers = nil)
-      write_and_await_response Punchblock::Command::Answer.new(:headers => headers)
-    rescue Punchblock::ProtocolError => e
+      write_and_await_response Adhearsion::Rayo::Command::Answer.new(:headers => headers)
+    rescue Adhearsion::ProtocolError => e
       abort e
     end
 
     def reject(reason = :busy, headers = nil)
-      write_and_await_response Punchblock::Command::Reject.new(:reason => reason, :headers => headers)
+      write_and_await_response Adhearsion::Rayo::Command::Reject.new(:reason => reason, :headers => headers)
       Adhearsion::Events.trigger_immediately :call_rejected, call: current_actor, reason: reason
-    rescue Punchblock::ProtocolError => e
+    rescue Adhearsion::ProtocolError => e
       abort e
     end
 
@@ -334,8 +338,8 @@ module Adhearsion
     # @param [String] to the target to redirect to, eg a SIP URI
     # @param [Hash, optional] headers a set of headers to send along with the redirect instruction
     def redirect(to, headers = nil)
-      write_and_await_response Punchblock::Command::Redirect.new(to: to, headers: headers)
-    rescue Punchblock::ProtocolError => e
+      write_and_await_response Adhearsion::Rayo::Command::Redirect.new(to: to, headers: headers)
+    rescue Adhearsion::ProtocolError => e
       abort e
     end
 
@@ -343,8 +347,8 @@ module Adhearsion
       return false unless active?
       logger.info "Hanging up"
       @end_reason = true
-      write_and_await_response Punchblock::Command::Hangup.new(:headers => headers)
-    rescue Punchblock::ProtocolError => e
+      write_and_await_response Adhearsion::Rayo::Command::Hangup.new(:headers => headers)
+    rescue Adhearsion::ProtocolError => e
       abort e
     end
 
@@ -381,10 +385,10 @@ module Adhearsion
         unjoined_condition.countdown!
       end
 
-      command = Punchblock::Command::Join.new options.merge(join_options_with_target(target))
+      command = Adhearsion::Rayo::Command::Join.new options.merge(join_options_with_target(target))
       write_and_await_response command
       {command: command, joined_condition: joined_condition, unjoined_condition: unjoined_condition}
-    rescue Punchblock::ProtocolError => e
+    rescue Adhearsion::ProtocolError => e
       abort e
     end
 
@@ -397,9 +401,9 @@ module Adhearsion
     #
     def unjoin(target = nil)
       logger.info "Unjoining from #{target}"
-      command = Punchblock::Command::Unjoin.new join_options_with_target(target)
+      command = Adhearsion::Rayo::Command::Unjoin.new join_options_with_target(target)
       write_and_await_response command
-    rescue Punchblock::ProtocolError => e
+    rescue Adhearsion::ProtocolError => e
       abort e
     end
 
@@ -442,14 +446,14 @@ module Adhearsion
     end
 
     def mute
-      write_and_await_response Punchblock::Command::Mute.new
-    rescue Punchblock::ProtocolError => e
+      write_and_await_response Adhearsion::Rayo::Command::Mute.new
+    rescue Adhearsion::ProtocolError => e
       abort e
     end
 
     def unmute
-      write_and_await_response Punchblock::Command::Unmute.new
-    rescue Punchblock::ProtocolError => e
+      write_and_await_response Adhearsion::Rayo::Command::Unmute.new
+    rescue Adhearsion::ProtocolError => e
       abort e
     end
 
@@ -462,7 +466,7 @@ module Adhearsion
 
       response = defer { command.response timeout }
       case response
-      when Punchblock::ProtocolError
+      when Adhearsion::ProtocolError
         if response.name == :item_not_found
           error_handler[Hangup.new(@end_reason)]
         else
@@ -481,10 +485,10 @@ module Adhearsion
 
     # @private
     def write_command(command)
-      abort Hangup.new(@end_reason) unless active? || command.is_a?(Punchblock::Command::Hangup)
+      abort Hangup.new(@end_reason) unless active? || command.is_a?(Adhearsion::Rayo::Command::Hangup)
       merge_headers command.headers if command.respond_to? :headers
       logger.debug "Executing command #{command.inspect}"
-      unless command.is_a?(Punchblock::Command::Dial)
+      unless command.is_a?(Adhearsion::Rayo::Command::Dial)
         command.target_call_id = id
         command.domain = domain
       end

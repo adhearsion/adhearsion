@@ -26,11 +26,5 @@ module Adhearsion
         super "Directory #{path} does not belong to an Adhearsion project!"
       end
     end
-
-    class PIDReadError < Thor::Error
-      def initialize(path)
-        super "Could not read pid from the file #{path}"
-      end
-    end
   end
 end

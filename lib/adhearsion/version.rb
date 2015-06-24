@@ -1,5 +1,5 @@
 # encoding: utf-8
 
 module Adhearsion
-  VERSION = '2.6.1'
+  VERSION = '3.0.0.beta1'
 end
