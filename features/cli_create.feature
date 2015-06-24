@@ -24,6 +24,7 @@ Feature: Adhearsion Ahn CLI (Create)
       | app/assets/audio/en/hello_world.wav       |
       | app/call_controllers/simon_game.rb        |
       | config/adhearsion.rb                      |
+      | config/app.rb                             |
       | config/environment.rb                     |
       | config/events.rb                          |
       | config/routes.rb                          |
@@ -42,6 +43,10 @@ Feature: Adhearsion Ahn CLI (Create)
     Adhearsion.config
     logging.level
     config.core.username
+    """
+    And the file "config/app.rb" should contain each of these content parts:
+    """
+    config do
     """
     And the file "config/events.rb" should contain each of these content parts:
     """
@@ -88,6 +93,7 @@ Feature: Adhearsion Ahn CLI (Create)
       | .gitignore            |
       | .rspec                |
       | config/adhearsion.rb  |
+      | config/app.rb         |
       | config/environment.rb |
       | config/events.rb      |
       | config/routes.rb      |
