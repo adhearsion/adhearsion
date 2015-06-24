@@ -1,4 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+
+# [3.0.0.beta1](https://github.com/adhearsion/adhearsion/compare/v2.6.1...v3.0.0.beta1) - [2015-06-24](https://rubygems.org/gems/adhearsion/versions/3.0.0.beta1)
   * Change: Removed `Adhearsion.ahn_root=` which was deprecated in favour of `Adhearsion.root=`
   * Change: Remove integration with `RAILS_ENV`
   * Change: Merge `#dial_and_confirm` into `#dial` such that `#dial` has parallel confirmation behaviour. Remove the old broken confirmation behaviour.
