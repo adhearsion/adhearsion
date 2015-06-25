@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+require 'adhearsion/application'
 require 'adhearsion/linux_proc_name'
 require 'adhearsion/rayo/initializer'
 require 'adhearsion/http_server'
@@ -28,6 +29,7 @@ module Adhearsion
       catch :boot_aborted do
         configure_plugins
         load_lib_folder
+        load_app_file
         load_config_file
         load_events_file
         load_routes_file
@@ -136,6 +138,11 @@ module Adhearsion
         end
       end
       true
+    end
+
+    def load_app_file
+      path = "#{Adhearsion.config.root}/config/app.rb"
+      load path if File.exists?(path)
     end
 
     def load_config_file
