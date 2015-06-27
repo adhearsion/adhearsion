@@ -72,9 +72,13 @@ module Adhearsion
       end
 
       def refresh!
+        clear
+        init
+      end
+
+      def clear
         @queue = nil
         Handler.instance.clear_handlers
-        init
       end
     end
 
