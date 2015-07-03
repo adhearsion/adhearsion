@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 class DemoApp < Adhearsion::Application
-  plugin_name :demo
+  app_name :demo
 
   # Actions to perform when initialising the application
   #
