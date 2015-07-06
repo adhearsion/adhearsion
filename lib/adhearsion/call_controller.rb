@@ -18,7 +18,7 @@ module Adhearsion
 
     class_attribute :callbacks
 
-    self.callbacks = {:before_call => [], :after_call => [], :on_error => []}
+    self.callbacks = {:before => [], :after => [], :on_error => []}
 
     self.callbacks.keys.each do |name|
       class_eval <<-STOP
@@ -48,6 +48,16 @@ module Adhearsion
       #
       def mixin(mod)
         include mod
+      end
+
+      def before_call(*args, &block)
+        Adhearsion.deprecated :before
+        before(*args, &block)
+      end
+
+      def after_call(*args, &block)
+        Adhearsion.deprecated :after
+        after(*args, &block)
       end
     end
 
@@ -113,7 +123,7 @@ module Adhearsion
     # @private
     def execute!(*options)
       call.async.register_controller self
-      execute_callbacks :before_call
+      execute_callbacks :before
       run
     rescue Call::Hangup, Call::ExpiredError
     rescue SyntaxError, StandardError => e
@@ -121,7 +131,7 @@ module Adhearsion
       on_error e
       raise
     ensure
-      after_call
+      after
       logger.debug "Finished executing controller #{self.inspect}"
     end
 
@@ -189,8 +199,8 @@ module Adhearsion
     end
 
     # @private
-    def after_call
-      @after_call ||= execute_callbacks :after_call
+    def after
+      @after ||= execute_callbacks :after
     end
 
     # @private
@@ -234,7 +244,7 @@ module Adhearsion
     end
 
     #
-    # Hangup the call, and execute after_call callbacks
+    # Hangup the call, and execute after callbacks
     #
     # @param [Hash] headers
     #

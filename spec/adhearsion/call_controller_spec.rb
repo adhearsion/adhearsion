@@ -142,15 +142,15 @@ module Adhearsion
     describe "#invoke" do
       class InvokeController < CallController
         def run
-          before
+          do_before
           metadata[:invoke_result] = invoke second_controller, :foo => 'bar'
-          after
+          do_after
         end
 
-        def before
+        def do_before
         end
 
-        def after
+        def do_after
         end
 
         def second_controller
@@ -168,9 +168,9 @@ module Adhearsion
       end
 
       it "should invoke another controller before returning to the current controller" do
-        expect(subject).to receive(:before).once.ordered
+        expect(subject).to receive(:do_before).once.ordered
         expect(call).to receive(:answer).once.ordered
-        expect(subject).to receive(:after).once.ordered
+        expect(subject).to receive(:do_after).once.ordered
 
         subject.exec
       end
@@ -189,9 +189,9 @@ module Adhearsion
       it "should allow the outer controller to cease execution and handle remote hangups" do
         subject[:second_controller] = SecondControllerWithRemoteHangup
 
-        expect(subject).to receive(:before).once.ordered
+        expect(subject).to receive(:do_before).once.ordered
         expect(call).to receive(:answer).once.ordered
-        expect(subject).to receive(:after).never.ordered
+        expect(subject).to receive(:do_after).never.ordered
 
         subject.exec
       end
@@ -200,21 +200,22 @@ module Adhearsion
     describe "#pass" do
       let(:pass_controller) do
         Class.new CallController do
-          after_call :foobar
+          after :foobar
+          after :doodaz
 
           def run
-            before
+            do_before
             pass SecondController, :foo => 'bar'
-            after
+            do_after
           end
 
-          def before
+          def do_before
           end
 
-          def after
+          def do_after
           end
 
-          def foobar
+          def doodaz
           end
         end
       end
@@ -230,16 +231,17 @@ module Adhearsion
       end
 
       it "should cease execution of the current controller, and instruct the call to execute another" do
-        expect(subject).to receive(:before).once.ordered
+        expect(subject).to receive(:do_before).once.ordered
         expect(call).to receive(:answer).once.ordered
-        expect(subject).to receive(:after).never.ordered
+        expect(subject).to receive(:do_after).never.ordered
 
         subject.exec
       end
 
-      it "should execute after_call callbacks before passing control" do
-        expect(subject).to receive(:before).once.ordered
+      it "should execute after callbacks before passing control" do
+        expect(subject).to receive(:do_before).once.ordered
         expect(subject).to receive(:foobar).once.ordered
+        expect(subject).to receive(:doodaz).once.ordered
         expect(call).to receive(:answer).once.ordered
 
         subject.exec
@@ -622,11 +624,13 @@ module Adhearsion
 end
 
 class ExampleCallController < Adhearsion::CallController
-  before_call { setup_models }
+  before { setup_models }
+  before :setup_models
   before_call :setup_models
 
   after_call { clean_up_models }
-  after_call :clean_up_models
+  after { clean_up_models }
+  after :clean_up_models
 
   on_error { apologize_for_failure }
   on_error :apologize_for_failure
@@ -661,22 +665,22 @@ describe ExampleCallController do
     allow(call.wrapped_object).to receive_messages :write_and_await_response => nil
   end
 
-  it "should execute the before_call callbacks before processing the call" do
-    expect(subject).to receive(:setup_models).twice.ordered
+  it "should execute the before callbacks before processing the call" do
+    expect(subject).to receive(:setup_models).exactly(3).times.ordered
     expect(subject).to receive(:join_to_conference).once.ordered
     subject.exec
   end
 
-  it "should execute the after_call callbacks after the call is hung up" do
+  it "should execute the after callbacks after the call is hung up" do
     expect(subject).to receive(:join_to_conference).once.ordered
-    expect(subject).to receive(:clean_up_models).twice.ordered
+    expect(subject).to receive(:clean_up_models).exactly(3).times.ordered
     expect(subject).to receive(:foobar).never
     subject.exec
   end
 
   it "should capture errors in callbacks" do
-    expect(subject).to receive(:setup_models).twice.and_raise StandardError
-    expect(subject).to receive(:clean_up_models).twice.and_raise StandardError
+    expect(subject).to receive(:setup_models).exactly(3).times.and_raise StandardError
+    expect(subject).to receive(:clean_up_models).exactly(3).times.and_raise StandardError
     latch = CountDownLatch.new 4
     Adhearsion::Events.exception do |e, l|
       expect(e).to be_a StandardError
@@ -695,11 +699,11 @@ describe ExampleCallController do
   end
 
   describe "when the controller finishes without a hangup" do
-    it "should execute the after_call callbacks" do
+    it "should execute the after callbacks" do
       subject[:skip_hangup] = true
       expect(subject).to receive(:join_to_conference).once.ordered
       expect(subject).to receive(:foobar).once.ordered
-      expect(subject).to receive(:clean_up_models).twice.ordered
+      expect(subject).to receive(:clean_up_models).exactly(3).times.ordered
       subject.exec
     end
   end
