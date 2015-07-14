@@ -28,6 +28,7 @@ module Adhearsion
             event = Adhearsion::Event::Complete.new reason: reason, recording: recording
             send_event event
             call.deregister_component id if call
+            translator.deregister_component id
           end
 
           def send_event(event)
