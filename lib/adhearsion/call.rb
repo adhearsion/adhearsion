@@ -23,6 +23,12 @@ module Adhearsion
       rescue ::Celluloid::DeadActorError
         raise ExpiredError, "This call is expired and is no longer accessible. See http://adhearsion.com/docs/calls for further details."
       end
+
+      def active?
+        alive? && super
+      rescue ExpiredError
+        false
+      end
     end
 
     include Celluloid

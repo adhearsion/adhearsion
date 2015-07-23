@@ -633,6 +633,7 @@ module Adhearsion
             subject << end_event
             sleep 2.1
             expect(subject.alive?).to be false
+            expect(subject.active?).to be false
             expect { subject.id }.to raise_error Call::ExpiredError, /expired and is no longer accessible/
           end
         end
@@ -653,8 +654,10 @@ module Adhearsion
             subject << end_event
             sleep 1.1
             expect(subject.alive?).to be true
+            expect(subject.active?).to be false
             sleep 1
             expect(subject.alive?).to be false
+            expect(subject.active?).to be false
             expect { subject.id }.to raise_error Call::ExpiredError, /expired and is no longer accessible/
           end
         end

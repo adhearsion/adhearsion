@@ -2,6 +2,7 @@
   * Bugfix: Ensure components are deregistered from asterisk translator once the call is ended ([#582](https://github.com/adhearsion/adhearsion/pull/582))
   * Change: Define configuration per-environment for any environment name and without colliding with plugin names. See [#442](https://github.com/adhearsion/adhearsion/issues/442). Syntax is now `config.env(:development).foo = :bar` instead of `config.development.foo = :bar`.
   * Feature: Introduce the concept of application specific config. Similar to a plugin, an Application can specify config and an initialiser, and is the place to put such application-wide and unshareable things.
+  * Bugfix: Calls remain inactive even after they shut down. Previously, to reliably check if a call was up or down it was necessary to consider the case where the call actor had been shut down. This is irrelevant to the `Adhearsion::Call#active?` question, which should *always* return a boolean. It now does.
 
 # [3.0.0.beta1](https://github.com/adhearsion/adhearsion/compare/v2.6.1...v3.0.0.beta1) - [2015-06-24](https://rubygems.org/gems/adhearsion/versions/3.0.0.beta1)
   * Change: Removed `Adhearsion.ahn_root=` which was deprecated in favour of `Adhearsion.root=`
