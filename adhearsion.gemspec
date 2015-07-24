@@ -45,7 +45,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'thor', "~> 0.18.0"
   s.add_runtime_dependency 'virtus', ["~> 1.0"]
 
-  s.add_development_dependency 'aruba', "~> 0.5"
+  s.add_development_dependency 'aruba', "~> 0.6.0"
   s.add_development_dependency 'ci_reporter_rspec'
   s.add_development_dependency 'ci_reporter_cucumber'
   s.add_development_dependency 'cucumber'
