@@ -3,7 +3,7 @@ rvm:
   - 2.2.0
   - 2.2.1
   - 2.2.2
-  - jruby-9.0.0.0.pre2
+  - jruby-9.0.0.0
   - ruby-head
 jdk:
   - openjdk7 # for jruby
