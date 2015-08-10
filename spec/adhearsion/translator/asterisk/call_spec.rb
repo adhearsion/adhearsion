@@ -832,11 +832,11 @@ module Adhearsion
                 Adhearsion::Rayo::Command::Join.new call_uri: other_call_id
               end
 
-              let :ami_event do
+              let :second_ami_event do
                 RubyAMI::Event.new 'BridgeEnter',
                 'Privilege' => "call,all",
                 'BridgeUniqueid'  => bridge_uniqueid,
-                'Channel'  => call_channel
+                'Channel'  => other_channel
               end
 
               let :expected_joined do
@@ -850,19 +850,18 @@ module Adhearsion
               end
 
               before do
-                translator.bridges[bridge_uniqueid] = other_channel
+                translator.register_call subject
                 translator.register_call other_call
-
-                other_call.pending_joins[channel] = command
                 command.request!
                 expect(subject).to receive(:execute_agi_command).and_return code: 200
                 subject.execute_command command
+                translator.handle_ami_event ami_event
               end
 
               it 'sends the correct Joined events' do
                 expect(translator).to receive(:handle_pb_event).with expected_joined
                 expect(translator).to receive(:handle_pb_event).with expected_joined_other
-                subject.process_ami_event ami_event
+                translator.handle_ami_event ami_event
                 expect(command.response(0.5)).to eq(true)
               end
             end
@@ -870,7 +869,7 @@ module Adhearsion
 
           context 'with a BridgeLeave event' do
             let(:bridge_uniqueid) { "1234-5678" }
-            let(:call_channel) { "SIP/foo-1234" }
+            let(:call_channel) { "SIP/foo" }
             let :ami_event do
               RubyAMI::Event.new 'BridgeLeave',
                 'Privilege' => "call,all",
@@ -892,11 +891,11 @@ module Adhearsion
               end
               let(:other_call_id) { other_call.id }
 
-              let :ami_event do
+              let :second_ami_event do
                 RubyAMI::Event.new 'BridgeLeave',
                 'Privilege' => "call,all",
                 'BridgeUniqueid'  => bridge_uniqueid,
-                'Channel'  => call_channel
+                'Channel'  => other_channel
               end
 
               let :expected_unjoined do
@@ -910,14 +909,15 @@ module Adhearsion
               end
 
               before do
-                translator.bridges[bridge_uniqueid + '_leave'] = other_channel
+                translator.register_call subject
                 translator.register_call other_call
+                translator.handle_ami_event ami_event
               end
 
               it 'sends the correct Unjoined events' do
                 expect(translator).to receive(:handle_pb_event).with expected_unjoined
                 expect(translator).to receive(:handle_pb_event).with expected_unjoined_other
-                subject.process_ami_event ami_event
+                translator.handle_ami_event second_ami_event
               end
             end
           end
