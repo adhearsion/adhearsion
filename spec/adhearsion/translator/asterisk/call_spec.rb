@@ -861,7 +861,7 @@ module Adhearsion
               it 'sends the correct Joined events' do
                 expect(translator).to receive(:handle_pb_event).with expected_joined
                 expect(translator).to receive(:handle_pb_event).with expected_joined_other
-                translator.handle_ami_event ami_event
+                translator.handle_ami_event second_ami_event
                 expect(command.response(0.5)).to eq(true)
               end
 
