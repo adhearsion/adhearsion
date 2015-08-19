@@ -18,7 +18,7 @@ module Adhearsion
           end
 
           def stop_by_redirect(complete_reason)
-            call.register_handler :ami, [{name: 'AsyncAGI', [:[], 'SubEvent'] => 'Start'}, {name: 'AsyncAGIExec'}] do |event|
+            call.register_handler :ami, [{name: 'AsyncAGI', [:[], 'SubEvent'] => 'Start'}, {name: 'AsyncAGIStart'}] do |event|
               send_complete_event complete_reason
             end
             call.redirect_back

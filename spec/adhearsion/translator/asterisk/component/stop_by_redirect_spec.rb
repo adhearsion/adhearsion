@@ -42,7 +42,7 @@ module Adhearsion
 
               it "sets the command response to true" do
                 expect(mock_call).to receive(:redirect_back)
-                expect(mock_call).to receive(:register_handler).once.with(:ami, [{:name => 'AsyncAGI', [:[], 'SubEvent']=>'Start'}, {:name => 'AsyncAGIExec'}])
+                expect(mock_call).to receive(:register_handler).once.with(:ami, [{:name => 'AsyncAGI', [:[], 'SubEvent']=>'Start'}, {:name => 'AsyncAGIStart'}])
 
                 subject.execute_command command
                 expect(command.response(0.1)).to eq(true)
