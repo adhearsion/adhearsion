@@ -149,7 +149,7 @@ module Adhearsion
           if call = call_with_id(command.uri)
             command.response = Adhearsion::ProtocolError.new.setup(:conflict, 'Call ID already in use')
           else
-            call = Call.new command.to, current_actor, ami_client, connection, nil, command.uri
+            call = Call.new command.to, self, ami_client, connection, nil, command.uri
             register_call call
             call.dial command
           end
@@ -229,7 +229,7 @@ module Adhearsion
 
         return if env[:agi_extension] == 'h' || env[:agi_type] == 'Kill'
 
-        call = Call.new event['Channel'], current_actor, ami_client, connection, env
+        call = Call.new event['Channel'], self, ami_client, connection, env
         register_call call
         call.send_offer
       end

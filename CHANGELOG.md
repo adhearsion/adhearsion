@@ -5,6 +5,7 @@
   * Bugfix: Calls remain inactive even after they shut down. Previously, to reliably check if a call was up or down it was necessary to consider the case where the call actor had been shut down. This is irrelevant to the `Adhearsion::Call#active?` question, which should *always* return a boolean. It now does.
   * Bugfix: Process joined events on Asterisk 13 in any order, avoiding Join command timeout
   * Bugfix: Handle correct event for confirming that a component stop was completed on Asterisk 13
+  * Bugfix: Avoid race conditions in processing calls with interactions between them
 
 # [3.0.0.beta1](https://github.com/adhearsion/adhearsion/compare/v2.6.1...v3.0.0.beta1) - [2015-06-24](https://rubygems.org/gems/adhearsion/versions/3.0.0.beta1)
   * Change: Removed `Adhearsion.ahn_root=` which was deprecated in favour of `Adhearsion.root=`
