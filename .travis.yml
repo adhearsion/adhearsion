@@ -13,3 +13,6 @@ matrix:
     - rvm: ruby-head
 env: ARUBA_TIMEOUT=120 AHN_ENV=development
 sudo: false
+notifications:
+  slack:
+    secure: Y7EqF/9FY7mca63c1DM7kEr34fNtFclWXJj9vLqVQJwR3rCDZUZSD8DlqHJDwE6KRCCDsSkyV4lihCim+GEM28CRcJir0AEUJhXHvIMckjH7n38W9OGN26RuJGZTapjgCSMOBeq0YpSe6dAnZeRpZRJxsTFtP5ptLD5RRjIMzZM=
