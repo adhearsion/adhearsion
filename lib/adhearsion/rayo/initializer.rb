@@ -2,6 +2,7 @@
 
 require 'blather'
 require 'active_support/core_ext/class/attribute_accessors'
+require 'securerandom'
 
 module Adhearsion
   module Rayo
@@ -161,7 +162,7 @@ module Adhearsion
         end
 
         def resource
-          [machine_identifier, ::Process.pid].join '-'
+          [machine_identifier, ::Process.pid, SecureRandom.hex(3)].join '-'
         end
 
         def machine_identifier

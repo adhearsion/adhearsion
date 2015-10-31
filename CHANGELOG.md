@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Change: Add a short UUID to the Rayo resource identifier to prevent possible PID conflicts made more likely by containerization  
   * Bugfix: Ensure components are deregistered from asterisk translator once the call is ended ([#582](https://github.com/adhearsion/adhearsion/pull/582))
   * Change: Define configuration per-environment for any environment name and without colliding with plugin names. See [#442](https://github.com/adhearsion/adhearsion/issues/442). Syntax is now `config.env(:development).foo = :bar` instead of `config.development.foo = :bar`.
   * Feature: Introduce the concept of application specific config. Similar to a plugin, an Application can specify config and an initialiser, and is the place to put such application-wide and unshareable things.
