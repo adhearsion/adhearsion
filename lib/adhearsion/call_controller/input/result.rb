@@ -9,7 +9,7 @@ module Adhearsion
         end
 
         def inspect
-          "#<#{self.class} status=#{status.inspect}, confidence=#{confidence.inspect}, utterance=#{utterance.inspect}, interpretation=#{interpretation.inspect}, nlsml=#{nlsml.inspect}>"
+          "#<#{self.class} status=#{status.inspect}, confidence=#{confidence.inspect}, utterance=#{utterance.inspect}, interpretation=#{interpretation.inspect}, nlsml='#{nlsml.to_xml.split("\n").join(' ')}'>"
         end
 
         def utterance=(other)
