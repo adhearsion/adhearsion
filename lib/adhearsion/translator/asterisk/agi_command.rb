@@ -24,7 +24,7 @@ module Adhearsion
           parser = RubyAMI::AGIResultParser.new event['Result']
           {code: parser.code, result: parser.result, data: parser.data}
         rescue ArgumentError => e
-          logger.warn "Illegal message received from Asterisk: #{e.message}"
+          logger.warn { "Illegal message received from Asterisk: #{e.message}" }
           {code: -1, result: nil, data: nil}
         end
 

@@ -126,7 +126,7 @@ module Adhearsion
       if environment == @active_environment
         yield self
       else
-        logger.trace "Ignoring configuration for inactive environment #{environment}"
+        logger.trace { "Ignoring configuration for inactive environment #{environment}" }
       end
     end
 

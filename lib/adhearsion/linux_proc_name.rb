@@ -5,7 +5,7 @@ module Adhearsion
   # https://gist.github.com/1350729
   #
   # Eric Lindvall <eric@5stops.com>
-  # 
+  #
   # Update the process name for the process you're running in.
   #
   # $0    => updates proc name for ps command
@@ -23,7 +23,7 @@ module Adhearsion
       def set_proc_name(name)
         $0 = name # process name in ps command
         if error
-          logger.debug error
+          logger.debug { error }
           return false
         end
         return false unless LibC.respond_to?(:prctl)

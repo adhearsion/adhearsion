@@ -122,7 +122,7 @@ module Adhearsion
       raise
     ensure
       after_call
-      logger.debug "Finished executing controller #{self.inspect}"
+      logger.debug { "Finished executing controller #{self.inspect}" }
     end
 
     #
@@ -158,7 +158,7 @@ module Adhearsion
     # Stop execution of all the components currently running in the controller.
     #
     def stop_all_components
-      logger.info "Stopping all controller components"
+      logger.info { "Stopping all controller components" }
       @active_components.each do |component|
         begin
           component.stop!
@@ -174,7 +174,7 @@ module Adhearsion
     # @param [Hash] metadata generic key-value storage applicable to the controller
     #
     def hard_pass(controller_class, metadata = nil)
-      logger.info "Hard passing with active components #{@active_components.inspect}"
+      logger.info { "Hard passing with active components #{@active_components.inspect}" }
       stop_all_components
       pass controller_class, metadata
     end

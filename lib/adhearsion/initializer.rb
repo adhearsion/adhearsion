@@ -52,7 +52,7 @@ module Adhearsion
 
         Adhearsion::Process.booted if Adhearsion.status == :booting
 
-        logger.info "Adhearsion v#{Adhearsion::VERSION} initialized in \"#{Adhearsion.environment}\"!" if Adhearsion.status == :running
+        logger.info { "Adhearsion v#{Adhearsion::VERSION} initialized in \"#{Adhearsion.environment}\"!" if Adhearsion.status == :running }
       end
 
       # This method will block until all important threads have finished.
@@ -72,13 +72,13 @@ module Adhearsion
 
     def debugging_log
       debugging_items.each do |item|
-        logger.trace item
+        logger.trace { item }
       end
     end
 
     def setup_i18n_load_path
       Adhearsion.config.core.i18n.locale_path.each do |dir|
-        logger.debug "Adding #{dir} to the I18n load path"
+        logger.debug { "Adding #{dir} to the I18n load path" }
         I18n.load_path += Dir["#{dir}/**/*.yml"]
       end
     end
@@ -99,8 +99,8 @@ module Adhearsion
             handle_signal signal
           end
         rescue => e
-          logger.error "Crashed reading signals"
-          logger.error e
+          logger.error { "Crashed reading signals" }
+          logger.error { e }
           exit 1
         end
       end
@@ -109,13 +109,13 @@ module Adhearsion
     def handle_signal(signal)
       case signal
       when 'INT', 'TERM'
-        logger.info "Received SIG#{signal}. Shutting down."
+        logger.info { "Received SIG#{signal}. Shutting down." }
         Adhearsion::Process.shutdown
       when 'ALRM'
-        logger.info "Received SIGALRM. Toggling trace logging."
+        logger.info { "Received SIGALRM. Toggling trace logging." }
         Adhearsion::Logging.toggle_trace!
       when 'ABRT'
-        logger.info "Received ABRT signal. Forcing stop."
+        logger.info { "Received ABRT signal. Forcing stop." }
         Adhearsion::Process.force_stop
       end
     end
@@ -214,7 +214,7 @@ module Adhearsion
         begin
           Adhearsion::Process.important_threads[index].join
         rescue => e
-          logger.error "Error after joining Thread #{Thread.inspect}. #{e.message}"
+          logger.error { "Error after joining Thread #{Thread.inspect}. #{e.message}" }
         ensure
           index = index + 1
         end

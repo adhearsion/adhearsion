@@ -55,7 +55,7 @@ module Adhearsion
           end
 
           Events.rayo Adhearsion::Rayo::Connection::Connected do |event|
-            logger.info "Connected to Rayo server"
+            logger.info { "Connected to Rayo server" }
             self.attempts = 0
           end
 
@@ -87,7 +87,7 @@ module Adhearsion
           end
 
           Events.shutdown do
-            logger.info "Shutting down while connecting. Breaking the connection block."
+            logger.info { "Shutting down while connecting. Breaking the connection block." }
             m.synchronize { blocker.broadcast }
           end
 
@@ -102,7 +102,7 @@ module Adhearsion
         end
 
         def connect_to_server
-          logger.info "Starting connection to server"
+          logger.info { "Starting connection to server" }
           client.run
         rescue Adhearsion::Rayo::DisconnectedError => e
           # We only care about disconnects if the process is up or booting
@@ -113,16 +113,16 @@ module Adhearsion
           self.attempts += 1
 
           if self.attempts >= self.config.reconnect_attempts
-            logger.fatal "Connection lost. Connection retry attempts exceeded."
+            logger.fatal { "Connection lost. Connection retry attempts exceeded." }
             Adhearsion::Process.stop!
             return
           end
 
-          logger.error "Connection lost. Attempting reconnect #{self.attempts} of #{self.config.reconnect_attempts}"
+          logger.error { "Connection lost. Attempting reconnect #{self.attempts} of #{self.config.reconnect_attempts}" }
           sleep self.config.reconnect_timer
           retry
         rescue Adhearsion::ProtocolError => e
-          logger.fatal "The connection failed due to a protocol error: #{e.name}."
+          logger.fatal { "The connection failed due to a protocol error: #{e.name}." }
           raise e
         end
 
@@ -132,7 +132,7 @@ module Adhearsion
             Adhearsion.active_calls << call
             case Adhearsion::Process.state_name
             when :booting, :rejecting
-              logger.info "Declining call because the process is not yet running."
+              logger.info { "Declining call because the process is not yet running." }
               call.reject :decline
             when :running, :stopping
               Adhearsion.router.handle call
@@ -147,7 +147,7 @@ module Adhearsion
           if call && call.alive?
             call.async.deliver_message event
           else
-            logger.warn "Event received for inactive call #{event.target_call_id}: #{event.inspect}"
+            logger.warn { "Event received for inactive call #{event.target_call_id}: #{event.inspect}" }
             Events.trigger :inactive_call, event
           end
         end

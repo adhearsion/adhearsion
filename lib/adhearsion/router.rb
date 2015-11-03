@@ -30,10 +30,10 @@ module Adhearsion
 
     def handle(call)
       raise NoMatchError unless route = match(call)
-      logger.info "Call #{call.id} selected route \"#{route.name}\" (#{route.target})"
+      logger.info { "Call #{call.id} selected route \"#{route.name}\" (#{route.target})" }
       route.dispatch call
     rescue NoMatchError
-      logger.warn "Call #{call.id} could not find a matching route. Rejecting."
+      logger.warn { "Call #{call.id} could not find a matching route. Rejecting." }
       call.reject :error
     end
 
