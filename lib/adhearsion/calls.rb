@@ -17,23 +17,31 @@ module Adhearsion
       @mutex.synchronize do
         self[call.id] = call
         by_uri[call.uri] = call
+
+        # Create indexes to avoid scanning @calls or @by_uri
+        call_id_by_object_id[call.object_id] = call.id if call.respond_to?(:id)
+        uri_by_object_id[call.object_id] = call.uri if call.respond_to?(:uri)
       end
       self
     end
 
     def remove_inactive_call(call)
       if call_is_dead?(call)
-        call_id = @mutex.synchronize { key call }
+        # call_id = @mutex.synchronize { key call }
         # call_id = key call
-        delete call_id if call_id
-
+        # call_id = by_object_id[call.object_id]
+        # delete call_id if call_id
+        delete call_id_by_object_id[call.object_id]
         remove_call_uri call
+        remove_from_indices call
       elsif call.respond_to?(:id)
         delete call.id
         remove_call_uri call
+        remove_from_indices call
       else
         call_actor = delete call
         remove_call_uri call_actor
+        remove_from_indices call_actor
       end
     end
 
@@ -64,10 +72,24 @@ module Adhearsion
       @by_uri ||= {}
     end
 
+    def call_id_by_object_id
+      @call_id_by_object_id ||= {}
+    end
+
+    def uri_by_object_id
+      @uri_by_object_id ||= {}
+    end
+
     def remove_call_uri(call)
-      uri = @mutex.synchronize { by_uri.key call }
+      # uri = @mutex.synchronize { by_uri.key call }
+      by_uri.delete uri_by_object_id[call.object_id]
       # uri = by_uri.key call
-      by_uri.delete uri if uri
+      # by_uri.delete uri if uri
+    end
+
+    def remove_from_indices(call)
+      uri_by_object_id.delete call.object_id
+      call_id_by_object_id.delete call.object_id
     end
 
     def call_is_dead?(call)
@@ -75,6 +97,8 @@ module Adhearsion
     rescue ::NoMethodError
       false
     end
+
+
 
     def method_missing(method, *args, &block)
       @mutex.synchronize do
