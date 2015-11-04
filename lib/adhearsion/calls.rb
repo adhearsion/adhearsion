@@ -23,9 +23,7 @@ module Adhearsion
 
     def remove_inactive_call(call)
       if call_is_dead?(call)
-        @mutex.synchronize do
-          call_id = key call
-        end
+        call_id = @mutex.synchronize { key call }
         # call_id = key call
         delete call_id if call_id
 
@@ -67,9 +65,7 @@ module Adhearsion
     end
 
     def remove_call_uri(call)
-      @mutex.synchronize do
-        uri = by_uri.key call
-      end
+      uri = @mutex.synchronize { by_uri.key call }
       # uri = by_uri.key call
       by_uri.delete uri if uri
     end
