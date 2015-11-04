@@ -40,7 +40,7 @@ module Adhearsion
     end
 
     def with_tag(tag)
-      @mutex.synchronize do
+      # @mutex.synchronize do
         values.find_all do |call|
           begin
             call.tagged_with? tag
@@ -48,7 +48,7 @@ module Adhearsion
             false
           end
         end
-      end
+      # end
     end
 
     def with_uri(uri)
