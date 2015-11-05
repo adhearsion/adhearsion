@@ -98,7 +98,9 @@ module Adhearsion
       false
     end
 
-
+    def delete(call_id)
+      @calls.delete call_id
+    end
 
     def method_missing(method, *args, &block)
       @mutex.synchronize do
