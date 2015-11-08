@@ -27,10 +27,16 @@ module Adhearsion
 
     def remove_inactive_call(call)
       if call_is_dead?(call)
+        puts "call is dead."
+        puts "object_id is #{call.object_id}"
+        puts "call_id_by_object_id[call.object_id] is #{call_id_by_object_id[call.object_id]}"
         delete call_id_by_object_id[call.object_id]
         remove_call_uri call
         remove_from_indices call
       elsif call.respond_to?(:id)
+        puts "call responds to id"
+        puts "object_id is #{call.object_id}"
+        puts "call.id is #{call.id}"
         delete call.id
         remove_call_uri call
         remove_from_indices call
