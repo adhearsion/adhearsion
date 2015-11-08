@@ -35,7 +35,9 @@ module Adhearsion
         remove_call_uri call
         remove_from_indices call
       else
+        puts "call is not dead and doesn't respond to id."
         call_actor = delete call
+        puts "call_actor is #{call_actor.inspect}"
         remove_call_uri call_actor
         remove_from_indices call_actor
       end
