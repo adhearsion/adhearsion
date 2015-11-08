@@ -27,10 +27,6 @@ module Adhearsion
 
     def remove_inactive_call(call)
       if call_is_dead?(call)
-        # call_id = @mutex.synchronize { key call }
-        # call_id = key call
-        # call_id = by_object_id[call.object_id]
-        # delete call_id if call_id
         delete call_id_by_object_id[call.object_id]
         remove_call_uri call
         remove_from_indices call
@@ -46,15 +42,13 @@ module Adhearsion
     end
 
     def with_tag(tag)
-      # @mutex.synchronize do
-        values.find_all do |call|
-          begin
-            call.tagged_with? tag
-          rescue Call::ExpiredError
-            false
-          end
+      values.find_all do |call|
+        begin
+          call.tagged_with? tag
+        rescue Call::ExpiredError
+          false
         end
-      # end
+      end
     end
 
     def with_uri(uri)
@@ -81,10 +75,7 @@ module Adhearsion
     end
 
     def remove_call_uri(call)
-      # uri = @mutex.synchronize { by_uri.key call }
       by_uri.delete uri_by_object_id[call.object_id]
-      # uri = by_uri.key call
-      # by_uri.delete uri if uri
     end
 
     def remove_from_indices(call)
