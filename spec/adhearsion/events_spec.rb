@@ -17,7 +17,7 @@ module Adhearsion
       latch = CountDownLatch.new 1
 
       Events.register_handler :event do |event|
-        logger.info "Received an event!"
+        logger.info { "Received an event!" }
         e = event
         latch.countdown!
       end
@@ -81,7 +81,7 @@ module Adhearsion
         result = nil
         Events.draw do
           event do
-            logger.info "Got an event!"
+            logger.info { "Got an event!" }
             result = :foo
           end
         end

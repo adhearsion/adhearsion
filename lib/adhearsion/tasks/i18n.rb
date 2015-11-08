@@ -19,13 +19,13 @@ namespace :i18n do
       prompts = prompts[locale]
 
       prompts.each_pair do |key, mapping|
-        logger.trace "Checking i18n key #{key}"
+        logger.trace { "Checking i18n key #{key}" }
         # Not all prompts will have audio files
         next unless mapping['audio']
 
         file = File.absolute_path "#{config['audio_path']}/#{locale}/#{mapping['audio']}"
         unless File.exist?(file)
-          logger.warn "[#{locale}] Missing audio file: #{file}"
+          logger.warn { "[#{locale}] Missing audio file: #{file}" }
           locale_errors[locale] ||= 0
           locale_errors[locale] += 1
         end
@@ -34,15 +34,15 @@ namespace :i18n do
     end
 
     if checked_prompts == 0
-      logger.warn "No Adhearsion i18n prompts found. No files checked."
+      logger.warn { "No Adhearsion i18n prompts found. No files checked." }
     else
       if locale_errors.keys.count > 0
-        logger.error "Errors detected! Number of errors by locale:"
+        logger.error { "Errors detected! Number of errors by locale:" }
         locale_errors.each_pair do |locale, err_count|
-          logger.error "[#{locale}]: #{err_count} missing prompts"
+          logger.error { "[#{locale}]: #{err_count} missing prompts" }
         end
       else
-        logger.info "All configured prompt files successfully validated."
+        logger.info { "All configured prompt files successfully validated." }
       end
     end
   end

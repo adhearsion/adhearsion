@@ -35,8 +35,8 @@ module Adhearsion
     end
 
     def deprecated(new_method)
-      logger.info "#{caller[0]} - This method is deprecated, please use #{new_method}."
-      logger.warn caller.join("\n")
+      logger.info { "#{caller[0]} - This method is deprecated, please use #{new_method}." }
+      logger.warn { caller.join("\n") }
     end
 
     def environment

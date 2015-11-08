@@ -34,12 +34,12 @@ module Adhearsion
       if jruby? || cruby_with_readline?
         set_prompt
         Pry.config.command_prefix = "%"
-        logger.info "Launching Adhearsion Console"
+        logger.info { "Launching Adhearsion Console" }
         @pry_thread = Thread.current
         pry
-        logger.info "Adhearsion Console exiting"
+        logger.info { "Adhearsion Console exiting" }
       else
-        logger.error "Unable to launch Adhearsion Console: This version of Ruby is using libedit. You must use readline for the console to work."
+        logger.error { "Unable to launch Adhearsion Console: This version of Ruby is using libedit. You must use readline for the console to work." }
       end
     end
 
@@ -47,7 +47,7 @@ module Adhearsion
       return unless instance_variable_defined?(:@pry_thread) && @pry_thread
       @pry_thread.kill
       @pry_thread = nil
-      logger.info "Adhearsion Console shutting down"
+      logger.info { "Adhearsion Console shutting down" }
     end
 
     def log_level(level = nil)
@@ -78,12 +78,12 @@ module Adhearsion
         if call = calls[call]
           interact_with_call call
         else
-          logger.error "An active call with that ID does not exist"
+          logger.error { "An active call with that ID does not exist" }
         end
       when nil
         case calls.size
         when 0
-          logger.warn "No calls active to take"
+          logger.warn { "No calls active to take" }
         when 1
           interact_with_call calls.values.first
         else
@@ -143,16 +143,16 @@ module Adhearsion
         call.pause_controllers
         CallController.exec InteractiveController.new(call)
       ensure
-        logger.debug "Restoring control of call to controllers"
+        logger.debug { "Restoring control of call to controllers" }
         call.resume_controllers
       end
     end
 
     class InteractiveController < CallController
       def run
-        logger.debug "Starting interactive controller"
+        logger.debug { "Starting interactive controller" }
         pry
-        logger.debug "Interactive controller finished"
+        logger.debug { "Interactive controller finished" }
       end
 
       def hangup(*args)

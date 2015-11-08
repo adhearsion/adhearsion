@@ -163,14 +163,14 @@ module Adhearsion
 
         result = send_ami_action 'Command', 'Command' => "dialplan show #{REDIRECT_CONTEXT}"
         if result.text_body =~ /failed/
-          logger.error "Adhearsion failed to add the #{REDIRECT_EXTENSION} extension to the #{REDIRECT_CONTEXT} context. Please add a [#{REDIRECT_CONTEXT}] entry to your dialplan."
+          logger.error { "Adhearsion failed to add the #{REDIRECT_EXTENSION} extension to the #{REDIRECT_CONTEXT} context. Please add a [#{REDIRECT_CONTEXT}] entry to your dialplan." }
         end
 
         check_recording_directory
       end
 
       def check_recording_directory
-        logger.warn "Recordings directory #{Component::Record::RECORDING_BASE_PATH} does not exist. Recording might not work. This warning can be ignored if Adhearsion is running on a separate machine than Asterisk. See http://adhearsion.com/docs/call-controllers#recording" unless File.exists?(Component::Record::RECORDING_BASE_PATH)
+        logger.warn { "Recordings directory #{Component::Record::RECORDING_BASE_PATH} does not exist. Recording might not work. This warning can be ignored if Adhearsion is running on a separate machine than Asterisk. See http://adhearsion.com/docs/call-controllers#recording" unless File.exists?(Component::Record::RECORDING_BASE_PATH) }
       end
 
       def actor_died(actor, reason)

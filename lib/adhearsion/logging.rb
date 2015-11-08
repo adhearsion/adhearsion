@@ -55,10 +55,10 @@ module Adhearsion
       # Useful for debugging a live Adhearsion instance
       def toggle_trace!
         if level == ::Logging.level_num(Adhearsion.config.core.logging['level'])
-          logger.warn "Turning TRACE logging ON."
+          logger.warn { "Turning TRACE logging ON." }
           self.level = :trace
         else
-          logger.warn "Turning TRACE logging OFF."
+          logger.warn { "Turning TRACE logging OFF." }
           self.level = Adhearsion.config.core.logging['level']
         end
       end

@@ -98,7 +98,7 @@ module Adhearsion
         # Links the lifecycle of the originating call to the Dial operation such that the Dial is unblocked when the originating call ends
         def track_originating_call
           @call.on_end do |_|
-            logger.debug "Root call ended, unblocking connected calls"
+            logger.debug { "Root call ended, unblocking connected calls" }
             @waiters.each do |latch|
               latch.countdown! until latch.count == 0
             end
@@ -169,7 +169,7 @@ module Adhearsion
               end
 
               if new_call.active? && status.result != :answer
-                logger.info "#dial joining call #{new_call.id} to #{@call.id}"
+                logger.info { "#dial joining call #{new_call.id} to #{@call.id}" }
                 pre_join_tasks new_call
                 @call.answer
                 new_call.join @join_target, @join_options
@@ -217,24 +217,24 @@ module Adhearsion
               [call.id, call] if call.active?
             end
           end.compact
-          logger.info "Splitting off peer calls #{calls_to_split.map(&:first).join ", "}"
+          logger.info { "Splitting off peer calls #{calls_to_split.map(&:first).join ", "}" }
           calls_to_split.each do |id, call|
             ignoring_ended_calls do
-              logger.debug "Unjoining peer #{call.id} from #{join_target}"
+              logger.debug { "Unjoining peer #{call.id} from #{join_target}" }
               ignoring_missing_joins { call.unjoin join_target }
               if split_controller = targets[:others]
-                logger.info "Executing controller #{split_controller} on split call #{call.id}"
+                logger.info { "Executing controller #{split_controller} on split call #{call.id}" }
                 call.execute_controller split_controller.new(call, 'current_dial' => self), targets[:others_callback]
               end
             end
           end
           ignoring_ended_calls do
             if join_target != @call
-              logger.debug "Unjoining main call #{@call.id} from #{join_target}"
+              logger.debug { "Unjoining main call #{@call.id} from #{join_target}" }
               @call.unjoin join_target
             end
             if split_controller = targets[:main]
-              logger.info "Executing controller #{split_controller} on main call"
+              logger.info { "Executing controller #{split_controller} on main call" }
               @call.execute_controller split_controller.new(@call, 'current_dial' => self), targets[:main_callback]
             end
           end
@@ -246,7 +246,7 @@ module Adhearsion
         def rejoin(target = nil, join_options = nil)
           target ||= join_target
           join_options ||= @join_options
-          logger.info "Rejoining to #{target}"
+          logger.info { "Rejoining to #{target}" }
           ignoring_ended_calls do
             unless target == @call
               @join_target = target
@@ -261,7 +261,7 @@ module Adhearsion
         # Merge another Dial into this one, joining all calls to a mixer
         # @param [Dial] other the other dial operation to merge calls from
         def merge(other)
-          logger.info "Merging with #{other.inspect}"
+          logger.info { "Merging with #{other.inspect}" }
 
           split
           other.split
@@ -284,9 +284,9 @@ module Adhearsion
         def await_completion
           @latch.wait(@options[:timeout]) || status.timeout!
           return unless status.result == :answer
-          logger.debug "Main calls were completed, waiting for any added calls: #{@waiters.inspect}"
+          logger.debug { "Main calls were completed, waiting for any added calls: #{@waiters.inspect}" }
           @waiters.each(&:wait)
-          logger.debug "All calls were completed, unblocking."
+          logger.debug { "All calls were completed, unblocking." }
         end
 
         #
@@ -304,20 +304,20 @@ module Adhearsion
             end
           end.compact
           if calls_to_hangup.size.zero?
-            logger.info "#dial finished with no remaining outbound calls"
+            logger.info { "#dial finished with no remaining outbound calls" }
             return
           end
           if @skip_cleanup
-            logger.info "#dial finished. Leaving #{calls_to_hangup.size} outbound calls going which are still active: #{calls_to_hangup.map(&:first).join ", "}."
+            logger.info { "#dial finished. Leaving #{calls_to_hangup.size} outbound calls going which are still active: #{calls_to_hangup.map(&:first).join ", "}." }
           else
-            logger.info "#dial finished. Hanging up #{calls_to_hangup.size} outbound calls which are still active: #{calls_to_hangup.map(&:first).join ", "}."
+            logger.info { "#dial finished. Hanging up #{calls_to_hangup.size} outbound calls which are still active: #{calls_to_hangup.map(&:first).join ", "}." }
             calls_to_hangup.each do |id, outbound_call|
               ignoring_ended_calls do
                 if @cleanup_controller
-                  logger.info "#dial running #{@cleanup_controller.class.name} on #{outbound_call.id}"
+                  logger.info { "#dial running #{@cleanup_controller.class.name} on #{outbound_call.id}" }
                   outbound_call.execute_controller @cleanup_controller.new(outbound_call, @cleanup_metadata), ->(call) { call.hangup }
                 else
-                  logger.info "#dial hanging up #{outbound_call.id}"
+                  logger.info { "#dial hanging up #{outbound_call.id}" }
                   outbound_call.hangup
                 end
               end
@@ -378,10 +378,10 @@ module Adhearsion
           terminate_ringback
           on_all_except call do |target_call|
             if @apology_controller
-              logger.info "#dial executing apology controller #{@apology_controller} on call #{target_call.id} because this call has been confirmed by another channel"
+              logger.info { "#dial executing apology controller #{@apology_controller} on call #{target_call.id} because this call has been confirmed by another channel" }
               target_call.async.execute_controller @apology_controller.new(target_call, @confirmation_metadata), ->(call) { call.hangup }
             else
-              logger.info "#dial hanging up call #{target_call.id} because this call has been confirmed by another channel"
+              logger.info { "#dial hanging up call #{target_call.id} because this call has been confirmed by another channel" }
               target_call.hangup
             end
           end

@@ -65,7 +65,7 @@ module Adhearsion
             else
               raise "Unknown completion reason received: #{reason}"
             end
-            logger.debug "Ask completed with result #{result.inspect}"
+            logger.debug { "Ask completed with result #{result.inspect}" }
           end
         end
 

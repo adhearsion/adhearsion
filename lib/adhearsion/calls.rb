@@ -17,22 +17,35 @@ module Adhearsion
       @mutex.synchronize do
         self[call.id] = call
         by_uri[call.uri] = call
+
+        # Create indexes to avoid scanning @calls or @by_uri
+        call_id_by_object_id[call.object_id] = call.id if call.respond_to?(:id)
+        uri_by_object_id[call.object_id] = call.uri if call.respond_to?(:uri)
       end
       self
     end
 
     def remove_inactive_call(call)
       if call_is_dead?(call)
-        call_id = key call
-        delete call_id if call_id
-
+        puts "call is dead."
+        puts "object_id is #{call.object_id}"
+        puts "call_id_by_object_id[call.object_id] is #{call_id_by_object_id[call.object_id]}"
+        delete call_id_by_object_id[call.object_id]
         remove_call_uri call
+        remove_from_indices call
       elsif call.respond_to?(:id)
+        puts "call responds to id"
+        puts "object_id is #{call.object_id}"
+        puts "call.id is #{call.id}"
         delete call.id
         remove_call_uri call
+        remove_from_indices call
       else
+        puts "call is not dead and doesn't respond to id."
         call_actor = delete call
+        puts "call_actor is #{call_actor.inspect}"
         remove_call_uri call_actor
+        remove_from_indices call_actor
       end
     end
 
@@ -61,15 +74,31 @@ module Adhearsion
       @by_uri ||= {}
     end
 
+    def call_id_by_object_id
+      @call_id_by_object_id ||= {}
+    end
+
+    def uri_by_object_id
+      @uri_by_object_id ||= {}
+    end
+
     def remove_call_uri(call)
-      uri = by_uri.key call
-      by_uri.delete uri if uri
+      by_uri.delete uri_by_object_id[call.object_id]
+    end
+
+    def remove_from_indices(call)
+      uri_by_object_id.delete call.object_id
+      call_id_by_object_id.delete call.object_id
     end
 
     def call_is_dead?(call)
       !call.alive?
     rescue ::NoMethodError
       false
+    end
+
+    def delete(call_id)
+      @calls.delete call_id
     end
 
     def method_missing(method, *args, &block)
@@ -93,7 +122,7 @@ module Adhearsion
           @collection.remove_inactive_call call
           return unless reason
           Adhearsion::Events.trigger :exception, reason
-          logger.error "Call #{call_id} terminated abnormally due to #{reason}. Forcing hangup."
+          logger.error { "Call #{call_id} terminated abnormally due to #{reason}. Forcing hangup." }
           Adhearsion.client.execute_command Adhearsion::Rayo::Command::Hangup.new, :async => true, :call_id => call_id
         end
       end

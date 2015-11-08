@@ -1412,7 +1412,7 @@ module Adhearsion
             let(:apology_controller) do
               Class.new(Adhearsion::CallController) do
                 def run
-                  logger.info "Apologising..."
+                  logger.info { "Apologising..." }
                   call['apology_metadata'] = metadata
                   call['apology_done'] = true
                 end
@@ -1538,7 +1538,7 @@ module Adhearsion
             let(:cleanup_controller) do
               Class.new(Adhearsion::CallController) do
                 def run
-                  logger.info "Cleaning up..."
+                  logger.info { "Cleaning up..." }
                 end
               end
             end

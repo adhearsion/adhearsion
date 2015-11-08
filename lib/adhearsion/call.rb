@@ -196,7 +196,7 @@ module Adhearsion
     end
 
     def deliver_message(message)
-      logger.debug "Receiving message: #{message.inspect}"
+      logger.debug { "Receiving message: #{message.inspect}" }
       catching_standard_errors do
         trigger_handler :event, message, broadcast: true, exception_callback: ->(e) { Adhearsion::Events.trigger :exception, [e, logger] }
       end
@@ -227,7 +227,7 @@ module Adhearsion
           target = event.mixer_name
           type = :mixer
         end
-        logger.info "Joined to #{type} #{target}"
+        logger.info { "Joined to #{type} #{target}" }
         call = Adhearsion.active_calls.with_uri(target)
         @peers[target] = call
         signal :joined, target
@@ -241,13 +241,13 @@ module Adhearsion
           target = event.mixer_name
           type = :mixer
         end
-        logger.info "Unjoined from #{type} #{target}"
+        logger.info { "Unjoined from #{type} #{target}" }
         @peers.delete target
         signal :unjoined, target
       end
 
       on_end do |event|
-        logger.info "Call #{from} -> #{to} ended due to #{event.reason}#{" (code #{event.platform_code})" if event.platform_code}"
+        logger.info { "Call #{from} -> #{to} ended due to #{event.reason}#{" (code #{event.platform_code})" if event.platform_code}" }
         @end_time = event.timestamp.to_time
         @duration = @end_time - @start_time if @start_time
         clear_from_active_calls
@@ -351,7 +351,7 @@ module Adhearsion
 
     def hangup(headers = nil)
       return false unless active?
-      logger.info "Hanging up"
+      logger.info { "Hanging up" }
       @end_reason = true
       write_and_await_response Adhearsion::Rayo::Command::Hangup.new(:headers => headers)
     rescue Adhearsion::ProtocolError => e
@@ -374,7 +374,7 @@ module Adhearsion
     # @return [Hash] where :command is the issued command, :joined_waiter is a #wait responder which is triggered when the join is complete, and :unjoined_waiter is a #wait responder which is triggered when the entities are unjoined
     #
     def join(target, options = {})
-      logger.debug "Joining to #{target}"
+      logger.debug { "Joining to #{target}" }
 
       joined_condition = CountDownLatch.new(1)
       on_joined target do
@@ -406,7 +406,7 @@ module Adhearsion
     # @option target [String] mixer_name The mixer to unjoin from
     #
     def unjoin(target = nil)
-      logger.info "Unjoining from #{target}"
+      logger.info { "Unjoining from #{target}" }
       command = Adhearsion::Rayo::Command::Unjoin.new join_options_with_target(target)
       write_and_await_response command
     rescue Adhearsion::ProtocolError => e
@@ -493,7 +493,7 @@ module Adhearsion
     def write_command(command)
       abort Hangup.new(@end_reason) unless active? || command.is_a?(Adhearsion::Rayo::Command::Hangup)
       merge_headers command.headers if command.respond_to? :headers
-      logger.debug "Executing command #{command.inspect}"
+      logger.debug { "Executing command #{command.inspect}" }
       unless command.is_a?(Adhearsion::Rayo::Command::Dial)
         command.target_call_id = id
         command.domain = domain
@@ -509,7 +509,7 @@ module Adhearsion
     # @option options [String] subject The message subject.
     #
     def send_message(body, options = {})
-      logger.debug "Sending message: #{body}"
+      logger.debug { "Sending message: #{body}" }
       client.send_message id, domain, body, options
     end
 
@@ -541,7 +541,7 @@ module Adhearsion
     def execute_controller(controller = nil, completion_callback = nil, &block)
       raise ArgumentError, "Cannot supply a controller and a block at the same time" if controller && block_given?
       controller ||= CallController.new current_actor, &block
-      logger.info "Executing controller #{controller.class}"
+      logger.info { "Executing controller #{controller.class}" }
       controller.bg_exec completion_callback
     end
 

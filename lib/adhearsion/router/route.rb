@@ -42,20 +42,20 @@ module Adhearsion
           begin
             if call_actor.active?
               if call_actor.auto_hangup
-                logger.info "Call #{call_id} routing completed. Hanging up now."
+                logger.info { "Call #{call_id} routing completed. Hanging up now." }
                 call_actor.hangup
               else
-                logger.info "Call #{call_id} routing completed. Keeping the call alive at controller/router request."
+                logger.info { "Call #{call_id} routing completed. Keeping the call alive at controller/router request." }
               end
             else
-              logger.info "Call #{call_id} routing completed. Call was already hung up."
+              logger.info { "Call #{call_id} routing completed. Call was already hung up." }
             end
           rescue Call::Hangup, Call::ExpiredError
           end
           callback.call if callback
         }
       rescue Call::Hangup, Call::ExpiredError
-        logger.info "Call routing could not be completed because call was unavailable."
+        logger.info { "Call routing could not be completed because call was unavailable." }
       end
 
       def evented?

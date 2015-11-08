@@ -65,7 +65,7 @@ module Adhearsion
 
     def log_state_change(transition)
       event, from, to = transition.event, transition.from_name, transition.to_name
-      logger.info "Transitioning from #{from} to #{to} with #{Adhearsion.active_calls.size} active calls due to #{event} event."
+      logger.info { "Transitioning from #{from} to #{to} with #{Adhearsion.active_calls.size} active calls due to #{event} event." }
     end
 
     def request_stop
@@ -89,13 +89,13 @@ module Adhearsion
 
       Console.stop
 
-      logger.info "Adhearsion shut down"
+      logger.info { "Adhearsion shut down" }
     end
 
     def stop_when_zero_calls
       i = 0
       until Adhearsion.active_calls.count == 0
-        logger.info "Stop requested but we still have #{Adhearsion.active_calls.count} active calls." if (i % 50) == 0
+        logger.info { "Stop requested but we still have #{Adhearsion.active_calls.count} active calls." if (i % 50) == 0 }
         sleep 0.2
         i += 1
       end
