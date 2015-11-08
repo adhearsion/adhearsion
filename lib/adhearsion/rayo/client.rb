@@ -15,6 +15,7 @@ module Adhearsion
       # @param [Hash] options
       # @option options [Connection::XMPP] :connection The connection to use for this session
       #
+
       def initialize(options = {})
         @connection = options[:connection]
         @connection.event_handler = lambda { |event| self.handle_event event } if @connection
