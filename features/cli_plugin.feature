@@ -27,7 +27,7 @@ Feature: Adhearsion Ahn CLI (Plugin)
     And I type "SECRET_CODE"
     Then the output should contain:
     """
-    Access Denied. Please sign up for an account at http://rubygems.org
+    Access Denied.
     """
 
   Scenario: Command create_github_hook
