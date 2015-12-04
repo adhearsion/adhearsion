@@ -51,6 +51,7 @@ describe Adhearsion::Rayo::Initializer do
     Adhearsion::Events.refresh!
     allow(Adhearsion::Process).to receive_messages :fqdn => 'hostname'
     allow(::Process).to receive_messages :pid => 1234
+    allow(SecureRandom).to receive_messages :hex => 'abc123'
   end
 
   describe "starts the client with the default values" do
@@ -90,7 +91,7 @@ describe Adhearsion::Rayo::Initializer do
   end
 
   it "starts the client with the correct resource" do
-    username = "usera@127.0.0.1/hostname-1234"
+    username = "usera@127.0.0.1/hostname-1234-abc123"
 
     expect(Adhearsion::Rayo::Connection::XMPP).to receive(:new).once.with(hash_including :username => username).and_return mock_client
     initialize_rayo
@@ -100,8 +101,9 @@ describe Adhearsion::Rayo::Initializer do
     it "should use the local hostname instead" do
       allow(Adhearsion::Process).to receive(:fqdn).and_raise SocketError
       allow(Socket).to receive(:gethostname).and_return 'local_hostname'
+      allow(SecureRandom).to receive(:hex).and_return 'fed987'
 
-      username = "usera@127.0.0.1/local_hostname-1234"
+      username = "usera@127.0.0.1/local_hostname-1234-fed987"
 
       expect(Adhearsion::Rayo::Connection::XMPP).to receive(:new).once.with(hash_including :username => username).and_return mock_client
       initialize_rayo
