@@ -348,6 +348,10 @@ module Adhearsion
           translator.after(*args, &block)
         end
 
+        def stop_playback
+          send_ami_action 'ControlPlayback', 'Control' => 'stop', 'Channel' => channel
+        end
+
         private
 
         def fetch_channel_var(variable)

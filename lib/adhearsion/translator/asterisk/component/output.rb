@@ -89,9 +89,14 @@ module Adhearsion
             with_error 'option error', e.message
           end
 
-          def stop_by_redirect(*args)
+          def stop_by_redirect(complete_reason)
             @stopped = true
-            super
+            if ami_version >= "2.0.0"
+              @call.stop_playback
+              send_complete_event complete_reason
+            else
+              super
+            end
           end
 
           private
