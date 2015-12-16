@@ -49,7 +49,7 @@ module Adhearsion
         before do
           @call_id = deleted_call.id
           @call_uri = deleted_call.uri
-          Celluloid::Actor.kill deleted_call
+          deleted_call.terminate
           expect(deleted_call.alive?).to be false
           subject.remove_inactive_call deleted_call
         end
@@ -87,7 +87,7 @@ module Adhearsion
 
         tagged_call = calls.last
         tagged_call.tag :moderator
-        Celluloid::Actor.kill tagged_call
+        tagged_call.terminate
 
         expect(subject.with_tag(:moderator)).to eq([])
       end
