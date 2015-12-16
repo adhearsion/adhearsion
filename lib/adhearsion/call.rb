@@ -17,7 +17,7 @@ module Adhearsion
     ExpiredError    = Class.new Celluloid::DeadActorError
 
     # @private
-    class ActorProxy < Celluloid::CellProxy
+    class ActorProxy < Celluloid::Proxy::Cell
       def method_missing(meth, *args, &block)
         super(meth, *args, &block)
       rescue ::Celluloid::DeadActorError
