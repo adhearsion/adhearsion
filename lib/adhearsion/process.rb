@@ -82,14 +82,16 @@ module Adhearsion
         call.hangup
       end
 
+      Adhearsion::Events.register_callback :shutdown do
+        logger.info "Adhearsion shut down"
+      end
+
       # This should shut down any remaining threads.  Once those threads have
       # stopped, important_threads will be empty and the process will exit
       # normally.
-      Events.trigger_immediately :shutdown
+      Events.trigger :shutdown
 
       Console.stop
-
-      logger.info "Adhearsion shut down"
     end
 
     def stop_when_zero_calls

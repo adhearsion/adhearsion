@@ -3,8 +3,8 @@
 abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby #{RUBY_VERSION} #{RUBY_RELEASE_DATE})! Please upgrade to at least Ruby v2.2.0 or JRuby 9.0.0.0." if RUBY_VERSION < "2.2"
 
 %w(
+  celluloid/current
   adhearsion/rayo
-  celluloid
   active_support/inflector
 ).each { |r| require r }
 
@@ -71,7 +71,7 @@ module Adhearsion
     # @return [Adhearsion::Statistics] a statistics aggregator object capable of producing stats dumps
     def statistics
       unless Celluloid::Actor[:statistics]
-        Statistics.supervise_as :statistics
+        Statistics.supervise as: :statistics
         Statistics.setup_event_handlers
       end
       Celluloid::Actor[:statistics]
