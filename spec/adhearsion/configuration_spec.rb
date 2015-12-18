@@ -98,17 +98,17 @@ describe Adhearsion::Configuration do
       end
 
       before do
-        subject.production do |env|
-          env.core.my_level = 0
+        subject.env :production do
+          subject.core.my_level = 0
         end
-        subject.development do |env|
-          env.core.my_level = 1
+        subject.env :development do
+          subject.core.my_level = 1
         end
-        subject.staging do |env|
-          env.core.my_level = 2
+        subject.env :staging do
+          subject.core.my_level = 2
         end
-        subject.test do |env|
-          env.core.my_level = 3
+        subject.env :test do
+          subject.core.my_level = 3
         end
       end
 
@@ -131,31 +131,6 @@ describe Adhearsion::Configuration do
         end
       end
     end
-  end
-
-  describe "while defining the environment" do
-
-    before do
-      Adhearsion.config = nil
-    end
-
-    after do
-      Adhearsion.environment = nil
-      Adhearsion.config = nil
-    end
-
-    [:development, :production, :staging, :test].each do |env|
-      it "should respond to #{env}" do
-        expect(Adhearsion.config).to respond_to(env)
-      end
-    end
-
-    it "should allow to add a new environment" do
-      expect(Adhearsion.config.valid_environment?(:another_environment)).to eq(false)
-      Adhearsion.environments << :another_environment
-      expect(Adhearsion.config.valid_environment?(:another_environment)).to eq(true)
-    end
-
   end
 
   describe "while retrieving configuration descriptions" do
@@ -222,17 +197,17 @@ describe Adhearsion::Configuration do
           end
 
           before do
-            config.production do |env|
-              env.my_plugin.name = "production"
+            config.env :production do
+              config.my_plugin.name = "production"
             end
-            config.development do |env|
-              env.my_plugin.name = "development"
+            config.env :development do
+              config.my_plugin.name = "development"
             end
-            config.staging do |env|
-              env.my_plugin.name = "staging"
+            config.env :staging do
+              config.my_plugin.name = "staging"
             end
-            config.test do |env|
-              env.my_plugin.name = "test"
+            config.env :test do
+              config.my_plugin.name = "test"
             end
           end
 

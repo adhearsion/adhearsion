@@ -17,8 +17,8 @@ Adhearsion.config do |config|
   #          config.<plugin-name>.<key> = <value>
   #        end
 <% end %>
-  config.development do |dev|
-    dev.core.logging.level = :debug
+  config.env :development do
+    config.core.logging.level = :debug
   end
 
   ##

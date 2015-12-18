@@ -25,14 +25,15 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'adhearsion-loquacious', ["~> 1.9"]
   s.add_runtime_dependency 'blather', ["~> 1.0"]
   s.add_runtime_dependency 'bundler', ["~> 1.0"]
-  s.add_runtime_dependency 'celluloid', ["~> 0.16"]
+  s.add_runtime_dependency 'celluloid', ["~> 0.16.0"]
   s.add_runtime_dependency 'countdownlatch'
   s.add_runtime_dependency 'deep_merge'
   s.add_runtime_dependency 'ffi', ["~> 1.0"]
   s.add_runtime_dependency 'future-resource', ["~> 1.0"]
   s.add_runtime_dependency 'has-guarded-handlers', ["~> 1.6", ">= 1.6.3"]
+  s.add_runtime_dependency 'http', ["~> 0.9.8"] # Pin back so Reel doesn't break
   s.add_runtime_dependency 'i18n', ["~> 0.6"]
-  s.add_runtime_dependency 'logging', ["~> 1.8"]
+  s.add_runtime_dependency 'logging', ["~> 2.0"]
   s.add_runtime_dependency 'nokogiri', ["~> 1.5", ">= 1.5.6"]
   s.add_runtime_dependency 'pry'
   s.add_runtime_dependency 'rake'
@@ -45,7 +46,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'thor', "~> 0.18.0"
   s.add_runtime_dependency 'virtus', ["~> 1.0"]
 
-  s.add_development_dependency 'aruba', "~> 0.5"
+  s.add_development_dependency 'aruba', "~> 0.6.0"
   s.add_development_dependency 'ci_reporter_rspec'
   s.add_development_dependency 'ci_reporter_cucumber'
   s.add_development_dependency 'cucumber'

@@ -140,10 +140,12 @@ module Adhearsion
           self.plugin_name = name
         end
       end
+      alias :app_name :plugin_name
 
       def plugin_name=(name)
         @plugin_name = name
       end
+      alias :app_name= :plugin_name=
 
       # Class method that will be used by subclasses to configure the plugin
       # @param name Symbol plugin config name

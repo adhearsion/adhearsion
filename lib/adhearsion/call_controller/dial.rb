@@ -74,7 +74,7 @@ module Adhearsion
         attr_accessor :status
 
         def initialize(to, options, call)
-          raise Call::Hangup unless call.alive? && call.active?
+          raise Call::Hangup unless call.active?
           @id = SecureRandom.uuid
           @options, @call = options, call
           @targets = to.respond_to?(:has_key?) ? to : Array(to)
@@ -168,7 +168,7 @@ module Adhearsion
                 condition.wait
               end
 
-              if new_call.alive? && new_call.active? && status.result != :answer
+              if new_call.active? && status.result != :answer
                 logger.info "#dial joining call #{new_call.id} to #{@call.id}"
                 pre_join_tasks new_call
                 @call.answer

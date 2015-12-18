@@ -23,6 +23,12 @@ module Adhearsion
       rescue ::Celluloid::DeadActorError
         raise ExpiredError, "This call is expired and is no longer accessible. See http://adhearsion.com/docs/calls for further details."
       end
+
+      def active?
+        alive? && super
+      rescue ExpiredError
+        false
+      end
     end
 
     include Celluloid
@@ -535,7 +541,7 @@ module Adhearsion
     def execute_controller(controller = nil, completion_callback = nil, &block)
       raise ArgumentError, "Cannot supply a controller and a block at the same time" if controller && block_given?
       controller ||= CallController.new current_actor, &block
-      logger.info "Executing controller #{controller.inspect}"
+      logger.info "Executing controller #{controller.class}"
       controller.bg_exec completion_callback
     end
 

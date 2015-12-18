@@ -148,6 +148,7 @@ module Adhearsion
             call.async.deliver_message event
           else
             logger.warn "Event received for inactive call #{event.target_call_id}: #{event.inspect}"
+            Events.trigger :inactive_call, event
           end
         end
 

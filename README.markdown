@@ -28,7 +28,7 @@ Adhearsion rests above a lower-level telephony platform, for example [Asterisk](
 * [ruby_speech dependencies](https://github.com/benlangfeld/ruby_speech#dependencies)
 * A VoIP platform:
   * Asterisk 11+
-  * A Rayo server (Prism 11+ with rayo-server, or FreeSWITCH with mod_rayo)
+  * FreeSWITCH 1.4+
 * An interest in building cool new things
 
 **Ruby 1.9 is no longer supported by Adhearsion or the Ruby core team. You should upgrade to Ruby 2.2 as a matter of urgency in order to continue receiving security fixes.**

@@ -60,17 +60,27 @@ module Adhearsion
       end
 
       def queue
-        @queue || refresh!
+        unless @queue && @queue.alive?
+          init
+        end
+
+        @queue
       end
 
       def init
-        @queue = Worker.pool(size: Adhearsion.config.core.event_threads)
+        size = Adhearsion.config.core.event_threads
+        logger.debug "Initializing event worker pool of size #{size}"
+        @queue = Worker.pool(size: size)
       end
 
       def refresh!
+        clear
+        init
+      end
+
+      def clear
         @queue = nil
         Handler.instance.clear_handlers
-        init
       end
     end
 

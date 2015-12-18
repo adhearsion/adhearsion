@@ -47,10 +47,6 @@ module Adhearsion
       @environment = other ? other.to_sym : other
     end
 
-    def environments
-      config.valid_environments
-    end
-
     def config=(config)
       @config = config
     end

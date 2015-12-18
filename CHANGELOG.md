@@ -1,5 +1,14 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
+# [3.0.0.beta2](https://github.com/adhearsion/adhearsion/compare/v3.0.0.beta1...v3.0.0.beta2) - [2015-12-18](https://rubygems.org/gems/adhearsion/versions/3.0.0.beta2)
+  * Bugfix: Ensure components are deregistered from asterisk translator once the call is ended ([#582](https://github.com/adhearsion/adhearsion/pull/582))
+  * Change: Define configuration per-environment for any environment name and without colliding with plugin names. See [#442](https://github.com/adhearsion/adhearsion/issues/442). Syntax is now `config.env(:development).foo = :bar` instead of `config.development.foo = :bar`.
+  * Feature: Introduce the concept of application specific config. Similar to a plugin, an Application can specify config and an initialiser, and is the place to put such application-wide and unshareable things.
+  * Bugfix: Calls remain inactive even after they shut down. Previously, to reliably check if a call was up or down it was necessary to consider the case where the call actor had been shut down. This is irrelevant to the `Adhearsion::Call#active?` question, which should *always* return a boolean. It now does.
+  * Bugfix: Process joined events on Asterisk 13 in any order, avoiding Join command timeout
+  * Bugfix: Handle correct event for confirming that a component stop was completed on Asterisk 13
+  * Bugfix: Avoid race conditions in processing calls with interactions between them
+
 # [3.0.0.beta1](https://github.com/adhearsion/adhearsion/compare/v2.6.1...v3.0.0.beta1) - [2015-06-24](https://rubygems.org/gems/adhearsion/versions/3.0.0.beta1)
   * Change: Removed `Adhearsion.ahn_root=` which was deprecated in favour of `Adhearsion.root=`
   * Change: Remove integration with `RAILS_ENV`
@@ -18,6 +27,7 @@
   * Change: Ruby 1.9 is no longer supported. Minimum supported versions are Ruby 2.2.0 and JRuby 9.0.0.0
   * Change: Rename "platform" to "core" relating to the config system, because "platform" is overloaded. Settings are now `config.core.*` or `AHN_CORE_*`.
   * Change: Permit application environment to be set only by AHN_ENV. The config system depends on the environment, and the previous dependency was circular.
+  * Change: Define configuration per-environment for any environment name and without colliding with plugin names. See [#442](https://github.com/adhearsion/adhearsion/issues/442). Syntax is now `config.env(:development).foo = :bar` instead of `config.development.foo = :bar`.
   * Feature: Add i18n support via `CallController#t`
   * Feature: Integrate a Rack-based HTTP server from the Virginia plugin
   * Feature: Permit timing out when calling `Call#wait_for_end`

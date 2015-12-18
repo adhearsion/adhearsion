@@ -162,6 +162,7 @@ describe Adhearsion::Rayo::Initializer do
     end
 
     it 'should not attempt to reconnect if Adhearsion is shutting down' do
+      skip 'Strange interaction with specs restarting Celluloid; TODO re-consider along with migration to actors for Process/connection management'
       Adhearsion::Process.booted
       Adhearsion::Process.shutdown
       allow(mock_client).to receive(:run).and_raise Adhearsion::Rayo::DisconnectedError
@@ -293,6 +294,11 @@ describe Adhearsion::Rayo::Initializer do
     describe "with an inactive call" do
       it "should log a warning" do
         expect(Adhearsion::Logging.get_logger(described_class)).to receive(:warn).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
+        described_class.dispatch_call_event mock_event
+      end
+
+      it "should trigger an inactive call event" do
+        expect(Adhearsion::Events).to receive(:trigger).once.with(:inactive_call, mock_event)
         described_class.dispatch_call_event mock_event
       end
     end

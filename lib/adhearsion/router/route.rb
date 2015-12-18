@@ -40,7 +40,7 @@ module Adhearsion
 
         call.execute_controller controller, lambda { |call_actor|
           begin
-            if call_actor.alive? && call_actor.active?
+            if call_actor.active?
               if call_actor.auto_hangup
                 logger.info "Call #{call_id} routing completed. Hanging up now."
                 call_actor.hangup

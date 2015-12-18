@@ -48,11 +48,11 @@ RSpec.configure do |config|
 
   config.after :each do
     Timecop.return
+    Adhearsion::Events.clear
     if defined?(:Celluloid)
       Celluloid.shutdown
       Adhearsion.active_calls = nil
       Celluloid.boot
-      Adhearsion::Events.refresh!
     end
   end
 end

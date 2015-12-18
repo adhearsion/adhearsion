@@ -139,7 +139,8 @@ module Adhearsion
           when 'BridgeEnter'
             if other_call_channel = translator.bridges.delete(ami_event['BridgeUniqueid'])
               if other_call = translator.call_for_channel(other_call_channel)
-                join_command  = other_call.pending_joins.delete channel
+                join_command   = @pending_joins.delete other_call_channel
+                join_command ||= other_call.pending_joins.delete channel
                 join_command.response = true if join_command
 
                 event = Adhearsion::Event::Joined.new call_uri: other_call.id, timestamp: ami_event.best_time
