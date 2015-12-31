@@ -18,7 +18,7 @@ module Adhearsion
           end
 
           def stop_playback(complete_reason)
-            if ami_client.version.to_s >= '2.0'
+            if Gem::Version.new(ami_client.version) >= Gem::Version.new('2.0.0')
               @call.stop_playback
               send_complete_event complete_reason
             else

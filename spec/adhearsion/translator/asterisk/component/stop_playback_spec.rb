@@ -37,6 +37,7 @@ module Adhearsion
               let(:command) { Adhearsion::Rayo::Component::Stop.new }
 
               before do
+                allow(ami_client).to receive(:version)
                 command.request!
               end
 
