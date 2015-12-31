@@ -85,6 +85,8 @@ module Adhearsion
           subject { described_class.new original_command, mock_call }
 
           before do
+            allow(ami_client).to receive(:version)
+
             original_command.request!
             {
               'RECOG_STATUS' => recog_status,

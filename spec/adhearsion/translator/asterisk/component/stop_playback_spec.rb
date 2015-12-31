@@ -6,10 +6,10 @@ module Adhearsion
   module Translator
     class Asterisk
       module Component
-        describe StopByRedirect do
+        describe StopPlayback do
 
           class MockComponent < Component
-            include StopByRedirect
+            include StopPlayback
             def set_complete
               @complete = true
             end
@@ -52,6 +52,34 @@ module Adhearsion
                 subject.set_complete
                 subject.execute_command command
                 expect(command.response(0.1)).to be_a Adhearsion::ProtocolError
+              end
+
+              context "in AMI 2.0 or greater" do
+                [ '2.0', '2.0.1', '3.0' ].each do |version|
+                  before do
+                    allow(ami_client).to receive(:version) { version }
+                    allow(translator).to receive :handle_pb_event
+                  end
+                end
+
+                it 'stops playback by executing a ControlPlayback action' do
+                  expect(ami_client).to receive(:send_action).once.with('ControlPlayback',
+                    'Control' => 'stop',
+                    'Channel' => 'SIP/foo'
+                  )
+                  subject.execute_command command
+                end
+              end
+
+              context "in AMI < 2.0" do
+                before do
+                  allow(ami_client).to receive(:version) { '1.4' }
+                end
+
+                it 'stops playback through redirection' do
+                  expect(ami_client).to receive(:send_action).once.with('Redirect', hash_including('Channel' => 'SIP/foo'))
+                  subject.execute_command command
+                end
               end
             end
           end

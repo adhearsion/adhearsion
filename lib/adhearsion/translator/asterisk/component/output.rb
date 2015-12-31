@@ -9,7 +9,7 @@ module Adhearsion
     class Asterisk
       module Component
         class Output < Component
-          include StopByRedirect
+          include StopPlayback
 
           UnrenderableDocError  = Class.new OptionError
           UniMRCPError          = Class.new Error
@@ -89,14 +89,9 @@ module Adhearsion
             with_error 'option error', e.message
           end
 
-          def stop_by_redirect(complete_reason)
+          def stop_playback(complete_reason)
             @stopped = true
-            if ami_version >= "2.0.0"
-              @call.stop_playback
-              send_complete_event complete_reason
-            else
-              super
-            end
+            super
           end
 
           private
@@ -114,7 +109,7 @@ module Adhearsion
 
             if interrupt
               call.register_handler :ami, [{:name => 'DTMF', [:[], 'End'] => 'Yes'}, {:name => 'DTMFEnd'}] do |event|
-                stop_by_redirect finish_reason
+                stop_playback finish_reason
               end
             end
 
