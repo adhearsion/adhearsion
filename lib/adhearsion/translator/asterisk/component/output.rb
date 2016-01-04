@@ -91,7 +91,7 @@ module Adhearsion
 
           def stop_by_redirect(complete_reason)
             @stopped = true
-            if ami_version >= "2.0.0"
+            if Gem::Version.new(ami_client.version) >= Gem::Version.new("2.0.0")
               @call.stop_playback
               send_complete_event complete_reason
             else

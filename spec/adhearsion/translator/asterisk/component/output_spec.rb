@@ -45,6 +45,8 @@ module Adhearsion
             }.and_return code: 200, result: 1
           end
 
+          before { allow(ami_client).to receive(:version) }
+
           describe '#execute' do
             before { original_command.request! }
 
@@ -1827,18 +1829,43 @@ module Adhearsion
                 expect(command.response(0.1)).to eq(true)
               end
 
-              it "sends the correct complete event" do
-                expect(mock_call).to receive(:redirect_back)
-                subject.execute_command command
-                expect(original_command).not_to be_complete
-                mock_call.process_ami_event ami_event
-                expect(reason).to be_a Adhearsion::Event::Complete::Stop
-                expect(original_command).to be_complete
+              context 'in AMI 2.0 or greater' do
+                [ '2.0', '2.7.0', '3.0' ].each do |version|
+                  before do
+                    allow(ami_client).to receive(:version).and_return(version)
+                  end
+
+                  it "sends the correct complete event" do
+                    allow(ami_client).to receive(:send_action)
+                    subject.execute_command command
+                    expect(original_command).to be_complete
+                  end
+
+                  it "stops playback by executing a `ControlPlayback` action" do
+                    expect(ami_client).to receive(:send_action).once.with('ControlPlayback', 'Control' => 'stop', 'Channel' => 'foo')
+                    subject.execute_command command
+                  end
+                end
               end
 
-              it "redirects the call by unjoining it" do
-                expect(mock_call).to receive(:redirect_back)
-                subject.execute_command command
+              context 'in AMI < 2.0.0' do
+                before do
+                  allow(ami_client).to receive(:version).and_return('1.4')
+                end
+
+                it "sends the correct complete event" do
+                  expect(mock_call).to receive(:redirect_back)
+                  subject.execute_command command
+                  expect(original_command).not_to be_complete
+                  mock_call.process_ami_event ami_event
+                  expect(reason).to be_a Adhearsion::Event::Complete::Stop
+                  expect(original_command).to be_complete
+                end
+
+                it "redirects the call by unjoining it" do
+                  expect(mock_call).to receive(:redirect_back)
+                  subject.execute_command command
+                end
               end
             end
           end
