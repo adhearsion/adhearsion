@@ -7,7 +7,7 @@ module Adhearsion
     class Asterisk
       module Component
         class MRCPPrompt < Component
-          include StopPlayback
+          include StopByRedirect
           include MRCPRecogPrompt
 
           private

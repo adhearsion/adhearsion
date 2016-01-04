@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 require 'adhearsion/translator/asterisk/component/input_component'
-require 'adhearsion/translator/asterisk/component/stop_playback'
+require 'adhearsion/translator/asterisk/component/stop_by_redirect'
 
 module Adhearsion
   module Translator
@@ -9,7 +9,7 @@ module Adhearsion
       module Component
         class ComposedPrompt < Component
           include InputComponent
-          include StopPlayback
+          include StopByRedirect
 
           def execute
             validate
@@ -44,7 +44,7 @@ module Adhearsion
 
           def process_dtmf(digit)
             if @component_node.barge_in && @output_incomplete
-              @output_component.stop_playback Adhearsion::Event::Complete::Stop.new
+              @output_component.stop_by_redirect Adhearsion::Event::Complete::Stop.new
               @barged = true
             end
             super

@@ -45,10 +45,6 @@ module Adhearsion
             }.and_return code: 200, result: 1
           end
 
-          before do
-            allow(ami_client).to receive(:version)
-          end
-
           describe '#execute' do
             before { original_command.request! }
 

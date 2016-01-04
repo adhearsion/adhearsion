@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-require 'adhearsion/translator/asterisk/component/stop_playback'
+require 'adhearsion/translator/asterisk/component/stop_by_redirect'
 require 'adhearsion/translator/asterisk/component/mrcp_recog_prompt'
 
 module Adhearsion
@@ -8,7 +8,7 @@ module Adhearsion
     class Asterisk
       module Component
         class MRCPNativePrompt < Component
-          include StopPlayback
+          include StopByRedirect
           include MRCPRecogPrompt
 
           private

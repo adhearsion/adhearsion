@@ -1,5 +1,4 @@
 # [develop](https://github.com/adhearsion/adhearsion)
-  * Bugfix: Use `ControlPlayback` rather than redirecting to terminate `Playback` on newer versions of Asterisk ([#593](https://github.com/adhearsion/adhearsion/issues/593))
   * Bugfix: Ensure components are deregistered from asterisk translator once the call is ended ([#582](https://github.com/adhearsion/adhearsion/pull/582))
   * Change: Define configuration per-environment for any environment name and without colliding with plugin names. See [#442](https://github.com/adhearsion/adhearsion/issues/442). Syntax is now `config.env(:development).foo = :bar` instead of `config.development.foo = :bar`.
   * Feature: Introduce the concept of application specific config. Similar to a plugin, an Application can specify config and an initialiser, and is the place to put such application-wide and unshareable things.

@@ -85,5 +85,5 @@ end
   mrcp_prompt
   mrcp_native_prompt
   record
-  stop_playback
+  stop_by_redirect
 }.each { |component| require "adhearsion/translator/asterisk/component/#{component}" }
