@@ -22,26 +22,30 @@ module Adhearsion
     end
 
     def remove_inactive_call(call)
-      if call_is_dead?(call)
-        call_id = key call
-        delete call_id if call_id
+      @mutex.synchronize do
+        if call_is_dead?(call)
+          call_id = key call
+          delete call_id if call_id
 
-        remove_call_uri call
-      elsif call.respond_to?(:id)
-        delete call.id
-        remove_call_uri call
-      else
-        call_actor = delete call
-        remove_call_uri call_actor
+          remove_call_uri call
+        elsif call.respond_to?(:id)
+          delete call.id
+          remove_call_uri call
+        else
+          call_actor = delete call
+          remove_call_uri call_actor
+        end
       end
     end
 
     def with_tag(tag)
-      values.find_all do |call|
-        begin
-          call.tagged_with? tag
-        rescue Call::ExpiredError
-          false
+      @mutex.synchronize do
+        values.find_all do |call|
+          begin
+            call.tagged_with? tag
+          rescue Call::ExpiredError
+            false
+          end
         end
       end
     end
