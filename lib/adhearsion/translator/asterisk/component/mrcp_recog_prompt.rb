@@ -53,6 +53,13 @@ module Adhearsion
             raise OptionError, "A dtmf-terminate-timeout value must be -1, 0, or a positive integer." if @dtmf_terminate_timeout < -1
             raise OptionError, "An n-best-list-length value must be a positive integer." if @n_best_list_length && @n_best_list_length < 1
             raise OptionError, "A speed-vs-accuracy value must be a positive integer." if @speed_vs_accuracy && @speed_vs_accuracy < 0
+
+            begin
+              grammars
+            rescue => e
+              logger.error e
+              raise OptionError, 'The requested grammars could not be parsed.'
+            end
           end
 
           def execute_app(app, *args)
@@ -111,7 +118,7 @@ module Adhearsion
           end
 
           def grammars
-            input_node.grammars.map do |d|
+            @grammars ||= input_node.grammars.map do |d|
               if d.content_type
                 d.value.to_doc.to_s
               else
