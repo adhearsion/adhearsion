@@ -1,4 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+
+# [3.0.0.rc1](https://github.com/adhearsion/adhearsion/compare/v3.0.0.beta2...v3.0.0.rc1) - [2016-01-07](https://rubygems.org/gems/adhearsion/versions/3.0.0.rc1)
   * Bugfix: Concurrent access to call collection should not be permitted. See [#589](https://github.com/adhearsion/adhearsion/issues/589)
   * Bugfix: Reduced log spam inspecting large controller metadata. We now only log controller names internally; any logging of metadata must happen in the app.
 
