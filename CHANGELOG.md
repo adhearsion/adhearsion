@@ -1,5 +1,9 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
+# [3.0.0.rc1](https://github.com/adhearsion/adhearsion/compare/v3.0.0.beta2...v3.0.0.rc1) - [2016-01-07](https://rubygems.org/gems/adhearsion/versions/3.0.0.rc1)
+  * Bugfix: Concurrent access to call collection should not be permitted. See [#589](https://github.com/adhearsion/adhearsion/issues/589)
+  * Bugfix: Reduced log spam inspecting large controller metadata. We now only log controller names internally; any logging of metadata must happen in the app.
+
 # [3.0.0.beta2](https://github.com/adhearsion/adhearsion/compare/v3.0.0.beta1...v3.0.0.beta2) - [2015-12-18](https://rubygems.org/gems/adhearsion/versions/3.0.0.beta2)
   * Bugfix: Ensure components are deregistered from asterisk translator once the call is ended ([#582](https://github.com/adhearsion/adhearsion/pull/582))
   * Change: Define configuration per-environment for any environment name and without colliding with plugin names. See [#442](https://github.com/adhearsion/adhearsion/issues/442). Syntax is now `config.env(:development).foo = :bar` instead of `config.development.foo = :bar`.

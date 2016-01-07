@@ -132,7 +132,7 @@ module Adhearsion
       raise
     ensure
       after
-      logger.debug "Finished executing controller #{self.inspect}"
+      logger.debug "Finished executing controller #{self.class}"
     end
 
     #

@@ -19,6 +19,13 @@ module Adhearsion
             raise OptionError, 'Only one document is allowed.' if output_node.render_documents.count > 1
             raise OptionError, 'A grammar is required.' unless input_node.grammars.count > 0
 
+            begin
+              render_doc
+            rescue => e
+              logger.error e
+              raise OptionError, 'The requested render document could not be parsed.'
+            end
+
             super
           end
 
@@ -35,11 +42,13 @@ module Adhearsion
           end
 
           def render_doc
-            d = output_node.render_documents.first
-            if d.content_type
-              d.value.to_doc.to_s
-            else
-              d.url
+            @render_doc ||= begin
+              d = output_node.render_documents.first
+              if d.content_type
+                d.value.to_doc.to_s
+              else
+                d.url
+              end
             end
           end
 
