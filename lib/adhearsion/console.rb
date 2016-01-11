@@ -59,7 +59,7 @@ module Adhearsion
     end
 
     def shutdown!
-      Process.shutdown!
+      Adhearsion.process.shutdown!
     end
 
     def calls

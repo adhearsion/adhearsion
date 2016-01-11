@@ -67,6 +67,11 @@ module Adhearsion
       @active_calls = other
     end
 
+    def process
+      Celluloid::Actor[:process] || Process.supervise_as(:process)
+      Celluloid::Actor[:process]
+    end
+
     #
     # @return [Adhearsion::Statistics] a statistics aggregator object capable of producing stats dumps
     def statistics
@@ -78,7 +83,7 @@ module Adhearsion
     end
 
     def status
-      Adhearsion::Process.state_name
+      process.state_name
     end
 
     def new_uuid

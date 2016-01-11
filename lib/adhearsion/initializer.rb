@@ -50,7 +50,7 @@ module Adhearsion
         run_plugins
         trigger_after_initialized_hooks
 
-        Adhearsion::Process.booted if Adhearsion.status == :booting
+        Adhearsion.process.booted if Adhearsion.status == :booting
 
         logger.info "Adhearsion v#{Adhearsion::VERSION} initialized in \"#{Adhearsion.environment}\"!" if Adhearsion.status == :running
       end
@@ -110,13 +110,13 @@ module Adhearsion
       case signal
       when 'INT', 'TERM'
         logger.info "Received SIG#{signal}. Shutting down."
-        Adhearsion::Process.shutdown
+        Adhearsion.process.shutdown
       when 'ALRM'
         logger.info "Received SIGALRM. Toggling trace logging."
         Adhearsion::Logging.toggle_trace!
       when 'ABRT'
         logger.info "Received ABRT signal. Forcing stop."
-        Adhearsion::Process.force_stop
+        Adhearsion.process.force_stop
       end
     end
 
@@ -177,7 +177,7 @@ module Adhearsion
     end
 
     def launch_console
-      Thread.new do
+      Adhearsion.process.important_threads << Thread.new do
         catching_standard_errors do
           Adhearsion::Console.run
         end
@@ -203,16 +203,16 @@ module Adhearsion
     end
 
     ##
-    # This method will block Thread.main() until calling join() has returned for all Threads in Adhearsion::Process.important_threads.
+    # This method will block Thread.main() until calling join() has returned for all Threads in Adhearsion.process.important_threads.
     # Note: important_threads won't always contain Thread instances. It simply requires the objects respond to join().
     #
     def join_important_threads
       # Note: we're using this ugly accumulator to ensure that all threads have ended since IMPORTANT_THREADS will almost
       # certainly change sizes after this method is called.
       index = 0
-      until index == Adhearsion::Process.important_threads.size
+      until index == Adhearsion.process.important_threads.size
         begin
-          Adhearsion::Process.important_threads[index].join
+          Adhearsion.process.important_threads[index].join
         rescue => e
           logger.error "Error after joining Thread #{Thread.inspect}. #{e.message}"
         ensure

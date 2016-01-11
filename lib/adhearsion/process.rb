@@ -6,7 +6,7 @@ require 'socket'
 
 module Adhearsion
   class Process
-    include Singleton
+    include Celluloid
 
     state_machine :initial => :booting do
       before_transition :log_state_change
@@ -59,7 +59,7 @@ module Adhearsion
     attr_accessor :important_threads
 
     def initialize
-      @important_threads = ThreadSafeArray.new
+      @important_threads = []
       super
     end
 
@@ -108,10 +108,6 @@ module Adhearsion
 
     def fqdn
       Socket.gethostbyname(Socket.gethostname).first
-    end
-
-    def self.method_missing(method_name, *args, &block)
-      instance.send method_name, *args, &block
     end
   end
 end
