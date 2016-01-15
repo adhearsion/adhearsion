@@ -1,5 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
   * Bugfix: Handle more AMI error responses which mean the channel is not found
+  * Bugfix: Reporting statistics should not deadlock call processing
 
 # [3.0.0.rc1](https://github.com/adhearsion/adhearsion/compare/v3.0.0.beta2...v3.0.0.rc1) - [2016-01-07](https://rubygems.org/gems/adhearsion/versions/3.0.0.rc1)
   * Bugfix: Concurrent access to call collection should not be permitted. See [#589](https://github.com/adhearsion/adhearsion/issues/589)

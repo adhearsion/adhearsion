@@ -138,7 +138,7 @@ module Adhearsion
           let(:route)       { Route.new 'foobar', controller }
 
           it "should immediately fire the :call_routed event giving the call and route" do
-            expect(Adhearsion::Events).to receive(:trigger_immediately).once.with(:call_routed, call: call, route: route)
+            expect(Adhearsion::Events).to receive(:trigger).once.with(:call_routed, call: call, route: route)
             expect(call).to receive(:hangup).once
             route.dispatch call, lambda { latch.countdown! }
             expect(latch.wait(2)).to be true
