@@ -39,14 +39,10 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'thor', "~> 0.18.0"
 
   s.add_development_dependency 'aruba', "~> 0.5"
-  s.add_development_dependency 'ci_reporter_rspec'
-  s.add_development_dependency 'ci_reporter_cucumber'
   s.add_development_dependency 'cucumber'
   s.add_development_dependency 'guard-cucumber'
   s.add_development_dependency 'guard-rspec'
   s.add_development_dependency 'rspec', ["~> 3.0"]
-  s.add_development_dependency 'simplecov'
-  s.add_development_dependency 'simplecov-rcov'
   s.add_development_dependency 'yard'
   s.add_development_dependency 'guard-yard'
   s.add_development_dependency 'coveralls'
