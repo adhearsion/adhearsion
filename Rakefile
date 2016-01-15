@@ -31,7 +31,7 @@ rescue LoadError
 end
 
 task :stats do
-  system 'scripts/cloc-1.64.pl . --exclude-dir=.git,vendor,coverage,doc'
+  system 'scripts/cloc-1.64.pl . --exclude-dir=.git,vendor,coverage,doc,scripts,tmp,.bundle,pkg'
 end
 
 task :encodeify do
