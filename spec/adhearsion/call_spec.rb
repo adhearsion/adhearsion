@@ -978,7 +978,7 @@ module Adhearsion
 
         it "should immediately fire the :call_rejected event giving the call and the reason" do
           expect_message_waiting_for_response kind_of(Punchblock::Command::Reject)
-          expect(Adhearsion::Events).to receive(:trigger_immediately).once.with(:call_rejected, :call => subject, :reason => :decline)
+          expect(Adhearsion::Events).to receive(:trigger).once.with(:call_rejected, :call => subject, :reason => :decline)
           subject.reject :decline
         end
 

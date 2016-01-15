@@ -280,7 +280,7 @@ module Adhearsion
         end
 
         it "should immediately fire the :call_dialed event giving the call" do
-          expect(Adhearsion::Events).to receive(:trigger_immediately).once.with(:call_dialed, subject)
+          expect(Adhearsion::Events).to receive(:trigger).once.with(:call_dialed, subject)
           subject.dial to, :from => from
         end
 

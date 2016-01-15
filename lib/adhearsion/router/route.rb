@@ -26,7 +26,7 @@ module Adhearsion
       end
 
       def dispatch(call, callback = nil)
-        Adhearsion::Events.trigger_immediately :call_routed, call: call, route: self
+        Adhearsion::Events.trigger :call_routed, call: call, route: self
 
         call_id = call.id # Grab this to use later incase the actor is dead
 

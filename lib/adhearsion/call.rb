@@ -314,7 +314,7 @@ module Adhearsion
 
     def reject(reason = :busy, headers = nil)
       write_and_await_response Punchblock::Command::Reject.new(:reason => reason, :headers => headers)
-      Adhearsion::Events.trigger_immediately :call_rejected, call: current_actor, reason: reason
+      Adhearsion::Events.trigger :call_rejected, call: current_actor, reason: reason
     rescue Punchblock::ProtocolError => e
       abort e
     end
