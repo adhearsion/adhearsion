@@ -118,7 +118,7 @@ module Adhearsion
         logger.info "Received ABRT signal. Forcing stop."
         Adhearsion::Process.force_stop
       when 'USR2'
-        logger.info "Received USR1 signal. Printing Celluloid stack dump."
+        logger.info "Received USR2 signal. Printing Celluloid stack dump."
         Celluloid.stack_dump(STDOUT)
       end
     end
