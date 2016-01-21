@@ -86,7 +86,7 @@ module Adhearsion
     def catch_termination_signal
       self_read, self_write = IO.pipe
 
-      %w(INT TERM HUP ALRM ABRT USR1).each do |sig|
+      %w(INT TERM HUP ALRM ABRT USR2).each do |sig|
         trap sig do
           self_write.puts sig
         end
@@ -117,7 +117,7 @@ module Adhearsion
       when 'ABRT'
         logger.info "Received ABRT signal. Forcing stop."
         Adhearsion::Process.force_stop
-      when 'USR1'
+      when 'USR2'
         logger.info "Received USR1 signal. Printing Celluloid stack dump."
         Celluloid.stack_dump(STDOUT)
       end
