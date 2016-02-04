@@ -20,6 +20,8 @@ module Adhearsion
               send_complete_event success_reason(response, final_event)
             rescue RubyAMI::Error => e
               send_complete_event error_reason(e)
+            rescue Celluloid::DeadActorError
+              send_complete_event error_reason(RubyAMI::Error.new(action_headers))
             end
 
             private
