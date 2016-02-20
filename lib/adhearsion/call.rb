@@ -51,10 +51,13 @@ module Adhearsion
     # @return [Hash<String => String>] a collection of SIP headers set during the call
     attr_reader :variables
 
-    # @return [Time] the time at which the call began. For inbound calls this is the time at which the call was offered to Adhearsion. For outbound calls it is the time at which the remote party answered.
+    # @return [Time] the time at which the call began. For inbound calls this is the time at which the call was offered to Adhearsion. For outbound calls it is the time at which the call was dialed
     attr_reader :start_time
 
-    # @return [Time] the time at which the call began. For inbound calls this is the time at which the call was offered to Adhearsion. For outbound calls it is the time at which the remote party answered.
+    # @return [Time] the time at which the call was answered
+    attr_reader :answer_time
+
+    # @return [Time] the time at which the call ended (was hung up)
     attr_reader :end_time
 
     # @return [true, false] whether or not the call should be automatically hung up after executing its controller
@@ -215,6 +218,10 @@ module Adhearsion
         @start_time = offer.timestamp.to_time
       end
 
+      register_event_handler Adhearsion::Event::Answered do |answer|
+        @answer_time = answer.timestamp.to_time
+      end
+
       register_event_handler Adhearsion::HasHeaders do |event|
         merge_headers event.headers
       end
@@ -318,6 +325,7 @@ module Adhearsion
 
     def answer(headers = nil)
       write_and_await_response Adhearsion::Rayo::Command::Answer.new(:headers => headers)
+      @answer_time = Time.now
     rescue Adhearsion::ProtocolError => e
       abort e
     end

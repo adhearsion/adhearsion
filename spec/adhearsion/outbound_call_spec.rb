@@ -160,11 +160,7 @@ module Adhearsion
           answer_time = Time.local(2008, 9, 1, 12, 0, 40)
           Timecop.freeze answer_time
           subject << event
-          expect(subject.start_time).to eq(answer_time)
-
-          later_time = Time.local(2008, 9, 1, 12, 0, 50)
-          Timecop.freeze later_time
-          expect(subject.duration).to eq(10.0)
+          expect(subject.answer_time).to eq(answer_time)
         end
       end
     end
