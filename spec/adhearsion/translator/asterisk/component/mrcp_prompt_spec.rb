@@ -151,6 +151,16 @@ module Adhearsion
               end
             end
 
+            context 'with a document that cannot be parsed' do
+              let(:output_command_options) { { render_documents: [{value: 'http://example.com/doc1.ssml'}] } }
+
+              it "should return an error and not execute any actions" do
+                subject.execute
+                error = Adhearsion::ProtocolError.new.setup 'option error', 'The requested render document could not be parsed.'
+                expect(original_command.response(0.1)).to eq(error)
+              end
+            end
+
             context 'unset' do
               let(:output_command_options) { {} }
 
@@ -482,6 +492,16 @@ module Adhearsion
                 expect(mock_call).to receive(:execute_agi_command).once.with('EXEC SynthAndRecog', param).and_return code: 200, result: 1
                 subject.execute
                 expect(original_command.response(0.1)).to be_a Adhearsion::Rayo::Ref
+              end
+            end
+
+            context 'with a grammar that cannot be parsed' do
+              let(:input_command_options) { { grammars: [{value: 'http://example.com/grammar1.grxml'}] } }
+
+              it "should return an error and not execute any actions" do
+                subject.execute
+                error = Adhearsion::ProtocolError.new.setup 'option error', 'The requested grammars could not be parsed.'
+                expect(original_command.response(0.1)).to eq(error)
               end
             end
 

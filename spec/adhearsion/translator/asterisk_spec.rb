@@ -168,12 +168,32 @@ module Adhearsion
 
             it 'sends an error in response to the command' do
               subject.execute_call_command command
+              expect(command.response(1)).to eq(Adhearsion::ProtocolError.new.setup(:error, "Unknown error executing command on call #{call_id}", call_id))
+            end
+
+            it 'fails to find the call for later commands' do
+              subject.execute_call_command command
 
               expect(subject.call_with_id(call_id)).to be_nil
 
               other_command.request!
               subject.execute_call_command other_command
               expect(other_command.response).to eq(Adhearsion::ProtocolError.new.setup(:item_not_found, "Could not find a call with ID #{call_id}", call_id))
+            end
+
+            it 'triggers an exception event' do
+              latch = CountDownLatch.new 1
+              ex = lo = nil
+              Events.exception do |e, l|
+                ex, lo = e, l
+                latch.countdown!
+              end
+
+              subject.execute_call_command command
+
+              expect(latch.wait(1)).to be true
+              expect(ex).to be_a StandardError
+              expect(lo).to be subject.logger
             end
           end
         end

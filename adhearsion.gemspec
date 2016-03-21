@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'activesupport', [">= 3.0.0", "< 5.0.0"]
   s.add_runtime_dependency 'adhearsion-loquacious', ["~> 1.9"]
-  s.add_runtime_dependency 'blather', ["~> 1.0"]
+  s.add_runtime_dependency 'blather', ["~> 1.2"]
   s.add_runtime_dependency 'bundler', ["~> 1.0"]
   s.add_runtime_dependency 'celluloid', ["~> 0.17.2"]
   s.add_runtime_dependency 'countdownlatch'
@@ -47,14 +47,10 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'virtus', ["~> 1.0"]
 
   s.add_development_dependency 'aruba', "~> 0.6.0"
-  s.add_development_dependency 'ci_reporter_rspec'
-  s.add_development_dependency 'ci_reporter_cucumber'
   s.add_development_dependency 'cucumber'
   s.add_development_dependency 'guard-cucumber'
   s.add_development_dependency 'guard-rspec'
   s.add_development_dependency 'rspec', ["~> 3.0"]
-  s.add_development_dependency 'simplecov'
-  s.add_development_dependency 'simplecov-rcov'
   s.add_development_dependency 'yard'
   s.add_development_dependency 'guard-yard'
   s.add_development_dependency 'coveralls'

@@ -1,4 +1,13 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Bugfix: Handle more AMI error responses which mean the channel is not found
+  * Bugfix: Reporting statistics should not deadlock call processing
+  * Bugfix: Sending the `USR2` signal to an Adhearsion application now prints thread stack traces to STDERR.
+
+# [3.0.0.rc1](https://github.com/adhearsion/adhearsion/compare/v3.0.0.beta2...v3.0.0.rc1) - [2016-01-07](https://rubygems.org/gems/adhearsion/versions/3.0.0.rc1)
+  * Bugfix: Concurrent access to call collection should not be permitted. See [#589](https://github.com/adhearsion/adhearsion/issues/589)
+  * Bugfix: Reduced log spam inspecting large controller metadata. We now only log controller names internally; any logging of metadata must happen in the app.
+
+# [3.0.0.beta2](https://github.com/adhearsion/adhearsion/compare/v3.0.0.beta1...v3.0.0.beta2) - [2015-12-18](https://rubygems.org/gems/adhearsion/versions/3.0.0.beta2)
   * Bugfix: Ensure components are deregistered from asterisk translator once the call is ended ([#582](https://github.com/adhearsion/adhearsion/pull/582))
   * Change: Define configuration per-environment for any environment name and without colliding with plugin names. See [#442](https://github.com/adhearsion/adhearsion/issues/442). Syntax is now `config.env(:development).foo = :bar` instead of `config.development.foo = :bar`.
   * Feature: Introduce the concept of application specific config. Similar to a plugin, an Application can specify config and an initialiser, and is the place to put such application-wide and unshareable things.

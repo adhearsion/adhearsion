@@ -99,7 +99,7 @@ module Adhearsion
           Adhearsion.active_calls << current_actor
           Adhearsion.active_calls.delete(@id)
         end
-        Adhearsion::Events.trigger_immediately :call_dialed, current_actor
+        Adhearsion::Events.trigger :call_dialed, current_actor
       end
     rescue
       clear_from_active_calls

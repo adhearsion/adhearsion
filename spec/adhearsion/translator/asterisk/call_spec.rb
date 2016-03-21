@@ -1586,6 +1586,42 @@ module Adhearsion
                   expect(command.response(0.5)).to eq(Adhearsion::ProtocolError.new.setup(:item_not_found, "Could not find a call with ID #{subject.id}", subject.id))
                 end
               end
+
+              context "which is 'Channel does not exist: SIP/nosuchchannel'" do
+                let(:message) { 'Channel does not exist: SIP/nosuchchannel' }
+
+                it "should return an :item_not_found event for the call" do
+                  subject.execute_command command
+                  expect(command.response(0.5)).to eq(Adhearsion::ProtocolError.new.setup(:item_not_found, "Could not find a call with ID #{subject.id}", subject.id))
+                end
+              end
+
+              context "which is 'ExtraChannel does not exist: SIP/nosuchchannel'" do
+                let(:message) { 'ExtraChannel does not exist: SIP/nosuchchannel' }
+
+                it "should return an :item_not_found event for the call" do
+                  subject.execute_command command
+                  expect(command.response(0.5)).to eq(Adhearsion::ProtocolError.new.setup(:item_not_found, "Could not find a call with ID #{subject.id}", subject.id))
+                end
+              end
+
+              context "which is 'Redirect failed, channel not up.'" do
+                let(:message) { 'Redirect failed, channel not up.' }
+
+                it "should return an :item_not_found event for the call" do
+                  subject.execute_command command
+                  expect(command.response(0.5)).to eq(Adhearsion::ProtocolError.new.setup(:item_not_found, "Could not find a call with ID #{subject.id}", subject.id))
+                end
+              end
+
+              context "which is 'Redirect failed, channel not up.'" do
+                let(:message) { 'Redirect failed, extra channel not up.' }
+
+                it "should return an :item_not_found event for the call" do
+                  subject.execute_command command
+                  expect(command.response(0.5)).to eq(Adhearsion::ProtocolError.new.setup(:item_not_found, "Could not find a call with ID #{subject.id}", subject.id))
+                end
+              end
             end
           end
 

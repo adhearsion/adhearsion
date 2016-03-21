@@ -124,7 +124,9 @@ module Adhearsion
           begin
             call.execute_command command
           rescue => e
+            Adhearsion::Events.trigger :exception, [e, logger]
             deregister_call call.id, call.channel
+            command.response = Adhearsion::ProtocolError.new.setup :error, "Unknown error executing command on call #{command.target_call_id}", command.target_call_id
           end
         else
           command.response = Adhearsion::ProtocolError.new.setup :item_not_found, "Could not find a call with ID #{command.target_call_id}", command.target_call_id
