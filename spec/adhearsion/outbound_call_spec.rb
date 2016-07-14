@@ -148,7 +148,7 @@ module Adhearsion
           subject << event
         end
 
-        it "should record the call start time" do
+        it "should record the call answer time" do
           originate_time = Time.local(2008, 9, 1, 12, 0, 0)
           Timecop.freeze originate_time
           expect(subject.duration).to eq(0.0)
@@ -160,11 +160,7 @@ module Adhearsion
           answer_time = Time.local(2008, 9, 1, 12, 0, 40)
           Timecop.freeze answer_time
           subject << event
-          expect(subject.start_time).to eq(answer_time)
-
-          later_time = Time.local(2008, 9, 1, 12, 0, 50)
-          Timecop.freeze later_time
-          expect(subject.duration).to eq(10.0)
+          expect(subject.answer_time).to eq(answer_time)
         end
       end
     end
@@ -210,8 +206,10 @@ module Adhearsion
 
       context "with a successful response" do
         let(:returned_uri) { call_uri }
+        let(:originate_time) { Time.local(1981, 4, 13, 10, 56, 0) }
 
         before do
+          Timecop.freeze originate_time
           expect_message_waiting_for_response expected_dial_command, returned_uri
         end
 
@@ -252,6 +250,11 @@ module Adhearsion
         it "should add the call to the active calls registry" do
           subject.dial to, :from => from
           expect(Adhearsion.active_calls[call_id]).to be subject
+        end
+
+        it "should set the start time" do
+          subject.dial to, :from => from
+          expect(subject.start_time).to eq(originate_time)
         end
 
         context "when a different ref is returned than the one expected" do

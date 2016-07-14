@@ -2,6 +2,9 @@
   * Bugfix: Handle more AMI error responses which mean the channel is not found
   * Bugfix: Reporting statistics should not deadlock call processing
   * Bugfix: Sending the `USR2` signal to an Adhearsion application now prints thread stack traces to STDERR.
+  * Change: `Adhearsion::Call#start_time` now consistently tracks the call start time for both incoming and outgoing calls
+  * Feature: Add `Adhearsion::Call#answer_time` to track the time at which the call was answered
+  * Feature: Send `Adhearsion::Event::Answered` events when inbound calls are answered (formerly was only sent when outbound calls were answered)
 
 # [3.0.0.rc1](https://github.com/adhearsion/adhearsion/compare/v3.0.0.beta2...v3.0.0.rc1) - [2016-01-07](https://rubygems.org/gems/adhearsion/versions/3.0.0.rc1)
   * Bugfix: Concurrent access to call collection should not be permitted. See [#589](https://github.com/adhearsion/adhearsion/issues/589)

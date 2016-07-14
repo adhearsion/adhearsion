@@ -224,6 +224,7 @@ module Adhearsion
           when Adhearsion::Rayo::Command::Answer
             execute_agi_command 'ANSWER'
             @answered = true
+            send_pb_event Adhearsion::Event::Answered.new
             command.response = true
           when Adhearsion::Rayo::Command::Hangup
             send_hangup_command
