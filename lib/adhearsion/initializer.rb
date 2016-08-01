@@ -79,7 +79,7 @@ module Adhearsion
     def setup_i18n_load_path
       Adhearsion.config.core.i18n.locale_path.each do |dir|
         logger.debug "Adding #{dir} to the I18n load path"
-        I18n.load_path += Dir["#{dir}/**/*.yml"]
+        ::I18n.load_path += Dir["#{dir}/**/*.yml"]
       end
     end
 
