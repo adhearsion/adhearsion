@@ -144,4 +144,5 @@ end
   protocol_error
   router
   statistics
+  i18n
 ).each { |f| require "adhearsion/#{f}" }
