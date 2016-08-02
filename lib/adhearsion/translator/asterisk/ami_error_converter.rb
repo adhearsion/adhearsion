@@ -8,7 +8,7 @@ module Adhearsion
           yield
         rescue RubyAMI::Error => e
           case e.message
-          when 'No such channel', /Channel (\S+) does not exist./, /channel not up/, /Channel does not exist/
+          when 'No such channel', /Channel (\S+) does not exist./, /channel not up/, /Channel does not exist/, /Redirect failed, channel not up/
             result.call e if result
           else
             raise e
