@@ -6,6 +6,8 @@ rvm:
   - ruby-head
 jdk:
   - openjdk7 # for jruby
+before_install:
+  - gem install bundler
 before_script: export JRUBY_OPTS="--server -J-Xss1024k -J-Xmx652m -J-XX:+UseConcMarkSweepGC"
 matrix:
   allow_failures:
