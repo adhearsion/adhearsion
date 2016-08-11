@@ -3,6 +3,7 @@
   * Bugfix: Reporting statistics should not deadlock call processing
   * Bugfix: Sending the `USR2` signal to an Adhearsion application now prints thread stack traces to STDERR.
   * Bugfix: Checking i18n prompts now handles nested keys
+  * Bugfix: Return the correct error when the call is down when stopping an output rather than crashing the translator (ported from PB[#256](https://github.com/adhearsion/punchblock/pull/256))
   * Change: `Adhearsion::Call#start_time` now consistently tracks the call start time for both incoming and outgoing calls
   * Feature: Add `Adhearsion::Call#answer_time` to track the time at which the call was answered
   * Feature: Send `Adhearsion::Event::Answered` events when inbound calls are answered (formerly was only sent when outbound calls were answered)
