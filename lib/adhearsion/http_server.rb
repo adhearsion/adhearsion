@@ -5,7 +5,9 @@ require 'reel/rack'
 
 module Adhearsion
   # @private
-  class HTTPServer
+  class HTTPServer < Reel::Rack::Server
+    include Celluloid::Internals::Logger
+
     def self.start
       config = Adhearsion.config.core.http
 
@@ -27,7 +29,7 @@ module Adhearsion
 
       logger.info "Starting HTTP server listening on #{config.host}:#{config.port}"
 
-      supervisor = ::Reel::Rack::Server.supervise_as(:ahn_http_server, app, options)
+      supervisor = self.supervise(as: :ahn_http_server, args: [app, options])
 
       Adhearsion::Events.register_callback :shutdown do
         supervisor.terminate

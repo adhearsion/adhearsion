@@ -26,7 +26,7 @@ RSpec.configure do |config|
   config.color = true
 
   config.mock_with :rspec do |mocks|
-    mocks.add_stub_and_should_receive_to Celluloid::AbstractProxy
+    mocks.add_stub_and_should_receive_to Celluloid::Proxy::Abstract
   end
 
   config.raise_errors_for_deprecations!

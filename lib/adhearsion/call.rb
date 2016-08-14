@@ -17,7 +17,7 @@ module Adhearsion
     ExpiredError    = Class.new Celluloid::DeadActorError
 
     # @private
-    class ActorProxy < Celluloid::CellProxy
+    class ActorProxy < Celluloid::Proxy::Cell
       def method_missing(meth, *args, &block)
         super(meth, *args, &block)
       rescue ::Celluloid::DeadActorError
@@ -544,7 +544,7 @@ module Adhearsion
     #
     # @yield execute the current block as the body of a controller by specifying no controller instance
     #
-    # @return [Celluloid::ThreadHandle]
+    # @return [Celluloid::Internals::ThreadHandle]
     #
     def execute_controller(controller = nil, completion_callback = nil, &block)
       raise ArgumentError, "Cannot supply a controller and a block at the same time" if controller && block_given?
