@@ -502,6 +502,9 @@ module Adhearsion
       else
         reject :error
       end
+    rescue Call::Hangup, Call::ExpiredError
+      logger.warn "Call routing could not be completed because call was unavailable."
+      self << Punchblock::Event::End.new(reason: :error)
     end
 
     ##
