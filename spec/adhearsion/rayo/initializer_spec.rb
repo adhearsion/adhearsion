@@ -266,18 +266,6 @@ describe Adhearsion::Rayo::Initializer do
         described_class.dispatch_call_event mock_event
       end
     end
-
-    describe "when the registry contains a dead call" do
-      before do
-        mock_call.terminate
-        Adhearsion.active_calls[mock_call.id] = mock_call
-      end
-
-      it "should log a warning" do
-        expect(Adhearsion::Logging.get_logger(described_class)).to receive(:warn).once.with("Event received for inactive call #{call_id}: #{mock_event.inspect}")
-        described_class.dispatch_call_event mock_event
-      end
-    end
   end
 
   context "rayo configuration" do
