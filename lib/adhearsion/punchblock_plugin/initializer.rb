@@ -135,8 +135,7 @@ module Adhearsion
         end
 
         def dispatch_call_event(event)
-          call = Adhearsion.active_calls[event.target_call_id]
-          if call && call.alive?
+          if call = Adhearsion.active_calls[event.target_call_id]
             call.async.deliver_message event
           else
             logger.warn "Event received for inactive call #{event.target_call_id}: #{event.inspect}"

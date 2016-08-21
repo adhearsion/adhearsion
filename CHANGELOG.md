@@ -2,6 +2,7 @@
   * Feature: Increases concurrent call routing performance by delegating call routing to Call actors
   * Bugfix: Reporting statistics should not deadlock call processing
   * Bugfix: Shuts down a call which couldn't be routed with a fake end event. This avoids leaking call actors in cases where the call ended before it was dispatched and we missed the real End event.
+  * Bugfix: Removes proactive checks on call availability before dispatching events because these are inaccurate; now optimistically dispatches.
 
 # [2.6.2](https://github.com/adhearsion/adhearsion/compare/v2.6.1...v2.6.2) - [2015-06-16](https://rubygems.org/gems/adhearsion/versions/2.6.2)
   * Bugfix: Properly load application bundle. This requires the spawning removed in [#534](https://github.com/adhearsion/adhearsion/pull/534).
