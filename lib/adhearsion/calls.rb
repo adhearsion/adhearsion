@@ -7,7 +7,7 @@ module Adhearsion
   # This manages the list of calls the Adhearsion service receives
   class Calls
     def initialize
-      @mutex = ::Monitor.new
+      @mutex = ::Mutex.new
       @calls = {}
       restart_supervisor
     end
@@ -15,7 +15,7 @@ module Adhearsion
     def <<(call)
       @supervisor.link call
       @mutex.synchronize do
-        self[call.id] = call
+        @calls[call.id] = call
         by_uri[call.uri] = call
       end
       self
