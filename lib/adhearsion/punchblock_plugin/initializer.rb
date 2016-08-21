@@ -130,15 +130,7 @@ module Adhearsion
           catching_standard_errors do
             call = Call.new(offer)
             Adhearsion.active_calls << call
-            case Adhearsion::Process.state_name
-            when :booting, :rejecting
-              logger.info "Declining call because the process is not yet running."
-              call.reject :decline
-            when :running, :stopping
-              Adhearsion.router.handle call
-            else
-              call.reject :error
-            end
+            call.async.route
           end
         end
 

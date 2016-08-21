@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Feature: Increases concurrent call routing performance by delegating call routing to Call actors
   * Bugfix: Reporting statistics should not deadlock call processing
 
 # [2.6.2](https://github.com/adhearsion/adhearsion/compare/v2.6.1...v2.6.2) - [2015-06-16](https://rubygems.org/gems/adhearsion/versions/2.6.2)
