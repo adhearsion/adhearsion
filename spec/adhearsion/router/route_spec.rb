@@ -164,16 +164,8 @@ module Adhearsion
           context "when the call has already ended before routing can begin" do
             before { Celluloid::Actor.kill call }
 
-            it "should fall through cleanly" do
-              expect { route.dispatch call }.not_to raise_error
-            end
-          end
-
-          context "when the call has already ended before routing can begin" do
-            before { Celluloid::Actor.kill call }
-
-            it "should fall through cleanly" do
-              expect { route.dispatch call }.not_to raise_error
+            it "should raise a hangup exception" do
+              expect { route.dispatch call }.to raise_error(Call::ExpiredError)
             end
           end
 

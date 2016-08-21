@@ -3,6 +3,7 @@
   * Bugfix: Reporting statistics should not deadlock call processing
   * Bugfix: Sending the `USR2` signal to an Adhearsion application now prints thread stack traces to STDERR.
   * Bugfix: Checking i18n prompts now handles nested keys
+  * Bugfix: Shuts down a call which couldn't be routed with a fake end event. This avoids leaking call actors in cases where the call ended before it was dispatched and we missed the real End event.
   * Change: `Adhearsion::Call#start_time` now consistently tracks the call start time for both incoming and outgoing calls
   * Feature: Add `Adhearsion::Call#answer_time` to track the time at which the call was answered
   * Feature: Send `Adhearsion::Event::Answered` events when inbound calls are answered (formerly was only sent when outbound calls were answered)
