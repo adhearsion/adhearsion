@@ -509,6 +509,19 @@ module Adhearsion
       client.execute_command command
     end
 
+    def route
+      case Adhearsion::Process.state_name
+      when :booting, :rejecting
+        logger.info "Declining call because the process is not yet running."
+        reject :decline
+      when :running, :stopping
+        logger.info "Routing call"
+        Adhearsion.router.handle current_actor
+      else
+        reject :error
+      end
+    end
+
     ##
     # Sends a message to the caller
     #

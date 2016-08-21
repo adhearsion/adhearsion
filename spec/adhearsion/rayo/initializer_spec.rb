@@ -39,7 +39,7 @@ describe Adhearsion::Rayo::Initializer do
     Adhearsion.config.core
   end
 
-  let(:call_id)     { rand }
+  let(:call_id)     { rand.to_s }
   let(:offer)       { Adhearsion::Event::Offer.new :target_call_id => call_id }
   let(:mock_call)   { Adhearsion::Call.new }
   let(:mock_client) { double 'Client' }
@@ -198,48 +198,13 @@ describe Adhearsion::Rayo::Initializer do
   describe "dispatching an offer" do
     before do
       initialize_rayo
-      expect(Adhearsion::Process).to receive(:state_name).once.and_return process_state
+    end
+
+    it "should create and route the call" do
       expect(Adhearsion::Call).to receive(:new).once.and_return mock_call
+      expect(mock_call).to receive_message_chain("async.route")
+      Adhearsion::Rayo::Initializer.dispatch_offer offer
     end
-
-    context "when the Adhearsion::Process is :booting" do
-      let(:process_state) { :booting }
-
-      it 'should reject a call with cause :declined' do
-        expect(mock_call).to receive(:reject).once.with(:decline)
-      end
-    end
-
-    [ :running, :stopping ].each do |state|
-      context "when when Adhearsion::Process is in :#{state}" do
-        let(:process_state) { state }
-
-        it "should dispatch via the router" do
-          Adhearsion.router do
-            route 'foobar', Class.new
-          end
-          expect(Adhearsion.router).to receive(:handle).once.with mock_call
-        end
-      end
-    end
-
-    context "when when Adhearsion::Process is in :rejecting" do
-      let(:process_state) { :rejecting }
-
-      it 'should reject a call with cause :declined' do
-        expect(mock_call).to receive(:reject).once.with(:decline)
-      end
-    end
-
-    context "when when Adhearsion::Process is not :running, :stopping or :rejecting" do
-      let(:process_state) { :foobar }
-
-      it 'should reject a call with cause :error' do
-        expect(mock_call).to receive(:reject).once.with(:error)
-      end
-    end
-
-    after { Adhearsion::Events.trigger_immediately :rayo, offer }
   end
 
   describe "dispatching a component event" do
@@ -280,7 +245,6 @@ describe Adhearsion::Rayo::Initializer do
       end
 
       it "should not block on the call handling the event" do
-
         mock_call.register_event_handler do |event|
           sleep 5
         end
