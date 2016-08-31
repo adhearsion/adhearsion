@@ -49,6 +49,11 @@ module Adhearsion
             expect(subject.detect_type(http_path)).to be :audio
           end
 
+          it "detects an HTTP path, even when it has a {profile}" do
+            http_path = "{profile=s3}http://adhearsion.com/sounds/hello.mp3"
+            subject.detect_type(http_path).should be :audio
+          end
+
           it "detects a file path" do
             file_path = "file:///usr/shared/sounds/hello.mp3"
             expect(subject.detect_type(file_path)).to be :audio
