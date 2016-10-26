@@ -80,7 +80,8 @@ module Adhearsion
           end
 
           def recording
-            Adhearsion::Rayo::Component::Record::Recording.new :uri => "file://#{filename}.#{@format}"
+            ext = @format.gsub('wav49', 'WAV')
+            Adhearsion::Rayo::Component::Record::Recording.new :uri => "file://#{filename}.#{ext}"
           end
 
           def stop_reason
