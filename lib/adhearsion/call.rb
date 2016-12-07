@@ -212,7 +212,7 @@ module Adhearsion
 
       register_event_handler Punchblock::Event::Complete do |event|
         if event.reason.is_a? Punchblock::Event::Complete::Hangup
-          @call_terminating = true
+          terminating!
         end
       end
 
@@ -298,6 +298,10 @@ module Adhearsion
 
     def on_end(&block)
       register_event_handler Punchblock::Event::End, &block
+    end
+
+    def terminating!
+      @call_terminating = true
     end
 
     #
