@@ -73,21 +73,9 @@ module Adhearsion
     # @param block to execute on the call
     #
     def initialize(call, metadata = nil, &block)
-      @call_hangup_flag = false
-      if call.alive? && call.active?
-        call.register_event_handler Punchblock::Event::Complete do |event|
-          if event.reason.is_a? Punchblock::Event::Complete::Hangup
-            @call_hangup_flag = true
-          end
-        end
-      end
       @call, @metadata, @block = call, metadata || {}, block
       @block_context = eval "self", @block.binding if @block
       @active_components = []
-    end
-
-    def is_current_call_terminatig?
-      @call_hangup_flag || !call.active?
     end
 
     def method_missing(method_name, *args, &block)
