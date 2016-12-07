@@ -304,7 +304,7 @@ module Adhearsion
     # @return [Boolean] if the call is currently terminating/terminated
     #
     def terminating?
-      !alive? || !active? || @call_terminating
+      !active? || @call_terminating
     end
 
     #
