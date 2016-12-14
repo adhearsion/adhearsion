@@ -212,7 +212,7 @@ module Adhearsion
 
       register_event_handler Punchblock::Event::Complete do |event|
         if event.reason.is_a? Punchblock::Event::Complete::Hangup
-          terminating!
+          terminating! unless terminating?
         end
       end
 
@@ -245,7 +245,7 @@ module Adhearsion
 
       on_end do |event|
         logger.info "Call #{from} -> #{to} ended due to #{event.reason}#{" (code #{event.platform_code})" if event.platform_code}"
-        terminating!
+        terminating! unless terminating?
         @end_time = event.timestamp.to_time
         @duration = @end_time - @start_time if @start_time
         clear_from_active_calls
@@ -302,6 +302,7 @@ module Adhearsion
     end
 
     def terminating!
+      logger.debug "Call is terminating"
       @call_terminating = true
     end
 

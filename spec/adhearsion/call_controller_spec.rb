@@ -571,6 +571,22 @@ module Adhearsion
         end
       end
 
+      describe "with complete event with reason hangup" do
+
+        let(:response) do
+          Punchblock::Event::Complete.new :reason => complete_reason
+        end
+
+        let(:complete_reason) do
+          Punchblock::Event::Complete::Hangup.new
+        end
+
+        it "raises the hangup" do
+          expect { subject.execute_component_and_await_completion component }.to raise_error(Call::Hangup)
+        end
+
+      end
+
       it "blocks until the component receives a complete event" do
         slow_component = Punchblock::Component::Output.new
         slow_component.request!
