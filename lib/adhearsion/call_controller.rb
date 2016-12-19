@@ -222,6 +222,10 @@ module Adhearsion
 
       complete_event = component.complete_event
       raise Adhearsion::Error, [complete_event.reason.details, component.inspect].join(": ") if complete_event.reason.is_a? Punchblock::Event::Complete::Error
+      if complete_event.reason.is_a? Punchblock::Event::Complete::Hangup
+        call.terminating! unless call.terminating?
+        raise Call::Hangup
+      end
       component
     end
 

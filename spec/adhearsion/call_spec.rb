@@ -552,9 +552,25 @@ module Adhearsion
     end
 
     describe "#<<" do
+      describe "with a Punchblock Complete Event and Reason Hangup" do
+        let :complete_event do
+          Punchblock::Event::Complete.new :reason => Punchblock::Event::Complete::Hangup.new
+        end
+
+        it "should mark the call as terminating" do
+          subject << complete_event
+          expect(subject.terminating?).to be true
+        end
+      end
+
       describe "with a Punchblock End" do
         let :end_event do
           Punchblock::Event::End.new :reason => :hangup, :platform_code => 'arbitrary_code'
+        end
+
+        it "should mark the call as terminating" do
+          subject << end_event
+          expect(subject.terminating?).to be true
         end
 
         it "should mark the call as ended" do

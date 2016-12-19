@@ -89,6 +89,7 @@ module Adhearsion
       @duration     = nil
       @auto_hangup  = true
       @after_hangup_lifetime = nil
+      @call_terminating = false
 
       self << offer if offer
     end
@@ -209,6 +210,12 @@ module Adhearsion
         merge_headers event.headers
       end
 
+      register_event_handler Punchblock::Event::Complete do |event|
+        if event.reason.is_a? Punchblock::Event::Complete::Hangup
+          terminating! unless terminating?
+        end
+      end
+
       on_joined do |event|
         if event.call_uri
           target = event.call_uri
@@ -238,6 +245,7 @@ module Adhearsion
 
       on_end do |event|
         logger.info "Call #{from} -> #{to} ended due to #{event.reason}#{" (code #{event.platform_code})" if event.platform_code}"
+        terminating! unless terminating?
         @end_time = event.timestamp.to_time
         @duration = @end_time - @start_time if @start_time
         clear_from_active_calls
@@ -291,6 +299,18 @@ module Adhearsion
 
     def on_end(&block)
       register_event_handler Punchblock::Event::End, &block
+    end
+
+    def terminating!
+      logger.debug "Call is terminating"
+      @call_terminating = true
+    end
+
+    #
+    # @return [Boolean] if the call is currently terminating/terminated
+    #
+    def terminating?
+      !active? || @call_terminating
     end
 
     #
