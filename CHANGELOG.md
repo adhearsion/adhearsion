@@ -1,4 +1,6 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+
+# [2.6.3](https://github.com/adhearsion/adhearsion/compare/v2.6.2...v2.6.3) - [2017-01-14](https://rubygems.org/gems/adhearsion/versions/2.6.3)
   * Feature: CallController execution does not continue after hangup during play, speak, record or ask  [#614](https://github.com/adhearsion/adhearsion/pull/#614).
 
 # [2.6.2](https://github.com/adhearsion/adhearsion/compare/v2.6.1...v2.6.2) - [2015-06-16](https://rubygems.org/gems/adhearsion/versions/2.6.2)
