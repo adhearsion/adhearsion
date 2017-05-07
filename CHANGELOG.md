@@ -1,5 +1,8 @@
 # [develop](https://github.com/adhearsion/adhearsion)
 
+# [2.6.3](https://github.com/adhearsion/adhearsion/compare/v2.6.3...v2.6.4) - [2017-01-14](https://rubygems.org/gems/adhearsion/versions/2.6.4)
+  * Bugfix: Upgrade logging gem for compat with other libraries' dependencies  [#619](https://github.com/adhearsion/adhearsion/pull/#619).
+
 # [2.6.3](https://github.com/adhearsion/adhearsion/compare/v2.6.2...v2.6.3) - [2017-01-14](https://rubygems.org/gems/adhearsion/versions/2.6.3)
   * Feature: CallController execution does not continue after hangup during play, speak, record or ask  [#614](https://github.com/adhearsion/adhearsion/pull/#614).
 
