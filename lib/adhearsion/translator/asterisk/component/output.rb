@@ -127,6 +127,7 @@ module Adhearsion
           end
 
           def path_for_audio_node(node)
+            return node.src if node.src.match(/^http/)
             path = node.src.sub('file://', '')
             dir = File.dirname(path)
             basename = File.basename(path, '.*')

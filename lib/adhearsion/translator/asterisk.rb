@@ -168,6 +168,9 @@ module Adhearsion
           logger.error "Adhearsion failed to add the #{REDIRECT_EXTENSION} extension to the #{REDIRECT_CONTEXT} context. Please add a [#{REDIRECT_CONTEXT}] entry to your dialplan."
         end
 
+      rescue
+        logger.error "Adhearsion failed to add the #{REDIRECT_EXTENSION} extension to the #{REDIRECT_CONTEXT} context. Please add a [#{REDIRECT_CONTEXT}] entry to your dialplan."
+      ensure
         check_recording_directory
       end
 

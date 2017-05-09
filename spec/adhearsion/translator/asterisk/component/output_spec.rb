@@ -595,6 +595,17 @@ module Adhearsion
                       end
                     end
 
+                    context "when the audio filename starts with http" do
+                      let(:audio_filename) { 'http://domain.com/tt-monkeys.wav' }
+
+                      it 'should playback the audio URI using Playback' do
+                        expect_answered
+                        expect_playback audio_filename
+                        subject.execute
+                      end
+                    end
+
+
                     context "when we get a RubyAMI Error" do
                       it "should send an error complete event" do
                         expect_answered
