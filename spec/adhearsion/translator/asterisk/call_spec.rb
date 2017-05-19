@@ -724,7 +724,7 @@ module Adhearsion
                 'CallerIDName'  => 'Bryan 100'
             end
 
-            context 'sucessful' do
+            context 'successful' do
               let(:response)  { 'Success' }
               let(:uniqueid)  { '<null>' }
 
@@ -754,6 +754,17 @@ module Adhearsion
                 expect(translator).to receive(:handle_pb_event).with expected_end_event
                 subject.process_ami_event ami_event
               end
+
+              context 'with an <unknown> uniqueid on Asterisk 14' do
+                let(:uniqueid)  { '<unknown>' }
+                it 'should send an error end event' do
+                  expected_end_event = Adhearsion::Event::End.new :reason         => :error,
+                                                                  :target_call_id => subject.id
+                  expect(translator).to receive(:handle_pb_event).with expected_end_event
+                  subject.process_ami_event ami_event
+                end
+              end
+
 
               context "when the AMI event has a timestamp" do
                 let :ami_event do

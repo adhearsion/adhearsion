@@ -167,7 +167,7 @@ module Adhearsion
               translator.bridges[ami_event['BridgeUniqueid'] + '_leave'] = ami_event['Channel']
             end
           when 'OriginateResponse'
-            if ami_event['Response'] == 'Failure' && ami_event['Uniqueid'] == '<null>'
+            if ami_event['Response'] == 'Failure' && (ami_event['Uniqueid'] == '<null>' || ami_event['Uniqueid'] == '<unknown>')
               send_end_event :error, nil, ami_event.best_time
             end
           when 'BridgeExec'
