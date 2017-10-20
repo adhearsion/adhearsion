@@ -1485,6 +1485,17 @@ module Adhearsion
             end
           end
         end
+
+        context 'when given a block with one argument' do
+          it "yields a block on the dial obj" do
+            expect(OutboundCall).to receive(:new).and_return other_mock_call
+            expect(other_mock_call).to receive(:dial).with(to, options).once
+            Thread.new do
+              expect {|b| subject.dial(to, options, &b)}.to yield_with_args Dial
+            end
+            sleep 0.1
+          end
+        end
       end
 
       describe Dial::Dial do
