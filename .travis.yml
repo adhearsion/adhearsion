@@ -1,16 +1,15 @@
 language: ruby
 rvm:
-  - 2.2.2
-  - 2.3.0
-  - jruby-9.0.4.0
+  - 2.3.6
+  - 2.4.3
+  - jruby-9.1.16.0
   - ruby-head
 jdk:
-  - openjdk7 # for jruby
-before_script: export JRUBY_OPTS="--server -J-Xss1024k -J-Xmx652m -J-XX:+UseConcMarkSweepGC"
+  - openjdk8 # for jruby
 matrix:
   allow_failures:
     - rvm: ruby-head
-env: ARUBA_TIMEOUT=120 AHN_ENV=development
+env: ARUBA_TIMEOUT=120 AHN_ENV=development JRUBY_OPTS="--server -J-Xss1024k -J-Xmx652m -J-XX:+UseConcMarkSweepGC"
 sudo: false
 notifications:
   slack:
