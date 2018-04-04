@@ -127,7 +127,6 @@ module Adhearsion
       run
     rescue Call::Hangup, Call::ExpiredError
     rescue SyntaxError, StandardError => e
-      Events.trigger :exception, [e, logger]
       on_error e
       raise
     ensure
