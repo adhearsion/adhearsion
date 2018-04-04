@@ -3,10 +3,13 @@
   * Bugfix: Reporting statistics should not deadlock call processing
   * Bugfix: Sending the `USR2` signal to an Adhearsion application now prints thread stack traces to STDERR.
   * Bugfix: Checking i18n prompts now handles nested keys
+  * Bugfix: Shuts down a call which couldn't be routed with a fake end event. This avoids leaking call actors in cases where the call ended before it was dispatched and we missed the real End event.
+  * Bugfix: Removes proactive checks on call availability before dispatching events because these are inaccurate; now optimistically dispatches.
   * Change: `Adhearsion::Call#start_time` now consistently tracks the call start time for both incoming and outgoing calls
   * Feature: Add `Adhearsion::Call#answer_time` to track the time at which the call was answered
   * Feature: Send `Adhearsion::Event::Answered` events when inbound calls are answered (formerly was only sent when outbound calls were answered)
   * Feature: Add rake task to generate Markdown formatted prompt list for recording
+  * Feature: Increases concurrent call routing performance by delegating call routing to Call actors
 
 # [3.0.0.rc1](https://github.com/adhearsion/adhearsion/compare/v3.0.0.beta2...v3.0.0.rc1) - [2016-01-07](https://rubygems.org/gems/adhearsion/versions/3.0.0.rc1)
   * Bugfix: Concurrent access to call collection should not be permitted. See [#589](https://github.com/adhearsion/adhearsion/issues/589)
