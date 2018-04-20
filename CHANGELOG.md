@@ -11,6 +11,7 @@
   * Feature: Send `Adhearsion::Event::Answered` events when inbound calls are answered (formerly was only sent when outbound calls were answered)
   * Feature: Add rake task to generate Markdown formatted prompt list for recording
   * Feature: Increases concurrent call routing performance by delegating call routing to Call actors
+  * Update: Bump Reel version to 0.6.x, fixing client disconnection bug
 
 # [3.0.0.rc1](https://github.com/adhearsion/adhearsion/compare/v3.0.0.beta2...v3.0.0.rc1) - [2016-01-07](https://rubygems.org/gems/adhearsion/versions/3.0.0.rc1)
   * Bugfix: Concurrent access to call collection should not be permitted. See [#589](https://github.com/adhearsion/adhearsion/issues/589)
