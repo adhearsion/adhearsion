@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'activesupport', [">= 3.0.0", "< 5.0.0"]
   s.add_runtime_dependency 'adhearsion-loquacious', ["~> 1.9"]
-  s.add_runtime_dependency 'blather', ["~> 1.2"]
+  s.add_runtime_dependency 'blather', ["~> 2.0"]
   s.add_runtime_dependency 'bundler', ["~> 1.0"]
   s.add_runtime_dependency 'celluloid', ["~> 0.16.0"]
   s.add_runtime_dependency 'countdownlatch'
@@ -33,14 +33,14 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'has-guarded-handlers', ["~> 1.6", ">= 1.6.3"]
   s.add_runtime_dependency 'i18n', ["~> 0.6"]
   s.add_runtime_dependency 'logging', ["~> 2.0"]
-  s.add_runtime_dependency 'nokogiri', ["~> 1.5", ">= 1.5.6"]
+  s.add_runtime_dependency 'nokogiri', ["~> 1.8", ">= 1.8.3"]
   s.add_runtime_dependency 'pry'
   s.add_runtime_dependency 'rake'
   s.add_runtime_dependency 'reel', ["~> 0.6.0"]
   s.add_runtime_dependency 'reel-rack', ["~> 0.2.0"]
   s.add_runtime_dependency 'ruby_ami', ["~> 2.2"]
   s.add_runtime_dependency 'ruby_jid', ["~> 1.0"]
-  s.add_runtime_dependency 'ruby_speech', ["~> 2.3"]
+  s.add_runtime_dependency 'ruby_speech', ["~> 3.0"]
   s.add_runtime_dependency 'state_machine', ["~> 1.0"]
   s.add_runtime_dependency 'thor', "~> 0.18.0"
   s.add_runtime_dependency 'virtus', ["~> 1.0"]
