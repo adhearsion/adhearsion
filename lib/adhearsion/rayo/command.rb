@@ -18,4 +18,6 @@ end
   reject
   unjoin
   unmute
+  exec
+  app
 }.each { |event| require "adhearsion/rayo/command/#{event}" }

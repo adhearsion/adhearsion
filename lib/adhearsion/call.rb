@@ -502,7 +502,7 @@ module Adhearsion
       abort Hangup.new(@end_reason) unless active? || command.is_a?(Adhearsion::Rayo::Command::Hangup)
       merge_headers command.headers if command.respond_to? :headers
       logger.debug "Executing command #{command.inspect}"
-      unless command.is_a?(Adhearsion::Rayo::Command::Dial)
+      unless command.is_a?(Adhearsion::Rayo::Command::Dial) || command.is_a?(Adhearsion::Rayo::Command::Exec)
         command.target_call_id = id
         command.domain = domain
       end

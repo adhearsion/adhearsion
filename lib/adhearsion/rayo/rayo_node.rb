@@ -102,7 +102,7 @@ module Adhearsion
       def to_rayo(parent = nil)
         parent = parent.parent if parent.is_a?(Nokogiri::XML::Builder)
         Nokogiri::XML::Builder.with(parent) do |xml|
-          xml.send(registered_name,
+          xml.send(xml_tag_name,
             {xmlns: registered_ns}.merge(rayo_attributes.delete_if { |k,v| v.nil? })) do |root|
             rayo_children root
           end
@@ -111,6 +111,10 @@ module Adhearsion
 
       def to_xml
         to_rayo.to_xml
+      end
+
+      def xml_tag_name
+        registered_name
       end
 
       alias :to_s :inspect
