@@ -7,6 +7,7 @@ require 'countdownlatch'
   input
   output
   record
+  rayo_exec
 ).each { |r| require "adhearsion/call_controller/#{r}" }
 
 module Adhearsion
@@ -15,6 +16,7 @@ module Adhearsion
     include Input
     include Output
     include Record
+    include RayoExec
 
     class_attribute :callbacks
 

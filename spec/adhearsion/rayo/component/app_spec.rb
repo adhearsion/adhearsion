@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe Adhearsion::Rayo::Command::App do
+describe Adhearsion::Rayo::Component::App do
   it 'registers itself' do
     expect(Adhearsion::Rayo::RayoNode.class_from_registration(:app, 'urn:xmpp:rayo:1')).to eq(described_class)
   end
@@ -25,8 +25,8 @@ describe Adhearsion::Rayo::Command::App do
         puts subject.to_rayo
         new_instance = Adhearsion::Rayo::RayoNode.from_xml subject.to_rayo
         expect(new_instance).to be_instance_of described_class
-        expect(new_instance.app).to eq('hello')
-        expect(new_instance.args).to eq('status')
+        expect(new_instance.app).to eq('playback')
+        expect(new_instance.args).to eq('hello')
       end
 
       it "should render to a parent node if supplied" do

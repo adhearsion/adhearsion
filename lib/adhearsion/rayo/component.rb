@@ -18,4 +18,5 @@ end
   record
   send_fax
   stop
+  app
 }.each { |component| require "adhearsion/rayo/component/#{component}" }
