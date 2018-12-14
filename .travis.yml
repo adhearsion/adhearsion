@@ -2,7 +2,9 @@ language: ruby
 rvm:
   - 2.3.7
   - 2.4.4
+  - 2.5.3
   - jruby-9.1.17.0
+  - jruby-9.2.5.0
   - ruby-head
 jdk:
   - openjdk8 # for jruby
