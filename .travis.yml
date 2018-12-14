@@ -11,7 +11,7 @@ jdk:
 matrix:
   allow_failures:
     - rvm: ruby-head
-env: ARUBA_TIMEOUT=120 AHN_ENV=development JRUBY_OPTS="--server -J-Xss1024k -J-Xmx652m -J-XX:+UseConcMarkSweepGC"
+env: ARUBA_TIMEOUT=120 AHN_ENV=development JRUBY_OPTS="-J-Xmx512m"
 sudo: false
 notifications:
   slack:
