@@ -41,6 +41,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'ruby_jid', ["~> 1.0"]
   s.add_runtime_dependency 'ruby_speech', ["~> 3.0"]
   s.add_runtime_dependency 'state_machine', ["~> 1.0"]
+  s.add_runtime_dependency 'sucker_punch', ["~> 2.0"]
   s.add_runtime_dependency 'thor', "~> 0.18.0"
   s.add_runtime_dependency 'virtus', ["~> 1.0"]
 

@@ -5,6 +5,7 @@ abort "ERROR: You are running Adhearsion on an unsupported version of Ruby (Ruby
 %w(
   adhearsion/rayo
   celluloid
+  sucker_punch
   active_support/inflector
 ).each { |r| require r }
 
@@ -120,6 +121,15 @@ module Celluloid
     undef :logger
     def logger
       ::Logging.logger['Celluloid']
+    end
+  end
+end
+
+module SuckerPunch
+  class << self
+    undef :default_logger
+    def default_logger
+      ::Logging.logger['SuckerPunch']
     end
   end
 end

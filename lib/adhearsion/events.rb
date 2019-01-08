@@ -2,7 +2,7 @@
 
 require 'has_guarded_handlers'
 require 'singleton'
-require 'celluloid'
+require 'sucker_punch'
 
 module Adhearsion
   module Events
@@ -27,16 +27,29 @@ module Adhearsion
       end
     end
 
-    class Worker
-      include Celluloid
-
-      def work(type, object)
-        Handler.instance.trigger_handler type, object
-      rescue => e
-        raise if type == :exception
-        async.work :exception, e
-      end
+    def self.__handle(type, object)
+      Handler.instance.trigger_handler type, object
+    rescue => ex
+      raise(ex) if type == :exception
+      trigger :exception, ex
     end
+
+    class Job
+      include SuckerPunch::Job
+
+      def perform(type, object)
+        Events.__handle(type, object)
+      end
+
+      def self.shutdown!
+        SuckerPunch::Queue.all.each do |queue|
+          queue.shutdown if queue.name == to_s
+        end
+        SuckerPunch::Queue::QUEUES.delete(to_s)
+      end
+
+    end
+    private_constant :Job
 
     class << self
       def method_missing(method_name, *args, &block)
@@ -47,30 +60,27 @@ module Adhearsion
         Handler.instance.respond_to? method_name, include_private
       end
 
-      def trigger(type, object = nil)
-        queue.async.work type, object
-      end
-
-      def trigger_immediately(type, object = nil)
-        queue.work type, object
-      end
-
       def draw(&block)
         Handler.instance.instance_exec(&block)
       end
 
-      def queue
-        unless @queue && @queue.alive?
-          init
-        end
-
-        @queue
+      def trigger(type, object = nil)
+        get_job.perform_async type, object
       end
+
+      def trigger_immediately(type, object = nil)
+        __handle type, object
+      end
+
+      def get_job
+        @_job ||= init
+      end
+      private :get_job
 
       def init
         size = Adhearsion.config.core.event_threads
         logger.debug "Initializing event worker pool of size #{size}"
-        @queue = Worker.pool(size: size)
+        Job.tap { Job.workers(size) }
       end
 
       def refresh!
@@ -79,9 +89,10 @@ module Adhearsion
       end
 
       def clear
-        @queue = nil
+        Job.shutdown!
         Handler.instance.clear_handlers
       end
+
     end
 
   end
