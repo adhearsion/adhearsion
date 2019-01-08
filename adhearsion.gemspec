@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'adhearsion-loquacious', ["~> 1.9"]
   s.add_runtime_dependency 'blather', ["~> 2.0"]
   s.add_runtime_dependency 'celluloid', ["~> 0.16.0"]
+  s.add_runtime_dependency 'concurrent-ruby', ["~> 1.0"]
   s.add_runtime_dependency 'countdownlatch'
   s.add_runtime_dependency 'deep_merge'
   s.add_runtime_dependency 'ffi', ["~> 1.0"]
@@ -41,7 +42,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'ruby_jid', ["~> 1.0"]
   s.add_runtime_dependency 'ruby_speech', ["~> 3.0"]
   s.add_runtime_dependency 'state_machine', ["~> 1.0"]
-  s.add_runtime_dependency 'sucker_punch', ["~> 2.0"]
   s.add_runtime_dependency 'thor', "~> 0.18.0"
   s.add_runtime_dependency 'virtus', ["~> 1.0"]
 

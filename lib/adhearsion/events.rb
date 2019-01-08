@@ -2,7 +2,7 @@
 
 require 'has_guarded_handlers'
 require 'singleton'
-require 'sucker_punch'
+require 'concurrent/executor/thread_pool_executor'
 
 module Adhearsion
   module Events
@@ -34,23 +34,6 @@ module Adhearsion
       trigger :exception, ex
     end
 
-    class Job
-      include SuckerPunch::Job
-
-      def perform(type, object)
-        Events.__handle(type, object)
-      end
-
-      def self.shutdown!
-        SuckerPunch::Queue.all.each do |queue|
-          queue.shutdown if queue.name == to_s
-        end
-        SuckerPunch::Queue::QUEUES.delete(to_s)
-      end
-
-    end
-    private_constant :Job
-
     class << self
       def method_missing(method_name, *args, &block)
         Handler.instance.send method_name, *args, &block
@@ -65,22 +48,22 @@ module Adhearsion
       end
 
       def trigger(type, object = nil)
-        get_job.perform_async type, object
+        executor.post { __handle(type, object) }
       end
 
       def trigger_immediately(type, object = nil)
         __handle type, object
       end
 
-      def get_job
-        @_job ||= init
+      def executor
+        @_executor ||= init
       end
-      private :get_job
+      private :executor
 
       def init
         size = Adhearsion.config.core.event_threads
         logger.debug "Initializing event worker pool of size #{size}"
-        Job.tap { Job.workers(size) }
+        Concurrent::ThreadPoolExecutor.new(min_threads: size, max_threads: size, auto_terminate: false)
       end
 
       def refresh!
@@ -89,7 +72,8 @@ module Adhearsion
       end
 
       def clear
-        Job.shutdown!
+        @_executor.kill if @_executor
+        @_executor = nil
         Handler.instance.clear_handlers
       end
 
