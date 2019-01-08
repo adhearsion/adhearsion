@@ -48,7 +48,13 @@ module Adhearsion
       end
 
       def trigger(type, object = nil)
-        executor.post { __handle(type, object) }
+        executor.post do
+          begin
+            __handle(type, object)
+          rescue => ex
+            logger.error(ex) rescue nil # to be aware of *unhandled* exceptions
+          end
+        end
       end
 
       def trigger_immediately(type, object = nil)
@@ -56,14 +62,14 @@ module Adhearsion
       end
 
       def executor
-        @_executor ||= init
+        @_executor || init
       end
       private :executor
 
       def init
         size = Adhearsion.config.core.event_threads
         logger.debug "Initializing event worker pool of size #{size}"
-        Concurrent::ThreadPoolExecutor.new(min_threads: size, max_threads: size, auto_terminate: false)
+        @_executor = Concurrent::ThreadPoolExecutor.new(min_threads: size, max_threads: size, auto_terminate: false)
       end
 
       def refresh!
@@ -72,12 +78,24 @@ module Adhearsion
       end
 
       def clear
-        @_executor.kill if @_executor
+        kill!
         @_executor = nil
         Handler.instance.clear_handlers
+      end
+
+      def kill!
+        @_executor.kill if @_executor
+      end
+
+      def stop!
+        @_executor.shutdown if @_executor
       end
 
     end
 
   end
+end
+
+Adhearsion::Events.register_callback :shutdown do
+  Adhearsion::Events.kill!
 end
