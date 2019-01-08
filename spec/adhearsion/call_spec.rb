@@ -436,14 +436,18 @@ module Adhearsion
 
         it 'passes the exception through the Events system' do
           latch = CountDownLatch.new 1
-          Adhearsion::Events.exception do |e, l|
+          handler_id = Adhearsion::Events.exception do |e, l|
             expect(e).to be_a RuntimeError
             expect(l).to be subject.logger
             latch.countdown!
           end
-          subject.register_event_handler { |e| raise 'foo' }
-          expect { subject << :foo }.not_to raise_error
-          expect(latch.wait(3)).to be true
+          begin
+            subject.register_event_handler { |e| raise 'foo' }
+            expect { subject << :foo }.not_to raise_error
+            expect(latch.wait(3)).to be true
+          ensure
+            Adhearsion::Events.unregister_handler :exception, handler_id
+          end
         end
       end
     end
