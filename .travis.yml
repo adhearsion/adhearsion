@@ -6,11 +6,16 @@ rvm:
   - jruby-9.1.17.0
   - jruby-9.2.5.0
   - ruby-head
+  - jruby-head
 jdk:
   - openjdk8 # for jruby
+before_install:
+  - rvm @global @default do gem uninstall bundler -a -x --silent || true
+  - gem install bundler -v '<2'
 matrix:
   allow_failures:
     - rvm: ruby-head
+    - rvm: jruby-head
     - rvm: jruby-9.2.5.0
 env: ARUBA_TIMEOUT=120 AHN_ENV=development JRUBY_OPTS="-J-Xmx512m"
 sudo: false
