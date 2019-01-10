@@ -1491,23 +1491,24 @@ module Adhearsion
             expect(other_mock_call).to receive(:dial).with(to, options).once
             expect(OutboundCall).to receive(:new).and_return other_mock_call
           end
+          let(:options) { { timeout: 1.0 } }
           let(:yield_latch) { CountDownLatch.new 1 }
           let(:thread_latch) { CountDownLatch.new 1 }
 
           it 'yields a block on the dial obj' do
+            @dial_obj = Concurrent::AtomicReference.new
             my_dial_block = proc do |dial|
-              @dial_obj = dial
+              @dial_obj.set dial
               yield_latch.countdown!
             end
             Thread.new do
               subject.dial to, options, &my_dial_block
               thread_latch.countdown!
             end
-            expect(yield_latch.wait(2)).to be_truthy
-            expect(@dial_obj).to be_instance_of Dial::Dial
-            other_mock_call << mock_answered
+            expect(yield_latch.count.zero? || yield_latch.wait(1)).to be_truthy
+            expect(@dial_obj.get).to be_instance_of Dial::Dial
             other_mock_call << mock_end
-            expect(thread_latch.wait(2)).to be_truthy
+            expect(thread_latch.count.zero? || thread_latch.wait(2)).to be_truthy
           end
         end
       end
