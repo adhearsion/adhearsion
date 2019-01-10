@@ -10,6 +10,7 @@ rvm:
 jdk:
   - openjdk8 # for jruby
 before_install:
+  - ruby -v # for (j)ruby-head
   - rvm @global @default do gem uninstall bundler -a -x --silent || true
   - gem install bundler -v '<2'
 matrix:
