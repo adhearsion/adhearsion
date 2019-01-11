@@ -58,8 +58,7 @@ RSpec.configure do |config|
 end
 
 Adhearsion::Events.exception do |e, _|
-  puts e.message
-  puts e.backtrace.join("\n")
+  warn "#{e.inspect}\n  #{(e.backtrace || ['NO BACKTRACE']).join("\n  ")}"
 end
 
 # Test modules for #mixin methods
