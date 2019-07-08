@@ -6,6 +6,7 @@
   * Bugfix: Shuts down a call which couldn't be routed with a fake end event. This avoids leaking call actors in cases where the call ended before it was dispatched and we missed the real End event.
   * Bugfix: Removes proactive checks on call availability before dispatching events because these are inaccurate; now optimistically dispatches.
   * Bugfix: Don't trigger the exception event handler twice per exception
+  * Bugfix: Prevent quick Asterisk commands from hanging indefinitely by registering components before executing them.
   * Change: `Adhearsion::Call#start_time` now consistently tracks the call start time for both incoming and outgoing calls
   * Feature: Add `Adhearsion::Call#answer_time` to track the time at which the call was answered
   * Feature: Send `Adhearsion::Event::Answered` events when inbound calls are answered (formerly was only sent when outbound calls were answered)

@@ -11,8 +11,8 @@ module Adhearsion
             end
 
             def execute
-              @agi.execute ami_client
               send_ref
+              @agi.execute ami_client
             rescue RubyAMI::Error
               set_node_response false
             rescue ChannelGoneError
