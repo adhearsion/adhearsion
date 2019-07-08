@@ -1,15 +1,24 @@
 language: ruby
 rvm:
-  - 2.3.7
-  - 2.4.4
+  - 2.3.8
+  - 2.4.6
+  - 2.5.5
   - jruby-9.1.17.0
+  - jruby-9.2.7.0
   - ruby-head
+  - jruby-head
 jdk:
   - openjdk8 # for jruby
+before_install:
+  - ruby -v # for (j)ruby-head
+  - rvm @global @default do gem uninstall bundler -a -x --silent || true
+  - gem install bundler -v '<2'
 matrix:
   allow_failures:
     - rvm: ruby-head
-env: ARUBA_TIMEOUT=120 AHN_ENV=development JRUBY_OPTS="--server -J-Xss1024k -J-Xmx652m -J-XX:+UseConcMarkSweepGC"
+    - rvm: jruby-head
+    - rvm: jruby-9.2.7.0 # fails console launching features (ChildProcess::TimeoutError)
+env: ARUBA_TIMEOUT=120 AHN_ENV=development JRUBY_OPTS="-J-Xmx512m"
 sudo: false
 notifications:
   slack:
