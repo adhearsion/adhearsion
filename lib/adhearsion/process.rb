@@ -39,10 +39,6 @@ module Adhearsion
         transition :booting => :force_stopped
       end
 
-      event :hard_shutdown do
-        transition [:running, :stopping] => :rejecting
-      end
-
       event :stop do
         transition all => :stopped
       end
