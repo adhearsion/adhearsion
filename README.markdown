@@ -1,9 +1,8 @@
-[![Gem Version](https://badge.fury.io/rb/adhearsion.png)](https://rubygems.org/gems/adhearsion)
-[![Build Status](https://secure.travis-ci.org/adhearsion/adhearsion.png?branch=develop)](http://travis-ci.org/adhearsion/adhearsion)
-[![Dependency Status](https://gemnasium.com/adhearsion/adhearsion.png?travis)](https://gemnasium.com/adhearsion/adhearsion)
-[![Code Climate](https://codeclimate.com/github/adhearsion/adhearsion.png)](https://codeclimate.com/github/adhearsion/adhearsion)
-[![Coverage Status](https://coveralls.io/repos/adhearsion/adhearsion/badge.png?branch=develop)](https://coveralls.io/r/adhearsion/adhearsion)
-[![Inline docs](http://inch-ci.org/github/adhearsion/adhearsion.png?branch=develop)](http://inch-ci.org/github/adhearsion/adhearsion)
+[![Gem Version](https://badge.fury.io/rb/adhearsion.svg)](https://rubygems.org/gems/adhearsion)
+[![Build Status](https://secure.travis-ci.org/adhearsion/adhearsion.svg?branch=develop)](http://travis-ci.org/adhearsion/adhearsion)
+[![Code Climate](https://codeclimate.com/github/adhearsion/adhearsion.svg)](https://codeclimate.com/github/adhearsion/adhearsion)
+[![Coverage Status](https://coveralls.io/repos/adhearsion/adhearsion/badge.svg?branch=develop)](https://coveralls.io/r/adhearsion/adhearsion)
+[![Inline docs](http://inch-ci.org/github/adhearsion/adhearsion.svg?branch=develop)](http://inch-ci.org/github/adhearsion/adhearsion)
 
 # Adhearsion
 
