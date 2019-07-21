@@ -156,7 +156,7 @@ module Adhearsion
       it "is sends a hangup command for the call" do
         call_id = call.id
         allow(Adhearsion).to receive_messages :client => double('Client')
-        expect(Adhearsion.client).to receive(:execute_command).once.with(Adhearsion::Rayo::Command::Hangup.new, :async => true, :call_id => call_id)
+        expect(Adhearsion.client).to receive(:execute_command).once.with(Adhearsion::Rayo::Command::Hangup.new, :call_id => call_id)
 
         subject << call
 

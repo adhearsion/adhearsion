@@ -109,7 +109,7 @@ describe Adhearsion do
     end
 
     it "writes a command to the client" do
-      execute_expectation.with(message, :async => true)
+      execute_expectation.with(message)
       described_class.execute_component message
     end
 
