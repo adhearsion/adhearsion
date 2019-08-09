@@ -477,7 +477,7 @@ module Adhearsion
         # The duration for which the calls were joined. Does not include time spent in confirmation controllers or after being separated.
         def duration
           if start_time && end_time
-            end_time - start_time
+            end_time.to_i - start_time.to_i
           else
             0.0
           end
