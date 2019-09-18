@@ -150,7 +150,7 @@ module Adhearsion
         end
 
         def handle_iq_result(iq, command)
-          command.response = iq.rayo_node.is_a?(Ref) ? iq.rayo_node : true
+          command.response = (iq.rayo_node.is_a?(Ref) || command.is_a?(Adhearsion::Rayo::Command::Exec)) ? iq.rayo_node : true
         end
 
         def handle_error(iq, command = nil)
