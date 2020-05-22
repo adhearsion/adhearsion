@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require 'loquacious'
+require 'concurrent'
 
 module Adhearsion
   class Configuration
@@ -50,7 +51,7 @@ module Adhearsion
           Does not work under JRuby.
         __
 
-        event_threads 5, transform: Proc.new { |v| Adhearsion::Configuration.validate_number v }, desc: <<-__
+        event_threads Concurrent.processor_count, transform: Proc.new { |v| Adhearsion::Configuration.validate_number v }, desc: <<-__
           The number of threads to include in the event worker pool."
         __
 

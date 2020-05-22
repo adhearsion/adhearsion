@@ -2,7 +2,7 @@
 
 require 'has_guarded_handlers'
 require 'singleton'
-require 'celluloid'
+require 'concurrent/executor/thread_pool_executor'
 
 module Adhearsion
   module Events
@@ -27,15 +27,11 @@ module Adhearsion
       end
     end
 
-    class Worker
-      include Celluloid
-
-      def work(type, object)
-        Handler.instance.trigger_handler type, object
-      rescue => e
-        raise if type == :exception
-        async.work :exception, e
-      end
+    def self.__handle(type, object)
+      Handler.instance.trigger_handler type, object
+    rescue => ex
+      raise(ex) if type == :exception
+      trigger :exception, ex
     end
 
     class << self
@@ -47,30 +43,33 @@ module Adhearsion
         Handler.instance.respond_to? method_name, include_private
       end
 
-      def trigger(type, object = nil)
-        queue.async.work type, object
-      end
-
-      def trigger_immediately(type, object = nil)
-        queue.work type, object
-      end
-
       def draw(&block)
         Handler.instance.instance_exec(&block)
       end
 
-      def queue
-        unless @queue && @queue.alive?
-          init
+      def trigger(type, object = nil)
+        executor.post do
+          begin
+            __handle(type, object)
+          rescue => ex
+            logger.error(ex) rescue nil # to be aware of *unhandled* exceptions
+          end
         end
-
-        @queue
       end
+
+      def trigger_immediately(type, object = nil)
+        __handle type, object
+      end
+
+      def executor
+        @_executor || init
+      end
+      private :executor
 
       def init
         size = Adhearsion.config.core.event_threads
         logger.debug "Initializing event worker pool of size #{size}"
-        @queue = Worker.pool(size: size)
+        @_executor = Concurrent::ThreadPoolExecutor.new(min_threads: size, max_threads: size, auto_terminate: false)
       end
 
       def refresh!
@@ -79,10 +78,24 @@ module Adhearsion
       end
 
       def clear
-        @queue = nil
+        kill!
+        @_executor = nil
         Handler.instance.clear_handlers
       end
+
+      def kill!
+        @_executor.kill if @_executor
+      end
+
+      def stop!
+        @_executor.shutdown if @_executor
+      end
+
     end
 
   end
+end
+
+Adhearsion::Events.register_callback :shutdown do
+  Adhearsion::Events.kill!
 end
