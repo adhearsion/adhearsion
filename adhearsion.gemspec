@@ -49,8 +49,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'guard-cucumber'
   s.add_development_dependency 'guard-rspec'
   s.add_development_dependency 'rspec', ["~> 3.8"]
+  s.add_development_dependency 'simplecov'
+  s.add_development_dependency 'simplecov-lcov'
   s.add_development_dependency 'yard'
   s.add_development_dependency 'guard-yard'
-  s.add_development_dependency 'coveralls'
   s.add_development_dependency 'timecop'
 end
