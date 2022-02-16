@@ -1,4 +1,4 @@
-default: --tags ~@wip
+default: --tags 'not @wip'
 wip: --wip --tags @wip
 cli: --tags @cli
-guard: --format pretty --strict --tags ~@wip
+guard: --format pretty --strict --tags 'not @wip'
