@@ -39,6 +39,16 @@ module Adhearsion
       Adhearsion.active_calls.clear
     end
 
+    def expect_message_waiting_for_response(message = nil, fail = false, &block)
+      expectation = expect(subject.wrapped_object).to receive(:write_and_await_response, &block).once
+      expectation = expectation.with message if message
+      if fail
+        expectation.and_raise fail
+      else
+        expectation.and_return message
+      end
+    end
+
     it "should do recursion detection on inspect" do
       subject[:foo] = subject
       Timeout.timeout(0.2) do
@@ -426,14 +436,18 @@ module Adhearsion
 
         it 'passes the exception through the Events system' do
           latch = CountDownLatch.new 1
-          Adhearsion::Events.exception do |e, l|
+          handler_id = Adhearsion::Events.exception do |e, l|
             expect(e).to be_a RuntimeError
             expect(l).to be subject.logger
             latch.countdown!
           end
-          subject.register_event_handler { |e| raise 'foo' }
-          expect { subject << :foo }.not_to raise_error
-          expect(latch.wait(3)).to be true
+          begin
+            subject.register_event_handler { |e| raise 'foo' }
+            expect { subject << :foo }.not_to raise_error
+            expect(latch.wait(3)).to be true
+          ensure
+            Adhearsion::Events.unregister_handler :exception, handler_id
+          end
         end
       end
     end
@@ -869,6 +883,51 @@ module Adhearsion
       end
     end
 
+    describe "routing" do
+      before do
+        expect(Adhearsion::Process).to receive(:state_name).once.and_return process_state
+      end
+
+      after { subject.route }
+
+      context "when the Adhearsion::Process is :booting" do
+        let(:process_state) { :booting }
+
+        it 'should reject a call with cause :declined' do
+          expect_message_waiting_for_response Adhearsion::Rayo::Command::Reject.new(reason: :decline)
+        end
+      end
+
+      [ :running, :stopping ].each do |state|
+        context "when when Adhearsion::Process is in :#{state}" do
+          let(:process_state) { state }
+
+          it "should dispatch via the router" do
+            Adhearsion.router do
+              route 'foobar', Class.new
+            end
+            expect(Adhearsion.router).to receive(:handle).once.with subject
+          end
+        end
+      end
+
+      context "when when Adhearsion::Process is in :rejecting" do
+        let(:process_state) { :rejecting }
+
+        it 'should reject a call with cause :declined' do
+          expect_message_waiting_for_response Adhearsion::Rayo::Command::Reject.new(reason: :decline)
+        end
+      end
+
+      context "when when Adhearsion::Process is not :running, :stopping or :rejecting" do
+        let(:process_state) { :foobar }
+
+        it 'should reject a call with cause :error' do
+          expect_message_waiting_for_response Adhearsion::Rayo::Command::Reject.new(reason: :error)
+        end
+      end
+    end
+
     describe "#send_message" do
       it "should send a message through the Rayo connection using the call ID and domain" do
         expect(subject.wrapped_object).to receive(:client).once.and_return mock_client
@@ -884,16 +943,6 @@ module Adhearsion
     end
 
     describe "basic control commands" do
-      def expect_message_waiting_for_response(message = nil, fail = false, &block)
-        expectation = expect(subject.wrapped_object).to receive(:write_and_await_response, &block).once
-        expectation = expectation.with message if message
-        if fail
-          expectation.and_raise fail
-        else
-          expectation.and_return message
-        end
-      end
-
       describe '#accept' do
         describe "with no headers" do
           it 'should send an Accept message' do

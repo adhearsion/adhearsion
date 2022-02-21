@@ -200,6 +200,23 @@ module Adhearsion
                   expect(recording.uri).to match(/.*\.mp3$/)
                 end
               end
+
+              context "set to 'wav49'" do
+                let(:command_options) { { :format => 'wav49' } }
+                it "should execute as 'wav49'" do
+                  expect(ami_client).to receive(:send_action).once.with('Monitor', hash_including('Format' => 'wav49'))
+                  subject.execute
+                  expect(original_command.response(0.1)).to be_a Adhearsion::Rayo::Ref
+                end
+
+                it "provides the correct filename in the recording" do
+                  expect(ami_client).to receive(:send_action)
+                  subject.execute
+                  monitor_stop_event = RubyAMI::Event.new 'MonitorStop', 'Channel' => channel
+                  mock_call.process_ami_event monitor_stop_event
+                  expect(recording.uri).to match(/.*\.WAV$/)
+                end
+              end
             end
 
             describe 'start_beep' do

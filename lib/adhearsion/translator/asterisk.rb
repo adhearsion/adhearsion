@@ -41,7 +41,7 @@ module Adhearsion
         @event_filter ? !!@event_filter[event] : true
       end
 
-      event_filter = nil
+      self.event_filter = nil
 
       def initialize(ami_client, connection)
         @ami_client, @connection = ami_client, connection

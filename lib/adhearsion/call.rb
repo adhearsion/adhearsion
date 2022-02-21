@@ -256,7 +256,7 @@ module Adhearsion
       on_end do |event|
         logger.info "Call #{from} -> #{to} ended due to #{event.reason}#{" (code #{event.platform_code})" if event.platform_code}"
         @end_time = event.timestamp.to_time
-        @duration = @end_time - @start_time if @start_time
+        @duration = @end_time.to_i - @start_time.to_i if @start_time
         clear_from_active_calls
         @end_reason = event.reason
         @end_code = event.platform_code
@@ -271,7 +271,7 @@ module Adhearsion
       if @duration
         @duration
       elsif @start_time
-        Time.now - @start_time
+        Time.now.to_i - @start_time.to_i
       else
         0.0
       end
@@ -507,6 +507,22 @@ module Adhearsion
         command.domain = domain
       end
       client.execute_command command
+    end
+
+    def route
+      case Adhearsion::Process.state_name
+      when :booting, :rejecting
+        logger.info "Declining call because the process is not yet running."
+        reject :decline
+      when :running, :stopping
+        logger.info "Routing call"
+        Adhearsion.router.handle current_actor
+      else
+        reject :error
+      end
+    rescue Call::Hangup, Call::ExpiredError
+      logger.warn "Call routing could not be completed because call was unavailable."
+      self << Adhearsion::Event::End.new(reason: :error)
     end
 
     ##

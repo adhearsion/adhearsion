@@ -79,18 +79,15 @@ module Adhearsion
         end
       end
 
-      it "catches standard errors, triggering an exception event" do
-        expect(subject).to receive(:run).once.ordered.and_raise(StandardError)
-        latch = CountDownLatch.new 1
-        ex = lo = nil
-        Events.exception do |e, l|
-          ex, lo = e, l
-          latch.countdown!
+      it "catches standard errors, triggering on_error callbacks" do
+        ex = nil
+        klass = Class.new(CallController) do
+          on_error { ex = @error }
         end
+        subject = new_controller(klass)
+        expect(subject).to receive(:run).once.ordered.and_raise(StandardError)
         expect { subject.exec }.to raise_error
-        expect(latch.wait(1)).to be true
         expect(ex).to be_a StandardError
-        expect(lo).to be subject.logger
       end
 
       context "when a block is specified" do

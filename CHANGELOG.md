@@ -1,13 +1,20 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Bugfix: Return correct recording uri for wav49 format with Asterisk.
   * Bugfix: Handle more AMI error responses which mean the channel is not found
   * Bugfix: Reporting statistics should not deadlock call processing
   * Bugfix: Sending the `USR2` signal to an Adhearsion application now prints thread stack traces to STDERR.
   * Bugfix: Checking i18n prompts now handles nested keys
   * Bugfix: Return the correct error when the call is down when stopping an output rather than crashing the translator (ported from PB[#256](https://github.com/adhearsion/punchblock/pull/256))
+  * Bugfix: Shuts down a call which couldn't be routed with a fake end event. This avoids leaking call actors in cases where the call ended before it was dispatched and we missed the real End event.
+  * Bugfix: Removes proactive checks on call availability before dispatching events because these are inaccurate; now optimistically dispatches.
+  * Bugfix: Don't trigger the exception event handler twice per exception
   * Change: `Adhearsion::Call#start_time` now consistently tracks the call start time for both incoming and outgoing calls
   * Feature: Add `Adhearsion::Call#answer_time` to track the time at which the call was answered
   * Feature: Send `Adhearsion::Event::Answered` events when inbound calls are answered (formerly was only sent when outbound calls were answered)
   * Feature: Add rake task to generate Markdown formatted prompt list for recording
+  * Feature: Increases concurrent call routing performance by delegating call routing to Call actors
+  * Update: Bump Reel version to 0.6.x, fixing client disconnection bug
+  * Update: Bump Blather to 2.x and RubySpeech to 3.x so that Nokogiri can be bumped to 1.8 for security fixes
 
 # [3.0.0.rc1](https://github.com/adhearsion/adhearsion/compare/v3.0.0.beta2...v3.0.0.rc1) - [2016-01-07](https://rubygems.org/gems/adhearsion/versions/3.0.0.rc1)
   * Bugfix: Concurrent access to call collection should not be permitted. See [#589](https://github.com/adhearsion/adhearsion/issues/589)
