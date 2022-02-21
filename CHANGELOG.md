@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Update: remove bundler 1 dependency
 
 # [2.6.3](https://github.com/adhearsion/adhearsion/compare/v2.6.3...v2.6.4) - [2017-01-14](https://rubygems.org/gems/adhearsion/versions/2.6.4)
   * Bugfix: Upgrade logging gem for compat with other libraries' dependencies  [#619](https://github.com/adhearsion/adhearsion/pull/#619).
