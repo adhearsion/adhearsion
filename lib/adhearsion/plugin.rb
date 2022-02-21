@@ -94,8 +94,8 @@ module Adhearsion
       #       end
       #     end
       #
-      def tasks
-        @@rake_tasks << Proc.new if block_given?
+      def tasks(&block)
+        @@rake_tasks << Proc.new(&block) if block_given?
         @@rake_tasks
       end
 
@@ -159,7 +159,7 @@ module Adhearsion
         if block_given?
           opts = {}
           opts[:after] ||= configs.last.name unless configs.empty?
-          ::Loquacious::Configuration.defaults_for plugin_name, &Proc.new
+          ::Loquacious::Configuration.defaults_for plugin_name, &Proc.new(&block)
           initializer = Initializer.new(plugin_name, self, opts) do
             ::Loquacious.configuration_for plugin_name, &block
           end
