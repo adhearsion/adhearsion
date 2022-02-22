@@ -1,9 +1,6 @@
 on:
-  push:
-    branches:
-      - master
-      - develop
-  pull_request:
+  - push
+  - pull_request
 
 name: Build
 
