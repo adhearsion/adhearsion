@@ -9,10 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [
-          2.7,
-          3.1
-        ]
+        ruby: ['2', '3']
 
     env:
       RAILS_ENV: test
