@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'ffi', ["~> 1.0"]
   s.add_runtime_dependency 'future-resource', ["~> 1.0"]
   s.add_runtime_dependency 'has-guarded-handlers', ["~> 1.6", ">= 1.6.3"]
-  s.add_runtime_dependency 'i18n', ["~> 0.6"]
+  s.add_runtime_dependency 'i18n', [">= 0.6"]
   s.add_runtime_dependency 'logging', ["~> 2.0", "< 2.3"] # See https://github.com/TwP/logging/issues/235
   s.add_runtime_dependency 'nokogiri', ["~> 1.8", ">= 1.8.3", "< 1.11"] # Versions > 1.10 broken under JRuby
   s.add_runtime_dependency 'pry'
