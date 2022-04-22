@@ -60,6 +60,40 @@ module Adhearsion
       expect(e).to be_a(ExceptionClass)
     end
 
+    class FailingNotifier
+      def notify(ex)
+        warn "#{self} - #{ex.class} : #{ex.message}"
+        raise Errno::ECONNREFUSED
+      end
+    end
+
+    it "should not propagate exceptions which occur during exception event handling" do
+      latch = CountDownLatch.new 1
+      notifier = FailingNotifier.new
+
+      exceptions = []
+      Events.exception do |ex, logger|
+        exceptions << ex
+        begin
+          notifier.notify ex
+        ensure
+          latch.countdown!
+        end
+      end
+
+      begin
+        raise "A-RUNTIME-FAILURE"
+      rescue => ex
+        Events.trigger :exception, ex
+      end
+
+      expect(latch.wait(2)).to be true
+
+      expect(exceptions.size).to eql 1
+      expect(exceptions.first).to be_a StandardError
+      expect(exceptions.first).to_not be_a SystemCallError # ECONNREFUSED should not propagate
+    end
+
     it "should implicitly pass on all handlers" do
       result = nil
 

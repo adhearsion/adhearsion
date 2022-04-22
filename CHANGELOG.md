@@ -1,4 +1,5 @@
 # [develop](https://github.com/adhearsion/adhearsion)
+  * Change: Move events system (once again) from Celluloid to using a thread pool executor (the previous move from GirlFriday to Celluloid has degraded performance considerably under heavy concurrent load)
   * Bugfix: Return correct recording uri for wav49 format with Asterisk.
   * Bugfix: Handle more AMI error responses which mean the channel is not found
   * Bugfix: Reporting statistics should not deadlock call processing
