@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 require 'ruby_speech'
-require 'singleton'
+require 'concurrent/map'
 require 'adhearsion/translator/asterisk/component'
 
 module Adhearsion
@@ -10,22 +10,25 @@ module Adhearsion
       module Component
         class DTMFRecognizer
           class BuiltinMatcherCache
-            include Singleton
-            include MonitorMixin
+            @@cache = Concurrent::Map.new
 
-            def get(uri)
-              cache[uri] ||= fetch(uri)
-            end
+            class << self
+              def get(uri)
+                @@cache[uri] || cache(uri)
+              end
 
-            private
+              def clear!
+                @@cache.clear
+              end
 
-            def fetch(uri)
-              grammar = RubySpeech::GRXML.from_uri(uri)
-              RubySpeech::GRXML::Matcher.new(grammar)
-            end
+              private
 
-            def cache
-              @cache ||= {}
+              def cache(uri)
+                grammar = RubySpeech::GRXML.from_uri(uri)
+                matcher = RubySpeech::GRXML::Matcher.new(grammar)
+                # put_if_absent returns existing value or nil if key wasn't stored (matcher got set as the value)
+                @@cache.put_if_absent(uri, matcher) || matcher
+              end
             end
           end
 
@@ -39,7 +42,7 @@ module Adhearsion
             @finished = false
 
             @matcher = if grammar.url
-              BuiltinMatcherCache.instance.get(grammar.url)
+              BuiltinMatcherCache.get(grammar.url)
             else
               RubySpeech::GRXML::Matcher.new RubySpeech::GRXML.import(grammar.value.to_s)
             end
