@@ -4,6 +4,7 @@
   * Bugfix: Reporting statistics should not deadlock call processing
   * Bugfix: Sending the `USR2` signal to an Adhearsion application now prints thread stack traces to STDERR.
   * Bugfix: Checking i18n prompts now handles nested keys
+  * Bugfix: Return the correct error when the call is down when stopping an output rather than crashing the translator (ported from PB[#256](https://github.com/adhearsion/punchblock/pull/256))
   * Bugfix: Shuts down a call which couldn't be routed with a fake end event. This avoids leaking call actors in cases where the call ended before it was dispatched and we missed the real End event.
   * Bugfix: Removes proactive checks on call availability before dispatching events because these are inaccurate; now optimistically dispatches.
   * Bugfix: Don't trigger the exception event handler twice per exception
