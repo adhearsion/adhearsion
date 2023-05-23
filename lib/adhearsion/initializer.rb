@@ -145,7 +145,7 @@ module Adhearsion
 
     def load_app_file
       path = "#{Adhearsion.config.root}/config/app.rb"
-      load path if File.exists?(path)
+      load path if File.exist?(path)
     end
 
     def load_config_file
@@ -155,12 +155,12 @@ module Adhearsion
     def load_events_file
       Adhearsion::Events.init
       path = "#{Adhearsion.config.root}/config/events.rb"
-      load path if File.exists?(path)
+      load path if File.exist?(path)
     end
 
     def load_routes_file
       path = "#{Adhearsion.config.root}/config/routes.rb"
-      load path if File.exists?(path)
+      load path if File.exist?(path)
     end
 
     def configure_plugins

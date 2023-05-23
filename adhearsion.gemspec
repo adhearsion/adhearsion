@@ -30,9 +30,9 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'ffi', ["~> 1.0"]
   s.add_runtime_dependency 'future-resource', ["~> 1.0"]
   s.add_runtime_dependency 'has-guarded-handlers', ["~> 1.6", ">= 1.6.3"]
-  s.add_runtime_dependency 'i18n', [">= 0.6"]
-  s.add_runtime_dependency 'logging', ["~> 2.0", "< 2.3"] # See https://github.com/TwP/logging/issues/235
-  s.add_runtime_dependency 'nokogiri', ["~> 1.8", ">= 1.8.3", "< 1.11"] # Versions > 1.10 broken under JRuby
+  s.add_runtime_dependency 'i18n'
+  s.add_runtime_dependency 'logging', ["~> 2.0"]
+  s.add_runtime_dependency 'nokogiri'
   s.add_runtime_dependency 'pry'
   s.add_runtime_dependency 'rake'
   s.add_runtime_dependency 'reel', ["~> 0.6.0"]
@@ -42,10 +42,10 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'ruby_jid', ["~> 1.0"]
   s.add_runtime_dependency 'ruby_speech', ["~> 3.0"]
   s.add_runtime_dependency 'state_machine', ["~> 1.0"]
-  s.add_runtime_dependency 'thor', "~> 0.18.0"
+  s.add_runtime_dependency 'thor'
   s.add_runtime_dependency 'virtus', ["~> 1.0"]
 
-  s.add_development_dependency 'aruba', "~> 0.6.0"
+  s.add_development_dependency 'aruba'
   s.add_development_dependency 'cucumber'
   s.add_development_dependency 'guard-cucumber'
   s.add_development_dependency 'guard-rspec'

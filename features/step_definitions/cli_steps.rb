@@ -27,8 +27,6 @@ Given /^that I create a valid app under "([^"]*)"$/ do |path|
     When I run `ahn create #{path}`
     Then there should be a valid adhearsion directory named "#{path}"
   }
-
-  remove_file "#{path}/Gemfile"
 end
 
 Then /^there should be a valid adhearsion directory named "([^"]*)"$/ do |path|
@@ -48,11 +46,4 @@ Then /^there should be a valid adhearsion directory named "([^"]*)"$/ do |path|
       | config/adhearsion.rb |
       | config/environment.rb |
   }
-
-  ## NOTE: Aruba's cd method is not really changing directories
-  ## Either we use cd or we need absolute path... could not figure out cleaner
-  ## way to get back to previous dir.
-  dotsback=1.upto(path.split(File::SEPARATOR)[0..-1].count).collect {|x| ".."}.join(File::SEPARATOR)
-  dotsback.shift if dotsback[0].is_a?(String) and dotsback[0].empty?
-  cd(dotsback)
 end

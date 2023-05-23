@@ -175,9 +175,9 @@ module Adhearsion
                 logger.info "#dial joining call #{new_call.id} to #{@call.id}"
                 pre_join_tasks new_call
                 @call.answer
-                new_call.join @join_target, @join_options
+                new_call.join(@join_target, **@join_options)
                 unless @join_target == @call
-                  @call.join @join_target, @join_options
+                  @call.join(@join_target, **@join_options)
                 end
                 status.answer!
               elsif status.result == :answer
@@ -201,7 +201,7 @@ module Adhearsion
           @calls.each do |call|
             target, specific_options = @call_targets[call]
             local_options = @options.dup.deep_merge specific_options if specific_options
-            call.dial target, (local_options || @options)
+            call.dial(target, **(local_options || @options))
           end
         end
 
@@ -234,7 +234,7 @@ module Adhearsion
           ignoring_ended_calls do
             if join_target != @call
               logger.debug "Unjoining main call #{@call.id} from #{join_target}"
-              @call.unjoin join_target
+              @call.unjoin(join_target)
             end
             if split_controller = targets[:main]
               logger.info "Executing controller #{split_controller} on main call"
@@ -253,11 +253,11 @@ module Adhearsion
           ignoring_ended_calls do
             unless target == @call
               @join_target = target
-              @call.join target, join_options
+              @call.join(target, **join_options)
             end
           end
           @calls.each do |call|
-            ignoring_ended_calls { call.join target, join_options }
+            ignoring_ended_calls { call.join target, **join_options }
           end
         end
 

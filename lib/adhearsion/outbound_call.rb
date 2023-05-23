@@ -26,8 +26,8 @@ module Adhearsion
       #
       def originate(to, opts = {}, &controller_block)
         new.tap do |call|
-          call.execute_controller_or_router_on_answer opts.delete(:controller), opts.delete(:controller_metadata), &controller_block
-          call.dial to, opts
+          call.execute_controller_or_router_on_answer(opts.delete(:controller), opts.delete(:controller_metadata), &controller_block)
+          call.dial(to, **opts)
         end
       end
     end

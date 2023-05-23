@@ -534,7 +534,7 @@ module Adhearsion
     #
     def send_message(body, options = {})
       logger.debug "Sending message: #{body}"
-      client.send_message id, domain, body, options
+      client.send_message(id, domain, body, **options)
     end
 
     # @private

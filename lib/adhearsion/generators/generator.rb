@@ -55,7 +55,7 @@ module Adhearsion
       def self.default_source_root
         return unless generator_name
         path = File.expand_path File.join(generator_name, 'templates'), base_root
-        path if File.exists?(path)
+        path if File.exist?(path)
       end
 
       # Returns the base root for a common set of generators. This is used to dynamically

@@ -12,7 +12,7 @@ module Adhearsion
       return unless config.enable
 
       rackup = File.join(Adhearsion.root, config.rackup)
-      unless File.exists?(rackup)
+      unless File.exist?(rackup)
         logger.error "Cannot start HTTP server because the Rack configuration does not exist at #{rackup}"
         return
       end

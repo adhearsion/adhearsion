@@ -665,28 +665,31 @@ module Adhearsion
         end
 
         it 'should send the redirect extension Command to the AMI client' do
-          expect(ami_client).to receive(:send_action).once.with 'Command', 'Command' => "dialplan add extension #{Asterisk::REDIRECT_EXTENSION},#{Asterisk::REDIRECT_PRIORITY},AGI,agi:async into #{Asterisk::REDIRECT_CONTEXT}"
-          expect(ami_client).to receive(:send_action).once.with('Command', 'Command' => "dialplan show #{Asterisk::REDIRECT_CONTEXT}").and_return(passed_show)
+          expect(ami_client).to receive(:send_action).once.with(
+            'Command',
+            Hash('Command' => "dialplan add extension #{Asterisk::REDIRECT_EXTENSION},#{Asterisk::REDIRECT_PRIORITY},AGI,agi:async into #{Asterisk::REDIRECT_CONTEXT}")
+          )
+          expect(ami_client).to receive(:send_action).once.with('Command', Hash('Command' => "dialplan show #{Asterisk::REDIRECT_CONTEXT}")).and_return(passed_show)
           subject.run_at_fully_booted
         end
 
         it 'should check the context for existence and do nothing if it is there' do
-          expect(ami_client).to receive(:send_action).once.with 'Command', 'Command' => "dialplan add extension #{Asterisk::REDIRECT_EXTENSION},#{Asterisk::REDIRECT_PRIORITY},AGI,agi:async into #{Asterisk::REDIRECT_CONTEXT}"
-          expect(ami_client).to receive(:send_action).once.with('Command', 'Command' => "dialplan show #{Asterisk::REDIRECT_CONTEXT}").and_return(passed_show)
+          expect(ami_client).to receive(:send_action).once.with('Command', Hash('Command' => "dialplan add extension #{Asterisk::REDIRECT_EXTENSION},#{Asterisk::REDIRECT_PRIORITY},AGI,agi:async into #{Asterisk::REDIRECT_CONTEXT}"))
+          expect(ami_client).to receive(:send_action).once.with('Command', Hash('Command' => "dialplan show #{Asterisk::REDIRECT_CONTEXT}")).and_return(passed_show)
           subject.run_at_fully_booted
         end
 
         it 'should check the context for existence and log an error if it is not there' do
-          expect(ami_client).to receive(:send_action).once.with 'Command', 'Command' => "dialplan add extension #{Asterisk::REDIRECT_EXTENSION},#{Asterisk::REDIRECT_PRIORITY},AGI,agi:async into #{Asterisk::REDIRECT_CONTEXT}"
-          expect(ami_client).to receive(:send_action).once.with('Command', 'Command' => "dialplan show #{Asterisk::REDIRECT_CONTEXT}").and_return(failed_show)
+          expect(ami_client).to receive(:send_action).once.with('Command', Hash('Command' => "dialplan add extension #{Asterisk::REDIRECT_EXTENSION},#{Asterisk::REDIRECT_PRIORITY},AGI,agi:async into #{Asterisk::REDIRECT_CONTEXT}"))
+          expect(ami_client).to receive(:send_action).once.with('Command', Hash('Command' => "dialplan show #{Asterisk::REDIRECT_CONTEXT}")).and_return(failed_show)
           expect(translator.logger).to receive(:error).once.with("Adhearsion failed to add the #{Asterisk::REDIRECT_EXTENSION} extension to the #{Asterisk::REDIRECT_CONTEXT} context. Please add a [#{Asterisk::REDIRECT_CONTEXT}] entry to your dialplan.")
           subject.run_at_fully_booted
         end
 
         it 'should check the recording directory for existence' do
           stub_const('Adhearsion::Translator::Asterisk::Component::Record::RECORDING_BASE_PATH', broken_path)
-          expect(ami_client).to receive(:send_action).once.with 'Command', 'Command' => "dialplan add extension #{Asterisk::REDIRECT_EXTENSION},#{Asterisk::REDIRECT_PRIORITY},AGI,agi:async into #{Asterisk::REDIRECT_CONTEXT}"
-          expect(ami_client).to receive(:send_action).once.with('Command', 'Command' => "dialplan show #{Asterisk::REDIRECT_CONTEXT}").and_return(passed_show)
+          expect(ami_client).to receive(:send_action).once.with('Command', Hash('Command' => "dialplan add extension #{Asterisk::REDIRECT_EXTENSION},#{Asterisk::REDIRECT_PRIORITY},AGI,agi:async into #{Asterisk::REDIRECT_CONTEXT}"))
+          expect(ami_client).to receive(:send_action).once.with('Command', Hash('Command' => "dialplan show #{Asterisk::REDIRECT_CONTEXT}")).and_return(passed_show)
           expect(translator.logger).to receive(:warn).once.with("Recordings directory #{broken_path} does not exist. Recording might not work. This warning can be ignored if Adhearsion is running on a separate machine than Asterisk. See http://adhearsion.com/docs/call-controllers#recording")
           subject.run_at_fully_booted
         end

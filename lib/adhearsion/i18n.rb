@@ -6,12 +6,12 @@ module Adhearsion
     def self.t(key, options = {})
       this_locale = options[:locale] || locale
       options = {default: '', locale: locale}.merge(options)
-      prompt = ::I18n.t "#{key}.audio", options
-      text   = ::I18n.t "#{key}.text", options
+      prompt = ::I18n.t("#{key}.audio", **options)
+      text   = ::I18n.t("#{key}.text", **options)
 
       if prompt.empty? && text.empty?
         # Look for a translation key that doesn't follow the Adhearsion-I18n structure
-        text = ::I18n.t key, options
+        text = ::I18n.t(key, **options)
       end
 
       unless prompt.empty?
