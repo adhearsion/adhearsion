@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+require 'celluloid/fsm'
 require 'reel'
 require 'reel/rack'
 
