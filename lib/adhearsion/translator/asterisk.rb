@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-require 'celluloid'
+require 'celluloid/current'
 require 'ruby_ami'
 
 require 'adhearsion/translator/asterisk/agi_command'

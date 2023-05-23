@@ -2,7 +2,7 @@
 
 require 'has_guarded_handlers'
 require 'singleton'
-require 'celluloid'
+require 'celluloid/current'
 
 module Adhearsion
   module Events
