@@ -24,7 +24,9 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'activesupport', [">= 3.0.0"]
   s.add_runtime_dependency 'adhearsion-loquacious', ["~> 1.9"]
   s.add_runtime_dependency 'blather', ["~> 2.0"]
-  s.add_runtime_dependency 'celluloid', ["~> 0.16.0"]
+  s.add_runtime_dependency 'celluloid'
+  s.add_runtime_dependency 'celluloid-pool'
+  s.add_runtime_dependency 'celluloid-supervision'
   s.add_runtime_dependency 'countdownlatch'
   s.add_runtime_dependency 'deep_merge'
   s.add_runtime_dependency 'ffi', ["~> 1.0"]
@@ -35,9 +37,9 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'nokogiri'
   s.add_runtime_dependency 'pry'
   s.add_runtime_dependency 'rake'
-  s.add_runtime_dependency 'reel', ["~> 0.6.0"]
-  s.add_runtime_dependency 'http_parser.rb', ["~> 0.6.0"] # Dependency of Reel, verions > 0.6.0 broken under JRuby
-  s.add_runtime_dependency 'reel-rack', ["~> 0.2.0"]
+  s.add_runtime_dependency 'reel'
+  s.add_runtime_dependency 'http_parser.rb'
+  s.add_runtime_dependency 'reel-rack'
   s.add_runtime_dependency 'ruby_ami', ["~> 2.2"]
   s.add_runtime_dependency 'ruby_jid', ["~> 1.0"]
   s.add_runtime_dependency 'ruby_speech', ["~> 3.0"]

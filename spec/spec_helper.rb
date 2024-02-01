@@ -30,9 +30,10 @@ RSpec.configure do |config|
   config.filter_run :focus => true
   config.run_all_when_everything_filtered = true
   config.color = true
+  config.example_status_persistence_file_path = "spec/examples.txt"
 
   config.mock_with :rspec do |mocks|
-    mocks.add_stub_and_should_receive_to Celluloid::AbstractProxy
+    mocks.add_stub_and_should_receive_to Celluloid::Proxy::Abstract
   end
 
   config.raise_errors_for_deprecations!

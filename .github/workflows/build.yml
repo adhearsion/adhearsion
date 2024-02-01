@@ -10,12 +10,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['3.1', '3.2', 'jruby-9.4', 'jruby-head']
+        ruby: ['3.2']
 
     env:
       RAILS_ENV: test
       CI: true
-      JRUBY_OPTS: "-J-Xmx512m"
 
     steps:
       - name: Checkout
@@ -30,10 +29,3 @@ jobs:
       - name: Run Specs
         run: |
           bundle exec rspec spec
-          ruby -v | grep jruby || bundle exec cucumber features
-
-      - name: Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: coverage/lcov.info

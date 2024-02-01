@@ -11,6 +11,7 @@ end
   accept
   answer
   dial
+  execute
   hangup
   join
   mute

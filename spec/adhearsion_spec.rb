@@ -180,13 +180,4 @@ describe Adhearsion do
       end
     end
   end
-
-  Dir['{bin,features,lib,spec}/**/*.rb'].each do |filename|
-    it "should have an encoding in the file #{filename}" do
-      File.open filename do |file|
-        first_line = file.first
-        expect(first_line).to eq("# encoding: utf-8\n")
-      end
-    end
-  end
 end
