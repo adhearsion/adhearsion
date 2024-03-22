@@ -17,7 +17,7 @@ module Adhearsion
     ExpiredError    = Class.new Celluloid::DeadActorError
 
     # @private
-    class ActorProxy < Celluloid::CellProxy
+    class ActorProxy < Celluloid::Proxy::Cell
       def method_missing(meth, *args, &block)
         super(meth, *args, &block)
       rescue ::Celluloid::DeadActorError
@@ -534,7 +534,7 @@ module Adhearsion
     #
     def send_message(body, options = {})
       logger.debug "Sending message: #{body}"
-      client.send_message id, domain, body, options
+      client.send_message(id, domain, body, **options)
     end
 
     # @private

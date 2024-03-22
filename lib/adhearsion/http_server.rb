@@ -12,22 +12,19 @@ module Adhearsion
       return unless config.enable
 
       rackup = File.join(Adhearsion.root, config.rackup)
-      unless File.exists?(rackup)
+      unless File.exist?(rackup)
         logger.error "Cannot start HTTP server because the Rack configuration does not exist at #{rackup}"
         return
       end
 
-      app, options = ::Rack::Builder.parse_file rackup
-      options = {
-        Host: config.host,
-        Port: config.port,
-      }.merge(options)
+      options = { Host: config.host, Port: config.port }
+      app = ::Rack::Builder.parse_file(rackup)
 
       app = Rack::CommonLogger.new(app, logger)
 
       logger.info "Starting HTTP server listening on #{config.host}:#{config.port}"
 
-      supervisor = ::Reel::Rack::Server.supervise_as(:ahn_http_server, app, options)
+      supervisor = ::Reel::Rack::Server.supervise_as(:ahn_http_server, args: [app, options])
 
       Adhearsion::Events.register_callback :shutdown do
         supervisor.terminate

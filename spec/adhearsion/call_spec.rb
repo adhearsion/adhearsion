@@ -931,7 +931,7 @@ module Adhearsion
     describe "#send_message" do
       it "should send a message through the Rayo connection using the call ID and domain" do
         expect(subject.wrapped_object).to receive(:client).once.and_return mock_client
-        expect(mock_client).to receive(:send_message).once.with(subject.id, subject.domain, "Hello World!", {})
+        expect(mock_client).to receive(:send_message).once.with(subject.id, subject.domain, "Hello World!")
         subject.send_message "Hello World!"
       end
 

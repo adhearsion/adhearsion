@@ -98,7 +98,7 @@ module Adhearsion
     # @return [Adhearsion::Rayo::Client] a client object
     #
     def client_with_connection(type, options)
-      connection = Rayo::Connection.const_get(type == :xmpp ? 'XMPP' : type.to_s.classify).new options
+      connection = Rayo::Connection.const_get(type == :xmpp ? 'XMPP' : type.to_s.classify).new(**options)
       Rayo::Client.new :connection => connection
     rescue NameError
       raise ArgumentError, "Connection type #{type.inspect} is not valid."

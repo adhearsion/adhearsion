@@ -11,6 +11,7 @@ module Adhearsion
     def self.exec_script_ahn!(args = ARGV)
       cwd = Dir.pwd
       return unless in_ahn_application? || in_ahn_application_subdirectory?
+
       exec RUBY, SCRIPT_AHN, *args if in_ahn_application?
       Dir.chdir("..") do
         # Recurse in a chdir block: if the search fails we want to be sure
@@ -22,11 +23,11 @@ module Adhearsion
     end
 
     def self.in_ahn_application?(path = '.')
-      Dir.chdir(path) { File.exists? SCRIPT_AHN }
+      Dir.chdir(path) { File.exist? SCRIPT_AHN }
     end
 
     def self.in_ahn_application_subdirectory?(path = Pathname.new(Dir.pwd))
-      File.exists?(File.join(path, SCRIPT_AHN)) || !path.root? && in_ahn_application_subdirectory?(path.parent)
+      File.exist?(File.join(path, SCRIPT_AHN)) || !path.root? && in_ahn_application_subdirectory?(path.parent)
     end
   end
 end

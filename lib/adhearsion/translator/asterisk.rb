@@ -172,7 +172,7 @@ module Adhearsion
       end
 
       def check_recording_directory
-        logger.warn "Recordings directory #{Component::Record::RECORDING_BASE_PATH} does not exist. Recording might not work. This warning can be ignored if Adhearsion is running on a separate machine than Asterisk. See http://adhearsion.com/docs/call-controllers#recording" unless File.exists?(Component::Record::RECORDING_BASE_PATH)
+        logger.warn "Recordings directory #{Component::Record::RECORDING_BASE_PATH} does not exist. Recording might not work. This warning can be ignored if Adhearsion is running on a separate machine than Asterisk. See http://adhearsion.com/docs/call-controllers#recording" unless File.exist?(Component::Record::RECORDING_BASE_PATH)
       end
 
       def actor_died(actor, reason)
@@ -188,7 +188,7 @@ module Adhearsion
       private
 
       def send_ami_action(name, headers = {})
-        ami_client.send_action name, headers
+        ami_client.send_action(name, headers)
       end
 
       def handle_varset_ami_event(event)

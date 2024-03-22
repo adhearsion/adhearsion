@@ -58,8 +58,8 @@ module Adhearsion
       end
 
       it "should dial the call to the correct endpoint and return it" do
-        expect(mock_call.wrapped_object).to receive(:dial).with(to, :from => 'foo').once
-        expect(OutboundCall.originate(to, :from => 'foo')).to be mock_call
+        expect(mock_call.wrapped_object).to receive(:dial).with(to, Hash(from: 'foo')).once
+        expect(OutboundCall.originate(to, Hash(from: 'foo'))).to be mock_call
       end
 
       it "should run through the router when the call is answered" do
@@ -74,9 +74,9 @@ module Adhearsion
         let(:controller) { CallController }
 
         it "should execute the controller on the call when it is answered" do
-          expect(mock_call).to receive(:dial).once.with(to, {})
-          expect(mock_call).to receive(:execute_controller).once.with kind_of(controller), kind_of(Proc)
-          call = OutboundCall.originate to, :controller => controller
+          expect(mock_call).to receive(:dial).once.with(to)
+          expect(mock_call).to receive(:execute_controller).once.with(kind_of(controller), kind_of(Proc))
+          call = OutboundCall.originate(to, :controller => controller)
           call << Adhearsion::Event::Answered.new
         end
 
@@ -91,8 +91,8 @@ module Adhearsion
 
         context "with controller metadata specified" do
           it "should set the metadata on the controller" do
-            expect(mock_call).to receive(:dial).once.with(to, {})
-            expected_controller = controller.new mock_call, foo: 'bar'
+            expect(mock_call).to receive(:dial).once.with(to)
+            expected_controller = controller.new(mock_call, foo: 'bar')
             expect(mock_call).to receive(:execute_controller).with(expected_controller, kind_of(Proc)).once
             call = OutboundCall.originate to, :controller => controller, :controller_metadata => {:foo => 'bar'}
             call << Adhearsion::Event::Answered.new
@@ -102,7 +102,7 @@ module Adhearsion
 
       context "when given a block" do
         it "should execute the block as a controller on the call when it is answered" do
-          expect(mock_call).to receive(:dial).once.with(to, {})
+          expect(mock_call).to receive(:dial).once.with(to)
           expect(mock_call).to receive(:execute_controller).once.with(kind_of(CallController), kind_of(Proc)) do |controller|
             expect(controller.block.call).to eq(:foobar)
           end

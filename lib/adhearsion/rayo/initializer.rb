@@ -31,7 +31,7 @@ module Adhearsion
             :root_domain        => self.config.root_domain
           }
 
-          self.client = Adhearsion.client_with_connection self.config.type, connection_options
+          self.client = Adhearsion.client_with_connection(self.config.type, **connection_options)
 
           # Tell the connection that we are ready to process calls.
           Events.register_callback :after_initialized do

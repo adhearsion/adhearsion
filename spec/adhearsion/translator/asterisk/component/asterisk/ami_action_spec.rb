@@ -33,7 +33,13 @@ module Adhearsion
               before { stub_uuids component_id }
 
               it 'should send the appropriate RubyAMI::Action and send the component node a ref' do
-                expect(ami_client).to receive(:send_action).once.with('ExtensionStatus', 'Context' => 'default', 'Exten' => 'idonno').and_return(RubyAMI::Response.new)
+                expect(ami_client).to receive(:send_action).once.with(
+                  'ExtensionStatus',
+                  Hash(
+                    'Context' => 'default',
+                    'Exten' => 'idonno'
+                  )
+                ).and_return(RubyAMI::Response.new)
                 subject.execute
                 expect(original_command.response(1)).to eq(expected_response)
               end

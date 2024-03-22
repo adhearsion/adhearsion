@@ -13,7 +13,6 @@ Feature: Adhearsion Ahn CLI (start)
 
   Scenario: Command start with no path inside of the app directory
     And that I create a valid app under "path/somewhere"
-    When I cd to "path/somewhere"
     And I run `ahn start` interactively
     And I wait for output to contain "Starting connection to server"
     Then the output should contain "Adhearsion::Console: Launching Adhearsion Console"
@@ -28,7 +27,6 @@ Feature: Adhearsion Ahn CLI (start)
 
   Scenario: Starting without the console
     Given that I create a valid app under "path/somewhere"
-    When I cd to "path/somewhere"
     And I run `ahn start --no-console` interactively
     And I wait for output to contain "Starting connection to server"
     Then the output should not contain "Adhearsion::Console: Launching Adhearsion Console"

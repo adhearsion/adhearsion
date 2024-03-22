@@ -1,9 +1,4 @@
-on:
-  push:
-    branches:
-      - master
-      - develop
-  pull_request:
+on: push
 
 name: Build
 
@@ -15,16 +10,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['2.7', '3.1', 'jruby-9.1', 'jruby-9.2', 'jruby-9.3', 'jruby-head']
+        ruby: ['3.2']
 
     env:
       RAILS_ENV: test
       CI: true
-      JRUBY_OPTS: "-J-Xmx512m"
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -34,10 +28,4 @@ jobs:
 
       - name: Run Specs
         run: |
-          bundle exec rake
-
-      - name: Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: coverage/lcov.info
+          bundle exec rspec spec

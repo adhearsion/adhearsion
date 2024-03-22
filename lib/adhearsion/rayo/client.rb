@@ -53,7 +53,7 @@ module Adhearsion
             trigger_handler :event, event
           end
         end
-        connection.write command, options
+        connection.write(command, **options)
       end
     end
   end

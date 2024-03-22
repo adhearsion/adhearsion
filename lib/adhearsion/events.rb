@@ -3,6 +3,7 @@
 require 'has_guarded_handlers'
 require 'singleton'
 require 'celluloid'
+require 'celluloid/pool'
 
 module Adhearsion
   module Events

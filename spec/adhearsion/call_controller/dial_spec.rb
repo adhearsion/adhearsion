@@ -98,7 +98,7 @@ module Adhearsion
 
           it "joins the new call to the existing one on answer" do
             expect(call).to receive(:answer).once
-            expect(other_mock_call).to receive(:join).once.with(call, {})
+            expect(other_mock_call).to receive(:join).once.with(call)
 
             dial_in_thread
 
@@ -111,12 +111,12 @@ module Adhearsion
           end
 
           context "with a join target specified" do
-            let(:options) { { join_target: {mixer_name: 'foobar'} } }
+            let(:options) { { join_target: { mixer_name: 'foobar' } } }
 
             it "joins the calls to the specified target on answer" do
               expect(call).to receive(:answer).once
-              expect(call).to receive(:join).once.with({mixer_name: 'foobar'}, {})
-              expect(other_mock_call).to receive(:join).once.with({mixer_name: 'foobar'}, {})
+              expect(call).to receive(:join).once.with(Hash(mixer_name: 'foobar'))
+              expect(other_mock_call).to receive(:join).once.with(Hash(mixer_name: 'foobar'))
 
               dial_in_thread
 
@@ -136,7 +136,7 @@ module Adhearsion
             it "executes the callback prior to joining" do
               expect(foo).to receive(:bar).once.with(other_mock_call).ordered
               expect(call).to receive(:answer).once.ordered
-              expect(other_mock_call).to receive(:join).once.with(call, {}).ordered
+              expect(other_mock_call).to receive(:join).once.with(call).ordered
 
               dial_in_thread
 
@@ -162,7 +162,7 @@ module Adhearsion
               expect(subject).to receive(:play!).once.with(['file://tt-monkeys'], repeat_times: 0).and_return(component)
               expect(component).to receive(:stop!).twice
               expect(call).to receive(:answer).once.ordered
-              expect(other_mock_call).to receive(:join).once.with(call, {}).ordered
+              expect(other_mock_call).to receive(:join).once.with(call).ordered
 
               dial_in_thread
 
@@ -182,7 +182,7 @@ module Adhearsion
                 expect(foo).to receive(:bar).once.ordered
                 expect(component).to receive(:stop!).twice
                 expect(call).to receive(:answer).once.ordered
-                expect(other_mock_call).to receive(:join).once.with(call, {}).ordered
+                expect(other_mock_call).to receive(:join).once.with(call).ordered
 
                 dial_in_thread
 
@@ -214,7 +214,7 @@ module Adhearsion
           it "hangs up the new call when the root call ends" do
             expect(other_mock_call).to receive(:hangup).once
             expect(call).to receive(:answer).once
-            expect(other_mock_call).to receive(:join).once.with(call, {})
+            expect(other_mock_call).to receive(:join).once.with(call)
 
             dial_in_thread
 
@@ -265,7 +265,7 @@ module Adhearsion
           context "when the call is answered and joined" do
             it "has an overall dial status of :answer" do
               expect(call).to receive(:answer).once
-              expect(other_mock_call).to receive(:join).once.with(call, {}) do
+              expect(other_mock_call).to receive(:join).once.with(call) do
                 call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
                 other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
               end
@@ -289,7 +289,7 @@ module Adhearsion
 
             it "records the duration of the join" do
               expect(call).to receive(:answer).once
-              expect(other_mock_call).to receive(:join).once.with(call, {}) do
+              expect(other_mock_call).to receive(:join).once.with(call) do
                 call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
                 other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
               end
@@ -350,7 +350,7 @@ module Adhearsion
 
             before do
               expect(call).to receive(:answer).once
-              expect(other_mock_call).to receive(:join).once.with(join_target, join_options) do
+              expect(other_mock_call).to receive(:join).once.with(join_target, **join_options) do
                 call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
                 other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
               end
@@ -366,8 +366,8 @@ module Adhearsion
                 other_mock_call << Adhearsion::Event::Unjoined.new(call_uri: call.id)
               end
 
-              dial = Dial::Dial.new to, options, call
-              dial.run subject
+              dial = Dial::Dial.new(to, options, call)
+              dial.run(subject)
 
               waiter_thread = Thread.new do
                 dial.await_completion
@@ -521,7 +521,7 @@ module Adhearsion
 
                 dial.split
 
-                expect(other_mock_call).to receive(:join).once.ordered.with(call, {}) do
+                expect(other_mock_call).to receive(:join).once.ordered.with(call) do
                   call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
                   other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
                 end
@@ -580,7 +580,7 @@ module Adhearsion
                 let(:options) { { join_target: join_target } }
 
                 it "joins the calls to the specified target on answer" do
-                  expect(call).to receive(:join).once.with(join_target, {})
+                  expect(call).to receive(:join).once.with(join_target)
                   expect(other_mock_call).to receive(:unjoin).once.ordered.with(join_target)
                   expect(call).to receive(:unjoin).once.ordered.with(join_target) do
                     call << Adhearsion::Event::Unjoined.new(join_target)
@@ -601,8 +601,8 @@ module Adhearsion
 
                   dial.split
 
-                  expect(call).to receive(:join).once.ordered.with({mixer_name: 'foobar'}, {})
-                  expect(other_mock_call).to receive(:join).once.ordered.with({mixer_name: 'foobar'}, {})
+                  expect(call).to receive(:join).once.ordered.with(Hash(mixer_name: 'foobar'))
+                  expect(other_mock_call).to receive(:join).once.ordered.with(Hash(mixer_name: 'foobar'))
                   dial.rejoin
 
                   other_mock_call << mock_end
@@ -637,9 +637,9 @@ module Adhearsion
 
                   dial.split
 
-                  expect(call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
-                  expect(other_mock_call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
-                  dial.rejoin mixer_name: mixer
+                  expect(call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
+                  expect(other_mock_call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
+                  dial.rejoin(mixer_name: mixer)
 
                   other_mock_call << mock_end
 
@@ -669,14 +669,14 @@ module Adhearsion
 
                   dial.split
 
-                  expect(call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
-                  expect(other_mock_call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
-                  dial.rejoin mixer_name: mixer
+                  expect(call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
+                  expect(other_mock_call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
+                  dial.rejoin(mixer_name: mixer)
 
-                  expect(other_mock_call).to receive(:unjoin).once.ordered.with(mixer_name: mixer) do
+                  expect(other_mock_call).to receive(:unjoin).once.ordered.with(Hash(mixer_name: mixer)) do
                     other_mock_call << Adhearsion::Event::Unjoined.new(mixer_name: mixer)
                   end
-                  expect(call).to receive(:unjoin).once.ordered.with(mixer_name: mixer) do
+                  expect(call).to receive(:unjoin).once.ordered.with(Hash(mixer_name: mixer)) do
                     call << Adhearsion::Event::Unjoined.new(mixer_name: mixer)
                   end
                   dial.split
@@ -702,7 +702,7 @@ module Adhearsion
               before do
                 allow(second_root_call).to receive_messages write_command: true, id: second_root_call_id
                 expect(OutboundCall).to receive(:new).and_return second_other_mock_call
-                expect(second_other_mock_call).to receive(:join).once.with(second_root_call, {})
+                expect(second_other_mock_call).to receive(:join).once.with(second_root_call)
                 expect(second_other_mock_call).to receive(:dial).once.with(second_to, options)
                 expect(second_root_call).to receive(:answer).once
 
@@ -725,13 +725,13 @@ module Adhearsion
                   second_other_mock_call << Adhearsion::Event::Unjoined.new(call_uri: second_root_call.id)
                 end
 
-                expect(call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
-                expect(other_mock_call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                expect(call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
+                expect(other_mock_call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
 
-                expect(second_root_call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
-                expect(second_other_mock_call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                expect(second_root_call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
+                expect(second_other_mock_call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
 
-                dial.merge other_dial
+                dial.merge(other_dial)
 
                 waiter_thread = Thread.new do
                   dial.await_completion
@@ -757,11 +757,11 @@ module Adhearsion
                   allow(other_mock_call).to receive(:unjoin)
                   allow(second_other_mock_call).to receive(:unjoin)
 
-                  expect(call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
-                  expect(other_mock_call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  expect(call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
+                  expect(other_mock_call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
 
-                  expect(second_root_call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
-                  expect(second_other_mock_call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  expect(second_root_call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
+                  expect(second_other_mock_call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
 
                   dial.merge other_dial
                 end
@@ -855,7 +855,7 @@ module Adhearsion
                 expect(latch.wait(2)).to be_falsey
 
                 [call, second_root_call, second_other_mock_call].each do |call|
-                  expect(call).to receive(:unjoin).once.with(mixer_name: mixer) do
+                  expect(call).to receive(:unjoin).once.with(Hash(mixer_name: mixer)) do
                     call << Adhearsion::Event::Unjoined.new(mixer_name: mixer)
                   end
                 end
@@ -863,7 +863,7 @@ module Adhearsion
                 dial.split
 
                 [call, other_mock_call, second_root_call, second_other_mock_call].each do |call|
-                  expect(call).to receive(:join).once.with({mixer_name: mixer}, {}) do
+                  expect(call).to receive(:join).once.with(Hash(mixer_name: mixer)) do
                     call << Adhearsion::Event::Joined.new(mixer_name: mixer)
                   end
                 end
@@ -963,7 +963,7 @@ module Adhearsion
                   sleep 0.5
 
                   [call, second_root_call, second_other_mock_call].each do |call|
-                    expect(call).to receive(:unjoin).once.with(mixer_name: mixer) do
+                    expect(call).to receive(:unjoin).once.with(Hash(mixer_name: mixer)) do
                       call << Adhearsion::Event::Unjoined.new(mixer_name: mixer)
                     end
                   end
@@ -976,7 +976,7 @@ module Adhearsion
                   expect(latch.wait(2)).to be_falsey
 
                   [call, second_root_call, second_other_mock_call].each do |call|
-                    expect(call).to receive(:join).once.with({mixer_name: mixer}, {}) do
+                    expect(call).to receive(:join).once.with(Hash(mixer_name: mixer)) do
                       call << Adhearsion::Event::Joined.new(mixer_name: mixer)
                     end
                   end
@@ -992,11 +992,11 @@ module Adhearsion
                   expect(other_mock_call).to receive(:unjoin).once.ordered.with(call).and_raise Adhearsion::ProtocolError.new.setup(:service_unavailable)
                   expect(second_other_mock_call).to receive(:unjoin).once.ordered.with(second_root_call).and_raise Adhearsion::ProtocolError.new.setup(:service_unavailable)
 
-                  expect(call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
-                  expect(other_mock_call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  expect(call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
+                  expect(other_mock_call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
 
-                  expect(second_root_call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
-                  expect(second_other_mock_call).to receive(:join).once.ordered.with({mixer_name: mixer}, {})
+                  expect(second_root_call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
+                  expect(second_other_mock_call).to receive(:join).once.ordered.with(Hash(mixer_name: mixer))
 
                   dial.merge other_dial
 
@@ -1060,7 +1060,7 @@ module Adhearsion
 
           it "dials all parties and joins the first one to answer, hanging up the rest" do
             expect(call).to receive(:answer).once
-            expect(other_mock_call).to receive(:join).once.with(call, {})
+            expect(other_mock_call).to receive(:join).once.with(call)
             expect(second_other_mock_call).to receive(:hangup).once do
               second_other_mock_call << mock_end
             end
@@ -1083,7 +1083,7 @@ module Adhearsion
 
           it "unblocks when the joined call unjoins, allowing it to proceed further" do
             expect(call).to receive(:answer).once
-            expect(other_mock_call).to receive(:join).once.with(call, {})
+            expect(other_mock_call).to receive(:join).once.with(call)
             expect(other_mock_call).to receive(:hangup).once
             expect(second_other_mock_call).to receive(:hangup).once do
               second_other_mock_call << mock_end
@@ -1195,7 +1195,7 @@ module Adhearsion
           context "when a call is answered and joined, and the other ends with an error" do
             it "has an overall dial status of :answer" do
               expect(call).to receive(:answer).once
-              expect(other_mock_call).to receive(:join).once.with(call, {})
+              expect(other_mock_call).to receive(:join).once.with(call)
               expect(second_other_mock_call).to receive(:hangup).once do
                 second_other_mock_call << mock_end(:error)
               end
@@ -1244,7 +1244,7 @@ module Adhearsion
             it "should not abort until the far end hangs up" do
               expect(other_mock_call).to receive(:dial).once.with(to, hash_including(:timeout => timeout))
               expect(call).to receive(:answer).once
-              expect(other_mock_call).to receive(:join).once.with(call, {})
+              expect(other_mock_call).to receive(:join).once.with(call)
               expect(OutboundCall).to receive(:new).and_return other_mock_call
 
               time = Time.now
@@ -1352,7 +1352,7 @@ module Adhearsion
               end
               other_mock_call['confirm'] = true
               expect(call).to receive(:answer).once
-              expect(other_mock_call).to receive(:join).once.with(call, {}) do
+              expect(other_mock_call).to receive(:join).once.with(call) do
                 call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
                 other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
               end
@@ -1442,7 +1442,7 @@ module Adhearsion
                 expect(call).to receive(:answer).once
 
                 expect(other_mock_call).to receive(:dial).once.with(to, from: nil)
-                expect(other_mock_call).to receive(:join).once.with(call, {}) do
+                expect(other_mock_call).to receive(:join).once.with(call) do
                   call << Adhearsion::Event::Joined.new(call_uri: other_mock_call.id)
                   other_mock_call << Adhearsion::Event::Joined.new(call_uri: call.id)
                 end

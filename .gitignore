@@ -10,6 +10,7 @@
 /spec/reports
 *.log
 /adhearsion.pid
+spec/examples.txt
 
 # RBX stuff
 /.rbx/
