@@ -10,6 +10,17 @@ module Adhearsion
           expect(command).to eq(Execute)
         end
 
+        it "is a server command" do
+          command = Execute.new
+          command.domain = "mydomain"
+          command.target_call_id = SecureRandom.uuid
+
+          expect(command).to have_attributes(
+            domain: nil,
+            target_call_id: nil
+          )
+        end
+
         describe ".from_xml" do
           it "initializes from xml" do
             stanza = <<-STANZA

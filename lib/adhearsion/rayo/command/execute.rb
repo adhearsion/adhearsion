@@ -9,6 +9,10 @@ module Adhearsion
         attribute :api
         attribute :args
 
+        # These fields should be nil for exec commands
+        def domain; end
+        def target_call_id; end
+
         def args=(value)
           value.is_a?(String) ? super(value.split(/\s+/)) : super
         end
